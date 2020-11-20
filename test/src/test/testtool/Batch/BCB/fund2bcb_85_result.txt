@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?><files><![CDATA[<document name="bcb.txt">
+<document name="Test Tool correlation id">
 </document>
-;<document name="bcb.txt">
+;<document name="Test Tool correlation id">
 AA
 850010952009012001
 850010952009012001
@@ -13,4 +13,3 @@ AA
 850010952009001001
 ZZ
 </document>
-]]></files>

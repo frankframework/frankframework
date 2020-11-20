@@ -1,50 +1,17 @@
 <module>
-	<adapter name="BatchTest" active="${active.jms}" >
-		<receiver name="BatchFileListener" pollInterval="1">
-			<listener 
-				className="nl.nn.adapterframework.receivers.DirectoryListener" 
-				inputFolder="${testdata.dir}/batch/in"
-				processedFolder="${testdata.dir}/batch/out"
-				errorFolder="${testdata.dir}/batch/error"
-				createFolders="true"
-				wildcard="*.*"
-				overwrite="true"
-				fileTimeSensitive="true"
-			/>
+	<adapter name="Batch-bcb" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-bcb" />
 		</receiver>
 
-		<receiver 
-			name="FxfListener" 
-			maxRetries="0"
-			active="${active.fxf}">
-			<listener 
-				className="nl.nn.adapterframework.extensions.fxf.FxfListener" 
-				destinationName="jms/fxf_request" 
-				script="${FXF_init}"
-				applicationId="BATCHFF"
-				jmsRealm="fxf" 
-				delete="true"
-				workDirectory="yyyy" 
-				fxfDestinationName="zzzz" 
-			/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" 
-				slotId="${applicationId}/BatchFxfListener" />
-		</receiver>
-
-		<pipeline firstPipe="bepaalTaak">
+		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
-			<pipe 
-				name="bepaalTaak" 
-				className="nl.nn.adapterframework.pipes.FilenameSwitch" 
-				>
-			</pipe>
 
 			<pipe 
 				name="bcb.txt" 
-				className="nl.nn.adapterframework.batch.BatchFileTransformerPipe" 
+				className="nl.nn.adapterframework.batch.StreamTransformerPipe" 
 			>
 				<manager
 					name="fundationRecordTypeManager" 
@@ -110,20 +77,22 @@
 					onOpenBlock="AA" 
 					onCloseBlock="ZZ"
 				/>
-				<forward name="success" path="createXml"/>
+				<forward name="success" path="READY"/>
 			</pipe>
-			<pipe
-				name="createXml"
-				className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="files"
-			>
-				<forward name="success" path="ResponseSender"/>
-			</pipe>
+		</pipeline>
+	</adapter>
 
-
+	<adapter name="Batch-pion" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-pion" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
 			<pipe
 			  name="pion.csv"
-			  className="nl.nn.adapterframework.batch.BatchFileTransformerPipe"
+			  className="nl.nn.adapterframework.batch.StreamTransformerPipe"
 			>
 			  <!-- no manager and flow defined, use always first recordhandler and result handler -->
 			  <recordHandler
@@ -183,13 +152,22 @@
 			    name="result"
 			    className="nl.nn.adapterframework.batch.Result2StringWriter"
 			  />
-			  <forward name="success" path="ResponseSender" />
+			  <forward name="success" path="READY" />
 			</pipe>
+		</pipeline>
+	</adapter>
 
-
+	<adapter name="Batch-fixedwitdth" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-fixedwidth" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
 			<pipe
 			  name="fixedwidth.txt"
-			  className="nl.nn.adapterframework.batch.BatchFileTransformerPipe"
+			  className="nl.nn.adapterframework.batch.StreamTransformerPipe"
 			>
 			  <!-- no manager and flow defined, use always first recordhandler and result handler -->
 			  <recordHandler
@@ -203,13 +181,22 @@
 			    name="result"
 			    className="nl.nn.adapterframework.batch.Result2StringWriter"
 			  />
-			  <forward name="success" path="ResponseSender" />
+			  <forward name="success" path="READY" />
 			</pipe>
+		</pipeline>
+	</adapter>
 
-				
+	<adapter name="Batch-structured" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-structured" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
 			<pipe
 			  name="structured.txt"
-			  className="nl.nn.adapterframework.batch.BatchFileTransformerPipe"
+			  className="nl.nn.adapterframework.batch.StreamTransformerPipe"
 			>
 			  <!-- first manager searches for 'start', then writes root tag -->
 			  <manager
@@ -272,12 +259,22 @@
 			    className="nl.nn.adapterframework.batch.Result2StringWriter"
 			    onCloseDocument="&lt;/doc&gt;&lt;/documents&gt;&lt;/document&gt;"
 			  />
-			  <forward name="success" path="ResponseSender" />
+			  <forward name="success" path="READY" />
 			</pipe>
+		</pipeline>
+	</adapter>
 
+	<adapter name="Batch-substructured" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-substructured" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
 			<pipe
 			  name="substructured.txt"
-			  className="nl.nn.adapterframework.batch.BatchFileTransformerPipe"
+			  className="nl.nn.adapterframework.batch.StreamTransformerPipe"
 			>
 			  <manager
 			    name="rhmBody"
@@ -303,12 +300,22 @@
 			    suffix=""
 			    default="true"
 			  />
-			  <forward name="success" path="ResponseSender" />
+			  <forward name="success" path="READY" />
 			</pipe>
+		</pipeline>
+	</adapter>
 
-		<pipe name="i4redifact.txt" className="nl.nn.adapterframework.batch.BatchFileTransformerPipe">
+	<adapter name="Batch-edifact" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-edifact" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+		<pipe name="i4redifact.txt" className="nl.nn.adapterframework.batch.StreamTransformerPipe">
 			<manager name="rhmBody" className="nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager" separator="+" fieldNr="1" initial="true">
-			    <flow recordKey="UNA:" openBlockBeforeLine="UNA_block"/>
+				<flow recordKey="UNA:" openBlockBeforeLine="UNA_block"/>
 				<flow recordKey="UNB" openBlockBeforeLine="UNB_block" recordHandlerRef="rhWriteUNB"/>
 				<flow recordKey="UNZ" recordHandlerRef="rhWriteUNZ"/>
 				<flow recordKey="UNH" openBlockBeforeLine="UNH_block" recordHandlerRef="rhWriteUNH"/>
@@ -324,23 +331,9 @@
 			<recordHandler name="rhWriteENT" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="ENT" outputFields="recordSoort,entiteit,volgNummer"/>
 			<recordHandler name="rhWriteLBW" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="LBW" outputFields="recordSoort,label,waarde"/>
 			<resultHandler name="ReceiveResultaat_Block" className="nl.nn.adapterframework.batch.Result2StringWriter" default="true" />
-			<forward name="success" path="ResponseSender"/>
+			<forward name="success" path="READY"/>
 		</pipe>
 		
-		
-			<pipe 
-		        name="ResponseSender" > 
-		        <sender 
-		                className="nl.nn.adapterframework.jms.JmsSender" 
-		                destinationName="jms/i4testiaf_out"
-		                deliveryMode="NON_PERSISTENT"
-		                jmsRealm="qcf"
-		        >
-		        	<param name="SOURCE" value="I4TESTGR"/>
-				</sender> 
-				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/BatchTest" />
-			  <forward name="success" path="READY" />
-			</pipe>	
 		</pipeline>
 	</adapter>
 </module>

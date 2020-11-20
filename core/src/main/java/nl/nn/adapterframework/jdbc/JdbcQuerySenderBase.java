@@ -15,12 +15,10 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -40,14 +38,14 @@ import java.util.StringTokenizer;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -62,7 +60,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -83,7 +80,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * The package processor makes some assumptions about the datatypes:
  * <ul>
  *   <li>elements that start with a single quote are assumed to be Strings</li>
- *   <li>elements thta contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)</li>
+ *   <li>elements that contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)</li>
  *   <li>elements containing a dot ('.') are assumed to be floats</li>
  *   <li>all other elements are assumed to be integers</li>
  * </ul>
@@ -113,10 +110,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private String columnsReturned=null;
 	private String resultQuery=null;
 	private boolean trimSpaces=true;
-	// TODO blobCharset should set to null! Clobs are for character data, blobs for binary. When blobs contain character data,
+	// 2020-11-18: blobCharset is set to null! Clobs are for character data, blobs for binary. When blobs contain character data,
 	// blobCharset can be set to "UTF-8", or set blobBase64Direction to 'encode'.
-	// In a later version of the framework it will be possible to return binary data from a sender.
-	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING; 
+	// By default, BLOBs are no longer read as strings
+	private String blobCharset = null;
 	private boolean closeInputstreamOnExit=true;
 	private boolean closeOutputstreamOnExit=true;
 	private String blobBase64Direction=null;
@@ -295,11 +292,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 
-	protected Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		try (JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
 			try {
-				return executeStatementSet(queryExecutionContext, message, session);
+				return executeStatementSet(queryExecutionContext, message, session, next);
 			} finally {
 				closeStatementSet(queryExecutionContext, session);
 			}
@@ -311,7 +308,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 
-	protected Message executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
@@ -328,25 +325,25 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
 					String contentType = (String) session.get("contentType");
 					String contentDisposition = (String) session.get("contentDisposition");
-					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);
+					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
 				} else {
-					return executeSelectQuery(statement,blobSessionVar,clobSessionVar);
+					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);
 				}
 			} 
 			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				if (StringUtils.isEmpty(getBlobSessionKey())) {
-					return executeUpdateBlobQuery(statement,message.asInputStream());
+				if (StringUtils.isNotEmpty(getBlobSessionKey())) {
+					return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:Message.asMessage(session.get(getBlobSessionKey()))));
 				} 
-				return executeUpdateBlobQuery(statement,session==null?null:session.get(getBlobSessionKey()));
+				return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
 			} 
 			if ("updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				if (StringUtils.isEmpty(getClobSessionKey())) {
-					return executeUpdateClobQuery(statement,message.asReader());
+				if (StringUtils.isNotEmpty(getClobSessionKey())) {
+					return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:Message.asMessage(session.get(getClobSessionKey()))));
 				} 
-				return executeUpdateClobQuery(statement,session==null?null:session.get(getClobSessionKey()));
+				return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
 			} 
 			if ("package".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				return executePackageQuery(queryExecutionContext);
+				return new PipeRunResult(null, executePackageQuery(queryExecutionContext));
 			}
 			Message result = executeOtherQuery(queryExecutionContext, message, session);
 			if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
@@ -359,7 +356,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				statement.clearBatch();
 				queryExecutionContext.iteration=0;
 			}
-			return result;
+			return new PipeRunResult(null, result);
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
@@ -409,8 +406,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (nextStartPos == -1) {
 				nextStartPos = query.length();
 			}
-			int endPos =
-					query.indexOf(UNP_END, startPos + UNP_START.length());
+			int endPos = query.indexOf(UNP_END, startPos + UNP_START.length());
 
 			if (endPos == -1 || endPos > nextStartPos) {
 				log.warn(getLogPrefix() + "Found a start delimiter without an end delimiter at position ["	+ startPos + "] in ["+ query+ "]");
@@ -458,54 +454,60 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException, JMSException {
-		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null);
+		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null, null, null).getResult();
 	}
 
-	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException, JMSException {
-		String result=null;
+	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, IPipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
 		if (isScalar()) {
+			String result=null;
 			if (resultset.next()) {
 				//result = resultset.getString(1);
 				ResultSetMetaData rsmeta = resultset.getMetaData();
 				int numberOfColumns = rsmeta.getColumnCount();
 				if(numberOfColumns > 1) {
-					log.warn(getLogPrefix() + "has the [scalar]=true. However, the resultset contains ["+numberOfColumns+"] columns. Consider optimizing the query.");
+					log.warn(getLogPrefix() + "has set scalar=true but the resultset contains ["+numberOfColumns+"] columns. Consider optimizing the query.");
 				}
 				if (JdbcUtil.isBlobType(resultset, 1, rsmeta)) {
-					if (response==null) {
-						if (blobSessionVar!=null) {
-							JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
-							return new Message("");
-						}
-					} else {
-						InputStream inputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), resultset, 1, isBlobsCompressed());
+					if (response!=null) {
 						if (StringUtils.isNotEmpty(contentType)) {
 							response.setHeader("Content-Type", contentType); 
 						}
 						if (StringUtils.isNotEmpty(contentDisposition)) {
 							response.setHeader("Content-Disposition", contentDisposition); 
 						}
-
-						if(getBlobBase64Direction() != null) {
-							if ("decode".equalsIgnoreCase(getBlobBase64Direction())) {
-								inputStream = new Base64InputStream (inputStream);
+						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), response.getOutputStream(), isCloseOutputstreamOnExit());
+						return new PipeRunResult(null, Message.nullMessage());
+					}
+					if (blobSessionVar!=null) {
+						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
+						return new PipeRunResult(null, Message.nullMessage());
+					}
+					if (!isBlobSmartGet()) {
+						try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+							if (StringUtils.isNotEmpty(getBlobCharset())) {
+								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), target.asWriter(), isCloseOutputstreamOnExit());
+							} else {
+								JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, null,             isBlobsCompressed(), getBlobBase64Direction(), target.asStream(), isCloseOutputstreamOnExit());
 							}
-							else if ("encode".equalsIgnoreCase(getBlobBase64Direction())) {
-								inputStream = new Base64InputStream (inputStream, true);
-							}
+							return target.getPipeRunResult();
+						} catch (Exception e) {
+							throw new JdbcException(e);
 						}
-
-						OutputStream outputStream = response.getOutputStream();
-						Misc.streamToStream(inputStream, outputStream);
-						log.debug(getLogPrefix() + "copied blob input stream [" + inputStream + "] to output stream [" + outputStream + "]");
-						return new Message("");
 					}
 				}
-				if (clobSessionVar!=null && JdbcUtil.isClobType(resultset, 1, rsmeta)) {
-					JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
-					return new Message("");
+				if (JdbcUtil.isClobType(resultset, 1, rsmeta)) {
+					if (clobSessionVar!=null) {
+						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
+						return new PipeRunResult(null, Message.nullMessage());
+					}
+					try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, target.asWriter(), isCloseOutputstreamOnExit());
+						return target.getPipeRunResult();
+					} catch (Exception e) {
+						throw new JdbcException(e);
+					}
 				}
-				result = JdbcUtil.getValue(getDbmsSupport(), resultset, 1, rsmeta, getBlobCharset(), isBlobsCompressed(), getNullValue(), isTrimSpaces(), isBlobSmartGet(), StringUtils.isEmpty(getBlobCharset()));
+				result = JdbcUtil.getValue(getDbmsSupport(), resultset, 1, rsmeta, getBlobCharset(), isBlobsCompressed(), getNullValue(), isTrimSpaces(), isBlobSmartGet(), "encode".equals(getBlobBase64Direction()));
 				if (resultset.wasNull()) {
 					if (isScalarExtended()) {
 						result = "[null]";
@@ -520,24 +522,29 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				}
 				if (resultset.next()) {
-					log.warn(getLogPrefix() + "has the [scalar]=true. However, the query returns more than 1 row. Consider optimizing the query.");
+					log.warn(getLogPrefix() + "has set scalar=true but the query returned more than 1 row. Consider optimizing the query.");
 				}
 			} else {
 				if (isScalarExtended()) {
 					result="[absent]";
 				}
 			}
+			return new PipeRunResult(null, new Message(result));
 		} else {
-			// Create XML and give the maxlength as a parameter
-			DB2XMLWriter db2xml = new DB2XMLWriter();
-			db2xml.setNullValue(getNullValue());
-			db2xml.setTrimSpaces(isTrimSpaces());
-			db2xml.setBlobCharset(getBlobCharset());
-			db2xml.setDecompressBlobs(isBlobsCompressed());
-			db2xml.setGetBlobSmart(isBlobSmartGet());
-			result = db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition());
+			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+				// Create XML and give the maxlength as a parameter
+				DB2XMLWriter db2xml = new DB2XMLWriter();
+				db2xml.setNullValue(getNullValue());
+				db2xml.setTrimSpaces(isTrimSpaces());
+				if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
+				db2xml.setDecompressBlobs(isBlobsCompressed());
+				db2xml.setGetBlobSmart(isBlobSmartGet());
+				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target.asContentHandler());
+				return target.getPipeRunResult();
+			} catch (Exception e) {
+				throw new JdbcException(e);
+			}
 		}
-		return new Message(result);
 	}
 	
 
@@ -552,39 +559,25 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return new BlobOutputStream(getDbmsSupport(), blobUpdateHandle, blobColumn, dbmsOutputStream, rs, result);
 	}
 
-	protected Message executeUpdateBlobQuery(PreparedStatement statement, Object message) throws SenderException{
+	protected Message executeUpdateBlobQuery(PreparedStatement statement, Message contents) throws SenderException{
 		BlobOutputStream blobOutputStream=null;
-		if (message!=null) {
+		try {
 			try {
-				try {
-					blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
-					InputStream inputStream = null;
-					if (message instanceof Reader) {
-						inputStream = new ReaderInputStream((Reader)message, getBlobCharset());
-					} else if (message instanceof InputStream) {
-						if (StringUtils.isNotEmpty(getStreamCharset())) {
-							inputStream = new ReaderInputStream(StreamUtil.getCharsetDetectingInputStreamReader((InputStream)message, getBlobCharset()));
-						} else {
-							inputStream = (InputStream)message;
-						}
-					} else if (message instanceof byte[]) {
-						inputStream = new ByteArrayInputStream((byte[])message);
-					} else {
-						inputStream = new ReaderInputStream(new StringReader(message.toString()), getBlobCharset());
+				blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
+				if (contents!=null) {
+					if (StringUtils.isNotEmpty(getStreamCharset())) {
+						contents = new Message(contents.asReader(getStreamCharset()));
 					}
+					InputStream inputStream = contents.asInputStream(getBlobCharset());
 					Misc.streamToStream(inputStream,blobOutputStream,isCloseInputstreamOnExit());
-				} finally {
-					if (blobOutputStream!=null) {
-						blobOutputStream.close();
-					}
 				}
-			} catch (SQLException sqle) {
-				throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command",sqle );
-			} catch (JdbcException e) {
-				throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command",e );
-			} catch (IOException e) {
-				throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command",e );
+			} finally {
+				if (blobOutputStream!=null) {
+					blobOutputStream.close();
+				}
 			}
+		} catch (SQLException|JdbcException|IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing an update BLOB command", e);
 		}
 		return blobOutputStream==null ? null : new Message(blobOutputStream.getWarnings().toXML());
 	}
@@ -600,40 +593,22 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return new ClobWriter(getDbmsSupport(), clobUpdateHandle, clobColumn, dbmsWriter, rs, result);
 	}
 
-	protected Message executeUpdateClobQuery(PreparedStatement statement, Object message) throws SenderException{
+	protected Message executeUpdateClobQuery(PreparedStatement statement, Message contents) throws SenderException{
 		ClobWriter clobWriter=null;
-		if (message!=null) {
+		try {
 			try {
-				try {
-					clobWriter = getClobWriter(statement, getClobColumn());
-					Reader reader=null;
-					if (message instanceof Reader) {
-						reader = (Reader)message;
-					} else if (message instanceof InputStream) {
-						InputStream inStream = (InputStream)message;
-						if (StringUtils.isNotEmpty(getStreamCharset())) {
-							reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream,getStreamCharset());
-						} else {
-							reader = StreamUtil.getCharsetDetectingInputStreamReader(inStream);
-						}
-					}
-					if (reader!=null) {
-						Misc.readerToWriter(reader, clobWriter, isCloseInputstreamOnExit());
-					} else {
-						clobWriter.write(message.toString());
-					}
-				} finally {
-					if (clobWriter!=null) {
-						clobWriter.close();
-					}
+				clobWriter = getClobWriter(statement, getClobColumn());
+				if (contents!=null) {
+					Reader reader = contents.asReader(getStreamCharset());
+					Misc.readerToWriter(reader, clobWriter, isCloseInputstreamOnExit());
 				}
-			} catch (SQLException sqle) {
-				throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command",sqle );
-			} catch (JdbcException e) {
-				throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command",e );
-			} catch (IOException e) {
-				throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command",e );
+			} finally {
+				if (clobWriter!=null) {
+					clobWriter.close();
+				}
 			}
+		} catch (SQLException|JdbcException|IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command", e);
 		}
 		return clobWriter==null ? null : new Message(clobWriter.getWarnings().toXML());
 	}
@@ -689,11 +664,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected Message executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar) throws SenderException{
-		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null);
+	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, IPipeLineSession session, IForwardTarget next) throws SenderException{
+		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null, session, next);
 	}
 
-	protected Message executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SenderException{
+	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, IPipeLineSession session, IForwardTarget next) throws SenderException{
 		try {
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
@@ -706,16 +681,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					resultset.absolute(getStartRow()-1);
 					log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
 				}				
-				return getResult(resultset,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);
+				return getResult(resultset,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
 			}
-		} catch (SQLException sqle) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
-		} catch (JdbcException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",e );
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",e );
-		} catch (JMSException e) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",e );
+		} catch (SQLException|JdbcException|IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command", e );
 		}
 	}
 
@@ -791,9 +760,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 			} catch (SQLException e) {
 				log.warn(
-					new SenderException(
-						getLogPrefix() + "got exception closing resultset",
-						e));
+					new SenderException(getLogPrefix() + "got exception closing resultset", e));
 			}
 		}
 	}
@@ -938,7 +905,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 					newMessage.append(message.substring(eindHaakje, lengthMessage));
 				} else {
-					newMessage.append(message.substring(eindHaakje, lengthMessage));				
+					newMessage.append(message.substring(eindHaakje, lengthMessage));
 				}
 			}
 			return newMessage.toString();
@@ -1080,7 +1047,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 
-	@IbisDoc({"13", "If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as a String)", "false"})
+	@IbisDoc({"13", "If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)", "false"})
+	@Deprecated
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -1158,14 +1126,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	public void setBlobBase64Direction(String string) {
 		blobBase64Direction = string;
 	}
-	
 	public String getBlobBase64Direction() {
 		return blobBase64Direction;
 	}
 	
 	@IbisDoc({"24", "Charset that is used to read and write BLOBs. This assumes the blob contains character data. " + 
-				"If blobCharset and blobSessionKey are not set, blobs are base64 encoded after being read to accommodate for the fact that senders need to return a String", "UTF-8"})
+				"If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case", ""})
 	public void setBlobCharset(String string) {
+		if (StringUtils.isEmpty(string)) {
+			ConfigurationWarnings.add(this, log, getLogPrefix()+"setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
+		}
 		blobCharset = string;
 	}
 	public String getBlobCharset() {

@@ -1,4 +1,4 @@
-<document name="i4rEdifact.txt">
+<document name="Test Tool correlation id">
   <UNA_block>
     <UNB_block>
       <UNB>
@@ -8,624 +8,624 @@
         <geadresseerde>I094324000118613</geadresseerde>
         <aanmaakDatumTijd>060127:1406</aanmaakDatumTijd>
         <filler>PMB0000449-026</filler>
-        <filler></filler>
-        <filler></filler>
-        <filler></filler>
-        <filler></filler>
-        <filler></filler>
-        <filler>1&#39;</filler>
-        <testAanduiding></testAanduiding>
+        <filler/>
+        <filler/>
+        <filler/>
+        <filler/>
+        <filler/>
+        <filler>1'</filler>
+        <testAanduiding/>
       </UNB>
       <UNH_block>
         <UNH>
           <recordSoort>UNH</recordSoort>
           <filler>PMB0002485-026</filler>
-          <soortBericht>INSLBW:1:0:IN:PMB&#39;</soortBericht>
+          <soortBericht>INSLBW:1:0:IN:PMB'</soortBericht>
         </UNH>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>AL</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VIEWCOD</label>
-            <waarde>00901&#39;</waarde>
+            <waarde>00901'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VERSIEV</label>
-            <waarde>102&#39;</waarde>
+            <waarde>102'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>PFUNK</label>
-            <waarde>100&#39;</waarde>
+            <waarde>100'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>DATACAT</label>
-            <waarde>2&#39;</waarde>
+            <waarde>2'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TPAAND</label>
-            <waarde>3613&#39;</waarde>
+            <waarde>3613'</waarde>
           </LBW>
         </ENT_block>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>PP</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>NUMMER</label>
-            <waarde>9196988&#39;</waarde>
+            <waarde>9196988'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>MYAAND</label>
-            <waarde>N007&#39;</waarde>
+            <waarde>N007'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BRANCHE</label>
-            <waarde>100&#39;</waarde>
+            <waarde>100'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>PRODUCT</label>
-            <waarde>40-R-FLEX&#39;</waarde>
+            <waarde>40-R-FLEX'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>INGDAT</label>
-            <waarde>20060126&#39;</waarde>
+            <waarde>20060126'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BETTERM</label>
-            <waarde>000&#39;</waarde>
+            <waarde>000'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BETWIJZ</label>
-            <waarde>T&#39;</waarde>
+            <waarde>T'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BTP</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TKRT</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TTSL</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TPP</label>
-            <waarde>4.00&#39;</waarde>
+            <waarde>4.00'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TINV</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TKST</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TASS</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TTOT</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TAC</label>
-            <waarde>02&#39;</waarde>
+            <waarde>02'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TAP</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
         </ENT_block>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>VP</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>ANAAM</label>
-            <waarde>MEINEN&#39;</waarde>
+            <waarde>JAUWEN'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VOORL</label>
-            <waarde>JN&#39;</waarde>
+            <waarde>KB'</waarde>
           </LBW>
         </ENT_block>
         <UNT>
           <recordSoort>UNT</recordSoort>
           <aantalSegmenten>29</aantalSegmenten>
-          <soortBericht>PMB0002485-026&#39;</soortBericht>
+          <soortBericht>PMB0002485-026'</soortBericht>
         </UNT>
       </UNH_block>
       <UNH_block>
         <UNH>
           <recordSoort>UNH</recordSoort>
           <filler>PMB0002486-026</filler>
-          <soortBericht>INSLBW:1:0:IN:PMB&#39;</soortBericht>
+          <soortBericht>INSLBW:1:0:IN:PMB'</soortBericht>
         </UNH>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>AL</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VIEWCOD</label>
-            <waarde>00901&#39;</waarde>
+            <waarde>00901'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VERSIEV</label>
-            <waarde>102&#39;</waarde>
+            <waarde>102'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>PFUNK</label>
-            <waarde>100&#39;</waarde>
+            <waarde>100'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>DATACAT</label>
-            <waarde>2&#39;</waarde>
+            <waarde>2'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TPAAND</label>
-            <waarde>3613&#39;</waarde>
+            <waarde>3613'</waarde>
           </LBW>
         </ENT_block>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>PP</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>NUMMER</label>
-            <waarde>9201902&#39;</waarde>
+            <waarde>9201902'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>MYAAND</label>
-            <waarde>N007&#39;</waarde>
+            <waarde>N007'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BRANCHE</label>
-            <waarde>100&#39;</waarde>
+            <waarde>100'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>PRODUCT</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>INGDAT</label>
-            <waarde>20060116&#39;</waarde>
+            <waarde>20060116'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BETTERM</label>
-            <waarde>000&#39;</waarde>
+            <waarde>000'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BETWIJZ</label>
-            <waarde>T&#39;</waarde>
+            <waarde>T'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BTP</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TKRT</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TTSL</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TPP</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TINV</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TKST</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TASS</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TTOT</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TAP</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
         </ENT_block>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>VP</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>ANAAM</label>
-            <waarde>BIJL&#39;</waarde>
+            <waarde>PIKHOUWEEL'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VOORL</label>
-            <waarde>EP&#39;</waarde>
+            <waarde>DG'</waarde>
           </LBW>
         </ENT_block>
         <UNT>
           <recordSoort>UNT</recordSoort>
           <aantalSegmenten>28</aantalSegmenten>
-          <soortBericht>PMB0002486-026&#39;</soortBericht>
+          <soortBericht>PMB0002486-026'</soortBericht>
         </UNT>
       </UNH_block>
       <UNH_block>
         <UNH>
           <recordSoort>UNH</recordSoort>
           <filler>PMB0002487-026</filler>
-          <soortBericht>INSLBW:1:0:IN:PMB&#39;</soortBericht>
+          <soortBericht>INSLBW:1:0:IN:PMB'</soortBericht>
         </UNH>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>AL</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VIEWCOD</label>
-            <waarde>00901&#39;</waarde>
+            <waarde>00901'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VERSIEV</label>
-            <waarde>102&#39;</waarde>
+            <waarde>102'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>PFUNK</label>
-            <waarde>100&#39;</waarde>
+            <waarde>100'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>DATACAT</label>
-            <waarde>2&#39;</waarde>
+            <waarde>2'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TPAAND</label>
-            <waarde>3613&#39;</waarde>
+            <waarde>3613'</waarde>
           </LBW>
         </ENT_block>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>PP</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>NUMMER</label>
-            <waarde>9549469&#39;</waarde>
+            <waarde>9549469'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>MYAAND</label>
-            <waarde>N007&#39;</waarde>
+            <waarde>N007'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BRANCHE</label>
-            <waarde>100&#39;</waarde>
+            <waarde>100'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>PRODUCT</label>
-            <waarde>60/40-R/20-D-3&#39;</waarde>
+            <waarde>60/40-R/20-D-3'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>INGDAT</label>
-            <waarde>20060126&#39;</waarde>
+            <waarde>20060126'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BETTERM</label>
-            <waarde>001&#39;</waarde>
+            <waarde>001'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BETWIJZ</label>
-            <waarde>M&#39;</waarde>
+            <waarde>M'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BTP</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TKRT</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TTSL</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TPP</label>
-            <waarde>486.98&#39;</waarde>
+            <waarde>486.98'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TINV</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TKST</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TASS</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TTOT</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TAC</label>
-            <waarde>02&#39;</waarde>
+            <waarde>02'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TAP</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
         </ENT_block>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>VP</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>ANAAM</label>
-            <waarde>VAN DER VELDEN&#39;</waarde>
+            <waarde>PLOP'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VOORL</label>
-            <waarde>JJC&#39;</waarde>
+            <waarde>K'</waarde>
           </LBW>
         </ENT_block>
         <UNT>
           <recordSoort>UNT</recordSoort>
           <aantalSegmenten>29</aantalSegmenten>
-          <soortBericht>PMB0002487-026&#39;</soortBericht>
+          <soortBericht>PMB0002487-026'</soortBericht>
         </UNT>
       </UNH_block>
       <UNH_block>
         <UNH>
           <recordSoort>UNH</recordSoort>
           <filler>PMB0002488-026</filler>
-          <soortBericht>INSLBW:1:0:IN:PMB&#39;</soortBericht>
+          <soortBericht>INSLBW:1:0:IN:PMB'</soortBericht>
         </UNH>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>AL</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VIEWCOD</label>
-            <waarde>00901&#39;</waarde>
+            <waarde>00901'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VERSIEV</label>
-            <waarde>102&#39;</waarde>
+            <waarde>102'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>PFUNK</label>
-            <waarde>100&#39;</waarde>
+            <waarde>100'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>DATACAT</label>
-            <waarde>2&#39;</waarde>
+            <waarde>2'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TPAAND</label>
-            <waarde>3613&#39;</waarde>
+            <waarde>3613'</waarde>
           </LBW>
         </ENT_block>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>PP</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>NUMMER</label>
-            <waarde>9572772&#39;</waarde>
+            <waarde>9572772'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>MYAAND</label>
-            <waarde>N007&#39;</waarde>
+            <waarde>N007'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BRANCHE</label>
-            <waarde>100&#39;</waarde>
+            <waarde>100'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>PRODUCT</label>
-            <waarde>20&#39;</waarde>
+            <waarde>20'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>INGDAT</label>
-            <waarde>20060126&#39;</waarde>
+            <waarde>20060126'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BETTERM</label>
-            <waarde>001&#39;</waarde>
+            <waarde>001'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BETWIJZ</label>
-            <waarde>M&#39;</waarde>
+            <waarde>M'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>BTP</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TKRT</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TTSL</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TPP</label>
-            <waarde>27.31&#39;</waarde>
+            <waarde>27.31'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TINV</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TKST</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TASS</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TTOT</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TAC</label>
-            <waarde>02&#39;</waarde>
+            <waarde>02'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>TAP</label>
-            <waarde>0.00&#39;</waarde>
+            <waarde>0.00'</waarde>
           </LBW>
         </ENT_block>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>VP</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>ANAAM</label>
-            <waarde>VELDBERG BV&#39;</waarde>
+            <waarde>TEENCO BV'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VOORL</label>
-            <waarde>0&#39;</waarde>
+            <waarde>0'</waarde>
           </LBW>
         </ENT_block>
         <UNT>
           <recordSoort>UNT</recordSoort>
           <aantalSegmenten>29</aantalSegmenten>
-          <soortBericht>PMB0002488-026&#39;</soortBericht>
+          <soortBericht>PMB0002488-026'</soortBericht>
         </UNT>
         <UNZ>
           <recordSoort>UNZ</recordSoort>
           <aantalBerichten>4</aantalBerichten>
-          <filler>PMB0000449-026&#39;</filler>
+          <filler>PMB0000449-026'</filler>
         </UNZ>
       </UNH_block>
     </UNB_block>

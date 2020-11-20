@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  *
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
- * @see    nl.nn.adapterframework.core.IAdapter
+ * @see    nl.nn.adapterframework.core.Adapter
  */
 public class Configuration implements INamedObject{
 	protected Logger log = LogUtil.getLogger(this);
@@ -80,8 +80,7 @@ public class Configuration implements INamedObject{
 		Object root = hski.start(now,mainMark,detailMark);
 		try {
 			Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
-			for (Map.Entry<String, IAdapter> entry : adapterService.getAdapters().entrySet()) {
-				IAdapter adapter = entry.getValue();
+			for (Adapter adapter : adapterService.getAdapters().values()) {
 				adapter.forEachStatisticsKeeperBody(hski,groupData,action);
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
@@ -160,15 +159,15 @@ public class Configuration implements INamedObject{
 	 * @param name the adapter to retrieve
 	 * @return IAdapter
 	 */
-	public IAdapter getRegisteredAdapter(String name) {
+	public Adapter getRegisteredAdapter(String name) {
 		return adapterService.getAdapter(name);
 	}
 
-	public IAdapter getRegisteredAdapter(int index) {
+	public Adapter getRegisteredAdapter(int index) {
 		return getRegisteredAdapters().get(index);
 	}
 
-	public List<IAdapter> getRegisteredAdapters() {
+	public List<Adapter> getRegisteredAdapters() {
 		return new ArrayList<>(adapterService.getAdapters().values());
 	}
 
@@ -241,8 +240,8 @@ public class Configuration implements INamedObject{
 	/**
 	 * Register an adapter with the configuration.
 	 */
-	public void registerAdapter(IAdapter adapter) throws ConfigurationException {
-		if (adapter instanceof Adapter && !((Adapter)adapter).isActive()) {
+	public void registerAdapter(Adapter adapter) throws ConfigurationException {
+		if (!adapter.isActive()) {
 			log.debug("adapter [" + adapter.getName() + "] is not active, therefore not included in configuration");
 			return;
 		}

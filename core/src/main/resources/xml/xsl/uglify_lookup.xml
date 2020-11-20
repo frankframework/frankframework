@@ -1442,6 +1442,6 @@
   <Element>
     <Name>Receiver</Name>
     <Type>receiver</Type>
-    <ClassName>nl.nn.adapterframework.receivers.GenericReceiver</ClassName>
+    <ClassName/>
   </Element>
 </Elements>

@@ -25,6 +25,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.DynaActionForm;
+
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -35,7 +41,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
@@ -44,12 +50,6 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.FileViewerServlet;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.DynaActionForm;
 
 /**
  * Basic browser for transactional storage.
@@ -64,7 +64,7 @@ public class Browse extends ActionBase {
 	
 	
 	// if performAction returns true, no forward should be returned
-	protected boolean performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
+	protected boolean performAction(Adapter adapter, Receiver receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
 		log.debug("performing action ["+action+"]");
 		return false;
 	}
@@ -161,7 +161,7 @@ public class Browse extends ActionBase {
 		log.debug("storageType ["+storageType+"] action ["+action+"] submit ["+submit+"] adapterName ["+adapterName+"] receiverName ["+receiverName+"] pipeName ["+pipeName+"] issued by ["+commandIssuedBy+"]");
 
 		
-		Adapter adapter = (Adapter)ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 
 		IMessageBrowser mb;
 		IListener listener=null;
@@ -171,7 +171,7 @@ public class Browse extends ActionBase {
 				MessageSendingPipe pipe=(MessageSendingPipe)adapter.getPipeLine().getPipe(pipeName);
 				mb=pipe.getMessageLog();
 			} else {
-				ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+				Receiver receiver = adapter.getReceiverByName(receiverName);
 				mb = receiver.getMessageLogBrowser();
 			}
 			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
@@ -179,7 +179,7 @@ public class Browse extends ActionBase {
 				performAction(adapter, null, action, mb, messageId, selected, request, response);
 			}
 		} else {
-			ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+			Receiver receiver = adapter.getReceiverByName(receiverName);
 			if (receiver==null) {
 				error("cannot find Receiver ["+receiverName+"]", null);
 				return null;

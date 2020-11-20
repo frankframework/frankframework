@@ -1,7 +1,6 @@
 <module>
 	<adapter name="WebControlExecuteJdbcProperties" active="${active.config.database}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebControlExecuteJdbcProperties">
+		<receiver name="WebControlExecuteJdbcProperties">
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="WebControlExecuteJdbcProperties" uriPattern="executeJdbcProperties"
 				authRoles="IbisDataAdmin,IbisAdmin,IbisTester" />
