@@ -47,10 +47,14 @@ public class FrankDocModel {
 	 * pull requests. 
 	 */
 	public static FrankDocModel populate() {
+		return FrankDocModel.populate(DIGESTER_RULES, "nl.nn.adapterframework.configuration.Configuration");
+	}
+
+	public static FrankDocModel populate(final String digesterRulesFileName, final String rootClassName) {
 		FrankDocModel result = new FrankDocModel();
 		try {
-			result.createConfigChildDescriptorsFrom(DIGESTER_RULES);
-			result.findOrCreateFrankElement(Utils.getClass("nl.nn.adapterframework.configuration.Configuration"));
+			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
+			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
 			result.setOverriddenFrom();
 			result.buildGroups();
 		} catch(Exception e) {
