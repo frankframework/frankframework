@@ -15,26 +15,28 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import java.util.Date;
-
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public interface IMailFileSystem<M,A> extends IWithAttachments<M,A> {
 
-	public String MAIL_MESSAGE_ID = "Message-ID";
+	public final String MAIL_MESSAGE_ID = "Message-ID";
+	public final String RETURN_PATH_HEADER="Return-Path";
 	
-	public Iterable<String> getToRecipients(M emailMessage) throws FileSystemException ;
-	public Iterable<String> getCCRecipients(M emailMessage) throws FileSystemException;
-	public Iterable<String> getBCCRecipients(M emailMessage) throws FileSystemException;
-	
-	public String getFrom(M emailMessage) throws FileSystemException;
-	public String getSender(M emailMessage) throws FileSystemException;
-	public String getReplyTo(M emailMessage) throws FileSystemException;
+	/*
+	 * IMailFileSystems should make sure the additionalProperties contain also the following keys:
+	 */
+	public final String TO_RECEPIENTS_KEY = "to";
+	public final String CC_RECEPIENTS_KEY = "cc";
+	public final String BCC_RECEPIENTS_KEY = "bcc";
+	public final String FROM_ADDRESS_KEY = "from";     // originator of the message
+	public final String SENDER_ADDRESS_KEY = "sender"; // identifies who submitted the messages, probably on behalf of the 'From'
+	public final String REPLY_TO_RECEPIENTS_KEY = "replyTo";
+	public final String DATETIME_SENT_KEY = "DateTimeSent";         // as Date, or in XML format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+	public final String DATETIME_RECEIVED_KEY = "DateTimeReceived";
 
+	
 	public String getSubject(M emailMessage) throws FileSystemException;
-	public Date getDateTimeSent(M emailMessage) throws FileSystemException;
-	public Date getDateTimeReceived(M emailMessage) throws FileSystemException;
 
 	public String getMessageBody(M emailMessage) throws FileSystemException;
 	public Message getMimeContent(M emailMessage) throws FileSystemException;

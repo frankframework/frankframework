@@ -3,8 +3,11 @@
 		<recipient type="to">gerrit@wearefrank.nl</recipient>
 	</recipients>
 	<from>Gerrit.van.Brakel@nn-group.com</from>
+	<sender>Gerrit.van.Brakel@nn-group.com</sender>
 	<bestReplyAddress>Gerrit.van.Brakel@nn-group.com</bestReplyAddress>
 	<subject>XML Problem #x3</subject>
+	<DateTimeSent>2020-10-30T13:10:21.000+0100</DateTimeSent>
+	<DateTimeReceived>2020-10-30T13:10:29.000+0100</DateTimeReceived>
 	<message>&lt;html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40"&gt;&lt;head&gt;
 &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt;&lt;meta name="Generator" content="Microsoft Word 15 (filtered medium)"&gt;&lt;!--[if !mso]&gt;&lt;style&gt;v\:* {behavior:url(#default#VML);}
 o\:* {behavior:url(#default#VML);}
@@ -119,6 +122,4 @@ div.WordSection1
 		<header name="X-Microsoft-Antispam-Mailbox-Delivery">ucf:0;jmr:0;auth:0;dest:I;ENG:(20160514016)(750128)(520011016)(944506458)(944626604);</header>
 		<header name="X-Microsoft-Antispam-Message-Info">CjMgFkn3FRwDaixbneeCVaDzbbQeKQ5oBVdk4dQmQvgumynPCf6YJjEPU4yXicb0LlayizOaRpdoOv8/94UuXs30CLU75t2/aVEO4AilWKhY/v9w5Gz705MH8HlZiJmegOMh0RY3QheD6h9NYPSm7pWrYk4dV5g31wDq/FPtC1JHTSLIi0wuYu+8MXvPaUOryDHlM/5PTW6TblKNsSbA69AyhfS/50grpPxlLadyRENdnTfxSiwrMC/AiR0PlzUrn/+JVOQgHj/yObAQTO9W15Xu9SDOZs8uoCYTvmmG+HlWUJvWP+HtNSppZIK2DCNWN4P8lyedNiYezvfpK1UJREJDiB/Vjp4yZ0tcYKYGG3Bk5BTdTjoRNsktxdlANSRzmBs7xZi9M/VuiFq7bPuinQeiV+BA6d3w2jPYRs7F1zkxwLN2rcIoMTL4uNnrNwRq8w57WK0uFlIFt2ZfPtSprwCK0Jj2LnJVMHI9S8n8ZCIT6PkTJK9XwIUWN1dYsDPk/NJbV5ntHDSjJmSd6RMSlhthO4vBMxhlDT7XTQLZFnsCH1Bf5nDbNePd4RbW8x5Iaz/LBU1YOotjAdeqmLh0litxnQNAVaOdfctvWh26mxlqlNb4kB9C5nK/rmPOUiBGbd14W0xM9oqiIeqggp8c9R4cIOfidd8P/s/34SfsJtjFl1jEIL9qZnQycgqPoqSW5JBXkwLfP+bYD0Wub3Z3e8JHiFIvLk4auDVfaGsm2KptjcNJUxcHAchAUXzmhbthETaZ3FDB0sHdmgRiafNU3sCQUGQ0bvhrgPLlu1W7czro0i0YswzyoFDYYR3Ij8nIK5B1EGItbY9ni9Eo0obBuNUJMCpJYEJEEd1N0dmOY+HY4TRxDiz2kpsjBZfyxmwCTLhlxBF7iJ3RQxvjGXXN7O0b0aqL4KcC3UWaGoTLZJu6nwQBQR9UwjVZVxRUaIPX2hVJmkbGtQ9wgKRJ6EjfBRQRbhvfZm7TlDRMB1plYy9Ae58FDNGOuC5Q9N/LmL8IkKQgbw0o0cXmKt254CLjdwxwjFlBekASevA8XsxrclQ=</header>
 	</headers>
-	<dateTimeSent>2020-10-30T13:10:21.000+0100</dateTimeSent>
-	<dateTimeReceived>2020-10-30T13:10:29.000+0100</dateTimeReceived>
 </email>

@@ -470,6 +470,14 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 				emailMessage = f;
 			}
 			Map<String, Object> result=new LinkedHashMap<String,Object>();
+			result.put(IMailFileSystem.TO_RECEPIENTS_KEY, asList(emailMessage.getToRecipients()));
+			result.put(IMailFileSystem.CC_RECEPIENTS_KEY, asList(emailMessage.getCcRecipients()));
+			result.put(IMailFileSystem.BCC_RECEPIENTS_KEY, asList(emailMessage.getBccRecipients()));
+			result.put(IMailFileSystem.FROM_ADDRESS_KEY, emailMessage.getFrom().getAddress()); 
+			result.put(IMailFileSystem.SENDER_ADDRESS_KEY, getSender(emailMessage)); 
+			result.put(IMailFileSystem.REPLY_TO_RECEPIENTS_KEY, getReplyTo(emailMessage)); 
+			result.put(IMailFileSystem.DATETIME_SENT_KEY, emailMessage.getDateTimeSent()); 
+			result.put(IMailFileSystem.DATETIME_RECEIVED_KEY, emailMessage.getDateTimeReceived()); 
 			for(InternetMessageHeader internetMessageHeader : emailMessage.getInternetMessageHeaders()) {
 				Object curEntry = result.get(internetMessageHeader.getName());
 				if (curEntry==null) {
@@ -661,43 +669,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		}
 	}
 
-	@Override
-	public Iterable<String> getToRecipients(EmailMessage emailMessage) throws FileSystemException {
-		try {
-			return asList(emailMessage.getToRecipients());
-		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not get ToRecipients", e);
-		}
-	}
-
-	@Override
-	public Iterable<String> getCCRecipients(EmailMessage emailMessage) throws FileSystemException {
-		try {
-			return asList(emailMessage.getCcRecipients());
-		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not get CCRecipients", e);
-		}
-	}
 	
-	@Override
-	public Iterable<String> getBCCRecipients(EmailMessage emailMessage) throws FileSystemException {
-		try {
-			return asList(emailMessage.getBccRecipients());
-		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not get BCCRecipients", e);
-		}
-	}
-	
-	@Override
-	public String getFrom(EmailMessage emailMessage) throws FileSystemException {
-		try {
-			return emailMessage.getFrom().getAddress();
-		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not get From Address", e);
-		}
-	}
-
-	@Override
 	public String getSender(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			EmailAddress sender = emailMessage.getSender();
@@ -708,24 +680,19 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		}
 	}
 
-	@Override
-	public String getReplyTo(EmailMessage emailMessage) throws FileSystemException {
+	public List getReplyTo(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			EmailAddressCollection replyTo = emailMessage.getReplyTo();
 			if (replyTo==null) {
 				return null;
 			}
-			
-			String addressList=null;
+			List<String> result = new LinkedList<>();
 			for (EmailAddress address: replyTo) {
-				if (addressList!=null) {
-					addressList += ", ";
-				}
-				addressList += address.getAddress();
+				result.add(address.getAddress());
 			}
-			return MailFileSystemUtils.getValidAddress("replyTo", addressList);
+			return result;
 		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not get ReplyTo Address", e);
+			throw new FileSystemException("Could not get ReplyTo Addresses", e);
 		}
 	}
 	
@@ -738,23 +705,6 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		}
 	}
 	
-	@Override
-	public Date getDateTimeSent(EmailMessage emailMessage) throws FileSystemException {
-		try {
-			return emailMessage.getDateTimeSent();
-		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not get DateTimeSent", e);
-		}
-	}
-
-	@Override
-	public Date getDateTimeReceived(EmailMessage emailMessage) throws FileSystemException {
-		try {
-			return emailMessage.getDateTimeReceived();
-		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not get DateTimeReceived", e);
-		}
-	}
 
 	@Override
 	public String getMessageBody(EmailMessage emailMessage) throws FileSystemException {

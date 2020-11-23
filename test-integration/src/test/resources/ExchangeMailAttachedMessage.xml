@@ -3,8 +3,11 @@
 		<recipient type="to">gerrit@wearefrank.nl</recipient>
 	</recipients>
 	<from>gerrit@wearefrank.nl</from>
+	<sender>gerrit@wearefrank.nl</sender>
 	<bestReplyAddress>gerrit@wearefrank.nl</bestReplyAddress>
 	<subject>attached messages</subject>
+	<DateTimeSent>2020-11-10T11:01:48.000+0100</DateTimeSent>
+	<DateTimeReceived>2020-11-10T11:01:58.000+0100</DateTimeReceived>
 	<message>&lt;html&gt;&lt;head&gt;
 &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt;&lt;style type="text/css" style="display:none;"&gt; P {margin-top:0;margin-bottom:0;} &lt;/style&gt;&lt;/head&gt;&lt;body dir="ltr"&gt;&lt;div style="font-family: Calibri, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(0, 0, 0);"&gt;probeer het maar!&lt;/div&gt;&lt;div&gt;&lt;div id="Signature"&gt;&lt;div&gt;&lt;div id="divtagdefaultwrapper" dir="ltr" style="font-size:12pt; color:#000000; font-family:Calibri,Helvetica,sans-serif"&gt;&lt;p style="margin-top: 0px; margin-bottom: 0px;"&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;</message>
 	<attachments>
@@ -14,10 +17,12 @@
 				<recipient type="cc">subscribed@noreply.github.com</recipient>
 			</recipients>
 			<from>notifications@github.com</from>
-			<replyTo>nullreply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com</replyTo>
 			<sender>notifications@github.com</sender>
-			<bestReplyAddress>nullreply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com</bestReplyAddress>
+			<replyTo>reply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com</replyTo>
+			<bestReplyAddress>reply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com</bestReplyAddress>
 			<subject>Re: [ibissource/iaf] Ladybug randomly stops report generation (#875)</subject>
+			<DateTimeSent>2020-09-30T12:35:41.000+0200</DateTimeSent>
+			<DateTimeReceived>2020-09-30T12:35:45.000+0200</DateTimeReceived>
 			<message>&lt;html&gt;&lt;head&gt;
 &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Closed &lt;a class="issue-link js-issue-link" data-error-text="Failed to load title" data-id="644549868" data-permission-text="Title is private" data-url="https://github.com/ibissource/iaf/issues/875" data-hovercard-type="issue" data-hovercard-url="/ibissource/iaf/issues/875/hovercard" href="https://github.com/ibissource/iaf/issues/875"&gt;#875&lt;/a&gt;.&lt;/p&gt;&lt;p style="font-size:small;-webkit-text-size-adjust:none;color:#666;"&gt;—&lt;br&gt;You are receiving this because you are subscribed to this thread.&lt;br&gt;Reply to this email directly, &lt;a href="https://github.com/ibissource/iaf/issues/875#event-3823828368"&gt;view it on GitHub&lt;/a&gt;, or &lt;a href="https://github.com/notifications/unsubscribe-auth/AA72C6EQCEEQB2J2GMWU6JTSIMCX3ANCNFSM4OGSSZKA"&gt;unsubscribe&lt;/a&gt;.&lt;img src="https://github.com/notifications/beacon/AA72C6E5QJWXL4YUN7HSV2LSIMCX3A5CNFSM4OGSSZKKYY3PNVWWK3TUL52HS4DFWZEXG43VMVCXMZLOORHG65DJMZUWGYLUNFXW5KTDN5WW2ZLOORPWSZGO4PVP3EA.gif" height="1" width="1" alt=""&gt;&lt;/p&gt;&lt;script type="application/ld+json"&gt;[
 {
@@ -95,8 +100,6 @@
 				<header name="X-Microsoft-Antispam-Mailbox-Delivery">ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(20160514016)(750128)(520011016)(944506458)(944626604);</header>
 				<header name="X-Microsoft-Antispam-Message-Info">/Z1KDPJKiwvjTAxcjszxs3Hv+PUemmrP+Y3Np4z1DWjGkYE37y0BFpvjCEp43XokULBpqMgsX6aiwNUtpQNiqW+0eahtAjnrWhgVGKLWDtEZRqcqz7Us+8qXvA+9HTRPjSP5UXpABiuVRssQP3YGksYSPfYkSyXAOMwtlqUBYNyvoa5Sxp4SYF3djYaWe4FUvcmwvm5X/PmZJvMx8vRhh53fMK82UWaxUc4I6lCb4ikhZg3ypUhtqul8PCjEM0iJf7nFN2+Ao8hyI/o0frg8atAkzqWD91wlYOt7frIoasxB9lALtfy9q17q/S6wo+EUUUbqRM5N+7Nth+1LGmZlqodnegnPl6d7fIsw7TrnjzrZVGeqWFUqh/uuq3CHD+cLdVEZRVQ+OciZuwisFB6dtH8HAzRTOFL9njjRyfvWUXG9OwtiVUX5VCcOA83mvfm2NJyXdXuA/FikPuElZ1fYHNE7+Eec0rs/t5G0qF/We68QELVVYSn5rVLk7kh4KCc7qO11JLmMgq/uEaz36LqgP1UAfya/8ytV97xXnmm8AZYiPNMe4wk+0AG+BhRb90S59tza/Ok/yDWNaoNTei7IyYVanlqweciI42kpJkU1rtb3XmqN4tKsBipmmY1SxRiYBPOiWjTal7gDPB/cV28UzgBLx4xcWPqOAyWWSdbXl31UK8+OHLZ5b0qujYzFydtfCbzpGd8/yfvtLv39s04T9vvuLFfp2aD35dogMNDUvloJsgHp7pIpwwDzzH/tFsyMoZLbLR4LgxSuuiSgyCVatUxPWnmAcK6KQXlhuxaBOTBgNxqxCJqYW+mTLc0nnYATXTmMm4S/QbjOaDnkMeko+4l5Xp9VYBO75TlNcry3mkfamT6D7oJpc+IDMgmqes/0N32M6eV4ssuB92a5jTt7NiBX8OYoMoP/hJKbKqU9AdRja8NfaI4+9AsxuoOSp7H09XkTFpp+Mnqxjx11H/u8WXsg2KekmPX/w0L9ku6+m6YzaVsKE4DOk0EnX84det/GEbyrpMn5gAQImHrwaNOqxzUtFgsWCzvKrLdhKnJn9YJRhSM3soRUb6sgAaqXWrT529U2mMrV8GGCTUvZITgTVMG2YZPPZvd8G03ZwlDZjThBaNJ5snZ2VBgIonqSeVx9W66Nt5lUW6tb7dnKUL7rFm1cGnTDl5lTM8cNUSCJ4jLX44eApUfVn/Mk9dequQy3msrSwQ3OZGOfVSzn6sanEtEkwDbYr5mHtGUOUjKzrDyxMtL7pflbqZhy3/gUR3QT4j5+qc1YtVThYDLdkg4HMtlqlw8iJbUtE2cjyySxlC9k3bp7aEpgkewvVRowqNt96it3MiDHEgncSouvCJqoGd4vPGlZ1u5XJz26R3ThOxvVmZwpfyaxR10WLe+pHs0Jx8oY/0Bxg8Y29gIcjBgCJM+jVLqUnSllBuYp7mYrloTS1zmCXY/n39VKlUav9ZoJGgNqng/g53JV8ZiCEZaBNAVnCDCPVcbg/an4La6R3s1nro3a3jQHDDXxMA1qsEC6</header>
 			</headers>
-			<dateTimeSent>2020-09-30T12:35:41.000+0200</dateTimeSent>
-			<dateTimeReceived>2020-09-30T12:35:45.000+0200</dateTimeReceived>
 		</attachment>
 	</attachments>
 	<headers>
@@ -149,6 +152,4 @@
 		<header name="X-Microsoft-Antispam-Mailbox-Delivery">ucf:0;jmr:0;auth:0;dest:I;ENG:(750128)(520011016)(706158)(944506458)(944626604);</header>
 		<header name="X-Microsoft-Antispam-Message-Info">4Cvnj240dSqSen2E82+130i0ICNgty9m1Gq7Ye6wTpoG4fHfpFlT+0c/AWtpnGWk/nxo5J5mJvyh8jZ5+adRb6GLgodC+SHdG+IH6bG3GNqgLMfXO3JG8feSmPsaVC0GJIIwDibhxGK4o8k9U1Cxr1bPV/AXsvkIbASc87SG72EKip9U2oXAVTCn95r94rJC/EXXxkwGlqA8N0aPp66AyIJXBkM0JCimHMt/VAXcJDbaKLsDMnZBEW2zzEkDMoOdADOZtGt5kt8d0AuALp//C7oYE0LHWvmGaaQCBwYkv5Ex9efyktQnulbsAdoY0kTZERgkNt/645wgUchkosDlBtRpIxUFPFmx/GXP7vVmgYfg7oXY21vFR4onxjjGYxQ7h1ILDicldsjTfY+RunQ6Qh4Ors5YgmiPaUm7MHkIH+E=</header>
 	</headers>
-	<dateTimeSent>2020-11-10T11:01:48.000+0100</dateTimeSent>
-	<dateTimeReceived>2020-11-10T11:01:58.000+0100</dateTimeReceived>
 </email>
