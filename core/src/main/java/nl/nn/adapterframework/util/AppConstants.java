@@ -52,11 +52,12 @@ public final class AppConstants extends Properties implements Serializable {
 	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
 	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
+	private final static String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 
 	private VariableExpander variableExpander;
 	private static Properties additionalProperties = new Properties();
 
-	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<ClassLoader, AppConstants>();
+	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
@@ -65,7 +66,7 @@ public final class AppConstants extends Properties implements Serializable {
 
 		//TODO Make sure this to happens only once, and store all the properties in 'additionalProperties' to be loaded for each AppConstants instance
 		//TODO JdbcUtil has static references to AppConstants causing it to load twice!
-		if(classLoader instanceof IConfigurationClassLoader) {
+		if(classLoader instanceof IConfigurationClassLoader && getBoolean(JDBC_PROPERTIES_KEY, false)) { //Order matters here, first check if it's not the rootinstance
 			Properties databaseProperties = JdbcUtil.retrieveJdbcPropertiesFromDatabase();
 			if (databaseProperties!=null) {
 				putAll(databaseProperties);
@@ -283,7 +284,7 @@ public final class AppConstants extends Properties implements Serializable {
 					throw new IllegalStateException("no classloader found!");
 				}
 				List<URL> resources = Collections.list(cl.getResources(theFilename));
-				if(resources.size() == 0) {
+				if(resources.isEmpty()) {
 					if(APP_CONSTANTS_PROPERTIES_FILE.equals(theFilename)) { //The AppConstants.properties file cannot be found, abort!
 						String msg = APP_CONSTANTS_PROPERTIES_FILE+ " file not found, unable to initalize AppConstants";
 						log.error(msg);
@@ -303,9 +304,10 @@ public final class AppConstants extends Properties implements Serializable {
 				Collections.reverse(resources);
 
 				for (URL url : resources) {
-					InputStream is = url.openStream();
-					load(is);
-					log.info("Application constants loaded from url [" + url.toString() + "]");
+					try(InputStream is = url.openStream()) {
+						load(is);
+						log.info("Application constants loaded from url [" + url.toString() + "]");
+					}
 				}
 
 				String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additional properties if it's defined...

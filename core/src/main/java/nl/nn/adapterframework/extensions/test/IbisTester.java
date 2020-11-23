@@ -1,3 +1,18 @@
+/*
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.extensions.test;
 
 import java.io.File;
@@ -8,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +40,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
@@ -150,6 +167,9 @@ public class IbisTester {
 		debug("***end***");
 	}
 
+	/**
+	 * returns a string containing the error, if any
+	 */
 	public String testStartAdapters() {
 		// Log4J2 will automatically create a console appender and basic pattern layout.
 		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.INFO);
@@ -172,6 +192,16 @@ public class IbisTester {
 		long configLoadEndTime = System.currentTimeMillis();
 		debug("***configuration loaded in ["+ (configLoadEndTime - configLoadStartTime) + "] msec***");
 
+		List<Configuration> configurations = ibisContext.getIbisManager().getConfigurations();
+		for(Configuration configuration : configurations) {
+			if(configuration.getConfigurationException() != null) {
+				error("error loading configuration ["+configuration.getName()+"]: "+ configuration.getConfigurationException().getMessage());
+			} else {
+				debug("loading configuration ["+configuration.getName()+"] with ["+configuration.getRegisteredAdapters().size()+"] adapters");
+			}
+		}
+
+		debug("***starting adapters***");
 		int adaptersStarted = 0;
 		int adaptersCount = 0;
 		for (Adapter adapter: ibisContext.getIbisManager().getRegisteredAdapters()) {
@@ -202,10 +232,12 @@ public class IbisTester {
 				error("adapter [" + adapter.getName() + "] has state [" + runState + "]");
 			}
 		}
+
 		String msg = "adapters started [" + adaptersStarted + "] from [" + adaptersCount + "]";
+
 		if (adaptersCount == adaptersStarted) {
 			debug(msg);
-			return null;
+			return null; // null == good
 		} else {
 			return error(msg);
 		}

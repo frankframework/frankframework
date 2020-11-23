@@ -788,6 +788,9 @@ public class JdbcUtil {
 		}
 	}
 
+	/**
+	 * Use with caution, this assumes you've defined a JMS realm and uses the first datasource found, if any.
+	 */
 	public static synchronized Properties retrieveJdbcPropertiesFromDatabase() {
 		if (jdbcProperties == null) {
 			String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
@@ -810,18 +813,15 @@ public class JdbcUtil {
 		return jdbcProperties;
 	}
 
+	/**
+	 * Use with caution, this assumes you've defined a JMS realm and uses the first datasource found, if any.
+	 */
 	public static synchronized void resetJdbcProperties() {
 		if(jdbcProperties != null) {
 			jdbcProperties.clear();
 			jdbcProperties = null;
 		}
 		retrieveJdbcPropertiesFromDatabase();
-	}
-
-	public static synchronized Connection retrieveConnection(String jmsRealm) throws JdbcException {
-		JdbcFacade jdbcFacade = new JdbcFacade();
-		jdbcFacade.setJmsRealm(jmsRealm);
-		return jdbcFacade.getConnection();
 	}
 
 	public static String selectAllFromTable(IDbmsSupport dbmsSupport, Connection conn, String tableName) throws SQLException {

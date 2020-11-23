@@ -101,10 +101,10 @@ public class ProcessUtil {
 		TimeoutGuard tg = new TimeoutGuard("ProcessUtil") {
 
 			@Override
-			protected void kill() {
+			protected void abort() {
 				process.destroy();
 			}
-			
+
 		};
 		tg.activateGuard(timeout) ;
 		try {
