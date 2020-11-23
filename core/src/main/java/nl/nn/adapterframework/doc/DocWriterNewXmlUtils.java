@@ -36,12 +36,46 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(element);
 	}
 
-	static XmlBuilder addComplexType(XmlBuilder schema, String complexTypeName) {
+	static void addElementRef(
+			XmlBuilder context,
+			String elementName,
+			String minOccurs,
+			String maxOccurs) {
+		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
+		element.addAttribute("ref", elementName);
+		element.addAttribute("minOccurs", minOccurs);
+		element.addAttribute("maxOccurs", maxOccurs);
+		context.addSubElement(element);
+	}
+
+	static void addElementRef(
+			XmlBuilder context,
+			String elementName) {
+		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
+		element.addAttribute("ref", elementName);
+		context.addSubElement(element);
+	}
+
+	static XmlBuilder addElementWithType(XmlBuilder context, String name) {
+		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
+		element.addAttribute("name", name);
+		context.addSubElement(element);
+		return element;
+	}
+
+	static XmlBuilder addComplexType(XmlBuilder schema) {
 		XmlBuilder complexType;
 		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
-		complexType.addAttribute("name", complexTypeName);
 		schema.addSubElement(complexType);
 		return complexType;
+	}
+
+	static XmlBuilder addComplexType(XmlBuilder schema, String name) {
+		XmlBuilder complexType;
+		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
+		complexType.addAttribute("name", name);
+		schema.addSubElement(complexType);
+		return complexType;		
 	}
 
 	static XmlBuilder addChoice(XmlBuilder context) {

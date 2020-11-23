@@ -7,6 +7,8 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElement;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementRef;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementWithType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroupRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
@@ -15,14 +17,10 @@ import static nl.nn.adapterframework.doc.model.ElementChild.SELECTED;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -44,21 +42,11 @@ public class DocWriterNew {
 	private static Logger log = LogUtil.getLogger(DocWriterNew.class);
 
 	private FrankDocModel model;
-	private Map<String, String> syntax2Names;
 	List<SortKeyForXsd> xsdSortOrder;
 	private XmlBuilder xsdRoot;
-	private String startClassName;
 
 	public DocWriterNew(FrankDocModel model) {
 		this.model = model;
-		Map<String, List<FrankElement>> simpleNamePartitions = model.getAllElements().values().stream()
-				.collect(Collectors.groupingBy(
-						FrankElement::getSimpleName,
-						Collectors.toList()));
-		syntax2Names = new HashMap<>();
-		for(List<FrankElement> partition: simpleNamePartitions.values()) {
-			syntax2Names.putAll(chooseSyntax2Names(partition));
-		}
 	}
 
 	public void init() {
@@ -66,56 +54,7 @@ public class DocWriterNew {
 	}
 
 	public void init(String startClassName) {
-		this.startClassName = startClassName;
 		xsdSortOrder = breadthFirstSort(startClassName);
-	}
-
-	static Map<String, String> chooseSyntax2Names(List<FrankElement> elementPartition) {
-		Map<String, String> result = new HashMap<>();
-		if(elementPartition.size() == 1) {
-			FrankElement theElement = elementPartition.get(0);
-			result.put(theElement.getFullName(), theElement.getSimpleName());
-			return result;
-		}
-		else {
-			List<List<String>> nameComponents = new ArrayList<>();
-			for(FrankElement element: elementPartition) {
-				List<String> packageNameComponents = Arrays.asList(element.getFullName().split("\\.", -1));
-				if(! element.getSimpleName().equals(packageNameComponents.get(packageNameComponents.size() - 1))) {
-					log.warn(String.format("Syntax 2 names may be wrong because there is a FrankElement with full name [%s] but simple name [%s]",
-							element.getFullName(), element.getSimpleName()));
-				}
-				nameComponents.add(packageNameComponents);
-			}
-			List<String> fullNames = elementPartition.stream().map(elem -> elem.getFullName()).collect(Collectors.toList());
-			int numComponents = 2;
-			while(true) {
-				result = chooseSyntax2Names(fullNames, nameComponents, numComponents);
-				Map<String, Long> multiplicities = result.values().stream()
-						.collect(Collectors.groupingBy(s -> s, Collectors.counting()));
-				Optional<Long> maxMultiplicity = multiplicities.values().stream().max((l1, l2) -> l1.compareTo(l2));
-				if(maxMultiplicity.get() == 1) {
-					break;
-				}
-			}
-			return result;
-		}
-	}
-
-	private static Map<String, String> chooseSyntax2Names(List<String> fullNames, List<List<String>> nameComponents, int numUsed) {
-		Map<String, String> result = new HashMap<>();
-		for(int i = 0; i < fullNames.size(); i++) {
-			result.put(fullNames.get(i), getSyntax2Name(nameComponents.get(i), numUsed));
-		}
-		return result;
-	}
-
-	private static String getSyntax2Name(List<String> components, int numUsed) {
-		List<String> items = new ArrayList<>(components);
-		Collections.reverse(items);
-		items = items.subList(0, Math.min(items.size(), numUsed));
-		Collections.reverse(items);
-		return items.stream().map(InfoBuilderSource::toUpperCamelCase).collect(Collectors.joining(""));
 	}
 
 	List<SortKeyForXsd> breadthFirstSort(String sourceFullName) {
@@ -173,8 +112,6 @@ public class DocWriterNew {
 		private List<SortKeyForXsd> getSortedTypeChildren(String typeName) {
 			ElementType elementType = model.getAllTypes().get(typeName);
 			List<FrankElement> members = new ArrayList<>(elementType.getMembers().values());
-			members.sort((c1, c2) -> syntax2Names.get(c1.getFullName())
-					.compareTo(syntax2Names.get(c2.getFullName())));
 			return members.stream().map(SortKeyForXsd::getInstance).collect(Collectors.toList());
 		}
 
@@ -186,9 +123,7 @@ public class DocWriterNew {
 					.map(c -> getTypeKey(c))
 					.collect(Collectors.toList());
 			FrankElement candidateParent = element.getNextAncestor(SELECTED);
-			if(
-					(candidateParent != null)
-					&& (available.contains(SortKeyForXsd.getInstance(candidateParent)))) {
+			if(candidateParent != null) {
 				result.add(SortKeyForXsd.getInstance(candidateParent));
 			}
 			return result;
@@ -209,8 +144,6 @@ public class DocWriterNew {
 
 	public String getSchema() {
 		xsdRoot = getXmlSchema();
-		FrankElement rootElement = model.getAllElements().get(startClassName);
-		addElement(xsdRoot, rootElement.getSimpleName(), xsdTypeOf(rootElement));
 		defineAllTypes();
 		return xsdRoot.toXML(true);
 	}
@@ -219,7 +152,7 @@ public class DocWriterNew {
 		for(SortKeyForXsd item: xsdSortOrder) {
 			switch(item.getKind()) {
 			case ELEMENT:
-				defineElementType(model.getAllElements().get(item.getName()));
+				defineElement(model.getAllElements().get(item.getName()));
 				break;
 			case TYPE:
 				defineTypeType(model.getAllTypes().get(item.getName()));
@@ -228,14 +161,11 @@ public class DocWriterNew {
 		}
 	}
 
-	private void defineElementType(FrankElement frankElement) {
-		XmlBuilder complexType = addComplexType(xsdRoot, xsdTypeOf(frankElement));
+	private void defineElement(FrankElement frankElement) {
+		XmlBuilder element = addElementWithType(xsdRoot, frankElement.getAlias());
+		XmlBuilder complexType = addComplexType(element);
 		addConfigChildren(complexType, frankElement);
 		addAttributes(complexType, frankElement);		
-	}
-
-	private String xsdTypeOf(FrankElement element) {
-		return syntax2Names.get(element.getFullName()) + "Type";
 	}
 
 	private void addConfigChildren(final XmlBuilder complexType, FrankElement frankElement) {
@@ -296,11 +226,11 @@ public class DocWriterNew {
 	}
 
 	private static String xsdDeclaredGroupNameForChildren(FrankElement element) {
-		return element.getSimpleName() + "DeclaredChildGroup";
+		return element.getAlias() + "DeclaredChildGroup";
 	}
 
 	private static String xsdCumulativeGroupNameForChildren(FrankElement element) {
-		return element.getSimpleName() + "CumulativeChildGroup";
+		return element.getAlias() + "CumulativeChildGroup";
 	}
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
@@ -311,13 +241,13 @@ public class DocWriterNew {
 		}
 		else {
 			FrankElement containedFrankElement = elementType.getMembers().values().iterator().next();
-			addElement(context, xsdFieldName(child), xsdTypeOf(containedFrankElement),
+			addElementRef(context, containedFrankElement.getAlias(),
 					getMinOccurs(child), getMaxOccurs(child));
 		}
 	}
 
 	private static String xsdFieldName(ConfigChild configChild) {
-		return InfoBuilderSource.toUpperCamelCase(configChild.getSyntax1Name());
+		return Utils.toUpperCamelCase(configChild.getSyntax1Name());
 	}
 
 	private static String xsdTypeOf(ElementType elementType) {
@@ -395,11 +325,11 @@ public class DocWriterNew {
 	}
 
 	private static String xsdDeclaredGroupNameForAttributes(FrankElement element) {
-		return element.getSimpleName() + "DeclaredAttributeGroup";
+		return element.getAlias() + "DeclaredAttributeGroup";
 	}
 
 	private static String xsdCumulativeGroupNameForAttributes(FrankElement element) {
-		return element.getSimpleName() + "CumulativeAttributeGroup";
+		return element.getAlias() + "CumulativeAttributeGroup";
 	}
 
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> frankAttributes) {
@@ -415,11 +345,9 @@ public class DocWriterNew {
 		XmlBuilder complexType = addComplexType(xsdRoot, xsdTypeOf(elementType));
 		XmlBuilder choice = addChoice(complexType);
 		List<FrankElement> frankElementOptions = new ArrayList<>(elementType.getMembers().values());
-		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
+		frankElementOptions.sort((o1, o2) -> o1.getAlias().compareTo(o2.getAlias()));
 		for(FrankElement frankElement: frankElementOptions) {
-			String syntax2Name = syntax2Names.get(frankElement.getFullName());
-			String xsdType = xsdTypeOf(frankElement);
-			addElement(choice, syntax2Name, xsdType);
+			addElementRef(choice, frankElement.getAlias());
 		}		
 	}
 }

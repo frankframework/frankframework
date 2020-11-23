@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -330,6 +331,7 @@ public class FrankDocModel {
 			configChild.setDeprecated(isDeprecated(m));
 			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
 			result.add(configChild);
+			calculateAliases(configChild);
 		}
 		return result;
 	}
@@ -337,6 +339,19 @@ public class FrankDocModel {
 	private boolean isDeprecated(Method m) {
 		Deprecated deprecated = AnnotationUtils.findAnnotation(m, Deprecated.class);
 		return (deprecated != null);
+	}
+
+	// TODO: Unit test this
+	private void calculateAliases(ConfigChild configChild) {
+		if(! configChild.getElementType().isFromJavaInterface()) {
+			Collection<FrankElement> members = configChild.getElementType().getMembers().values();
+			if(members.size() >= 1) {
+				FrankElement aliased = members.iterator().next();
+				aliased.addAliasSource(configChild);
+			} else {
+				log.warn(String.format("Found empty element type: [%s]", configChild.getElementType().getFullName()));
+			}
+		}
 	}
 
 	public void buildGroups() {

@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankElement {
@@ -47,10 +48,13 @@ public class FrankElement {
 	private Map<String, FrankAttribute> attributeLookup;
 	private @Getter List<ConfigChild> configChildren;
 	private Map<ConfigChildKey, ConfigChild> configChildLookup;
+	private @Getter List<ConfigChild> aliasSources;
+	private String cachedAlias = null;
 	private @Getter FrankElementStatistics statistics;
 
 	FrankElement(Class<?> clazz) {
 		this(clazz.getName(), clazz.getSimpleName());
+		this.aliasSources = new ArrayList<>();
 	}
 
 	/**
@@ -61,6 +65,7 @@ public class FrankElement {
 	public FrankElement(final String fullName, final String simpleName) {
 		this.fullName = fullName;
 		this.simpleName = simpleName;
+		this.aliasSources = new ArrayList<>();
 	}
 
 	public void setParent(FrankElement parent) {
@@ -165,5 +170,30 @@ public class FrankElement {
 				return new ConfigChildKey(child);
 			}
 		}.run(this);		
+	}
+
+	public void addAliasSource(ConfigChild aliasSource) {
+		aliasSources.add(aliasSource);
+	}
+
+	public String getAlias() {
+		if(cachedAlias != null) {
+			return cachedAlias;
+		}
+		List<String> aliasCandidates = aliasSources.stream()
+				.filter(c -> ! c.isDeprecated())
+				.map(c -> Utils.toUpperCamelCase(c.getSyntax1Name()))
+				.collect(Collectors.toSet())
+				.stream().sorted().collect(Collectors.toList());
+		if(aliasCandidates.size() == 0) {
+			cachedAlias = simpleName;
+		} else if(aliasCandidates.size() == 1) {
+			cachedAlias = aliasCandidates.iterator().next();
+		} else {
+			log.warn(String.format("Multiple aliases for config FrankElement %s, which are: %s",
+					fullName, aliasCandidates.stream().collect(Collectors.joining(", "))));
+			cachedAlias = aliasCandidates.get(0);
+		}
+		return cachedAlias;
 	}
 }

@@ -44,4 +44,8 @@ public final class Utils {
 	public static boolean isConfigChildSetter(Method method) {
 		return InfoBuilderSource.isConfigChildSetter(method);
 	}
+
+	public static String toUpperCamelCase(String arg) {
+		return InfoBuilderSource.toUpperCamelCase(arg);
+	}
 }

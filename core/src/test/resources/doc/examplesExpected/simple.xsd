@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-  <xs:element name="Start" type="StartType" />
-  <xs:complexType name="StartType">
-    <xs:group ref="StartDeclaredChildGroup" />
-    <xs:attributeGroup ref="StartDeclaredAttributeGroup" />
-  </xs:complexType>
+  <xs:element name="Start">
+    <xs:complexType>
+      <xs:group ref="StartDeclaredChildGroup" />
+      <xs:attributeGroup ref="StartDeclaredAttributeGroup" />
+    </xs:complexType>
+  </xs:element>
   <xs:group name="StartDeclaredChildGroup">
     <xs:sequence>
       <xs:element name="Syntax1NameIChild" type="IChildCombinationType" minOccurs="0" maxOccurs="1" />
-      <xs:element name="Syntax1NameTChild" type="TChildType" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element ref="Syntax1NameTChild" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="StartDeclaredAttributeGroup">
@@ -16,14 +17,18 @@
   </xs:attributeGroup>
   <xs:complexType name="IChildCombinationType">
     <xs:choice>
-      <xs:element name="DescribedPossibleIChild" type="DescribedPossibleIChildType" />
-      <xs:element name="NotDescribedPossibleIChild" type="NotDescribedPossibleIChildType" />
+      <xs:element ref="DescribedPossibleIChild" />
+      <xs:element ref="NotDescribedPossibleIChild" />
     </xs:choice>
   </xs:complexType>
-  <xs:complexType name="TChildType" />
-  <xs:complexType name="DescribedPossibleIChildType">
-    <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />
-  </xs:complexType>
+  <xs:element name="Syntax1NameTChild">
+    <xs:complexType />
+  </xs:element>
+  <xs:element name="DescribedPossibleIChild">
+    <xs:complexType>
+      <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />
+    </xs:complexType>
+  </xs:element>
   <xs:attributeGroup name="DescribedPossibleIChildDeclaredAttributeGroup">
     <xs:attribute name="firstAttribute" type="xs:string">
       <xs:annotation>
@@ -36,9 +41,11 @@
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:complexType name="NotDescribedPossibleIChildType">
-    <xs:attributeGroup ref="NotDescribedPossibleIChildDeclaredAttributeGroup" />
-  </xs:complexType>
+  <xs:element name="NotDescribedPossibleIChild">
+    <xs:complexType>
+      <xs:attributeGroup ref="NotDescribedPossibleIChildDeclaredAttributeGroup" />
+    </xs:complexType>
+  </xs:element>
   <xs:attributeGroup name="NotDescribedPossibleIChildDeclaredAttributeGroup">
     <xs:attribute name="firstAttribute" type="xs:string" />
     <xs:attribute name="secondAttribute" type="xs:string" />
