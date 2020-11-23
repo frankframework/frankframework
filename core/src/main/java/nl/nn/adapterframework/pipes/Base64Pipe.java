@@ -17,7 +17,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Arrays;
@@ -95,7 +94,7 @@ public class Base64Pipe extends StreamingPipe {
 		if(charset == null) {
 			if(outputType.equals("string")) {
 				charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-				ConfigurationWarnings.add(this, log, "please consider changing the output type to bytes or stream instead"); //if charset not set, why use strings?
+				ConfigurationWarnings.add(this, log, "please consider changing to the default output type 'stream' instead"); //if charset not set, why use strings?
 			}
 		} else if(!outputType.equals("string")) {
 			ConfigurationWarnings.add(this, log, "charset can only be set when outputType='string'");
@@ -108,28 +107,30 @@ public class Base64Pipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		boolean directionEncode = "encode".equals(getDirection());//TRUE encode - FALSE decode
+
 		InputStream binaryInputStream;
 		try {
-			binaryInputStream = message.asInputStream(getCharset());
+			binaryInputStream = message.asInputStream(directionEncode ? getCharset() : null);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		boolean directionEncode = "encode".equals(getDirection());//TRUE encode - FALSE decode
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
+		Message result = new Message(base64, directionEncode ? null : getCharset());
 		if(getOutputType().equals("stream")) {
-			return new PipeRunResult(getForward(), base64);
+			return new PipeRunResult(getForward(), result);
 		}
 
 		try (MessageOutputStream target=getTargetStream(session)) {
 			if (getOutputType().equals("string")) {
 				try (Writer writer = target.asWriter()) {
-					Misc.readerToWriter(new InputStreamReader(base64, getCharset()), writer);
+					Misc.readerToWriter(result.asReader(), writer);
 				}
 			} else {
 				try (OutputStream out = target.asStream()) {
-					Misc.streamToStream(base64, out);
+					Misc.streamToStream(result.asInputStream(), out);
 				}
 			}
 			return target.getPipeRunResult();
