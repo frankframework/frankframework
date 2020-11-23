@@ -1,5 +1,7 @@
 cell = AdminControl.getCell()
 node = AdminControl.getNode()
+nodeId = AdminConfig.getid('/Cell:'+cell+'/Node:'+node+'/')
+
 server = 'server1'
 contextRoot = '/iaf-test'
 
@@ -37,10 +39,26 @@ def setClassloaderMode( ear, mode ):
 			AdminConfig.modify(module, [['classloaderMode', mode]])
 	return
 
+def createSharedLibrary( name, classpath ):
+	print "creating shared library:", name
+	print AdminConfig.create('Library', nodeId, [['name', name], ['classPath', classpath]])
+	return
+
+def assignSharedLibrary( ear, name ):
+	deployments = AdminConfig.getid('/Deployment:'+ear+'/')
+	print "deployments:", deployments
+	deployedObject = AdminConfig.showAttribute(deployments, 'deployedObject')
+	print "deploymentObject:", deployedObject
+	# set Application classloader mode
+	classldr = AdminConfig.showAttribute(deployedObject, 'classloader')
+	print AdminConfig.create('LibraryRef', classldr, [['libraryName', name ],  ['sharedClassloader', 'true']])
+	return
 
 installApp('adapterframework.ear', 'IBIS AdapterFramework', 'adapterframework.war', contextRoot)
-
 setClassloaderMode('adapterframework.ear', 'PARENT_LAST')
 
+
+createSharedLibrary('frankConfig', '/work/frank/configuration/resources.jar /work/frank/configuration/configurations.jar')
+assignSharedLibrary('adapterframework.ear', 'frankConfig')
 
 AdminConfig.save()
