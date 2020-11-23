@@ -1218,7 +1218,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 		IPipeLineSession pipelineSession = null;
 		String errorMessage="";
 		boolean messageInError = false;
-		String result=null;
+		Message result = null;
 		PipeLineResult pipeLineResult=null;
 		try {
 			Message pipelineMessage;
@@ -1253,33 +1253,37 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 					pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
 					setExitState(threadContext, pipeLineResult.getState(), pipeLineResult.getExitCode());
 					pipelineSession.put("exitcode", ""+ pipeLineResult.getExitCode());
-					result=pipeLineResult.getResult().asString();
-					if(result != null && result.length() > ITransactionalStorage.MAXCOMMENTLEN) {
-						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result.substring(0, ITransactionalStorage.MAXCOMMENTLEN)+"]";
-					}else {
-						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
+					result=pipeLineResult.getResult();
+
+					errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
+					if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN) { //Since we can determine the size, assume the message is preservable
+						errorMessage += result.asString().substring(0, ITransactionalStorage.MAXCOMMENTLEN);
+					} else {
+						errorMessage += result;
 					}
+					errorMessage += "]";
+
 					int status = pipeLineResult.getExitCode();
 					if(status > 0) {
 						errorMessage += ", exitcode ["+status+"]";
 					}
+
 					if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
 					messageInError=txStatus.isRollbackOnly();
 				} finally {
 					log.debug(getLogPrefix()+"canceling TimeoutGuard, isInterrupted ["+Thread.currentThread().isInterrupted()+"]");
 					if (tg.cancel()) {
 						errorMessage = "timeout exceeded";
-						if (StringUtils.isEmpty(result)) {
-							result="<timeout/>";
+						if (Message.isEmpty(result)) {
+							result = new Message("<timeout/>");
 						}
 						messageInError=true;
 					}
 				}
 				if (!messageInError && !isTransacted()) {
-					String commitOnState=adapter.getPipeLine().getCommitOnState();
-					
-					if (StringUtils.isNotEmpty(commitOnState) && 
-						!commitOnState.equalsIgnoreCase(pipeLineResult.getState())) {
+					String commitOnState = adapter.getPipeLine().getCommitOnState();
+
+					if (StringUtils.isNotEmpty(commitOnState) && !commitOnState.equalsIgnoreCase(pipeLineResult.getState())) {
 						messageInError=true;
 					}
 				}
@@ -1293,7 +1297,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 				if (pipeLineResult==null) {
 					pipeLineResult=new PipeLineResult();
 				}
-				if (pipeLineResult.getResult()==null || pipeLineResult.getResult().isEmpty()) {
+				if (Message.isEmpty(pipeLineResult.getResult())) {
 					String formattedErrorMessage=adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp);
 					pipeLineResult.setResult(new Message(formattedErrorMessage));
 				}
@@ -1307,7 +1311,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 //				responseSizeStatistics.addValue(result.length());
 //			}
 			if (getSender()!=null) {
-				String sendMsg = sendResultToSender(technicalCorrelationId, new Message(result));
+				String sendMsg = sendResultToSender(technicalCorrelationId, result);
 				if (sendMsg != null) {
 					errorMessage = sendMsg;
 				}
@@ -1353,7 +1357,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 			}
 		}
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"messageId ["+messageId+"] correlationId ["+businessCorrelationId+"] returning result ["+result+"]");
-		return new Message(result);
+		return result;
 	}
 
 	private void setExitState(Map<String,Object> threadContext, String state, int code) {

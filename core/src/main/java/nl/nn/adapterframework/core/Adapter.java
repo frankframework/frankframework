@@ -659,7 +659,7 @@ public class Adapter implements IAdapter, NamedBean {
 				log.info(String.format("Adapter [%s] received message with messageId [%s]" + additionalLogging, getName(), messageId));
 			}
 
-			if ((message == null || message.isEmpty()) && isReplaceNullMessage()) {
+			if (Message.isEmpty(message) && isReplaceNullMessage()) {
 				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
 				message = new Message("");
 			}
@@ -968,16 +968,14 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	private String getFileSizeAsBytes(Message message) {
-		if (message==null || message.isEmpty()) {
+		if (Message.isEmpty(message)) {
 			return null;
 		}
-		if (message.asObject() instanceof String) {
-			return Misc.toFileSize(((String)message.asObject()).length());
+		if(message.size() == -1) {
+			return "unknown";
 		}
-		if (message.asObject() instanceof byte[]) {
-			return Misc.toFileSize(((byte[])message.asObject()).length);
-		}
-		return "unknown";
+
+		return Misc.toFileSize(message.size());
 	}
 
 	@Override
