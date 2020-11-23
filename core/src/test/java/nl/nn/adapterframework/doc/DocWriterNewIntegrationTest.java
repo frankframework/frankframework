@@ -23,7 +23,7 @@ import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.model.FrankElementStatistics;
 
-@Ignore
+@Ignore("Test takes a long time to run, and gives little information")
 public class DocWriterNewIntegrationTest {
 
 	@Test
