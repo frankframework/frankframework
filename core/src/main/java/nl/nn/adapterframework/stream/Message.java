@@ -398,6 +398,10 @@ public class Message implements Serializable {
 		return Message.asMessage(object).asByteArray(defaultCharset);
 	}
 
+	public static boolean isEmpty(Message message) {
+		return (message == null || message.isEmpty());
+	}
+
 	/*
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */

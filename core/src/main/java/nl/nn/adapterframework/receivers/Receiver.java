@@ -1259,7 +1259,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 					result=pipeLineResult.getResult();
 
 					errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
-					if(result != null && !result.isEmpty() && result.size() > ITransactionalStorage.MAXCOMMENTLEN) { //Since we can determine the size, assume the message is preservable
+					if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN) { //Since we can determine the size, assume the message is preservable
 						errorMessage += result.asString().substring(0, ITransactionalStorage.MAXCOMMENTLEN);
 					} else {
 						errorMessage += result;
@@ -1277,7 +1277,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 					log.debug(getLogPrefix()+"canceling TimeoutGuard, isInterrupted ["+Thread.currentThread().isInterrupted()+"]");
 					if (tg.cancel()) {
 						errorMessage = "timeout exceeded";
-						if (result == null || result.isEmpty()) {
+						if (Message.isEmpty(result)) {
 							result = new Message("<timeout/>");
 						}
 						messageInError=true;
@@ -1300,7 +1300,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 				if (pipeLineResult==null) {
 					pipeLineResult=new PipeLineResult();
 				}
-				if (pipeLineResult.getResult()==null || pipeLineResult.getResult().isEmpty()) {
+				if (Message.isEmpty(pipeLineResult.getResult())) {
 					String formattedErrorMessage=adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp);
 					pipeLineResult.setResult(new Message(formattedErrorMessage));
 				}

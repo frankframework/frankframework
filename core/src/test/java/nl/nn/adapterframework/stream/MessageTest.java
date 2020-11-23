@@ -467,4 +467,17 @@ public class MessageTest {
 		Message message = new Message(new StringReader("string"));
 		assertEquals("size differs or could not be determined", -1, message.size());
 	}
+
+	@Test
+	public void testMessageIsEmpty() {
+		Message message = Message.nullMessage();
+		assertTrue(message.isEmpty());
+		assertTrue(Message.isEmpty(message));
+	}
+
+	@Test
+	public void testNullMessageIsEmpty() {
+		Message message = null;
+		assertTrue(Message.isEmpty(message));
+	}
 }
