@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <?ibiscontext test=PL26081973 ?>
 <request action="copy">
 	<data1>&lt;RDB&gt;
@@ -35,13 +36,13 @@
 			</f2>
 		</f1>
 	</f>
-	<data2><![CDATA[<RDB>
- <P volgnummer="1">
-   <OORSPRONG>LIFE_CLUSTER4B</OORSPRONG>
-   <SOMKOOPSOM>7648.00</SOMKOOPSOM>
-   <PREMIERESTITUTIEBEDRAG>0.00</PREMIERESTITUTIEBEDRAG>
-   <ASRESTITUTIEBEDRAG>0.00</ASRESTITUTIEBEDRAG>
- </P>
-</RDB>
-]]></data2>
+	<data2>&lt;RDB&gt;
+ &lt;P volgnummer="1"&gt;
+   &lt;OORSPRONG&gt;LIFE_CLUSTER4B&lt;/OORSPRONG&gt;
+   &lt;SOMKOOPSOM&gt;7648.00&lt;/SOMKOOPSOM&gt;
+   &lt;PREMIERESTITUTIEBEDRAG&gt;0.00&lt;/PREMIERESTITUTIEBEDRAG&gt;
+   &lt;ASRESTITUTIEBEDRAG&gt;0.00&lt;/ASRESTITUTIEBEDRAG&gt;
+ &lt;/P&gt;
+&lt;/RDB&gt;
+</data2>
 </request>
