@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,12 +49,11 @@ import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -181,9 +179,8 @@ public class ServerStatistics extends Base {
 			//ErrorStore count
 			if (showCountErrorStore) {
 				long esr = 0;
-				for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
-					for(Iterator<?> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
-						ReceiverBase receiver = (ReceiverBase) receiverIt.next();
+				for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
+					for (Receiver receiver: adapter.getReceivers()) {
 						IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
 						if (errorStorage != null) {
 							try {
@@ -393,17 +390,14 @@ public class ServerStatistics extends Base {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
 		}
 
-		List<IAdapter> adapters = getIbisManager().getRegisteredAdapters();
 		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
 		List<String> errors = new ArrayList<>();
 
-		for (IAdapter adapter : adapters) {
+		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state.equals(RunStateEnum.STARTED)) {
-				Iterator<IReceiver> receiverIterator = adapter.getReceiverIterator();
-				while (receiverIterator.hasNext()) {
-					IReceiver receiver = receiverIterator.next();
+				for (Receiver receiver: adapter.getReceivers()) {
 					RunStateEnum rState = receiver.getRunState();
 	
 					if(!rState.equals(RunStateEnum.STARTED)) {

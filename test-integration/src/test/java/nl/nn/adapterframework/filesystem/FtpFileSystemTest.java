@@ -2,10 +2,6 @@ package nl.nn.adapterframework.filesystem;
 
 import org.apache.commons.net.ftp.FTPFile;
 
-import nl.nn.adapterframework.filesystem.FileSystemTest;
-import nl.nn.adapterframework.filesystem.FtpFileSystem;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-
 /**
  *  This test class is created to test both FtpFileSystem and FtpFileSystemSender classes.
  * @author alisihab
@@ -13,10 +9,10 @@ import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
  */
 public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 
-	private String username = "test";
-	private String password = "test";
-	private String host = "10.0.0.190";
-	private String remoteDirectory = "";
+	private String username = "wearefrank";
+	private String password = "pass_123";
+	private String host = "localhost";
+	private String remoteDirectory = "/home/wearefrank/dir";
 	private int port = 21;
 
 	@Override

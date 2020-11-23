@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -43,7 +44,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 //		}
 		
 		Map<String,Object> threadContext=new HashMap<String,Object>();
-		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
+		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		

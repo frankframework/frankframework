@@ -98,7 +98,7 @@
 		<property name="assembler">
 			<bean class="nl.nn.adapterframework.jmx.JmxMBeanInfoAssembler" />
 		</property>
-		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
+		<property name="registrationPolicy" value="REPLACE_EXISTING"/>
 	</bean>
 
 	<bean
@@ -332,7 +332,7 @@
 
 	<bean
 		name="proto-receiver"
-		class="nl.nn.adapterframework.receivers.GenericReceiver"
+		class="nl.nn.adapterframework.receivers.Receiver"
 		autowire="byName"
 		scope="prototype"
 	/>

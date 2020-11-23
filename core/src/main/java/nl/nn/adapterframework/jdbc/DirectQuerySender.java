@@ -20,7 +20,9 @@ import java.sql.Connection;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
@@ -94,8 +96,20 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 
 	@Override
+	// implements IBlockEnabledSender.sendMessage()
 	public Message sendMessage(Connection blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		return sendMessageOnConnection(blockHandle, message, session);
+		return sendMessageOnConnection(blockHandle, message, session, null).getResult();
+	}
+
+	@Override
+	// implements IStreamingSender.sendMessage()
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+		Connection blockHandle = openBlock(session);
+		try {
+			return sendMessageOnConnection(blockHandle, message, session, next);
+		} finally {
+			closeBlock(blockHandle, session);
+		}
 	}
 
 }

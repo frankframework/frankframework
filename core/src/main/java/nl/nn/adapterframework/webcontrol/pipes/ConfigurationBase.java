@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -134,7 +134,7 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 	}
 
 	protected IbisManager retrieveIbisManager() {
-		IAdapter adapter = getAdapter();
+		Adapter adapter = getAdapter();
 		if (adapter==null) {
 			throw new IllegalStateException("Adapter is null");
 		}

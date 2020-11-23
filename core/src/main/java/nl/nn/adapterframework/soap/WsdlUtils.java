@@ -18,7 +18,6 @@ package nl.nn.adapterframework.soap;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
@@ -30,7 +29,7 @@ import javanet.staxutils.IndentingXMLStreamWriter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IXmlValidator;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -43,18 +42,13 @@ public abstract class WsdlUtils {
         // this class has no instances
     }
 
-    public static Collection<IListener> getListeners(IAdapter a) {
-        List<IListener> result = new ArrayList<IListener>();
-        Iterator j = a.getReceiverIterator();
-        while (j.hasNext()) {
-            Object o = j.next();
-            if (o instanceof ReceiverBase) {
-                ReceiverBase r = (ReceiverBase) o;
-                result.add(r.getListener());
-            }
-        }
-        return result;
-    }
+	public static Collection<IListener> getListeners(IAdapter adapter) {
+		List<IListener> result = new ArrayList<IListener>();
+		for (Receiver receiver: adapter.getReceivers()) {
+			result.add(receiver.getListener());
+		}
+		return result;
+	}
 
       // 2017-10-17 Previous version, before 
 //    public static String getEsbSoapParadigm(XmlValidator xmlValidator, boolean outputMode) {

@@ -1,9 +1,0 @@
-version: "3"
-services:
-  database:
-    image: iaf-test-db-oracle
-    container_name: iaf-test-oracle
-    ports:
-      - "1521:1521"
-    expose:
-      - "1521"

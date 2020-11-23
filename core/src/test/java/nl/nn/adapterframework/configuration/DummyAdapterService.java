@@ -15,37 +15,37 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.LogUtil;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.util.LogUtil;
+
 /**
  * Used with test cases.
- * This implementation keeps a list of all {@link IAdapter}s within this IAdapterService.
+ * This implementation keeps a list of all {@link Adapter}s within this IAdapterService.
  * It does not wire any extra's such as JMX and flowDiagrams.
  */
 public class DummyAdapterService implements IAdapterService {
 
 	protected final Logger log = LogUtil.getLogger(this);
-	private final Map<String, IAdapter> adapters = new LinkedHashMap<>(); // insertion order map
+	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 
 	@Override
-	public IAdapter getAdapter(String name) {
+	public Adapter getAdapter(String name) {
 		return getAdapters().get(name);
 	}
 
 	@Override
-	public final Map<String, IAdapter> getAdapters() {
+	public final Map<String, Adapter> getAdapters() {
 		return Collections.unmodifiableMap(adapters);
 	}
 
 	@Override
-	public void registerAdapter(IAdapter adapter) throws ConfigurationException {
+	public void registerAdapter(Adapter adapter) throws ConfigurationException {
 		if(log.isDebugEnabled()) log.debug("registering adapter ["+adapter+"] with AdapterService ["+this+"]");
 		if(adapter.getName() == null) {
 			throw new ConfigurationException("Adapter has no name");
@@ -60,7 +60,7 @@ public class DummyAdapterService implements IAdapterService {
 	}
 
 	@Override
-	public void unRegisterAdapter(IAdapter adapter) {
+	public void unRegisterAdapter(Adapter adapter) {
 		adapters.remove(adapter.getName());
 		if(log.isDebugEnabled()) log.debug("unregistered adapter ["+adapter+"] from AdapterService ["+this+"]");
 	}

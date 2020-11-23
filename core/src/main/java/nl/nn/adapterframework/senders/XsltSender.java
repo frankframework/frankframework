@@ -50,6 +50,7 @@ import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SkipEmptyTagsFilter;
 import nl.nn.adapterframework.xml.TransformerFilter;
+import nl.nn.adapterframework.xml.XmlTap;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
@@ -80,6 +81,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private boolean skipEmptyTags=false;
 	private int xsltVersion=0; // set to 0 for auto detect.
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
+	private boolean debugInput = false;
 	
 	private TransformerPool transformerPool;
 	
@@ -281,8 +283,17 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		try {
 			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
 				ContentHandler handler = createHandler(message, session, target);
-				InputSource source = message.asInputSource();
+				if (isDebugInput() && log.isDebugEnabled()) {
+					handler = new XmlTap(handler) {
+						@Override
+						public void endDocument() throws SAXException {
+							super.endDocument();
+							log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
+						}
+					};
+				}
 				XMLReader reader = getXmlReader(handler);
+				InputSource source = message.asInputSource();
 				reader.parse(source);
 				return target.getPipeRunResult();
 			}
@@ -393,7 +404,15 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return namespaceAware;
 	}
 
-	@IbisDoc({"13", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"13", "when set <code>true</code> the input is written to the log file, at DEBUG level", "false"})
+	public void setDebugInput(boolean debugInput) {
+		this.debugInput = debugInput;
+	}
+	public boolean isDebugInput() {
+		return debugInput;
+	}
+
+	@IbisDoc({"14", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */

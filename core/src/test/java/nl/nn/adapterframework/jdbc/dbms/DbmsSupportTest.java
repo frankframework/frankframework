@@ -64,12 +64,19 @@ public class DbmsSupportTest extends JdbcTestBase {
 		assertTrue("Should have found existing table", dbmsSupport.isTablePresent(connection, "TEMP"));
 		assertFalse(dbmsSupport.isTablePresent(connection, "XXXX"));
 	}
-	
+
 	@Test
 	public void testIsColumnPresent() throws JdbcException {
 		assertTrue("Should have found existing column", dbmsSupport.isColumnPresent(connection, "TEMP", "TINT"));
 		assertFalse(dbmsSupport.isColumnPresent(connection, "TEMP", "XXXX"));
 		assertFalse(dbmsSupport.isColumnPresent(connection, "XXXX", "XXXX"));
+	}
+
+	@Test
+	public void testIsColumnPresentInSchema() throws JdbcException {
+		assertTrue("Should have found existing column", dbmsSupport.isColumnPresent(connection, dbmsSupport.getSchema(connection), "TEMP", "TINT"));
+		assertFalse(dbmsSupport.isColumnPresent(connection, dbmsSupport.getSchema(connection), "TEMP", "XXXX"));
+		assertFalse(dbmsSupport.isColumnPresent(connection, dbmsSupport.getSchema(connection), "XXXX", "XXXX"));
 	}
 
 	@Test
@@ -290,7 +297,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=21", "select")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				String actual = JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, true, false, false);
+				String actual = JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", true, false, false);
 				assertEquals(blobContents, actual);
 			}
 		}
@@ -337,7 +344,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=24", "select")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				String actual = JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false, false);
+				String actual = JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false);
 				assertEquals(blobContents, actual);
 			}
 		}
@@ -352,7 +359,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=25", "select")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				assertThat(JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false, false), IsEmptyString.isEmptyOrNullString() );
+				assertThat(JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false), IsEmptyString.isEmptyOrNullString() );
 			}
 		}
 		

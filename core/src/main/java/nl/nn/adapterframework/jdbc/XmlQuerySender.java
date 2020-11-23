@@ -36,10 +36,11 @@ import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -229,13 +230,13 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected Message sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
 		Vector<Column> columns = null;
 		String where = null;
 		String order = null;
-		Message result = null;
+		PipeRunResult result = null;
 		try {
 			queryElement = XmlUtils.buildElement(message.asString());
 			String root = queryElement.getTagName();
@@ -248,26 +249,26 @@ public class XmlQuerySender extends DirectQuerySender {
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
 
 			if (root.equalsIgnoreCase("select")) {
-				result = selectQuery(connection, tableName, columns, where, order);
+				result = selectQuery(connection, tableName, columns, where, order, session, next);
 			} else {
 				if (root.equalsIgnoreCase("insert")) {
-					result = insertQuery(connection, tableName, columns);
+					result = new PipeRunResult(null, insertQuery(connection, tableName, columns));
 				} else {
 					if (root.equalsIgnoreCase("delete")) {
-						result = deleteQuery(connection, tableName, where);
+						result = new PipeRunResult(null, deleteQuery(connection, tableName, where));
 					} else {
 						if (root.equalsIgnoreCase("update")) {
-							result = updateQuery(connection, tableName, columns, where);
+							result = new PipeRunResult(null, updateQuery(connection, tableName, columns, where));
 						} else {
 							if (root.equalsIgnoreCase("alter")) {
 								String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
 								int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith"));
-								result = alterQuery(connection, sequenceName, startWith);
+								result = new PipeRunResult(null, alterQuery(connection, sequenceName, startWith));
 							} else {
 								if (root.equalsIgnoreCase("sql")) {
 									String type = XmlUtils.getChildTagAsString(queryElement, "type");
 									String query = XmlUtils.getChildTagAsString(queryElement, "query");
-									result = sql(connection, query, type);
+									result = new PipeRunResult(null, sql(connection, query, type));
 								} else {
 								throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
 							}
@@ -287,7 +288,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		return result;
 	}
 
-	private Message selectQuery(Connection connection, String tableName, Vector<Column> columns, String where, String order) throws SenderException, JdbcException {
+	private PipeRunResult selectQuery(Connection connection, String tableName, Vector<Column> columns, String where, String order, IPipeLineSession session, IForwardTarget next) throws SenderException, JdbcException {
 		String query = "SELECT ";
 		try {
 			if (columns != null) {
@@ -316,7 +317,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			PreparedStatement statement = getStatement(connection, queryExecutionContext);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
-			return executeSelectQuery(statement,null,null);
+			return executeSelectQuery(statement,null,null, session, next);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command ["+query+"]", e);
 		}
@@ -396,7 +397,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
-				return executeSelectQuery(statement,null,null);
+				return executeSelectQuery(statement,null,null, null, null).getResult();
 			} else if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("ddl")) {
 				//TODO: alles tussen -- en newline nog weggooien
 				StringBuffer result = new StringBuffer();
@@ -406,16 +407,16 @@ public class XmlQuerySender extends DirectQuerySender {
 					queryExecutionContext = new QueryExecutionContext(q, "other", null);
 					statement = getStatement(connection, queryExecutionContext);
 					if (q.trim().toLowerCase().startsWith("select")) {
-						result.append(executeSelectQuery(statement,null,null));
+						result.append(executeSelectQuery(statement,null,null, null, null).getResult().asString());
 					} else {
-						result.append(executeOtherQuery(connection, statement, queryExecutionContext.getQuery(), null, null, null, null));
+						result.append(executeOtherQuery(connection, statement, queryExecutionContext.getQuery(), null, null, null, null).asString());
 					}
 				}
 				return new Message(result.toString());
 			} else {
 				return executeOtherQuery(connection, statement, query, null, null, null, null);
 			}
-		} catch (SQLException e) {
+		} catch (SQLException | IOException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command ["+query+"]", e);
 		}
 	}
@@ -447,9 +448,9 @@ public class XmlQuerySender extends DirectQuerySender {
 						statement.setString(1, rowId);
 						statement.setQueryTimeout(getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							executeUpdateBlobQuery(statement, column.getValue());
+							executeUpdateBlobQuery(statement, new Message(column.getValue()));
 						} else {
-							executeUpdateClobQuery(statement, column.getValue());
+							executeUpdateClobQuery(statement, new Message(column.getValue()));
 						}
 					}
 				}

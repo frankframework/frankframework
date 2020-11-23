@@ -55,4 +55,9 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 		return a.getContents()==null?null:a.getAdditionalProperties();
 	}
 
+	@Override
+	public MockFileWithAttachments getFileFromAttachment(MockAttachment a) throws FileSystemException {
+		return null;
+	}
+
 }

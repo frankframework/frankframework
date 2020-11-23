@@ -45,7 +45,7 @@ public class MockIbisManager extends Mockito implements IbisManager {
 
 	public MockIbisManager() {
 		IAdapterService adapterService = new DummyAdapterService();
-		IAdapter adapter = new Adapter();
+		Adapter adapter = new Adapter();
 		adapter.setName("dummyAdapter");
 		try {
 			PipeLine pipeline = new PipeLine();
@@ -125,9 +125,9 @@ public class MockIbisManager extends Mockito implements IbisManager {
 	}
 
 	@Override
-	public IAdapter getRegisteredAdapter(String name) {
-		List<IAdapter> adapters = getRegisteredAdapters();
-		for (IAdapter adapter : adapters) {
+	public Adapter getRegisteredAdapter(String name) {
+		List<Adapter> adapters = getRegisteredAdapters();
+		for (Adapter adapter : adapters) {
 			if (name.equals(adapter.getName())) {
 				return adapter;
 			}
@@ -149,8 +149,8 @@ public class MockIbisManager extends Mockito implements IbisManager {
 	}
 
 	@Override
-	public List<IAdapter> getRegisteredAdapters() {
-		List<IAdapter> registeredAdapters = new ArrayList<IAdapter>();
+	public List<Adapter> getRegisteredAdapters() {
+		List<Adapter> registeredAdapters = new ArrayList<Adapter>();
 		for (Configuration configuration : configurations) {
 			registeredAdapters.addAll(configuration.getRegisteredAdapters());
 		}

@@ -28,8 +28,10 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -65,44 +67,41 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		int counter = 0;
-		ResultSet resultset=null;
 		String fileName = (String)session.get(getFileNameSessionKey());
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
 			maxRecords = Integer.parseInt((String)session.get(getMaxRecordsSessionKey()));
 		}
 
-		FileOutputStream fos=null;
-		try {
-			fos = new FileOutputStream(fileName, isAppend());
-			QueryExecutionContext queryExecutionContext = blockHandle;
+		try (FileOutputStream fos = new FileOutputStream(fileName, isAppend())) {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
-			resultset = statement.executeQuery();
-			boolean eor = false;
-			if (maxRecords==0) {
-				eor = true;
-			}
-			while (resultset.next() && !eor) {
-				counter++;
-				processResultSet(resultset, fos, counter);
-				if (maxRecords>=0 && counter>=maxRecords) {
-					ResultSetMetaData rsmd = resultset.getMetaData();
-					if (rsmd.getColumnCount() >= 3) {
-						String group = resultset.getString(3);
-						while (resultset.next() && !eor) {
-							String groupNext = resultset.getString(3);
-							if (groupNext.equals(group)) {
-								counter++;
-								processResultSet(resultset, fos, counter);
-							} else {
-								eor = true;
+			try (ResultSet resultset = statement.executeQuery()) {
+				boolean eor = false;
+				if (maxRecords==0) {
+					eor = true;
+				}
+				while (resultset.next() && !eor) {
+					counter++;
+					processResultSet(resultset, fos, counter);
+					if (maxRecords>=0 && counter>=maxRecords) {
+						ResultSetMetaData rsmd = resultset.getMetaData();
+						if (rsmd.getColumnCount() >= 3) {
+							String group = resultset.getString(3);
+							while (resultset.next() && !eor) {
+								String groupNext = resultset.getString(3);
+								if (groupNext.equals(group)) {
+									counter++;
+									processResultSet(resultset, fos, counter);
+								} else {
+									eor = true;
+								}
 							}
+						} else {
+							eor = true;
 						}
-					} else {
-						eor = true;
 					}
 				}
 			}
@@ -116,23 +115,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", sqle);
 		} catch (JdbcException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
-		} finally {
-			try {
-				if (fos!=null) {
-					fos.close();
-				}
-			} catch (IOException e) {
-				log.warn(new SenderException(getLogPrefix() + "got exception closing fileoutputstream", e));
-			}
-			try {
-				if (resultset!=null) {
-					resultset.close();
-				}
-			} catch (SQLException e) {
-				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset", e));
-			}
 		}
-		return new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>");
+		return new PipeRunResult(null, new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>"));
 	}
 
 	private void processResultSet (ResultSet resultset, FileOutputStream fos, int counter) throws SQLException, IOException {

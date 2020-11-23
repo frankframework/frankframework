@@ -360,23 +360,19 @@ public final class ShowSecurityItems extends Base {
 	private Map<String, Object> addServerProps() {
 		Map<String, Object> serverProps = new HashMap<String, Object>(2);
 
-		String totalTransactionLifetimeTimeout;
-		try {
-			totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout();
-		} catch (Exception e) {
-			totalTransactionLifetimeTimeout = "*** ERROR ***";
+		Integer totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout();
+		if(totalTransactionLifetimeTimeout == null) {
+			serverProps.put("totalTransactionLifetimeTimeout", "-");
+		} else {
+			serverProps.put("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
 		}
-		if(totalTransactionLifetimeTimeout == null) totalTransactionLifetimeTimeout = "-";
 
-		serverProps.put("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
-		String maximumTransactionTimeout;
-		try {
-			maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-		} catch (Exception e) {
-			maximumTransactionTimeout = "*** ERROR ***";
+		Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
+		if(maximumTransactionTimeout == null) {
+			serverProps.put("maximumTransactionTimeout", "-");
+		} else {
+			serverProps.put("maximumTransactionTimeout", maximumTransactionTimeout);
 		}
-		if(maximumTransactionTimeout == null) maximumTransactionTimeout = "-";
-		serverProps.put("maximumTransactionTimeout", maximumTransactionTimeout);
 		return serverProps;
 	}
 }

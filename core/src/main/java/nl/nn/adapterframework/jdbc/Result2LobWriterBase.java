@@ -100,7 +100,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	}
 	
 	@Override
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		try {
 			return super.finalizeResult(session,streamId, error);
 		} finally {

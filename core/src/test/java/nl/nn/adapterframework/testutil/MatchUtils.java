@@ -74,7 +74,7 @@ public class MatchUtils {
 			XmlUtils.parseXml(xml, contentHandler);
 			return xmlWriter.toString();
 		} catch (IOException | SAXException e) {
-			throw new RuntimeException("ERROR: could not prettyfy ["+xml+"]",e);
+			throw new RuntimeException("ERROR: could not prettify ["+xml+"]",e);
 		}
 	}
 

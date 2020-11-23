@@ -1,9 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
 import jcifs.smb.SmbFile;
-import nl.nn.adapterframework.filesystem.FileSystemTest;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 /**
  * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
  * 
@@ -20,10 +17,10 @@ import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSystem> {
 
 	private String realm = "";
-	private String kdc = "";
+	private String kdc = "localhost";
 	private String shareName = "Share";
-	private String username = "";
-	private String password = "";
+	private String username = "wearefrank";
+	private String password = "pass_123";
 	private String domain = "";
 	
 	@Override

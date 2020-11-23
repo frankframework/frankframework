@@ -14,6 +14,12 @@ def setJVMProperty( name, value ):
 	propertyId = AdminTask.setJVMProperties([ '-serverName', server, '-nodeName', node, name, value ])
 	return(propertyId)
 
+def setSecurityProperty( name, value ):
+	print "Setting Security property:",name,"=",value
+	security = AdminConfig.list('Security')
+	AdminConfig.modify(security, [[ name, value ]])
+	return
+
 setJVMSystemProperty( 'log.dir', '${SERVER_LOG_ROOT}')
 setJVMSystemProperty( 'otap.stage', 'TST')
 setJVMSystemProperty( 'web.protocol', 'http')
@@ -28,8 +34,10 @@ setJVMSystemProperty( 'active.ifsa', 'false')
 setJVMSystemProperty( 'log.dir.match', '(?i)(([cd]:[\\\\/]temp)|(${SERVER_LOG_ROOT}))')
 setJVMSystemProperty( 'test.alias', 'testAuthAlias')
 setJVMSystemProperty( 'APPSERVER_ROOT_DIR', '${USER_INSTALL_ROOT}') # APPSERVER_ROOT_DIR is a NN standard custom property for WAS
+setJVMSystemProperty( 'com.ibm.websphere.java2secman.norethrow', 'true')
 
-setJVMProperty( '-classpath', '[ /work/frank/configuration/resources.jar /work/frank/configuration/configurations.jar ]')
+setSecurityProperty('enforceJava2Security', 'true')
+
 
 AdminConfig.save()
 	

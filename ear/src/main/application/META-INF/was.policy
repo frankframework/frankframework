@@ -18,8 +18,7 @@
 * APPSERVER_ROOT_DIR            /data/WAS/6.1/wasap0x                          
 */
 
-//grant codeBase "file:${application}" {
-grant {
+grant codeBase "file:${application}" {
 
 //permission java.io.FilePermission "${app.installed.path}${/}-", "read";
 permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}", "read";
@@ -90,6 +89,10 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.io";
 
 permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared";
 
+// required for nashhorn
+permission java.lang.RuntimePermission "accessClassInPackage.jdk.internal.dynalink.support";
+permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime.*";
+
 // required for MS SQL:
 permission java.lang.RuntimePermission "accessClassInPackage.sun.jdbc.odbc";
 
@@ -124,6 +127,7 @@ permission javax.management.MBeanPermission "*", "getMBeanInfo";
 permission javax.management.MBeanPermission "*", "isInstanceOf";
 permission javax.management.MBeanPermission "*", "addNotificationListener";
 permission javax.management.MBeanPermission "*", "unregisterMBean";
+permission javax.management.MBeanPermission "*", "queryNames";
 permission java.lang.management.ManagementPermission "monitor";
 
 // required for BitronixTransactionManager.begin() in receiveMessageAndMoveToErrorStorage
@@ -163,4 +167,6 @@ permission java.security.SecurityPermission "printIdentity";
 // required for Log4j stacktrace rendering
 permission java.lang.RuntimePermission "createSecurityManager";
 
+// required for cxf
+permission java.lang.RuntimePermission "shutdownHooks";
 };

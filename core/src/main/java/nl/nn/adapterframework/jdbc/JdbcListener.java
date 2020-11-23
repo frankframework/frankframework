@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,7 +38,6 @@ import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * JdbcListener base class.
@@ -58,7 +58,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	private String messageField;
 	private String messageFieldType="String";
 
-	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String blobCharset = null;
 	private boolean blobsCompressed=true;
 	private boolean blobSmartGet=false;
 	
@@ -181,7 +181,14 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 						message=new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
 					} else {
 						if ("blob".equalsIgnoreCase(getMessageFieldType())) {
-							message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false)); // TODO: should not convert Blob to String, but keep as byte array
+							if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) {
+								message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),isBlobsCompressed(),isBlobSmartGet(),false));
+							} else {
+								try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
+									message=new Message(blobStream);
+									message.preserve();
+								}
+							}
 						} else {
 							message=new Message(rs.getString(getMessageField()));
 						}
@@ -402,7 +409,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return messageField;
 	}
 
-	@IbisDoc({"Type of the field containing the message data: either String, clob or blob", "<i>String</i>"})
+	@IbisDoc({"3", "Type of the field containing the message data: either String, clob or blob", "<i>String</i>"})
 	public void setMessageFieldType(String string) {
 		messageFieldType = string;
 	}
@@ -410,15 +417,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return messageFieldType;
 	}
 
-	@IbisDoc({"Charset used to read blobs", "UTF-8"})
-	public void setBlobCharset(String string) {
-		blobCharset = string;
-	}
-	public String getBlobCharset() {
-		return blobCharset;
-	}
-
-	@IbisDoc({"Controls whether blobdata is considered stored compressed in the database", "true"})
+	@IbisDoc({"4", "Controls whether BLOB is considered stored compressed in the database", "true"})
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
@@ -426,7 +425,16 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return blobsCompressed;
 	}
 
-	@IbisDoc({"Controls automatically whether blobdata is stored compressed and/or serialized in the database", "false"})
+	@IbisDoc({"5", "Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
+	@Deprecated
+	public void setBlobCharset(String string) {
+		blobCharset = string;
+	}
+	public String getBlobCharset() {
+		return blobCharset;
+	}
+
+	@IbisDoc({"6", "Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string", "false"})
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}

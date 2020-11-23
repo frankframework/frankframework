@@ -1,9 +1,0 @@
-<project default="create.user">
-	<target name="create.user">
-		<exec executable="mysql" input="create_user.sql">
-			<arg value="--user=root"/>
-			<arg value="--password=system"/>
-			<arg value="--force"/>
-		</exec>
-	</target>
-</project>

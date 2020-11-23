@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore
+@Ignore("Test takes a long time to run, and gives little information")
 public class FrankDocModelPopulateTest {
 	private FrankDocModel instance;
 	private Set<String> actualTypeSimpleNames;
@@ -30,7 +30,7 @@ public class FrankDocModelPopulateTest {
 	}
 
 	@Test
-	public void testElementGenericReceiverCreated() {
-		assertTrue(actualElementSimpleNames.contains("GenericReceiver"));
+	public void testElementReceiverCreated() {
+		assertTrue(actualElementSimpleNames.contains("Receiver"));
 	}
 }

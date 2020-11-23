@@ -1,15 +1,12 @@
 <module>
 	<adapter name="Test1">
-		<receiver
-			name="Test1"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			>
+		<receiver name="Test1">
 			<listener
 				name="Test1"
 				className="nl.nn.adapterframework.http.WebServiceListener"
 				serviceNamespaceURI="urn:test1"
 			/>
-    </receiver>
+	</receiver>
 		<pipeline firstPipe="Call IFSA">
 			<exits>
 				<exit path="READY" state="success"/>
