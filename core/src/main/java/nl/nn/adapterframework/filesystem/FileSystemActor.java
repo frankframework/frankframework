@@ -143,6 +143,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
 
+		if (fileSystem instanceof IWritableFileSystem) {
+			actions.addAll(Arrays.asList(ACTIONS_WRITABLE_FS));
+		}
+
 		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
 			ConfigurationWarnings.add(owner, log, "parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]");
 			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);
@@ -151,7 +155,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (StringUtils.isNotEmpty(getAction())) {
 			checkConfiguration(getAction());
 		} else if (parameterList == null || parameterList.findParameter(PARAMETER_ACTION) == null) {
-			throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: either action or parameter ["+PARAMETER_ACTION+"] must be specified");
+			throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
 		}
 
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
@@ -173,9 +177,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	private void checkConfiguration(String action) throws ConfigurationException {
-		if (fileSystem instanceof IWritableFileSystem) {
-			actions.addAll(Arrays.asList(ACTIONS_WRITABLE_FS));
-		}
 		if (!actions.contains(action))
 			throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: unknown or invalid action [" + action + "] supported actions are " + actions.toString() + "");
 
@@ -293,6 +294,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			String action;
 			if (pvl != null && pvl.containsKey(PARAMETER_ACTION)) {
 				action = pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getAction());
+				if(StringUtils.isEmpty(action)) {
+					throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
+				}
 				checkConfiguration(action);
 			} else {
 				action = getAction();

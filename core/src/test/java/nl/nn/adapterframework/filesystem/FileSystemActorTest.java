@@ -82,9 +82,34 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureNoAction() throws Exception {
-		thrown.expectMessage("either action or parameter [action] must be specified");
+		thrown.expectMessage("either attribute [action] or parameter [action] must be specified");
 		thrown.expectMessage("fake owner of FileSystemActor");
 		actor.configure(fileSystem,null,owner);
+	}
+
+	@Test
+	public void fileSystemActorEmptyParameterAction() throws Exception {
+		thrown.expectMessage("unable to resolve the value of parameter");
+		String filename = "emptyParameterAction" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("action");
+		p.setValue("");
+		params.add(p);
+		params.configure();
+
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message= new Message(filename);
+		ParameterValueList pvl = params.getValues(new Message(""), session);
+
+		actor.doAction(message, pvl, session);
 	}
 
 	@Test
