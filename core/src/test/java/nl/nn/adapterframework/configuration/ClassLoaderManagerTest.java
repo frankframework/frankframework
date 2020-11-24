@@ -181,7 +181,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		ple.setPath("success");
 		ple.setState("success");
 		pl.registerPipeLineExit(ple);
-		adapter.registerPipeLine(pl);
+		adapter.setPipeLine(pl);
 
 		doAnswer(new Answer<PipeLineResult>() {
 			@Override

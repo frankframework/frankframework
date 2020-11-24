@@ -725,7 +725,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @see PipeLine
 	 */
 	@Override
-	public void registerPipeLine(PipeLine pipeline) throws ConfigurationException {
+	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline = pipeline;
 		pipeline.setAdapter(this);
 		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");

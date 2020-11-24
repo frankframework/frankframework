@@ -101,7 +101,7 @@ class InfoBuilderSource {
 	}
 	static Map<String, Integer> sortWeightPipeline = new HashMap<String, Integer>();
 	static {
-		sortWeightPipeline.put("registerCache", 100);
+		sortWeightPipeline.put("setCache", 100);
 		sortWeightPipeline.put("setLocker", 90);
 		sortWeightPipeline.put("setInputValidator", 80);
 		sortWeightPipeline.put("setInputWrapper", 70);
@@ -112,7 +112,7 @@ class InfoBuilderSource {
 	}
 	static Map<String, Integer> sortWeight = new HashMap<String, Integer>();
 	static {
-		sortWeight.put("registerCache", 100);
+		sortWeight.put("setCache", 100);
 		sortWeight.put("setLocker", 90);
 		sortWeight.put("setInputWrapper", 80);
 		sortWeight.put("setInputValidator", 70);

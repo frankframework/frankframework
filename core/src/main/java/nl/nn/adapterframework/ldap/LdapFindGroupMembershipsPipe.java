@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
 		options.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
 		ldapClient= new LdapClient(options);
-		ldapClient.registerCache(cache);
+		ldapClient.setCache(cache);
 		ldapClient.configure();
 	}
 
@@ -143,7 +143,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 
 
 	@Override
-	public void registerCache(ICacheAdapter<String, Set<String>> cache) {
+	public void setCache(ICacheAdapter<String, Set<String>> cache) {
 		this.cache=cache;
 	}
 	@Override

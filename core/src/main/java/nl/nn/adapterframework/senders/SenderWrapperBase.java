@@ -103,7 +103,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 
 	@Override
-	public void registerCache(ICacheAdapter<String,String> cache) {
+	public void setCache(ICacheAdapter<String,String> cache) {
 		this.cache=cache;
 	}
 	@Override

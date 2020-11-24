@@ -128,10 +128,10 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	public final static String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
 	public final static String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
 
-	private IPipe inputValidator  = null;
-	private IPipe outputValidator = null;
-	private IPipe inputWrapper    = null;
-	private IPipe outputWrapper   = null;
+	private IValidatorPipe inputValidator  = null;
+	private IValidatorPipe outputValidator = null;
+	private IWrapperPipe inputWrapper    = null;
+	private IWrapperPipe outputWrapper   = null;
 
 	private TransactionDefinition txDef = null;
 
@@ -275,8 +275,8 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			throw new ConfigurationException("no pipe found for firstPipe [" + firstPipe + "]");
 		}
 
-		IPipe inputValidator = getInputValidator();
-		IPipe outputValidator = getOutputValidator();
+		IValidatorPipe inputValidator = getInputValidator();
+		IValidatorPipe outputValidator = getOutputValidator();
 		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
 			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator();
 			setOutputValidator(outputValidator);
@@ -672,34 +672,34 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 
 
 	@IbisDoc({"10", "Request validator, or combined validator for request and response"})
-	public void setInputValidator(IPipe inputValidator) {
+	public void setInputValidator(IValidatorPipe inputValidator) {
 		this.inputValidator = inputValidator;
 	}
-	public IPipe getInputValidator() {
+	public IValidatorPipe getInputValidator() {
 		return inputValidator;
 	}
 
 	@IbisDoc({"20", "Optional pipe to validate the response. Can be specified if the response cannot be validated by the request validator"})
-	public void setOutputValidator(IPipe outputValidator) {
+	public void setOutputValidator(IValidatorPipe outputValidator) {
 		this.outputValidator = outputValidator;
 	}
-	public IPipe getOutputValidator() {
+	public IValidatorPipe getOutputValidator() {
 		return outputValidator;
 	}
 
 	@IbisDoc({"30", "Optional pipe to extract the request message from its envelope"})
-	public void setInputWrapper(IPipe inputWrapper) {
+	public void setInputWrapper(IWrapperPipe inputWrapper) {
 		this.inputWrapper = inputWrapper;
 	}
-	public IPipe getInputWrapper() {
+	public IWrapperPipe getInputWrapper() {
 		return inputWrapper;
 	}
 
 	@IbisDoc({"40", "Optional pipe to wrap the response message in an envelope"})
-	public void setOutputWrapper(IPipe outputWrapper) {
+	public void setOutputWrapper(IWrapperPipe outputWrapper) {
 		this.outputWrapper = outputWrapper;
 	}
-	public IPipe getOutputWrapper() {
+	public IWrapperPipe getOutputWrapper() {
 		return outputWrapper;
 	}
 
@@ -727,7 +727,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 
 	@Override
 	@IbisDoc({"70", "Cache of results"})
-	public void registerCache(ICacheAdapter<String,String> cache) {
+	public void setCache(ICacheAdapter<String,String> cache) {
 		this.cache=cache;
 	}
 	@Override
