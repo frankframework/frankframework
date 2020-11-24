@@ -35,6 +35,9 @@ public interface IMailFileSystem<M,A> extends IWithAttachments<M,A> {
 	public final String DATETIME_SENT_KEY = "DateTimeSent";         // as Date, or in XML format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
 	public final String DATETIME_RECEIVED_KEY = "DateTimeReceived";
 
+	public final String BEST_REPLY_ADDRESS_KEY = "bestReplyAddress";
+	public final String REPLY_ADDRESS_FIELDS_DEFAULT=REPLY_TO_RECEPIENTS_KEY+','+FROM_ADDRESS_KEY+','+SENDER_ADDRESS_KEY+','+RETURN_PATH_HEADER;
+
 	
 	public String getSubject(M emailMessage) throws FileSystemException;
 
@@ -43,5 +46,7 @@ public interface IMailFileSystem<M,A> extends IWithAttachments<M,A> {
 
 	public void extractEmail(M emailMessage, SaxElementBuilder emailXml) throws FileSystemException;
 	public void extractAttachment(A attachment, SaxElementBuilder attachmentsXml) throws FileSystemException;
+	
+	public String getReplyAddressFields();
 	
 }

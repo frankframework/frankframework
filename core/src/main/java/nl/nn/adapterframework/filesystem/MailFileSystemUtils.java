@@ -44,7 +44,8 @@ public class MailFileSystemUtils {
 				IMailFileSystem.SENDER_ADDRESS_KEY,
 				IMailFileSystem.REPLY_TO_RECEPIENTS_KEY,
 				IMailFileSystem.DATETIME_SENT_KEY,
-				IMailFileSystem.DATETIME_RECEIVED_KEY } );
+				IMailFileSystem.DATETIME_RECEIVED_KEY,
+				IMailFileSystem.BEST_REPLY_ADDRESS_KEY} );
 
 	
 	public static <M,A> void addEmailInfoSimple(IMailFileSystem<M,A> fileSystem, M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
@@ -92,8 +93,7 @@ public class MailFileSystemUtils {
 		addPropertyAsHeader(emailXml,IMailFileSystem.FROM_ADDRESS_KEY, properties.get(IMailFileSystem.FROM_ADDRESS_KEY));
 		addPropertyAsHeader(emailXml,IMailFileSystem.SENDER_ADDRESS_KEY, properties.get(IMailFileSystem.SENDER_ADDRESS_KEY));
 		addPropertyAsHeader(emailXml,IMailFileSystem.REPLY_TO_RECEPIENTS_KEY, properties.get(IMailFileSystem.REPLY_TO_RECEPIENTS_KEY));
-		String bestReplyAddress = findBestReplyAddress(properties);
-		emailXml.addElement("bestReplyAddress", bestReplyAddress);
+		addPropertyAsHeader(emailXml,IMailFileSystem.BEST_REPLY_ADDRESS_KEY, properties.get(IMailFileSystem.BEST_REPLY_ADDRESS_KEY));
 		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
 		addPropertyAsHeader(emailXml,IMailFileSystem.DATETIME_SENT_KEY, properties.get(IMailFileSystem.DATETIME_SENT_KEY));
 		addPropertyAsHeader(emailXml,IMailFileSystem.DATETIME_RECEIVED_KEY, properties.get(IMailFileSystem.DATETIME_RECEIVED_KEY));
@@ -131,20 +131,15 @@ public class MailFileSystemUtils {
 	}
 	
 
-	public static String findBestReplyAddress(Map<String,Object> headers) {
+	public static String findBestReplyAddress(Map<String,Object> headers, String replyAddressFields) {
+		if (StringUtils.isEmpty(replyAddressFields)) {
+			return null;
+		}
 		String result;
-		
-		if (null != (result = getValidAddressFromHeader(IMailFileSystem.REPLY_TO_RECEPIENTS_KEY, headers))) {
-			return result; 
-		}
-		if (null != (result = getValidAddressFromHeader(IMailFileSystem.FROM_ADDRESS_KEY, headers))) {
-			return result; 
-		}
-		if (null != (result = getValidAddressFromHeader(IMailFileSystem.SENDER_ADDRESS_KEY, headers))) {
-			return result; 
-		}
-		if (null != (result = getValidAddressFromHeader(IMailFileSystem.RETURN_PATH_HEADER, headers))) {
-			return result; 
+		for(String field:replyAddressFields.split(",")) {
+			if (null != (result = getValidAddressFromHeader(field, headers))) {
+				return result; 
+			}
 		}
 		return null;
 	}

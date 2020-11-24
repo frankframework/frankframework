@@ -114,6 +114,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 	private String filter;
 	private boolean readMimeContents=false;
 	private int maxNumberOfMessagesToList=10;
+	private String replyAddressFields = REPLY_ADDRESS_FIELDS_DEFAULT;
 
 	private String proxyHost = null;
 	private int proxyPort = 8080;
@@ -484,17 +485,17 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 					result.put(internetMessageHeader.getName(), internetMessageHeader.getValue());
 					continue;
 				}
-				List values;
+				List<Object> values;
 				if (curEntry instanceof List) {
-					values = (List)curEntry;
+					values = (List<Object>)curEntry;
 				} else {
-					values = new LinkedList();
+					values = new LinkedList<Object>();
 					values.add(curEntry);
 					result.put(internetMessageHeader.getName(),values);
 				}
 				values.add(internetMessageHeader.getValue());
 			}
-			
+			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY, MailFileSystemUtils.findBestReplyAddress(result,getReplyAddressFields()));
 			return result;
 		} catch (Exception e) {
 			throw new FileSystemException(e);
@@ -680,7 +681,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		}
 	}
 
-	public List getReplyTo(EmailMessage emailMessage) throws FileSystemException {
+	public List<String> getReplyTo(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			EmailAddressCollection replyTo = emailMessage.getReplyTo();
 			if (replyTo==null) {
@@ -844,22 +845,32 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		return filter;
 	}
 
-	public boolean isReadMimeContents() {
-		return readMimeContents;
+	@IbisDoc({"10", "Comma separated list of fields to try as response address", REPLY_ADDRESS_FIELDS_DEFAULT})
+	public void setReplyAddressFields(String replyAddressFields) {
+		this.replyAddressFields = replyAddressFields;
 	}
+	@Override
+	public String getReplyAddressFields() {
+		return replyAddressFields;
+	}
+
+	@IbisDoc({"11", "if set <code>true</code>, the contents will be read in MIME format", "false"})
 	public void setReadMimeContents(boolean readMimeContents) {
 		this.readMimeContents = readMimeContents;
 	}
-
-
-	public int getMaxNumberOfMessagesToList() {
-		return maxNumberOfMessagesToList;
+	public boolean isReadMimeContents() {
+		return readMimeContents;
 	}
+
+	@IbisDoc({"12", "the maximum number of messages to be retrieved from a folder", "10"})
 	public void setMaxNumberOfMessagesToList(int maxNumberOfMessagesToList) {
 		this.maxNumberOfMessagesToList = maxNumberOfMessagesToList;
 	}
+	public int getMaxNumberOfMessagesToList() {
+		return maxNumberOfMessagesToList;
+	}
 
-	@IbisDoc({"10", "proxy host", ""})
+	@IbisDoc({"13", "proxy host", ""})
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
@@ -867,7 +878,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		return proxyHost;
 	}
 
-	@IbisDoc({"11", "proxy port", ""})
+	@IbisDoc({"14", "proxy port", ""})
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}
@@ -875,7 +886,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		return proxyPort;
 	}
 
-	@IbisDoc({"12", "proxy username", ""})
+	@IbisDoc({"15", "proxy username", ""})
 	public void setProxyUsername(String proxyUsername) {
 		this.proxyUsername = proxyUsername;
 	}
@@ -883,7 +894,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		return proxyUsername;
 	}
 
-	@IbisDoc({"13", "proxy password", ""})
+	@IbisDoc({"16", "proxy password", ""})
 	public void setProxyPassword(String proxyPassword) {
 		this.proxyPassword = proxyPassword;
 	}
@@ -891,7 +902,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		return proxyPassword;
 	}
 
-	@IbisDoc({"14", "proxy authAlias", ""})
+	@IbisDoc({"17", "proxy authAlias", ""})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		this.proxyAuthAlias = proxyAuthAlias;
 	}
@@ -899,7 +910,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		return proxyAuthAlias;
 	}
 
-	@IbisDoc({"15", "proxy domain", ""})
+	@IbisDoc({"18", "proxy domain", ""})
 	public void setProxyDomain(String proxyDomain) {
 		this.proxyDomain = proxyDomain;
 	}
