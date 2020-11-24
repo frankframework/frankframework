@@ -63,6 +63,15 @@ class DocWriterNewXmlUtils {
 		return element;
 	}
 
+	static XmlBuilder addElementWithType(XmlBuilder context, String name, String minOccurs, String maxOccurs) {
+		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
+		element.addAttribute("name", name);
+		element.addAttribute("minOccurs", minOccurs);
+		element.addAttribute("maxOccurs", maxOccurs);
+		context.addSubElement(element);
+		return element;
+	}
+
 	static XmlBuilder addComplexType(XmlBuilder schema) {
 		XmlBuilder complexType;
 		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
@@ -120,6 +129,15 @@ class DocWriterNewXmlUtils {
 		XmlBuilder group = new XmlBuilder("group", "xs", XML_SCHEMA_URI);
 		context.addSubElement(group);
 		group.addAttribute("ref", id);
+		return group;
+	}
+
+	static XmlBuilder addGroupRef(XmlBuilder context, String id, String minOccurs, String maxOccurs) {
+		XmlBuilder group = new XmlBuilder("group", "xs", XML_SCHEMA_URI);
+		group.addAttribute("ref", id);
+		group.addAttribute("minOccurs", minOccurs);
+		group.addAttribute("maxOccurs", maxOccurs);
+		context.addSubElement(group);
 		return group;
 	}
 

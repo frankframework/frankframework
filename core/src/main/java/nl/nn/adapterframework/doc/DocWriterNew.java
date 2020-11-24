@@ -6,7 +6,6 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroupR
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElement;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementWithType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroup;
@@ -17,6 +16,7 @@ import static nl.nn.adapterframework.doc.model.ElementChild.SELECTED;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +39,9 @@ public class DocWriterNew {
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 
 	private static Logger log = LogUtil.getLogger(DocWriterNew.class);
+
+	private static Comparator<FrankElement> FIX_ELEMENT_SEQUENCE =
+			Comparator.comparing(FrankElement::getSimpleName).thenComparing(FrankElement::getFullName);
 
 	private FrankDocModel model;
 	List<SortKeyForXsd> xsdSortOrder;
@@ -111,6 +114,7 @@ public class DocWriterNew {
 		private List<SortKeyForXsd> getSortedTypeChildren(String typeName) {
 			ElementType elementType = model.getAllTypes().get(typeName);
 			List<FrankElement> members = new ArrayList<>(elementType.getMembers().values());
+			members.sort(FIX_ELEMENT_SEQUENCE);
 			return members.stream().map(SortKeyForXsd::getInstance).collect(Collectors.toList());
 		}
 
@@ -154,7 +158,7 @@ public class DocWriterNew {
 				defineElement(model.getAllElements().get(item.getName()));
 				break;
 			case TYPE:
-				defineTypeType(model.getAllTypes().get(item.getName()));
+				defineElementTypeGroup(model.getAllTypes().get(item.getName()));
 				break;
 			}
 		}
@@ -235,8 +239,10 @@ public class DocWriterNew {
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
 		ElementType elementType = child.getElementType();
 		if(elementType.isFromJavaInterface()) {
-			addElement(context, xsdFieldName(child), xsdTypeOf(elementType),
-					getMinOccurs(child), getMaxOccurs(child));
+			XmlBuilder xsdElement = addElementWithType(
+					context, Utils.toUpperCamelCase(xsdFieldName(child)), getMinOccurs(child), "1");
+			XmlBuilder complexType = addComplexType(xsdElement);
+			addGroupRef(complexType, xsdGroupOf(elementType), "1", getMaxOccurs(child));
 		}
 		else {
 			FrankElement containedFrankElement = elementType.getMembers().values().iterator().next();
@@ -245,12 +251,16 @@ public class DocWriterNew {
 		}
 	}
 
-	private static String xsdFieldName(ConfigChild configChild) {
-		return Utils.toUpperCamelCase(configChild.getSyntax1Name());
+	String xsdFieldName(final ConfigChild child) {
+		if(child.isAllowMultiple()) {
+			return child.getSyntax1NamePlural();
+		} else {
+			return child.getSyntax1Name();
+		}
 	}
 
-	private static String xsdTypeOf(ElementType elementType) {
-		return elementType.getSimpleName() + "ElementType";
+	private static String xsdGroupOf(ElementType elementType) {
+		return elementType.getSimpleName() + "ElementGroup";
 	}
 
 	private static String getMinOccurs(ConfigChild child) {
@@ -340,9 +350,9 @@ public class DocWriterNew {
 		}		
 	}
 
-	private void defineTypeType(ElementType elementType) {
-		XmlBuilder complexType = addComplexType(xsdRoot, xsdTypeOf(elementType));
-		XmlBuilder choice = addChoice(complexType);
+	private void defineElementTypeGroup(ElementType elementType) {
+		XmlBuilder group = addGroup(xsdRoot, xsdGroupOf(elementType));
+		XmlBuilder choice = addChoice(group);
 		List<FrankElement> frankElementOptions = new ArrayList<>(elementType.getMembers().values());
 		frankElementOptions.sort((o1, o2) -> o1.getAlias().compareTo(o2.getAlias()));
 		for(FrankElement frankElement: frankElementOptions) {

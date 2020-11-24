@@ -8,19 +8,23 @@
   </xs:element>
   <xs:group name="StartDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Syntax1NameIChild" type="IChildElementType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="Syntax1NameIChild" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:group ref="IChildElementGroup" minOccurs="1" maxOccurs="1" />
+        </xs:complexType>
+      </xs:element>
       <xs:element ref="Syntax1NameTChild" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="StartDeclaredAttributeGroup">
     <xs:attribute name="attribute" type="xs:string" />
   </xs:attributeGroup>
-  <xs:complexType name="IChildElementType">
+  <xs:group name="IChildElementGroup">
     <xs:choice>
       <xs:element ref="DescribedPossibleIChild" />
       <xs:element ref="NotDescribedPossibleIChild" />
     </xs:choice>
-  </xs:complexType>
+  </xs:group>
   <xs:element name="Syntax1NameTChild">
     <xs:complexType />
   </xs:element>
