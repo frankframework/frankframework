@@ -2,7 +2,7 @@
 <digester-rules>
   <rule pattern="*/syntax1NameChild" registerMethod="setChild"/>
   <rule pattern="*/syntax1NameDeprecatedChild" registerMethod="setDeprecatedChild"/>
-  <rule pattern="*/syntax1NameInheritedChild" registerMethod="registerInheritedChild"/>
+  <rule pattern="*/syntax1NameInheritedChilds" registerMethod="registerInheritedChilds"/>
   <rule pattern="*/syntax1NameInheritedChildDocOnDerived" registerMethod="setInheritedChildDocOnDerived"/>
   <rule pattern="*/syntax1NameChildNoDoc" registerMethod="setChildNoDoc"/>
   <rule pattern="*/syntax1NameInheritedChildDocWithOrderOverride" registerMethod="setInheritedChildDocWithOrderOverride"/>

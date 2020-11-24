@@ -48,6 +48,14 @@ public class ConfigChild extends ElementChild<ConfigChild> {
 		return result;
 	}
 
+	public String getSyntax1NamePlural() {
+		if(syntax1Name.endsWith("s")) {
+			return syntax1Name;
+		} else {
+			return syntax1Name + "s";
+		}
+	}
+
 	@Override
 	ConfigChild cast() {
 		return this;

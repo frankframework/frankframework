@@ -13,8 +13,8 @@ public class Container extends ContainerParent {
 	}
 
 	@Override
-	public void registerInheritedChild(InheritedChild inheritedChild) {
-		super.registerInheritedChild(inheritedChild);
+	public void registerInheritedChilds(InheritedChild inheritedChild) {
+		super.registerInheritedChilds(inheritedChild);
 	}
 
 	@Override
