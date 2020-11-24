@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -251,7 +250,7 @@ public class DocWriterNew {
 	}
 
 	private static String xsdTypeOf(ElementType elementType) {
-		return elementType.getSimpleName() + "CombinationType";
+		return elementType.getSimpleName() + "ElementType";
 	}
 
 	private static String getMinOccurs(ConfigChild child) {

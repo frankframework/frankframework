@@ -8,14 +8,14 @@
   </xs:element>
   <xs:group name="StartDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Syntax1NameIChild" type="IChildCombinationType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="Syntax1NameIChild" type="IChildElementType" minOccurs="0" maxOccurs="1" />
       <xs:element ref="Syntax1NameTChild" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="StartDeclaredAttributeGroup">
     <xs:attribute name="attribute" type="xs:string" />
   </xs:attributeGroup>
-  <xs:complexType name="IChildCombinationType">
+  <xs:complexType name="IChildElementType">
     <xs:choice>
       <xs:element ref="DescribedPossibleIChild" />
       <xs:element ref="NotDescribedPossibleIChild" />
