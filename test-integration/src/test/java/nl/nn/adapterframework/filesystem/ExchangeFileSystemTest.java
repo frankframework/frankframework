@@ -104,6 +104,26 @@ public class ExchangeFileSystemTest extends SelfContainedBasicFileSystemTest<Ema
 	
 	
 	@Test
+	public void testExtractMessageWithProblematicAddress2() throws Exception {
+		EmailMessage emailMessage = getFirstFileFromFolder("FromAddressProblem2");
+		SaxElementBuilder xml = new SaxElementBuilder("email");
+		fileSystem.extractEmail(emailMessage, xml);
+		xml.close();
+		String expected = TestFileUtils.getTestFile("/ExchangeMailFromAddressProblem2.xml");
+		MatchUtils.assertXmlEquals(expected,xml.toString());
+	}
+	
+	@Test
+	public void testExtractMessageWithProblematicAddress3() throws Exception {
+		EmailMessage emailMessage = getFirstFileFromFolder("FromAddressProblem3");
+		SaxElementBuilder xml = new SaxElementBuilder("email");
+		fileSystem.extractEmail(emailMessage, xml);
+		xml.close();
+		String expected = TestFileUtils.getTestFile("/ExchangeMailFromAddressProblem3.xml");
+		MatchUtils.assertXmlEquals(expected,xml.toString());
+	}
+	
+	@Test
 	public void testExtractMessageWithMessageAttached() throws Exception {
 		EmailMessage emailMessage = getFirstFileFromFolder("AttachedMessage");
 		SaxElementBuilder xml = new SaxElementBuilder("email");
