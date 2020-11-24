@@ -1,11 +1,11 @@
 <file>
-	<fullName>TESTDATA_DIR\b64\file_out.txt</fullName>
-	<directory>TESTDATA_DIR\b64</directory>
-	<name>file_out.txt</name>
-	<baseName>file_out</baseName>
-	<extension>txt</extension>
-	<size>18</size>
-	<fSize>1 kB</fSize>
-	<modificationDate>25-09-15</modificationDate>
-	<modificationTime>08:36:21</modificationTime>
+  <fullName>C:\Temp\testdata\b64\file_out.txt</fullName>
+  <directory>c:\temp\testdata\b64</directory>
+  <name>file_out.txt</name>
+  <baseName>file_out</baseName>
+  <extension>txt</extension>
+  <size>15</size>
+  <fSize>1 kB</fSize>
+  <modificationDate>24-11-20</modificationDate>
+  <modificationTime>14:53:18</modificationTime>
 </file>
