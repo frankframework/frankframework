@@ -42,6 +42,7 @@ import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IValidatorPipe;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -431,7 +432,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@Override
-	public IPipe getResponseValidator() {
+	public IValidatorPipe getResponseValidator() {
 		if (isConfiguredForMixedValidation()) {
 			return new ResponseValidatorWrapper(this);
 		}
@@ -729,7 +730,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	@IbisDoc({"5", "Name of the root element, or a comma separated list of names to choose from (only one is allowed)", ""})
 	public void setRoot(String root) {
 		this.root = root;
-		addRequestRootValidation(Arrays.asList(root));
+		if (root!=null) {
+			addRequestRootValidation(Arrays.asList(root.split(",")));
+		}
 	}
 	public String getRoot() {
 		return root;
@@ -737,7 +740,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	@IbisDoc({"6", "Name of the response root element, or a comma separated list of names to choose from (only one is allowed)", ""})
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
-		addResponseRootValidation(Arrays.asList(responseRoot));
+		if (responseRoot!=null) {
+			addResponseRootValidation(Arrays.asList(responseRoot.split(",")));
+		}
 	}
 	protected String getResponseRoot() {
 		return responseRoot;

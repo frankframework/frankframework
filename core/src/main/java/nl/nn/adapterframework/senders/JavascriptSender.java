@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Iterator;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -140,8 +139,7 @@ public class JavascriptSender extends SenderSeries {
 			jsInstance = new J2V8();
 			jsInstance.startRuntime();
 
-			for (Iterator<ISender> iterator = getSenderIterator(); iterator.hasNext();) {
-				ISender sender = iterator.next();
+			for (ISender sender: getSenders()) {
 				jsInstance.registerCallback(sender, session);
 			} 
 		}

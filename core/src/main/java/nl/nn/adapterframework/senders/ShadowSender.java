@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -68,8 +68,7 @@ public class ShadowSender extends ParallelSenders {
 		if(resultSender == null)
 			throw new ConfigurationException("no resultSender defined");
 
-		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			if(sender.getName() != null && sender.getName().equalsIgnoreCase(getOriginalSender())) {
 				if(hasOriginalSender)
 					throw new ConfigurationException("originalSender can only be defined once");
@@ -206,8 +205,7 @@ public class ShadowSender extends ParallelSenders {
 	private List<ISender> getSenderList() {
 		if(senderList == null) {
 			senderList = new ArrayList<ISender>();
-			for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
-				ISender sender = it.next();
+			for (ISender sender: getSenders()) {
 				if(sender.getName() == null || (!sender.getName().equals(getResultSender())))
 					senderList.add(sender);
 			}

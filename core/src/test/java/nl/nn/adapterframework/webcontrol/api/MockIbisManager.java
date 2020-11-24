@@ -56,7 +56,7 @@ public class MockIbisManager extends Mockito implements IbisManager {
 			EchoPipe pipe = new EchoPipe();
 			pipe.setName("myPipe");
 			pipeline.addPipe(pipe);
-			adapter.registerPipeLine(pipeline);
+			adapter.setPipeLine(pipeline);
 			adapterService.registerAdapter(adapter);
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
