@@ -144,7 +144,7 @@ public class FrankDocModelTest {
 		assertEquals(1, actualGrandChild.getAttributes().size());
 		actualInheritedAttribute = actualGrandChild.getAttributes().get(0);
 		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
-		assertSame(actualParent, actualInheritedAttribute.getOverriddenFrom());
+		assertSame(actualChild, actualInheritedAttribute.getOverriddenFrom());
 	}
 
 	private FrankAttribute findAttribute(final FrankElement elem, String name) {

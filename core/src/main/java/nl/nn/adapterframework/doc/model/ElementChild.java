@@ -59,12 +59,7 @@ public abstract class ElementChild<T extends ElementChild<?>> {
 			match = match.getParent();
 			T matchingChild = lookup.apply(match, cast());
 			if(matchingChild != null) {
-				FrankElement matchOverriddenFrom = matchingChild.getOverriddenFrom();
-				if(matchOverriddenFrom != null) {
-					overriddenFrom = matchOverriddenFrom;
-				} else {
-					overriddenFrom = match;
-				}
+				overriddenFrom = match;
 				return;
 			}
 		}

@@ -143,7 +143,7 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void whenConfigChildOverriddenTwiceTheGrandparentTaken() {
 		ConfigChild grandChild = checkAndFindGrandChild("syntax1NameInheritedChildDocWithOrderOverride");
-		assertEquals("ContainerParent", grandChild.getOverriddenFrom().getSimpleName());
+		assertEquals("Container", grandChild.getOverriddenFrom().getSimpleName());
 	}
 
 	private ConfigChild checkAndFindGrandChild(final String syntax1Name) {
