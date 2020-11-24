@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -236,7 +237,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.isNamespaceAware();
 	}
 
-	@IbisDocRef({"15", XSLTSENDER})
+	@IbisDoc({"15", "If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result"})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
