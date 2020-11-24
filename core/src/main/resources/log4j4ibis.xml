@@ -66,7 +66,9 @@
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
 		<Appender type="RollingFile" name="config" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml.%i">
-			<Layout type="IbisXmlLayout" configLogLayout="true"/>
+			<Layout type="PatternLayout">
+				<Pattern>&lt;event datetime=&quot;%d{yyyy-MM-dd HH:mm:ss,SSS}&quot;&gt;%n%m%n&lt;/event&gt;</Pattern>
+			</Layout>
 			<Policies>
 				<OnStartupTriggeringPolicy />
 				<SizeBasedTriggeringPolicy size="1MB" />
