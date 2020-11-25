@@ -123,14 +123,15 @@ public class SenderSeries extends SenderWrapperBase {
 
 	@Override
 	@Deprecated // replaced by registerSender, to allow for multiple senders in XSD. 
-	public void setSender(ISender sender) {
+	public final void setSender(ISender sender) {
+		registerSender(sender);
+	}
+	public void registerSender(ISender sender) {
 		senderList.add(sender);
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added
 		statisticsMap.put(sender, new StatisticsKeeper("-> "+ClassUtils.nameOf(sender)));
 	}
-	public void registerSender(ISender sender) {
-		setSender(sender);
-	}
+	
 	protected Iterable<ISender> getSenders() {
 		return senderList;
 	}
