@@ -44,6 +44,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.IValidatorPipe;
+import nl.nn.adapterframework.core.IWrapperPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -214,10 +216,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public final static String MESSAGE_LOG_NAME_PREFIX="- ";
 	public final static String MESSAGE_LOG_NAME_SUFFIX=": message log";
 
-	private IPipe inputValidator=null;
-	private IPipe outputValidator=null;
-	private IPipe inputWrapper=null;
-	private IPipe outputWrapper=null;
+	private IValidatorPipe inputValidator=null;
+	private IValidatorPipe outputValidator=null;
+	private IWrapperPipe inputWrapper=null;
+	private IWrapperPipe outputWrapper=null;
 	
 	private boolean timeoutPending=false;
 
@@ -404,8 +406,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
 			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
 		}
-		IPipe inputValidator = getInputValidator();
-		IPipe outputValidator = getOutputValidator();
+		IValidatorPipe inputValidator = getInputValidator();
+		IValidatorPipe outputValidator = getOutputValidator();
 		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
 			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator();
 			setOutputValidator(outputValidator);
@@ -1038,37 +1040,37 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return sender;
 	}
 
-	public void setInputValidator(IPipe inputValidator) {
+	public void setInputValidator(IValidatorPipe inputValidator) {
 		inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
 		this.inputValidator = inputValidator;
 	}
-	public IPipe getInputValidator() {
+	public IValidatorPipe getInputValidator() {
 		return inputValidator;
 	}
 
-	public void setOutputValidator(IPipe outputValidator) {
+	public void setOutputValidator(IValidatorPipe outputValidator) {
 		if (outputValidator!=null) {
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
 		}
 		this.outputValidator = outputValidator;
 	}
-	public IPipe getOutputValidator() {
+	public IValidatorPipe getOutputValidator() {
 		return outputValidator;
 	}
 
-	public void setInputWrapper(IPipe inputWrapper) {
+	public void setInputWrapper(IWrapperPipe inputWrapper) {
 		inputWrapper.setName(INPUT_WRAPPER_NAME_PREFIX+getName()+INPUT_WRAPPER_NAME_SUFFIX);
 		this.inputWrapper = inputWrapper;
 	}
-	public IPipe getInputWrapper() {
+	public IWrapperPipe getInputWrapper() {
 		return inputWrapper;
 	}
 
-	public void setOutputWrapper(IPipe outputWrapper) {
+	public void setOutputWrapper(IWrapperPipe outputWrapper) {
 		outputWrapper.setName(OUTPUT_WRAPPER_NAME_PREFIX+getName()+OUTPUT_WRAPPER_NAME_SUFFIX);
 		this.outputWrapper = outputWrapper;
 	}
-	public IPipe getOutputWrapper() {
+	public IWrapperPipe getOutputWrapper() {
 		return outputWrapper;
 	}
 

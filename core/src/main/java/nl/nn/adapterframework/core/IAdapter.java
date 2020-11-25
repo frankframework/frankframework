@@ -53,7 +53,7 @@ public interface IAdapter extends IManagable {
 	public PipeLineResult processMessage(String messageId, Message message, IPipeLineSession pipeLineSession);
 	public PipeLineResult processMessageWithExceptions(String messageId, Message message, IPipeLineSession pipeLineSession) throws ListenerException;
 
-	public void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
+	public void setPipeLine (PipeLine pipeline) throws ConfigurationException;
 	public PipeLine getPipeLine();
 	public void setConfiguration(Configuration configuration);
 	public Configuration getConfiguration();

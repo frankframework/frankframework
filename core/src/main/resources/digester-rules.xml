@@ -15,11 +15,12 @@
 	<rule pattern="*/sapSystem" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
 
 	<rule pattern="*/adapter" registerMethod="registerAdapter" />
-	<rule pattern="*/pipeline" registerMethod="registerPipeLine"/>
+	<rule pattern="*/pipeline" registerMethod="setPipeLine"/>
 	<rule pattern="*/errorMessageFormatter" registerMethod="setErrorMessageFormatter"/>
 
 	<rule pattern="*/receiver" registerMethod="registerReceiver"/>
 	<rule pattern="*/sender" registerMethod="setSender"/>
+	<rule pattern="*/senders" registerMethod="registerSender"/> <!-- e.g. for ParallelSenders -->
 	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.ListenerFactory" registerMethod="setListener"/>
 	<rule pattern="*/errorSender" registerMethod="setErrorSender"/>
 	<rule pattern="*/messageLog" registerMethod="setMessageLog"/>
@@ -50,5 +51,5 @@
 	<rule pattern="*/resultHandler" registerMethod="registerResultHandler"/>
 
 	<rule pattern="*/statisticsHandler" registerMethod="registerStatisticsHandler"/>
-	<rule pattern="*/cache" registerMethod="registerCache"/>
+	<rule pattern="*/cache" registerMethod="setCache"/>
 </digester-rules>

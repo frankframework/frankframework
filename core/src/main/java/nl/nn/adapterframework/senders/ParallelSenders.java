@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden
+   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
@@ -74,8 +73,7 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
 
-		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			guard.addResource();
 			// Create a new ParameterResolutionContext to be thread safe, see
 			// documentation on constructor of ParameterResolutionContext
@@ -101,8 +99,7 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 		}
 
 		XmlBuilder resultsXml = new XmlBuilder("results");
-		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 			XmlBuilder resultXml = new XmlBuilder("result");
 			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
