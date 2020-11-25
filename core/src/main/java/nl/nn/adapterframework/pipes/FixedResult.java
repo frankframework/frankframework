@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.net.URL;
 
 import javax.xml.transform.Transformer;
@@ -123,17 +124,14 @@ public class FixedResult extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		String result=returnString;
-		if ((StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime())
-				|| StringUtils.isNotEmpty(getFileNameSessionKey())) {
-			String fileName = null;
-			if (StringUtils.isNotEmpty(getFileNameSessionKey())) {
-				fileName = (String)session.get(fileNameSessionKey);
-			}
-			if (fileName == null) {
-				if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
-					fileName = getFileName();
-				}
-			}
+		String fileName = null;
+		if (StringUtils.isNotEmpty(getFileNameSessionKey())) {
+			fileName = (String)session.get(fileNameSessionKey);
+		}
+		if (fileName == null && StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
+			fileName = getFileName();
+		}
+		if (StringUtils.isNotEmpty(fileName)) {
 			URL resource = null;
 			try {
 				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), fileName);
@@ -173,6 +171,11 @@ public class FixedResult extends FixedForwardPipe {
 			}
 		}
 
+		try (Reader dummy = message.asReader()) {
+			// get the inputstream and close it, to avoid connection leaking when the message itself is not consumed
+		} catch (IOException e) {
+			log.warn("Exception reading ignored inputstream", e);
+		}
 		if (getSubstituteVars()){
 			result=StringResolver.substVars(returnString, session, appConstants);
 		}
