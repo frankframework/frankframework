@@ -365,16 +365,9 @@ public class FileHandler {
 				}
 			}
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
-			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append);
-			try {
-				Misc.streamToStream(in, fos);
-				if (isWriteLineSeparator()) {
-					fos.write(eolArray);
-				}
-			} finally {
-				fos.close();
-			}
-			
+			try(FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append)){
+				Misc.streamToStream(in, fos, true, isWriteLineSeparator() ? eolArray : null);
+			};
 			return tmpFile.getPath().getBytes();
 		}
 	}
