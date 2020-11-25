@@ -89,8 +89,7 @@ public class PushingListenerAdapter implements IPushingListener<String>, Service
 		try {
 			log.debug("PushingListenerAdapter.processRequerawMmessagest() for correlationId ["+correlationId+"]");
 			try {
-				Message result = handler.processRequest(this, correlationId, rawMessage, message, requestContext);
-				return Message.isEmpty(result) ? "" : result.asString();
+				return handler.processRequest(this, correlationId, rawMessage, message, requestContext).asString();
 			} catch (IOException e) {
 				throw new ListenerException(e);
 			} 
