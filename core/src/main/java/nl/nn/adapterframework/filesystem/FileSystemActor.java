@@ -155,7 +155,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (StringUtils.isNotEmpty(getAction())) {
 			checkConfiguration(getAction());
 		} else if (parameterList == null || parameterList.findParameter(PARAMETER_ACTION) == null) {
-			throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
+			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
 		}
 
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
@@ -178,7 +178,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	private void checkConfiguration(String action) throws ConfigurationException {
 		if (!actions.contains(action))
-			throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: unknown or invalid action [" + action + "] supported actions are " + actions.toString() + "");
+			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: unknown or invalid action [" + action + "] supported actions are " + actions.toString() + "");
 
 		if (action.equals(ACTION_READ2)) {
 			ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
@@ -209,7 +209,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			boolean parameter2Set = parameterList != null && parameterList.findParameter(parameter2) != null;
 			boolean attributeSet  = StringUtils.isNotEmpty(attributeValue);
 			if (!parameter1Set && !parameter2Set && !attributeSet) {
-				throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: the "+action+" action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");
+				throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: the "+action+" action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");
 			}
 		}
 	}
