@@ -158,6 +158,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
 		}
 
+		if (getAction().equals(ACTION_READ2)) {
+			ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
+			setAction(ACTION_READ1);
+		}
+		if (getAction().equals(ACTION_WRITE2)) {
+			ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
+			setAction(ACTION_WRITE1);
+		}
+
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
 			ConfigurationWarnings.add(owner, log, "inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored");
 		}
@@ -179,15 +188,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private void checkConfiguration(String action) throws ConfigurationException {
 		if (!actions.contains(action))
 			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: unknown or invalid action [" + action + "] supported actions are " + actions.toString() + "");
-
-		if (action.equals(ACTION_READ2)) {
-			ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
-			setAction(ACTION_READ1);
-		}
-		if (action.equals(ACTION_WRITE2)) {
-			ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
-			setAction(ACTION_WRITE1);
-		}
 
 		//Check if necessary parameters are available
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_WRITE1, PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
