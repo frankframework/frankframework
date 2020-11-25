@@ -180,8 +180,8 @@ public class ServerStatistics extends Base {
 			if (showCountErrorStore) {
 				long esr = 0;
 				for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
-					for (Receiver receiver: adapter.getReceivers()) {
-						IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
+					for (Receiver<?> receiver: adapter.getReceivers()) {
+						IMessageBrowser<?> errorStorage = receiver.getErrorStorageBrowser();
 						if (errorStorage != null) {
 							try {
 								esr += errorStorage.getMessageCount();
@@ -293,11 +293,11 @@ public class ServerStatistics extends Base {
 	}
 
 	@PUT
-	@RolesAllowed({"IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/server/log")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) {
 
 		Boolean logIntermediaryResults = null;
 		int maxMessageLength = IbisMaskingLayout.getMaxLength();
@@ -397,7 +397,7 @@ public class ServerStatistics extends Base {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state.equals(RunStateEnum.STARTED)) {
-				for (Receiver receiver: adapter.getReceivers()) {
+				for (Receiver<?> receiver: adapter.getReceivers()) {
 					RunStateEnum rState = receiver.getRunState();
 	
 					if(!rState.equals(RunStateEnum.STARTED)) {
