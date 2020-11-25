@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Jaco de Groot
  * @author Niels Meijer
  */
-public class WebServiceListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, HasSpecialDefaultValues, ApplicationContextAware {
+public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues, ApplicationContextAware {
 
 	private boolean soap = true;
 	private String serviceNamespaceURI;
