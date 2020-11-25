@@ -217,7 +217,7 @@ public class Misc {
 
 	/**
 	 * Writes the content of an input stream to an output stream by copying the buffer of input stream to the buffer of the output stream.
-	 * If eof is specified, appends new line char after copying data.
+	 * If eof is specified, appends the eof(could represent a new line) to the outputstream
 	 * Closes the input stream if specified.
 	 * <p>
 	 *     Example:
