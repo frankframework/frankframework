@@ -65,6 +65,16 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
+		<Appender type="RollingFile" name="config" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml.%i">
+			<Layout type="PatternLayout">
+				<Pattern>&lt;event datetime=&quot;%d{yyyy-MM-dd HH:mm:ss,SSS}&quot;&gt;%n%m%n&lt;/event&gt;</Pattern>
+			</Layout>
+			<Policies>
+				<OnStartupTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="1MB" />
+			</Policies>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="5" fileIndex="min" />
+		</Appender>
 	</Appenders>
 
 	<Loggers>
@@ -83,6 +93,9 @@
 		</Logger>
 		<Logger name="HEARTBEAT" additivity="false" level="INFO">
 			<AppenderRef ref="heartbeat"/>
+		</Logger>
+		<Logger name="CONFIG" additivity="false" level="INFO">
+			<AppenderRef ref="config"/>
 		</Logger>
 
 		<!-- This is an example of a custom logger that prints all log messages of the IbisContext class to sysout -->
