@@ -28,7 +28,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- ERRORS -->
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="InputValidateError" fileName="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML">
+			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="InputValidateError" fileName="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="NOT_WELL_FORMED_XML">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="InputValidateFailure" styleSheetName="/ManageDatabase/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">

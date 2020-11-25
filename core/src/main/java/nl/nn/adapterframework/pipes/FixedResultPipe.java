@@ -70,7 +70,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * @author Johan Verrips
  */
-public class FixedResult extends FixedForwardPipe {
+public class FixedResultPipe extends FixedForwardPipe {
 	
 	private final static String FILE_NOT_FOUND_FORWARD = "filenotfound";
 	
