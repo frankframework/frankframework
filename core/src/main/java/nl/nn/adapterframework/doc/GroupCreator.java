@@ -23,6 +23,13 @@ import nl.nn.adapterframework.doc.model.CumulativeChildHandler;
 import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.FrankElement;
 
+/**
+ * Helper class for building attribute groups and config child groups from the model.
+ * See {@link DocWriterNew} to understand what we try to achieve.
+ *
+ * @author martijn
+ *
+ */
 class GroupCreator<T extends ElementChild<T>> {
 	static interface Callback<T extends ElementChild<T>> extends CumulativeChildHandler<T> {
 		List<T> getChildrenOf(FrankElement elem);

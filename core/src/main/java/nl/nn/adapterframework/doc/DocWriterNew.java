@@ -44,6 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.doc.model.ConfigChild;
+import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.ElementType;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
@@ -51,6 +52,106 @@ import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+/**
+ * This class writes the XML Schema document (XSD) that checks the validity of a
+ * Frank configuration XML file. The XML Schema is written based on the information
+ * in a {@link FrankDocModel} object (the model).
+ * <p>
+ * Below, a few implementation details are explained. Each XML tag that is
+ * allowed in a Frank configuration appears as an &lt;xs:element&gt; in the XSD.
+ * Each &lt;xs:element&gt; in the XSD has a corresponding
+ * {@link FrankElement} object in the model. Each element in the 
+ * XSD can have attributes or other elements. These correspond to {@link FrankAttribute}
+ * objects or {@link ConfigChild} objects in the model.
+ * <p>
+ * In the model, a {@link FrankElement} only holds its declared attributes, but
+ * the &lt;xs:element&gt; should allow both the declared attributes and the attributes
+ * inherited from the ancestors of the {@link FrankElement} (the inherited attributes).
+ * The same holds for configuration children. This similarity appears in the model
+ * through the common base class {@link ElementChild}, which is a parent class of both
+ * {@link FrankAttribute} and {@link ConfigChild}. An attribute defined high in the
+ * class hierarchy of the Frank!Framework can be allowed for many &lt;xs:element&gt; tags in
+ * the XSD, but we do not want to repeat the same &lt;xs:attribute&gt; tags in all these cases.
+ * We solve this by grouping the attributes, and the config children, in the XSD, for example:
+ * 
+ * <pre>
+ * {@code
+<xs:element name="Configuration">
+  <xs:complexType>
+    <xs:group ref="ConfigurationDeclaredChildGroup" />
+    <xs:attributeGroup ref="ConfigurationDeclaredAttributeGroup" />
+  </xs:complexType>
+</xs:element>
+}
+ * </pre>
+ * <p>
+ * The example shows a group named <code>ConfigurationDeclaredChildGroup</code>. This group
+ * declares all &lt;xs:element&gt; that are allowed as children of Frank config tag
+ * &lt;Configuration&gt;.
+ * <p>
+ * An XSD group ending with "DeclaredChildGroup" only holds the <em>declared</em> configuration children
+ * or attributes. This is sufficient for Frank config element &lt;Configuration&gt; because the corresponding
+ * Java class has only <code>Object</code> as parent. We also use cumulative groups
+ * that allow the declared items (attributes / config children) of a {@link FrankElement}
+ * as well as the inherited items. The following example in the XSD illustrates this:
+ * <pre>
+ {@code
+<xs:attributeGroup name="LockerCumulativeAttributeGroup">
+  <xs:attributeGroup ref="LockerDeclaredAttributeGroup" />
+  <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
+</xs:attributeGroup>
+}
+ * </pre>
+ * The Frank!Framework has a Java class named <code>Locker</code> that has class
+ * <code>JdbcFacade</code> as its parent. The group <code>LockerCumulativeAttributeGroup</code>
+ * is defined recursively: all declared attributes of <code>Locker</code> are in, and all
+ * declared and inherited attributes of the parent class <code>JdbcFacade</code>. The
+ * recursion stops with the ancestor that holds the last inherited attributes, because
+ * for that ancestor we do not introduce a cumulative group and use the declared group
+ * only.
+ * <p>
+ * Another issue about groups needs explanation. Some Java classes of the Frank!Framework override
+ * attributes that become then duplicate in the model. They appear as declared attributes
+ * in two {@link FrankElement} objects, one modeling the Java subclass and one modeling the
+ * Java ancestor class. In this situation, only the &lt;xs:element&gt; corresponding
+ * to the Java subclass is needed. The attribute
+ * of the ancestor class is omitted. The following example illustrates this:
+ * <pre>
+ {@code
+<xs:attributeGroup name="SoapValidatorCumulativeAttributeGroup">
+  <xs:attributeGroup ref="SoapValidatorDeclaredAttributeGroup" />
+  <xs:attributeGroup ref="Json2XmlValidatorDeclaredAttributeGroup" />
+  <xs:attribute name="ignoreUnknownNamespaces" type="xs:string" />
+  <xs:attribute name="schema" type="xs:string" default="">
+    <xs:annotation>
+      <xs:documentation>the filename of the schema on the classpath. see doc on the method. (effectively the same as noNamespaceSchemaLocation)</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  ...
+  <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+</xs:attributeGroup>
+ }
+ * </pre>
+ * Java class <code>SoapValidator</code> overrides a method <code>setRoot()</code> from
+ * the grand-parent class <code>XmlValidator</code>. If the cumulative group of
+ * the parent class <code>Json2XmlValidatorCumulativeAttributeGroup</code> would be referenced,
+ * we would have attribute "<code>root</code>" twice. To avoid this, only the declared group
+ * <code>Json2XmlValidatorDeclaredAttributeGroup</code> is referenced and the non-duplicate
+ * attributes of <code>XmlValidator</code> are repeated. Higher up the dependency
+ * hierarchy, there are no duplicate attributes. Therefore, the list of attributes
+ * can end with referencing group <code>FixedForwardPipeCumulativeAttributeGroup</code>.
+ * <p>
+ * Please note that in this example the "<code>schema</code>" attribute appears with
+ * the grand parent, even though Java class <code>SoapValidator</code> overrides
+ * method <code>setSchema()</code>. This is the case because
+ * <code>SoapValidator.setSchema()</code> does neither have an IbisDoc nor an
+ * IbisDocRef annotation. This is a technical override that is ignored when
+ * writing the XSD. This is implemented using the {@link ElementChild}
+ * properties "documented", "overriddenFrom" and "deprecated".
+ *
+ * @author martijn
+ *
+ */
 public class DocWriterNew {
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 
