@@ -113,6 +113,65 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
+	public void fileSystemActorEmptyParameterActionWillBeOverridenByConfiguredAction() throws Exception {
+		String filename = "overwriteEmptyParameter" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("action");
+		p.setValue(null);
+		params.add(p);
+		params.configure();
+		actor.setAction("read");
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message= new Message(filename);
+		ParameterValueList pvl = params.getValues(null, session);
+
+		Object result = actor.doAction(message, pvl, session);
+		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
+		String actualContents = Misc.streamToString((InputStream)result);
+		assertEquals(contents, actualContents);
+	}
+
+	@Test
+	public void fileSystemActorParameterActionAndAttributeActionConfigured() throws Exception {
+		String filename = "actionParamAndAttr" + FILE1;
+		String contents = "Text to read";
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		ParameterList params = new ParameterList();
+		Parameter pAction = new Parameter();
+		pAction.setName("action");
+		pAction.setValue("read");
+		params.add(pAction);
+		Parameter pFilename = new Parameter();
+		pFilename.setName("filename");
+		pFilename.setValue(filename);
+		params.add(pFilename);
+		params.configure();
+
+		actor.setAction("write");
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message= new Message(filename);
+		ParameterValueList pvl = params.getValues(null, session);
+
+		Object result = actor.doAction(message, pvl, session);
+		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
+		String actualContents = Misc.streamToString((InputStream)result);
+		assertEquals(contents, actualContents);
+	}
+
+	@Test
 	public void fileSystemActorTestConfigureInvalidAction() throws Exception {
 		thrown.expectMessage("unknown or invalid action [xxx]");
 		thrown.expectMessage("fake owner of FileSystemActor");

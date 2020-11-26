@@ -153,18 +153,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 
 		if (StringUtils.isNotEmpty(getAction())) {
+			if (getAction().equals(ACTION_READ2)) {
+				ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
+				setAction(ACTION_READ1);
+			}
+			if (getAction().equals(ACTION_WRITE2)) {
+				ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
+				setAction(ACTION_WRITE1);
+			}
 			checkConfiguration(getAction());
 		} else if (parameterList == null || parameterList.findParameter(PARAMETER_ACTION) == null) {
 			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
-		}
-
-		if (getAction().equals(ACTION_READ2)) {
-			ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
-			setAction(ACTION_READ1);
-		}
-		if (getAction().equals(ACTION_WRITE2)) {
-			ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
-			setAction(ACTION_WRITE1);
 		}
 
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
@@ -548,7 +547,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		actions.addAll(specificActions);
 	}
 
-	@IbisDoc({"1", "Possible values: "+ACTION_LIST+", "+ACTION_INFO+", "+ACTION_READ1+", "+ACTION_READ_DELETE+", "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+", "+ACTION_MKDIR+", "+ACTION_RMDIR+", "+ACTION_WRITE1+", "+ACTION_APPEND+", "+ACTION_RENAME, "" })
+	@IbisDoc({"1", "Possible values: "+ACTION_LIST+", "+ACTION_INFO+", "+ACTION_READ1+", "+ACTION_READ_DELETE+", "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+", "+ACTION_MKDIR+", "+ACTION_RMDIR+", "+ACTION_WRITE1+", "+ACTION_APPEND+", "+ACTION_RENAME+". If parameter ["+PARAMETER_ACTION+"] is set, then the attribute action value will be overridden with the value of the parameter.", "" })
 	public void setAction(String action) {
 		this.action = action;
 	}
