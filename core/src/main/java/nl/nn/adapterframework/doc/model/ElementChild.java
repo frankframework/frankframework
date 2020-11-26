@@ -81,5 +81,10 @@ public abstract class ElementChild<T extends ElementChild<?>> {
 		}
 	}
 
+	/**
+	 * Converts <code>ElementChild&lt;FrankAttribute&gt;</code> to <code>FrankAttribute</code>
+	 * or <code>ElementChild&lt;ConfigChild&gt;</code> to <code>ConfigChild</code>. This cast
+	 * is needed to avoid compiler errors.
+	 */
 	abstract T cast();
 }
