@@ -13,7 +13,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.doc.Utils;
 
 public class FrankDocModelGroupsTest {
-	private static final String IPIPE = "nl.nn.adapterframework.doc.testtarget.groups.IPipe";
+	private static final String I_GROUP_CONTAINER = "nl.nn.adapterframework.doc.testtarget.groups.IGroupContainer";
 
 	private FrankDocModel instance;
 	
@@ -22,16 +22,16 @@ public class FrankDocModelGroupsTest {
 		instance = new FrankDocModel();
 		instance.createConfigChildDescriptorsFrom("doc/fake-group-digester-rules.xml");
 		instance.findOrCreateElementType(
-			Utils.getClass(IPIPE));
+			Utils.getClass(I_GROUP_CONTAINER));
 		instance.buildGroups();
 	}
 
 	@Test
 	public void whenElementTypeThenGroupCreated() {
-		assertTrue(instance.getGroups().containsKey("IPipe"));
-		List<FrankElement> elements = instance.getGroups().get("IPipe").getElements();
+		assertTrue(instance.getGroups().containsKey("IGroupContainer"));
+		List<FrankElement> elements = instance.getGroups().get("IGroupContainer").getElements();
 		assertEquals(1, elements.size());
-		assertEquals("Pipe", instance.getGroups().get("IPipe").getElements().get(0).getSimpleName());
+		assertEquals("GroupContainer", instance.getGroups().get("IGroupContainer").getElements().get(0).getSimpleName());
 	}
 
 	@Test
@@ -40,6 +40,6 @@ public class FrankDocModelGroupsTest {
 		FrankDocGroup other = instance.getGroups().get(FrankDocModel.OTHER);
 		assertEquals(1, other.getElements().size());
 		FrankElement element = other.getElements().get(0);
-		assertEquals("Listener", element.getSimpleName());
+		assertEquals("GroupChild", element.getSimpleName());
 	}
 }
