@@ -45,7 +45,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 		exit.setState("success");
 		pipeline.registerPipeLineExit(exit);
 		adapter = new Adapter();
-		adapter.registerPipeLine(pipeline);
+		adapter.setPipeLine(pipeline);
 	}
 
 	/**

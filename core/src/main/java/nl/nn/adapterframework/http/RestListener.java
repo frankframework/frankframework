@@ -47,7 +47,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Niels Meijer
  * @author  Gerrit van Brakel
  */
-public class RestListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, HasSpecialDefaultValues {
+public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
 	private String uriPattern;
 	private String method;

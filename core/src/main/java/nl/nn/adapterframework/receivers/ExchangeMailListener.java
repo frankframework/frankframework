@@ -94,16 +94,21 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 	}
 
 	@IbisDocRef({"9", EXCHANGE_FILE_SYSTEM})
+	public void setReplyAddressFields(String replyAddressFields) {
+		getFileSystem().setReplyAddressFields(replyAddressFields);
+	}
+	
+	@IbisDocRef({"10", EXCHANGE_FILE_SYSTEM})
 	public void setProxyHost(String proxyHost) {
 		getFileSystem().setProxyHost(proxyHost);
 	}
 
-	@IbisDocRef({"10", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"11", EXCHANGE_FILE_SYSTEM})
 	public void setProxyPort(int proxyPort) {
 		getFileSystem().setProxyPort(proxyPort);
 	}
 
-	@IbisDocRef({"11", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"12", EXCHANGE_FILE_SYSTEM})
 	public void setProxyUsername(String proxyUsername) {
 		getFileSystem().setProxyUsername(proxyUsername);
 	}
@@ -112,17 +117,17 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 	public void setProxyUserName(String proxyUsername) {
 		setProxyUsername(proxyUsername);
 	}
-	@IbisDocRef({"12", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"13", EXCHANGE_FILE_SYSTEM})
 	public void setProxyPassword(String proxyPassword) {
 		getFileSystem().setProxyPassword(proxyPassword);
 	}
 
-	@IbisDocRef({"13", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"14", EXCHANGE_FILE_SYSTEM})
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		getFileSystem().setProxyAuthAlias(proxyAuthAlias);
 	}
 
-	@IbisDocRef({"14", EXCHANGE_FILE_SYSTEM})
+	@IbisDocRef({"15", EXCHANGE_FILE_SYSTEM})
 	public void setProxyDomain(String domain) {
 		getFileSystem().setProxyDomain(domain);
 	}

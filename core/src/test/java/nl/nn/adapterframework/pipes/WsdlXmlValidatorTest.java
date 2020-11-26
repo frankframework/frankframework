@@ -260,7 +260,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		ple.setPath("success");
 		ple.setState("success");
 		pl.registerPipeLineExit(ple);
-		adapter.registerPipeLine(pl);
+		adapter.setPipeLine(pl);
 
 		adapter.setConfiguration(configuration);
 		configuration.registerAdapter(adapter);
@@ -301,7 +301,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		ple.setPath("success");
 		ple.setState("success");
 		pl.registerPipeLineExit(ple);
-		adapter.registerPipeLine(pl);
+		adapter.setPipeLine(pl);
 
 		adapter.setConfiguration(configuration);
 		configuration.registerAdapter(adapter);

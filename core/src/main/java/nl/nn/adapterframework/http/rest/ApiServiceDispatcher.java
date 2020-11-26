@@ -298,9 +298,7 @@ public class ApiServiceDispatcher {
 			exit.add("description", status.getReasonPhrase());
 			if(!ple.getEmptyResult()) {
 				JsonObjectBuilder content = Json.createObjectBuilder();
-				if(schema == null) {
-					content.addNull(contentType.getContentType());
-				} else if(StringUtils.isNotEmpty(ref)){
+				if(StringUtils.isNotEmpty(ref)){
 					String reference = null;
 					if(StringUtils.isNotEmpty(ple.getResponseRoot())) {
 						reference = ple.getResponseRoot();

@@ -54,7 +54,7 @@ public class TestAppender extends AbstractAppender {
 		}
 
 		public B useIbisXmlLayout() {
-			IbisXmlLayout layout = IbisXmlLayout.createLayout(getConfiguration(), null, true);
+			IbisXmlLayout layout = IbisXmlLayout.createLayout(getConfiguration(), null, false);
 			return setLayout(layout);
 		}
 

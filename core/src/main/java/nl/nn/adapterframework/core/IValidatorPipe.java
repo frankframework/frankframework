@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,19 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.cache;
+package nl.nn.adapterframework.core;
 
 /**
- * Interface to be implemented by classes that could use a cache. 
- * Implementers will be notified of a cache that is configured via setCache().
- * They must call cache.configure() once in their own configure() method
- * They must call cache.open() and cache.close() from their own open() resp. close().
+ * Marker interface for Validators
  * 
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ *
  */
-public interface ICacheEnabled<K,V> {
+public interface IValidatorPipe extends IPipe {
 
-	void setCache(ICacheAdapter<K,V> cache);
-	ICacheAdapter<K,V> getCache();
 }

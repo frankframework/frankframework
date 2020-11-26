@@ -134,7 +134,7 @@ public final class Webservices extends Base {
 					// N.B. OpenAPI 3.0 generation via ApiServiceDispatcher.mapResponses() is currently not based on explicit outputValidator. 
 					endpoint.put("schemaResource","openapi.json");
 				} else {
-					endpoint.put("error","pipeline has no validator");
+					endpoint.put("error","Pipeline has no validator. Content in the response mappings will be empty in the generated schema.");
 				}
 				apiListeners.add(endpoint);
 			}

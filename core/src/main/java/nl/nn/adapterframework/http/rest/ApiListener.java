@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Niels Meijer
  *
  */
-public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, ReceiverAware<String> {
+public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<String> {
 
 	private String uriPattern;
 	private boolean updateEtag = true;
