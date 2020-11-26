@@ -89,7 +89,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutputStreamingSupport {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	public final String ACTION_LIST="list";
 	public final String ACTION_INFO="info";
 	public final String ACTION_READ1="read";
@@ -104,7 +104,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String ACTION_WRITE2="upload";
 	public final String ACTION_APPEND="append";
 	public final String ACTION_RENAME="rename";
-	
+
+	public final String PARAMETER_ACTION="action";
 	public final String PARAMETER_CONTENTS1="contents";
 	public final String PARAMETER_CONTENTS2="file";
 	public final String PARAMETER_FILENAME="filename";
@@ -141,42 +142,38 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
+
 		if (fileSystem instanceof IWritableFileSystem) {
 			actions.addAll(Arrays.asList(ACTIONS_WRITABLE_FS));
 		}
 
-		if (getAction() == null)
-			throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: action must be specified");
-		if (!actions.contains(getAction()))
-			throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: unknown or invalid action [" + getAction() + "] supported actions are " + actions.toString() + "");
-
-		if (getAction().equals(ACTION_READ2)) {
-			ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
-			setAction(ACTION_READ1);
-		}
-		if (getAction().equals(ACTION_WRITE2)) {
-			ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
-			setAction(ACTION_WRITE1);
-		}
-		
-		if (StringUtils.isNotEmpty(getBase64()) && !(getBase64().equals(BASE64_ENCODE) || getBase64().equals(BASE64_DECODE))) {
-			throw new ConfigurationException("attribute 'base64' can have value '"+BASE64_ENCODE+"' or '"+BASE64_DECODE+"' or can be left empty");
-		}
-		
 		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
 			ConfigurationWarnings.add(owner, log, "parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]");
 			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);
 		}
-		
-		//Check if necessarily parameters are available
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, ACTION_WRITE1, PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, ACTION_MOVE,   PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, ACTION_COPY,   PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, ACTION_RENAME, PARAMETER_DESTINATION, null, "destination", getDestination());
-		
+
+		if (StringUtils.isNotEmpty(getAction())) {
+			if (getAction().equals(ACTION_READ2)) {
+				ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
+				setAction(ACTION_READ1);
+			}
+			if (getAction().equals(ACTION_WRITE2)) {
+				ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
+				setAction(ACTION_WRITE1);
+			}
+			checkConfiguration(getAction());
+		} else if (parameterList == null || parameterList.findParameter(PARAMETER_ACTION) == null) {
+			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
+		}
+
+		if (StringUtils.isNotEmpty(getBase64()) && !(getBase64().equals(BASE64_ENCODE) || getBase64().equals(BASE64_DECODE))) {
+			throw new ConfigurationException("attribute 'base64' can have value '"+BASE64_ENCODE+"' or '"+BASE64_DECODE+"' or can be left empty");
+		}
+
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
 			ConfigurationWarnings.add(owner, log, "inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored");
 		}
+
 		if (!(fileSystem instanceof IWritableFileSystem)) {
 			if (getNumberOfBackups()>0) {
 				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");
@@ -186,28 +183,38 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 		}
 	}
+
+	private void checkConfiguration(String action) throws ConfigurationException {
+		if (!actions.contains(action))
+			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: unknown or invalid action [" + action + "] supported actions are " + actions.toString() + "");
+
+		//Check if necessary parameters are available
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_WRITE1, PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_MOVE,   PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_COPY,   PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_RENAME, PARAMETER_DESTINATION, null, "destination", getDestination());
+	}
 	
-	
-	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
+//	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
 //		if (getAction().equals(action) && (parameterList == null || parameterList.findParameter(parameter) == null)) {
 //			throw new ConfigurationException("the "+action+" action requires the parameter ["+parameter+"] to be present");
 //		}
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, parameter, null, null, null);
-	}
+//		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, parameter, null, null, null);
+//	}
 
-	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, String action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
-		if (getAction().equals(action)) {
+	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, String configuredAction, String action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
+		if (configuredAction.equals(action)) {
 			boolean parameter1Set = parameterList != null && parameterList.findParameter(parameter1) != null;
 			boolean parameter2Set = parameterList != null && parameterList.findParameter(parameter2) != null;
 			boolean attributeSet  = StringUtils.isNotEmpty(attributeValue);
 			if (!parameter1Set && !parameter2Set && !attributeSet) {
-				throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: the "+action+" action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");
+				throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: the "+action+" action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");
 			}
 		}
 	}
 
 	public void open() throws FileSystemException {
-		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && !getAction().equals(ACTION_MKDIR)) {
+		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && !ACTION_MKDIR.equals(getAction())) {
 			if (isCreateFolder()) {
 				log.debug("creating inputFolder ["+getInputFolder()+"]");
 				fileSystem.createFolder(getInputFolder());
@@ -283,6 +290,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	
 	public Object doAction(Message input, ParameterValueList pvl, IPipeLineSession session) throws FileSystemException, TimeOutException {
 		try {
+			String action;
+			if (pvl != null && pvl.containsKey(PARAMETER_ACTION)) {
+				action = pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getAction());
+				if(StringUtils.isEmpty(action)) {
+					throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
+				}
+				checkConfiguration(action);
+			} else {
+				action = getAction();
+			}
+
 			if (action.equalsIgnoreCase(ACTION_DELETE)) {
 				F file=getFile(input, pvl);
 				fileSystem.deleteFile(file);
@@ -529,7 +547,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		actions.addAll(specificActions);
 	}
 
-	@IbisDoc({"1", "Possible values: "+ACTION_LIST+", "+ACTION_INFO+", "+ACTION_READ1+", "+ACTION_READ_DELETE+", "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+", "+ACTION_MKDIR+", "+ACTION_RMDIR+", "+ACTION_WRITE1+", "+ACTION_APPEND+", "+ACTION_RENAME, "" })
+	@IbisDoc({"1", "Possible values: "+ACTION_LIST+", "+ACTION_INFO+", "+ACTION_READ1+", "+ACTION_READ_DELETE+", "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+", "+ACTION_MKDIR+", "+ACTION_RMDIR+", "+ACTION_WRITE1+", "+ACTION_APPEND+", "+ACTION_RENAME+". If parameter ["+PARAMETER_ACTION+"] is set, then the attribute action value will be overridden with the value of the parameter.", "" })
 	public void setAction(String action) {
 		this.action = action;
 	}
@@ -610,5 +628,4 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public String getBase64() {
 		return base64;
 	}
-
 }
