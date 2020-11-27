@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -150,7 +151,15 @@ public class FrankElement {
 	}
 
 	public FrankElement getNextConfigChildAncestor(Predicate<? super ConfigChild> childFilter) {
-		return AncestorChildNavigation.nextAncestor(this, el -> el.getConfigChildren(childFilter));
+		return nextAncestor(this, el -> el.getConfigChildren(childFilter));
+	}
+
+	static <U extends ElementChild<U>> FrankElement nextAncestor(FrankElement elem, Function<FrankElement, List<U>> fun) {
+		FrankElement ancestor = elem.getParent();
+		while((ancestor != null) && (fun.apply(ancestor).size() == 0)) {
+			ancestor = ancestor.getParent();
+		}
+		return ancestor;
 	}
 
 	public FrankElement getNextAncestor(Predicate<ElementChild<?>> selector) {
@@ -162,7 +171,7 @@ public class FrankElement {
 	}
 
 	public FrankElement getNextAttributeAncestor(Predicate<? super FrankAttribute> childFilter) {
-		return AncestorChildNavigation.nextAncestor(this, el -> el.getAttributes(childFilter));
+		return nextAncestor(this, el -> el.getAttributes(childFilter));
 	}
 
 	private List<ElementChild<?>> getGenericChildren(Predicate<ElementChild<?>> selector) {
@@ -174,8 +183,10 @@ public class FrankElement {
 
 	public void walkCumulativeAttributes(
 			CumulativeChildHandler<FrankAttribute> handler,
-			Predicate<? super FrankAttribute> childSelector) {
-		new AncestorChildNavigation<String, FrankAttribute>(handler, el -> el.getAttributes(childSelector)) {
+			Predicate<ElementChild<?>> childSelector,
+			Predicate<ElementChild<?>> childRejector) {
+		new AncestorChildNavigation<String, FrankAttribute>(
+				handler, el -> el.getAttributes(), childSelector, childRejector) {
 			@Override
 			String keyOf(FrankAttribute child) {
 				return child.getName();
@@ -185,8 +196,10 @@ public class FrankElement {
 
 	public void walkCumulativeConfigChildren(
 			CumulativeChildHandler<ConfigChild> handler,
-			Predicate<? super ConfigChild> childSelector) {
-		new AncestorChildNavigation<ConfigChildKey, ConfigChild>(handler, el -> el.getConfigChildren(childSelector)) {
+			Predicate<ElementChild<?>> childSelector,
+			Predicate<ElementChild<?>> childRejector) {
+		new AncestorChildNavigation<ConfigChildKey, ConfigChild>(
+				handler, el -> el.getConfigChildren(childSelector), childSelector, childRejector) {
 			@Override
 			ConfigChildKey keyOf(ConfigChild child) {
 				return new ConfigChildKey(child);

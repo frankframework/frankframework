@@ -22,62 +22,56 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 abstract class AncestorChildNavigation<K, T extends ElementChild<T>> {
 	private final CumulativeChildHandler<T> handler;
 	private final Function<FrankElement, List<T>> childFunction;
+	private final ChildRejector<K, T> rejector;
 	private FrankElement current;
 	private Map<K, Boolean> items;
 	private Set<K> overridden;
+	
 
-	AncestorChildNavigation(CumulativeChildHandler<T> handler, Function<FrankElement, List<T>> childFunction) {
+	AncestorChildNavigation(
+			CumulativeChildHandler<T> handler,
+			Function<FrankElement, List<T>> childFunction,
+			Predicate<ElementChild<?>> childSelector,
+			Predicate<ElementChild<?>> childRejector) {
 		this.handler = handler;
 		this.childFunction = childFunction;
+		this.rejector = new ChildRejector<K, T>(childFunction, childSelector, childRejector, this::keyOf);
 	}
 
 	void run(FrankElement start) {
+		this.rejector.init(start);
 		enter(start);
-		handler.handleChildrenOf(start);
-		overridden = getCurrentOverrides();
-		while(nextAncestor(current, childFunction) != null) {
-			enter(nextAncestor(current, childFunction));
-			if(overridden.isEmpty()) {
+		overridden = new HashSet<>();
+		declaredGroupOrRepeatedChildren();
+		while(rejector.getNextSelectedAncestor(current) != null) {
+			enter(rejector.getNextSelectedAncestor(current));
+			if(overridden.isEmpty() && rejector.isNoCumulativeRejected(current)) {
 				safeAddCumulative();
 				return;
 			}
-			handleOverridesForCurrent();
+			declaredGroupOrRepeatedChildren();
 		}
-	}
-
-	static <U extends ElementChild<U>> FrankElement nextAncestor(FrankElement elem, Function<FrankElement, List<U>> fun) {
-		FrankElement ancestor = elem.getParent();
-		while((ancestor != null) && (fun.apply(ancestor).size() == 0)) {
-			ancestor = ancestor.getParent();
-		}
-		return ancestor;
 	}
 
 	private void enter(FrankElement current) {
 		this.current = current;
+		List<T> children = rejector.getChildrenFor(current);
 		items = new HashMap<>();
-		for(T c: childFunction.apply(current)) {
+		for(T c: children) {
 			items.put(keyOf(c), c.getOverriddenFrom() != null);
 		}
 	}
 
-	private void safeAddCumulative() {
-		if(nextAncestor(current, childFunction) == null) {
-			handler.handleChildrenOf(current);
-		} else {
-			handler.handleCumulativeChildrenOf(current);
-		}
-	}
-
-	private void handleOverridesForCurrent() {
+	private void declaredGroupOrRepeatedChildren() {
 		Set<K> omit = new HashSet<>(items.keySet());
 		omit.retainAll(overridden);
-		if(omit.isEmpty()) {
+		if(omit.isEmpty() && rejector.isNoDeclaredRejected(current)) {
 			handler.handleChildrenOf(current);
 		}
 		else {
@@ -85,6 +79,14 @@ abstract class AncestorChildNavigation<K, T extends ElementChild<T>> {
 		}
 		overridden.addAll(getCurrentOverrides());
 		overridden.removeAll(getCurrentNonOverrides());
+	}
+
+	private void safeAddCumulative() {
+		if(rejector.getNextSelectedAncestor(current) == null) {
+			handler.handleChildrenOf(current);
+		} else {
+			handler.handleCumulativeChildrenOf(current);
+		}
 	}
 
 	private void repeatNonOverriddenItems() {

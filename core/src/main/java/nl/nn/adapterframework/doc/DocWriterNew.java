@@ -28,6 +28,7 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroupRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
+import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
 import static nl.nn.adapterframework.doc.model.ElementChild.SELECTED;
 
 import java.util.ArrayDeque;
@@ -397,7 +398,7 @@ public class DocWriterNew {
 
 	private void addConfigChildren(FrankElement frankElement, ElementBuildingStrategy xsdElementStrategy) {
 		Consumer<GroupCreator.Callback<ConfigChild>> cumulativeGroupTrigger =
-				ca -> frankElement.walkCumulativeConfigChildren(ca, SELECTED);
+				ca -> frankElement.walkCumulativeConfigChildren(ca, SELECTED, DEPRECATED);
 		new GroupCreator<ConfigChild>(frankElement, cumulativeGroupTrigger, new GroupCreator.Callback<ConfigChild>() {
 			private XmlBuilder cumulativeBuilder;
 			
@@ -505,7 +506,7 @@ public class DocWriterNew {
 
 	private void addAttributes(FrankElement frankElement, ElementBuildingStrategy xsdElementStrategy) {
 		Consumer<GroupCreator.Callback<FrankAttribute>> cumulativeGroupTrigger =
-				ca -> frankElement.walkCumulativeAttributes(ca, SELECTED);
+				ca -> frankElement.walkCumulativeAttributes(ca, SELECTED, DEPRECATED);
 		new GroupCreator<FrankAttribute>(frankElement, cumulativeGroupTrigger, new GroupCreator.Callback<FrankAttribute>() {
 			private XmlBuilder cumulativeBuilder;
 

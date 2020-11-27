@@ -1,8 +1,10 @@
 package nl.nn.adapterframework.doc.model;
 
 import static java.util.Arrays.asList;
-import static nl.nn.adapterframework.doc.model.ElementChild.SELECTED;
 import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
+import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
+import static nl.nn.adapterframework.doc.model.ElementChild.NONE;
+import static nl.nn.adapterframework.doc.model.ElementChild.SELECTED;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -27,27 +29,30 @@ public class NavigationTest {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return asList(new Object[][] {
-			{"Parent", SELECTED, asList(
+			{"Parent", SELECTED, NONE, asList(
 					ref(RefKind.DECLARED, "Parent"))},
-			{"Child", SELECTED, asList(
+			{"Child", SELECTED, NONE, asList(
 					// Attribute childAttribute is not selected, so we do not have a real override.
 					ref(RefKind.DECLARED, "Child"), ref(RefKind.DECLARED, "Parent"))},
-			{"Child", ALL, asList(
+			{"Child", ALL, NONE, asList(
 					// Attribute parentAttributeFirst is overridden. Keep with Child, omit with Parent
 					ref(RefKind.DECLARED, "Child"), ref(RefKind.CHILD, "parentAttributeSecond"))},
-			{"GrandChild", ALL, asList(
+			{"GrandChild", ALL, NONE, asList(
 					// All attributes of Parent were overridden. Nothing to reference for Parent.
 					ref(RefKind.DECLARED, "GrandChild"), ref(RefKind.DECLARED, "Child"))},
-			{"GrandChild", SELECTED, asList(
+			{"GrandChild", SELECTED, NONE, asList(
 					// The override of parentAttributeSecond counts, in Child parentAttributeFirst is ignored as child
 					ref(RefKind.DECLARED, "GrandChild"),
 					ref(RefKind.DECLARED, "Child"),
 					ref(RefKind.CHILD, "parentAttributeFirst"))},
-			{"GrandChild2", ALL, asList(
+			{"GrandChild2", ALL, NONE, asList(
 					ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.CUMULATIVE, "Child2"))},
-			{"GrandChild2", SELECTED, asList(
+			{"GrandChild2", SELECTED, NONE, asList(
 					// All children of Child2 are deprecated, so Child2 is ignored in the ancestor hierarchy
-					ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.DECLARED, "Parent"))}
+					ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.DECLARED, "Parent"))},
+			{"GrandChild3", ALL, DEPRECATED, asList(
+					// All attributes of Parent are overridden by deprecated methods and should be de-inherited
+					)}
 		});
 	}
 
@@ -84,6 +89,9 @@ public class NavigationTest {
 	public Predicate<ElementChild<?>> childSelector;
 
 	@Parameter(2)
+	public Predicate<ElementChild<?>> childRejector;
+
+	@Parameter(3)
 	public List<Ref> expectedRefs;
 
 	private List<Ref> actual;
@@ -114,7 +122,7 @@ public class NavigationTest {
 				actual.add(ref(RefKind.CUMULATIVE, frankElement.getSimpleName()));
 			}
 			
-		}, childSelector);
+		}, childSelector, childRejector);
 		assertEquals(expectedRefs, actual);
 	}
 }

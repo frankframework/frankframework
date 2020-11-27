@@ -63,11 +63,13 @@ public abstract class ElementChild<T extends ElementChild<?>> {
 		(! c.isDeprecated())
 		&& (c.isDocumented() || (c.getOverriddenFrom() == null));
 
+	public static Predicate<ElementChild<?>> DEPRECATED = c -> c.isDeprecated();
+	public static Predicate<ElementChild<?>> ALL = c -> true;
+	public static Predicate<ElementChild<?>> NONE = c -> false;
+
 	ElementChild(final FrankElement owningElement) {
 		this.owningElement = owningElement;
 	}
-
-	public static Predicate<ElementChild<?>> ALL = c -> true;
 
 	void calculateOverriddenFrom(BiFunction<FrankElement, T, T> lookup) {
 		FrankElement match = getOwningElement();
