@@ -138,6 +138,7 @@ public class Base64Pipe extends StreamingPipe {
 		}
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
 		MessageOutputStream target = getTargetStream(session);
