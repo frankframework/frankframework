@@ -39,10 +39,16 @@ public class FrankDocModelConfigChildrenTest {
 	}
 
 	@Test
-	public void whenConfigChildMethodThenConfigChildProduced() {
+	public void whenConfigChildMethodThenConfigChildProduced() throws Exception {
 		ConfigChild actual = selectChild("syntax1NameChild");
 		assertEquals("syntax1NameChild", actual.getSyntax1Name());
 		assertEquals("syntax1NameChilds", actual.getSyntax1NamePlural());
+		// Class Child is the only element of ElementType Child, and this type
+		// is used in a ConfigChild. Therefore FrankElement Child gets the syntax 1
+		// name (upper-case'd) as alias. In production, this feature is for example used
+		// to alias "PipeForward" with "Forward".
+		assertEquals("Syntax1NameChild", instance.findOrCreateFrankElement(Utils.getClass(
+				"nl.nn.adapterframework.doc.testtarget.children.Child")).getAlias());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());

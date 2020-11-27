@@ -32,11 +32,11 @@ import nl.nn.adapterframework.doc.DocWriterNew;
  * <li> The structure is very similar in the XML schema for config children and
  * attributes. In both cases, we have cumulative groups that include inherited
  * items and declared groups that hold only items at the present level of the
- * inheritance hierarchy. Please see this in action at {@link DocWriterNew}
+ * inheritance hierarchy. Please see this in action at {@link DocWriterNew}.
  *
  * @author martijn
  *
- * @param <T>
+ * @param <T> {@link FrankAttribute} or {@link ConfigChild}.
  */
 public abstract class ElementChild<T extends ElementChild<?>> {
 	private @Getter FrankElement owningElement;

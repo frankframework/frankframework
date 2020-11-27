@@ -145,6 +145,10 @@ public class FrankDocModelTest {
 		actualInheritedAttribute = actualGrandChild.getAttributes().get(0);
 		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
 		assertSame(actualChild, actualInheritedAttribute.getOverriddenFrom());
+		// actualParent and actualChild are not config children of a non-interface
+		// element type. Therefore the alias equals the syntax 1 name with a capital.
+		assertEquals(Utils.toUpperCamelCase(actualParent.getSimpleName()), actualParent.getAlias());
+		assertEquals(Utils.toUpperCamelCase(actualChild.getSimpleName()), actualChild.getAlias());
 	}
 
 	private FrankAttribute findAttribute(final FrankElement elem, String name) {
