@@ -172,7 +172,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 		}
 
 		try (Reader dummy = message.asReader()) {
-			// get the inputstream and close it, to avoid connection leaking when the message itself is not consumed
+			// get the inputstream and close it, to avoid connection leaking when the message itself is not consumed.
+			// Also see javadoc of IPipe.doPipe()
 		} catch (IOException e) {
 			log.warn("Exception reading ignored inputstream", e);
 		}

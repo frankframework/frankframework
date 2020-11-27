@@ -18,6 +18,7 @@ package nl.nn.adapterframework.core;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.pipes.FixedResultPipe;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -38,6 +39,12 @@ public interface IPipe extends INamedObject, IForwardTarget {
 	/**
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.
+	 * Implementations must either consume the message, or pass it on to the next Pipe in the PipeRunResult.
+	 * If the result of the Pipe does not depend on the input, like for the {@link FixedResultPipe}, the Pipe
+	 * should still retrieve an InputStream or Reader from the message, and close that.
+	 * This allows the previous Pipe to release any resources (e.g. connections) that it might have kept open
+	 * until the message was consumed. Doing so avoids connections leaking from pools, while it enables
+	 * efficient streaming processing of data while it is being read from a stream.
 	 */
 	PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException;
 
