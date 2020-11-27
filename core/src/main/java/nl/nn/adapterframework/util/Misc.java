@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -205,14 +205,19 @@ public class Misc {
 
 	/**
 	 * Overloaded version of streamToStream that calls the main version with closeInput set to true.
-	 * @see #streamToStream(InputStream, OutputStream, boolean)
+	 * @see #streamToStream(InputStream, OutputStream, boolean, byte[])
 	 */
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
-		streamToStream(input,output,true);
+		streamToStream(input, output, true, null);
+	}
+	
+	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput) throws IOException {
+		streamToStream(input, output, closeInput, null);
 	}
 
 	/**
 	 * Writes the content of an input stream to an output stream by copying the buffer of input stream to the buffer of the output stream.
+	 * If eof is specified, appends the eof(could represent a new line) to the outputstream
 	 * Closes the input stream if specified.
 	 * <p>
 	 *     Example:
@@ -227,12 +232,15 @@ public class Misc {
 	 * @param closeInput if set to 'true', the input stream gets closed.
 	 * @throws IOException  exception to be thrown if an I/O eexception occurs
 	 */
-	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput) throws IOException {
+	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput, byte[] eof) throws IOException {
 		if (input!=null) {
 			byte[] buffer=new byte[BUFFERSIZE];
 			int bytesRead;
 			while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>-1) {
 				output.write(buffer,0,bytesRead);
+			}
+			if(eof != null) {
+				output.write(eof);
 			}
 			if (closeInput) {
 				input.close();
