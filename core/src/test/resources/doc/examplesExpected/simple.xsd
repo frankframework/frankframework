@@ -3,7 +3,7 @@
   <xs:element name="Start">
     <xs:complexType>
       <xs:group ref="StartDeclaredChildGroup" />
-      <xs:attributeGroup ref="StartDeclaredAttributeGroup" />
+      <xs:attributeGroup ref="StartCumulativeAttributeGroup" />
     </xs:complexType>
   </xs:element>
   <xs:group name="StartDeclaredChildGroup">
@@ -16,6 +16,10 @@
       <xs:element ref="Syntax1NameTChild" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
+  <xs:attributeGroup name="StartCumulativeAttributeGroup">
+    <xs:attributeGroup ref="StartDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractParentOfStartDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:attributeGroup name="StartDeclaredAttributeGroup">
     <xs:attribute name="attribute" type="xs:string" />
   </xs:attributeGroup>
@@ -28,6 +32,9 @@
   <xs:element name="Syntax1NameTChild">
     <xs:complexType />
   </xs:element>
+  <xs:attributeGroup name="AbstractParentOfStartDeclaredAttributeGroup">
+    <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
+  </xs:attributeGroup>
   <xs:element name="DescribedPossibleIChild">
     <xs:complexType>
       <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />

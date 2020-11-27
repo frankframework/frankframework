@@ -340,13 +340,62 @@ public class DocWriterNew {
 	}
 
 	private void defineElement(FrankElement frankElement) {
-		XmlBuilder element = addElementWithType(xsdRoot, frankElement.getAlias());
-		XmlBuilder complexType = addComplexType(element);
-		addConfigChildren(complexType, frankElement);
-		addAttributes(complexType, frankElement);		
+		ElementBuildingStrategy elementBuildingStrategy = getElementBuildingStrategy(frankElement);
+		addConfigChildren(frankElement, elementBuildingStrategy);
+		addAttributes(frankElement, elementBuildingStrategy);		
 	}
 
-	private void addConfigChildren(final XmlBuilder complexType, FrankElement frankElement) {
+	/*
+	 * This class is responsible for adding an xs:element in the XML schema if required.
+	 * If a FrankElement corresponds to an abstract class, then no XML element
+	 * should be added. This is achieved using the derived class ElementOmitter.
+	 *
+	 * For an abstract FrankElement, the config child declared/cumulative groups
+	 * and the attribute declared/cumulative groups are still needed. Adding them is
+	 * outside the scope of this class.
+	 */
+	private abstract class ElementBuildingStrategy {
+		abstract void addGroupRef(String referencedGroupName);
+		abstract void addAttributeGroupRef(String referencedGroupName);
+	}
+
+	private ElementBuildingStrategy getElementBuildingStrategy(FrankElement element) {
+		if(element.isAbstract()) {
+			return new ElementOmitter();
+		} else {
+			return new ElementAdder(element);
+		}
+	}
+
+	private class ElementAdder extends ElementBuildingStrategy {
+		private final XmlBuilder complexType;
+
+		ElementAdder(FrankElement frankElement) {
+			XmlBuilder element = addElementWithType(xsdRoot, frankElement.getAlias());
+			complexType = addComplexType(element);
+		}
+
+		@Override
+		void addGroupRef(String referencedGroupName) {
+			DocWriterNewXmlUtils.addGroupRef(complexType, referencedGroupName);
+		}
+		
+		@Override
+		void addAttributeGroupRef(String referencedGroupName) {
+			DocWriterNewXmlUtils.addAttributeGroupRef(complexType, referencedGroupName);
+		}
+	}
+
+	private class ElementOmitter extends ElementBuildingStrategy {
+		@Override
+		void addGroupRef(String referencedGroupName) {
+		}
+		@Override
+		void addAttributeGroupRef(String referencedGroupName) {
+		}
+	}
+
+	private void addConfigChildren(FrankElement frankElement, ElementBuildingStrategy xsdElementStrategy) {
 		Consumer<GroupCreator.Callback<ConfigChild>> cumulativeGroupTrigger =
 				ca -> frankElement.walkCumulativeConfigChildren(ca, SELECTED);
 		new GroupCreator<ConfigChild>(frankElement, cumulativeGroupTrigger, new GroupCreator.Callback<ConfigChild>() {
@@ -364,12 +413,12 @@ public class DocWriterNew {
 			
 			@Override
 			public void addDeclaredGroupRef(FrankElement referee) {
-				addGroupRef(complexType, xsdDeclaredGroupNameForChildren(referee));
+				xsdElementStrategy.addGroupRef(xsdDeclaredGroupNameForChildren(referee));
 			}
 			
 			@Override
 			public void addCumulativeGroupRef(FrankElement referee) {
-				addGroupRef(complexType, xsdCumulativeGroupNameForChildren(referee));				
+				xsdElementStrategy.addGroupRef(xsdCumulativeGroupNameForChildren(referee));				
 			}
 
 			@Override
@@ -454,7 +503,7 @@ public class DocWriterNew {
 		}
 	}
 
-	private void addAttributes(XmlBuilder complexType, FrankElement frankElement) {
+	private void addAttributes(FrankElement frankElement, ElementBuildingStrategy xsdElementStrategy) {
 		Consumer<GroupCreator.Callback<FrankAttribute>> cumulativeGroupTrigger =
 				ca -> frankElement.walkCumulativeAttributes(ca, SELECTED);
 		new GroupCreator<FrankAttribute>(frankElement, cumulativeGroupTrigger, new GroupCreator.Callback<FrankAttribute>() {
@@ -472,12 +521,12 @@ public class DocWriterNew {
 
 			@Override
 			public void addDeclaredGroupRef(FrankElement referee) {
-				addAttributeGroupRef(complexType, xsdDeclaredGroupNameForAttributes(referee));
+				xsdElementStrategy.addAttributeGroupRef(xsdDeclaredGroupNameForAttributes(referee));
 			}
 
 			@Override
 			public void addCumulativeGroupRef(FrankElement referee) {
-				addAttributeGroupRef(complexType, xsdCumulativeGroupNameForAttributes(referee));				
+				xsdElementStrategy.addAttributeGroupRef(xsdCumulativeGroupNameForAttributes(referee));				
 			}
 
 			@Override

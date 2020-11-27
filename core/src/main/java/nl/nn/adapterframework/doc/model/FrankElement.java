@@ -16,6 +16,7 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,6 +60,7 @@ public class FrankElement {
 
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
+	private final @Getter boolean isAbstract;
 	private @Getter FrankElement parent;
 	private @Getter List<FrankAttribute> attributes;
 	private Map<String, FrankAttribute> attributeLookup;
@@ -69,8 +71,7 @@ public class FrankElement {
 	private @Getter FrankElementStatistics statistics;
 
 	FrankElement(Class<?> clazz) {
-		this(clazz.getName(), clazz.getSimpleName());
-		this.aliasSources = new ArrayList<>();
+		this(clazz.getName(), clazz.getSimpleName(), Modifier.isAbstract(clazz.getModifiers()));
 	}
 
 	/**
@@ -78,12 +79,17 @@ public class FrankElement {
 	 * in which case we do not have a parent.
 	 * TODO: Reorganize files such that this test constructor need not be public.
 	 */
-	public FrankElement(final String fullName, final String simpleName) {
+	public FrankElement(final String fullName, final String simpleName, boolean isAbstract) {
 		this.fullName = fullName;
 		this.simpleName = simpleName;
+		this.isAbstract = isAbstract;
 		this.aliasSources = new ArrayList<>();
 	}
 
+	public FrankElement(final String fullName, final String simpleName) {
+		this(fullName, simpleName, false);
+	}
+	
 	public void setParent(FrankElement parent) {
 		this.parent = parent;
 		this.statistics = new FrankElementStatistics(this);

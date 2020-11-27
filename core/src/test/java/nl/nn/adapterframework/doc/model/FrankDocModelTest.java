@@ -110,12 +110,14 @@ public class FrankDocModelTest {
 		assertSame(actualAllElements.get(actualParent.getFullName()), actualParent);
 		assertSame(actualAllElements.get(actualChild.getFullName()), actualChild);
 		FrankElement actualGrandParent = actualAllElements.get(SIMPLE_GRNAD_PARENT);
+		assertTrue(actualGrandParent.isAbstract());
 		FrankElement actualObject = actualAllElements.get("java.lang.Object");
 		assertNull(actualObject.getParent());
 		assertSame(actualObject, actualGrandParent.getParent());
 		assertSame(actualGrandParent, actualParent.getParent());
 		assertEquals(SIMPLE_PARENT, actualParent.getFullName());
 		assertEquals("ListenerParent", actualParent.getSimpleName());
+		assertFalse(actualParent.isAbstract());
 		// We check here that protected method getChildAttribute does not produce
 		// an attribute
 		assertEquals(2, actualParent.getAttributes().size());
