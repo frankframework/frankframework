@@ -22,7 +22,7 @@ import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 
-public class CmisEventListener extends PushingListenerAdapter<String> implements HasPhysicalDestination {
+public class CmisEventListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private CmisEvent cmisEvent = null;
 
