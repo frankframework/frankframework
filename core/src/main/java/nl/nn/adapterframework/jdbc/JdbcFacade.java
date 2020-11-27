@@ -120,6 +120,10 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 				log.debug(getLogPrefix()+"looking up proxied Datasource ["+dsName+"]");
 				datasource = (DataSource)proxiedDataSources.get(dsName);
 			} else {
+				if (proxiedDataSources != null) {
+					ConfigurationWarnings.add(this, log, "data source '" + dsName
+							+ "' isn't part of proxiedDataSources and is therefore probably not known to the transaction manager");
+				}
 				String prefixedDsName=getJndiContextPrefix()+dsName;
 				log.debug(getLogPrefix()+"looking up Datasource ["+prefixedDsName+"]");
 				if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
