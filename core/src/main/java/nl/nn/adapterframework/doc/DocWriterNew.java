@@ -125,11 +125,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
   <xs:attributeGroup ref="SoapValidatorDeclaredAttributeGroup" />
   <xs:attributeGroup ref="Json2XmlValidatorDeclaredAttributeGroup" />
   <xs:attribute name="ignoreUnknownNamespaces" type="xs:string" />
-  <xs:attribute name="schema" type="xs:string" default="">
-    <xs:annotation>
-      <xs:documentation>the filename of the schema on the classpath. see doc on the method. (effectively the same as noNamespaceSchemaLocation)</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   ...
   <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
 </xs:attributeGroup>
@@ -144,14 +139,18 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * hierarchy, there are no duplicate attributes. Therefore, the list of attributes
  * can end with referencing group <code>FixedForwardPipeCumulativeAttributeGroup</code>.
  * <p>
- * Please note that in this example the "<code>schema</code>" attribute appears with
- * the grand parent, even though Java class <code>SoapValidator</code> overrides
- * method <code>setSchema()</code>. This is the case because
- * <code>SoapValidator.setSchema()</code> does neither have an IbisDoc nor an
- * IbisDocRef annotation. This is a technical override that is ignored when
- * writing the XSD. This is implemented using the {@link ElementChild}
- * properties "documented", "overriddenFrom" and "deprecated".
- *
+ * Please note that <code>SoapValidator</code> has a deprecated method <code>setSchema()</code>
+ * that it overrdes from <code>XmlValidator</code>. The algorithm takes care to not only omit
+ * attribute <code>schema</code> as a declared attribute,
+ * but also as an inherited attributre of <code>SoapValidator</code>. Other descendants
+ * of <code>XmlValidator</code> are not influenced by the override by <code>SoapValidator</code>.
+ * This part of the algorithm is handled by package-private class
+ * <code>nl.nn.adapterframework.doc.model.ChildRejector</code>.
+ * <p>
+ * Finally, 'technical' overrides are ignored by this algorithm, which are
+ * setters with an override annotation that are not deprecated and lack
+ * IbisDoc or IbisDocRef annotations.
+ * 
  * <h1> The options for a config child</h1>
  *
  * The {@link ConfigChild} class in the model determines what &lt;xs:element&gt; are allowed
