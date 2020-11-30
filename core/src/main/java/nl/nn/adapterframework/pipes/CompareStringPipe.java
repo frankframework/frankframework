@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe that compares lexicographically two strings.
- *
+ * <table>
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link Parameter param}</td><td>the parameters <code>operand1</code> and <code>operand2</code> are compared. If one of these parameters doesn't exist the input message is taken.
  * If parameter <code>ignorepatterns</code> exists it contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
@@ -57,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>
  * <tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>
- * <tr><td>equals</td><td>when v1 = v1</td></tr>
+ * <tr><td>equals</td><td>when v1 = v2</td></tr>
  * </table>
  * </p>
  * @author  Peter Leeuwenburgh
@@ -89,20 +89,8 @@ public class CompareStringPipe extends AbstractPipe {
 			throw new ConfigurationException(getLogPrefix(null) + "forward [" + EQUALSFORWARD + "] is not defined");
 
 		if (StringUtils.isEmpty(sessionKey1) && StringUtils.isEmpty(sessionKey2)) {
-			boolean operand1Exists = false;
-			boolean operand2Exists = false;
 			ParameterList parameterList = getParameterList();
-			for (int i = 0; i < parameterList.size(); i++) {
-				Parameter parameter = parameterList.getParameter(i);
-				if (parameter.getName().equalsIgnoreCase(OPERAND1)) {
-					operand1Exists = true;
-				} else {
-					if (parameter.getName().equalsIgnoreCase(OPERAND2)) {
-						operand2Exists = true;
-					}
-				}
-			}
-			if (!operand1Exists && !operand2Exists) {
+			if (parameterList.findParameter(OPERAND1) == null && parameterList.findParameter(OPERAND2) == null) {
 				throw new ConfigurationException(getLogPrefix(null) + "has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
 			}
 		}
