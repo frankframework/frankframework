@@ -1,12 +1,11 @@
 package nl.nn.adapterframework.util;
 
-import org.junit.Test;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
-
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import java.util.Date;
+
+import org.junit.Test;
 
 /**
  * DateUtils Tester.
@@ -16,119 +15,123 @@ import static org.junit.Assert.assertEquals;
  */
 public class DateUtilsTest {
 
-	public Calendar now = Calendar.getInstance();
-	public String tz = now.getTimeZone().getDisplayName(false, TimeZone.SHORT);
 
-	/**
-	 * Method: format(Date date, String dateFormat)
-	 */
+	@Test
+	public void testFormatLong() throws Exception {
+		String date = DateUtils.format(1380924000000L);
+		assertEquals("2013-10-05 00:00:00.000", date);
+	}
+
+	@Test
+	public void testFormatDate() throws Exception {
+		String date = DateUtils.format(new Date(1380924000000L));
+		assertEquals("2013-10-05 00:00:00.000", date);
+	}
+
 	@Test
 	public void testFormatForDateDateFormat() throws Exception {
 		Date d = new Date(1500000000);
-		String s = DateUtils.format(d, DateUtils.FORMAT_FULL_GENERIC);
-		assertEquals("1970-01-18", s.substring(0, 10));
+		String time = DateUtils.format(d, DateUtils.FORMAT_FULL_GENERIC);
+		assertEquals("1970-01-18 09:40:00.000", time);
 
 	}
 
-	/**
-	 * Method: parseToDate(String s, String dateFormat)
-	 */
 	@Test
 	public void testParseToDate() throws Exception {
-		Date d = DateUtils.parseToDate("05-10-13", DateUtils.FORMAT_DATE);
-		int len = d.toString().length();
-		assertEquals("Sat Oct 05", d.toString().substring(0, 10));
-		assertEquals("2013", d.toString().substring(len-4, len));
+		Date date = DateUtils.parseToDate("05-10-13", DateUtils.FORMAT_DATE);
+		assertEquals(1380924000000L, date.getTime());
 	}
 
 	@Test
 	public void testParseToDateFullYear() throws Exception {
-		Date d = DateUtils.parseToDate("05-10-2014", DateUtils.FORMAT_DATE);
-		int len = d.toString().length();
-		assertEquals("Sun Oct 05", d.toString().substring(0, 10));
-		assertEquals("2014", d.toString().substring(len-4, len));
+		Date date = DateUtils.parseToDate("05-10-2014", DateUtils.FORMAT_DATE);
+		assertEquals(1412460000000L, date.getTime());
 	}
 
 	@Test
-	public void testParseToDate90s() throws Exception {
-		Date d = DateUtils.parseToDate("05-10-98", DateUtils.FORMAT_DATE);
-		int len = d.toString().length();
-		assertEquals("1998", d.toString().substring(len-4, len));
+	public void unableToParseDate() throws Exception {
+		Date date = DateUtils.parseToDate("05/10/98", DateUtils.FORMAT_DATE);
+		assertNull(date);
 	}
 
-	/**
-	 * Method: parseXmlDateTime(String s)
-	 */
+	@Test
+	public void unableToParseFullGenericWithoutTime() throws Exception {
+		Date date = DateUtils.parseToDate("2000-01-01", DateUtils.FORMAT_FULL_GENERIC);
+		assertNull(date);
+	}
+
+	@Test
+	public void testParseXmlDate() throws Exception {
+		Date date = DateUtils.parseXmlDateTime("2013-12-10");
+		assertEquals(1386630000000L, date.getTime());
+	}
+
 	@Test
 	public void testParseXmlDateTime() throws Exception {
-		Date d = DateUtils.parseXmlDateTime("2013-12-10");
-		int len = d.toString().length();
-		assertEquals("Tue Dec 10", d.toString().substring(0, 10));
-		assertEquals("2013", d.toString().substring(len-4, len));
+		Date date = DateUtils.parseXmlDateTime("2013-12-10T12:41:43");
+		assertEquals(1386675703000L, date.getTime());
 	}
 
-	/**
-	 * Method: parseAnyDate(String dateInAnyFormat)
-	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void testParseXmlInvalidDateTime() throws Exception {
+		DateUtils.parseXmlDateTime("2013-12-10 12:41:43");
+	}
+
 	@Test
-	public void testParseAnyDate() throws Exception {
-		Date d = DateUtils.parseAnyDate("12-2013-10");
-		int len = d.toString().length();
-		assertEquals("Tue Dec 10", d.toString().substring(0, 10));
-		assertEquals("2013", d.toString().substring(len-4, len));
-
+	public void testParseAnyDate1() throws Exception {
+		Date date = DateUtils.parseAnyDate("12-2013-10");
+		assertEquals(1386630000000L, date.getTime());
 	}
 
-	/**
-	 * Method: formatOptimal(Date d)
-	 */
+	@Test
+	public void testParseAnyDate2() throws Exception {
+		Date date = DateUtils.parseAnyDate("2013-12-10 12:41:43");
+		assertEquals(1386675703000L, date.getTime());
+	}
+
+	@Test
+	public void testParseAnyDate3() throws Exception {
+		Date date = DateUtils.parseAnyDate("05/10/98 05:47:13");
+		assertEquals(907559233000L, date.getTime());
+	}
+
 	@Test
 	public void testFormatOptimal() throws Exception {
-		Date d = new Date(1500000000);
-		String s = DateUtils.formatOptimal(d);
-		assertEquals("1970-01-18", s.substring(0, 10));
+		String date = DateUtils.formatOptimal(new Date(1386630000000L));
+		assertEquals("2013-12-10", date);
 	}
 
-	/**
-	 * Method: nextHigherValue(Date d)
-	 */
+	@Test
+	public void testFormatOptimalWithTime() throws Exception {
+		String date = DateUtils.formatOptimal(new Date(1500000000));
+		assertEquals("1970-01-18 09:40", date);
+	}
+
 	@Test
 	public void testNextHigherValue() throws Exception {
 		Date d = new Date(1500000000);
-		Date s = DateUtils.nextHigherValue(d);
-		assertEquals("Sun Jan 18", s.toString().substring(0, 10));
+		Date date = DateUtils.nextHigherValue(d);
+		assertEquals(1500060000L, date.getTime());
 	}
 
-	/**
-	 * Method: convertDate(String from, String to, String value)
-	 */
 	@Test
 	public void testConvertDate() throws Exception {
-		String s = DateUtils.convertDate(DateUtils.FORMAT_DATE, DateUtils.FORMAT_FULL_GENERIC, "18-03-13");
-		assertEquals("2013-03-18", s.substring(0, 10));
+		String date = DateUtils.convertDate(DateUtils.FORMAT_DATE, DateUtils.FORMAT_FULL_GENERIC, "18-03-13");
+		assertEquals("2013-03-18 00:00:00.000", date);
 	}
 
-	/**
-	 * Method: changeDate(String date, int years, int months, int days)
-	 */
 	@Test
 	public void testChangeDateForDateYearsMonthsDays() throws Exception {
 		String date = DateUtils.changeDate("2013-10-10", 2, 3, 5);
 		assertEquals("2016-01-15", date);
 	}
 
-	/**
-	 * Method: changeDate(String date, int years, int months, int days, String dateFormat)
-	 */
 	@Test
 	public void testChangeDateForDateYearsMonthsDaysDateFormat() throws Exception {
 		String date = DateUtils.changeDate("10-10-13", 2, 3, 5, DateUtils.FORMAT_DATE);
 		assertEquals("15-01-16", date);
 	}
 
-	/**
-	 * Method: isSameDay(Date date1, Date date2)
-	 */
 	@Test
 	public void testIsSameDay() throws Exception {
 		Date d1 = DateUtils.parseAnyDate("10-10-2013");
@@ -136,6 +139,4 @@ public class DateUtilsTest {
 		boolean b = DateUtils.isSameDay(d1, d2);
 		assertEquals(true, b);
 	}
-
-
 }
