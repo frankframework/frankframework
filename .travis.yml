@@ -9,6 +9,7 @@ cache:
 
 before_install:
   - cp .travis.settings.xml $HOME/.m2/settings.xml
+  - export TZ=Europe/Amsterdam
 
 # Skip separate install phase as for some reason running the two default phases
 # on Travis seem to cause the second phases to select the wrong profile
