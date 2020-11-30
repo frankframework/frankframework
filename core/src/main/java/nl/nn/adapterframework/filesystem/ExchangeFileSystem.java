@@ -76,7 +76,6 @@ import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
@@ -814,7 +813,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " + 
 			"If the alias refers to a password without a username, the password is treated as the accessToken.", ""})
 	public void setAuthAlias(String authAlias) {
-		super.setAuthAlias(authAlias);;
+		super.setAuthAlias(authAlias);
 	}
 
 	@IbisDoc({"6", "Username for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
@@ -828,7 +827,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken")
 	public void setPassword(String password) {
-		super.setPassword(password);;
+		super.setPassword(password);
 	}
 
 

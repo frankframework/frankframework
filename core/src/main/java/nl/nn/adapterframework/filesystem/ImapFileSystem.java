@@ -67,13 +67,13 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 	private @Getter String host = "";
 	private @Getter int port = 993;
 	
+	private Store store = null;
 	private Session emailSession;
 
 	{
 		setBaseFolder("INBOX");
 	}
 
-	Store store = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
