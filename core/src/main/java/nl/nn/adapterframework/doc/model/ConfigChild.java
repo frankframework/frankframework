@@ -16,6 +16,8 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import java.util.Comparator;
+
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -76,4 +78,13 @@ public class ConfigChild extends ElementChild<ConfigChild> {
 	ConfigChild cast() {
 		return this;
 	}
+
+	@Override
+	public int compareTo(ConfigChild other) {
+		return CONFIG_CHILD_COMPARATOR.compare(this, other);
+	}
+
+	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
+			Comparator.comparing(ConfigChild::getSequenceInConfig)
+			.thenComparing(ConfigChild::getSyntax1Name);
 }

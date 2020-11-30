@@ -19,7 +19,6 @@ package nl.nn.adapterframework.doc.model;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +35,6 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankElement {
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
-
-	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
-			Comparator.comparing(ConfigChild::getSequenceInConfig)
-			.thenComparing(ConfigChild::getSyntax1Name);
-	private static final Comparator<FrankAttribute> FRANK_ATTRIBUTE_COMPARATOR =
-			Comparator.comparing(FrankAttribute::getOrder)
-			.thenComparing(FrankAttribute::getName);
 
 	@EqualsAndHashCode
 	private final class ConfigChildKey {
@@ -102,7 +94,7 @@ public class FrankElement {
 	 * @param inputAttributes
 	 */
 	public void setAttributes(List<FrankAttribute> inputAttributes) {
-		inputAttributes.sort(FRANK_ATTRIBUTE_COMPARATOR);
+		Collections.sort(inputAttributes);
 		this.attributes = Collections.unmodifiableList(inputAttributes);
 		attributeLookup = new HashMap<>();
 		for(FrankAttribute a: attributes) {
@@ -125,7 +117,7 @@ public class FrankElement {
 	 * @param children
 	 */
 	public void setConfigChildren(List<ConfigChild> children) {
-		children.sort(CONFIG_CHILD_COMPARATOR);
+		Collections.sort(children);
 		this.configChildren = Collections.unmodifiableList(children);
 		configChildLookup = new HashMap<>();
 		for(ConfigChild c: children) {

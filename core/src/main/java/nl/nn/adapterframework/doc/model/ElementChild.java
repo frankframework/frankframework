@@ -38,7 +38,7 @@ import nl.nn.adapterframework.doc.DocWriterNew;
  *
  * @param <T> {@link FrankAttribute} or {@link ConfigChild}.
  */
-public abstract class ElementChild<T extends ElementChild<?>> {
+public abstract class ElementChild<T extends ElementChild<?>> implements Comparable<T> {
 	private @Getter FrankElement owningElement;
 	
 	/**

@@ -16,6 +16,8 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import java.util.Comparator;
+
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -70,4 +72,13 @@ public class FrankAttribute extends ElementChild<FrankAttribute> {
 	FrankAttribute cast() {
 		return this;
 	}
+
+	@Override
+	public int compareTo(FrankAttribute other) {
+		return FRANK_ATTRIBUTE_COMPARATOR.compare(this, other);
+	}
+
+	private static final Comparator<FrankAttribute> FRANK_ATTRIBUTE_COMPARATOR =
+			Comparator.comparing(FrankAttribute::getOrder)
+			.thenComparing(FrankAttribute::getName);
 }
