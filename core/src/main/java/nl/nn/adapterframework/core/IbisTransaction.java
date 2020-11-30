@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ public class IbisTransaction {
 
 	private PlatformTransactionManager txManager;
 	private TransactionStatus txStatus;
-	private TransactionDefinition txDef;
 	private String object;
 
 	private boolean txClientIsActive;
@@ -51,7 +50,6 @@ public class IbisTransaction {
 
 	public IbisTransaction(PlatformTransactionManager txManager, TransactionDefinition txDef, String object) {
 		this.txManager = txManager;
-		this.txDef = txDef;
 		this.object = object;
 
 		txClientIsActive = TransactionSynchronizationManager.isActualTransactionActive();
@@ -105,14 +103,19 @@ public class IbisTransaction {
 	}
 
 	public void commit() {
+		boolean mustRollback = txStatus.isRollbackOnly();
 		if (txIsNew) {
-			if (txStatus.isRollbackOnly()) {
+			if (mustRollback) {
 				log.debug("Transaction ["+txName+"] marked for rollback, so transaction manager ["+getRealTransactionManager()+"] is rolling back the transaction for " + object);
 			} else {
 				log.debug("Transaction ["+txName+"] is not marked for rollback, so transaction manager ["+getRealTransactionManager()+"] is committing the transaction for " + object);
 			}
 		}
-		txManager.commit(txStatus);
+		if (mustRollback) {
+			txManager.rollback(txStatus);
+		} else {
+			txManager.commit(txStatus);
+		}
 		if (!txIsNew && txClientIsActive && !txIsActive) {
 			log.debug("Transaction manager ["+getRealTransactionManager()+"] resumed the transaction [" + txClientName + "] for " + object);
 		}

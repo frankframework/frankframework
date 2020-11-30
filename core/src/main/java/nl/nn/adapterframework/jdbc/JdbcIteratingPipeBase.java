@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -52,7 +53,12 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 	protected class MixedQuerySender extends DirectQuerySender {
 		
 		private String query;
-		
+
+		@Override
+		public void configure() throws ConfigurationException {
+			super.configure(query!=null);
+		}
+
 		@Override
 		protected String getQuery(Message message) throws SenderException {
 			if (query!=null) {
@@ -65,15 +71,14 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 			this.query = query;
 		}
 	}
-	
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
-	
+
 	@Override
 	public void start() throws PipeStartException {
 		try {
@@ -90,7 +95,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.close();
 	}
 
-	protected abstract IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
 
 	@SuppressWarnings("finally")
 	@Override
@@ -102,7 +107,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 			connection = querySender.getConnection();
 			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
 			statement=queryExecutionContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+			JdbcUtil.applyParameters(querySender.getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			rs = statement.executeQuery();
 			if (rs==null) {
 				throw new SenderException("resultset is null");
@@ -111,7 +116,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 				JdbcUtil.fullClose(connection, rs);
 				return null; // no results
 			}
-			return getIterator(connection, rs);
+			return getIterator(querySender.getDbmsSupport(), connection, rs);
 		} catch (Throwable t) {
 			try {
 				if (rs!=null) {
@@ -153,7 +158,6 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.setJmsRealm(jmsRealmName);
 	}
 
-
 	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
@@ -163,17 +167,35 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
-	public String getDatasourceName() {
-		return querySender.getDatasourceName();
-	}
 
 	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	public void setUseNamedParams(boolean b) {
+		querySender.setUseNamedParams(b);
+	}
+
+	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	public void setTrimSpaces(boolean b) {
+		querySender.setTrimSpaces(b);
+	}
+
+	@IbisDocRef({"5", FIXEDQUERYSENDER})
+	public void setSqlDialect(String string) {
+		querySender.setSqlDialect(string);
+	}
+	
+	@IbisDocRef({"6", FIXEDQUERYSENDER})
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);
 	}
 
-	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	@IbisDocRef({"7", FIXEDQUERYSENDER})
 	public void setLockWait(int i) {
 		querySender.setLockWait(i);
 	}
+
+	@IbisDocRef({"8", FIXEDQUERYSENDER})
+	public void setAvoidLocking(boolean avoidLocking) {
+		querySender.setAvoidLocking(avoidLocking);
+	}
+
 }

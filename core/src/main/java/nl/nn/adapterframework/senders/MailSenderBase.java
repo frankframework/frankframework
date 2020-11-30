@@ -125,9 +125,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 		MailSession mail = new MailSession();
 		try {
-			if (paramList !=null) {
-				pvl=paramList.getValues(input, session);
-			}
+			pvl = paramList.getValues(input, session);
 			pv = pvl.getParameterValue("from");
 			if (pv != null) {
 				from = new EMail();

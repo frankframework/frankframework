@@ -26,6 +26,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IWrapperPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -67,7 +68,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
  * @author Peter Leeuwenburgh
  */
-public class SoapWrapperPipe extends FixedForwardPipe {
+public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	protected static final String DEFAULT_SOAP_HEADER_SESSION_KEY = "soapHeader";
 	protected static final String DEFAULT_SOAP_NAMESPACE_SESSION_KEY = "soapNamespace";
 

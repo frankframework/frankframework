@@ -13,14 +13,13 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.configuration.BasicAdapterServiceImpl;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.DummyAdapterService;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
@@ -235,13 +234,13 @@ public class WsdlXmlValidatorTest extends Mockito {
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));
-		Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+		Configuration configuration = new Configuration(new DummyAdapterService());
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);
 		ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
-		IAdapter adapter = spy(new Adapter());
+		Adapter adapter = spy(new Adapter());
 		adapter.setName("dummy");
 		PipeLine pl = new PipeLine();
 		pl.setFirstPipe("dummy");
@@ -261,7 +260,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		ple.setPath("success");
 		ple.setState("success");
 		pl.registerPipeLineExit(ple);
-		adapter.registerPipeLine(pl);
+		adapter.setPipeLine(pl);
 
 		adapter.setConfiguration(configuration);
 		configuration.registerAdapter(adapter);
@@ -276,13 +275,13 @@ public class WsdlXmlValidatorTest extends Mockito {
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));
-		Configuration configuration = new Configuration(new BasicAdapterServiceImpl());
+		Configuration configuration = new Configuration(new DummyAdapterService());
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);
 		ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
-		IAdapter adapter = spy(new Adapter());
+		Adapter adapter = spy(new Adapter());
 		adapter.setName("dummy");
 		PipeLine pl = new PipeLine();
 		pl.setFirstPipe("dummy");
@@ -302,7 +301,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		ple.setPath("success");
 		ple.setState("success");
 		pl.registerPipeLineExit(ple);
-		adapter.registerPipeLine(pl);
+		adapter.setPipeLine(pl);
 
 		adapter.setConfiguration(configuration);
 		configuration.registerAdapter(adapter);

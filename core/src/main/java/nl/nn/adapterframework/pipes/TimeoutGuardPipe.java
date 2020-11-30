@@ -64,7 +64,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		log.debug(getLogPrefix(session) + "setting timeout of [" + timeout_work + "] s");
 		TimeoutGuard tg = new TimeoutGuard(timeout_work, getName()) {
 			@Override
-			protected void kill() {
+			protected void abort() {
 				//The guard automatically kills the current thread, additional threads maybe 'killed' by implementing killPipe.
 				killPipe();
 			}

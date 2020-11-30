@@ -1,6 +1,6 @@
 /*
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -158,7 +158,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	}
    
 	@Override
-	public void registerCache(ICacheAdapter<String,Set<String>> cache) {
+	public void setCache(ICacheAdapter<String,Set<String>> cache) {
 		attributeCache=cache;
 	}
 	@Override

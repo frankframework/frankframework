@@ -47,8 +47,18 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
+	}
+
+	@Override
 	public String getSysDate() {
 		return "CURRENT_TIMESTAMP";
+	}
+
+	@Override
+	public String getDateAndOffset(String dateValue, int daysOffset) {
+		return "DATEADD(day, "+daysOffset+ "," + dateValue + ")";
 	}
 
 	@Override
@@ -92,6 +102,16 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getBlobFieldType() {
 		return "VARBINARY(MAX)";
 	}
+	@Override
+	public String emptyBlobValue() {
+		return "0x";
+	}
+
+	@Override
+	public String getClobFieldType() {
+		return "VARCHAR(MAX)";
+	}
+	
 
 	@Override
 	public String getTextFieldType() {
@@ -139,7 +159,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	} 
 
 	@Override
-	public String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException {
+	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
@@ -160,7 +180,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getSchema(Connection conn) throws JdbcException {
-		return JdbcUtil.executeStringQuery(conn, "SELECT DB_NAME()");
+		return JdbcUtil.executeStringQuery(conn, "SELECT SCHEMA_NAME()");
 	}
 
 	@Override
@@ -241,4 +261,15 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 			return false;
 		}
 	}
+	
+	@Override
+	public String getBooleanFieldType() {
+		return "BIT";
+	}
+	
+	@Override
+	public String getBooleanValue(boolean value) {
+		return value? "1":"0";
+	}
+
 }

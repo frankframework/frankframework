@@ -23,6 +23,7 @@
 		<pipeline firstPipe="switch">
 			<exits>
 				<exit path="EXIT" state="success" />
+				<exit path="ERROR" state="error" />
 			</exits>
 			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request" />
 			<pipe name="hello" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;reply&gt;goodbye&lt;/reply&gt;">
@@ -31,7 +32,10 @@
 			<pipe name="hi" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;reply&gt;ha&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="error" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+			<pipe name="errorState" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;reply&gt;errorStateResult&lt;/reply&gt;">
+				<forward name="success" path="ERROR" />
+			</pipe>
+			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

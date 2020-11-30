@@ -1,6 +1,6 @@
 <throwable>
   <class>nl.nn.adapterframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-ForEachChildElementPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception: Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;error&lt;/request&gt;</message>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-ForEachChildElementPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception: Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;exception&lt;/request&gt;</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
@@ -8,15 +8,15 @@
       <cause>
         <throwable>
           <class>nl.nn.adapterframework.core.ListenerException</class>
-          <message>Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;error&lt;/request&gt;</message>
+          <message>Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;exception&lt;/request&gt;</message>
           <cause>
             <throwable>
               <class>nl.nn.adapterframework.core.PipeRunException</class>
-              <message>Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;error&lt;/request&gt;</message>
+              <message>Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;exception&lt;/request&gt;</message>
               <cause>
                 <throwable>
                   <class>nl.nn.adapterframework.core.SenderException</class>
-                  <message>(SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;error&lt;/request&gt;</message>
+                  <message>(SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;exception&lt;/request&gt;</message>
                   <cause>
                     <throwable>
                       <class>nl.nn.adapterframework.xml.SaxException</class>
@@ -24,23 +24,23 @@
                       <cause>
                         <throwable>
                           <class>javax.xml.transform.TransformerException</class>
-                          <message>nl.nn.adapterframework.xml.SaxException: IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;error&lt;/request&gt;</message>
+                          <message>nl.nn.adapterframework.xml.SaxException: IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;exception&lt;/request&gt;</message>
                           <cause>
                             <throwable>
                               <class>nl.nn.adapterframework.xml.SaxException</class>
-                              <message>IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;error&lt;/request&gt;</message>
+                              <message>IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;exception&lt;/request&gt;</message>
                               <cause>
                                 <throwable>
                                   <class>nl.nn.adapterframework.core.SenderException</class>
-                                  <message>IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;error&lt;/request&gt;</message>
+                                  <message>IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: &lt;request&gt;exception&lt;/request&gt;</message>
                                   <cause>
                                     <throwable>
                                       <class>nl.nn.adapterframework.core.ListenerException</class>
-                                      <message>&lt;request&gt;error&lt;/request&gt;</message>
+                                      <message>&lt;request&gt;exception&lt;/request&gt;</message>
                                       <cause>
                                         <throwable>
                                           <class>nl.nn.adapterframework.core.PipeRunException</class>
-                                          <message>&lt;request&gt;error&lt;/request&gt;</message>
+                                          <message>&lt;request&gt;exception&lt;/request&gt;</message>
                                         </throwable>
                                       </cause>
                                     </throwable>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author  Gerrit van Brakel
  */
-public interface ISender extends INamedObject {
+public interface ISender extends IConfigurable {
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this sender. 
 	 * Purpose of this method is to check whether the static configuration of the sender is correct.

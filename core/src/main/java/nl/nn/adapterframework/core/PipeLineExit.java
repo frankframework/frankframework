@@ -50,13 +50,14 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @author Niels Meijer
  */
 public class PipeLineExit implements IForwardTarget {
-	
+
 	public static final String EXIT_STATE_SUCCESS = "success";
-	
+
 	private String path;
 	private String state;
 	private int exitCode = 0;
 	private boolean emptyResult = false;
+	private String responseRoot;
 
 	@IbisDoc({"name of the pipeline exit", ""})
 	public void setPath(String newPath) {
@@ -72,30 +73,35 @@ public class PipeLineExit implements IForwardTarget {
 		return getPath();
 	}
 
-
-	public String getState() {
-		return state;
-	}
-
 	@IbisDoc({"the exit state defines possible exists to the pipeline. the state can be one of the following: <code>success, error</code>", ""})
 	public void setState(String newState) {
 		state = newState;
 	}
-
-	public int getExitCode() {
-		return exitCode;
+	public String getState() {
+		return state;
 	}
 
 	@IbisDoc({"http statuscode e.g. <code>500</code>", "200"})
 	public void setCode(String code) {
 		this.exitCode = Integer.parseInt(code);
 	}
-	public boolean getEmptyResult() {
-		return emptyResult;
+	public int getExitCode() {
+		return exitCode;
 	}
 
 	@IbisDoc({"when using restlistener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool", "false"})
 	public void setEmpty(String b) {
 		emptyResult = Boolean.parseBoolean(b);
+	}
+	public boolean getEmptyResult() {
+		return emptyResult;
+	}
+	// TODO: validate the output by looking at this responseRoot
+	@IbisDoc({"Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state 'success', the last for the other exits.", ""})
+	public void setResponseRoot(String responseRoot) {
+		this.responseRoot = responseRoot;
+	}
+	public String getResponseRoot() {
+		return responseRoot;
 	}
 }

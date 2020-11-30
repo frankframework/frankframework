@@ -15,9 +15,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.stream.Message;
@@ -31,9 +29,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 	protected FileSystemListener<F,FS> fileSystemListener;
 	protected Map<String,Object> threadContext;
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	
 	public abstract FileSystemListener<F,FS> createFileSystemListener();

@@ -17,8 +17,7 @@ package nl.nn.adapterframework.batch;
 
 import java.util.List;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -28,10 +27,9 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
  * 
  * @author  John Dekker
  */
-public interface IResultHandler extends INamedObject {
+public interface IResultHandler extends IConfigurable {
 
 	public void setPipe(AbstractPipe pipe);
-	public void configure() throws ConfigurationException;
 	public void open() throws SenderException;
 	public void close() throws SenderException;
 	
@@ -44,13 +42,13 @@ public interface IResultHandler extends INamedObject {
 	void closeDocument(IPipeLineSession session, String streamId);
 
 	/**
-	 * write a result ta record. 
+	 * write a result record. 
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @param recordKey key of the record (describes the record type)
 	 * @param result transformed record
 	 */
-	void handleResult(IPipeLineSession session, String streamId, String recordKey, Object result) throws Exception;
+	void handleResult(IPipeLineSession session, String streamId, String recordKey, String result) throws Exception;
 	
 	/**
 	 * Called when all records in the original file are handled.
@@ -58,7 +56,7 @@ public interface IResultHandler extends INamedObject {
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @return the name or names of the output files
 	 */
-	Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception;
+	String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception;
 
 	/**
 	 * @param session  current PipeLineSession

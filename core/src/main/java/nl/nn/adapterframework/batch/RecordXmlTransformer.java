@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  John Dekker / Gerrit van Brakel
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private String rootTag="record";
 	private String xpathExpression=null;
@@ -69,14 +68,14 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			}
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())||StringUtils.isNotEmpty(getXpathExpression())) {
-			transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ["+getName()+"] ", classLoader, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
+			transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ["+getName()+"] ", getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
 		}
 	}
 
 
 
 	@Override
-	public Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+	public String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = getXml(parsedRecord);
 		if (transformerPool!=null) {
 			if (log.isDebugEnabled()) {
@@ -99,7 +98,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			// get value
 			String value = "";
 			if (ndx < parsedRecord.size()) {
-				value = (String)parsedRecord.get(ndx++);
+				value = parsedRecord.get(ndx++);
 				if (!it.hasNext() && !StringUtils.isEmpty(endOfRecord)) {
 					if (value.endsWith(endOfRecord)) {
 						int ei = value.length() - endOfRecord.length();

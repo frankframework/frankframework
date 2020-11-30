@@ -1,13 +1,11 @@
 <module>
 	<adapter name="WebControlShowEnvironmentVariables" active="${strutsConsole.enabled}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebControlShowEnvironmentVariables-get">
+		<receiver name="WebControlShowEnvironmentVariables-get">
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="WebControlShowEnvironmentVariables-get" uriPattern="showEnvironmentVariables"
 				method="GET" view="false" />
 		</receiver>
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebControlShowEnvironmentVariables-post">
+		<receiver name="WebControlShowEnvironmentVariables-post">
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="WebControlShowEnvironmentVariables-post" uriPattern="showEnvironmentVariables"
 				method="POST" view="false" authRoles="IbisDataAdmin,IbisAdmin,IbisTester" />

@@ -39,6 +39,7 @@ import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSender;
@@ -308,10 +309,14 @@ public class SendGridSender extends MailSenderBase {
 	}
 
 	@IbisDoc({"23", "username used to obtain credentials for proxy authentication", ""})
-	public void setProxyUserName(String string) {
-		httpclient.setProxyUserName(string);
+	public void setProxyUsername(String string) {
+		httpclient.setProxyUsername(string);
 	}
-
+	@Deprecated
+	@ConfigurationWarning("Please use \"proxyUsername\" instead")
+	public void setProxyUserName(String string) {
+		setProxyUsername(string);
+	}
 	@IbisDoc({"24", "password used to obtain credentials for proxy authentication", ""})
 	public void setProxyPassword(String string) {
 		httpclient.setProxyPassword(string);

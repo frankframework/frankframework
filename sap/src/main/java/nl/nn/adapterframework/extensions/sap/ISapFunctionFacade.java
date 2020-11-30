@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.extensions.sap;
 
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IConfigurable;
 
 /**
  * Common interface to be implemented by SapListeners
@@ -24,7 +24,7 @@ import nl.nn.adapterframework.core.INamedObject;
  * @author  Gerrit van Brakel
  * @since   7.3
  */
-public interface ISapFunctionFacade extends INamedObject, HasPhysicalDestination {
+public interface ISapFunctionFacade extends IConfigurable, HasPhysicalDestination {
 
 	public void setCorrelationIdFieldIndex(int i);
 	public void setCorrelationIdFieldName(String string);

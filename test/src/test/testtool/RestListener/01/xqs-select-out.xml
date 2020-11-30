@@ -9,10 +9,8 @@
       </fielddefinition>
       <rowset>
         <row number="0">
-          <field name="SLOTID">sample.pdf</field>
-          <field name="COMMENTS">&lt;RestListerREQ&gt;OK&lt;/RestListerREQ&gt;</field>
-          <field name="LENGTH(MESSAGE)">324338</field>
-          <field name="LABEL">every cloud has a silver lining</field>
+          <field name="TVARCHAR">sample.pdf</field>
+          <field name="LENGTH">324338</field>
         </row>
       </rowset>
     </result>

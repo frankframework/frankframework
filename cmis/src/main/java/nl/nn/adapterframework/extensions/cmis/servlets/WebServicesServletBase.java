@@ -51,7 +51,7 @@ public abstract class WebServicesServletBase extends CmisWebServicesServlet impl
 
 	@Override
 	public int loadOnStartUp() {
-		return -1;
+		return 1;
 	}
 
 	@Override

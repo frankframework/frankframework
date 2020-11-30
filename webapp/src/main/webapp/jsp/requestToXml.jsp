@@ -1,6 +1,7 @@
 <%@ page import="nl.nn.adapterframework.util.AppConstants"%>
 <%@ page import="nl.nn.adapterframework.lifecycle.IbisApplicationServlet"%>
 <%@ page import="nl.nn.adapterframework.configuration.IbisContext" %>
+<%@ page import="nl.nn.adapterframework.lifecycle.ApplicationMetrics" %>
 <%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
 <%@ page import="java.util.Enumeration" %>
@@ -20,8 +21,10 @@
 		ServletContext sc = request.getSession().getServletContext();
 		String attributeKey = AppConstants.getInstance().getProperty(IbisApplicationServlet.KEY_CONTEXT);
 		IbisContext ibisContext = (IbisContext) sc.getAttribute(attributeKey);
+		ApplicationMetrics metrics = ibisContext.getBean("metrics", ApplicationMetrics.class);
 	%>
-	<upTime><![CDATA[<%=ibisContext.getUptime()%>]]></upTime>
+
+	<upTime><%= metrics.getUptimeDate() %></upTime>
 
 	<httpServletRequest>
 		<auth_type><![CDATA[<%=request.getAuthType()%>]]></auth_type>

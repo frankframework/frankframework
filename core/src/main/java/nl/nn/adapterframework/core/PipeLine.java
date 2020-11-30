@@ -17,7 +17,6 @@ package nl.nn.adapterframework.core;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
@@ -37,7 +37,7 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -111,13 +111,13 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	private Adapter adapter;    // for transaction managing
 	private INamedObject owner; // for logging purposes
 
-    private Map<String, StatisticsKeeper> pipeStatistics = new Hashtable<String, StatisticsKeeper>(); // needless synchronization?
-    private Map<String, StatisticsKeeper> pipeWaitingStatistics = new Hashtable<String, StatisticsKeeper>();
+	private Map<String, StatisticsKeeper> pipeStatistics = new Hashtable<String, StatisticsKeeper>(); // needless synchronization?
+	private Map<String, StatisticsKeeper> pipeWaitingStatistics = new Hashtable<String, StatisticsKeeper>();
 	private StatisticsKeeper requestSizeStats;
 	private Map<String, StatisticsKeeper> pipeSizeStats = new Hashtable<String, StatisticsKeeper>();
 
 	private Map<String, PipeForward> globalForwards = new Hashtable<String, PipeForward>();
-    private String firstPipe;
+	private String firstPipe;
 	private int transactionAttribute = TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout   = 0;
 
@@ -128,17 +128,17 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	public final static String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
 	public final static String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
 
-	private IPipe inputValidator  = null;
-	private IPipe outputValidator = null;
-	private IPipe inputWrapper    = null;
-	private IPipe outputWrapper   = null;
+	private IValidatorPipe inputValidator  = null;
+	private IValidatorPipe outputValidator = null;
+	private IWrapperPipe inputWrapper    = null;
+	private IWrapperPipe outputWrapper   = null;
 
 	private TransactionDefinition txDef = null;
 
-    private Map<String, IPipe> pipesByName = new LinkedHashMap<String, IPipe>();
-    private List<IPipe> pipes              = new ArrayList<IPipe>();
-    // set of exits paths with their state
-    private Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<String, PipeLineExit>();
+	private Map<String, IPipe> pipesByName = new LinkedHashMap<String, IPipe>();
+	private List<IPipe> pipes			  = new ArrayList<IPipe>();
+	// set of exits paths with their state
+	private Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<String, PipeLineExit>();
 
 	private String commitOnState = "success"; // exit state on which receiver will commit XA transactions
 	private boolean storeOriginalMessageWithoutNamespaces = false;
@@ -161,6 +161,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 * to prevail.
 	 * @see AbstractPipe
 	 **/
+	@IbisDoc("80")
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
@@ -219,9 +220,9 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 */
 	public void configure() throws ConfigurationException {
 		INamedObject owner = getOwner();
-		IAdapter adapter = null;
-		if (owner instanceof IAdapter) {
-			adapter = (IAdapter)owner;
+		Adapter adapter = null;
+		if (owner instanceof Adapter) {
+			adapter = (Adapter)owner;
 		}
 		if (cache != null) {
 			cache.configure(owner.getName() + "-Pipeline");
@@ -274,8 +275,8 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			throw new ConfigurationException("no pipe found for firstPipe [" + firstPipe + "]");
 		}
 
-		IPipe inputValidator = getInputValidator();
-		IPipe outputValidator = getOutputValidator();
+		IValidatorPipe inputValidator = getInputValidator();
+		IValidatorPipe outputValidator = getOutputValidator();
 		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
 			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator();
 			setOutputValidator(outputValidator);
@@ -309,29 +310,21 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			log.debug(getLogPrefix()+"configuring OutputWrapper");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
-			if (getOutputWrapper() instanceof AbstractPipe && adapter instanceof Adapter) {
-				((AbstractPipe) getOutputWrapper()).setRecoverAdapter(((Adapter) adapter).isRecover());
+			if (getOutputWrapper() instanceof AbstractPipe) {
+				((AbstractPipe) getOutputWrapper()).setRecoverAdapter(adapter.isRecover());
 			}
 			getOutputWrapper().registerForward(pf);
 			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
 			if (getOutputWrapper() instanceof EsbSoapWrapperPipe) {
 				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getOutputWrapper();
-				boolean stop = false;
-				Iterator<IReceiver> recIt = adapter.getReceiverIterator();
-				if (recIt.hasNext()) {
-					while (recIt.hasNext() && !stop) {
-						IReceiver receiver = recIt.next();
-						if (receiver instanceof ReceiverBase ) {
-							ReceiverBase rb = (ReceiverBase) receiver;
-							IListener listener = rb.getListener();
-							try {
-								if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
-									stop = true;
-								}
-							} catch (JmsException e) {
-							    throw new ConfigurationException(e);
-							}
+				for (Receiver receiver: adapter.getReceivers()) {
+					IListener listener = receiver.getListener();
+					try {
+						if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
+							break;
 						}
+					} catch (JmsException e) {
+						throw new ConfigurationException(e);
 					}
 				}
 			}
@@ -341,12 +334,9 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
 
 		if (isTransacted() && getTransactionTimeout()>0) {
-			String systemTransactionTimeout = Misc.getSystemTransactionTimeout();
-			if (systemTransactionTimeout!=null && StringUtils.isNumeric(systemTransactionTimeout)) {
-				int stt = Integer.parseInt(systemTransactionTimeout);
-				if (getTransactionTimeout()>stt) {
-					ConfigurationWarnings.add(null, log, getLogPrefix()+"has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the system transaction timeout ["+stt+"]");
-				}
+			Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
+			if (maximumTransactionTimeout != null && getTransactionTimeout() > maximumTransactionTimeout) {
+				ConfigurationWarnings.add(null, log, getLogPrefix()+"has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the maximum transaction timeout ["+maximumTransactionTimeout+"]");
 			}
 		}
 
@@ -536,20 +526,6 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
 	}
 
-	/**
-	 * Register global forwards.
-	 */
-	public void registerForward(PipeForward forward){
-		globalForwards.put(forward.getName(), forward);
-		log.debug("registered global PipeForward "+forward.toString());
-	}
-
-	public void registerPipeLineExit(PipeLineExit exit) {
-		if (pipeLineExits.containsKey(exit.getPath())) {
-			ConfigurationWarnings.add(null, log, getLogPrefix()+"exit named ["+exit.getPath()+"] already exists");
-		}
-		pipeLineExits.put(exit.getPath(), exit);
-	}
 
 	public void setPipeLineProcessor(PipeLineProcessor pipeLineProcessor) {
 		this.pipeLineProcessor = pipeLineProcessor;
@@ -596,16 +572,6 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return owner;
 	}
 
-	/**
-	 * set the name of the first pipe to execute when a message is to be processed
-	 * 
-	 * @param pipeName the name of the pipe
-	 * @see AbstractPipe
-	 */
-	@IbisDoc({ "name of the first pipe to execute when a message is to be processed", "" })
-	public void setFirstPipe(String pipeName) {
-		firstPipe = pipeName;
-	}
 
 	public void start() throws PipeStartException {
 		log.info(getLogPrefix()+"is starting pipeline");
@@ -651,184 +617,8 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 
 	}
 
-    /**
-     *
-     * @return an enumeration of all pipenames in the pipeline and the
-     * startpipe and endpath
-     * @see #setFirstPipe
-     */
-    @Override
-	public String toString(){
-        // TODO: Should use StringBuilder
-        String result = "";
-		result+="[ownerName="+(owner==null ? "-none-" : owner.getName())+"]";
-        result+="[adapterName="+(adapter==null ? "-none-" : adapter.getName())+"]";
-        result+="[startPipe="+firstPipe+"]";
-//        result+="[transacted="+transacted+"]";
-		result+="[transactionAttribute="+getTransactionAttribute()+"]";
-		for (int i=0; i<pipes.size(); i++) {
-			result+="pipe"+i+"=["+getPipe(i).getName()+"]";
-		}
-        for (String exitPath : pipeLineExits.keySet()) {
-            PipeLineExit pe = pipeLineExits.get(exitPath);
-            result += "[path:" + pe.getPath() + " state:" + pe.getState() + "]";
-        }
-        return result;
-    }
-
-
-	@IbisDoc({"if set to <code>true, messages will be processed under transaction control. (see below)</code>", "<code>false</code>"})
-	public void setTransacted(boolean transacted) {
-//		this.transacted = transacted;
-		if (transacted) {
-			ConfigurationWarnings.add(null, log, getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required");
-			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
-		} else {
-			ConfigurationWarnings.add(null, log, getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports");
-			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
-		}
-	}
-
-	public boolean isTransacted() {
-//		return transacted;
-		int txAtt = getTransactionAttributeNum();
-		return  txAtt==TransactionDefinition.PROPAGATION_REQUIRED || 
-				txAtt==TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
-				txAtt==TransactionDefinition.PROPAGATION_MANDATORY;
-	}
-
-	/**
-	 * the exit state of the pipeline on which the receiver will commit the transaction.
-	 */
-	@IbisDoc({"if the pipelineresult.getstate() equals this value, the transaction is committed, otherwise it is rolled back.", "<code>success</code>"})
-	public void setCommitOnState(String string) {
-		commitOnState = string;
-	}
-	public String getCommitOnState() {
-		return commitOnState;
-	}
-
-	@IbisDoc({"The <code>transactionAttribute</code> declares transactional behavior of pipeline execution. It "
-		+ "applies both to database transactions and XA transactions."
-        + "The pipeline uses this to start a new transaction or suspend the current one when required. "
-		+ "For developers: it is equal"
-        + "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. "
-        + "Possible values for transactionAttribute:"
-        + "  <table border=\"1\">"
-        + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
-        + "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
-        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-        + "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
-        + "											      <tr><td>T1</td>  <td>T2</td></tr>"
-        + "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
-        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-        + "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
-        + "											      <tr><td>T1</td>  <td>none</td></tr>"
-        + "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
-        + " 										      <tr><td>T1</td>  <td>T1</td></tr>"
-        + "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
-        + "											      <tr><td>T1</td>  <td>error</td></tr>"
-        + "  </table>", "Supports"})
-	public void setTransactionAttribute(String attribute) throws ConfigurationException {
-		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
-		if (transactionAttribute<0) {
-			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
-		}
-	}
-	public String getTransactionAttribute() {
-		return JtaUtil.getTransactionAttributeString(transactionAttribute);
-	}
-
-    @IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
-	    + "option is represented with a number. The numbers mean:"
-	    + "<table>"
-	    + "<tr><td>0</td><td>Required</td></tr>"
-	    + "<tr><td>1</td><td>Supports</td></tr>"
-	    + "<tr><td>2</td><td>Mandatory</td></tr>"
-	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
-	    + "<tr><td>4</td><td>NotSupported</td></tr>"
-	    + "<tr><td>5</td><td>Never</td></tr>"
-	    + "</table>", "1"})
-	public void setTransactionAttributeNum(int i) {
-		transactionAttribute = i;
-	}
-	public int getTransactionAttributeNum() {
-		return transactionAttribute;
-	}
-
-	public void setLocker(Locker locker) {
-		this.locker = locker;
-	}
-	public Locker getLocker() {
-		return locker;
-	}
-
-	public void setInputValidator(IPipe inputValidator) {
-		this.inputValidator = inputValidator;
-	}
-	public IPipe getInputValidator() {
-		return inputValidator;
-	}
-
-	public void setOutputValidator(IPipe outputValidator) {
-		this.outputValidator = outputValidator;
-	}
-	public IPipe getOutputValidator() {
-		return outputValidator;
-	}
-
-	public void setInputWrapper(IPipe inputWrapper) {
-		this.inputWrapper = inputWrapper;
-	}
-	public IPipe getInputWrapper() {
-		return inputWrapper;
-	}
-
-	public void setOutputWrapper(IPipe outputWrapper) {
-		this.outputWrapper = outputWrapper;
-	}
-	public IPipe getOutputWrapper() {
-		return outputWrapper;
-	}
-
-	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
-	public void setTransactionTimeout(int i) {
-		transactionTimeout = i;
-	}
-	public int getTransactionTimeout() {
-		return transactionTimeout;
-	}
-
-	@IbisDoc({"when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalmessagewithoutnamespaces", "false"})
-	public void setStoreOriginalMessageWithoutNamespaces(boolean b) {
-		storeOriginalMessageWithoutNamespaces = b;
-	}
-	public boolean isStoreOriginalMessageWithoutNamespaces() {
-		return storeOriginalMessageWithoutNamespaces;
-	}
-
-	/**
-	 * The <b>MessageSizeWarn</b> option takes a long
-	 * integer in the range 0 - 2^63. You can specify the value
-	 * with the suffixes "KB", "MB" or "GB" so that the integer is
-	 * interpreted being expressed respectively in kilobytes, megabytes
-	 * or gigabytes. For example, the value "10KB" will be interpreted
-	 * as 10240.
-	 */
-	@IbisDoc({"if messagesizewarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged", "application default (3mb)"})
-	public void setMessageSizeWarn(String s) {
-		messageSizeWarn = Misc.toFileSize(s, messageSizeWarn + 1);
-	}
-	public long getMessageSizeWarnNum() {
-		return messageSizeWarn;
-	}
-
 	public TransactionDefinition getTxDef() {
 		return txDef;
-	}
-
-	public String getFirstPipe() {
-		return firstPipe;
 	}
 
 	public Map<String, PipeLineExit> getPipeLineExits() {
@@ -839,39 +629,10 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return exitHandlers;
 	}
 
-	@Override
-	public void registerCache(ICacheAdapter<String,String> cache) {
-		this.cache=cache;
-	}
-	@Override
-	public ICacheAdapter<String,String> getCache() {
-		return cache;
-	}
-
-	@IbisDoc({"forces that each pipe in the pipeline is not automatically added to the globalforwards table", "application default"})
-	public void setForceFixedForwarding(boolean b) {
-		forceFixedForwarding = b;
-	}
-	public boolean isForceFixedForwarding() {
-		return forceFixedForwarding;
-	}
-
-	@IbisDoc({"when specified and <code>null</code> is received as a message the message is changed to the specified value", ""})
-	public void setTransformNullMessage(String s) {
-		transformNullMessage = new Message(s);
-	}
-
 	public StatisticsKeeper getRequestSizeStats() {
 		return requestSizeStats;
 	}
 
-	@IbisDoc({"when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline", ""})
-	public void setAdapterToRunBeforeOnEmptyInput(String s) {
-		adapterToRunBeforeOnEmptyInput = s;
-	}
-	public String getAdapterToRunBeforeOnEmptyInput() {
-		return adapterToRunBeforeOnEmptyInput;
-	}
 
 	private String getLogPrefix() {
 		String prefix = "PipeLine";
@@ -879,5 +640,226 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			prefix += " of [" + owner.getName() + "]";
 		}
 		return prefix + " ";
+	}
+
+	/**
+	 *
+	 * @return an enumeration of all pipenames in the pipeline and the
+	 * startpipe and endpath
+	 * @see #setFirstPipe
+	 */
+	@Override
+	public String toString(){
+		// TODO: Should use StringBuilder
+		String result = "";
+		result+="[ownerName="+(owner==null ? "-none-" : owner.getName())+"]";
+		result+="[adapterName="+(adapter==null ? "-none-" : adapter.getName())+"]";
+		result+="[startPipe="+firstPipe+"]";
+//		result+="[transacted="+transacted+"]";
+		result+="[transactionAttribute="+getTransactionAttribute()+"]";
+		for (int i=0; i<pipes.size(); i++) {
+			result+="pipe"+i+"=["+getPipe(i).getName()+"]";
+		}
+		for (String exitPath : pipeLineExits.keySet()) {
+			PipeLineExit pe = pipeLineExits.get(exitPath);
+			result += "[path:" + pe.getPath() + " state:" + pe.getState() + "]";
+		}
+		return result;
+	}
+
+
+	@IbisDoc({"10", "Request validator, or combined validator for request and response"})
+	public void setInputValidator(IValidatorPipe inputValidator) {
+		this.inputValidator = inputValidator;
+	}
+	public IValidatorPipe getInputValidator() {
+		return inputValidator;
+	}
+
+	@IbisDoc({"20", "Optional pipe to validate the response. Can be specified if the response cannot be validated by the request validator"})
+	public void setOutputValidator(IValidatorPipe outputValidator) {
+		this.outputValidator = outputValidator;
+	}
+	public IValidatorPipe getOutputValidator() {
+		return outputValidator;
+	}
+
+	@IbisDoc({"30", "Optional pipe to extract the request message from its envelope"})
+	public void setInputWrapper(IWrapperPipe inputWrapper) {
+		this.inputWrapper = inputWrapper;
+	}
+	public IWrapperPipe getInputWrapper() {
+		return inputWrapper;
+	}
+
+	@IbisDoc({"40", "Optional pipe to wrap the response message in an envelope"})
+	public void setOutputWrapper(IWrapperPipe outputWrapper) {
+		this.outputWrapper = outputWrapper;
+	}
+	public IWrapperPipe getOutputWrapper() {
+		return outputWrapper;
+	}
+
+	@IbisDoc({"50", "Global forwards"})
+	public void registerForward(PipeForward forward){
+		globalForwards.put(forward.getName(), forward);
+		log.debug("registered global PipeForward "+forward.toString());
+	}
+
+	@IbisDoc({"60", "PipeLine exits"})
+	public void registerPipeLineExit(PipeLineExit exit) {
+		if (pipeLineExits.containsKey(exit.getPath())) {
+			ConfigurationWarnings.add(null, log, getLogPrefix()+"exit named ["+exit.getPath()+"] already exists");
+		}
+		pipeLineExits.put(exit.getPath(), exit);
+	}
+
+	@IbisDoc({"60", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads or servers"})
+	public void setLocker(Locker locker) {
+		this.locker = locker;
+	}
+	public Locker getLocker() {
+		return locker;
+	}
+
+	@Override
+	@IbisDoc({"70", "Cache of results"})
+	public void setCache(ICacheAdapter<String,String> cache) {
+		this.cache=cache;
+	}
+	@Override
+	public ICacheAdapter<String,String> getCache() {
+		return cache;
+	}
+
+	@IbisDoc({"1", "Name of the first pipe to execute when a message is to be processed", "<first pipe of the pipeline>" })
+	public void setFirstPipe(String pipeName) {
+		firstPipe = pipeName;
+	}
+	public String getFirstPipe() {
+		return firstPipe;
+	}
+
+	@IbisDoc({"2", "The <code>transactionAttribute</code> declares transactional behavior of pipeline execution. It "
+		+ "applies both to database transactions and XA transactions."
+		+ "The pipeline uses this to start a new transaction or suspend the current one when required. "
+		+ "For developers: it is equal"
+		+ "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. "
+		+ "Possible values for transactionAttribute:"
+		+ "  <table border=\"1\">"
+		+ "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
+		+ "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
+		+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
+		+ "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
+		+ "											      <tr><td>T1</td>  <td>T2</td></tr>"
+		+ "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
+		+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
+		+ "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
+		+ "											      <tr><td>T1</td>  <td>none</td></tr>"
+		+ "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
+		+ " 										      <tr><td>T1</td>  <td>T1</td></tr>"
+		+ "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
+		+ "											      <tr><td>T1</td>  <td>error</td></tr>"
+		+ "  </table>", "Supports"})
+	public void setTransactionAttribute(String attribute) throws ConfigurationException {
+		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
+		if (transactionAttribute<0) {
+			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
+		}
+	}
+	public String getTransactionAttribute() {
+		return JtaUtil.getTransactionAttributeString(transactionAttribute);
+	}
+
+	@IbisDoc({"3", "Like <code>transactionAttribute</code>, but the chosen "
+		+ "option is represented with a number. The numbers mean:"
+		+ "<table>"
+		+ "<tr><td>0</td><td>Required</td></tr>"
+		+ "<tr><td>1</td><td>Supports</td></tr>"
+		+ "<tr><td>2</td><td>Mandatory</td></tr>"
+		+ "<tr><td>3</td><td>RequiresNew</td></tr>"
+		+ "<tr><td>4</td><td>NotSupported</td></tr>"
+		+ "<tr><td>5</td><td>Never</td></tr>"
+		+ "</table>", "1"})
+	@Deprecated
+	public void setTransactionAttributeNum(int i) {
+		transactionAttribute = i;
+	}
+	public int getTransactionAttributeNum() {
+		return transactionAttribute;
+	}
+
+	@Deprecated
+	@IbisDoc({"4", "if set to <code>true, messages will be processed under transaction control. (see below)</code>", "<code>false</code>"})
+	public void setTransacted(boolean transacted) {
+		if (transacted) {
+			ConfigurationWarnings.add(getAdapter(), log, getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
+			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
+		} else {
+			ConfigurationWarnings.add(getAdapter(), log, getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
+			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
+		}
+	}
+	public boolean isTransacted() {
+		int txAtt = getTransactionAttributeNum();
+		return  txAtt==TransactionDefinition.PROPAGATION_REQUIRED || 
+				txAtt==TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
+				txAtt==TransactionDefinition.PROPAGATION_MANDATORY;
+	}
+
+	@IbisDoc({"5", "Timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
+	public void setTransactionTimeout(int i) {
+		transactionTimeout = i;
+	}
+	public int getTransactionTimeout() {
+		return transactionTimeout;
+	}
+
+	/**
+	 * the exit state of the pipeline on which the receiver will commit the transaction.
+	 */
+	@IbisDoc({"5", "If the pipelineresult.getstate() equals this value, the transaction is committed, otherwise it is rolled back.", "<code>success</code>"})
+	public void setCommitOnState(String string) {
+		commitOnState = string;
+	}
+	public String getCommitOnState() {
+		return commitOnState;
+	}
+
+	@IbisDoc({"6", "If set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces", "false"})
+	public void setStoreOriginalMessageWithoutNamespaces(boolean b) {
+		storeOriginalMessageWithoutNamespaces = b;
+	}
+	public boolean isStoreOriginalMessageWithoutNamespaces() {
+		return storeOriginalMessageWithoutNamespaces;
+	}
+
+	@IbisDoc({"7", "If messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes \"KB\", \"MB\" or \"GB\"", "application default (3MB)"})
+	public void setMessageSizeWarn(String s) {
+		messageSizeWarn = Misc.toFileSize(s, messageSizeWarn + 1);
+	}
+	public long getMessageSizeWarnNum() {
+		return messageSizeWarn;
+	}
+
+	@IbisDoc({"8", "Forces that each pipe in the pipeline is not automatically added to the globalforwards table", "application default"})
+	public void setForceFixedForwarding(boolean b) {
+		forceFixedForwarding = b;
+	}
+	public boolean isForceFixedForwarding() {
+		return forceFixedForwarding;
+	}
+
+	@IbisDoc({"9", "when specified and <code>null</code> is received as a message the message is changed to the specified value", ""})
+	public void setTransformNullMessage(String s) {
+		transformNullMessage = new Message(s);
+	}
+
+	@IbisDoc({"10", "when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline", ""})
+	public void setAdapterToRunBeforeOnEmptyInput(String s) {
+		adapterToRunBeforeOnEmptyInput = s;
+	}
+	public String getAdapterToRunBeforeOnEmptyInput() {
+		return adapterToRunBeforeOnEmptyInput;
 	}
 }

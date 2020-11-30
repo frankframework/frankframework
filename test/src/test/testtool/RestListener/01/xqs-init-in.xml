@@ -1,6 +1,6 @@
 <root>
 	<delete>
-		<tableName>IBISSTORE</tableName>
+		<tableName>IBISTEMP</tableName>
 	</delete>
 <!-- 	<alter>
 		<sequenceName>SEQ_IBISSTORE</sequenceName>

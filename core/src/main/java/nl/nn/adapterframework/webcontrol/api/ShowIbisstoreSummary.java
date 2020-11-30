@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,14 +39,16 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 
 @Path("/")
@@ -88,7 +89,7 @@ public final class ShowIbisstoreSummary extends Base {
 				qs.setDatasourceName(datasource);
 				qs.setQueryType("select");
 				qs.setBlobSmartGet(true);
-				qs.setDirtyRead(true);
+				qs.setAvoidLocking(true);
 				qs.configure(true);
 				qs.open();
 				result = qs.sendMessage(new Message(query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();
@@ -109,10 +110,8 @@ public final class ShowIbisstoreSummary extends Base {
 	private Map<String, SlotIdRecord> getSlotmap() {
 		Map<String, SlotIdRecord> slotmap = new HashMap<String, SlotIdRecord>();
 
-		for(IAdapter iAdapter : getIbisManager().getRegisteredAdapters()) {
-			Adapter adapter = (Adapter)iAdapter;
-			for(Iterator<?> receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
-				ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+		for(Adapter adapter: getIbisManager().getRegisteredAdapters()) {
+			for (Receiver receiver: adapter.getReceivers()) {
 				ITransactionalStorage errorStorage=receiver.getErrorStorage();
 				if (errorStorage!=null) {
 					String slotId=errorStorage.getSlotId();
@@ -164,7 +163,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
+	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, IPipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
 		JsonArrayBuilder types = Json.createArrayBuilder();
 		String previousType=null;
 		JsonObjectBuilder typeBuilder=null;
@@ -270,7 +269,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 		}
 		
 		JsonStructure result = types.build();
-		return new Message(result.toString());
+		return new PipeRunResult(null, new Message(result.toString()));
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import nl.nn.adapterframework.jdbc.transformer.QueryOutputToJson;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -33,6 +34,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +54,7 @@ import java.util.Map.Entry;
 public final class ExecuteJdbcQuery extends Base {
 
 	public static final String DBXML2CSV_XSLT="xml/xsl/dbxml2csv.xslt";
+	private Logger secLog = LogUtil.getLogger("SEC");
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -95,7 +98,7 @@ public final class ExecuteJdbcQuery extends Base {
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 
 		String datasource = null, resultType = null, query = null, queryType = null, result = "", returnType = MediaType.APPLICATION_XML;
-		boolean dirtyRead = false;
+		boolean avoidLocking = false, trimSpaces=false;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("datasource")) {
@@ -110,8 +113,11 @@ public final class ExecuteJdbcQuery extends Base {
 					returnType = MediaType.APPLICATION_JSON;
 				}
 			}
-			if(key.equalsIgnoreCase("dirtyRead")) {
-				dirtyRead = Boolean.parseBoolean(entry.getValue().toString());
+			if(key.equalsIgnoreCase("avoidLocking")) {
+				avoidLocking = Boolean.parseBoolean(entry.getValue().toString());
+			}
+			if(key.equalsIgnoreCase("trimSpaces")) {
+				trimSpaces = Boolean.parseBoolean(entry.getValue().toString());
 			}
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
@@ -137,6 +143,8 @@ public final class ExecuteJdbcQuery extends Base {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
 		}
 
+		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
+
 		//We have all info we need, lets execute the query!
 		DirectQuerySender qs;
 		try {
@@ -149,7 +157,8 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.setName("QuerySender");
 			qs.setDatasourceName(datasource);
 			qs.setQueryType(queryType);
-			qs.setDirtyRead(dirtyRead);
+			qs.setTrimSpaces(trimSpaces);
+			qs.setAvoidLocking(avoidLocking);
 			qs.setBlobSmartGet(true);
 			qs.configure(true);
 			qs.open();

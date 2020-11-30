@@ -15,9 +15,6 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import nl.nn.adapterframework.core.IReceiver;
-
-
 /**
  * When a listener implements this interface it will get a reference to it's
  * parent receiver.
@@ -27,7 +24,7 @@ import nl.nn.adapterframework.core.IReceiver;
  */
 public interface ReceiverAware<M> {
 
-	public void setReceiver(IReceiver<M> receiver);
-	public IReceiver<M> getReceiver();
+	public void setReceiver(Receiver<M> receiver);
+	public Receiver<M> getReceiver();
 
 }

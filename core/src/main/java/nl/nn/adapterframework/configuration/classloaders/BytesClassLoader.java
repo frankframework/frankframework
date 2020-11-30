@@ -23,13 +23,9 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
 
 public abstract class BytesClassLoader extends ClassLoaderBase {
 
-	protected Logger log = LogUtil.getLogger(this);
 	private Map<String, byte[]> resources = new HashMap<String, byte[]>();
 
 	public BytesClassLoader(ClassLoader classLoader) {

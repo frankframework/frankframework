@@ -39,9 +39,11 @@ import nl.nn.adapterframework.util.Lock;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-import org.apache.commons.digester.AbstractObjectCreationFactory;
-import org.apache.commons.digester.Digester;
-import org.apache.commons.digester.Rule;
+import org.apache.commons.digester3.AbstractObjectCreationFactory;
+import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.Rule;
+import org.apache.commons.digester3.binder.RulesBinder;
+import org.apache.commons.digester3.binder.RulesModule;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 
@@ -182,19 +184,20 @@ public class MonitorManager implements EventHandler {
 	public void setDigesterRules(Digester d) {
 		Rule attributeChecker=new AttributeCheckingRule();
 
-		d.addFactoryCreate("*/monitoring",new CreationFactory());
+		d.addFactoryCreate("*/monitoring", new CreationFactory());
 		d.addSetProperties("*/monitoring");
 		d.addSetTop("*/monitoring","register");
 		d.addRule("*/monitoring", attributeChecker);
 
-		d.addRule("*/monitoring/destinations",new DestinationCleanup());
+		d.addRule("*/monitoring/destinations", new DestinationCleanup());
 
-		d.addObjectCreate("*/destination","className",IMonitorAdapter.class);
+		//We cannot call addObjectCreate(pattern, attributeName, clazz) as this will invoke the class (and the class is an interface).
+		d.addObjectCreate("*/destination", IMonitorAdapter.class.getCanonicalName(), "className");
 		d.addSetProperties("*/destination");
 		d.addSetTop("*/destination","register");
 		d.addRule("*/destination", attributeChecker);
 
-		d.addObjectCreate("*/destination/sender","className",ISender.class);
+		d.addObjectCreate("*/destination/sender", ISender.class.getCanonicalName(), "className");
 		d.addSetProperties("*/destination/sender");
 		d.addSetNext("*/destination/sender","setSender");
 		d.addRule("*/destination/sender", attributeChecker);

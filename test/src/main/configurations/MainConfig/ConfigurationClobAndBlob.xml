@@ -188,14 +188,11 @@
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
-			<pipe name="prepareBlobResultSessionKey2" className="nl.nn.adapterframework.pipes.FixedResult" storeResultInSessionKey="blobResult" returnString="${testdata.dir}/blobresult2.txt" />
 			<pipe name="readBlobViaSessionKeyNotCompressed" getInputFromSessionKey="dummyInput">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true" 
-					blobSessionKey="blobResult" blobsCompressed="false" >
+					blobsCompressed="false" >
 					<param name="key" sessionKey="blobKey"/>
 				</sender>
-			</pipe>
-			<pipe name="renderBlob2" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" fileName="${testdata.dir}/blobresult2.txt">
 				<forward name="success" path="EXIT" />
 			</pipe>
 

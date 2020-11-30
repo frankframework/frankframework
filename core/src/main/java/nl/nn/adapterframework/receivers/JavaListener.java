@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -50,6 +51,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String serviceName;
@@ -224,7 +226,6 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			return "internal: "+getName();
 		}
 	}
-
 
 	/**
 	 * The <code>toString()</code> method retrieves its value

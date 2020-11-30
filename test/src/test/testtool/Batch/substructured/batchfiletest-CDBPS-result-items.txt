@@ -1,4 +1,4 @@
-<document name="batchfiletest-CDBPS.txt">
+<document name="Test Tool correlation id">
 <doc>
 <regel>b1-1</regel>
 <regel>b1-2</regel>

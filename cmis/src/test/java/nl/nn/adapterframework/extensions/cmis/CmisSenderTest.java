@@ -115,7 +115,7 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 	@Test
 	public void getterSetterProxyUserName() {
 		String dummyString = "dummyString";
-		sender.setProxyUserName(dummyString);
+		sender.setProxyUsername(dummyString);
 	}
 
 	@Test

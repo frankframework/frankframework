@@ -13,13 +13,11 @@
 			<pipe name="insertDoc"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISSTORE (MESSAGEKEY, MESSAGEDATE, SLOTID, COMMENTS, MESSAGE, LABEL) VALUES (SEQ_IBISSTORE.NEXTVAL, CURRENT_TIMESTAMP, ?, ?, ?, ?)"
+					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
 					queryType="insert" jmsRealm="jdbc"
-					resultQuery="SELECT SEQ_IBISSTORE.CURRVAL FROM DUAL" scalar="true">
-					<param name="slotid" sessionKey="fileName" />
-					<param name="comments" sessionKey="key02" />
+					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true">
+					<param name="TVARCHAR" sessionKey="fileName" />
 					<param name="message" sessionKey="file" type="inputstream" />
-					<param name="label" sessionKey="key01" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -103,7 +101,7 @@
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				storeResultInSessionKey="docFileName">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT SLOTID FROM IBISSTORE WHERE MESSAGEKEY=?" queryType="select"
+					query="SELECT TVARCHAR FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					jmsRealm="jdbc" scalar="true">
 					<param name="messageKey" sessionKey="docId" />
 				</sender>
@@ -120,7 +118,7 @@
 			<pipe name="getDocAndWriteToFile"
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY=?" queryType="select"
+					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					jmsRealm="jdbc" scalar="true" streamResultToServlet="true"
 					blobsCompressed="false">
 					<param name="messageKey" sessionKey="docId" />

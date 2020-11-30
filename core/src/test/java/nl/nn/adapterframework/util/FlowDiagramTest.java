@@ -30,11 +30,15 @@ public class FlowDiagramTest {
 		IFlowGenerator generator = new V8FlowGenerator();
 		generator.afterPropertiesSet();
 
-		FlowDiagramManager flow = new FlowDiagramManager();
-		flow.setFlowGenerator(generator);
-		flow.afterPropertiesSet();
+		FlowDiagramManager flow = new FlowDiagramManager() {
+			@Override
+			protected IFlowGenerator createFlowGenerator() {
+				return generator;
+			}
+		};
 
 		assertNotNull(flow);
+		flow.afterPropertiesSet();
 	}
 
 	@Test
@@ -43,11 +47,15 @@ public class FlowDiagramTest {
 		generator.setFileExtension("svG");
 		generator.afterPropertiesSet();
 
-		FlowDiagramManager flow = new FlowDiagramManager();
-		flow.setFlowGenerator(generator);
-		flow.afterPropertiesSet();
+		FlowDiagramManager flow = new FlowDiagramManager() {
+			@Override
+			protected IFlowGenerator createFlowGenerator() {
+				return generator;
+			}
+		};
 
 		assertNotNull(flow);
+		flow.afterPropertiesSet();
 		assertEquals("svg", generator.getFileExtension());
 	}
 
@@ -57,10 +65,14 @@ public class FlowDiagramTest {
 		generator.setFileExtension("application/pdf");
 		generator.afterPropertiesSet();
 
-		FlowDiagramManager flow = new FlowDiagramManager();
-		flow.setFlowGenerator(generator);
-		flow.afterPropertiesSet();
+		FlowDiagramManager flow = new FlowDiagramManager() {
+			@Override
+			protected IFlowGenerator createFlowGenerator() {
+				return generator;
+			}
+		};
 
 		assertNotNull(flow);
+		flow.afterPropertiesSet();
 	}
 }

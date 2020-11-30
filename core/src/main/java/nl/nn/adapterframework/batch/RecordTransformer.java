@@ -29,10 +29,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -68,7 +66,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 	
 	@Override
-	public Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+	public String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
 		StringBuffer output = new StringBuffer();
 		Stack<IOutputField> conditions = new Stack<>();
 		
@@ -311,7 +309,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 			if (inputFieldIndex < 0 || inputFieldIndex >= inputFields.size()) {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
-			String val = (String)inputFields.get(inputFieldIndex);
+			String val = inputFields.get(inputFieldIndex);
 			if ((! StringUtils.isEmpty(getOutputSeparator())) && (val != null)) {
 				return val.trim();
 			}
@@ -350,7 +348,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		
 		@Override
 		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
-			String val = ((String)super.toValue(inputFields)).trim();
+			String val = super.toValue(inputFields).trim();
 			
 			if (startIndex >= val.length()) {
 				if (StringUtils.isEmpty(getOutputSeparator())) {
@@ -391,7 +389,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		
 		@Override
 		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
-			String val = ((String)super.toValue(inputFields)).trim();
+			String val = super.toValue(inputFields).trim();
 			FileUtils.align(result, val, length, leftAlign, fillchar);
 			return null;
 		}
@@ -501,7 +499,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 				if (inputFieldIndex >= inputFields.size()) {
 					throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 				}
-				date = inFormatter.parse((String)inputFields.get(inputFieldIndex));
+				date = inFormatter.parse(inputFields.get(inputFieldIndex));
 			}
 			result.append(outFormatter.format(date));
 			return null;
@@ -580,7 +578,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 			if (inputFieldIndex < 0 && inputFieldIndex >= inputFields.size()) {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
-			String val = (String)inputFields.get(inputFieldIndex);
+			String val = inputFields.get(inputFieldIndex);
 
 			if (compareValue.startsWith("{") && compareValue.endsWith("}")) { 
 				Vector<String> v = new Vector<String>();
@@ -593,7 +591,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 						return v.contains(val);
 					case 3: // sw
 						for (int i = 0; i < v.size(); i++) {
-							String  vs = (String)v.elementAt(i);
+							String  vs = v.elementAt(i);
 							if (val.startsWith(vs)) {
 								return true;
 							}
@@ -601,7 +599,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 						return false;
 					case 4: // ns
 						for (int i = 0; i < v.size(); i++) {
-							String  vs = (String)v.elementAt(i);
+							String  vs = v.elementAt(i);
 							if (val.startsWith(vs)) {
 								return false;
 							}

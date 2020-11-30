@@ -18,26 +18,24 @@ package nl.nn.adapterframework.webcontrol.action;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.ItemList;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
 
 /**
  * <code>Action</code> to retrieve the statistics from a
@@ -54,6 +52,7 @@ public class ShowAdapterStatistics extends ActionBase {
     private DecimalFormat pf=new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
     
    
+	@Override
 	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
 	    // Initialize action
@@ -63,7 +62,7 @@ public class ShowAdapterStatistics extends ActionBase {
 	    String deepString =  request.getParameter("deep");
 	    boolean deep = "true".equals(deepString);
 	
-	    Adapter adapter = (Adapter)ibisManager.getRegisteredAdapter(adapterName);
+	    Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 	    XmlBuilder adapterXML = new XmlBuilder("adapterStatistics");
 	
 	    adapterXML.addAttribute("name", adapter.getName());
@@ -94,59 +93,33 @@ public class ShowAdapterStatistics extends ActionBase {
 			item.addAttribute("count", numOfMessagesStartProcessingByHour[i]);
 		}
 	    
-	    Iterator recIt=adapter.getReceiverIterator();
-	    if (recIt.hasNext()) {
-			XmlBuilder receiversXML=new XmlBuilder("receivers");
-		    while (recIt.hasNext()) {
-				IReceiver receiver=(IReceiver) recIt.next();
-			    XmlBuilder receiverXML=new XmlBuilder("receiver");
-			    receiversXML.addSubElement(receiverXML);
-	
-			    receiverXML.addAttribute("name",receiver.getName());
-				receiverXML.addAttribute("class", receiver.getClass().getName());
-				receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
-				receiverXML.addAttribute("messagesRetried", ""+receiver.getMessagesRetried());
-	/*				  
-			    if (receiver instanceof HasSender) {
-					ISender sender = ((HasSender) receiver).getSender();
-				          if (sender != null) 
-					          	receiverXML.addAttribute("senderName", sender.getName());
-	 	        }
-	*/		    
-			    if (receiver instanceof IReceiverStatistics) {
-	
-				    IReceiverStatistics statReceiver = (IReceiverStatistics)receiver;
-				    Iterator statsIter;
-	
-				    statsIter = statReceiver.getProcessStatisticsIterator();
-				    if (statsIter != null) {
-					    XmlBuilder procStatsXML = new XmlBuilder("procStats");
-//						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
-//						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
-					    while(statsIter.hasNext()) {				    
-					        StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-					        procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat", deep));
-				        }
-						receiverXML.addSubElement(procStatsXML);
-				    }
-	
-				    statsIter = statReceiver.getIdleStatisticsIterator();
-				    if (statsIter != null) {
-				        XmlBuilder procStatsXML = new XmlBuilder("idleStats");
-					    while(statsIter.hasNext()) {				    
-					        StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-					        procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat", deep));
-			  	      	}
-						receiverXML.addSubElement(procStatsXML);
-				    }
-	
-	
-				}
+		XmlBuilder receiversXML=new XmlBuilder("receivers");
+		for (Receiver<?> receiver: adapter.getReceivers()) {
+			XmlBuilder receiverXML=new XmlBuilder("receiver");
+			receiversXML.addSubElement(receiverXML);
+
+			receiverXML.addAttribute("name",receiver.getName());
+			receiverXML.addAttribute("class", receiver.getClass().getName());
+			receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
+			receiverXML.addAttribute("messagesRetried", ""+receiver.getMessagesRetried());
+
+			XmlBuilder procStatsXML = new XmlBuilder("procStats");
+//			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
+//			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
+			for (StatisticsKeeper pstat: receiver.getProcessStatistics()) {
+				procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat", deep));
 			}
-	        adapterXML.addSubElement(receiversXML); 
-	    }
-	
-	    
+			receiverXML.addSubElement(procStatsXML);
+
+			
+			XmlBuilder idleStatsXML = new XmlBuilder("idleStats");
+			for (StatisticsKeeper istat: receiver.getIdleStatistics()) {
+				idleStatsXML.addSubElement(statisticsKeeperToXmlBuilder(istat, "stat", deep));
+			}
+			receiverXML.addSubElement(idleStatsXML);
+		}
+		adapterXML.addSubElement(receiversXML); 
+
 		StatisticsKeeperToXml handler = new StatisticsKeeperToXml(adapterXML, deep);
 		handler.configure();
 		Object handle = handler.start(null,null,null);

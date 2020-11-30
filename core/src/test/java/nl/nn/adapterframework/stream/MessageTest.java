@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.stream;
 
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,8 +38,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import static org.hamcrest.core.StringStartsWith.startsWith;
 
 import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -90,7 +90,7 @@ public class MessageTest {
 		}
 	}
 	
-	protected void testToString(Message adapter, Class clazz) {
+	protected void testToString(Message adapter, Class<?> clazz) {
 		String actual = adapter.toString();
 		assertThat(actual, startsWith(clazz.getSimpleName()));
 		assertEquals(adapter.asObject().getClass().getName(), clazz.getName());
@@ -388,7 +388,7 @@ public class MessageTest {
 		folder.create();
 		File file = folder.newFile();
 		writeContentsToFile(file, testString);
-		URL source = file.toURL();
+		URL source = file.toURI().toURL();
 
 		Message in = new Message(source);
 		byte[] wire = serializationTester.serialize(in);
@@ -404,5 +404,80 @@ public class MessageTest {
 		fw.write(contents);
 		fw.close();
 	}
-	
+
+	@Test
+	public void testMessageSizeString() {
+		Message message = Message.asMessage("string");
+		assertEquals("size differs or could not be determined", 6, message.size());
+	}
+
+	@Test
+	public void testMessageSizeByteArray() {
+		Message message = Message.asMessage( "string".getBytes());
+		assertEquals("size differs or could not be determined", 6, message.size());
+	}
+
+	@Test
+	public void testMessageSizeFileInputStream() throws Exception {
+		URL url = this.getClass().getResource("/file.xml");
+		assertNotNull("cannot find testfile", url);
+
+		File file = new File(url.toURI());
+		FileInputStream fis = new FileInputStream(file);
+		Message message = Message.asMessage(fis);
+		assertEquals("size differs or could not be determined", 33, message.size());
+	}
+
+	@Test
+	public void testMessageSizeFile() throws Exception {
+		URL url = this.getClass().getResource("/file.xml");
+		assertNotNull("cannot find testfile", url);
+
+		File file = new File(url.toURI());
+		Message message = Message.asMessage(file);
+		assertEquals("size differs or could not be determined", 33, message.size());
+	}
+
+	@Test
+	public void testMessageSizeURL() {
+		URL url = this.getClass().getResource("/file.xml");
+		assertNotNull("cannot find testfile", url);
+
+		Message message = Message.asMessage(url);
+		assertEquals("size differs or could not be determined", -1, message.size());
+	}
+
+	@Test
+	public void testNullMessageSize() {
+		Message message = Message.nullMessage();
+		assertEquals(0, message.size());
+	}
+
+	@Test
+	public void testMessageSizeExternalURL() throws Exception {
+		URL url = new URL("http://www.file.xml");
+		assertNotNull("cannot find testfile", url);
+
+		Message message = Message.asMessage(url);
+		assertEquals(-1, message.size());
+	}
+
+	@Test
+	public void testMessageSizeReader() {
+		Message message = new Message(new StringReader("string"));
+		assertEquals("size differs or could not be determined", -1, message.size());
+	}
+
+	@Test
+	public void testMessageIsEmpty() {
+		Message message = Message.nullMessage();
+		assertTrue(message.isEmpty());
+		assertTrue(Message.isEmpty(message));
+	}
+
+	@Test
+	public void testNullMessageIsEmpty() {
+		Message message = null;
+		assertTrue(Message.isEmpty(message));
+	}
 }

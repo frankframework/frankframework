@@ -37,9 +37,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
-import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
-import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -113,8 +111,6 @@ public class ApiListenerServlet extends HttpServletBase {
 			log.warn("Aborting request with status [400], empty uri");
 			return;
 		}
-		if(uri.startsWith("/"))
-			uri = uri.substring(1);
 		if(uri.endsWith("/"))
 			uri = uri.substring(0, uri.length()-1);
 
@@ -199,11 +195,11 @@ public class ApiListenerServlet extends HttpServletBase {
 			 */
 			ApiPrincipal userPrincipal = null;
 
-			if(!AuthenticationMethods.NONE.equals(listener.getAuthenticationMethod())) {
+			if(!AuthenticationMethods.NONE.equals(listener.getAuthenticationMethodEnum())) {
 				String authorizationToken = null;
 				Cookie authorizationCookie = null;
 
-				switch (listener.getAuthenticationMethod()) {
+				switch (listener.getAuthenticationMethodEnum()) {
 				case COOKIE:
 					Cookie[] cookies = request.getCookies();
 					if(cookies != null) {
@@ -220,7 +216,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					authorizationToken = request.getHeader("Authorization");
 					break;
 				case AUTHROLE:
-					List<String> roles = listener.getAuthenticationRoles();
+					List<String> roles = listener.getAuthenticationRoleList();
 					if(roles != null) {
 						for (String role : roles) {
 							if(request.isUserInRole(role)) {
@@ -282,7 +278,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 			if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
 				response.setStatus(415);
-				if(log.isTraceEnabled()) log.trace("Aborting request with status [415], did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
+				if(log.isTraceEnabled()) log.trace("Aborting request with status [415], did not match consumes ["+listener.getConsumesEnum()+"] got ["+request.getContentType()+"] instead");
 				return;
 			}
 
@@ -499,7 +495,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
 			String contentType = listener.getContentType();
-			if(listener.getProduces().equals("ANY")) {
+			if(listener.getProducesEnum().equals(MediaTypes.ANY)) {
 				contentType = messageContext.get("contentType", contentType);
 			}
 			response.setHeader("Content-Type", contentType);

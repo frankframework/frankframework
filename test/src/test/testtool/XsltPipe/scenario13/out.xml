@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?ibiscontext test=PL26081973 ?>
+<request action="copySkipEmptyTags">
+	<data1>&lt;RDB&gt;
+ &lt;P volgnummer="1"&gt;
+   &lt;OORSPRONG&gt;LIFE_CLUSTER4B&lt;/OORSPRONG&gt;
+   &lt;SOMKOOPSOM&gt;7648.00&lt;/SOMKOOPSOM&gt;
+   &lt;PREMIERESTITUTIEBEDRAG&gt;0.00&lt;/PREMIERESTITUTIEBEDRAG&gt;
+   &lt;ASRESTITUTIEBEDRAG&gt;0.00&lt;/ASRESTITUTIEBEDRAG&gt;
+ &lt;/P&gt;
+&lt;/RDB&gt;
+</data1>
+	<b>b</b>
+	<d hallo="true">d</d>
+	<f>
+		<f1>
+			<f2>
+				<f3>
+					<f4>
+						<f5>f</f5>
+					</f4>
+				</f3>
+			</f2>
+		</f1>
+	</f>
+	<data2>&lt;RDB&gt;
+ &lt;P volgnummer="1"&gt;
+   &lt;OORSPRONG&gt;LIFE_CLUSTER4B&lt;/OORSPRONG&gt;
+   &lt;SOMKOOPSOM&gt;7648.00&lt;/SOMKOOPSOM&gt;
+   &lt;PREMIERESTITUTIEBEDRAG&gt;0.00&lt;/PREMIERESTITUTIEBEDRAG&gt;
+   &lt;ASRESTITUTIEBEDRAG&gt;0.00&lt;/ASRESTITUTIEBEDRAG&gt;
+ &lt;/P&gt;
+&lt;/RDB&gt;
+</data2>
+</request>

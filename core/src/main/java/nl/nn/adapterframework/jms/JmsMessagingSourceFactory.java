@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,10 +30,11 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IbisException;
-
 import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.util.AppConstants;
 
 
 /**
@@ -48,15 +49,18 @@ import org.apache.commons.lang.StringUtils;
 public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	static private Map jmsMessagingSourceMap = new HashMap();
 	private JMSFacade jmsFacade;
+	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 
 	public JmsMessagingSourceFactory(JMSFacade jmsFacade) {
 		this.jmsFacade = jmsFacade;
 	}
 
+	@Override
 	protected Map getMessagingSourceMap() {
 		return jmsMessagingSourceMap;
 	}
 
+	@Override
 	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName,
 			String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Context context = getContext();
@@ -68,10 +72,12 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 				jmsFacade.getProxiedDestinationNames(), useJms102);
 	}
 
+	@Override
 	protected Context createContext() throws NamingException {
 		return (Context) new InitialContext();
 	}
 
+	@Override
 	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination, boolean useJms102) throws IbisException {
 		ConnectionFactory connectionFactory;
 		if (jmsFacade.getProxiedConnectionFactories() != null
@@ -79,6 +85,10 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			log.debug(jmsFacade.getLogPrefix()+"looking up proxied connection factory ["+cfName+"]");
 			connectionFactory = jmsFacade.getProxiedConnectionFactories().get(cfName);
 		} else {
+			if (jmsFacade.getProxiedConnectionFactories() != null ) {
+				ConfigurationWarnings.add(jmsFacade, log, "connection factory '" + cfName
+						+ "' isn't part of proxiedConnectionFactories and is therefore probably not known to the transaction manager");
+			}
 			String prefixedCfName=jmsFacade.getJndiContextPrefix()+cfName;
 			log.debug(jmsFacade.getLogPrefix()+"looking up connection factory ["+prefixedCfName+"]");
 			if (StringUtils.isNotEmpty(jmsFacade.getJndiContextPrefix())) {
@@ -113,7 +123,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	public String getConnectionFactoryInfo(ConnectionFactory connectionFactory) {
-		if (IbisContext.getApplicationServerType().equals("TIBCOAMX")) {
+		if ("TIBCOAMX".equals(applicationServerType)) {
 			// Workaround to prevent the following exception:
 			// [org.apache.geronimo.connector.outbound.MCFConnectionInterceptor] - Error occurred creating ManagedConnection for org.apache.geronimo.connector.outbound.ConnectionInfo@#######
 			// javax.resource.ResourceException: JMSJCA-E084: Failed to create session: The JNDI name is null
@@ -150,10 +160,12 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			wrapped=connectionFactory;
 		}
 
+		@Override
 		public Connection createConnection() throws JMSException {
 			return wrapped.createConnection();
 		}
 
+		@Override
 		public Connection createConnection(String arg0, String arg1) throws JMSException {
 			return wrapped.createConnection(arg0,arg1);
 		}
@@ -167,18 +179,22 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			wrapped=connectionFactory;
 		}
 
+		@Override
 		public QueueConnection createQueueConnection() throws JMSException {
 			return wrapped.createQueueConnection();
 		}
 
+		@Override
 		public QueueConnection createQueueConnection(String arg0, String arg1) throws JMSException {
 			return wrapped.createQueueConnection(arg0,arg1);
 		}
 
+		@Override
 		public Connection createConnection() throws JMSException {
 			return createQueueConnection();
 		}
 
+		@Override
 		public Connection createConnection(String arg0, String arg1) throws JMSException {
 			return createQueueConnection(arg0, arg1);
 		}
@@ -192,18 +208,22 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			wrapped=connectionFactory;
 		}
 
+		@Override
 		public TopicConnection createTopicConnection() throws JMSException {
 			return wrapped.createTopicConnection();
 		}
 
+		@Override
 		public TopicConnection createTopicConnection(String arg0, String arg1) throws JMSException {
 			return wrapped.createTopicConnection(arg0,arg1);
 		}
 
+		@Override
 		public Connection createConnection() throws JMSException {
 			return createTopicConnection();
 		}
 
+		@Override
 		public Connection createConnection(String arg0, String arg1) throws JMSException {
 			return createTopicConnection(arg0, arg1);
 		}

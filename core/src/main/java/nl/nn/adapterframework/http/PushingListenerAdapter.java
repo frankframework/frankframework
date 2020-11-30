@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
@@ -33,16 +34,17 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
+ * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
  * to receive messages from Servlets.
  * </table>
  * @author  Gerrit van Brakel 
  * @since   4.12
  */
-public class PushingListenerAdapter<M extends String> implements IPushingListener<M>, ServiceClient {
+public class PushingListenerAdapter implements IPushingListener<String>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	private IMessageHandler<M> handler;
+	private IMessageHandler<String> handler;
 	private String name;
 	private boolean applicationFaultsAsExceptions=true;
 //	private IbisExceptionListener exceptionListener;
@@ -69,11 +71,11 @@ public class PushingListenerAdapter<M extends String> implements IPushingListene
 
 
 	@Override
-	public String getIdFromRawMessage(M rawMessage, Map<String, Object> threadContext) {
+	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) {
 		return null;
 	}
 	@Override
-	public Message extractMessage(M rawMessage, Map<String, Object> threadContext) {
+	public Message extractMessage(String rawMessage, Map<String, Object> threadContext) {
 		return Message.asMessage(rawMessage);
 	}
 	@Override
@@ -83,11 +85,11 @@ public class PushingListenerAdapter<M extends String> implements IPushingListene
 
 	@Override
 	public String processRequest(String correlationId, String rawMessage, Map<String, Object> requestContext) throws ListenerException {
-		Message message = extractMessage((M)rawMessage, requestContext);
+		Message message = extractMessage(rawMessage, requestContext);
 		try {
 			log.debug("PushingListenerAdapter.processRequerawMmessagest() for correlationId ["+correlationId+"]");
 			try {
-				return handler.processRequest(this, correlationId, (M)rawMessage, message, requestContext).asString();
+				return handler.processRequest(this, correlationId, rawMessage, message, requestContext).asString();
 			} catch (IOException e) {
 				throw new ListenerException(e);
 			} 
@@ -119,7 +121,7 @@ public class PushingListenerAdapter<M extends String> implements IPushingListene
 	}
 
 	@Override
-	public void setHandler(IMessageHandler<M> handler) {
+	public void setHandler(IMessageHandler<String> handler) {
 		this.handler=handler;
 	}
 	@Override
@@ -140,5 +142,4 @@ public class PushingListenerAdapter<M extends String> implements IPushingListene
 	public void setRunning(boolean running) {
 		this.running = running;
 	}
-
 }

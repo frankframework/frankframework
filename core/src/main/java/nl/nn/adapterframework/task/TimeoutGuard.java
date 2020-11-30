@@ -51,7 +51,7 @@ public class TimeoutGuard {
 			log.warn("Thread ["+thread.getName()+"] executing task ["+description+"] exceeds timeout of ["+timeout+"] s, interuppting");
 			threadKilled=true;
 			thread.interrupt();
-			kill();
+			abort();
 		}
 	}
 
@@ -101,9 +101,9 @@ public class TimeoutGuard {
 	}
 
 	/**
-	 * Implement this method to kill the process you are 'guarding'.
+	 * Implement this method to stop the process and cleanup the resources you are 'guarding'.
 	 */
-	protected void kill() {
+	protected void abort() {
 		// can be called in descendants to kill the guarded job when timeout is exceeded.
 	}
 

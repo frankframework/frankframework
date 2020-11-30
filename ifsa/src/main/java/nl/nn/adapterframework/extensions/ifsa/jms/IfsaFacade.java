@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
@@ -47,6 +47,8 @@ import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAQueueSender;
 import com.ing.ifsa.IFSAServerQueueSender;
 import com.ing.ifsa.IFSATextMessage;
+
+import lombok.Getter;
 
 /**
  * Base class for IFSA 2.0/2.2 functions.
@@ -78,9 +80,10 @@ import com.ing.ifsa.IFSATextMessage;
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
  */
-public class IfsaFacade implements INamedObject, HasPhysicalDestination {
+public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
     protected Logger log = LogUtil.getLogger(this);
-    
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+
  	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
  	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;
  	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
@@ -675,10 +678,11 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		return useSelectorsStore.booleanValue();
 	}
 
-
+	@Override
 	public void setName(String newName) {
 		name = newName;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}

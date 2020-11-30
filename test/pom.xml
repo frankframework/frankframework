@@ -14,9 +14,11 @@
 	<properties>
 		<m2eclipse.wtp.contextRoot>iaf-test</m2eclipse.wtp.contextRoot>
 		<failOnMissingWebXml>false</failOnMissingWebXml>
+		<databaseHost>localhost</databaseHost>
 	</properties>
 
 	<dependencies>
+		<!-- This dependency is here because of the IbisMetricsPipe -->
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
@@ -25,32 +27,6 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-webapp</artifactId>
 			<type>war</type>
-		</dependency>
-
-<!-- 	Only runs on Java7 or higher!
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-cmis</artifactId>
-			<version>${iaf.version}</version>
-		</dependency>
--->
-
-		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<artifactId>servlet-api</artifactId>
-			<groupId>javax.servlet</groupId>
-			<version>2.5</version>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -62,8 +38,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 <!--
@@ -83,6 +59,48 @@
 				</configuration>
 			</plugin>
 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.0</version>
+				<!-- make separate artifacts of configurations, resources and testscenarios, to inject them into deployments -->
+				<executions>
+					<execution>
+						<id>zip-configurations</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>configurations</classifier>
+							<classesDirectory>src/main</classesDirectory>
+							<includes>configurations/</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>zip-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>resources</classifier>
+							<classesDirectory>src/main/resources</classesDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>zip-scenarios</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>scenarios</classifier>
+							<classesDirectory>src/test/testtool</classesDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
@@ -126,6 +144,11 @@
 							<directory>src/test/testtool</directory>
 							<targetPath>testtool</targetPath>
 						</resource>
+						<webResource>
+							<directory>src/main/webapp/META-INF</directory>
+							<targetPath>META-INF</targetPath>
+							<filtering>true</filtering>
+						</webResource>
 					</webResources>
 				</configuration>
 			</plugin>

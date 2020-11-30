@@ -48,8 +48,17 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
+			<pipe name="passThrough" className="nl.nn.adapterframework.pipes.EchoPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			
 			<pipe name="copy" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/copy.xsl">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			
+			<pipe name="copySkipEmptyTags" className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="XsltPipe/copy.xsl" skipEmptyTags="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			
