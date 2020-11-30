@@ -275,7 +275,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public EmailMessage toFile(String folder, String filename) throws FileSystemException {
-		throw new NotImplementedException("Cannot make item for ["+filename+"] file in Exchange folder ["+folder+"]");
+		return toFile(filename);
 	}
 
 	private boolean itemExistsInFolder(FolderId folderId, String itemId) throws FileSystemException{
@@ -763,8 +763,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 		return null;
 	}
-	
-	static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
+
+
+	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
 		
 		@Override
 		public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {

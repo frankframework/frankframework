@@ -27,6 +27,11 @@ public class MailFileSystemUtilsTest {
 	}
 
 	@Test
+	public void testGetValidAddressWithLineFeed() throws AddressException {
+		testGetValidAddress("Xxx <xxx@yy.nl>", "\"Xxx\n\" <xxx@yy.nl>");
+	}
+
+	@Test
 	public void testGetValidAddressWithComma1() throws AddressException {
 		testGetValidAddress("\"Brakel, G. van\" <gerrit@waf.nl>");
 	}

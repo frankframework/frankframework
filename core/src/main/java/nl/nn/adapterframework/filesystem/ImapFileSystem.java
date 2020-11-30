@@ -69,10 +69,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 	
 	private Store store = null;
 	private Session emailSession;
-
-	{
-		setBaseFolder("INBOX");
-	}
+	private IMAPFolder basefolderRef; 
 
 
 	@Override
@@ -89,23 +86,41 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 			store = emailSession.getStore("imaps");
 			store.connect(getHost(), getPort(), cf.getUsername(), cf.getPassword());
+			findBaseFolder();
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
-	private IMAPFolder getFolder(String name) throws MessagingException {
-		Folder inbox = store.getFolder("INBOX");
-		Folder folder;
-		String baseFolder = getBaseFolder();
-		if (StringUtils.isNotEmpty(baseFolder)) {
-			folder = inbox.getFolder(baseFolder);
-		} else {
-			folder = inbox;
+	private void findBaseFolder() throws FileSystemException {
+		try {
+			IMAPFolder inbox = (IMAPFolder)store.getFolder("INBOX");
+			IMAPFolder folder;
+			String baseFolder = getBaseFolder();
+			if (StringUtils.isNotEmpty(baseFolder)) {
+				folder = (IMAPFolder)inbox.getFolder(baseFolder);
+				if (!folder.exists()) {
+					folder = (IMAPFolder)store.getFolder(baseFolder);
+				}
+				if (!folder.exists()) {
+					throw new FileSystemException("Could not find baseFolder ["+baseFolder+"]");
+				}
+			} else {
+				folder = inbox;
+			}
+			basefolderRef = folder;
+		} catch (MessagingException e) {
+			throw new FileSystemException(e);
 		}
-		if (StringUtils.isNotEmpty(name))
-			folder = folder.getFolder(name);
-		return (IMAPFolder) folder;
+	}
+
+
+	private IMAPFolder getFolder(String name) throws MessagingException {
+		IMAPFolder folder = basefolderRef;
+		if (StringUtils.isNotEmpty(name)) {
+			folder = (IMAPFolder)folder.getFolder(name);
+		}
+		return folder;
 	}
 
 	@Override
@@ -145,9 +160,11 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 	@Override
 	public Message toFile(String defaultFolder, String filename) throws FileSystemException {
 		try {
-			Folder folder = getFolder(defaultFolder);
-			UIDFolder uf = (UIDFolder) folder;
-			return uf.getMessageByUID(nameToUid(filename));
+			IMAPFolder folder = getFolder(defaultFolder);
+			if (!folder.isOpen()) {
+				folder.open(Folder.READ_WRITE);
+			}
+			return folder.getMessageByUID(nameToUid(filename));
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}
@@ -177,7 +194,9 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 	public DirectoryStream<Message> listFiles(String foldername) throws FileSystemException {
 		try {
 			Folder folder = getFolder(foldername);
-			folder.open(Folder.READ_WRITE);
+			if (!folder.isOpen()) {
+				folder.open(Folder.READ_WRITE);
+			}
 			Message messages[] = folder.getMessages();
 			return FileSystemUtils.getDirectoryStream(Arrays.asList(messages));
 		} catch (MessagingException e) {
