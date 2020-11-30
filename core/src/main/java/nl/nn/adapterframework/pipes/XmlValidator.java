@@ -757,7 +757,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public void setForwardFailureToSuccess(boolean b) {
 		this.forwardFailureToSuccess = b;
 	}
-	public Boolean isForwardFailureToSuccess() {
+	public boolean isForwardFailureToSuccess() {
 		return forwardFailureToSuccess;
 	}
 

@@ -227,6 +227,12 @@ public class FrankDocModel {
 	private void checkForTypeConflict(Method setter, Method getter, FrankElement attributeOwner) {
 		String setterType = setter.getParameterTypes()[0].getName();
 		String getterType = getter.getReturnType().getName();
+		if(getter.getName().startsWith("get")) {
+			// For issers we require an exact match of the type name. For getters,
+			// the setter and the getter may mix boxed and unboxed types.
+			setterType = Utils.promoteIfPrimitive(setterType);
+			getterType = Utils.promoteIfPrimitive(getterType);
+		}
 		if(! getterType.equals(setterType)) {
 			log.warn(String.format("In Frank element [%s]: setter [%s] has type [%s] while the getter has type [%s]",
 					attributeOwner.getSimpleName(), setter.getName(), setterType, getterType));

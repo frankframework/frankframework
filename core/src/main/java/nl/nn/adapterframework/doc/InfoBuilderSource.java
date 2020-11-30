@@ -59,6 +59,15 @@ class InfoBuilderSource {
 	private static final String JAVA_BYTE = "java.lang.Byte";
 	private static final String JAVA_SHORT = "java.lang.Short";
 
+	private static Map<String, String> primitiveToBoxed = new HashMap<>();
+	static {
+		primitiveToBoxed.put("int", JAVA_INTEGER);
+		primitiveToBoxed.put("boolean", JAVA_BOOLEAN);
+		primitiveToBoxed.put("long", JAVA_LONG);
+		primitiveToBoxed.put("byte", JAVA_BYTE);
+		primitiveToBoxed.put("short", JAVA_SHORT);
+	}
+
 	private static final Set<String> JAVA_BOXED = new HashSet<String>(Arrays.asList(new String[] {
 			JAVA_STRING, JAVA_INTEGER, JAVA_BOOLEAN, JAVA_LONG, JAVA_BYTE, JAVA_SHORT}));
 	
@@ -420,5 +429,13 @@ class InfoBuilderSource {
 				&& (! JAVA_BOXED.contains(method.getParameterTypes()[0].getName()))
 				&& (method.getReturnType().isPrimitive())
 				&& (method.getReturnType().getName().equals("void"));
+	}
+
+	public static String promoteIfPrimitive(String typeName) {
+		if(primitiveToBoxed.containsKey(typeName)) {
+			return primitiveToBoxed.get(typeName);
+		} else {
+			return typeName;
+		}
 	}
 }

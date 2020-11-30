@@ -64,4 +64,8 @@ public final class Utils {
 	public static String toUpperCamelCase(String arg) {
 		return InfoBuilderSource.toUpperCamelCase(arg);
 	}
+
+	public static String promoteIfPrimitive(String typeName) {
+		return InfoBuilderSource.promoteIfPrimitive(typeName);
+	}
 }
