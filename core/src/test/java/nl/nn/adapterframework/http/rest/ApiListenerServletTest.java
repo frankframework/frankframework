@@ -191,24 +191,26 @@ public class ApiListenerServletTest extends Mockito {
 	public void uriNotFound() throws ServletException, IOException, ListenerException, ConfigurationException {
 		addListener("test", Methods.GET);
 
-		Response result = service(createRequest("not-test", Methods.GET, null));
+		Response result = service(createRequest("/not-test", Methods.GET, null));
 		assertEquals(404, result.getStatus());
 	}
 
 	@Test
 	public void methodNotAllowed() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("test", Methods.GET);
+		String uri="/test";
+		addListener(uri, Methods.GET);
 
-		Response result = service(createRequest("test", Methods.PUT, null));
+		Response result = service(createRequest(uri, Methods.PUT, null));
 		assertEquals(405, result.getStatus());
 		assertNull(result.getErrorMessage());
 	}
 
 	@Test
 	public void simpleGet() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("test1", Methods.GET);
+		String uri="/test1";
+		addListener(uri, Methods.GET);
 
-		Response result = service(createRequest("test1", Methods.GET, null));
+		Response result = service(createRequest(uri, Methods.GET, null));
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -216,9 +218,10 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void simpleGetWithSlashes() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("/test2/", Methods.GET);
+		String uri="/test2";
+		addListener(uri, Methods.GET);
 
-		Response result = service(createRequest("test2/", Methods.GET, null));
+		Response result = service(createRequest(uri, Methods.GET, null));
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -226,9 +229,10 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void preFlightRequest() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("preflight/", Methods.GET);
+		String uri="/preflight/";
+		addListener(uri, Methods.GET);
 
-		Response result = service(createRequest("preflight/", Methods.OPTIONS, null));
+		Response result = service(createRequest(uri, Methods.OPTIONS, null));
 		assertEquals(200, result.getStatus());
 		assertEquals("", result.getContentAsString()); //Pre-flight requests have no data
 		assertNull(result.getErrorMessage());
@@ -240,11 +244,12 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void preFlightRequestWithRequestHeader() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("preflight/", Methods.GET);
+		String uri="/preflight/";
+		addListener(uri, Methods.GET);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Access-Control-Request-Headers", "Message-Id,CustomHeader");
-		Response result = service(createRequest("preflight/", Methods.OPTIONS, null, headers));
+		Response result = service(createRequest(uri, Methods.OPTIONS, null, headers));
 		assertEquals(200, result.getStatus());
 		assertEquals("", result.getContentAsString()); //Pre-flight requests have no data
 		assertNull(result.getErrorMessage());
@@ -257,12 +262,13 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void corsGetRequest() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("not-preflight/", Methods.POST);
+		String uri="/not-preflight/";
+		addListener(uri, Methods.POST);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("origin", "https://ibissource.org");
 		headers.put("Access-Control-Request-Headers", "Message-Id,CustomHeader");
-		Response result = service(createRequest("not-preflight/", Methods.POST, "data", headers));
+		Response result = service(createRequest(uri, Methods.POST, "data", headers));
 		assertEquals(200, result.getStatus());
 		assertEquals("data", result.getContentAsString());
 		assertNull(result.getErrorMessage());
@@ -276,9 +282,10 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void apiListenerThatProducesXML() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("/ApiListenerThatProducesXML/", Methods.PUT, null, MediaTypes.XML);
+		String uri="/ApiListenerThatProducesXML/";
+		addListener(uri, Methods.PUT, null, MediaTypes.XML);
 
-		Response result = service(createRequest("ApiListenerThatProducesXML", Methods.PUT, "<xml>data</xml>"));
+		Response result = service(createRequest(uri, Methods.PUT, "<xml>data</xml>"));
 		assertEquals(200, result.getStatus());
 		assertEquals("<xml>data</xml>", result.getContentAsString());
 		assertEquals("OPTIONS, PUT", result.getHeader("Allow"));
@@ -288,9 +295,10 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void apiListenerThatProducesJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("/ApiListenerThatProducesJSON/", Methods.POST, null, MediaTypes.JSON);
+		String uri="/ApiListenerThatProducesJSON/";
+		addListener(uri, Methods.POST, null, MediaTypes.JSON);
 
-		Response result = service(createRequest("ApiListenerThatProducesJSON", Methods.POST, "{}"));
+		Response result = service(createRequest(uri, Methods.POST, "{}"));
 		assertEquals(200, result.getStatus());
 		assertEquals("{}", result.getContentAsString());
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
@@ -300,21 +308,23 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void clientAcceptHeaderDoesNotLikeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("/ApiListenerAllow/", Methods.POST, null, MediaTypes.JSON);
+		String uri="/ApiListenerAllow/";
+		addListener(uri, Methods.POST, null, MediaTypes.JSON);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/xml");
-		Response result = service(createRequest("ApiListenerAllow", Methods.POST, "{}", headers));
+		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
 		assertEquals(406, result.getStatus());
 	}
 
 	@Test
 	public void clientAcceptHeaderLovesJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("/ApiListenerAllow/", Methods.POST, null, MediaTypes.JSON);
+		String uri="/ApiListenerAllow/";
+		addListener(uri, Methods.POST, null, MediaTypes.JSON);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
-		Response result = service(createRequest("ApiListenerAllow", Methods.POST, "{}", headers));
+		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
 		assertEquals(200, result.getStatus());
 		assertEquals("{}", result.getContentAsString());
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
@@ -324,24 +334,26 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void listenerDoesNotLikeContentTypeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("listenerDoesNotAcceptContentType", Methods.POST, MediaTypes.XML, null);
+		String uri="/listenerDoesNotAcceptContentType";
+		addListener(uri, Methods.POST, MediaTypes.XML, null);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
-		Response result = service(createRequest("listenerDoesNotAcceptContentType", Methods.POST, "{}", headers));
+		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
 		assertEquals(415, result.getStatus());
 		System.out.println(result);
 	}
 
 	@Test
 	public void listenerLovesContentTypeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("listenerLovesContentTypeJSON", Methods.POST, MediaTypes.JSON, MediaTypes.JSON);
+		String uri="/listenerLovesContentTypeJSON";
+		addListener(uri, Methods.POST, MediaTypes.JSON, MediaTypes.JSON);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
-		Response result = service(createRequest("listenerLovesContentTypeJSON", Methods.POST, "{}", headers));
+		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
 		assertEquals(200, result.getStatus());
 		assertEquals("{}", result.getContentAsString());
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
@@ -351,12 +363,13 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void getRequestWithQueryParameters() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("queryParamTest", Methods.GET);
+		String uri="/queryParamTest";
+		addListener(uri, Methods.GET);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
-		Response result = service(createRequest("queryParamTest?name=JOHN-DOE&GENDER=MALE", Methods.GET, null, headers));
+		Response result = service(createRequest(uri+"?name=JOHN-DOE&GENDER=MALE", Methods.GET, null, headers));
 
 		assertEquals(200, result.getStatus());
 		assertEquals("JOHN-DOE", session.get("name"));
@@ -367,12 +380,13 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void getRequestWithDynamicPath() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("dynamic/{poef}", Methods.GET);
+		String uri="/dynamic/";
+		addListener(uri+"{poef}", Methods.GET);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
-		Response result = service(createRequest("dynamic/tralala", Methods.GET, null, headers));
+		Response result = service(createRequest(uri+"tralala", Methods.GET, null, headers));
 
 		assertEquals(200, result.getStatus());
 		assertEquals("tralala", session.get("poef"));
@@ -382,12 +396,13 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void getRequestWithAsteriskPath() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("dynamic/*", Methods.GET);
+		String uri="/dynamic/";
+		addListener(uri+"*", Methods.GET);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
-		Response result = service(createRequest("dynamic/tralala", Methods.GET, null, headers));
+		Response result = service(createRequest(uri+"tralala", Methods.GET, null, headers));
 		System.out.println(session);
 
 		assertEquals(200, result.getStatus());
@@ -398,14 +413,15 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void customExitCode() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("exitcode", Methods.GET);
+		String uri="/exitcode";
+		addListener(uri, Methods.GET);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		session = new HashMap<String, Object>();
 		session.put("exitcode", "234");
-		Response result = service(createRequest("exitcode", Methods.GET, null, headers));
+		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
 		assertEquals(234, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
@@ -414,14 +430,15 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void apiListenerShouldReturnEtag() throws ServletException, IOException, ListenerException, ConfigurationException {
-		addListener("etag1", Methods.GET);
+		String uri="/etag1";
+		addListener(uri, Methods.GET);
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		session = new HashMap<String, Object>();
 		session.put("response-content", "{\"tralalalallala\":true}");
-		Response result = service(createRequest("etag1", Methods.GET, null, headers));
+		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
@@ -431,7 +448,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void eTagGetEtagMatches() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "etag32";
+		String uri = "/etag32";
 		addListener(uri, Methods.GET);
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
@@ -449,7 +466,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void eTagGetEtagDoesNotMatch() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "etag32";
+		String uri = "/etag32";
 		addListener(uri, Methods.GET);
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
@@ -468,7 +485,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void eTagPostEtagIfMatches() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "etag45";
+		String uri = "/etag45";
 		addListener(uri, Methods.POST);
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
@@ -486,7 +503,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void eTagPostEtagDoesNotMatch() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "etag46";
+		String uri = "/etag46";
 		addListener(uri, Methods.POST);
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
@@ -502,7 +519,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void cookieAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "cookie";
+		String uri = "/cookie";
 		addListener(uri, Methods.POST, AuthMethods.COOKIE);
 
 		Map<String, String> headers = new HashMap<String, String>();
@@ -515,7 +532,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void cookieNotFoundInCache401() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "cookie";
+		String uri = "/cookie";
 		addListener(uri, Methods.POST, AuthMethods.COOKIE);
 
 		Map<String, String> headers = new HashMap<String, String>();
@@ -531,7 +548,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void cookieAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "cookie";
+		String uri = "/cookie";
 		addListener(uri, Methods.POST, AuthMethods.COOKIE);
 		String authToken = "random-token_thing";
 
@@ -557,7 +574,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void headerAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "cookie";
+		String uri = "/cookie";
 		addListener(uri, Methods.POST, AuthMethods.HEADER);
 
 		Map<String, String> headers = new HashMap<String, String>();
@@ -571,7 +588,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void headerAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "header";
+		String uri = "/header";
 		addListener(uri, Methods.POST, AuthMethods.HEADER);
 		String authToken = "random-token_thing";
 
@@ -594,7 +611,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void authRoleAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "authRole2";
+		String uri = "/authRole2";
 		addListener(uri, Methods.POST, AuthMethods.AUTHROLE);
 
 		Map<String, String> headers = new HashMap<String, String>();
@@ -613,7 +630,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void authRoleAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "authRole2";
+		String uri = "/authRole2";
 		addListener(uri, Methods.POST, AuthMethods.AUTHROLE);
 
 		Map<String, String> headers = new HashMap<String, String>();

@@ -3,6 +3,7 @@ package nl.nn.adapterframework.stream;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeNotNull;
 
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,18 +34,18 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 	public boolean provideStreamForInput=false;
 	@Parameter(3)
 	public boolean writeOutputToStream=false;
-	
+
 	@Parameters(name = "{index}: {0}: provide [{2}] stream out [{3}]")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                 { "classic", 			true, false, false }, 
-                 { "new, no stream", 	 false, false, false }, 
-                 { "output to stream", 	 false, false, true  }, 
-                 { "consume stream", 	 false, true,  false }, 
-                 { "stream through",  	 false, true,  true  }
-           });
-    }
-    
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+			{ "classic", 			true, false, false }, 
+			{ "new, no stream", 	false, false, false }, 
+			{ "output to stream", 	false, false, true  }, 
+			{ "consume stream", 	false, true,  false }, 
+			{ "stream through",  	false, true,  true  }
+		});
+	}
+
 	@Override
 	public void setup() throws ConfigurationException {
 		super.setup();
@@ -64,8 +65,14 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 			//Object result;
 			try (MessageOutputStream target = pipe.provideOutputStream(session, nextPipe)) {
 				assumeNotNull(target);
-				try (Writer writer = target.asWriter()) {
-					writer.write(input.asString()); // TODO: proper conversion of non-string classes..
+				if(input.isBinary()) {
+					try (OutputStream stream = target.asStream()) {
+						stream.write(input.asByteArray());
+					}
+				} else {
+					try (Writer writer = target.asWriter()) {
+						writer.write(input.asString());
+					}
 				}
 				prr=target.getPipeRunResult();
 			} catch (AssumptionViolatedException e) {

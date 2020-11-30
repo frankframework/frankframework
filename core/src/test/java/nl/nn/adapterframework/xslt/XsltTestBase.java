@@ -32,8 +32,6 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	
 	public static final String IDENTITY_STYLESHEET="/Xslt/identity.xslt";
 
-	protected IPipeLineSession session;
-
 	protected abstract void setXpathExpression(String xpathExpression);
 	protected abstract void setStyleSheetName(String styleSheetName);
 	protected abstract void setStyleSheetNameSessionKey(String styleSheetNameSessionKey);
@@ -340,7 +338,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	@Test
 	public void xpathAttrText() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = "Euro € single quote ' double quote escaped \" ";
+		String expected = "Euro € single quote ' double quote escaped \" newline escaped \n";
 
 		setXpathExpression("request/g/@attr");
 		pipe.configure();
@@ -355,7 +353,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	@Test
 	public void xpathNodeXml() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = "<g attr=\"Euro € single quote ' double quote escaped &quot; \">Euro € single quote ' double quote \"</g>";
+		String expected = "<g attr=\"Euro € single quote ' double quote escaped &quot; newline escaped &#10;\">Euro € single quote ' double quote \"</g>";
 
 		setXpathExpression("request/g");
 		setOutputType("xml");

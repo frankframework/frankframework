@@ -1,0 +1,172 @@
+/*
+* standard was.policy for ibis-projects.
+*/
+
+/*
+* Standard WebSphere variables for use in dynamic policy files:
+* (These variables can be used without defining them as custom properties)
+* Symbol                              Definition      
+* ${app.installed.path}      Path where the application is installed      
+* ${was.module.path}            Path where the module is installed      
+* ${current.cell.name}            Current cell name      
+* ${current.node.name}            Current node name      
+* ${current.server.name}      Current server name      
+* ${was.install.root}            
+*
+* Standard SDI custom properties that can also be used in dynamic policy files:
+* Name                                    Example Value      
+* APPSERVER_ROOT_DIR            /data/WAS/6.1/wasap0x                          
+*/
+
+grant codeBase "file:${application}" {
+
+//permission java.io.FilePermission "${app.installed.path}${/}-", "read";
+permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}", "read";
+permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}-", "read";
+
+permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}lib${/}-", "read";
+
+permission java.lang.RuntimePermission "modifyThreadGroup";
+permission java.lang.RuntimePermission "modifyThread";
+permission java.lang.RuntimePermission "setContextClassLoader";
+permission java.lang.RuntimePermission "getClassLoader";
+permission java.lang.RuntimePermission "getFileSystemAttributes";
+
+// required to read the ibm-application-bnd.xmi from within the Ibis Console
+permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}applications${/}-", "read";
+// required to read the resources.xml from within the Ibis Console
+permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}nodes${/}-", "read";
+
+permission java.util.logging.LoggingPermission "control";
+
+permission java.lang.RuntimePermission "getenv.*";
+
+// permission java.util.PropertyPermission "*", "read";
+
+permission com.ibm.websphere.security.WebSphereRuntimePermission "accessRuntimeClasses";
+
+// required for WebSphere Application Server administrative application programming interfaces (APIs):
+permission com.ibm.websphere.security.WebSphereRuntimePermission "AdminPermission";
+
+// the following was required for 'test a pipeline' on IUF
+// It should not be necessary anymore, now upload.dir can be used to control where uploaded files are stored
+// permission java.io.FilePermission "${user.install.root}${/}temp${/}-", "read,write,delete";
+
+// required for LDAP Sender
+permission java.net.SocketPermission "*", "connect,resolve";
+
+// Needed for MAIL
+permission java.io.FilePermission "${user.home}${/}.mailcap", "read";
+permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}lib${/}mailcap", "read";
+
+// property * write required for Quartz scheduler and SpringFramework,
+// as they call java.System.getProperties()
+// See http://java.sun.com/j2se/1.5.0/docs/api/java/lang/SecurityManager.html#checkPropertiesAccess()
+permission java.util.PropertyPermission "*", "write";
+
+// required to for CredentialFactory to obtain credentials from JAAS Authentication Entries:
+permission javax.security.auth.AuthPermission "createLoginContext.DefaultPrincipalMapping";
+permission javax.security.auth.PrivateCredentialPermission "javax.resource.spi.security.PasswordCredential nl.nn.adapterframework.util.CredentialFactory$IbisPrincipal "Ibis"", "read";
+
+// required for Spring AbstractAutowireCapableBeanFactory:
+permission java.lang.RuntimePermission "getProtectionDomain";
+
+// required for ToStringBuilder.reflectionToString()
+permission java.lang.RuntimePermission "accessDeclaredMembers";
+permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
+
+// required for Spring TypeConverterDelegate.convertIfNecessary():
+permission java.lang.RuntimePermission "accessClassInPackage.sun.beans.editors";
+
+// required for Spring AOP (aspectjweaver.jar):
+permission com.ibm.oti.shared.SharedClassPermission "java.net.URLClassLoader", "read,write";
+
+// required for Spring BeanFactory:
+permission java.lang.RuntimePermission "accessClassInPackage.sun.misc";
+permission java.lang.RuntimePermission "accessClassInPackage.sun.beans.infos";
+
+permission java.lang.RuntimePermission "accessClassInPackage.sun.io";
+
+permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared";
+
+// required for nashhorn
+permission java.lang.RuntimePermission "accessClassInPackage.jdk.internal.dynalink.support";
+permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime.*";
+
+// required for MS SQL:
+permission java.lang.RuntimePermission "accessClassInPackage.sun.jdbc.odbc";
+
+// required to parse dates in varying formats:
+permission java.lang.RuntimePermission "accessClassInPackage.sun.util.calendar";
+
+// required for http access (webservices)
+permission java.lang.RuntimePermission "accessClassInPackage.sun.net.www.protocol.c";
+
+// required for http access (ntlm webservices)
+permission java.lang.RuntimePermission "accessClassInPackage.sun.net.www.protocol.d";
+
+// required for signing SOAP messages:
+permission java.lang.RuntimePermission "createClassLoader";
+
+// the following permissions are required for FXF
+// the application must be able to create, write and delete files in/from the fxf-work directory
+permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}fxf-work${/}", "read,write,delete";
+permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}fxf-work${/}-", "read,write,delete";
+
+// the following permissions are required for XFB
+permission java.io.FilePermission "${was.install.root}/../ingscripts/iuf_xfb_wrapper.sh", "execute";
+
+// Necessary for com.ibm.crypto.provider
+permission java.security.SecurityPermission "insertProvider.IBMJCE";
+permission java.security.SecurityPermission "insertProvider.JSSE";
+
+// required for JMX
+permission javax.management.MBeanServerPermission "findMBeanServer";
+permission javax.management.MBeanPermission "*", "registerMBean";
+permission javax.management.MBeanPermission "*", "getMBeanInfo";
+permission javax.management.MBeanPermission "*", "isInstanceOf";
+permission javax.management.MBeanPermission "*", "addNotificationListener";
+permission javax.management.MBeanPermission "*", "unregisterMBean";
+permission javax.management.MBeanPermission "*", "queryNames";
+permission java.lang.management.ManagementPermission "monitor";
+
+// required for BitronixTransactionManager.begin() in receiveMessageAndMoveToErrorStorage
+permission javax.management.MBeanServerPermission "createMBeanServer";
+// required for PoolingConnectionFactory.init() in receiveMessageAndMoveToErrorStorage
+permission javax.management.MBeanTrustPermission "register";
+
+// Checked for existence by wsdl4j
+permission java.io.FilePermission "${java.home}/lib/wsdl.properties", "read";
+
+// required for loading ibis-configuration from database
+permission java.net.NetPermission "specifyStreamHandler";
+
+// required for loading CMIS-sender to webservice binding
+permission java.net.NetPermission "getProxySelector";
+
+  // required for liquibase local hostname lookup
+  permission java.net.NetPermission "getNetworkInformation";
+
+// required for registering webservicelisteners
+permission javax.xml.ws.WebServicePermission "publishEndpoint";
+permission javax.security.auth.AuthPermission "getPolicy";
+
+// allowing read access to /opt/WAS/properties/jndi.properties
+permission java.io.FilePermission "${was.install.root}${/}properties${/}-", "read";
+
+// required for http(s) connections (since Java 8)
+permission java.net.URLPermission "http:*", "*";
+permission java.net.URLPermission "https:*", "*";
+
+// required for Aspose libary's fonts
+permission java.io.FilePermission "/usr/share/fonts/-", "read";
+
+// required for ladybug retrieving userprincipal
+permission java.security.SecurityPermission "printIdentity";
+
+// required for Log4j stacktrace rendering
+permission java.lang.RuntimePermission "createSecurityManager";
+
+// required for cxf
+permission java.lang.RuntimePermission "shutdownHooks";
+};

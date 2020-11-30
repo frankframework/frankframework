@@ -65,11 +65,20 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
+		<Appender type="RollingFile" name="config" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml.%i">
+			<Layout type="PatternLayout">
+				<Pattern>&lt;event datetime=&quot;%d{yyyy-MM-dd HH:mm:ss,SSS}&quot;&gt;%n%m%n&lt;/event&gt;</Pattern>
+			</Layout>
+			<Policies>
+				<OnStartupTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="1MB" />
+			</Policies>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="5" fileIndex="min" />
+		</Appender>
 	</Appenders>
 
 	<Loggers>
-		<Logger name="nl.nn.adapterframework" level="${ctx:log.level}" />
-		<Logger name="liquibase" level="${ctx:log.level}" />
+		<Logger name="liquibase" level="INFO" />
 		<Logger name="nl.nn.adapterframework.testtool" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
@@ -85,9 +94,32 @@
 		<Logger name="HEARTBEAT" additivity="false" level="INFO">
 			<AppenderRef ref="heartbeat"/>
 		</Logger>
+		<Logger name="CONFIG" additivity="false" level="INFO">
+			<AppenderRef ref="config"/>
+		</Logger>
 
 		<!-- This is an example of a custom logger that prints all log messages of the IbisContext class to sysout -->
 		<!-- Logger name="nl.nn.adapterframework.configuration.IbisContext" level="ERROR" additivity="true">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+
+		<!-- Put some loggers of special interest on DEBUG level -->
+		<!-- Logger name="org.apache.activemq" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+		<!-- Logger name="org.springframework" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+		<!-- Logger name="bitronix.tm" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+		<!-- Logger name="org.quartz" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+		<!-- Logger name="org.apache.http" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
+		<!-- Logger name="org.apache.cxf" level="DEBUG" additivity="false">
 			<AppenderRef ref="stdout"/>
 		</Logger -->
 

@@ -90,17 +90,17 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		Message message = new Message(streamId);
 		QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
 		PreparedStatement statement=queryExecutionContext.getStatement();
-		JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
+		JdbcUtil.applyParameters(dbmsSupport, statement, queryExecutionContext.getParameterList(), message, session);
 		ResultSet rs =statement.executeQuery();
 		openResultSets.put(streamId,rs);
-		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
 		Object lobHandle=getLobHandle(dbmsSupport, rs);
 		openLobHandles.put(streamId, lobHandle);
 		return getWriter(dbmsSupport, lobHandle, rs);
 	}
 	
 	@Override
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		try {
 			return super.finalizeResult(session,streamId, error);
 		} finally {

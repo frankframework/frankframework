@@ -123,6 +123,9 @@ public class CmisSessionBuilder {
 		if (StringUtils.isEmpty(repository)) {
 			throw new CmisSessionException("no repository configured");
 		}
+		if (StringUtils.isEmpty(getBindingType())) {
+			throw new CmisSessionException("no bindingType configured");
+		}
 		if(overrideEntryPointWSDL != null && !"webservices".equals(getBindingType())) {
 			throw new CmisSessionException("illegal value for bindingtype [" + getBindingType() + "], overrideEntryPointWSDL only supports webservices");
 		}
@@ -207,7 +210,7 @@ public class CmisSessionBuilder {
 			CredentialFactory pcf = new CredentialFactory(proxyAuthAlias, proxyUserName, proxyPassword);
 			parameterMap.put("proxyHost", proxyHost);
 			parameterMap.put("proxyPort", "" + proxyPort);
-			parameterMap.put("proxyUserName", pcf.getUsername());
+			parameterMap.put("proxyUsername", pcf.getUsername());
 			parameterMap.put("proxyPassword", pcf.getPassword());
 		}
 
@@ -326,7 +329,7 @@ public class CmisSessionBuilder {
 		return this;
 	}
 
-	public CmisSessionBuilder setProxyUserName(String string) {
+	public CmisSessionBuilder setProxyUsername(String string) {
 		proxyUserName = string;
 		return this;
 	}
@@ -417,7 +420,7 @@ public class CmisSessionBuilder {
 		return (new ReflectionToStringBuilder(this) {
 			@Override
 			protected boolean accept(Field f) {
-				return super.accept(f) && !f.getName().contains("password");
+				return super.accept(f) && !f.getName().contains("password") && !f.getName().contains("classLoader");
 			}
 		}).toString();
 	}

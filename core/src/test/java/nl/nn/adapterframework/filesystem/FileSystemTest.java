@@ -3,15 +3,20 @@ package nl.nn.adapterframework.filesystem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
 import org.junit.Test;
+
+import static org.hamcrest.core.AnyOf.anyOf;
+import static org.hamcrest.core.StringEndsWith.endsWith;
 
 import nl.nn.adapterframework.util.Misc;
 
@@ -150,22 +155,97 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 
 	@Test
-	public void writableFileSystemTestCreateAndRemoveFolder() throws Exception {
+	public void writableFileSystemTestCreateFolder() throws Exception {
 		String folderName = "dummyFolder";
 		
 		fileSystem.configure();
 		fileSystem.open();
 
-		_createFolder(folderName);
+		if (_folderExists(folderName)) {
+			_deleteFolder(folderName);
+			waitForActionToFinish();
+			assertFalse("could not remove folder before test", _folderExists(folderName));
+		}
+
+		fileSystem.createFolder(folderName);
 		waitForActionToFinish();
 		
 		assertTrue("folder does not exist after creation",_folderExists(folderName));
+	}
+	
+	@Test
+	public void writableFileSystemTestRemoveFolder() throws Exception {
+		String folderName = "dummyFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (!_folderExists(folderName)) {
+			_createFolder(folderName);
+			waitForActionToFinish();
+			assertTrue("could not create folder before test", _folderExists(folderName));
+		}
 		
 		fileSystem.removeFolder(folderName);
 		waitForActionToFinish();
 		
 		assertFalse("folder still exists after removal", _folderExists(folderName));
 	}
+
+	@Test
+	public void writableFileSystemTestFolderExists() throws Exception {
+		String folderName = "dummyFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (!_folderExists(folderName)) {
+			_createFolder(folderName);
+			waitForActionToFinish();
+			assertTrue("could not create folder before test", _folderExists(folderName));
+		}
+		
+		assertTrue("existing folder is not seen", fileSystem.folderExists(folderName));
+	}
+
+	@Test
+	public void writableFileSystemTestFolderDoesNotExist() throws Exception {
+		String folderName = "dummyFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (_folderExists(folderName)) {
+			_deleteFolder(folderName);
+			waitForActionToFinish();
+			assertFalse("could not remove folder before test", _folderExists(folderName));
+		}
+
+		assertFalse("non existing folder is seen", fileSystem.folderExists(folderName));
+	}
+	
+	@Test
+	public void writableFileSystemTestFileIsNotAFolder() throws Exception {
+		String folderName = "dummyFile";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (_folderExists(folderName)) {
+			_deleteFolder(folderName);
+			waitForActionToFinish();
+			assertFalse("could not remove folder before test", _folderExists(folderName));
+		}
+		
+		if (!_fileExists(folderName)) {
+			createFile(null, folderName, "tja");
+			waitForActionToFinish();
+			assertTrue("file must exist before test", _fileExists(folderName));
+		}
+
+		assertFalse("file must not be seen as folder", fileSystem.folderExists(folderName));
+	}
+	
 	
 	@Test
 	public void writableFileSystemTestRenameTo() throws Exception {
@@ -184,7 +264,8 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 		
 		F f = fileSystem.toFile(fileName);
-		fileSystem.renameFile(f, destination, false);
+		F d = fileSystem.toFile(destination);
+		fileSystem.renameFile(f, d);
 		waitForActionToFinish();
 		
 		assertTrue("Destination must exist",_fileExists(destination));
@@ -192,30 +273,35 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 	
 	@Test
-	public void writableFileSystemTestRenameToExisting() throws Exception {
-		thrown.expectMessage("Cannot rename file. Destination file already exists.");
-		String fileName = "fileToBeRenamedExisting.txt";
+	public void writableFileSystemTestRenameToOtherFolder() throws Exception {
+		String sourceFolder = "srcFolder";
+		String destinationFolder = "dstFolder";
+		String fileName = "fileTobeRenamed.txt";
+		String destination = "fileRenamed.txt";
 		
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null, fileName, "");
+		_createFolder(sourceFolder);
+		_createFolder(destinationFolder);
+		createFile(sourceFolder,fileName, "");
 		waitForActionToFinish();
 		
-		assertTrue(_fileExists(fileName));
+		assertTrue(_fileExists(sourceFolder, fileName));
 		
-		String destination = "fileRenamedExists.txt";
-		createFile(null, destination, "");
+		deleteFile(destinationFolder, destination);
+		assertFalse(_fileExists(destinationFolder, destination));
 		waitForActionToFinish();
 		
-		F f = fileSystem.toFile(fileName);
-		fileSystem.renameFile(f, destination, false);
+		F f = fileSystem.toFile(sourceFolder, fileName);
+		F d = fileSystem.toFile(destinationFolder, destination);
+		fileSystem.renameFile(f, d);
 		waitForActionToFinish();
 		
-		assertTrue("Origin must still exist",_fileExists(fileName));
-		assertTrue("Destination must exist",_fileExists(destination));
+		assertTrue("Destination must exist",_fileExists(destinationFolder, destination));
+		assertFalse("Origin must have disappeared",_fileExists(sourceFolder, fileName));
 	}
-
+	
 	@Test
 	public void writableFileSystemTestRemovingNonExistingDirectory() throws Exception {
 		thrown.expectMessage("Directory does not exist.");
@@ -253,14 +339,15 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		createFile(null, filename, contents);
 		waitForActionToFinish();
-		
-		Iterator<F> files = fileSystem.listFiles(null);
 		F f = null;
-		if(files.hasNext()) {
-			f = files.next();
-		}
-		else {
-			fail("File not found");
+		try(DirectoryStream<F> ds = fileSystem.listFiles(null)) {
+			Iterator<F> files = ds.iterator();
+			if(files.hasNext()) {
+				f = files.next();
+			}
+			else {
+				fail("File not found");
+			}
 		}
 		long size=fileSystem.getFileSize(f);
 		
@@ -357,4 +444,44 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		
 		assertFalse("Expected the file ["+filename+"] not to be present", _fileExists(filename));
 	}
+	
+	@Test
+	public void writableFileSystemTestReferToFileInFolder() throws Exception {
+		String folder = "folder";
+		String filename = "fileToBeReferred.txt";
+		String content = "some content";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		_createFolder(folder);
+		createFile(folder, filename, content);
+		
+		F file1 = fileSystem.toFile(folder,filename);
+		assertTrue(fileSystem.exists(file1));
+		assertThat(fileSystem.getCanonicalName(file1),anyOf(endsWith(folder+"/"+filename),endsWith(folder+"\\"+filename)));
+		assertThat(fileSystem.getName(file1),endsWith(filename));
+
+		String absoluteName1 = folder+"/"+filename;
+		String absoluteName2 = folder+"\\"+filename;
+		F file2 = fileSystem.toFile(absoluteName1);
+		assertTrue(fileSystem.exists(file2));
+		assertThat(fileSystem.getCanonicalName(file2),anyOf(endsWith(absoluteName1),endsWith(absoluteName2)));
+		assertThat(fileSystem.getName(file2),endsWith(filename));
+
+	}
+	
+	@Test
+	public void writeableFileSystemTestCreateLockfile() throws Exception {
+		String filename = "lockFile.txt";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		try (OutputStream out1 = fileSystem.createFile(fileSystem.toFile(filename))) {
+		}
+		assertTrue(fileSystem.exists(fileSystem.toFile(filename)));
+
+	}
+	
 }

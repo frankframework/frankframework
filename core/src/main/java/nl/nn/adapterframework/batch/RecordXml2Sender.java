@@ -67,8 +67,8 @@ public class RecordXml2Sender extends RecordXmlTransformer implements Configurat
 	}
 
 	@Override
-	public Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
-		String xml = (String)super.handleRecord(session,parsedRecord);
+	public String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+		String xml = super.handleRecord(session,parsedRecord);
 		return getSender().sendMessage(new Message(xml), session).asString(); 
 	}
 	

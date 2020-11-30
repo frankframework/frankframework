@@ -10,7 +10,7 @@ import java.util.Properties;
 
 import org.junit.Test;
 
-import microsoft.exchange.webservices.data.core.service.item.Item;
+import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
@@ -21,6 +21,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTestBase{
 
 	protected String mailaddress;
+	protected String accessToken;
 	protected String username;
 	protected String password;
 	protected String baseurl     = "https://outlook.office365.com/EWS/Exchange.asmx"; // leave empty to use autodiscovery
@@ -53,6 +54,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		Properties properties=new Properties();
 		properties.load(ClassUtils.getResourceURL(this, testProperties).openStream());
 		mailaddress = properties.getProperty("mailaddress");
+		accessToken = properties.getProperty("accessToken");
 		username = properties.getProperty("username");
 		password = properties.getProperty("password");
 		recipient=  properties.getProperty("recipient");
@@ -66,7 +68,8 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		super.setUp();
 		mailListener=createExchangeMailListener();
 		mailListener.setMailAddress(mailaddress);
-		mailListener.setUserName(username);
+		mailListener.setAccessToken(accessToken);
+		mailListener.setUsername(username);
 		mailListener.setPassword(password);
 		mailListener.setUrl(baseurl);
 	}
@@ -87,11 +90,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.open();	
 	}
 	
-	/**
-	 * Returns the listener 
-	 * @return fileSystem
-	 * @throws ConfigurationException
-	 */
 	protected abstract ExchangeMailListener createExchangeMailListener();
 	
 	protected void equalsCheck(String content, String actual) {
@@ -265,7 +263,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //		}
 		
 		Map<String,Object> threadContext=new HashMap<String,Object>();
-		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
+		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		
@@ -298,7 +296,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 				
-		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
+		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		
@@ -347,7 +345,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 				
-		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
+		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		
@@ -400,7 +398,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 				
-		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
+		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		
@@ -453,7 +451,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 				
-		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
+		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 		

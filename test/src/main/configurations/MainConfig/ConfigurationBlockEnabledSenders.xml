@@ -37,6 +37,26 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+	<adapter name="BlockEnabledFixedQuerySenderInBatch" description="Test the sending of multiple lines from the ForEachChildElementPipe to the FixedQuerySender in batch mode">
+		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BlockEnabledFixedQuerySenderInBatch">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledFixedQuerySenderInBatch" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)"
+					batchSize="2" />
+					<param name="tchar" xpathExpression="/record/char" />
+					<param name="tnumber" value="${jdbc.blockenabledsenders.key}" />
+					<param name="tvarchar" />
+			</pipe>
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
 	<adapter name="BlockEnabledDirectQuerySender" description="Test the functioning of sending blocks from the StreamLineIteratorPipe to the DirectQuerySender">
 		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BlockEnabledDirectQuerySender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledDirectQuerySender" />

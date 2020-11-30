@@ -61,12 +61,11 @@ import org.quartz.impl.matchers.GroupMatcher;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.DatabaseJobDef;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
@@ -406,11 +405,13 @@ public final class ShowScheduler extends Base {
 	public Response trigger(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, LinkedHashMap<String, Object> json) throws ApiException {
 		Scheduler scheduler = getScheduler();
 
-		String commandIssuedBy = servletConfig.getInitParameter("remoteHost");
-		commandIssuedBy += servletConfig.getInitParameter("remoteAddress");
-		commandIssuedBy += servletConfig.getInitParameter("remoteUser");
-
-		if(log.isInfoEnabled()) log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
+		if(log.isInfoEnabled()) {
+			String commandIssuedBy = request.getRemoteHost();
+			commandIssuedBy += "-"+request.getRemoteAddr();
+			commandIssuedBy += "-"+request.getRemoteUser();
+	
+			log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
+		}
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
 
 		String action = ""; //PAUSE,RESUME,TRIGGER
@@ -427,6 +428,20 @@ public final class ShowScheduler extends Base {
 				scheduler.pauseJob(jobKey);
 			}
 			else if("resume".equals(action)) {
+				SchedulerHelper sh = ((DefaultIbisManager) getIbisManager()).getSchedulerHelper();
+				JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+				// TODO this part can be more generic in case multiple triggers 
+				// can be configurable
+				List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
+				if(triggers != null) {
+					for (Trigger trigger : triggers) {
+						if(trigger instanceof CronTrigger) {
+							sh.scheduleJob(jobDetail, ((CronTrigger) trigger).getCronExpression(), -1, true);
+						} else if(trigger instanceof SimpleTrigger) {
+							sh.scheduleJob(jobDetail, null, ((SimpleTrigger) trigger).getRepeatInterval(), true);
+						}
+					}
+				}
 				scheduler.resumeJob(jobKey);
 			}
 			else if("trigger".equals(action)) {
@@ -502,17 +517,14 @@ public final class ShowScheduler extends Base {
 
 		//Make sure the receiver exists!
 		String receiverName = resolveStringFromMap(inputDataMap, "receiver");
-		IReceiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found");
 		}
 		String listenerName = null;
-		if (receiver instanceof ReceiverBase) {
-			ReceiverBase rb = (ReceiverBase) receiver;
-			IListener<?> listener = rb.getListener();
-			if(listener != null) {
-				listenerName = listener.getName();
-			}
+		IListener<?> listener = receiver.getListener();
+		if(listener != null) {
+			listenerName = listener.getName();
 		}
 		if(StringUtils.isEmpty(listenerName)) {
 			throw new ApiException("unable to determine listener for receiver ["+receiverName+"]");

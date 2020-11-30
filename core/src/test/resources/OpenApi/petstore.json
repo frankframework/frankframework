@@ -9,19 +9,33 @@
         "/pets":{
             "post":{
                 "summary":"Create a pet",
-                "operationId":"createPets",
+                "requestBody":{
+                    "content":{
+                        "*/*":{
+                            "schema":{
+                                "$ref":"#/components/schemas/Pet"
+                            }
+                        }
+                    }
+                },
                 "responses":{
                     "201":{
                         "description":"Created"
                     },
                     "500":{
-                        "description":"Internal Server Error"
+                        "description":"Internal Server Error",
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/Error"
+                                }
+                            }
+                        }
                     }
                 }
             },
             "get":{
                 "summary":"List all pets",
-                "operationId":"listPets",
                 "responses":{
                     "200":{
                         "description":"OK",
@@ -34,15 +48,31 @@
                         }
                     },
                     "500":{
-                        "description":"Internal Server Error"
+                        "description":"Internal Server Error",
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/Error"
+                                }
+                            }
+                        }
                     }
                 }
             }
         },
-        "/pets/*":{
+        "/pets/{petId}":{
             "get":{
                 "summary":"Info for a specific pet",
-                "operationId":"showPetById",
+                "parameters":[
+                    {
+                        "name":"petId",
+                        "in":"path",
+                        "required":true,
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                ],
                 "responses":{
                     "200":{
                         "description":"OK",
@@ -55,7 +85,14 @@
                         }
                     },
                     "500":{
-                        "description":"Internal Server Error"
+                        "description":"Internal Server Error",
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/Error"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -71,6 +108,18 @@
                 "items":{
                     "$ref":"#/components/schemas/petType"
                 }
+            },
+            "Error":{
+                "type":"object",
+                "additionalProperties":false,
+                "properties":{
+                    "message":{
+                        "type":"string"
+                    }
+                },
+                "required":[
+                    "message"
+                ]
             },
             "petType":{
                 "type":"object",

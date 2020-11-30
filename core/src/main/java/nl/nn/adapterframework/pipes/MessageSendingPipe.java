@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2020 Nationale-Nederlanden
+   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
@@ -43,6 +44,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.IValidatorPipe;
+import nl.nn.adapterframework.core.IWrapperPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -213,14 +216,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public final static String MESSAGE_LOG_NAME_PREFIX="- ";
 	public final static String MESSAGE_LOG_NAME_SUFFIX=": message log";
 
-	private IPipe inputValidator=null;
-	private IPipe outputValidator=null;
-	private IPipe inputWrapper=null;
-	private IPipe outputWrapper=null;
+	private IValidatorPipe inputValidator=null;
+	private IValidatorPipe outputValidator=null;
+	private IWrapperPipe inputWrapper=null;
+	private IWrapperPipe outputWrapper=null;
 	
 	private boolean timeoutPending=false;
 
-	private boolean checkMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", false);
 	private boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
 	private boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
 
@@ -245,17 +247,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void setName(String name) {
 		super.setName(name);
 		propagateName();
-	}
-
-	@Override
-	public void addParameter(Parameter p){
-		if (getSender() instanceof ISenderWithParameters && getParameterList()!=null) {
-			if (p.getName().equals(STUBFILENAME)) {
-				super.addParameter(p);
-			} else {
-				((ISenderWithParameters)getSender()).addParameter(p);
-			}
-		}
 	}
 
 	/**
@@ -285,7 +276,18 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (getSender() == null) {
 				throw new ConfigurationException(getLogPrefix(null) + "no sender defined ");
 			}
-	
+			
+			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
+			// because sender might not have been set when addPipe() is called.
+			if (getParameterList()!=null && getSender() instanceof ISenderWithParameters) {
+				for (Parameter p:getParameterList()) {
+					if (!p.getName().equals(STUBFILENAME)) {
+						((ISenderWithParameters)getSender()).addParameter(p);
+					}
+				}
+				
+			}
+
 			try {
 				if (getSender() instanceof ConfigurationAware) {
 					IAdapter adapter=getAdapter();
@@ -297,9 +299,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				//In order to suppress 'XmlQuerySender is used one or more times' config warnings
 				if(sender instanceof DirectQuerySender) {
-					String dynamicallyGeneratedKey = "warnings.suppress.sqlInjections."+getAdapter().getName();
-					boolean suppressSqlWarning = AppConstants.getInstance().getBoolean(dynamicallyGeneratedKey, false);
-					((DirectQuerySender) getSender()).configure(suppressSqlWarning);
+					String msg = "has a ["+ClassUtils.nameOf(DirectQuerySender.class)+"]. This may cause potential SQL injections!";
+					ConfigurationWarnings.add(this, log, msg, SuppressKeys.SQL_INJECTION_SUPPRESS_KEY, getAdapter());
+					((DirectQuerySender) getSender()).configure(true);
 				} else {
 					getSender().configure();
 				}
@@ -362,14 +364,24 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 		}
 		ITransactionalStorage messageLog = getMessageLog();
-		if (checkMessageLog) {
-			if (!getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) {
-				if (messageLog==null) {
-					ConfigurationWarnings.add(this, log, "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. Integrity check not possible");
+		if (messageLog==null) {
+			if (!getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) { // sender is asynchronous and not a local sender, but has no messageLog
+				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed(SuppressKeys.INTEGRITY_CHECK_SUPPRESS_KEY, getAdapter(), getConfigurationClassLoader());
+				if (!suppressIntegrityCheckWarning) {
+					boolean legacyCheckMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", true);
+					if (!legacyCheckMessageLog) {
+						ConfigurationWarnings.add(this, log, "Suppressing integrityCheck warnings by setting property 'messageLog.check=false' has been replaced by by setting property 'warnings.suppress.integrityCheck=true'");
+						suppressIntegrityCheckWarning=true;
+					}
+				}
+				if (!suppressIntegrityCheckWarning) {
+					ConfigurationWarnings.add(this, log, "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. " + 
+						"Service Managers will not be able to perform an integrity check (matching messages received by the adapter to messages sent by this pipe). " + 
+						"This warning can be suppressed globally by setting property 'warnings.suppress.integrityCheck=true', "+
+						"or for this adapter only by setting property 'warnings.suppress.integrityCheck."+getAdapter().getName()+"=true'");
 				}
 			}
-		}
-		if (messageLog!=null) {
+		} else {
 			if (StringUtils.isNotEmpty(getHideRegex()) && StringUtils.isEmpty(messageLog.getHideRegex())) {
 				messageLog.setHideRegex(getHideRegex());
 				messageLog.setHideMethod(getHideMethod());
@@ -394,8 +406,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
 			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
 		}
-		IPipe inputValidator = getInputValidator();
-		IPipe outputValidator = getOutputValidator();
+		IValidatorPipe inputValidator = getInputValidator();
+		IValidatorPipe outputValidator = getOutputValidator();
 		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
 			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator();
 			setOutputValidator(outputValidator);
@@ -1028,37 +1040,37 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return sender;
 	}
 
-	public void setInputValidator(IPipe inputValidator) {
+	public void setInputValidator(IValidatorPipe inputValidator) {
 		inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
 		this.inputValidator = inputValidator;
 	}
-	public IPipe getInputValidator() {
+	public IValidatorPipe getInputValidator() {
 		return inputValidator;
 	}
 
-	public void setOutputValidator(IPipe outputValidator) {
+	public void setOutputValidator(IValidatorPipe outputValidator) {
 		if (outputValidator!=null) {
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
 		}
 		this.outputValidator = outputValidator;
 	}
-	public IPipe getOutputValidator() {
+	public IValidatorPipe getOutputValidator() {
 		return outputValidator;
 	}
 
-	public void setInputWrapper(IPipe inputWrapper) {
+	public void setInputWrapper(IWrapperPipe inputWrapper) {
 		inputWrapper.setName(INPUT_WRAPPER_NAME_PREFIX+getName()+INPUT_WRAPPER_NAME_SUFFIX);
 		this.inputWrapper = inputWrapper;
 	}
-	public IPipe getInputWrapper() {
+	public IWrapperPipe getInputWrapper() {
 		return inputWrapper;
 	}
 
-	public void setOutputWrapper(IPipe outputWrapper) {
+	public void setOutputWrapper(IWrapperPipe outputWrapper) {
 		outputWrapper.setName(OUTPUT_WRAPPER_NAME_PREFIX+getName()+OUTPUT_WRAPPER_NAME_SUFFIX);
 		this.outputWrapper = outputWrapper;
 	}
-	public IPipe getOutputWrapper() {
+	public IWrapperPipe getOutputWrapper() {
 		return outputWrapper;
 	}
 

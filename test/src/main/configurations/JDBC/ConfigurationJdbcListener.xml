@@ -34,9 +34,10 @@
 						statusValueAvailable="5"
 						statusValueProcessed="6"
 						statusValueError="7"
+						statusValueInProcess="8"
 						keyField="tkey"/>
 		</receiver>
-		<pipeline firstPipe="Insert" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>

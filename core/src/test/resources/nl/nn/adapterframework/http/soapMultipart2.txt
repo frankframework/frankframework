@@ -1,0 +1,10 @@
+Content-Type: multipart/form-data;charset=ISO-8859-1
+Content-Length: 957
+Date: Wed, 07 Oct 2020 12:38:42 GMT
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<TestElement>test value</TestElement>
+	</soapenv:Body>
+</soapenv:Envelope>

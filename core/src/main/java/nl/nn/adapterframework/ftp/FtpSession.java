@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -59,6 +60,8 @@ import com.sshtools.j2ssh.transport.ConsoleKnownHostsKeyVerification;
 import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
 import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
 
+import lombok.Getter;
+
 /**
  * Helper class for sftp and ftp.
  * 
@@ -66,8 +69,9 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * 
  * @author John Dekker
  */
-public class FtpSession {
+public class FtpSession implements IConfigurable {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	// types of ftp transports
 	static final int FTP = 1;
@@ -78,7 +82,8 @@ public class FtpSession {
 
 	// indication of ftp-subtype, defines which client
 	private int ftpType;
-	
+	private String name;
+
 	// configuration parameters, global for all types
 	private String host;
 	private int port = 21;
@@ -125,7 +130,8 @@ public class FtpSession {
 	private SshClient sshClient;
 	private SftpClient sftpClient;
 	public FTPClient ftpClient;
-	
+
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(ftpTypeDescription)) {
 			throw new ConfigurationException("Attribute [ftpTypeDescription] is not set");
@@ -952,5 +958,15 @@ public class FtpSession {
 	@IbisDoc({"when true, keyboardinteractive is used to login", "false"})
 	public void setKeyboardInteractive(boolean keyboardInteractive) {
 		this.keyboardInteractive = keyboardInteractive;
+	}
+
+	@Override
+	@IbisDoc({"name of the listener or sender", ""})
+	public void setName(String name) {
+		this.name = name;
+	}
+	@Override
+	public String getName() {
+		return name;
 	}
 }

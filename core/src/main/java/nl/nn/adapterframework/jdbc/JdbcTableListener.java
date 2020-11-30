@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jdbc;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -26,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
  *
  * @since   4.7
  */
-public class JdbcTableListener extends JdbcListener implements IProvidesMessageBrowsers {
+public class JdbcTableListener extends JdbcListener implements IProvidesMessageBrowsers<Object> {
 	
 	private String tableName;
 	private String statusField;
@@ -35,65 +36,80 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	private String selectCondition;
 	
 	private String statusValueAvailable;
+	private String statusValueInProcess;
 	private String statusValueProcessed;
 	private String statusValueError;
 	
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getTableName())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy tableName");
+			throw new ConfigurationException(getLogPrefix()+"must specify tableName");
 		}
 		if (StringUtils.isEmpty(getKeyField())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy keyField");
+			throw new ConfigurationException(getLogPrefix()+"must specify keyField");
 		}
 		if (StringUtils.isEmpty(getStatusField())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy statusField");
+			throw new ConfigurationException(getLogPrefix()+"must specify statusField");
 		}
 		if (StringUtils.isEmpty(getMessageField())) {
 			log.info(getLogPrefix()+"has no messageField specified. Will use keyField as messageField, too");
 		}
 		if (StringUtils.isEmpty(getStatusValueError())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy statusValueError");
+			throw new ConfigurationException(getLogPrefix()+"must specify statusValueError");
 		}
 		if (StringUtils.isEmpty(getStatusValueProcessed())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy statusValueProcessed");
+			throw new ConfigurationException(getLogPrefix()+"must specify statusValueProcessed");
 		}
-		setSelectQuery("SELECT "+getKeyField()+
-						(StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
+		setSelectQuery("SELECT "+getKeyField() + (StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
 						" FROM "+getTableName()+
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValueAvailable())?
 						 "='"+getStatusValueAvailable()+"'":
 						 " NOT IN ('"+getStatusValueError()+"','"+getStatusValueProcessed()+"')")+
 						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND ("+getSelectCondition()+")": "") +
-						 (StringUtils.isNotEmpty(getOrderField())?
-						 " ORDER BY "+getOrderField():""));
-		setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed()));				 
-		setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError())); 
+						 (StringUtils.isNotEmpty(getOrderField())? " ORDER BY "+getOrderField():""));
+		setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed(),null));
+		setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError(),null)); 
+		if (StringUtils.isNotEmpty(getStatusValueInProcess())) {
+			setUpdateStatusToInProcessQuery(getUpdateStatusQuery(getStatusValueInProcess(),null)); 
+			setRevertInProcessStatusQuery(getUpdateStatusQuery(getStatusValueAvailable(),null));
+		}
 		super.configure();
+		if (StringUtils.isEmpty(getStatusValueInProcess()) && !getDbmsSupport().hasSkipLockedFunctionality()) {
+			ConfigurationWarnings.add(this, log, "Database ["+getDbmsSupport().getDbmsName()+"] needs statusValueInProcess to run in multiple threads");
+		}
 	}
 
-	protected String getUpdateStatusQuery(String fieldValue) {
+	protected String getUpdateStatusQuery(String fieldValue, String additionalSetClause) {
 		return "UPDATE "+getTableName()+ 
 				" SET "+getStatusField()+"='"+fieldValue+"'"+
 				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"="+getDbmsSupport().getSysDate():"")+
+				(StringUtils.isNotEmpty(additionalSetClause)?","+additionalSetClause:"")+
 				" WHERE "+getKeyField()+"=?";
 	}
 
 	@Override
-	public IMessageBrowser getMessageLogBrowser() {
-		if (StringUtils.isEmpty(getStatusValueProcessed())) {
+	public IMessageBrowser<Object> getInProcessBrowser() {
+		if (StringUtils.isEmpty(getStatusValueInProcess())) {
 			return null;
 		}
-		return new JdbcTableMessageBrowser(this,getStatusValueProcessed(), IMessageBrowser.StorageType.MESSAGELOG_RECEIVER);
+		return new JdbcTableMessageBrowser<Object>(this,getStatusValueInProcess(), IMessageBrowser.StorageType.MESSAGELOG_RECEIVER);
 	}
 
 	@Override
-	public IMessageBrowser getErrorStoreBrowser() {
+	public IMessageBrowser<Object> getMessageLogBrowser() {
+		if (StringUtils.isEmpty(getStatusValueProcessed())) {
+			return null;
+		}
+		return new JdbcTableMessageBrowser<Object>(this,getStatusValueProcessed(), IMessageBrowser.StorageType.MESSAGELOG_RECEIVER);
+	}
+
+	@Override
+	public IMessageBrowser<Object> getErrorStoreBrowser() {
 		if (StringUtils.isEmpty(getStatusValueError())) {
 			return null;
 		}
-		return new JdbcTableMessageBrowser(this,getStatusValueError(), IMessageBrowser.StorageType.ERRORSTORAGE);
+		return new JdbcTableMessageBrowser<Object>(this,getStatusValueError(), IMessageBrowser.StorageType.ERRORSTORAGE);
 	}
 
 
@@ -111,16 +127,6 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	}
 	public String getTableName() {
 		return tableName;
-	}
-
-	@Override
-	public void setKeyField(String fieldname) {
-		super.setKeyField(fieldname);
-	}
-
-	@Override
-	public void setMessageField(String fieldname) {
-		super.setMessageField(fieldname);
 	}
 
 	@IbisDoc({"4", "Field containing the status of the message", ""})
@@ -169,6 +175,14 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	}
 	public String getStatusValueProcessed() {
 		return statusValueProcessed;
+	}
+
+	@IbisDoc({"10", "Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality", ""})
+	public void setStatusValueInProcess(String string) {
+		statusValueInProcess = string;
+	}
+	public String getStatusValueInProcess() {
+		return statusValueInProcess;
 	}
 
 	@IbisDoc({"10", "Additional condition for a row to belong to this TableListener", ""})

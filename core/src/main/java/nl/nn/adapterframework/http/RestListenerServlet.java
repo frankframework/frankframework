@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden
+   Copyright 2013-2015 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -153,8 +153,13 @@ public class RestListenerServlet extends HttpServlet {
 				log.trace("RestListenerServlet finished with result ["+result+"] etag ["+etag+"] contentType ["+contentType+"] contentDisposition ["+contentDisposition+"]");
 			}
 		} catch (ListenerException e) {
-			log.warn("RestListenerServlet caught exception, will rethrow as ServletException",e);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
+			if (!response.isCommitted()) {
+				log.warn("RestListenerServlet caught exception, return internal server error",e);
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
+			} else {
+				log.warn("RestListenerServlet caught exception, response already committed",e);
+				throw new ServletException("RestListenerServlet caught exception, response already committed",e);
+			}
 		}
 	}
 }

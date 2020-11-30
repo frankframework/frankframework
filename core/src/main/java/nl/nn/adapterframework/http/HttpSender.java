@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -65,6 +66,7 @@ import org.w3c.dom.Node;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -157,9 +159,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class HttpSender extends HttpSenderBase {
 
-	private String streamResultToFileNameSessionKey = null;
-	private String storeResultAsStreamInSessionKey;
-	private String storeResultAsByteArrayInSessionKey;
+	@Deprecated private String streamResultToFileNameSessionKey = null;
+	@Deprecated private String storeResultAsStreamInSessionKey;
+	@Deprecated private String storeResultAsByteArrayInSessionKey;
+
 	private boolean base64=false;
 	private boolean streamResultToServlet=false;
 
@@ -167,7 +170,7 @@ public class HttpSender extends HttpSenderBase {
 	private boolean ignoreRedirects=false;
 	private String inputMessageParam=null;
 
-	private boolean multipartResponse=false;
+	private Boolean multipartResponse=null;
 	private String multipartXmlSessionKey;
 	private String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
 	private boolean encodeMessages = false;
@@ -250,7 +253,7 @@ public class HttpSender extends HttpSenderBase {
 			}
 			pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
 		}
-		if(pairs.size() > 0) {
+		if(!pairs.isEmpty()) {
 			uri.clearParameters();
 			uri.addParameters(pairs);
 		}
@@ -527,6 +530,7 @@ public class HttpSender extends HttpSenderBase {
 			throw new SenderException(getLogPrefix() + "httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
 					+ " body: " + getResponseBodyAsString(responseHandler));
+			
 		}
 
 		HttpServletResponse response = null;
@@ -543,7 +547,7 @@ public class HttpSender extends HttpSenderBase {
 				} catch (IOException e) {
 					throw new SenderException("cannot find filename to stream result to", e);
 				}
-			} else if (isBase64()) {
+			} else if (isBase64()) { //This should be removed in a future iteration
 				return getResponseBodyAsBase64(responseHandler.getResponse());
 			} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
 				session.put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
@@ -551,11 +555,13 @@ public class HttpSender extends HttpSenderBase {
 			} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
 				session.put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
 				return Message.nullMessage();
-			} else if (isMultipartResponse()) {
+			} else if (BooleanUtils.isTrue(isMultipartResponse()) || responseHandler.isMultipart()) {
+				if(BooleanUtils.isFalse(isMultipartResponse())) {
+					log.warn("multipart response was set to false, but the response is multipart!");
+				}
 				return handleMultipartResponse(responseHandler, session);
 			} else {
-				//TODO remove getResponseBodyAsString method and return a Message object
-				return Message.asMessage(getResponseBodyAsString(responseHandler));
+				return getResponseBody(responseHandler);
 			}
 		} else {
 			streamResponseBody(responseHandler, response);
@@ -563,9 +569,10 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	public String getResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
+	public Message getResponseBody(HttpResponseHandler responseHandler) {
 		String charset = responseHandler.getCharset();
 		log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
+
 		if ("HEAD".equals(getMethodType())) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			Header[] headers = responseHandler.getAllHeaders();
@@ -575,9 +582,24 @@ public class HttpSender extends HttpSenderBase {
 				headerXml.setCdataValue(header.getValue());
 				headersXml.addSubElement(headerXml);
 			}
-			return headersXml.toXML();
+			return Message.asMessage(headersXml.toXML());
 		}
-		String responseBody = responseHandler.getResponseAsString(true);
+
+		return new Message(responseHandler.getResponse(), charset);
+	}
+
+	/**
+	 * Tries to parse the response as a String. If unsuccessful return null.
+	 */
+	public String getResponseBodyAsString(HttpResponseHandler responseHandler) {
+		String responseBody = null;
+		try {
+			responseBody = getResponseBody(responseHandler).asString();
+		} catch(IOException e) {
+			log.warn(getLogPrefix()+"unable to parse response", e);
+			return null;
+		}
+
 		if (StringUtils.isEmpty(responseBody)) {
 			log.warn(getLogPrefix()+"responseBody is empty");
 		} else {
@@ -587,6 +609,7 @@ public class HttpSender extends HttpSenderBase {
 				log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
 			}
 		}
+
 		return responseBody;
 	}
 
@@ -640,22 +663,15 @@ public class HttpSender extends HttpSenderBase {
 		return result;
 	}
 
-	public void streamResponseBody(HttpResponseHandler responseHandler, HttpServletResponse response) throws IOException {
-		streamResponseBody(responseHandler.getResponse(),
-				responseHandler.getHeader("Content-Type"),
-				responseHandler.getHeader("Content-Disposition"),
-				response, log, getLogPrefix());
+	private void streamResponseBody(HttpResponseHandler responseHandler, HttpServletResponse response) throws IOException {
+		streamResponseBody(responseHandler.getResponse(), responseHandler.getHeader("Content-Type"), responseHandler.getHeader("Content-Disposition"), response, log, getLogPrefix());
 	}
 
-	public static void streamResponseBody(InputStream is, String contentType,
-			String contentDisposition, HttpServletResponse response,
-			Logger log, String logPrefix) throws IOException {
+	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix) throws IOException {
 		streamResponseBody(is, contentType, contentDisposition, response, log, logPrefix, null);
 	}
 
-	public static void streamResponseBody(InputStream is, String contentType,
-			String contentDisposition, HttpServletResponse response,
-			Logger log, String logPrefix, String redirectLocation) throws IOException {
+	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
 		if (StringUtils.isNotEmpty(contentType)) {
 			response.setHeader("Content-Type", contentType); 
 		}
@@ -688,9 +704,9 @@ public class HttpSender extends HttpSenderBase {
 		if(!b) {
 			if(!postType.equals(PostType.MTOM) && !postType.equals(PostType.FORMDATA)) { //Don't override if another type has explicitly been set
 				postType = PostType.URLENCODED;
-				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: please use postType='URLENCODED' instead");
+				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: please use postType='URLENCODED' instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 			} else {
-				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: no longer required when using FORMDATA or MTOM requests");
+				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: no longer required when using FORMDATA or MTOM requests", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 			}
 		}
 		paramsInUrl = b;
@@ -715,33 +731,39 @@ public class HttpSender extends HttpSenderBase {
 		return ignoreRedirects;
 	}
 
+	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", ""})
+	@Deprecated
+	@ConfigurationWarning("no longer required to store the result as a file in the PipeLineSession, the sender can return binary data")
+	public void setStreamResultToFileNameSessionKey(String string) {
+		streamResultToFileNameSessionKey = string;
+	}
 	public String getStreamResultToFileNameSessionKey() {
 		return streamResultToFileNameSessionKey;
 	}
 
-	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", ""})
-	public void setStreamResultToFileNameSessionKey(String string) {
-		streamResultToFileNameSessionKey = string;
+	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
+	@Deprecated
+	@ConfigurationWarning("no longer required to store the result as a stream in the PipeLineSession, the sender can return binary data")
+	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
+		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
 	}
-
 	public String getStoreResultAsStreamInSessionKey() {
 		return storeResultAsStreamInSessionKey;
 	}
 
-	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
-	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
-		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
-	}
-
-	public String getStoreResultAsByteArrayInSessionKey() {
-		return storeResultAsByteArrayInSessionKey;
-	}
+	@Deprecated
+	@ConfigurationWarning("no longer required to store the result as a byte array in the PipeLineSession, the sender can return binary data")
 	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}
+	public String getStoreResultAsByteArrayInSessionKey() {
+		return storeResultAsByteArrayInSessionKey;
+	}
 
 	@IbisDoc({"when true, the result is base64 encoded", "false"})
-	public void setBase64(boolean b) { // TODO deprecate this. Let people use the Base64Pipe instead!
+	@Deprecated
+	@ConfigurationWarning("use Base64Pipe instead")
+	public void setBase64(boolean b) {
 		base64 = b;
 	}
 	public boolean isBase64() {
@@ -765,11 +787,13 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
+	@Deprecated
+	@ConfigurationWarning("Unless set explicitly multipart response will be detected automatically")
 	@IbisDoc({"when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.", "false"})
-	public void setMultipartResponse(boolean b) {
+	public void setMultipartResponse(Boolean b) {
 		multipartResponse = b;
 	}
-	public boolean isMultipartResponse() {
+	public Boolean isMultipartResponse() {
 		return multipartResponse;
 	}
 

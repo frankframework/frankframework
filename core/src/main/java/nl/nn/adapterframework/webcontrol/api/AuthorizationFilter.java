@@ -74,6 +74,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 		if(method == null) {
 			log.error("unable to fetch resource method from CXF Message");
 			requestContext.abortWith(SERVER_ERROR);
+			return;
 		}
 
 		if(method.isAnnotationPresent(DenyAll.class)) {

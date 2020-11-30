@@ -25,12 +25,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -48,6 +46,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -59,10 +58,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
 public final class TestPipeline extends Base {
-	@Context ServletConfig servletConfig;
 
 	protected Logger secLog = LogUtil.getLogger("SEC");
-
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	@POST
@@ -72,14 +69,14 @@ public final class TestPipeline extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postTestPipeLine(MultipartBody inputDataMap) throws ApiException {
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, Object> result = new HashMap<>();
 
 		IbisManager ibisManager = getIbisManager();
 		if (ibisManager == null) {
 			throw new ApiException("Config not found!");
 		}
 
-		String message = null, fileName = null;
+		String message = null;
 		InputStream file = null;
 
 		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
@@ -93,7 +90,7 @@ public final class TestPipeline extends Base {
 
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
-			fileName = filePart.getContentDisposition().getParameter( "filename" );
+			String fileName = filePart.getContentDisposition().getParameter( "filename" );
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
@@ -117,6 +114,7 @@ public final class TestPipeline extends Base {
 			try {
 				PipeLineResult plr = processMessage(adapter, message, secLogMessage);
 				result.put("state", plr.getState());
+				result.put("message", message);
 				result.put("result", plr.getResult().asString());
 			} catch (Exception e) {
 				throw new ApiException("exception on sending message", e);
@@ -127,30 +125,18 @@ public final class TestPipeline extends Base {
 	}
 
 	private void processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {
-		String result = "";
+		StringBuilder result = new StringBuilder();
 		String lastState = null;
 		ZipInputStream archive = new ZipInputStream(inputStream);
 		for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
 			String name = entry.getName();
-			int size = (int) entry.getSize();
-			if (size > 0) {
-				byte[] b = new byte[size];
-				int rb = 0;
-				int chunk = 0;
-				while (((int) size - rb) > 0) {
-					chunk = archive.read(b, rb, (int) size - rb);
-					if (chunk == -1) {
-						break;
-					}
-					rb += chunk;
-				}
-				String message = XmlUtils.readXml(b, 0, rb, fileEncoding, false);
-				if (StringUtils.isNotEmpty(result)) {
-					result += "\n";
-				}
-				lastState = processMessage(adapter, message, writeSecLogMessage).getState();
-				result += name + ":" + lastState;
+			byte contentBytes[] = StreamUtil.streamToByteArray(archive, true);
+			String message = XmlUtils.readXml(contentBytes, fileEncoding, false);
+			if (result.length() > 0) {
+				result.append("\n");
 			}
+			lastState = processMessage(adapter, message, writeSecLogMessage).getState();
+			result.append(name + ":" + lastState);
 			archive.closeEntry();
 		}
 		archive.close();
@@ -184,9 +170,9 @@ public final class TestPipeline extends Base {
 		}
 		Date now = new Date();
 		PipeLineSessionBase.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
-		if (writeSecLogMessage) {
-			secLog.info("message [" + message + "]");
-		}
+
+		secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
+
 		return adapter.processMessage(messageId, new Message(message), pls);
 	}
 }

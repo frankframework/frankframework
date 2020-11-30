@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -85,7 +86,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class FileHandler {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
 	
@@ -99,6 +100,7 @@ public class FileHandler {
 	protected String fileNameSessionKey;
 	protected boolean createDirectory = false;
 	protected boolean writeLineSeparator = false;
+	protected boolean testExists = true;
 	protected boolean testCanWrite = true;
 	protected boolean skipBOM = false;
 	protected boolean deleteEmptyDirectory = false;
@@ -283,7 +285,7 @@ public class FileHandler {
 			throws IOException {
 		String name = getEffectiveFileName(in, session);
 		if (fileSource.equals("classpath")) {
-			return ClassUtils.getResourceURL(classLoader, name);
+			return ClassUtils.getResourceURL(getConfigurationClassLoader(), name);
 		} else {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				return new File(getDirectory(), name);
@@ -363,16 +365,9 @@ public class FileHandler {
 				}
 			}
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
-			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append);
-			try {
-				Misc.streamToStream(in, fos);
-				if (isWriteLineSeparator()) {
-					fos.write(eolArray);
-				}
-			} finally {
-				fos.close();
+			try(FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append)){
+				Misc.streamToStream(in, fos, true, isWriteLineSeparator() ? eolArray : null);
 			}
-			
 			return tmpFile.getPath().getBytes();
 		}
 	}
@@ -432,7 +427,7 @@ public class FileHandler {
 						throw new ConfigurationException(directory + " could not be created");
 					}
 				}
-				if (! (file.exists() && file.isDirectory() && file.canRead())) {
+				if (isTestExists() && ! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
 				}
 			}
@@ -484,7 +479,7 @@ public class FileHandler {
 	private class FileDeleter implements TransformerAction {
 
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory())) {
 					throw new ConfigurationException(directory + " is not a directory");
@@ -535,7 +530,7 @@ public class FileHandler {
 	private class FileLister implements TransformerAction {
 
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
@@ -570,7 +565,7 @@ public class FileHandler {
 	private class FileInfoProvider implements TransformerAction {
 
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
@@ -712,6 +707,14 @@ public class FileHandler {
 	}
 	public String getFileNameSessionKey() {
 		return fileNameSessionKey;
+	}
+
+	@IbisDoc({"test if the specified directory exists at configure()", "true"})
+	public void setTestExists(boolean testExists) {
+		this.testExists = testExists;
+	}
+	public boolean isTestExists() {
+		return testExists;
 	}
 
 	@IbisDoc({"when set to <code>true</code>, the directory to read from or write to is created if it does not exist", "false"})

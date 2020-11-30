@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.util.List;
 
 import javax.xml.transform.TransformerException;
@@ -54,9 +55,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class FlowDiagramManager implements ApplicationContextAware, InitializingBean, DisposableBean {
 	private static Logger log = LogUtil.getLogger(FlowDiagramManager.class);
 
-	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private File adapterFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.adapter.dir"));
 	private File configFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.config.dir"));
+	private ApplicationContext applicationContext;
 
 	private static final String ADAPTER2DOT_XSLT = "/xsl/adapter2dot.xsl";
 	private static final String CONFIGURATION2DOT_XSLT = "/xsl/configuration2dot.xsl";
@@ -64,12 +66,13 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private TransformerPool transformerPoolAdapter;
 	private TransformerPool transformerPoolConfig;
 	private Resource noImageAvailable;
+	private String fileExtension = null;
 
 	/**
 	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be 
 	 * able to generate dot files and return the `noImageAvailable` image.
 	 */
-	private IFlowGenerator generator;
+	private ThreadLocal<SoftReference<IFlowGenerator>> generators = new ThreadLocal<SoftReference<IFlowGenerator>>();
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -79,10 +82,12 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		Resource xsltSourceIbis = Resource.getResource(CONFIGURATION2DOT_XSLT);
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceIbis, 2);
 
+		IFlowGenerator generator = getFlowGenerator();
 		if(generator == null) {
 			log.warn("no IFlowGenerator found. Unable to generate flow diagrams");
 		} else {
 			if(log.isDebugEnabled()) log.debug("using IFlowGenerator ["+generator+"]");
+			fileExtension = generator.getFileExtension();
 		}
 
 		noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
@@ -91,24 +96,51 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 	}
 
-	/**
-	 * Cannot use Spring Autowired as it's an optional!
-	 */
-	public void setFlowGenerator(IFlowGenerator generator) {
-		if(log.isDebugEnabled()) log.debug("setting FlowGenerator ["+generator+"]");
-
-		this.generator = generator;
-	}
-
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+
+	/**
+	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be 
+	 * able to generate dot files and return the `noImageAvailable` image.
+	 */
+	protected IFlowGenerator createFlowGenerator() {
+		if(applicationContext == null) {
+			throw new IllegalStateException("ApplicationContext has not been autowired, cannot instantiate IFlowDiagram");
+		}
+
 		try {
 			IFlowGenerator generator = applicationContext.getBean("flowGenerator", IFlowGenerator.class);
-			setFlowGenerator(generator);
+
+			if(log.isTraceEnabled()) log.trace("created new FlowGenerator instance ["+generator+"]");
+			return generator;
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
-			//Failed to initialise.
+			//Failed to initialize.
 			log.warn("failed to initalize IFlowGenerator", e);
 		}
+		return null;
+	}
+
+	/**
+	 * The IFlowGenerator is wrapped in a SoftReference, wrapped in a ThreadLocal. 
+	 * When the thread is cleaned up, it will remove the instance. Or when the GC is 
+	 * running our of heapspace it will remove the IFlowGenerator. This method makes sure,
+	 * as long as the IFlowGenerator bean can initialize, always a valid instance is returned.
+	 */
+	public IFlowGenerator getFlowGenerator() {
+		SoftReference<IFlowGenerator> reference = generators.get();
+		if(reference == null || reference.get() == null) {
+			IFlowGenerator generator = createFlowGenerator();
+			if(generator == null) {
+				return null;
+			}
+
+			reference = new SoftReference<>(generator);
+			generators.set(reference);
+		}
+
+		return reference.get();
 	}
 
 	public InputStream get(IAdapter adapter) throws IOException {
@@ -226,7 +258,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	private File retrieveFlowFile(File parent, String fileName) {
-		if(generator == null) {
+		if(fileExtension == null) {
 			return null;
 		}
 
@@ -236,7 +268,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			}
 		}
 
-		String name = FileUtils.encodeFileName(fileName) + "." + generator.getFileExtension();
+		String name = FileUtils.encodeFileName(fileName) + "." + fileExtension;
 		log.debug("retrieve flow file for name["+fileName+"] in folder["+parent.getPath()+"]");
 
 		return new File(parent, name);
@@ -248,7 +280,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		long start = System.currentTimeMillis();
 
 		try (FileOutputStream outputStream = new FileOutputStream(destination)) {
-			generator.generateFlow(name, dot, outputStream);
+			getFlowGenerator().generateFlow(name, dot, outputStream);
 		} catch (IOException e) {
 			if(log.isDebugEnabled()) log.debug("error generating flow diagram for ["+name+"]", e);
 

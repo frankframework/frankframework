@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.JsonStructure;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -68,8 +74,24 @@ public class MatchUtils {
 			XmlUtils.parseXml(xml, contentHandler);
 			return xmlWriter.toString();
 		} catch (IOException | SAXException e) {
-			return "ERROR: could not prettyfy: ("+e.getClass().getName()+") "+e.getMessage();
+			throw new RuntimeException("ERROR: could not prettify ["+xml+"]",e);
 		}
+	}
+
+	public static String jsonPretty(String json) {
+		StringWriter sw = new StringWriter();
+		JsonReader jr = Json.createReader(new StringReader(json));
+		JsonObject jobj = jr.readObject();
+
+		Map<String, Object> properties = new HashMap<>(1);
+		properties.put(JsonGenerator.PRETTY_PRINTING, true);
+
+		JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+		try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
+			jsonWriter.writeObject(jobj);
+		}
+
+		return sw.toString().trim();
 	}
 
 	public static void assertXmlEquals(String xmlExp, String xmlAct) {

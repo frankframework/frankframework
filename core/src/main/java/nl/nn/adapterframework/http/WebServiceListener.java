@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,31 +25,32 @@ import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.Bus;
-import org.apache.cxf.BusFactory;
+import org.apache.cxf.bus.spring.SpringBus;
+import org.apache.cxf.jaxws.EndpointImpl;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.cxf.jaxws.EndpointImpl;
 import nl.nn.adapterframework.http.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
+ * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
  * to receive messages as a web-service.
  * 
  * @author Gerrit van Brakel
  * @author Jaco de Groot
  * @author Niels Meijer
  */
-public class WebServiceListener extends PushingListenerAdapter<String> implements Serializable, HasPhysicalDestination, HasSpecialDefaultValues {
-
-	private static final long serialVersionUID = 1L;
+public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues, ApplicationContextAware {
 
 	private boolean soap = true;
 	private String serviceNamespaceURI;
@@ -63,6 +63,7 @@ public class WebServiceListener extends PushingListenerAdapter<String> implement
 	private String multipartXmlSessionKey = "multipartXml";
 	private List<String> attachmentSessionKeysList = new ArrayList<String>();
 	private EndpointImpl endpoint = null;
+	private SpringBus cxfBus;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -92,20 +93,20 @@ public class WebServiceListener extends PushingListenerAdapter<String> implement
 
 		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress())) {
 			String msg = "calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify an address or serviceNamespaceURI and modify the call accordingly";
-			ConfigurationWarnings.add(this, log, msg);
+			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
+		}
+
+		if(cxfBus == null) {
+			throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
 		}
 	}
 
 	@Override
 	public void open() throws ListenerException {
 		if (StringUtils.isNotEmpty(getAddress())) {
-			Bus cxfBus = BusFactory.getDefaultBus(false);
-			if(cxfBus == null) {
-				throw new ListenerException("unable to find SpringBus");
-			}
 			log.debug("registering listener ["+getName()+"] with JAX-WS CXF Dispatcher on SpringBus ["+cxfBus.getId()+"]");
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
-			endpoint.publish("/"+getAddress());
+			endpoint.publish("/"+getAddress()); //TODO: prepend with `local://` when used without application server
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
 
@@ -148,7 +149,7 @@ public class WebServiceListener extends PushingListenerAdapter<String> implement
 
 	@Override
 	public String processRequest(String correlationId, String message, Map<String, Object> requestContext) throws ListenerException {
-		if (attachmentSessionKeysList.size() > 0) {
+		if (!attachmentSessionKeysList.isEmpty()) {
 			XmlBuilder xmlMultipart = new XmlBuilder("parts");
 			for(String attachmentSessionKey: attachmentSessionKeysList) {
 				//<parts><part type=\"file\" name=\"document.pdf\" sessionKey=\"part_file\" size=\"12345\" mimeType=\"application/octet-stream\"/></parts>
@@ -257,8 +258,7 @@ public class WebServiceListener extends PushingListenerAdapter<String> implement
 	}
 
 	@Override
-	public Object getSpecialDefaultValue(String attributeName,
-			Object defaultValue, Map<String, String> attributes) {
+	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
 		if ("address".equals(attributeName)) {
 			return getAddressDefaultValue(attributes.get("name"));
 		}
@@ -267,5 +267,16 @@ public class WebServiceListener extends PushingListenerAdapter<String> implement
 
 	private static String getAddressDefaultValue(String name) {
 		return "/" + name;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		Bus bus = applicationContext.getBean("cxf", Bus.class);
+		if(bus instanceof SpringBus) {
+			cxfBus = (SpringBus) bus;
+			log.info("found CXF SpringBus id ["+bus.getId()+"]");
+		} else {
+			throw new IllegalStateException("CXF bus ["+bus+"] not instance of [SpringBus]");
+		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden
+   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -48,9 +50,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class ParallelSenders extends SenderSeries {
+public class ParallelSenders extends SenderSeries implements ApplicationContextAware {
 
 	private int maxConcurrentThreads = 0;
+	private ApplicationContext applicationContext;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -70,8 +73,7 @@ public class ParallelSenders extends SenderSeries {
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
 
-		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			guard.addResource();
 			// Create a new ParameterResolutionContext to be thread safe, see
 			// documentation on constructor of ParameterResolutionContext
@@ -97,8 +99,7 @@ public class ParallelSenders extends SenderSeries {
 		}
 
 		XmlBuilder resultsXml = new XmlBuilder("results");
-		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 			XmlBuilder resultXml = new XmlBuilder("result");
 			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
@@ -133,12 +134,12 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	protected TaskExecutor createTaskExecutor() {
-		ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) getConfiguration().getIbisManager().getIbisContext().getBean("concurrentTaskExecutor");
+		ThreadPoolTaskExecutor executor = applicationContext.getBean("concurrentTaskExecutor", ThreadPoolTaskExecutor.class);
 		executor.setCorePoolSize(getMaxConcurrentThreads());
 		return executor;
 	}
 
-	@IbisDoc({"sets and upper limit to the amount of concurrent threads that can be run simultaneously. use 0 to disable.", "0"})
+	@IbisDoc({"Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.", "0"})
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if(maxThreads < 1)
 			maxThreads = 0;
@@ -147,5 +148,10 @@ public class ParallelSenders extends SenderSeries {
 	}
 	public int getMaxConcurrentThreads() {
 		return maxConcurrentThreads;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -39,9 +38,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -59,7 +59,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
- * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
+ * and uses {@link Receiver Receivers} and a {@link PipeLine}.
  *
  * <b>responsibility</b><br/>
  * <ul>
@@ -79,7 +79,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </table>
  * 
  * @author Johan Verrips
- * @see    IReceiver
+ * @see    Receiver
  * @see    PipeLine
  * @see    StatisticsKeeper
  * @see    DateUtils
@@ -103,7 +103,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private String targetDesignDocument;
 	private boolean active=true;
 
-	private ArrayList<IReceiver> receivers = new ArrayList<IReceiver>();
+	private ArrayList<Receiver> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
 	private String lastMessageProcessingState; //"OK" or "ERROR"
 	private PipeLine pipeline;
@@ -185,9 +185,8 @@ public class Adapter implements IAdapter, NamedBean {
 			pipeline.setAdapter(this);
 			pipeline.configure();
 			messageKeeper.add("Adapter [" + name + "] pipeline successfully configured");
-			Iterator<IReceiver> it = receivers.iterator();
-			while (it.hasNext()) {
-				IReceiver receiver = it.next();
+			
+			for (Receiver receiver: receivers) {
 				configureReceiver(receiver);
 			}
 			configurationSucceeded = true;
@@ -221,7 +220,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
-	public void configureReceiver(IReceiver receiver) {
+	public void configureReceiver(Receiver receiver) {
 		log.info("Adapter [" + name + "] is initializing receiver [" + receiver.getName() + "]");
 		receiver.setAdapter(this);
 		try {
@@ -357,6 +356,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * retrieve the date and time of the last message.
 	 */
+	@JmxAttribute(description = "The date/time of the last processed message")
 	public String getLastMessageDate() {
 		return getLastMessageDate(DateUtils.FORMAT_FULL_GENERIC);
 	}
@@ -424,12 +424,8 @@ public class Adapter implements IAdapter, NamedBean {
 				|| action == HasStatistics.STATISTICS_ACTION_RESET;
 		if (showDetails) {
 			Object recsData=hski.openGroup(adapterData,null,"receivers");
-			Iterator<IReceiver> recIt = getReceiverIterator();
-			if (recIt.hasNext()) {
-				while (recIt.hasNext()) {
-					IReceiver receiver = recIt.next();
-					receiver.iterateOverStatistics(hski,recsData,action);
-				}
+			for (Receiver receiver: receivers) {
+				receiver.iterateOverStatistics(hski,recsData,action);
 			}
 			hski.closeGroup(recsData);
 
@@ -465,6 +461,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * the functional name of this adapter
 	 * @return  the name of the adapter
 	 */
+	@JmxAttribute(description = "Name of the Adapter")
 	@Override
 	public String getName() {
 		return name;
@@ -473,11 +470,13 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
 	 */
+	@JmxAttribute(description = "# Messages in Error")
 	public long getNumOfMessagesInError() {
 		synchronized (statsMessageProcessingDuration) {
 			return numOfMessagesInError.getValue();
 		}
 	}
+	@JmxAttribute(description = "# Messages in process")
 	public int getNumOfMessagesInProcess() {
 		synchronized (statsMessageProcessingDuration) {
 			return numOfMessagesInProcess;
@@ -493,6 +492,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Total of messages processed
 	 * @return long total messages processed
 	 */
+	@JmxAttribute(description = "# Messages Processed")
 	public long getNumOfMessagesProcessed() {
 		synchronized (statsMessageProcessingDuration) {
 			return numOfMessagesProcessed.getValue();
@@ -500,40 +500,30 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public IReceiver getReceiverByName(String receiverName) {
-		Iterator<IReceiver> it = receivers.iterator();
-		while (it.hasNext()) {
-			IReceiver receiver = it.next();
+	public Receiver getReceiverByName(String receiverName) {
+		for (Receiver receiver: receivers) {
 			if (receiver.getName().equalsIgnoreCase(receiverName)) {
 				return receiver;
 			}
-
 		}
 		return null;
 	}
 
-	public IReceiver getReceiverByNameAndListener(String receiverName, Class<?> listenerClass) {
+	public Receiver getReceiverByNameAndListener(String receiverName, Class<?> listenerClass) {
 		if (listenerClass == null) {
 			return getReceiverByName(receiverName);
 		}
-		Iterator<IReceiver> it = receivers.iterator();
-		while (it.hasNext()) {
-			IReceiver receiver = it.next();
-			if (receiver.getName().equalsIgnoreCase(receiverName)) {
-				if (receiver instanceof ReceiverBase) {
-					ReceiverBase receiverBase = (ReceiverBase) receiver;
-					if (listenerClass.equals(receiverBase.getListener().getClass())) {
-						return receiver;
-					}
-				}
+		for (Receiver receiver: receivers) {
+			if (receiver.getName().equalsIgnoreCase(receiverName) && listenerClass.equals(receiver.getListener().getClass())) {
+				return receiver;
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public Iterator<IReceiver> getReceiverIterator() {
-		return receivers.iterator();
+	public Iterable<Receiver> getReceivers() {
+		return receivers;
 	}
 
 	public PipeLine getPipeLine() {
@@ -545,6 +535,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return runState.getRunState();
 	}
 
+	@JmxAttribute(description = "RunState")
 	public String getRunStateAsString() {
 		return runState.getRunState().toString();
 	}
@@ -566,6 +557,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Creation date: (19-02-2003 12:16:53)
 	 * @return String  Date
 	 */
+	@JmxAttribute(description = "Up Since")
 	public String getStatsUpSince() {
 		return getStatsUpSince(DateUtils.FORMAT_FULL_GENERIC);
 	}
@@ -667,7 +659,7 @@ public class Adapter implements IAdapter, NamedBean {
 				log.info(String.format("Adapter [%s] received message with messageId [%s]" + additionalLogging, getName(), messageId));
 			}
 
-			if ((message == null || message.isEmpty()) && isReplaceNullMessage()) {
+			if (Message.isEmpty(message) && isReplaceNullMessage()) {
 				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
 				message = new Message("");
 			}
@@ -733,7 +725,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @see PipeLine
 	 */
 	@Override
-	public void registerPipeLine(PipeLine pipeline) throws ConfigurationException {
+	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline = pipeline;
 		pipeline.setAdapter(this);
 		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");
@@ -741,14 +733,11 @@ public class Adapter implements IAdapter, NamedBean {
 
 	/**
 	 * Register a receiver for this Adapter
-	 * @see IReceiver
+	 * @see Receiver
 	 */
-	public void registerReceiver(IReceiver receiver) {
-		boolean receiverActive=true;
-		if (receiver instanceof ReceiverBase) {
-			receiverActive=((ReceiverBase)receiver).isActive();
-		}
-		if (receiverActive) {
+	@IbisDoc("100")
+	public void registerReceiver(Receiver receiver) {
+		if (receiver.isActive()) {
 			receivers.add(receiver);
 			log.debug("Adapter ["	+ name 	+ "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
 		} else {
@@ -772,7 +761,6 @@ public class Adapter implements IAdapter, NamedBean {
 	 * for this <code>adapter</code>
 	 * @see IErrorMessageFormatter
 	 */
-	@IbisDoc({" ", ""})
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;
 	}
@@ -823,7 +811,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * of the IReceiver. The Adapter will be a new thread, as this interface
 	 * extends the <code>Runnable</code> interface. The actual starting is done
 	 * in the <code>run</code> method.
-	 * @see IReceiver#startRunning()
+	 * @see Receiver#startRunning()
 	 */
 	@Override
 	public void startRunning() {
@@ -832,7 +820,7 @@ public class Adapter implements IAdapter, NamedBean {
 			public void run() {
 				Thread.currentThread().setName("starting Adapter "+getName());
 				try {
-					// See also ReceiverBase.startRunning()
+					// See also Receiver.startRunning()
 					if (!configurationSucceeded) {
 						log.error("configuration of adapter [" + getName() + "] did not succeed, therefore starting the adapter is not possible");
 						warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
@@ -870,9 +858,7 @@ public class Adapter implements IAdapter, NamedBean {
 					getMessageKeeper().add("Adapter [" + getName() + "] up and running");
 					log.info("Adapter [" + getName() + "] up and running");
 					// starting receivers
-					Iterator<IReceiver> it = receivers.iterator();
-					while (it.hasNext()) {
-						IReceiver receiver = it.next();
+					for (Receiver receiver: receivers) {
 						receiver.startRunning();
 					}
 				} catch (Throwable t) {
@@ -898,7 +884,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * will call the <code>IReceiver</code> to <code>stopListening</code>
 	 * <p>Also the <code>PipeLine.close()</code> method will be called,
 	 * closing alle registered pipes. </p>
-	 * @see IReceiver#stopRunning
+	 * @see Receiver#stopRunning
 	 * @see PipeLine#stop
 	 */
 	@Override
@@ -908,7 +894,7 @@ public class Adapter implements IAdapter, NamedBean {
 			public void run() {
 				Thread.currentThread().setName("stopping Adapter " +getName());
 				try {
-					// See also ReceiverBase.stopRunning()
+					// See also Receiver.stopRunning()
 					synchronized (runState) {
 						RunStateEnum currentRunState = getRunState();
 						if (currentRunState.equals(RunStateEnum.STARTING)
@@ -921,16 +907,12 @@ public class Adapter implements IAdapter, NamedBean {
 						runState.setRunState(RunStateEnum.STOPPING);
 					}
 					log.debug("Adapter [" + name + "] is stopping receivers");
-					Iterator<IReceiver> it = receivers.iterator();
-					while (it.hasNext()) {
-						IReceiver receiver = it.next();
+					for (Receiver receiver: receivers) {
 						receiver.stopRunning();
 					}
 					// IPullingListeners might still be running, see also
-					// comment in method ReceiverBase.tellResourcesToStop()
-					it = receivers.iterator();
-					while (it.hasNext()) {
-						IReceiver receiver = (IReceiver) it.next();
+					// comment in method Receiver.tellResourcesToStop()
+					for (Receiver receiver: receivers) {
 						while (receiver.getRunState() != RunStateEnum.STOPPED) {
 							log.debug("Adapter [" + getName() + "] waiting for receiver [" + receiver.getName() + "] in state ["+receiver.getRunState()+"] to stop");
 							try {
@@ -974,10 +956,8 @@ public class Adapter implements IAdapter, NamedBean {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[name=" + name + "]");
 		sb.append("[targetDesignDocument=" + targetDesignDocument + "]");
-		Iterator<IReceiver> it = receivers.iterator();
 		sb.append("[receivers=");
-		while (it.hasNext()) {
-			IReceiver receiver = it.next();
+		for (Receiver receiver: receivers) {
 			sb.append(" " + receiver.getName());
 
 		}
@@ -988,16 +968,14 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	private String getFileSizeAsBytes(Message message) {
-		if (message==null || message.isEmpty()) {
+		if (Message.isEmpty(message)) {
 			return null;
 		}
-		if (message.asObject() instanceof String) {
-			return Misc.toFileSize(((String)message.asObject()).length());
+		if(message.size() == -1) {
+			return "unknown";
 		}
-		if (message.asObject() instanceof byte[]) {
-			return Misc.toFileSize(((byte[])message.asObject()).length);
-		}
-		return "unknown";
+
+		return Misc.toFileSize(message.size());
 	}
 
 	@Override
@@ -1012,7 +990,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void waitForNoMessagesInProcess() throws InterruptedException {
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
-				wait();
+				wait(); // waits for notification from decNumOfMessagesInProcess()
 			}
 		}
 	}

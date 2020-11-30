@@ -15,7 +15,9 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -40,10 +42,13 @@ public interface IDbmsSupport {
 	Dbms getDbms(); 
 	String getDbmsName();
 	
+	boolean isParameterTypeMatchRequired();
+	boolean hasSkipLockedFunctionality();
 	/**
 	 * SQL String returning current date and time of dbms.
 	 */
 	String getSysDate();
+	String getDateAndOffset(String dateValue, int daysOffset);
 
 	String getNumericKeyFieldType();
 
@@ -72,6 +77,8 @@ public interface IDbmsSupport {
 	Writer getClobWriter(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException;
 	void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException;
 	void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException;
+	Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException;
+	Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException;
 
 	String getBlobFieldType();
 	boolean mustInsertEmptyBlobBeforeData();
@@ -83,6 +90,8 @@ public interface IDbmsSupport {
 	OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
 	void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException;
 	void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
+	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException;
+	InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException;
 
 	String getTextFieldType();
 
@@ -93,20 +102,22 @@ public interface IDbmsSupport {
 	String getFirstRecordQuery(String tableName) throws JdbcException;
 
 	/**
-	 * Modify the provided selectQuery in such a way that the resulting query will not be blocked by locks, and will not place locks itself.
-	 * Will always be executed together with {@link #prepareSessionForDirtyRead(Connection)}.
+	 * Modify the provided selectQuery in such a way that the resulting query will not be blocked by locks, and will avoid placing locks itself as much as possible.
+	 * Will always be executed together with {@link #prepareSessionForNonLockingRead(Connection)}.
+	 * Preferably, the effective isolation level is READ_COMMITTED (commited rows of other transactions may be read), but if placing locks can be avoid by an isolation level similar to READ_UNCOMMITTED, that is allowed too.
 	 * Should return the query unmodified if no special action is required.
-	 * For an example, see {@link MsSqlServerDbmsSupport#prepareQueryTextForDirtyRead(String)}
+	 * For an example, see {@link MsSqlServerDbmsSupport#prepareQueryTextForNonLockingRead(String)}
 	 */
-	String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException;
+	String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException;
 	/**
-	 * Modify the connection in such a way that it when select queries, prepared by {@link #prepareQueryTextForDirtyRead(String)}, 
-	 * are executed, they will not be blocked by locks, and will not place locks itself.
-	 * After the query is executed, jdbcSession.close() will be called, to return the connection to its normal state.
+	 * Modify the connection in such a way that it when select queries, prepared by {@link #prepareQueryTextForNonLockingRead(String)} or by {@link #prepareQueryTextForWorkQueuePeeking(int,String)}, 
+	 * are executed, they will not be blocked by locks, and will avoid placing locks itself as much as possible.
+	 * Preferably isolation level is READ_COMMITTED (commited rows of other transactions may be read), but if placing locks can be avoid by an isolation level similar to READ_UNCOMMITTED, that is allowed too.
+	 * After the query is executed, jdbcSession.close() will be called, to return the connection to its normal state (which is expected to be REPEATABLE_READ).
 	 * Should return null if no preparation of the connection is required.
-	 * For an example, see {@link MySqlDbmsSupport#prepareSessionForDirtyRead(Connection)}
+	 * For an example, see {@link MySqlDbmsSupport#prepareSessionForNonLockingRead(Connection)}
 	 */
-	JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException;
+	JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException;
 
 	String provideIndexHintAfterFirstKeyword(String tableName, String indexName);
 	String provideFirstRowsHintAfterFirstKeyword(int rowCount);

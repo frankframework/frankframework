@@ -15,49 +15,10 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 
-/**
- * Plain extension of {@link ReceiverBase} that can be used directly in configurations.
- * Only extension is that the setters for its three worker-objects are public, and can therefore
- * be set from the configuration file.
- * For configuration options, see {@link ReceiverBase}.
- * 
- * @author  Gerrit van Brakel
- * @since   4.1
- */
-public class GenericReceiver extends ReceiverBase {
+@Deprecated
+@ConfigurationWarning("Please do not specify a className attribute for Receiver")
+public class GenericReceiver extends Receiver {
 
-	@Override
-	public void setListener(IListener listener) {
-		super.setListener(listener);
-	}
-	@Override
-	public void setInProcessStorage(ITransactionalStorage inProcessStorage) {
-		super.setInProcessStorage(inProcessStorage);
-	}
-	@Override
-	public void setErrorSender(ISender errorSender) {
-		super.setErrorSender(errorSender);
-	}			
-	@Override
-	public void setErrorStorage(ITransactionalStorage errorStorage) {
-		super.setErrorStorage(errorStorage);
-	}
-	@Override
-	public void setMessageLog(ITransactionalStorage messageLog) {
-		super.setMessageLog(messageLog);
-	}
-	
-	@Override
-	public void setSender(ISender sender) {
-		super.setSender(sender);
-	}    
-	@Override
-    public IAdapter getAdapter() {
-        return super.getAdapter();
-    }
 }

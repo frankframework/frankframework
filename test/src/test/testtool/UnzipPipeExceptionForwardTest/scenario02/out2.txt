@@ -1,0 +1,1 @@
+<results count="1"><result item="1"><zipEntry>test.txt</zipEntry><fileName>c:\temp\testdata\unzip\test6734827797989363954.txt</fileName></result></results>

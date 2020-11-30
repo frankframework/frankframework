@@ -51,39 +51,39 @@ import org.apache.logging.log4j.Logger;
  */
 public class CredentialFactory implements CallbackHandler {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	private String alias;
 	private String username;
 	private String password;
 	private boolean gotCredentials=false;
 	private boolean useFallback=false;
-	
+
 	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) {
 		super();
 		setAlias(alias);
 		setUsername(defaultUsername);
 		setPassword(defaultPassword);
 	}
-	
+
 	public String invokeCharArrayGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		char arr[] = (char[])ClassUtils.invokeGetter(o,name);
-		StringBuffer sb=new StringBuffer();
+		StringBuffer sb = new StringBuffer();
 		for (int j=0; j<arr.length;j++) {
 			sb.append(arr[j]);
 		}
 		return sb.toString();
 	}
 
-	
+	@Override
 	public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 		log.info("Handling callbacks for alias ["+getAlias()+"]");
 		for (int i=0; i<callbacks.length; i++) {
 			Callback cb=callbacks[i];
 //			log.info(i+") "+cb.getClass().getName()+" "+ToStringBuilder.reflectionToString(cb));
-			Class cbc = cb.getClass();
+			Class<? extends Callback> cbc = cb.getClass();
 			if (cbc.getName().endsWith("MappingPropertiesCallback")) { // Websphere 6
 				try {
-					Map mappingProperties=new HashMap();
+					Map<String, String> mappingProperties = new HashMap<>();
 					mappingProperties.put("com.ibm.mapping.authDataAlias", getAlias());
 					ClassUtils.invokeSetter(cb,"setProperties",mappingProperties,Map.class);
 					log.debug("MappingPropertiesCallback.properties set to entry key [com.ibm.mapping.authDataAlias], value ["+getAlias()+"]");
@@ -126,8 +126,8 @@ public class CredentialFactory implements CallbackHandler {
 		log.info("Handled callbacks for alias ["+getAlias()+"]");
 	}
 
-	private class loginCallbackHandler implements CallbackHandler {
-
+	private class LoginCallbackHandler implements CallbackHandler {
+		@Override
 		public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 			log.info("callback: "+ToStringBuilder.reflectionToString(callbacks));
 			for (int i=0; i<callbacks.length; i++) {
@@ -157,7 +157,6 @@ public class CredentialFactory implements CallbackHandler {
 		}
 	}
 
-
 	/** 
 	 * return a loginContext, obtained by logging in using the obtained credentials
 	 */
@@ -165,7 +164,7 @@ public class CredentialFactory implements CallbackHandler {
 		String loginConfig="ClientContainer";
 		getCredentialsFromAlias();
 		log.debug("logging in using context["+loginConfig+"]");
-		LoginContext lc = new LoginContext(loginConfig,new loginCallbackHandler());
+		LoginContext lc = new LoginContext(loginConfig, new LoginCallbackHandler());
 		lc.login();
 		return lc;
 	}
@@ -199,28 +198,27 @@ public class CredentialFactory implements CallbackHandler {
 //		log.debug(msg);
 //	}
 
-	
 	/*
 	 * Dummy principal, to populate subject, to have at least a principal.
 	 */
 	private class IbisPrincipal implements Principal{
-
+		@Override
 		public String getName() {
 			return "Ibis";
 		}
-		
 	}
 
 	protected void getCredentialsFromAlias() {
 		if (!gotCredentials && StringUtils.isNotEmpty(getAlias())) {
 			try {
-				Set principals = new HashSet();
-				Set publicCredentials = new HashSet();
-				Set privateCredentials = new HashSet();
+				Set<Principal> principals = new HashSet<>();
+				Set<Object> publicCredentials = new HashSet<>();
+				Set<Object> privateCredentials = new HashSet<>();
+
 				Principal p = new IbisPrincipal();
 				principals.add(p);
-				Subject initialSubject= new Subject(false,principals,publicCredentials,privateCredentials);
-				String loginConfiguration = AppConstants.getInstance().getProperty("PrincipalMapping","DefaultPrincipalMapping");
+				Subject initialSubject= new Subject(false, principals, publicCredentials, privateCredentials);
+				String loginConfiguration = AppConstants.getInstance().getProperty("PrincipalMapping", "DefaultPrincipalMapping");
 				LoginContext lc = new LoginContext(loginConfiguration, initialSubject, this);
 				lc.login();
 				Subject s = lc.getSubject();
@@ -253,10 +251,15 @@ public class CredentialFactory implements CallbackHandler {
 	}
 
 
+	@Override
 	public String toString() {
-		return getClass().getName()+": alias="+getAlias()+"; username="+username;
+		final StringBuilder builder = new StringBuilder();
+		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
+		builder.append(" alias ["+getAlias()+"]");
+		builder.append(" username ["+username+"]");
+		return builder.toString();
 	}
-	
+
 	public void setAlias(String string) {
 		alias = string;
 		gotCredentials=false;
@@ -280,7 +283,4 @@ public class CredentialFactory implements CallbackHandler {
 		getCredentialsFromAlias();
 		return password;
 	}
-
-
-
 }

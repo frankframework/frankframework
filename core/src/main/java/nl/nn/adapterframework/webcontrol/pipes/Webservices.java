@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.webcontrol.pipes;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -24,13 +23,13 @@ import java.util.SortedMap;
 import javax.naming.NamingException;
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListener;
@@ -39,12 +38,10 @@ import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Webservices.
@@ -74,17 +71,17 @@ public class Webservices extends TimeoutGuardPipe {
 
 		if (StringUtils.isNotEmpty(uri) && (uri.endsWith(Wsdl.WSDL_EXTENSION) || uri.endsWith(".zip"))) {
 			String adapterName = StringUtils.substringBeforeLast(StringUtils.substringAfterLast(uri, "/"), ".");
-			IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
+			Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 			if (adapter == null) {
 				throw new PipeRunException(this, getLogPrefix(session) + "adapter [" + adapterName + "] doesn't exist");
 			}
 			try {
 				if (uri.endsWith(Wsdl.WSDL_EXTENSION)) {
 					RestListenerUtils.setResponseContentType(session, "application/xml");
-					wsdl((Adapter) adapter, session, indent, useIncludes);
+					wsdl(adapter, session, indent, useIncludes);
 				} else {
 					RestListenerUtils.setResponseContentType(session, "application/octet-stream");
-					zip((Adapter) adapter, session);
+					zip(adapter, session);
 				}
 
 			} catch (Exception e) {
@@ -101,22 +98,16 @@ public class Webservices extends TimeoutGuardPipe {
 
 		//RestListeners
 		XmlBuilder restsXML = new XmlBuilder("rests");
-		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
-			Adapter adapter = (Adapter) a;
-			Iterator recIt = adapter.getReceiverIterator();
-			while (recIt.hasNext()) {
-				IReceiver receiver = (IReceiver) recIt.next();
-				if (receiver instanceof ReceiverBase) {
-					ReceiverBase rb = (ReceiverBase) receiver;
-					IListener listener = rb.getListener();
-					if (listener instanceof RestListener) {
-						RestListener rl = (RestListener) listener;
-						if (rl.isView()) {
-							XmlBuilder restXML = new XmlBuilder("rest");
-							restXML.addAttribute("name", rb.getName());
-							restXML.addAttribute("uriPattern", rl.getUriPattern());
-							restsXML.addSubElement(restXML);
-						}
+		for (Adapter adapter : ibisManager.getRegisteredAdapters()) {
+			for (Receiver receiver: adapter.getReceivers()) {
+				IListener listener = receiver.getListener();
+				if (listener instanceof RestListener) {
+					RestListener rl = (RestListener) listener;
+					if (rl.isView()) {
+						XmlBuilder restXML = new XmlBuilder("rest");
+						restXML.addAttribute("name", receiver.getName());
+						restXML.addAttribute("uriPattern", rl.getUriPattern());
+						restsXML.addSubElement(restXML);
 					}
 				}
 			}
@@ -125,15 +116,14 @@ public class Webservices extends TimeoutGuardPipe {
 
 		//WSDL's
 		XmlBuilder wsdlsXML = new XmlBuilder("wsdls");
-		for (IAdapter a : ibisManager.getRegisteredAdapters()) {
+		for (Adapter adapter : ibisManager.getRegisteredAdapters()) {
 			XmlBuilder wsdlXML = new XmlBuilder("wsdl");
 			try {
-				Adapter adapter = (Adapter) a;
 				Wsdl wsdl = new Wsdl(adapter.getPipeLine(), retrieveGenerationInfo(session));
 				wsdlXML.addAttribute("name", wsdl.getName());
 				wsdlXML.addAttribute("extension", Wsdl.WSDL_EXTENSION);
 			} catch (Exception e) {
-				wsdlXML.addAttribute("name", a.getName());
+				wsdlXML.addAttribute("name", adapter.getName());
 				XmlBuilder errorXML = new XmlBuilder("error");
 				if (e.getMessage() != null) {
 					errorXML.setCdataValue(e.getMessage());

@@ -49,6 +49,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	private final boolean ignoreUnknownNamespaces;
 	private XmlValidatorErrorHandler xmlValidatorErrorHandler;
 	private int namespaceWarnings = 0;
+	private String currentInvalidNamespace = null;
 
 	/**
 	 *
@@ -167,17 +168,22 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	
 	protected void checkNamespaceExistance(String namespace) throws UnknownNamespaceException {
 		if (!ignoreUnknownNamespaces && validNamespaces != null && namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
-			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) {
-				String message = "Unknown namespace '" + namespace + "'";
-				namespaceWarnings++;
-				if (namespaceWarnings > MAX_NAMESPACE_WARNINGS) {
-					message = message + " (maximum number of namespace warnings reached)";
+			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) { 
+				if (currentInvalidNamespace == null || !(currentInvalidNamespace.equals(namespace))) { // avoid invalid namespace to be reported for each sub element
+					currentInvalidNamespace = namespace;
+					String message = "Unknown namespace '" + namespace + "'";
+					namespaceWarnings++;
+					if (namespaceWarnings > MAX_NAMESPACE_WARNINGS) {
+						message = message + " (maximum number of namespace warnings reached)";
+					}
+					if (xmlValidatorErrorHandler != null) {
+						xmlValidatorErrorHandler.addReason(message, null, null);
+					} else {
+						throw new UnknownNamespaceException(message);
+					}
 				}
-				if (xmlValidatorErrorHandler != null) {
-					xmlValidatorErrorHandler.addReason(message, null, null);
-				} else {
-					throw new UnknownNamespaceException(message);
-				}
+			} else {
+				currentInvalidNamespace = null;
 			}
 		}
 	}

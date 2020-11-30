@@ -28,7 +28,7 @@ public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>
 
 	public FileSystemMessageBrowsingIterator(FS fileSystem, String folder) throws FileSystemException {
 		this.fileSystem = fileSystem;
-		iterator = fileSystem.listFiles(folder);
+		iterator = fileSystem.listFiles(folder).iterator();
 	}
 	
 	@Override

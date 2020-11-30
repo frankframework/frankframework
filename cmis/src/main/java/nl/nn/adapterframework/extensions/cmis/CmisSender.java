@@ -61,6 +61,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -1052,10 +1053,14 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@IbisDoc({"Proxy Username", ""})
-	public void setProxyUserName(String proxyUserName) {
-		sessionBuilder.setProxyUserName(proxyUserName);
+	public void setProxyUsername(String proxyUsername) {
+		sessionBuilder.setProxyUsername(proxyUsername);
 	}
-
+	@Deprecated
+	@ConfigurationWarning("Please use \"proxyUsername\" instead")
+	public void setProxyUserName(String proxyUsername) {
+		setProxyUsername(proxyUsername);
+	}
 	@IbisDoc({"Proxy Password", ""})
 	public void setProxyPassword(String proxyPassword) {
 		sessionBuilder.setProxyPassword(proxyPassword);
@@ -1114,9 +1119,8 @@ public class CmisSender extends SenderWithParametersBase {
 		sessionBuilder.setUsername(userName);
 		this.userName = userName;
 	}
-	/**
-	 * @deprecated legacy username is one word..
-	 */
+	@Deprecated
+	@ConfigurationWarning("Please use \"username\" instead")
 	public void setUserName(String userName) {
 		setUsername(userName);
 	}

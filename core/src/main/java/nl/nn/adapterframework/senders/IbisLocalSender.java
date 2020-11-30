@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -157,35 +158,36 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		HashMap<String,Object> context = null;
 		if (paramList!=null) {
 			try {
-				context = (HashMap) paramList.getValues(message, session).getValueMap();
+				context = (HashMap<String,Object>) paramList.getValues(message, session).getValueMap();
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 			}
-		} else {
-			if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-				context = new HashMap();
-			}
 		}
+		if (context==null) {
+			context = new HashMap<>();
+		}
+		String serviceIndication;
 		if (StringUtils.isNotEmpty(getServiceName())) {
+			serviceIndication="service ["+getServiceName()+"]";
 			try {
 				if (isIsolated()) {
 					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
 						result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
 					} else {
-						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
 						isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
 						result = message;
 					}
 				} else {
-					log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
+					log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
 					result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message.asString(), context));
 				}
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling service ["+getServiceName()+"]",e);
+					throw new TimeOutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
 				}
-				throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
+				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication+"",e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
@@ -201,6 +203,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			} else {
 				javaListener = getJavaListener();
 			}
+			serviceIndication="JavaListener ["+javaListener+"]";
 			try {
 				JavaListener listener= JavaListener.getListener(javaListener);
 				if (listener==null) {
@@ -213,22 +216,22 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 				if (isIsolated()) {
 					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in separate Thread");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
 						result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true);
 					} else {
-						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in asynchronously");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
 						isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true);
 						result = message;
 					}
 				} else {
-					log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in same Thread");
+					log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
 					result = new Message(listener.processRequest(correlationID,message.asString(),context));
 				}
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling JavaListener ["+javaListener+"]",e);
+					throw new TimeOutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
 				}
-				throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+javaListener+"]",e);
+				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
@@ -237,6 +240,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					Misc.copyContext(getReturnedSessionKeys(),context, session);
 				}
 			}
+		}
+		String exitState = (String)context.remove(IPipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		Object exitCode = context.remove(IPipeLineSession.EXIT_CODE_CONTEXT_KEY);
+		if (exitState!=null && !exitState.equalsIgnoreCase(PipeLineExit.EXIT_STATE_SUCCESS)) {
+			context.put("originalResult", result);
+			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 		}
 		return result;
 	}
@@ -254,7 +263,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	/**
 	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
 	 */
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.webservicelistener webservicelistener} that should be called", ""})
+	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} that should be called", ""})
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
@@ -275,7 +284,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"name of the sessionkey which holds the name of the {@link nl.nn.adapterframework.receivers.javalistener javalistener} that should be called", ""})
+	@IbisDoc({"name of the sessionkey which holds the name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called", ""})
 	public void setJavaListenerSessionKey(String string) {
 		javaListenerSessionKey = string;
 	}
@@ -284,7 +293,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.javalistener javalistener} that should be called (will be ignored when javalistenersessionkey is set)", ""})
+	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}
@@ -303,7 +312,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.javalistener javalistener} is opened", "true"})
+	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened", "true"})
 	public void setCheckDependency(boolean b) {
 		checkDependency = b;
 	}
@@ -332,7 +341,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		this.isolatedServiceCaller = isolatedServiceCaller;
 	}
 
-	@IbisDoc({"when set <code>false</code>, the xml-string \"&lt;error&gt;could not find javalistener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})
+	@IbisDoc({"when set <code>false</code>, the xml-string \"&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})
 	public void setThrowJavaListenerNotFoundException(boolean b) {
 		throwJavaListenerNotFoundException = b;
 	}
