@@ -21,16 +21,6 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 	}
 
 	@Override
-	public MockAttachment getAttachmentByName(MockFileWithAttachments f, String name) throws FileSystemException {
-		for (MockAttachment a:f.getAttachments()) {
-			if (a.getName().equals(name)) {
-				return a;
-			}
-		}
-		return null;
-	}
-
-	@Override
 	public InputStream readAttachment(MockAttachment a) throws FileSystemException, IOException {
 		return a.getContents()==null?null:new ByteArrayInputStream(a.getContents());
 	}

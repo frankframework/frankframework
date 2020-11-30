@@ -154,6 +154,32 @@ public class FileSystemUtils {
 		}
 	}
 
+	public static <F> DirectoryStream<F> getDirectoryStream(Iterable<F> iterable){
+		final DirectoryStream<F> ds = new DirectoryStream<F>() {
+
+			@Override
+			public void close() throws IOException {
+				if (iterable instanceof AutoCloseable) {
+					try {
+						((AutoCloseable)iterable).close();
+					} catch (IOException e) {
+						throw e;
+					} catch (Exception e) {
+						throw new IOException(e);
+					}
+				}
+			}
+
+			@Override
+			public Iterator<F> iterator() {
+				return iterable.iterator();
+			}
+			
+		};
+
+		return ds;
+	}
+	
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator){
 		final DirectoryStream<F> ds = new DirectoryStream<F>() {
 

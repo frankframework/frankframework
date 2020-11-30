@@ -83,6 +83,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *  For streaming operation, the parameter <code>filename</code> must be specified.
  *  </td><td>&nbsp;</td></tr>
  * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
+ * <tr><td>forward</td><td>(for MailFileSystems only:) forward an existing file to an email address</td><td>filename: taken from parameter <code>filename</code> or input message<br/>destination (an email address in this case): taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <table>
  * 
  * @author Gerrit van Brakel
@@ -104,6 +105,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String ACTION_WRITE2="upload";
 	public final String ACTION_APPEND="append";
 	public final String ACTION_RENAME="rename";
+	public final String ACTION_FORWARD="forward";
 
 	public final String PARAMETER_ACTION="action";
 	public final String PARAMETER_CONTENTS1="contents";
@@ -117,6 +119,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	
 	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_INFO, ACTION_READ1, ACTION_READ2, ACTION_READ_DELETE, ACTION_MOVE, ACTION_COPY, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
 	public final String[] ACTIONS_WRITABLE_FS= {ACTION_WRITE1, ACTION_WRITE2, ACTION_APPEND, ACTION_RENAME};
+	public final String[] ACTIONS_MAIL_FS= {ACTION_FORWARD};
 
 	private String action;
 	private String filename;
@@ -145,6 +148,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 		if (fileSystem instanceof IWritableFileSystem) {
 			actions.addAll(Arrays.asList(ACTIONS_WRITABLE_FS));
+		}
+		if (fileSystem instanceof IMailFileSystem) {
+			actions.addAll(Arrays.asList(ACTIONS_MAIL_FS));
 		}
 
 		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
@@ -189,10 +195,11 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: unknown or invalid action [" + action + "] supported actions are " + actions.toString() + "");
 
 		//Check if necessary parameters are available
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_WRITE1, PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_MOVE,   PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_COPY,   PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_RENAME, PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_WRITE1,  PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_MOVE,    PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_COPY,    PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_RENAME,  PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
 	}
 	
 //	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
@@ -428,6 +435,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				String destinationFolder = determineDestination(pvl);
 				F copied = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
 				return fileSystem.getName(copied);
+			} else if (action.equalsIgnoreCase(ACTION_FORWARD)) {
+				F file=getFile(input, pvl);
+				FileSystemUtils.checkSource(fileSystem, file, "forward");
+				String destinationAddress = determineDestination(pvl);
+				((IMailFileSystem<F,?>)fileSystem).forwardMail(file, destinationAddress);
+				return null;
 			}
 		} catch (Exception e) {
 			throw new FileSystemException("unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]", e);

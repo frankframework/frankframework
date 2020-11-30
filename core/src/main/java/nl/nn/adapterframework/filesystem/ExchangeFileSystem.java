@@ -18,6 +18,7 @@ package nl.nn.adapterframework.filesystem;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.file.DirectoryStream;
 import java.util.Collections;
@@ -29,9 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.mail.internet.InternetAddress;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.logging.log4j.Logger;
 
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
 import microsoft.exchange.webservices.data.core.ExchangeService;
@@ -48,6 +50,7 @@ import microsoft.exchange.webservices.data.core.exception.service.remote.Service
 import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.core.service.item.Item;
+import microsoft.exchange.webservices.data.core.service.response.ResponseMessage;
 import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
 import microsoft.exchange.webservices.data.core.service.schema.FolderSchema;
 import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
@@ -73,11 +76,11 @@ import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -100,21 +103,13 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  * @author Gerrit van Brakel
  *
  */
-public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachment> {
-	protected Logger log = LogUtil.getLogger(this);
+public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment> {
 
 	private String mailAddress;
 	private boolean validateAllRedirectUrls=true;
 	private String url;
 	private String accessToken;
-	private String authAlias;
-	private String username;
-	private String password;
-	private String basefolder;
 	private String filter;
-	private boolean readMimeContents=false;
-	private int maxNumberOfMessagesToList=10;
-	private String replyAddressFields = REPLY_ADDRESS_FIELDS_DEFAULT;
 
 	private String proxyHost = null;
 	private int proxyPort = 8080;
@@ -329,7 +324,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 				findResults = exchangeService.findItems(folderId, view);
 			}
 			if (findResults.getTotalCount() == 0) {
-				return FileSystemUtils.getDirectoryStream(null);
+				return FileSystemUtils.getDirectoryStream((Iterator)null);
 			} else {
 				Iterator<Item> itemIterator = findResults.getItems().iterator();
 				return FileSystemUtils.getDirectoryStream(new Iterator<EmailMessage>() {
@@ -375,14 +370,22 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 //				EmailMessageSchema.DateTimeSent);
 //		
 		try {
-			emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
+			if (f.getId()!=null) {
+				emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
+				if (isReadMimeContents()) {
+					emailMessage.load(new PropertySet(ItemSchema.MimeContent));
+				} else {
+					emailMessage.load(new PropertySet(ItemSchema.Body));
+					
+				}
+			} else {
+				emailMessage = f;
+			}
 			if (isReadMimeContents()) {
-				emailMessage.load(new PropertySet(ItemSchema.MimeContent));
 				MimeContent mc = emailMessage.getMimeContent();
 				ByteArrayInputStream bis = new ByteArrayInputStream(mc.getContent());
 				return bis;
 			}
-			emailMessage.load(new PropertySet(ItemSchema.Body));
 			String body =MessageBody.getStringFromMessageBody(emailMessage.getBody());
 			ByteArrayInputStream bis = new ByteArrayInputStream(body.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 			return bis;
@@ -452,11 +455,24 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		}
 	}
 	
+	
+	private String cleanAddress(EmailAddress address) {
+		String personal = address.getName();
+		String email = address.getAddress();
+		InternetAddress iaddress;
+		try {
+			iaddress = new InternetAddress(email, personal);
+		} catch (UnsupportedEncodingException e) {
+			return address.toString();
+		}
+		return iaddress.toUnicodeString();
+	}
+	
 	private List<String> asList(EmailAddressCollection addressCollection) {
 		if (addressCollection==null) {
 			return Collections.emptyList();
 		}
-		return addressCollection.getItems().stream().map(EmailAddress::getAddress).collect(Collectors.toList());
+		return addressCollection.getItems().stream().map(this::cleanAddress).collect(Collectors.toList());
 	}
 	
 	
@@ -474,7 +490,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 			result.put(IMailFileSystem.TO_RECEPIENTS_KEY, asList(emailMessage.getToRecipients()));
 			result.put(IMailFileSystem.CC_RECEPIENTS_KEY, asList(emailMessage.getCcRecipients()));
 			result.put(IMailFileSystem.BCC_RECEPIENTS_KEY, asList(emailMessage.getBccRecipients()));
-			result.put(IMailFileSystem.FROM_ADDRESS_KEY, emailMessage.getFrom().getAddress()); 
+			result.put(IMailFileSystem.FROM_ADDRESS_KEY, cleanAddress(emailMessage.getFrom())); 
 			result.put(IMailFileSystem.SENDER_ADDRESS_KEY, getSender(emailMessage)); 
 			result.put(IMailFileSystem.REPLY_TO_RECEPIENTS_KEY, getReplyTo(emailMessage)); 
 			result.put(IMailFileSystem.DATETIME_SENT_KEY, emailMessage.getDateTimeSent()); 
@@ -497,6 +513,32 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 			}
 			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY, MailFileSystemUtils.findBestReplyAddress(result,getReplyAddressFields()));
 			return result;
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	
+	@Override
+	public void forwardMail(EmailMessage emailMessage, String destination) throws FileSystemException {
+		try {
+			ResponseMessage forward = emailMessage.createForward();
+			forward.getToRecipients().clear();
+			forward.getToRecipients().add(destination);
+			
+//			if(forwardMessage != null){
+//				forward.setBodyPrefix(MessageBody.getMessageBodyFromText(forwardMessage));
+//			}
+
+//			if(getSaveCopy() == true){
+//				if(getFolderNameToSaveCopy() != null){
+//					forward.sendAndSaveCopy(retrieveFolderIdByFolderName(getFolderNameToSaveCopy()));
+//				} else {
+//					forward.sendAndSaveCopy();
+//				}
+//			} else {
+				forward.send();
+//			}
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -530,29 +572,6 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 	public String getAttachmentName(Attachment a) {
 		return a.getName();
 	}
-
-	@Override
-	public FileAttachment getAttachmentByName(EmailMessage f, String name) throws FileSystemException {
-		try {
-			EmailMessage emailMessage;
-			PropertySet ps = new PropertySet(EmailMessageSchema.Attachments);
-			emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
-			AttachmentCollection attachmentCollection = emailMessage.getAttachments();
-			emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
-			for (Attachment attachment : attachmentCollection) {
-				FileAttachment fileAttachment = (FileAttachment) attachment;
-				if (name.equals(attachment.getName())) {
-					return fileAttachment;
-				}
-			}
-			return null;
-		} catch (ServiceLocalException e) {
-			throw new FileSystemException("cannot read attachments",e);
-		} catch (Exception e) {
-			throw new FileSystemException("cannot read attachments",e);
-		}
-	}
-
 
 
 	@Override
@@ -674,7 +693,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 	public String getSender(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			EmailAddress sender = emailMessage.getSender();
-			return sender==null ? null : sender.getAddress();
+			return sender==null ? null : cleanAddress(sender);
 		} catch (ServiceLocalException e) {
 			log.warn("Could not get Sender Address: "+ e.getMessage());
 			return null;
@@ -683,15 +702,7 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 
 	public List<String> getReplyTo(EmailMessage emailMessage) throws FileSystemException {
 		try {
-			EmailAddressCollection replyTo = emailMessage.getReplyTo();
-			if (replyTo==null) {
-				return null;
-			}
-			List<String> result = new LinkedList<>();
-			for (EmailAddress address: replyTo) {
-				result.add(address.getAddress());
-			}
-			return result;
+			return asList(emailMessage.getReplyTo());
 		} catch (ServiceLocalException e) {
 			throw new FileSystemException("Could not get ReplyTo Addresses", e);
 		}
@@ -706,16 +717,6 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		}
 	}
 	
-
-	@Override
-	public String getMessageBody(EmailMessage emailMessage) throws FileSystemException {
-		try {
-			return MessageBody.getStringFromMessageBody(emailMessage.getBody());
-		} catch (Exception e) {
-			throw new FileSystemException("Could not get MessageBody", e);
-		}
-		
-	}
 
 	@Override
 	public Message getMimeContent(EmailMessage emailMessage) throws FileSystemException {
@@ -763,6 +764,18 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		}
 		return null;
 	}
+	
+	static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
+		
+		@Override
+		public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
+			return redirectionUrl.toLowerCase().startsWith("https://"); //TODO: provide better test on how to trust this url
+		}
+	}
+
+	public ExchangeService getExchangeService() {
+		return exchangeService;
+	}
 
 
 	@IbisDoc({"1", "The mail address of the mailbox connected to (also used for auto discovery)", ""})
@@ -797,45 +810,28 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		return accessToken;
 	}
 
-	@IbisDoc({"5", "Username for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
-	@Deprecated
-	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken. N.B. username no longer defaults to mailaddress")
-	public void setUsername(String username) {
-		this.username = username;
-	}
-	public String getUsername() {
-		return username;
-	}
-
-	@IbisDoc({"6", "Password for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
-	@Deprecated
-	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken")
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	public String getPassword() {
-		return password;
-	}
-
-
-	@IbisDoc({"7", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " + 
+	@IbisDoc({"5", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " + 
 			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " + 
 			"If the alias refers to a password without a username, the password is treated as the accessToken.", ""})
 	public void setAuthAlias(String authAlias) {
-		this.authAlias = authAlias;
+		super.setAuthAlias(authAlias);;
 	}
-	public String getAuthAlias() {
-		return authAlias;
+
+	@IbisDoc({"6", "Username for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken. N.B. username no longer defaults to mailaddress")
+	public void setUsername(String username) {
+		super.setUsername(username);
+	}
+
+	@IbisDoc({"7", "Password for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
+	@Deprecated
+	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken")
+	public void setPassword(String password) {
+		super.setPassword(password);;
 	}
 
 
-	@IbisDoc({"8", "Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
-	public void setBaseFolder(String basefolder) {
-		this.basefolder = basefolder;
-	}
-	public String getBaseFolder() {
-		return basefolder;
-	}
 
 	@IbisDoc({"9", "If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
 	public void setFilter(String filter) {
@@ -845,30 +841,6 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		return filter;
 	}
 
-	@IbisDoc({"10", "Comma separated list of fields to try as response address", REPLY_ADDRESS_FIELDS_DEFAULT})
-	public void setReplyAddressFields(String replyAddressFields) {
-		this.replyAddressFields = replyAddressFields;
-	}
-	@Override
-	public String getReplyAddressFields() {
-		return replyAddressFields;
-	}
-
-	@IbisDoc({"11", "if set <code>true</code>, the contents will be read in MIME format", "false"})
-	public void setReadMimeContents(boolean readMimeContents) {
-		this.readMimeContents = readMimeContents;
-	}
-	public boolean isReadMimeContents() {
-		return readMimeContents;
-	}
-
-	@IbisDoc({"12", "the maximum number of messages to be retrieved from a folder", "10"})
-	public void setMaxNumberOfMessagesToList(int maxNumberOfMessagesToList) {
-		this.maxNumberOfMessagesToList = maxNumberOfMessagesToList;
-	}
-	public int getMaxNumberOfMessagesToList() {
-		return maxNumberOfMessagesToList;
-	}
 
 	@IbisDoc({"13", "proxy host", ""})
 	public void setProxyHost(String proxyHost) {
@@ -918,16 +890,4 @@ public class ExchangeFileSystem implements IMailFileSystem<EmailMessage,Attachme
 		return proxyDomain;
 	}
 	
-	static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
-		
-		@Override
-		public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
-			return redirectionUrl.toLowerCase().startsWith("https://"); //TODO: provide better test on how to trust this url
-		}
-	}
-
-	public ExchangeService getExchangeService() {
-		return exchangeService;
-	}
-
 }

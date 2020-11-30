@@ -1,10 +1,10 @@
 <email>
 	<recipients>
-		<recipient type="to">gerrit@wearefrank.nl</recipient>
+		<recipient type="to">Gerrit van Brakel &lt;gerrit@wearefrank.nl&gt;</recipient>
 	</recipients>
-	<from>Gerrit.van.Brakel@nn-group.com</from>
-	<sender>Gerrit.van.Brakel@nn-group.com</sender>
-	<bestReplyAddress>Gerrit.van.Brakel@nn-group.com</bestReplyAddress>
+	<from>"Brakel, G. van (Gerrit)" &lt;Gerrit.van.Brakel@nn-group.com&gt;</from>
+	<sender>"Brakel, G. van (Gerrit)" &lt;Gerrit.van.Brakel@nn-group.com&gt;</sender>
+	<bestReplyAddress>"Brakel, G. van (Gerrit)" &lt;Gerrit.van.Brakel@nn-group.com&gt;</bestReplyAddress>
 	<subject>XML Problem #x3</subject>
 	<DateTimeSent>2020-10-30T13:10:21.000+0100</DateTimeSent>
 	<DateTimeReceived>2020-10-30T13:10:29.000+0100</DateTimeReceived>

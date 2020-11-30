@@ -24,8 +24,7 @@ public interface IWithAttachments<F,A> extends IBasicFileSystem<F> {
 	
 	public Iterator<A> listAttachments(F f) throws FileSystemException;
 
-	public String getAttachmentName(A a);
-	public A getAttachmentByName(F f, String name) throws FileSystemException;
+	public String getAttachmentName(A a) throws FileSystemException;
 	public InputStream readAttachment(A a) throws FileSystemException, IOException;
 	public long getAttachmentSize(A a) throws FileSystemException;
 	public String getAttachmentContentType(A a) throws FileSystemException;

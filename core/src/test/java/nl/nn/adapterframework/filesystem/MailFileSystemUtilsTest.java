@@ -2,7 +2,10 @@ package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.UnsupportedEncodingException;
+
 import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 import org.junit.Test;
 
@@ -23,6 +26,17 @@ public class MailFileSystemUtilsTest {
 		testGetValidAddress("Xxx <xxx@yy.nl>", "\"Xxx\" <xxx@yy.nl>");
 	}
 
+	@Test
+	public void testGetValidAddressWithComma1() throws AddressException {
+		testGetValidAddress("\"Brakel, G. van\" <gerrit@waf.nl>");
+	}
+
+	@Test
+	public void testGetValidAddressWithComma2() throws AddressException, UnsupportedEncodingException {
+		InternetAddress address = new InternetAddress("gerrit@waf.nl", "Brakel, G. van");
+		testGetValidAddress("\"Brakel, G. van\" <gerrit@waf.nl>", address.toString());
+	}
+	
 	@Test
 	public void testgetValidAddressWithWhitespace1() throws AddressException {
 		testGetValidAddress(null, "scan@ <popp.dk scan@popp.dk>");
