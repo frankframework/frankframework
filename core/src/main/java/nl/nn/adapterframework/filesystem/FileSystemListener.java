@@ -297,6 +297,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			if (attributes!=null) {
 				threadContext.putAll(attributes);
 			}
+			if (!"path".equals(getMessageType())) {
+				threadContext.put("filepath", fileSystem.getCanonicalName(rawMessage));
+			}
+			if (!"name".equals(getMessageType())) {
+				threadContext.put("filename", fileSystem.getName(rawMessage));
+			}
 			return messageId;
 		} catch (Exception e) {
 			throw new ListenerException("Could not get filetime for filename ["+filename+"]",e);
