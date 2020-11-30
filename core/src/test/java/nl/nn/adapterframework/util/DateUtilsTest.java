@@ -3,8 +3,11 @@ package nl.nn.adapterframework.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.util.Calendar;
 import java.util.Date;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -14,6 +17,24 @@ import org.junit.Test;
  * @author <Sina Sen>
  */
 public class DateUtilsTest {
+
+	public static String TZ = Calendar.getInstance().getTimeZone().getID();
+
+	/**
+	 * Tests have been written in CET timezone, change it here so Travis/Azure don't fail when running in other timezones
+	 */
+	@BeforeClass
+	public static void setUp() {
+		String timezone = "Europe/Amsterdam";
+		System.out.println("settings timezone from ["+TZ+"] to [" + timezone + "]");
+		System.setProperty("user.timezone", timezone);
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		System.out.println("reverting timezone back to [" + TZ + "]");
+		System.setProperty("user.timezone", TZ);
+	}
 
 
 	@Test
