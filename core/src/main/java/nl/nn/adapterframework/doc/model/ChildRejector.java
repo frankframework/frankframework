@@ -37,15 +37,11 @@ class ChildRejector<K, T extends ElementChild<?>> {
 		Level(FrankElement levelOwner, Set<K> downstreamRejectCandidates) {
 			calculateRejectCandidates(levelOwner, downstreamRejectCandidates);
 			Level parentLevel = addParentLevelsFor(levelOwner);
-			boolean hasRejectedDeclared = childFunction.apply(levelOwner).stream()
+			isRejectsDeclared = childFunction.apply(levelOwner).stream()
 					.filter(selector)
 					.map(keyFunction)
 					.filter(rejectCandidates::contains)
 					.collect(Collectors.counting()) >= 1;
-			boolean hasDeclaredChildren = childFunction.apply(levelOwner).stream()
-					.filter(selector)
-					.collect(Collectors.counting()) >= 1;
-			isRejectsDeclared = hasDeclaredChildren && hasRejectedDeclared;
 			if(parentLevel == null) {
 				isRejectsDeclaredOrInherited = isRejectsDeclared;
 			} else {
@@ -99,14 +95,14 @@ class ChildRejector<K, T extends ElementChild<?>> {
 				.collect(Collectors.toSet());
 	}
 
+	List<T> getChildrenFor(FrankElement levelOwner) {
+		return childrenFor(levelOwner, getChildKeysFor(levelOwner));
+	}
+
 	private List<T> childrenFor(FrankElement levelOwner, Set<K> childKeys) {
 		return childFunction.apply(levelOwner).stream()
 				.filter(c -> childKeys.contains(keyFunction.apply(c)))
 				.collect(Collectors.toList());
-	}
-
-	List<T> getChildrenFor(FrankElement levelOwner) {
-		return childrenFor(levelOwner, getChildKeysFor(levelOwner));
 	}
 
 	boolean isNoDeclaredRejected(FrankElement levelOwner) {
