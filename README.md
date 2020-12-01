@@ -7,17 +7,8 @@
 [![Latest Snapshot](https://img.shields.io/nexus/public/org.ibissource/ibis-adapterframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.ibissource.org%2F)](https://nexus.ibissource.org/#view-repositories;releases~browsestorage)
 
 
-
-Community website
-=================
-
-Visit our community website and become a member at: https://ibissource.org/
-
-Before [Contributing](CONTRIBUTING.md) please read our [Code of Conduct](CODE_OF_CONDUCT.md).
-
-
-Ibis AdapterFramework
-=====================
+Frank!Framework
+===============
 
 Build adapters using XML configuration. Build applications using adapters.
 
@@ -31,7 +22,10 @@ Some example XML configurations:
 See them in action: http://ibis4example.ibissource.org/
 
 
-The Ibis Adapter Framework is being renamed to "Frank!Framework". There is a user manual, the Frank!Manual, which can be found at <http://frank-manual.readthedocs.io>. If you want to contribute to this manual, please go to <http://github.com/ibissource/frank-manual>.
+The Ibis Adapter Framework is being renamed to "Frank!Framework". There is a user manual, the Frank!Manual, which can
+be found at <http://frank-manual.readthedocs.io>. If you want to contribute to this manual, please go to
+<http://github.com/ibissource/frank-manual>.
+
 
 Releases
 ========
@@ -39,11 +33,15 @@ Releases
 See [release notes](RELEASES.md).
 
 
+Feedback
+========
 
-Mailing list
+For bug reports and feature requests create a new issue at <https://github.com/ibissource/iaf/issues>. The
+Frank!Framework is developed and maintained by [WeAreFrank!](https://wearefrank.nl/). Contact us at
+<https://wearefrank.nl/en/contact/> or send an email to info@wearefrank.nl.
+
+
+Contributing
 ============
 
-The Ibis community can be contacted via
-https://groups.google.com/d/forum/ibissource. You can join this mailing list by 
-sending a message to ibissource+subscribe@googlegroups.com.
-
+Before [Contributing](CONTRIBUTING.md) please read our [Code of Conduct](CODE_OF_CONDUCT.md).
