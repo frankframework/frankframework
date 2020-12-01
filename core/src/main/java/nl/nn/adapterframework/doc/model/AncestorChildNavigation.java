@@ -16,19 +16,21 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-abstract class AncestorChildNavigation<K, T extends ElementChild<T>> {
+abstract class AncestorChildNavigation<K, T extends ElementChild> {
 	private final CumulativeChildHandler<T> handler;
-	private final Function<FrankElement, List<T>> childFunction;
+	private final Predicate<ElementChild> childSelector;
 	private final ChildRejector<K, T> rejector;
+	private final Class<T> kind;
 	private FrankElement current;
 	private Map<K, Boolean> items;
 	private Set<K> overridden;
@@ -36,12 +38,13 @@ abstract class AncestorChildNavigation<K, T extends ElementChild<T>> {
 
 	AncestorChildNavigation(
 			CumulativeChildHandler<T> handler,
-			Function<FrankElement, List<T>> childFunction,
-			Predicate<ElementChild<?>> childSelector,
-			Predicate<ElementChild<?>> childRejector) {
+			Predicate<ElementChild> childSelector,
+			Predicate<ElementChild> childRejector,
+			Class<T> kind) {
 		this.handler = handler;
-		this.childFunction = childFunction;
-		this.rejector = new ChildRejector<K, T>(childFunction, childSelector, childRejector, this::keyOf);
+		this.childSelector = childSelector;
+		this.rejector = new ChildRejector<K, T>(childSelector, childRejector, this::keyOf, kind);
+		this.kind = kind;
 	}
 
 	void run(FrankElement start) {
@@ -49,8 +52,8 @@ abstract class AncestorChildNavigation<K, T extends ElementChild<T>> {
 		enter(start);
 		overridden = new HashSet<>();
 		declaredGroupOrRepeatedChildren();
-		while(rejector.getNextSelectedAncestor(current) != null) {
-			enter(rejector.getNextSelectedAncestor(current));
+		while(current.getNextAncestor(childSelector, kind) != null) {
+			enter(current.getNextAncestor(childSelector, kind));
 			if(overridden.isEmpty() && rejector.isNoCumulativeRejected(current)) {
 				safeAddCumulative();
 				return;
@@ -61,9 +64,9 @@ abstract class AncestorChildNavigation<K, T extends ElementChild<T>> {
 
 	private void enter(FrankElement current) {
 		this.current = current;
-		List<T> children = rejector.getChildrenFor(current);
+		List<ElementChild> children = rejector.getChildrenFor(current);
 		items = new HashMap<>();
-		for(T c: children) {
+		for(ElementChild c: children) {
 			items.put(keyOf(c), c.getOverriddenFrom() != null);
 		}
 	}
@@ -82,7 +85,7 @@ abstract class AncestorChildNavigation<K, T extends ElementChild<T>> {
 	}
 
 	private void safeAddCumulative() {
-		if(rejector.getNextSelectedAncestor(current) == null) {
+		if(current.getNextAncestor(childSelector, kind) == null) {
 			handler.handleChildrenOf(current);
 		} else {
 			handler.handleCumulativeChildrenOf(current);
@@ -97,9 +100,11 @@ abstract class AncestorChildNavigation<K, T extends ElementChild<T>> {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<T> selectChildren(Set<K> keys) {
-		return childFunction.apply(current).stream()
+		return current.getChildren(ALL, kind).stream()
 				.filter(c -> keys.contains(keyOf(c)))
+				.map(c -> (T) c)
 				.collect(Collectors.toList());
 						
 	}
@@ -118,5 +123,5 @@ abstract class AncestorChildNavigation<K, T extends ElementChild<T>> {
 				.collect(Collectors.toSet());		
 	}
 
-	abstract K keyOf(T arg);
+	abstract K keyOf(ElementChild arg);
 }

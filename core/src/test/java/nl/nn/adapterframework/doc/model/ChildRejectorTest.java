@@ -22,14 +22,14 @@ public class ChildRejectorTest {
 
 	private void init(
 			String modelPopulateClassSimpleName,
-			Predicate<ElementChild<?>> selector,
-			Predicate<ElementChild<?>> rejector,
+			Predicate<ElementChild> selector,
+			Predicate<ElementChild> rejector,
 			String subject)
 			throws Exception {
 		String rootClassName = PACKAGE + "." + modelPopulateClassSimpleName;
 		model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName);
 		instance = new ChildRejector<String, FrankAttribute>(
-				FrankElement::getAttributes, selector, rejector, c -> c.getName());
+				selector, rejector, c -> ((FrankAttribute) c).getName(), FrankAttribute.class);
 		instance.init(getElement(subject));
 	}
 
@@ -40,7 +40,7 @@ public class ChildRejectorTest {
 
 	private Set<String> childNames(String frankElementSimpleName) throws Exception {
 		return instance.getChildrenFor(getElement(frankElementSimpleName)).stream()
-				.map(a -> a.getName()).collect(Collectors.toSet());
+				.map(a -> ((FrankAttribute) a).getName()).collect(Collectors.toSet());
 	}
 
 	private Set<String> setOf(String ...names) {

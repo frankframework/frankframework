@@ -422,10 +422,8 @@ public class FrankDocModel {
 			while((current.getParent() != null) && (remainingElements.contains(current.getParent().getFullName()))) {
 				current = current.getParent();
 			}
-			current.getConfigChildren().forEach(c -> c.calculateOverriddenFrom(
-					FrankElement::findConfigChildMatch));
-			current.getAttributes().forEach(c -> c.calculateOverriddenFrom(
-					FrankElement::findAttributeMatch));
+			current.getConfigChildren().forEach(c -> c.calculateOverriddenFrom());
+			current.getAttributes().forEach(c -> c.calculateOverriddenFrom());
 			current.getStatistics().finish();
 			remainingElements.remove(current.getFullName());
 		}

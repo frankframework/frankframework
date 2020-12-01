@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -134,6 +133,18 @@ public class FrankElement {
 		return configChildren.stream().filter(filter).collect(Collectors.toList());
 	}
 
+	ElementChild findElementChildMatch(ElementChild elementChild) {
+		if(elementChild instanceof FrankAttribute) {
+			return findAttributeMatch((FrankAttribute) elementChild);
+		} else if(elementChild instanceof ConfigChild) {
+			return findConfigChildMatch((ConfigChild) elementChild);
+		} else {
+			throw new IllegalArgumentException(String.format(
+					"Expected a FrankAttribute or ConfigChild, but got a [%s]",
+					elementChild.getClass().getName()));
+		}
+	}
+
 	FrankAttribute findAttributeMatch(FrankAttribute attribute) {
 		return attributeLookup.get(attribute.getName());
 	}
@@ -142,59 +153,47 @@ public class FrankElement {
 		return configChildLookup.get(new ConfigChildKey(configChild));
 	}
 
-	public FrankElement getNextConfigChildAncestor(Predicate<? super ConfigChild> childFilter) {
-		return nextAncestor(this, el -> el.getConfigChildren(childFilter));
-	}
-
-	static <U extends ElementChild<U>> FrankElement nextAncestor(FrankElement elem, Function<FrankElement, List<U>> fun) {
-		FrankElement ancestor = elem.getParent();
-		while((ancestor != null) && (fun.apply(ancestor).size() == 0)) {
+	public <T extends ElementChild> FrankElement getNextAncestor(Predicate<ElementChild> childFilter, Class<T> kind) {
+		FrankElement ancestor = parent;
+		while((ancestor != null) && (ancestor.getChildren(childFilter, kind).size() == 0)) {
 			ancestor = ancestor.getParent();
 		}
 		return ancestor;
 	}
 
-	public FrankElement getNextAncestor(Predicate<ElementChild<?>> selector) {
-		FrankElement current = parent;
-		while((current != null) && (current.getGenericChildren(selector).size() == 0)) {
-			current = current.parent;
+	public <T extends ElementChild> List<ElementChild> getChildren(Predicate<ElementChild> selector, Class<T> kind) {
+		List<ElementChild> result = new ArrayList<>();
+		if(kind.isAssignableFrom(FrankAttribute.class)) {
+			result.addAll(getAttributes(selector));
 		}
-		return current;
-	}
-
-	public FrankElement getNextAttributeAncestor(Predicate<? super FrankAttribute> childFilter) {
-		return nextAncestor(this, el -> el.getAttributes(childFilter));
-	}
-
-	private List<ElementChild<?>> getGenericChildren(Predicate<ElementChild<?>> selector) {
-		List<ElementChild<?>> result = new ArrayList<>();
-		result.addAll(getAttributes(selector));
-		result.addAll(getConfigChildren(selector));
+		if(kind.isAssignableFrom(ConfigChild.class)) {
+			result.addAll(getConfigChildren(selector));
+		}
 		return result;
 	}
 
 	public void walkCumulativeAttributes(
 			CumulativeChildHandler<FrankAttribute> handler,
-			Predicate<ElementChild<?>> childSelector,
-			Predicate<ElementChild<?>> childRejector) {
+			Predicate<ElementChild> childSelector,
+			Predicate<ElementChild> childRejector) {
 		new AncestorChildNavigation<String, FrankAttribute>(
-				handler, el -> el.getAttributes(), childSelector, childRejector) {
+				handler, childSelector, childRejector, FrankAttribute.class) {
 			@Override
-			String keyOf(FrankAttribute child) {
-				return child.getName();
+			String keyOf(ElementChild child) {
+				return ((FrankAttribute) child).getName();
 			}
 		}.run(this);
 	}
 
 	public void walkCumulativeConfigChildren(
 			CumulativeChildHandler<ConfigChild> handler,
-			Predicate<ElementChild<?>> childSelector,
-			Predicate<ElementChild<?>> childRejector) {
+			Predicate<ElementChild> childSelector,
+			Predicate<ElementChild> childRejector) {
 		new AncestorChildNavigation<ConfigChildKey, ConfigChild>(
-				handler, el -> el.getConfigChildren(childSelector), childSelector, childRejector) {
+				handler, childSelector, childRejector, ConfigChild.class) {
 			@Override
-			ConfigChildKey keyOf(ConfigChild child) {
-				return new ConfigChildKey(child);
+			ConfigChildKey keyOf(ElementChild child) {
+				return new ConfigChildKey((ConfigChild) child);
 			}
 		}.run(this);		
 	}

@@ -16,7 +16,6 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 import lombok.Getter;
@@ -35,10 +34,8 @@ import nl.nn.adapterframework.doc.DocWriterNew;
  * inheritance hierarchy. Please see this in action at {@link DocWriterNew}.
  *
  * @author martijn
- *
- * @param <T> {@link FrankAttribute} or {@link ConfigChild}.
  */
-public abstract class ElementChild<T extends ElementChild<?>> implements Comparable<T> {
+public abstract class ElementChild implements Comparable<ElementChild> {
 	private @Getter FrankElement owningElement;
 	
 	/**
@@ -59,34 +56,27 @@ public abstract class ElementChild<T extends ElementChild<?>> implements Compara
 	private @Getter @Setter boolean documented;
 	private @Getter FrankElement overriddenFrom;
 
-	public static Predicate<ElementChild<?>> SELECTED = c ->
+	public static Predicate<ElementChild> SELECTED = c ->
 		(! c.isDeprecated())
 		&& (c.isDocumented() || (c.getOverriddenFrom() == null));
 
-	public static Predicate<ElementChild<?>> DEPRECATED = c -> c.isDeprecated();
-	public static Predicate<ElementChild<?>> ALL = c -> true;
-	public static Predicate<ElementChild<?>> NONE = c -> false;
+	public static Predicate<ElementChild> DEPRECATED = c -> c.isDeprecated();
+	public static Predicate<ElementChild> ALL = c -> true;
+	public static Predicate<ElementChild> NONE = c -> false;
 
 	ElementChild(final FrankElement owningElement) {
 		this.owningElement = owningElement;
 	}
 
-	void calculateOverriddenFrom(BiFunction<FrankElement, T, T> lookup) {
+	void calculateOverriddenFrom() {
 		FrankElement match = getOwningElement();
 		while(match.getParent() != null) {
 			match = match.getParent();
-			T matchingChild = lookup.apply(match, cast());
+			ElementChild matchingChild = match.findElementChildMatch(this);
 			if(matchingChild != null) {
 				overriddenFrom = match;
 				return;
 			}
 		}
 	}
-
-	/**
-	 * Converts <code>ElementChild&lt;FrankAttribute&gt;</code> to <code>FrankAttribute</code>
-	 * or <code>ElementChild&lt;ConfigChild&gt;</code> to <code>ConfigChild</code>. This cast
-	 * is needed to avoid compiler errors.
-	 */
-	abstract T cast();
 }

@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.doc.model;
 
+import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,18 +11,19 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-class ChildRejector<K, T extends ElementChild<?>> {
-	private final Function<FrankElement, List<T>> childFunction;
-	private final Predicate<ElementChild<?>> selector;
-	private final Predicate<ElementChild<?>> rejector;
-	private final Function<T, K> keyFunction;
+class ChildRejector<K, T extends ElementChild> {
+	private final Predicate<ElementChild> selector;
+	private final Predicate<ElementChild> rejector;
+	private final Function<ElementChild, K> keyFunction;
+	private final Class<T> kind;
+
 	private Map<String, Level> levels = new HashMap<>();
 
-	ChildRejector(Function<FrankElement, List<T>> childFunction, Predicate<ElementChild<?>> selector, Predicate<ElementChild<?>> rejector, Function<T, K> keyFunction) {
-		this.childFunction = childFunction;
+	ChildRejector(Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Function<ElementChild, K> keyFunction, Class<T> kind) {
 		this.selector = selector;
 		this.rejector = rejector;
 		this.keyFunction = keyFunction;
+		this.kind = kind;
 	}
 
 	private Level addLevelsFor(FrankElement owner, Set<K> rejectCandidates) {
@@ -37,8 +40,7 @@ class ChildRejector<K, T extends ElementChild<?>> {
 		Level(FrankElement levelOwner, Set<K> downstreamRejectCandidates) {
 			calculateRejectCandidates(levelOwner, downstreamRejectCandidates);
 			Level parentLevel = addParentLevelsFor(levelOwner);
-			isRejectsDeclared = childFunction.apply(levelOwner).stream()
-					.filter(selector)
+			isRejectsDeclared = levelOwner.getChildren(selector, kind).stream()
 					.map(keyFunction)
 					.filter(rejectCandidates::contains)
 					.collect(Collectors.counting()) >= 1;
@@ -50,8 +52,7 @@ class ChildRejector<K, T extends ElementChild<?>> {
 		}
 
 		private void calculateRejectCandidates(FrankElement levelOwner, Set<K> downstreamRejectCandidates) {
-			rejectCandidates = childFunction.apply(levelOwner).stream()
-					.filter(rejector)
+			rejectCandidates = levelOwner.getChildren(rejector, kind).stream()
 					.map(keyFunction)
 					.collect(Collectors.toSet());
 			rejectCandidates.addAll(downstreamRejectCandidates);
@@ -59,7 +60,7 @@ class ChildRejector<K, T extends ElementChild<?>> {
 
 		private Level addParentLevelsFor(FrankElement levelOwner) {
 			Level parentLevel = null;
-			FrankElement parent = getNextSelectedAncestor(levelOwner);
+			FrankElement parent = levelOwner.getNextAncestor(selector, kind);
 			if(parent != null) {
 				parentLevel = addLevelsFor(parent, rejectCandidates);
 			}
@@ -71,38 +72,25 @@ class ChildRejector<K, T extends ElementChild<?>> {
 		}
 	}
 
-	FrankElement getNextSelectedAncestor(FrankElement elem) {
-		FrankElement ancestor = elem.getParent();
-		while((ancestor != null) && (numSelectedChildrenOf(ancestor) == 0)) {
-			ancestor = ancestor.getParent();
-		}
-		return ancestor;		
-	}
-
-	private Long numSelectedChildrenOf(FrankElement element) {
-		return childFunction.apply(element).stream().filter(selector).collect(Collectors.counting());
-	}
-
 	void init(FrankElement subject) {
 		addLevelsFor(subject, new HashSet<>());
 	}
 
-	private Set<K> getChildKeysFor(FrankElement levelOwner) {
-		return childFunction.apply(levelOwner).stream()
-				.filter(selector)
-				.map(keyFunction)
-				.filter(k -> levels.get(levelOwner.getFullName()).acceptsChildKey(k))
-				.collect(Collectors.toSet());
-	}
-
-	List<T> getChildrenFor(FrankElement levelOwner) {
+	List<ElementChild> getChildrenFor(FrankElement levelOwner) {
 		return childrenFor(levelOwner, getChildKeysFor(levelOwner));
 	}
 
-	private List<T> childrenFor(FrankElement levelOwner, Set<K> childKeys) {
-		return childFunction.apply(levelOwner).stream()
+	private List<ElementChild> childrenFor(FrankElement levelOwner, Set<K> childKeys) {
+		return levelOwner.getChildren(ALL, kind).stream()
 				.filter(c -> childKeys.contains(keyFunction.apply(c)))
 				.collect(Collectors.toList());
+	}
+
+	private Set<K> getChildKeysFor(FrankElement levelOwner) {
+		return levelOwner.getChildren(selector, kind).stream()
+				.map(keyFunction)
+				.filter(k -> levels.get(levelOwner.getFullName()).acceptsChildKey(k))
+				.collect(Collectors.toSet());
 	}
 
 	boolean isNoDeclaredRejected(FrankElement levelOwner) {

@@ -300,7 +300,7 @@ public class DocWriterNew {
 			List<SortKeyForXsd> result = configChildren.stream()
 					.map(c -> getTypeKey(c))
 					.collect(Collectors.toList());
-			FrankElement candidateParent = element.getNextAncestor(SELECTED);
+			FrankElement candidateParent = element.getNextAncestor(SELECTED, ElementChild.class);
 			if(candidateParent != null) {
 				result.add(SortKeyForXsd.getInstance(candidateParent));
 			}
@@ -408,7 +408,7 @@ public class DocWriterNew {
 			
 			@Override
 			public FrankElement getAncestorOf(FrankElement elem) {
-				return elem.getNextConfigChildAncestor(SELECTED);
+				return elem.getNextAncestor(SELECTED, ConfigChild.class);
 			}
 			
 			@Override
@@ -516,7 +516,7 @@ public class DocWriterNew {
 
 			@Override
 			public FrankElement getAncestorOf(FrankElement elem) {
-				return elem.getNextAttributeAncestor(SELECTED);
+				return elem.getNextAncestor(SELECTED, FrankAttribute.class);
 			}
 
 			@Override
