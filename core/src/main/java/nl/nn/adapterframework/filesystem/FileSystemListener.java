@@ -69,6 +69,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private boolean fileTimeSensitive=false;
 	private String messageType="path";
 	private String messageIdProperty = null;
+	
+	private boolean disableMessageBrowsers = false;
 
 	private long minStableTime = 1000;
 //	private Long fileListFirstFileFound;
@@ -311,7 +313,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public IMessageBrowser<F> getInProcessBrowser() {
-		if (StringUtils.isEmpty(getInProcessFolder())) {
+		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getInProcessFolder())) {
 			return null;
 		}
 		return new FileSystemMessageBrowser<F, FS>(fileSystem, getInProcessFolder());
@@ -319,7 +321,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public IMessageBrowser<F> getMessageLogBrowser() {
-		if (StringUtils.isEmpty(getProcessedFolder())) {
+		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getProcessedFolder())) {
 			return null;
 		}
 		return new FileSystemMessageBrowser<F, FS>(fileSystem, getProcessedFolder());
@@ -327,7 +329,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	
 	@Override
 	public IMessageBrowser<F> getErrorStoreBrowser() {
-		if (StringUtils.isEmpty(getErrorFolder())) {
+		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getErrorFolder())) {
 			return null;
 		}
 		return new FileSystemMessageBrowser<F, FS>(fileSystem, getErrorFolder());
@@ -488,4 +490,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public String getMessageIdProperty() {
 		return messageIdProperty;
 	}
+
+	@IbisDoc({"15", "If set <code>true</code>, no browsers for process folders are generated", "false"})
+	public void setDisableMessageBrowsers(boolean disableMessageBrowsers) {
+		this.disableMessageBrowsers = disableMessageBrowsers;
+	}
+	public boolean isDisableMessageBrowsers() {
+		return disableMessageBrowsers;
+	}
+
 }
