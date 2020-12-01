@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.NotImplementedException;
 
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
 import microsoft.exchange.webservices.data.core.ExchangeService;
@@ -813,6 +812,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@IbisDoc({"5", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " + 
 			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " + 
 			"If the alias refers to a password without a username, the password is treated as the accessToken.", ""})
+	@Override
 	public void setAuthAlias(String authAlias) {
 		super.setAuthAlias(authAlias);
 	}
@@ -820,6 +820,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@IbisDoc({"6", "Username for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken. N.B. username no longer defaults to mailaddress")
+	@Override
 	public void setUsername(String username) {
 		super.setUsername(username);
 	}
@@ -827,6 +828,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@IbisDoc({"7", "Password for authentication to Exchange mail server. Ignored when accessToken is also specified", ""})
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to authentication using an accessToken")
+	@Override
 	public void setPassword(String password) {
 		super.setPassword(password);
 	}

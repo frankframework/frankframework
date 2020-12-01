@@ -39,7 +39,6 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 public class MailFileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(MailFileSystemUtils.class);
 	
-	@SuppressWarnings("unchecked")
 	public static final List<String> specialHeaders = Arrays.asList(new String[] {
 				IMailFileSystem.TO_RECEPIENTS_KEY, 
 				IMailFileSystem.CC_RECEPIENTS_KEY,
@@ -65,7 +64,7 @@ public class MailFileSystemUtils {
 			return;
 		}
 		if (property instanceof Iterable) {
-			for (Object item:(Iterable)property) {
+			for (Object item:(Iterable<?>)property) {
 				addPropertyAsHeader(xml, elementName, attributeName, attributeValue, item);
 			}
 			return;
@@ -115,11 +114,9 @@ public class MailFileSystemUtils {
 			throw new FileSystemException("Cannot extract attachment",e);
 		}
 		try (SaxElementBuilder headersXml = emailXml.startElement("headers")) {
-			if (properties != null) {
-				for (Map.Entry<String,Object> header: properties.entrySet()) {
-					if (!specialHeaders.contains(header.getKey())) {
-						addPropertyAsHeader(headersXml, "header", "name", header.getKey(), header.getValue());
-					}
+			for (Map.Entry<String,Object> header: properties.entrySet()) {
+				if (!specialHeaders.contains(header.getKey())) {
+					addPropertyAsHeader(headersXml, "header", "name", header.getKey(), header.getValue());
 				}
 			}
 		}
