@@ -35,7 +35,7 @@ import nl.nn.adapterframework.doc.DocWriterNew;
  *
  * @author martijn
  */
-public abstract class ElementChild implements Comparable<ElementChild> {
+public abstract class ElementChild {
 	private @Getter FrankElement owningElement;
 	
 	/**

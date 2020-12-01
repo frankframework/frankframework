@@ -25,7 +25,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class FrankAttribute extends ElementChild {
+public class FrankAttribute extends ElementChild implements Comparable<FrankAttribute> {
 	private static Logger log = LogUtil.getLogger(FrankAttribute.class);
 
 	private @Getter String name;
@@ -69,7 +69,7 @@ public class FrankAttribute extends ElementChild {
 	}
 
 	@Override
-	public int compareTo(ElementChild other) {
+	public int compareTo(FrankAttribute other) {
 		return FRANK_ATTRIBUTE_COMPARATOR.compare(this, (FrankAttribute) other);
 	}
 

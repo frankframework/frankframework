@@ -25,7 +25,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigChild extends ElementChild {
+public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
 
 	private @Getter @Setter ElementType elementType;
@@ -75,7 +75,7 @@ public class ConfigChild extends ElementChild {
 	}
 
 	@Override
-	public int compareTo(ElementChild other) {
+	public int compareTo(ConfigChild other) {
 		return CONFIG_CHILD_COMPARATOR.compare(this, (ConfigChild) other);
 	}
 
