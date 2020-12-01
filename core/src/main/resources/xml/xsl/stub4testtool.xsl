@@ -88,16 +88,6 @@
 				</xsl:element>
 				<xsl:call-template name="copy" />
 			</xsl:when>
-			<xsl:when test="name()='listener'">
-				<xsl:choose>
-					<xsl:when test="parent::*[name()='pipe']">
-						<xsl:call-template name="disable" />
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:call-template name="copy" />
-					</xsl:otherwise>
-				</xsl:choose>
-			</xsl:when>
 			<xsl:when test="name()='sender'">
 				<xsl:choose>
 					<xsl:when test="parent::*[name()='pipe']">
@@ -186,160 +176,171 @@
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>
-			<xsl:when test="name()='sapSystems'">
-				<xsl:call-template name="disable" />
-			</xsl:when>
-			<xsl:when test="name()='jmsRealm' and @queueConnectionFactoryName">
-				<xsl:call-template name="disable" />
-				<xsl:if test="@datasourceName">
-					<xsl:element name="jmsRealm">
-						<xsl:attribute name="realmName">
-							<xsl:value-of select="@realmName" />
-						</xsl:attribute>
-						<xsl:attribute name="datasourceName">
-							<xsl:value-of select="@datasourceName" />
-						</xsl:attribute>
-					</xsl:element>
-				</xsl:if>
-			</xsl:when>
-			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.pipes.PutSystemDateInSession'">
-				<xsl:element name="pipe">
-					<xsl:apply-templates select="@*" />
-					<xsl:attribute name="returnFixedDate">true</xsl:attribute>
-					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-				</xsl:element>
-			</xsl:when>
-			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe'">
-				<xsl:element name="pipe">
-					<xsl:apply-templates select="@*" />
-					<xsl:attribute name="useFixedValues">true</xsl:attribute>
-					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination']/@value)=0">
-						<xsl:element name="param">
-							<xsl:attribute name="name">destination</xsl:attribute>
-							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Request</xsl:attribute>
-						</xsl:element>
-					</xsl:if>
-				</xsl:element>
-			</xsl:when>
-			<xsl:when test="name()='inputWrapper' and @className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe'">
-				<xsl:element name="inputWrapper">
-					<xsl:apply-templates select="@*" />
-					<xsl:attribute name="useFixedValues">true</xsl:attribute>
-					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination']/@value)=0">
-						<xsl:element name="param">
-							<xsl:attribute name="name">destination</xsl:attribute>
-							<xsl:choose>
-								<xsl:when test="parent::*/outputWrapper">
-									<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Request</xsl:attribute>
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Action</xsl:attribute>
-								</xsl:otherwise>
-							</xsl:choose>
-						</xsl:element>
-					</xsl:if>
-				</xsl:element>
-			</xsl:when>
-			<xsl:when test="name()='outputWrapper' and @className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe'">
-				<xsl:element name="outputWrapper">
-					<xsl:apply-templates select="@*" />
-					<xsl:attribute name="useFixedValues">true</xsl:attribute>
-					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-					<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination']/@value)=0">
-						<xsl:element name="param">
-							<xsl:attribute name="name">destination</xsl:attribute>
-							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Response</xsl:attribute>
-						</xsl:element>
-					</xsl:if>
-				</xsl:element>
-			</xsl:when>
-			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.pipes.GetPrincipalPipe'">
-				<xsl:element name="pipe">
-					<xsl:apply-templates select="@*" />
-					<xsl:attribute name="className">nl.nn.adapterframework.pipes.FixedResultPipe</xsl:attribute>
-					<xsl:attribute name="returnString">tst9</xsl:attribute>
-					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-				</xsl:element>
-			</xsl:when>
-			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.pipes.IsUserInRolePipe'">
-				<xsl:element name="pipe">
-					<xsl:apply-templates select="@*" />
-					<xsl:attribute name="className">nl.nn.adapterframework.pipes.EchoPipe</xsl:attribute>
-					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-				</xsl:element>
-			</xsl:when>
-			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.pipes.UUIDGeneratorPipe'">
-				<xsl:element name="pipe">
-					<xsl:apply-templates select="@*[name()!='type']" />
-					<xsl:attribute name="className">nl.nn.adapterframework.pipes.FixedResultPipe</xsl:attribute>
-					<xsl:choose>
-						<xsl:when test="@type='numeric'">
-							<xsl:attribute name="returnString">1234567890123456789012345678901</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="returnString">0a4544b6-37489ec0_15ad0f006ae_-7ff3</xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
-					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-				</xsl:element>
-			</xsl:when>
-			<xsl:when test="name()='pipe' and (@className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe' or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe')">
-				<xsl:element name="pipe">
-					<xsl:attribute name="name">
-						<xsl:value-of select="@name"/>
-					</xsl:attribute>
-					<xsl:apply-templates select="@*[name()='storeResultInSessionKey' or name()='getInputFromSessionKey' or name()='getInputFromFixedValue']" />
-					<xsl:attribute name="className">nl.nn.adapterframework.pipes.GenericMessageSendingPipe</xsl:attribute>
-					<xsl:element name="sender">
-						<xsl:attribute name="className">nl.nn.adapterframework.senders.IbisJavaSender</xsl:attribute>
-						<xsl:attribute name="serviceName">
-							<xsl:value-of select="concat('testtool-',@name)" />
-						</xsl:attribute>
-					</xsl:element>
-					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-				</xsl:element>
-				<xsl:call-template name="disable" />
-			</xsl:when>
-			<xsl:when test="name()='pipe' and (@className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe' or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe')">
-				<xsl:element name="pipe">
-					<xsl:apply-templates select="@*" />
-					<xsl:attribute name="timeOutOnResult">[timeout]</xsl:attribute>
-					<xsl:attribute name="exceptionOnResult">[error]</xsl:attribute>
-					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-				</xsl:element>
-			</xsl:when>
-			<xsl:when test="name()='param' and contains(@pattern,'{now,')">
-				<xsl:element name="param">
-					<xsl:apply-templates select="@*[(name()='pattern')=false()]" />
-					<xsl:attribute name="pattern">
-						<xsl:value-of select="replace(@pattern,'\{now,','{fixedDate,')" />
-					</xsl:attribute>
-					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
-				</xsl:element>
-			</xsl:when>
-			<xsl:when test="(name()='errorStorage' or name()='messageLog') and parent::*[name()='pipe'] and (@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage')=false() and (@className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage')=false()">
-				<xsl:call-template name="disable" />
-			</xsl:when>
-			<xsl:when test="$disableValidators=true and (name()='inputValidator' or name()='outputValidator')">
-				<xsl:call-template name="disable" />
-			</xsl:when>
 			<xsl:otherwise>
 				<xsl:call-template name="copy" />
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	<xsl:template name="disable">
-		<xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
-		<xsl:copy>
-			<xsl:apply-templates select="*|@*|processing-instruction()|text()" />
-		</xsl:copy>
-		<xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
+	
+	<xsl:template match="pipe/listener">
+		<xsl:call-template name="disable" />
 	</xsl:template>
+	<xsl:template match="listener">
+		<xsl:call-template name="copy" />
+	</xsl:template>
+	
+	<xsl:template match="sapSystems">
+		<xsl:call-template name="disable" />
+	</xsl:template>
+	
+	<xsl:template match="jmsRealm[@queueConnectionFactoryName]">
+		<xsl:call-template name="disable" />
+		<xsl:if test="@datasourceName">
+			<xsl:element name="jmsRealm">
+				<xsl:attribute name="realmName">
+					<xsl:value-of select="@realmName" />
+				</xsl:attribute>
+				<xsl:attribute name="datasourceName">
+					<xsl:value-of select="@datasourceName" />
+				</xsl:attribute>
+			</xsl:element>
+		</xsl:if>
+	</xsl:template>
+	
+	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.PutSystemDateInSession']">
+		<xsl:element name="pipe">
+			<xsl:apply-templates select="@*" />
+			<xsl:attribute name="returnFixedDate">true</xsl:attribute>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="pipe[@className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe']">
+		<xsl:element name="pipe">
+			<xsl:apply-templates select="@*" />
+			<xsl:attribute name="useFixedValues">true</xsl:attribute>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+			<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination']/@value)=0">
+				<xsl:element name="param">
+					<xsl:attribute name="name">destination</xsl:attribute>
+					<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Request</xsl:attribute>
+				</xsl:element>
+			</xsl:if>
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="inputWrapper[@className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe']">
+		<xsl:element name="inputWrapper">
+			<xsl:apply-templates select="@*" />
+			<xsl:attribute name="useFixedValues">true</xsl:attribute>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+			<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination']/@value)=0">
+				<xsl:element name="param">
+					<xsl:attribute name="name">destination</xsl:attribute>
+					<xsl:choose>
+						<xsl:when test="parent::*/outputWrapper">
+							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Request</xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Action</xsl:attribute>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:element>
+			</xsl:if>
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="outputWrapper[@className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe']">
+		<xsl:element name="outputWrapper">
+			<xsl:apply-templates select="@*" />
+			<xsl:attribute name="useFixedValues">true</xsl:attribute>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+			<xsl:if test="(@direction='wrap' or string-length(@direction)=0) and string-length(param[@name='destination']/@value)=0">
+				<xsl:element name="param">
+					<xsl:attribute name="name">destination</xsl:attribute>
+					<xsl:attribute name="value">P2P.Infrastructure.Ibis4TestTool.Stub.Response</xsl:attribute>
+				</xsl:element>
+			</xsl:if>
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.GetPrincipalPipe']">
+		<xsl:element name="pipe">
+			<xsl:apply-templates select="@*" />
+			<xsl:attribute name="className">nl.nn.adapterframework.pipes.FixedResultPipe</xsl:attribute>
+			<xsl:attribute name="returnString">tst9</xsl:attribute>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.IsUserInRolePipe']">
+		<xsl:element name="pipe">
+			<xsl:apply-templates select="@*" />
+			<xsl:attribute name="className">nl.nn.adapterframework.pipes.EchoPipe</xsl:attribute>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.UUIDGeneratorPipe']">
+		<xsl:element name="pipe">
+			<xsl:apply-templates select="@*[name()!='type']" />
+			<xsl:attribute name="className">nl.nn.adapterframework.pipes.FixedResultPipe</xsl:attribute>
+			<xsl:choose>
+				<xsl:when test="@type='numeric'">
+					<xsl:attribute name="returnString">1234567890123456789012345678901</xsl:attribute>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:attribute name="returnString">0a4544b6-37489ec0_15ad0f006ae_-7ff3</xsl:attribute>
+				</xsl:otherwise>
+			</xsl:choose>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="pipe[@className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe' or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe']">
+		<xsl:element name="pipe">
+			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
+			<xsl:attribute name="className">nl.nn.adapterframework.pipes.GenericMessageSendingPipe</xsl:attribute>
+			<xsl:element name="sender">
+				<xsl:attribute name="className">nl.nn.adapterframework.senders.IbisJavaSender</xsl:attribute>
+				<xsl:attribute name="serviceName">
+					<xsl:value-of select="concat('testtool-',@name)" />
+				</xsl:attribute>
+			</xsl:element>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe' or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe']">
+		<xsl:element name="pipe">
+			<xsl:apply-templates select="@*" />
+			<xsl:attribute name="timeOutOnResult">[timeout]</xsl:attribute>
+			<xsl:attribute name="exceptionOnResult">[error]</xsl:attribute>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="param/@pattern[contains(.,'{now,')]">
+		<xsl:attribute name="pattern"><xsl:value-of select="replace(.,'\{now,','{fixedDate,')"/></xsl:attribute>
+	</xsl:template>
+	
+	<xsl:template match="pipe/(errorStorage|messageLog)[@className!='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' and @className!='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
+		<xsl:call-template name="disable" />
+	</xsl:template>
+	
+	<xsl:template match="inputValidator|outputValidator and $disableValidators">
+		<xsl:call-template name="disable" />
+	</xsl:template>
+	
 	<xsl:template name="copy">
 		<xsl:copy>
 			<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" />
 		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template name="disable">
+		<xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
+			<xsl:copy-of/>
+		<xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
 	</xsl:template>
 </xsl:stylesheet>
