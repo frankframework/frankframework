@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -41,11 +43,12 @@ public interface IMailFileSystem<M,A> extends IWithAttachments<M,A> {
 	
 	public String getSubject(M emailMessage) throws FileSystemException;
 
-	public String getMessageBody(M emailMessage) throws FileSystemException;
 	public Message getMimeContent(M emailMessage) throws FileSystemException;
+	
+	public void forwardMail(M emailMessage, String destination) throws FileSystemException;
 
-	public void extractEmail(M emailMessage, SaxElementBuilder emailXml) throws FileSystemException;
-	public void extractAttachment(A attachment, SaxElementBuilder attachmentsXml) throws FileSystemException;
+	public void extractEmail(M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException;
+	public void extractAttachment(A attachment, SaxElementBuilder attachmentsXml) throws FileSystemException, SAXException;
 	
 	public String getReplyAddressFields();
 	

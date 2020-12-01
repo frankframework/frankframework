@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -67,7 +68,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 			assertTrue("there must be at least one messsage in the sourceOfMessages_folder ["+sourceOfMessages_folder+"]", it!=null && it.hasNext());
 
 			sourceFile =  it.next();
-			assertTrue("source file should exist", fileSystem.exists(sourceFile));
+			assertTrue("file retrieved from folder should exist", fileSystem.exists(sourceFile));
 			//assertFalse("name of source file should not appear in just created folder", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(sourceFile)));
 			//displayFile(sourceFile);
 
@@ -75,6 +76,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 			assertTrue("source file should still exist after copy", fileSystem.exists(sourceFile));
 
 			//displayFile(destFile1);
+			assertNotNull("destination file should be not null after copy", destFile1);
 			assertTrue("destination file should exist after copy", fileSystem.exists(destFile1));
 			//assertTrue("name of destination file should exist in folder after copy", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(destFile1)));
 		}
@@ -93,7 +95,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		assertTrue(fileSystem.exists(destFile2));
 
 		fileSystem.deleteFile(destFile2);
-		assertFalse(fileSystem.exists(destFile2));
+		assertFalse("file should not exist anymore after being deleted", fileSystem.exists(destFile2));
 
 		fileSystem.removeFolder(folderName2);
 		assertFalse(fileSystem.folderExists(folderName2));

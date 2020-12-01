@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -30,12 +33,12 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class MailFileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(MailFileSystemUtils.class);
 	
-	@SuppressWarnings("unchecked")
 	public static final List<String> specialHeaders = Arrays.asList(new String[] {
 				IMailFileSystem.TO_RECEPIENTS_KEY, 
 				IMailFileSystem.CC_RECEPIENTS_KEY,
@@ -61,7 +64,7 @@ public class MailFileSystemUtils {
 			return;
 		}
 		if (property instanceof Iterable) {
-			for (Object item:(Iterable)property) {
+			for (Object item:(Iterable<?>)property) {
 				addPropertyAsHeader(xml, elementName, attributeName, attributeValue, item);
 			}
 			return;
@@ -97,20 +100,23 @@ public class MailFileSystemUtils {
 		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
 		addPropertyAsHeader(emailXml,IMailFileSystem.DATETIME_SENT_KEY, properties.get(IMailFileSystem.DATETIME_SENT_KEY));
 		addPropertyAsHeader(emailXml,IMailFileSystem.DATETIME_RECEIVED_KEY, properties.get(IMailFileSystem.DATETIME_RECEIVED_KEY));
-		emailXml.addElement("message", fileSystem.getMessageBody(emailMessage));
+		try (InputStream bodyStream = fileSystem.readFile(emailMessage)) {
+			emailXml.addElement("message", Misc.streamToString(bodyStream));
+		} catch (IOException e) {
+			throw new FileSystemException("Cannot read message body",e);
+		}
 		try (SaxElementBuilder attachmentsXml = emailXml.startElement("attachments")) {
-			for (Iterator<A> it = fileSystem.listAttachments(emailMessage); it.hasNext();) {
+			
+			for (Iterator<A> it = fileSystem.listAttachments(emailMessage); it!=null && it.hasNext();) {
 				fileSystem.extractAttachment(it.next(), attachmentsXml);
 			}
 		} catch (Exception e) {
 			throw new FileSystemException("Cannot extract attachment",e);
 		}
 		try (SaxElementBuilder headersXml = emailXml.startElement("headers")) {
-			if (properties != null) {
-				for (Map.Entry<String,Object> header: properties.entrySet()) {
-					if (!specialHeaders.contains(header.getKey())) {
-						addPropertyAsHeader(headersXml, "header", "name", header.getKey(), header.getValue());
-					}
+			for (Map.Entry<String,Object> header: properties.entrySet()) {
+				if (!specialHeaders.contains(header.getKey())) {
+					addPropertyAsHeader(headersXml, "header", "name", header.getKey(), header.getValue());
 				}
 			}
 		}
@@ -151,8 +157,8 @@ public class MailFileSystemUtils {
 		}
 		if (item instanceof List) {
 			String result;
-			for(String address:(List<String>) item) {
-				if (null != (result = getValidAddress(key, address))) {
+			for(Object address:(List<?>) item) {
+				if (null != (result = getValidAddress(key, address.toString()))) {
 					return result; 
 				}
 			}
@@ -170,8 +176,19 @@ public class MailFileSystemUtils {
 			if (addresses.length==0) {
 				return null;
 			} 
-			return InternetAddress.toString(addresses);
-		} catch (AddressException e) {
+			StringBuffer result = new StringBuffer();
+			for (InternetAddress iaddress: addresses) {
+				String personal = iaddress.getPersonal();
+				if (personal!=null) {
+					iaddress.setPersonal(iaddress.getPersonal().trim());
+				}
+				if (result.length()!=0) {
+					result.append(", ");
+				}
+				result.append(iaddress.toUnicodeString());
+			}
+			return result.toString();
+		} catch (AddressException | UnsupportedEncodingException e) {
 			log.warn("type ["+type+"] address ["+address+"] is invalid: "+e.getMessage());
 			return null;
 		}
