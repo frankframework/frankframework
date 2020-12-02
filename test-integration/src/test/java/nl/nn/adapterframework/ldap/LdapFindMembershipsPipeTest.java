@@ -93,7 +93,7 @@ public class LdapFindMembershipsPipeTest {
 		
 		EhCache<Set<String>> cache = new EhCache<Set<String>>();
 		cache.setTimeToLiveSeconds(3600);
-		pipe.registerCache(cache);
+		pipe.setCache(cache);
 		pipe.configure();
 		pipe.start();
 		
