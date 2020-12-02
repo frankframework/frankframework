@@ -26,160 +26,98 @@
 		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
 	</xsl:template>
 	<xsl:template match="*|@*|comment()|processing-instruction()">
-		<xsl:choose>
-			<xsl:when test="name()='receiver'">
-				<xsl:choose>
-					<xsl:when test="listener[@className='nl.nn.adapterframework.jdbc.JdbcQueryListener']">
-						<xsl:call-template name="copy" />
-					</xsl:when>
-					<xsl:when test="listener[@className='nl.nn.adapterframework.receivers.DirectoryListener']">
-						<xsl:call-template name="copy" />
-					</xsl:when>
-					<xsl:when test="listener[@className='nl.nn.adapterframework.receivers.JavaListener']">
-						<xsl:call-template name="copy" />
-					</xsl:when>
-					<xsl:when test="listener[@className='nl.nn.adapterframework.http.WebServiceListener']">
-						<xsl:call-template name="copy" />
-					</xsl:when>
-					<xsl:when test="listener[@className='nl.nn.adapterframework.http.RestListener']">
-						<xsl:call-template name="copy" />
-					</xsl:when>
-					<xsl:when test="listener[@className='nl.nn.adapterframework.jdbc.MessageStoreListener']">
-						<xsl:call-template name="copy" />
-					</xsl:when>
-					<xsl:when test="listener[@className='nl.nn.adapterframework.http.rest.ApiListener']">
-						<xsl:call-template name="copy" />
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:call-template name="disable" />
-					</xsl:otherwise>
-				</xsl:choose>
-			</xsl:when>
-			<xsl:when test="name()='pipeline'">
-				<xsl:element name="receiver">
-					<xsl:attribute name="name">
-						<xsl:value-of select="concat('testtool-',parent::*[name()='adapter']/@name)" />
-					</xsl:attribute>
-					<xsl:apply-templates select="parent::*[name()='adapter']/receiver/@*[name()!='transactionAttribute']" />
-					<xsl:element name="listener">
-						<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
-						<xsl:attribute name="serviceName">
-							<xsl:value-of select="concat('testtool-',parent::*[name()='adapter']/@name)" />
-						</xsl:attribute>
-						<xsl:if test="parent::*[name()='adapter']/errorMessageFormatter">
-							<xsl:attribute name="throwException">false</xsl:attribute>
-						</xsl:if>
-					</xsl:element>
-					<xsl:for-each select="parent::*[name()='adapter']/receiver/errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
-						<xsl:if test="position()=1">
-							<xsl:copy-of select="." />
-						</xsl:if>
-					</xsl:for-each>
-					<xsl:for-each select="parent::*[name()='adapter']/receiver/errorSender[@className='nl.nn.adapterframework.senders.IbisLocalSender']">
-						<xsl:if test="position()=1">
-							<xsl:copy-of select="." />
-						</xsl:if>
-					</xsl:for-each>
-					<xsl:for-each select="parent::*[name()='adapter']/receiver/messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
-						<xsl:if test="position()=1">
-							<xsl:copy-of select="." />
-						</xsl:if>
-					</xsl:for-each>
-				</xsl:element>
-				<xsl:call-template name="copy" />
-			</xsl:when>
-			<xsl:when test="name()='sender'">
-				<xsl:choose>
-					<xsl:when test="parent::*[name()='pipe']">
-						<xsl:variable name="pipeName" select="parent::*[name()='pipe']/@name" />
-						<xsl:choose>
-							<xsl:when test="@className='nl.nn.adapterframework.jdbc.ResultSet2FileSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.jdbc.DirectQuerySender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.jdbc.FixedQuerySender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.jdbc.XmlQuerySender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.DelaySender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.EchoSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.IbisLocalSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.LogSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.ParallelSenders'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.SenderSeries'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.SenderWrapper'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.XsltSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.CommandSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.FixedResultSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.FileSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.JavascriptSender'">
-								<xsl:call-template name="copy" /> 
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.jdbc.MessageStoreSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.senders.ReloadSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:when test="@className='nl.nn.adapterframework.compression.ZipWriterSender'">
-								<xsl:call-template name="copy" />
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:element name="sender">
-									<xsl:if test="string-length(@name)&gt;0">
-										<xsl:attribute name="name">
-											<xsl:value-of select="@name" />
-										</xsl:attribute>
-									</xsl:if>
-									<xsl:attribute name="className">nl.nn.adapterframework.senders.IbisJavaSender</xsl:attribute>
-									<xsl:attribute name="serviceName">
-										<xsl:value-of select="concat('testtool-',$pipeName)" />
-									</xsl:attribute>
-									<xsl:if test="string-length(@multipartResponse)&gt;0">
-										<xsl:attribute name="multipartResponse">
-											<xsl:value-of select="@multipartResponse" />
-										</xsl:attribute>
-									</xsl:if>
-								</xsl:element>
-								<xsl:call-template name="disable" />
-							</xsl:otherwise>
-						</xsl:choose>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:call-template name="copy" />
-					</xsl:otherwise>
-				</xsl:choose>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:call-template name="copy" />
-			</xsl:otherwise>
-		</xsl:choose>
+		<xsl:call-template name="copy" />
+	</xsl:template>
+	
+	<xsl:template match="pipeline">
+		<xsl:for-each select="parent::adapter/receiver[1]">
+			<xsl:call-template name="stubReceiver">
+				<xsl:with-param name="receiverName" select="parent::adapter/@name"/>
+			</xsl:call-template>
+		</xsl:for-each>
+		<xsl:call-template name="copy" />
+	</xsl:template>
+	
+	<xsl:template match="receiver[listener[@className='nl.nn.adapterframework.jdbc.JdbcQueryListener'
+										or @className='nl.nn.adapterframework.receivers.DirectoryListener'
+										or @className='nl.nn.adapterframework.receivers.JavaListener'
+										or @className='nl.nn.adapterframework.http.WebServiceListener'
+										or @className='nl.nn.adapterframework.http.RestListener'
+										or @className='nl.nn.adapterframework.jdbc.MessageStoreListener'
+										or @className='nl.nn.adapterframework.http.rest.ApiListener']]">
+		<xsl:call-template name="copy" />
+		<xsl:call-template name="stubReceiver">
+			<xsl:with-param name="receiverName" select="string-join((parent::adapter/@name,position()),'-')"/>
+		</xsl:call-template>
+	</xsl:template>
+	<xsl:template match="receiver">
+		<xsl:call-template name="disable" />
+		<xsl:call-template name="stubReceiver" />
+	</xsl:template>	
+	
+	<xsl:template name="stubReceiver">
+		<xsl:param name="receiverName"/>
+		<xsl:element name="receiver">
+			<xsl:attribute name="name">
+				<xsl:value-of select="concat('testtool-',$receiverName)" />
+			</xsl:attribute>
+			<xsl:apply-templates select="@*[name()!='transactionAttribute' and name() !='name']" />
+			<xsl:element name="listener">
+				<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
+				<xsl:attribute name="serviceName">
+					<xsl:value-of select="concat('testtool-',$receiverName)" />
+				</xsl:attribute>
+				<xsl:if test="parent::*[adapter]/errorMessageFormatter">
+					<xsl:attribute name="throwException">false</xsl:attribute>
+				</xsl:if>
+			</xsl:element>
+			<xsl:copy-of select="errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			<xsl:copy-of select="errorSender[@className='nl.nn.adapterframework.senders.IbisLocalSender']"/>
+			<xsl:copy-of select="messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="sender[   @className='nl.nn.adapterframework.jdbc.ResultSet2FileSender'
+								or @className='nl.nn.adapterframework.jdbc.DirectQuerySender'
+								or @className='nl.nn.adapterframework.jdbc.FixedQuerySender'
+								or @className='nl.nn.adapterframework.jdbc.XmlQuerySender'
+								or @className='nl.nn.adapterframework.senders.DelaySender'
+								or @className='nl.nn.adapterframework.senders.EchoSender'
+								or @className='nl.nn.adapterframework.senders.IbisLocalSender'
+								or @className='nl.nn.adapterframework.senders.LogSender'
+								or @className='nl.nn.adapterframework.senders.ParallelSenders'
+								or @className='nl.nn.adapterframework.senders.SenderSeries'
+								or @className='nl.nn.adapterframework.senders.SenderWrapper'
+								or @className='nl.nn.adapterframework.senders.XsltSender'
+								or @className='nl.nn.adapterframework.senders.CommandSender'
+								or @className='nl.nn.adapterframework.senders.FixedResultSender'
+								or @className='nl.nn.adapterframework.senders.JavascriptSender'
+								or @className='nl.nn.adapterframework.jdbc.MessageStoreSender'
+								or @className='nl.nn.adapterframework.senders.ReloadSender'
+								or @className='nl.nn.adapterframework.compression.ZipWriterSender'
+								or @className='nl.nn.adapterframework.senders.LocalFileSystemSender']">
+		<xsl:call-template name="copy" />
+	</xsl:template>
+	<xsl:template match="sender">
+		<xsl:call-template name="disable" />
+		
+		<xsl:variable name="pipeName" select="parent::*[name()='pipe']/@name" />
+		<xsl:element name="sender">
+			<xsl:if test="string-length(@name)&gt;0">
+				<xsl:attribute name="name">
+					<xsl:value-of select="@name" />
+				</xsl:attribute>
+			</xsl:if>
+			<xsl:attribute name="className">nl.nn.adapterframework.senders.IbisJavaSender</xsl:attribute>
+			<xsl:attribute name="serviceName">
+				<xsl:value-of select="concat('testtool-',$pipeName)" />
+			</xsl:attribute>
+			<xsl:if test="string-length(@multipartResponse)&gt;0">
+				<xsl:attribute name="multipartResponse">
+					<xsl:value-of select="@multipartResponse" />
+				</xsl:attribute>
+			</xsl:if>
+		</xsl:element>
 	</xsl:template>
 	
 	<xsl:template match="pipe/listener">
@@ -297,7 +235,10 @@
 		</xsl:element>
 	</xsl:template>
 	
-	<xsl:template match="pipe[@className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe' or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe']">
+	<xsl:template match="pipe[ @className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' 
+							or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' 
+							or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe' 
+							or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
 			<xsl:attribute name="className">nl.nn.adapterframework.pipes.GenericMessageSendingPipe</xsl:attribute>
@@ -311,7 +252,8 @@
 		</xsl:element>
 	</xsl:template>
 	
-	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe' or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe']">
+	<xsl:template match="pipe[ @className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe' 
+							or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="timeOutOnResult">[timeout]</xsl:attribute>
@@ -324,11 +266,12 @@
 		<xsl:attribute name="pattern"><xsl:value-of select="replace(.,'\{now,','{fixedDate,')"/></xsl:attribute>
 	</xsl:template>
 	
-	<xsl:template match="pipe/(errorStorage|messageLog)[@className!='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' and @className!='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
+	<xsl:template match="pipe/*[errorStorage or messageLog][@className!='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' 
+														and @className!='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
 		<xsl:call-template name="disable" />
 	</xsl:template>
 	
-	<xsl:template match="inputValidator|outputValidator and $disableValidators">
+	<xsl:template match="*[inputValidator or outputValidator][$disableValidators]">
 		<xsl:call-template name="disable" />
 	</xsl:template>
 	
@@ -340,7 +283,7 @@
 	
 	<xsl:template name="disable">
 		<xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
-			<xsl:copy-of/>
+			<xsl:copy-of select="."/>
 		<xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
 	</xsl:template>
 </xsl:stylesheet>
