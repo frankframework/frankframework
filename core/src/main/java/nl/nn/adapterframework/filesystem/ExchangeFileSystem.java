@@ -79,6 +79,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -757,10 +758,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public String getPhysicalDestinationName() {
+		String result = super.getPhysicalDestinationName();
 		if (exchangeService != null) {
-			return "url [" + (exchangeService == null ? "" : exchangeService.getUrl()) + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]";
+			result = Misc.concatStrings("url [" + (exchangeService == null ? "" : exchangeService.getUrl()) + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
 		}
-		return null;
+		return result;
 	}
 
 

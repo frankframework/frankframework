@@ -59,6 +59,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
@@ -515,7 +516,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return store.getURLName().toString();
+		return Misc.concatStrings(store.getURLName().toString()," ", super.getPhysicalDestinationName());
 	}
 
 	@Override

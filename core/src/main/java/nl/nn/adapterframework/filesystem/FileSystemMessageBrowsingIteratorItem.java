@@ -16,6 +16,9 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.util.Date;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
@@ -24,10 +27,12 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 
 	private FS fileSystem;
 	private F item;
+	private String messageIdProperty;
 
-	public FileSystemMessageBrowsingIteratorItem(FS fileSystem, F item) {
+	public FileSystemMessageBrowsingIteratorItem(FS fileSystem, F item, String messageIdProperty) {
 		this.fileSystem = fileSystem;
 		this.item = item;
+		this.messageIdProperty = messageIdProperty;
 	}
 	
 	@Override
@@ -38,7 +43,11 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	@Override
 	public String getOriginalId() throws ListenerException {
 		try {
-			return fileSystem.getCanonicalName(item);
+			if (StringUtils.isNotEmpty(messageIdProperty)) {
+				Map<String,Object> properties = fileSystem.getAdditionalFileProperties(item);
+				return (String)properties.get(messageIdProperty);
+			}
+			return fileSystem.getName(item);
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}
@@ -84,7 +93,7 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	}
 
 	@Override
-	public void release() {
+	public void close() {
 	}
 
 }

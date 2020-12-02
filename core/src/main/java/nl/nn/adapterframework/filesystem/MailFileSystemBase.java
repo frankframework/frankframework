@@ -37,7 +37,10 @@ public abstract class MailFileSystemBase<M,A> implements IMailFileSystem<M,A> {
 	private int maxNumberOfMessagesToList=100;
 	private String replyAddressFields = REPLY_ADDRESS_FIELDS_DEFAULT;
 
-
+	@Override
+	public String getPhysicalDestinationName() {
+		return "baseFolder ["+getBaseFolder()+"]";
+	}
 
 	@IbisDoc({"1", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " + 
 			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " + 

@@ -459,7 +459,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		}
 
 		@Override
-		public void release() {
+		public void close() {
 			if (closeOnRelease) {
 				JdbcUtil.fullClose(conn, rs);
 			}

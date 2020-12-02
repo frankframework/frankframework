@@ -57,7 +57,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * 
  * @author Peter Leeuwenburgh, Gerrit van Brakel
  */
-public abstract class MailListener<M, A, FS extends IMailFileSystem<M,A>> extends FileSystemListener<M,FS> implements HasPhysicalDestination {
+public abstract class MailListener<M, A, FS extends IMailFileSystem<M,A>> extends FileSystemListener<M,FS> {
 
 	public final String EMAIL_MESSAGE_TYPE="email";
 	public final String MIME_MESSAGE_TYPE="mime";

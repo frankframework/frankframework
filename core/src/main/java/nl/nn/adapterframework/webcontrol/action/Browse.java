@@ -37,7 +37,6 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -190,7 +189,7 @@ public class Browse extends ActionBase {
 			listener = receiver.getListener();
 		}
 		try {
-			logCount = "(" + ((ITransactionalStorage) mb).getMessageCount() + ")";
+			logCount = "(" + mb.getMessageCount() + ")";
 		} catch (Exception e) {
 			log.warn(e);
 			logCount = "(?)";
@@ -235,8 +234,7 @@ public class Browse extends ActionBase {
  					}
 					int messageCount;
 					for (messageCount=0; mbi.hasNext(); ) {
-						IMessageBrowsingIteratorItem iterItem = mbi.next();
-						try {
+						try (IMessageBrowsingIteratorItem iterItem = mbi.next()) {
 							String cType=iterItem.getType();
 							String cHost=iterItem.getHost();
 							String cId=iterItem.getId();
@@ -313,8 +311,6 @@ public class Browse extends ActionBase {
 								log.warn("stopped iterating messages after ["+messageCount+"]: limit reached");
 								break;
 							}
-						} finally {
-							iterItem.release();
 						}
 					}
 					messages.addAttribute("messageCount",Integer.toString(messageCount-skipMessages));

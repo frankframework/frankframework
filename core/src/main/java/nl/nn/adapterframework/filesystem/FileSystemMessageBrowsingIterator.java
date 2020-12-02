@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
@@ -24,25 +26,34 @@ import nl.nn.adapterframework.core.ListenerException;
 public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>> implements IMessageBrowsingIterator {
 
 	private FS fileSystem;
+	private DirectoryStream<F> directoryStream;
 	private Iterator<F> iterator;
+	private String messageIdProperty;
 
-	public FileSystemMessageBrowsingIterator(FS fileSystem, String folder) throws FileSystemException {
+	public FileSystemMessageBrowsingIterator(FS fileSystem, String folder, String messageIdProperty) throws FileSystemException {
 		this.fileSystem = fileSystem;
-		iterator = fileSystem.listFiles(folder).iterator();
+		directoryStream = fileSystem.listFiles(folder);
+		iterator = directoryStream.iterator();
+		this.messageIdProperty = messageIdProperty;
 	}
 	
 	@Override
 	public boolean hasNext() throws ListenerException {
-		return iterator.hasNext();
+		return iterator !=null && iterator.hasNext();
 	}
 
 	@Override
 	public IMessageBrowsingIteratorItem next() throws ListenerException {
-		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, iterator.next());
+		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, iterator.next(), messageIdProperty);
 	}
 
 	@Override
 	public void close() throws ListenerException {
+		try {
+			directoryStream.close();
+		} catch (IOException e) {
+			throw new ListenerException(e);
+		}
 	}
 
 }

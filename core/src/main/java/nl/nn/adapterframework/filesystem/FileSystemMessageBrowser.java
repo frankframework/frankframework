@@ -33,14 +33,16 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 
 	private FS fileSystem;
 	private String folder;
-
+	private String messageIdProperty;
+	
 	private String hideRegex = null;
 	private String hideMethod = "all";
 
 
-	public FileSystemMessageBrowser(FS fileSystem, String folder) {
+	public FileSystemMessageBrowser(FS fileSystem, String folder, String messageIdProperty) {
 		this.fileSystem = fileSystem;
 		this.folder = folder;
+		this.messageIdProperty = messageIdProperty;
 	}
 	
 	@Override
@@ -51,7 +53,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	@Override
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		try {
-			return new FileSystemMessageBrowsingIterator<F, FS>(fileSystem, folder);
+			return new FileSystemMessageBrowsingIterator<F, FS>(fileSystem, folder, messageIdProperty);
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}
@@ -63,8 +65,8 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	}
 
 	@Override
-	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
-		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, browseMessage(messageId));
+	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
+		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, browseMessage(storageKey), messageIdProperty);
 	}
 
 	@Override
@@ -82,18 +84,18 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	}
 
 	@Override
-	public F browseMessage(String messageId) throws ListenerException {
+	public F browseMessage(String storageKey) throws ListenerException {
 		try {
-			return fileSystem.toFile(folder, messageId);
+			return fileSystem.toFile(folder, storageKey);
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}
 	}
 
 	@Override
-	public void deleteMessage(String messageId) throws ListenerException {
+	public void deleteMessage(String storageKey) throws ListenerException {
 		try {
-			F file = fileSystem.toFile(folder, messageId);
+			F file = fileSystem.toFile(folder, storageKey);
 			fileSystem.deleteFile(file);
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
@@ -104,8 +106,13 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	public int getMessageCount() throws ListenerException {
 		int count = 0;
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
-			for (Iterator<F> it = ds.iterator(); it.hasNext(); it.next()) {
+			Iterator<F> it = ds.iterator();
+			if (it==null) {
+				return 0;
+			}
+			while (it.hasNext()) {
 				count++;
+				it.next();
 			}
 		} catch (IOException | FileSystemException e) {
 			throw new ListenerException(e);

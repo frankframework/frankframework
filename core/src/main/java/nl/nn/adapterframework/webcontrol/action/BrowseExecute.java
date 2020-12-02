@@ -150,8 +150,7 @@ public class BrowseExecute extends Browse {
 		}
 		try {
 			Object rawmsg = mb.browseMessage(id);
-			IMessageBrowsingIteratorItem msgcontext=mb.getContext(id);
-			try {
+			try (IMessageBrowsingIteratorItem msgcontext=mb.getContext(id)) {
 				String msg=null;
 				String msgId=msgcontext.getId();
 				String msgMid=msgcontext.getOriginalId();
@@ -231,8 +230,6 @@ public class BrowseExecute extends Browse {
 					bulkfile.delete();
 				}
 				zipOutputStream.closeEntry();
-			} finally {
-				msgcontext.release();
 			}
 		} catch (Throwable e) {
 			error(", ", "errors.generic", "Could not export message with id ["+id+"]", e);

@@ -1,0 +1,29 @@
+<module>
+	<adapter name="ExchangeMail" active="${exchangemail.active}">
+		<receiver>
+			<listener
+				className="nl.nn.adapterframework.receivers.ExchangeMailListener"
+				url="${exchangemail.url}"
+				mailAddress="${exchangemail.mailAddress}"
+				authAlias="${exchangemail.authAlias}"
+				username="${exchangemail.username}"
+				password="${exchangemail.password}"
+				baseFolder="${exchangemail.baseFolder}"
+				inputFolder="${exchangemail.inputFolder}"
+				inProcessFolder="${exchangemail.inProcessFolder}"
+				processedFolder="${exchangemail.processedFolder}"
+				errorFolder="${exchangemail.errorFolder}"
+				createFolders="true"
+				disableFolderBrowsers="true"
+			/>
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="Echo">
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>
