@@ -19,9 +19,8 @@ package nl.nn.adapterframework.doc.model;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -54,10 +53,8 @@ public class FrankElement {
 	private final @Getter String simpleName;
 	private final @Getter boolean isAbstract;
 	private @Getter FrankElement parent;
-	private @Getter List<FrankAttribute> attributes;
-	private Map<String, FrankAttribute> attributeLookup;
-	private @Getter List<ConfigChild> configChildren;
-	private Map<ConfigChildKey, ConfigChild> configChildLookup;
+	private LinkedHashMap<String, FrankAttribute> attributeLookup;
+	private LinkedHashMap<ConfigChildKey, ConfigChild> configChildLookup;
 	private @Getter List<ConfigChild> aliasSources;
 	private String cachedAlias = null;
 	private @Getter FrankElementStatistics statistics;
@@ -94,9 +91,8 @@ public class FrankElement {
 	 */
 	public void setAttributes(List<FrankAttribute> inputAttributes) {
 		Collections.sort(inputAttributes);
-		this.attributes = Collections.unmodifiableList(inputAttributes);
-		attributeLookup = new HashMap<>();
-		for(FrankAttribute a: attributes) {
+		attributeLookup = new LinkedHashMap<>();
+		for(FrankAttribute a: inputAttributes) {
 			if(attributeLookup.containsKey(a.getName())) {
 				log.warn(String.format("Frank element [%s] has multiple attributes with name [%s]",
 						fullName, a.getName()));
@@ -106,8 +102,12 @@ public class FrankElement {
 		}
 	}
 
+	public List<FrankAttribute> getAttributes() {
+		return new ArrayList<>(attributeLookup.values());
+	}
+
 	public List<FrankAttribute> getAttributes(Predicate<? super FrankAttribute> filter) {
-		return attributes.stream().filter(filter).collect(Collectors.toList());
+		return getAttributes().stream().filter(filter).collect(Collectors.toList());
 	}
 
 	/**
@@ -117,8 +117,7 @@ public class FrankElement {
 	 */
 	public void setConfigChildren(List<ConfigChild> children) {
 		Collections.sort(children);
-		this.configChildren = Collections.unmodifiableList(children);
-		configChildLookup = new HashMap<>();
+		configChildLookup = new LinkedHashMap<>();
 		for(ConfigChild c: children) {
 			ConfigChildKey key = new ConfigChildKey(c);
 			if(configChildLookup.containsKey(key)) {
@@ -129,8 +128,12 @@ public class FrankElement {
 		}
 	}
 
+	public List<ConfigChild> getConfigChildren() {
+		return new ArrayList<>(configChildLookup.values());
+	}
+
 	public List<ConfigChild> getConfigChildren(Predicate<? super ConfigChild> filter) {
-		return configChildren.stream().filter(filter).collect(Collectors.toList());
+		return getConfigChildren().stream().filter(filter).collect(Collectors.toList());
 	}
 
 	ElementChild findElementChildMatch(ElementChild elementChild) {
