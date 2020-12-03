@@ -52,8 +52,8 @@ class AncestorChildNavigation<K, T extends ElementChild> {
 		enter(start);
 		overridden = new HashSet<>();
 		declaredGroupOrRepeatedChildren();
-		while(current.getNextAncestor(childSelector, kind) != null) {
-			enter(current.getNextAncestor(childSelector, kind));
+		while(current.getNextAncestorThatHasChildren(childSelector, kind) != null) {
+			enter(current.getNextAncestorThatHasChildren(childSelector, kind));
 			if(overridden.isEmpty() && rejector.isNoCumulativeRejected(current)) {
 				safeAddCumulative();
 				return;
@@ -85,7 +85,7 @@ class AncestorChildNavigation<K, T extends ElementChild> {
 	}
 
 	private void safeAddCumulative() {
-		if(current.getNextAncestor(childSelector, kind) == null) {
+		if(current.getNextAncestorThatHasChildren(childSelector, kind) == null) {
 			handler.handleChildrenOf(current);
 		} else {
 			handler.handleCumulativeChildrenOf(current);

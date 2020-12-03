@@ -142,7 +142,7 @@ public class FrankElement {
 		return configChildren.get(configChild.getKey());
 	}
 
-	public <T extends ElementChild> FrankElement getNextAncestor(Predicate<ElementChild> childFilter, Class<T> kind) {
+	public <T extends ElementChild> FrankElement getNextAncestorThatHasChildren(Predicate<ElementChild> childFilter, Class<T> kind) {
 		FrankElement ancestor = parent;
 		while((ancestor != null) && (ancestor.getChildren(childFilter, kind).size() == 0)) {
 			ancestor = ancestor.getParent();

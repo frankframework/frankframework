@@ -57,7 +57,7 @@ class ChildRejector<T extends ElementChild> {
 
 		private Level addParentLevelsFor(FrankElement levelOwner) {
 			Level parentLevel = null;
-			FrankElement parent = levelOwner.getNextAncestor(selector, kind);
+			FrankElement parent = levelOwner.getNextAncestorThatHasChildren(selector, kind);
 			if(parent != null) {
 				parentLevel = addLevelsFor(parent, rejectCandidates);
 			}
