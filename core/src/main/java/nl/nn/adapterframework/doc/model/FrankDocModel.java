@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.xml.sax.SAXException;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.digester.DigesterRule;
@@ -54,7 +55,7 @@ public class FrankDocModel {
 	static final String OTHER = "Other";
 
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors;
-	private @Getter Map<String, FrankDocGroup> groups = new HashMap<>();
+	private @Getter LinkedHashMap<String, FrankDocGroup> groups = new LinkedHashMap<>();
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
 
@@ -83,7 +84,7 @@ public class FrankDocModel {
 
 	public FrankDocModel() {
 		configChildDescriptors = new HashMap<>();
-		groups = new HashMap<>();
+		groups = new LinkedHashMap<>();
 	}
 
 	public void createConfigChildDescriptorsFrom(String path) throws IOException, SAXException {
@@ -409,8 +410,12 @@ public class FrankDocModel {
 				log.warn(String.format("Group name [%s] used for multiple groups", groupName));
 			}
 		}
-		groups = new HashMap<>();
-		for(String groupName: groupsBase.keySet()) {
+		// Sort the groups alphabetically, including group "Other". We have to update
+		// this code if "Other" needs to be put to the end.
+		groups = new LinkedHashMap<>();
+		List<String> sortedGroups = new ArrayList<>(groupsBase.keySet());
+		Collections.sort(sortedGroups);
+		for(String groupName: sortedGroups) {
 			groups.put(groupName, groupsBase.get(groupName).get(0));
 		}
 	}
