@@ -29,7 +29,7 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroupRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
 import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
-import static nl.nn.adapterframework.doc.model.ElementChild.SELECTED;
+import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -295,12 +295,12 @@ public class DocWriterNew {
 
 		private List<SortKeyForXsd> getSortedElementChildren(String elementName) {
 			FrankElement element = model.getAllElements().get(elementName);
-			List<ConfigChild> configChildren = element.getConfigChildren(SELECTED);
+			List<ConfigChild> configChildren = element.getConfigChildren(IN_XSD);
 			configChildren.sort((c1, c2) -> c1.getSyntax1Name().compareTo(c2.getSyntax1Name()));
 			List<SortKeyForXsd> result = configChildren.stream()
 					.map(c -> getTypeKey(c))
 					.collect(Collectors.toList());
-			FrankElement candidateParent = element.getNextAncestor(SELECTED, ElementChild.class);
+			FrankElement candidateParent = element.getNextAncestor(IN_XSD, ElementChild.class);
 			if(candidateParent != null) {
 				result.add(SortKeyForXsd.getInstance(candidateParent));
 			}
@@ -397,18 +397,18 @@ public class DocWriterNew {
 
 	private void addConfigChildren(FrankElement frankElement, ElementBuildingStrategy xsdElementStrategy) {
 		Consumer<GroupCreator.Callback<ConfigChild>> cumulativeGroupTrigger =
-				ca -> frankElement.walkCumulativeConfigChildren(ca, SELECTED, DEPRECATED);
+				ca -> frankElement.walkCumulativeConfigChildren(ca, IN_XSD, DEPRECATED);
 		new GroupCreator<ConfigChild>(frankElement, cumulativeGroupTrigger, new GroupCreator.Callback<ConfigChild>() {
 			private XmlBuilder cumulativeBuilder;
 			
 			@Override
 			public List<ConfigChild> getChildrenOf(FrankElement elem) {
-				return elem.getConfigChildren(SELECTED);
+				return elem.getConfigChildren(IN_XSD);
 			}
 			
 			@Override
 			public FrankElement getAncestorOf(FrankElement elem) {
-				return elem.getNextAncestor(SELECTED, ConfigChild.class);
+				return elem.getNextAncestor(IN_XSD, ConfigChild.class);
 			}
 			
 			@Override
@@ -425,7 +425,7 @@ public class DocWriterNew {
 			public void addDeclaredGroup() {
 				XmlBuilder group = addGroup(xsdRoot, xsdDeclaredGroupNameForChildren(frankElement));
 				XmlBuilder sequence = addSequence(group);
-				frankElement.getConfigChildren(SELECTED).forEach(
+				frankElement.getConfigChildren(IN_XSD).forEach(
 						c -> addConfigChild(sequence, c));
 			}
 
@@ -505,18 +505,18 @@ public class DocWriterNew {
 
 	private void addAttributes(FrankElement frankElement, ElementBuildingStrategy xsdElementStrategy) {
 		Consumer<GroupCreator.Callback<FrankAttribute>> cumulativeGroupTrigger =
-				ca -> frankElement.walkCumulativeAttributes(ca, SELECTED, DEPRECATED);
+				ca -> frankElement.walkCumulativeAttributes(ca, IN_XSD, DEPRECATED);
 		new GroupCreator<FrankAttribute>(frankElement, cumulativeGroupTrigger, new GroupCreator.Callback<FrankAttribute>() {
 			private XmlBuilder cumulativeBuilder;
 
 			@Override
 			public List<FrankAttribute> getChildrenOf(FrankElement elem) {
-				return elem.getAttributes(SELECTED);
+				return elem.getAttributes(IN_XSD);
 			}
 
 			@Override
 			public FrankElement getAncestorOf(FrankElement elem) {
-				return elem.getNextAncestor(SELECTED, FrankAttribute.class);
+				return elem.getNextAncestor(IN_XSD, FrankAttribute.class);
 			}
 
 			@Override
@@ -532,7 +532,7 @@ public class DocWriterNew {
 			@Override
 			public void addDeclaredGroup() {
 				XmlBuilder attributeGroup = addAttributeGroup(xsdRoot, xsdDeclaredGroupNameForAttributes(frankElement));
-				addAttributeList(attributeGroup, frankElement.getAttributes(SELECTED));
+				addAttributeList(attributeGroup, frankElement.getAttributes(IN_XSD));
 			}
 
 			@Override

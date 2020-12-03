@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.doc.model;
 
-import static nl.nn.adapterframework.doc.model.ElementChild.SELECTED;
+import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -301,7 +301,7 @@ public class FrankDocModelTest {
 		assertEquals("Description of ibisDockedDescriptionDefault", actual.getDescription());
 		assertEquals("Default of ibisDockedDescriptionDefault", actual.getDefaultValue());
 		assertFalse(actual.isDeprecated());
-		assertTrue(SELECTED.test(actual));
+		assertTrue(IN_XSD.test(actual));
 	}
 
 	@Test
@@ -320,7 +320,7 @@ public class FrankDocModelTest {
 		assertTrue(actual.isDocumented());
 		assertEquals("Description of ibisDockedDeprecated", actual.getDescription());
 		assertTrue(actual.isDeprecated());
-		assertFalse(SELECTED.test(actual));
+		assertFalse(IN_XSD.test(actual));
 	}
 
 	@Test

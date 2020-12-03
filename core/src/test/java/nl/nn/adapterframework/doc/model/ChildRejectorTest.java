@@ -90,7 +90,7 @@ public class ChildRejectorTest {
 
 	@Test
 	public void whenNonAttributeRejectedByChildThenThatAttributeRejectedByParent() throws Exception {
-		init("Child3", ElementChild.SELECTED, ElementChild.DEPRECATED, "Child3");
+		init("Child3", ElementChild.IN_XSD, ElementChild.DEPRECATED, "Child3");
 		assertEquals(setOf(), childNames("Child3"));
 		assertTrue(instance.isNoDeclaredRejected(getElement("Child3")));
 		assertFalse(instance.isNoCumulativeRejected(getElement("Child3")));
@@ -115,7 +115,7 @@ public class ChildRejectorTest {
 
 	@Test
 	public void whenChildrenRejectNonAttributesForParentAndGrandParentThenThoseAttributesRejected() throws Exception {
-		init("GrandChild4", ElementChild.SELECTED, ElementChild.DEPRECATED, "GrandChild4");
+		init("GrandChild4", ElementChild.IN_XSD, ElementChild.DEPRECATED, "GrandChild4");
 		assertEquals(setOf("grandChild4Attribute"), childNames("GrandChild4"));
 		assertTrue(instance.isNoDeclaredRejected(getElement("GrandChild4")));
 		assertFalse(instance.isNoCumulativeRejected(getElement("GrandChild4")));

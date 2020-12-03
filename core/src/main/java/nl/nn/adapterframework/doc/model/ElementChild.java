@@ -56,7 +56,7 @@ public abstract class ElementChild {
 	private @Getter @Setter boolean documented;
 	private @Getter FrankElement overriddenFrom;
 
-	public static Predicate<ElementChild> SELECTED = c ->
+	public static Predicate<ElementChild> IN_XSD = c ->
 		(! c.isDeprecated())
 		&& (c.isDocumented() || (c.getOverriddenFrom() == null));
 

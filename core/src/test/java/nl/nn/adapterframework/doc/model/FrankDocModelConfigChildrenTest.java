@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.doc.model;
 
-import static nl.nn.adapterframework.doc.model.ElementChild.SELECTED;
+import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -57,7 +57,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertFalse(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
 		assertNull(actual.getOverriddenFrom());
-		assertTrue(SELECTED.test(actual));
+		assertTrue(IN_XSD.test(actual));
 	}
 
 	private ConfigChild selectChild(String name) {
@@ -80,7 +80,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertTrue(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
 		assertNull(actual.getOverriddenFrom());
-		assertFalse(SELECTED.test(actual));
+		assertFalse(IN_XSD.test(actual));
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertFalse(actual.isMandatory());
 		// The method in the parent is protected, so not overridden
 		assertNull(actual.getOverriddenFrom());
-		assertTrue(SELECTED.test(actual));
+		assertTrue(IN_XSD.test(actual));
 	}
 
 	@Test
@@ -125,7 +125,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals(10, actual.getSequenceInConfig());
 		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
-		assertTrue(SELECTED.test(actual));
+		assertTrue(IN_XSD.test(actual));
 	}
 
 	@Test
@@ -173,7 +173,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertFalse(actual.isDocumented());
 		assertFalse(actual.isDeprecated());
 		assertNotNull(actual.getOverriddenFrom());
-		assertFalse(SELECTED.test(actual));
+		assertFalse(IN_XSD.test(actual));
 	}
 
 	@Test
@@ -187,6 +187,6 @@ public class FrankDocModelConfigChildrenTest {
 		assertTrue(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
 		// Not selected because deprecated
-		assertFalse(SELECTED.test(actual));
+		assertFalse(IN_XSD.test(actual));
 	}
 }

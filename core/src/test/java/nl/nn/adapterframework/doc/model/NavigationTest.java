@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
 import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
 import static nl.nn.adapterframework.doc.model.ElementChild.NONE;
-import static nl.nn.adapterframework.doc.model.ElementChild.SELECTED;
+import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -29,9 +29,9 @@ public class NavigationTest {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return asList(new Object[][] {
-			{"Parent", SELECTED, NONE, asList(
+			{"Parent", IN_XSD, NONE, asList(
 					ref(RefKind.DECLARED, "Parent"))},
-			{"Child", SELECTED, NONE, asList(
+			{"Child", IN_XSD, NONE, asList(
 					// Attribute childAttribute is not selected, so we do not have a real override.
 					ref(RefKind.DECLARED, "Child"), ref(RefKind.DECLARED, "Parent"))},
 			{"Child", ALL, NONE, asList(
@@ -40,14 +40,14 @@ public class NavigationTest {
 			{"GrandChild", ALL, NONE, asList(
 					// All attributes of Parent were overridden. Nothing to reference for Parent.
 					ref(RefKind.DECLARED, "GrandChild"), ref(RefKind.DECLARED, "Child"))},
-			{"GrandChild", SELECTED, NONE, asList(
+			{"GrandChild", IN_XSD, NONE, asList(
 					// The override of parentAttributeSecond counts, in Child parentAttributeFirst is ignored as child
 					ref(RefKind.DECLARED, "GrandChild"),
 					ref(RefKind.DECLARED, "Child"),
 					ref(RefKind.CHILD, "parentAttributeFirst"))},
 			{"GrandChild2", ALL, NONE, asList(
 					ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.CUMULATIVE, "Child2"))},
-			{"GrandChild2", SELECTED, NONE, asList(
+			{"GrandChild2", IN_XSD, NONE, asList(
 					// All children of Child2 are deprecated, so Child2 is ignored in the ancestor hierarchy
 					ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.DECLARED, "Parent"))},
 			{"GrandChild3", ALL, DEPRECATED, asList(

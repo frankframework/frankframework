@@ -24,6 +24,23 @@ import java.util.Map;
 
 import lombok.Getter;
 
+/**
+ * Holds a group of FrankElement objects for the Frank!Doc website.
+ * This website will show a table-of-contents with the groups. When you
+ * select a group, the FrankElement objects inside will be shown.
+ * <p>
+ * There are two kinds of groups that are represented by two subclasses of
+ * {@link FrankDocGroup} that are also inner classes, namely
+ * <code>FromType</code> and <code>Other</code>. <code>FromType</code>
+ * holds a group that has the classes of an {@link ElementType}.
+ * <code>Other</code> holds a group of remaining {@link FrankElement}
+ * that can be part of different {@link ElementType} objects.
+ * <p>
+ * The Frank!Doc website has not been created yet.
+ *
+ * @author martijn
+ *
+ */
 public abstract class FrankDocGroup {
 	private @Getter String name;
 
