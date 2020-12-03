@@ -51,14 +51,14 @@ class AncestorChildNavigation<K, T extends ElementChild> {
 		this.rejector.init(start);
 		enter(start);
 		overridden = new HashSet<>();
-		declaredGroupOrRepeatedChildren();
+		addDeclaredGroupOrRepeatChildrenInXsd();
 		while(current.getNextAncestorThatHasChildren(childSelector, kind) != null) {
 			enter(current.getNextAncestorThatHasChildren(childSelector, kind));
 			if(overridden.isEmpty() && rejector.isNoCumulativeRejected(current)) {
 				safeAddCumulative();
 				return;
 			}
-			declaredGroupOrRepeatedChildren();
+			addDeclaredGroupOrRepeatChildrenInXsd();
 		}
 	}
 
@@ -71,7 +71,7 @@ class AncestorChildNavigation<K, T extends ElementChild> {
 		}
 	}
 
-	private void declaredGroupOrRepeatedChildren() {
+	private void addDeclaredGroupOrRepeatChildrenInXsd() {
 		Set<String> omit = new HashSet<>(items.keySet());
 		omit.retainAll(overridden);
 		if(omit.isEmpty() && rejector.isNoDeclaredRejected(current)) {
