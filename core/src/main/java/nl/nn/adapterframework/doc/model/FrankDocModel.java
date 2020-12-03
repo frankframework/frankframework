@@ -231,6 +231,8 @@ public class FrankDocModel {
 		if(getter.getName().startsWith("get")) {
 			// For issers we require an exact match of the type name. For getters,
 			// the setter and the getter may mix boxed and unboxed types.
+			// This allows the framework code to distinguish null values
+			// (=not configured) from default values.
 			setterType = Utils.promoteIfPrimitive(setterType);
 			getterType = Utils.promoteIfPrimitive(getterType);
 		}
@@ -400,7 +402,7 @@ public class FrankDocModel {
 			}
 		}
 		if(groupsBase.containsKey(OTHER)) {
-			log.warn(String.format("Name [%s] cannot been used for other because it is the name of an ElementType", OTHER));
+			log.warn(String.format("Name \"[%s]\" cannot been used for others group because it is the name of an ElementType", OTHER));
 		}
 		else {
 			groupsBase.put(OTHER, Arrays.asList(FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther)));

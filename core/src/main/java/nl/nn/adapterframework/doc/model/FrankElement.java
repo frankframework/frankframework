@@ -52,9 +52,12 @@ public class FrankElement {
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
 	private final @Getter boolean isAbstract;
+
+	// Represents the Java superclass.
 	private @Getter FrankElement parent;
-	private LinkedHashMap<String, FrankAttribute> attributeLookup;
-	private LinkedHashMap<ConfigChildKey, ConfigChild> configChildLookup;
+
+	private LinkedHashMap<String, FrankAttribute> attributes;
+	private LinkedHashMap<ConfigChildKey, ConfigChild> configChildren;
 	private @Getter List<ConfigChild> aliasSources;
 	private String cachedAlias = null;
 	private @Getter FrankElementStatistics statistics;
@@ -91,19 +94,19 @@ public class FrankElement {
 	 */
 	public void setAttributes(List<FrankAttribute> inputAttributes) {
 		Collections.sort(inputAttributes);
-		attributeLookup = new LinkedHashMap<>();
+		attributes = new LinkedHashMap<>();
 		for(FrankAttribute a: inputAttributes) {
-			if(attributeLookup.containsKey(a.getName())) {
+			if(attributes.containsKey(a.getName())) {
 				log.warn(String.format("Frank element [%s] has multiple attributes with name [%s]",
 						fullName, a.getName()));
 			} else {
-				attributeLookup.put(a.getName(), a);
+				attributes.put(a.getName(), a);
 			}
 		}
 	}
 
 	public List<FrankAttribute> getAttributes() {
-		return new ArrayList<>(attributeLookup.values());
+		return new ArrayList<>(attributes.values());
 	}
 
 	public List<FrankAttribute> getAttributes(Predicate<? super FrankAttribute> filter) {
@@ -117,19 +120,19 @@ public class FrankElement {
 	 */
 	public void setConfigChildren(List<ConfigChild> children) {
 		Collections.sort(children);
-		configChildLookup = new LinkedHashMap<>();
+		configChildren = new LinkedHashMap<>();
 		for(ConfigChild c: children) {
 			ConfigChildKey key = new ConfigChildKey(c);
-			if(configChildLookup.containsKey(key)) {
+			if(configChildren.containsKey(key)) {
 				log.warn(String.format("Different config children of Frank element [%s] have the same key", fullName));
 			} else {
-				configChildLookup.put(key, c);
+				configChildren.put(key, c);
 			}
 		}
 	}
 
 	public List<ConfigChild> getConfigChildren() {
-		return new ArrayList<>(configChildLookup.values());
+		return new ArrayList<>(configChildren.values());
 	}
 
 	public List<ConfigChild> getConfigChildren(Predicate<? super ConfigChild> filter) {
@@ -149,11 +152,11 @@ public class FrankElement {
 	}
 
 	FrankAttribute findAttributeMatch(FrankAttribute attribute) {
-		return attributeLookup.get(attribute.getName());
+		return attributes.get(attribute.getName());
 	}
 
 	ConfigChild findConfigChildMatch(ConfigChild configChild) {
-		return configChildLookup.get(new ConfigChildKey(configChild));
+		return configChildren.get(new ConfigChildKey(configChild));
 	}
 
 	public <T extends ElementChild> FrankElement getNextAncestor(Predicate<ElementChild> childFilter, Class<T> kind) {
