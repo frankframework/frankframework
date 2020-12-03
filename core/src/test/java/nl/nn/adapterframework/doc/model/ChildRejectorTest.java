@@ -18,7 +18,7 @@ public class ChildRejectorTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.walking";
 
 	private FrankDocModel model;
-	private ChildRejector<String, FrankAttribute> instance;
+	private ChildRejector<FrankAttribute> instance;
 
 	private void init(
 			String modelPopulateClassSimpleName,
@@ -28,8 +28,8 @@ public class ChildRejectorTest {
 			throws Exception {
 		String rootClassName = PACKAGE + "." + modelPopulateClassSimpleName;
 		model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName);
-		instance = new ChildRejector<String, FrankAttribute>(
-				selector, rejector, c -> ((FrankAttribute) c).getName(), FrankAttribute.class);
+		instance = new ChildRejector<FrankAttribute>(
+				selector, rejector, FrankAttribute.class);
 		instance.init(getElement(subject));
 	}
 

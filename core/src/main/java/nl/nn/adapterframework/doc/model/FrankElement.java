@@ -26,28 +26,12 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankElement {
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
-
-	@EqualsAndHashCode
-	private final class ConfigChildKey {
-		private final @Getter String syntax1Name;
-		private final @Getter ElementType elementType;
-		private final @Getter boolean mandatory;
-		private final @Getter boolean allowMultiple;
-
-		public ConfigChildKey(ConfigChild configChild) {
-			syntax1Name = configChild.getSyntax1Name();
-			elementType = configChild.getElementType();
-			mandatory = configChild.isMandatory();
-			allowMultiple = configChild.isAllowMultiple();
-		}
-	}
 
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
@@ -57,7 +41,7 @@ public class FrankElement {
 	private @Getter FrankElement parent;
 
 	private LinkedHashMap<String, FrankAttribute> attributes;
-	private LinkedHashMap<ConfigChildKey, ConfigChild> configChildren;
+	private LinkedHashMap<String, ConfigChild> configChildren;
 	private @Getter List<ConfigChild> aliasSources;
 	private String cachedAlias = null;
 	private @Getter FrankElementStatistics statistics;
@@ -96,11 +80,11 @@ public class FrankElement {
 		Collections.sort(inputAttributes);
 		attributes = new LinkedHashMap<>();
 		for(FrankAttribute a: inputAttributes) {
-			if(attributes.containsKey(a.getName())) {
+			if(attributes.containsKey(a.getKey())) {
 				log.warn(String.format("Frank element [%s] has multiple attributes with name [%s]",
-						fullName, a.getName()));
+						fullName, a.getKey()));
 			} else {
-				attributes.put(a.getName(), a);
+				attributes.put(a.getKey(), a);
 			}
 		}
 	}
@@ -122,11 +106,10 @@ public class FrankElement {
 		Collections.sort(children);
 		configChildren = new LinkedHashMap<>();
 		for(ConfigChild c: children) {
-			ConfigChildKey key = new ConfigChildKey(c);
-			if(configChildren.containsKey(key)) {
+			if(configChildren.containsKey(c.getKey())) {
 				log.warn(String.format("Different config children of Frank element [%s] have the same key", fullName));
 			} else {
-				configChildren.put(key, c);
+				configChildren.put(c.getKey(), c);
 			}
 		}
 	}
@@ -152,11 +135,11 @@ public class FrankElement {
 	}
 
 	FrankAttribute findAttributeMatch(FrankAttribute attribute) {
-		return attributes.get(attribute.getName());
+		return attributes.get(attribute.getKey());
 	}
 
 	ConfigChild findConfigChildMatch(ConfigChild configChild) {
-		return configChildren.get(new ConfigChildKey(configChild));
+		return configChildren.get(configChild.getKey());
 	}
 
 	public <T extends ElementChild> FrankElement getNextAncestor(Predicate<ElementChild> childFilter, Class<T> kind) {
@@ -183,25 +166,15 @@ public class FrankElement {
 			Predicate<ElementChild> childSelector,
 			Predicate<ElementChild> childRejector) {
 		new AncestorChildNavigation<String, FrankAttribute>(
-				handler, childSelector, childRejector, FrankAttribute.class) {
-			@Override
-			String keyOf(ElementChild child) {
-				return ((FrankAttribute) child).getName();
-			}
-		}.run(this);
+				handler, childSelector, childRejector, FrankAttribute.class).run(this);
 	}
 
 	public void walkCumulativeConfigChildren(
 			CumulativeChildHandler<ConfigChild> handler,
 			Predicate<ElementChild> childSelector,
 			Predicate<ElementChild> childRejector) {
-		new AncestorChildNavigation<ConfigChildKey, ConfigChild>(
-				handler, childSelector, childRejector, ConfigChild.class) {
-			@Override
-			ConfigChildKey keyOf(ElementChild child) {
-				return new ConfigChildKey((ConfigChild) child);
-			}
-		}.run(this);		
+		new AncestorChildNavigation<String, ConfigChild>(
+				handler, childSelector, childRejector, ConfigChild.class).run(this);		
 	}
 
 	public void addAliasSource(ConfigChild aliasSource) {

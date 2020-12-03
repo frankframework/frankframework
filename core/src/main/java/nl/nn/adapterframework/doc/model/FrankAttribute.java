@@ -45,6 +45,11 @@ public class FrankAttribute extends ElementChild implements Comparable<FrankAttr
 		this.describingElement = attributeOwner;
 	}
 
+	@Override
+	public String getKey() {
+		return name;
+	}
+
 	void parseIbisDocAnnotation(IbisDoc ibisDoc) {
 		String[] ibisDocValues = ibisDoc.value();
 		boolean isIbisDocHasOrder = false;

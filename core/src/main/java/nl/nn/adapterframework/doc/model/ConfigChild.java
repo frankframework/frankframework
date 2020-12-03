@@ -16,7 +16,10 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -36,6 +39,20 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 
 	ConfigChild(FrankElement owningElement) {
 		super(owningElement);
+	}
+
+	@Override
+	String getKey() {
+		List<String> keyComponents = new ArrayList<>();
+		keyComponents.add(syntax1Name);
+		keyComponents.add(elementType.getSimpleName());
+		keyComponents.add(Boolean.toString(mandatory));
+		keyComponents.add(Boolean.toString(allowMultiple));
+		// Keys should be quickly comparable, even if they are not used
+		// in a hash map. This is achieved by putting the most meaningful
+		// values at the start of the key.
+		keyComponents.add(elementType.getFullName());
+		return keyComponents.stream().collect(Collectors.joining());
 	}
 
 	public void setSequenceInConfigFromIbisDocAnnotation(IbisDoc ibisDoc) {

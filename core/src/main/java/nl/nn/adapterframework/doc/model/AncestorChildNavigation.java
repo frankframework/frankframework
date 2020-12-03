@@ -26,14 +26,14 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-abstract class AncestorChildNavigation<K, T extends ElementChild> {
+class AncestorChildNavigation<K, T extends ElementChild> {
 	private final CumulativeChildHandler<T> handler;
 	private final Predicate<ElementChild> childSelector;
-	private final ChildRejector<K, T> rejector;
+	private final ChildRejector<T> rejector;
 	private final Class<T> kind;
 	private FrankElement current;
-	private Map<K, Boolean> items;
-	private Set<K> overridden;
+	private Map<String, Boolean> items;
+	private Set<String> overridden;
 	
 
 	AncestorChildNavigation(
@@ -43,7 +43,7 @@ abstract class AncestorChildNavigation<K, T extends ElementChild> {
 			Class<T> kind) {
 		this.handler = handler;
 		this.childSelector = childSelector;
-		this.rejector = new ChildRejector<K, T>(childSelector, childRejector, this::keyOf, kind);
+		this.rejector = new ChildRejector<T>(childSelector, childRejector, kind);
 		this.kind = kind;
 	}
 
@@ -67,12 +67,12 @@ abstract class AncestorChildNavigation<K, T extends ElementChild> {
 		List<ElementChild> children = rejector.getChildrenFor(current);
 		items = new HashMap<>();
 		for(ElementChild c: children) {
-			items.put(keyOf(c), c.getOverriddenFrom() != null);
+			items.put(c.getKey(), c.getOverriddenFrom() != null);
 		}
 	}
 
 	private void declaredGroupOrRepeatedChildren() {
-		Set<K> omit = new HashSet<>(items.keySet());
+		Set<String> omit = new HashSet<>(items.keySet());
 		omit.retainAll(overridden);
 		if(omit.isEmpty() && rejector.isNoDeclaredRejected(current)) {
 			handler.handleChildrenOf(current);
@@ -93,7 +93,7 @@ abstract class AncestorChildNavigation<K, T extends ElementChild> {
 	}
 
 	private void repeatNonOverriddenItems() {
-		Set<K> retain = new HashSet<>(items.keySet());
+		Set<String> retain = new HashSet<>(items.keySet());
 		retain.removeAll(overridden);
 		if(! retain.isEmpty()) {
 			handler.handleSelectedChildren(selectChildren(retain), current);
@@ -101,27 +101,25 @@ abstract class AncestorChildNavigation<K, T extends ElementChild> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<T> selectChildren(Set<K> keys) {
+	private List<T> selectChildren(Set<String> keys) {
 		return current.getChildren(ALL, kind).stream()
-				.filter(c -> keys.contains(keyOf(c)))
+				.filter(c -> keys.contains(c.getKey()))
 				.map(c -> (T) c)
 				.collect(Collectors.toList());
 						
 	}
 
-	private Set<K> getCurrentOverrides() {
+	private Set<String> getCurrentOverrides() {
 		return getWithOverrideStatus(true);
 	}
 
-	private Set<K> getCurrentNonOverrides() {
+	private Set<String> getCurrentNonOverrides() {
 		return getWithOverrideStatus(false);
 	}
 
-	private Set<K> getWithOverrideStatus(final boolean overrideStatus) {
+	private Set<String> getWithOverrideStatus(final boolean overrideStatus) {
 		return items.keySet().stream()
 				.filter(k -> items.get(k).booleanValue() == overrideStatus)
 				.collect(Collectors.toSet());		
 	}
-
-	abstract K keyOf(ElementChild arg);
 }
