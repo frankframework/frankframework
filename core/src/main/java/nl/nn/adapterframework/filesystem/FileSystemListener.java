@@ -71,6 +71,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private String messageIdProperty = null;
 	
 	private boolean disableMessageBrowsers = false;
+	
 
 	private long minStableTime = 1000;
 //	private Long fileListFirstFileFound;
@@ -311,28 +312,26 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	@Override
-	public IMessageBrowser<F> getInProcessBrowser() {
-		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getInProcessFolder())) {
+	protected IMessageBrowser<F> getMessageBrowser(String folder) {
+		if (isDisableMessageBrowsers() || StringUtils.isEmpty(folder)) {
 			return null;
 		}
-		return new FileSystemMessageBrowser<F, FS>(fileSystem, getInProcessFolder());
+		return new FileSystemMessageBrowser<F, FS>(fileSystem, folder, getMessageIdProperty());
+	}	
+	
+	@Override
+	public IMessageBrowser<F> getInProcessBrowser() {
+		return getMessageBrowser(getInProcessFolder());
 	}
 
 	@Override
 	public IMessageBrowser<F> getMessageLogBrowser() {
-		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getProcessedFolder())) {
-			return null;
-		}
-		return new FileSystemMessageBrowser<F, FS>(fileSystem, getProcessedFolder());
+		return getMessageBrowser(getProcessedFolder());
 	}
 	
 	@Override
 	public IMessageBrowser<F> getErrorStoreBrowser() {
-		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getErrorFolder())) {
-			return null;
-		}
-		return new FileSystemMessageBrowser<F, FS>(fileSystem, getErrorFolder());
+		return getMessageBrowser(getErrorFolder());
 	}
 
 	@Override

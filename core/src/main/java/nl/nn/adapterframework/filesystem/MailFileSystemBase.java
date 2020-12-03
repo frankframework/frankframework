@@ -17,6 +17,7 @@ package nl.nn.adapterframework.filesystem;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -36,6 +37,18 @@ public abstract class MailFileSystemBase<M,A> implements IMailFileSystem<M,A> {
 	private boolean readMimeContents=false;
 	private int maxNumberOfMessagesToList=100;
 	private String replyAddressFields = REPLY_ADDRESS_FIELDS_DEFAULT;
+
+	private @Getter boolean fsOpen = false;
+
+	@Override
+	public void open() throws FileSystemException {
+		fsOpen = true;
+	}
+
+	@Override
+	public void close() throws FileSystemException {
+		fsOpen = false;
+	}
 
 	@Override
 	public String getPhysicalDestinationName() {

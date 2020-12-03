@@ -638,9 +638,6 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 					info("has errorStorage to "+((HasPhysicalDestination)errorStorage).getPhysicalDestinationName());
 				}
 				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
-				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser()!=null) {
-					ConfigurationWarnings.add(this, log, "Default errorStorageBrowser provided by listener is overridden by configured errorStorage");
-				}
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
 					IMessageBrowser errorStoreBrowser = ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser();
@@ -658,9 +655,6 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 				}
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
 					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), configurationClassLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
-				}
-				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser()!=null) {
-					ConfigurationWarnings.add(this, log, "Default messageLogBrowser provided by listener is overridden by configured messageLog");
 				}
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {

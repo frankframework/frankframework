@@ -209,6 +209,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			} else {
 				basefolderId=inboxId;
 			}
+			super.open();
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -256,6 +257,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void close() throws FileSystemException {
+		super.close();
 		if (exchangeService!=null) {
 			exchangeService.close();
 		}
@@ -312,6 +314,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public DirectoryStream<EmailMessage> listFiles(String folder) throws FileSystemException {
 		try {
+			if (!isFsOpen()) {
+				return null;
+			}
 			FolderId folderId = findFolder(basefolderId,folder);
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
