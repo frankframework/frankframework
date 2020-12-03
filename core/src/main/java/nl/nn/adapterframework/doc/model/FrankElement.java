@@ -42,7 +42,7 @@ public class FrankElement {
 	private @Getter FrankElement parent;
 
 	private LinkedHashMap<String, FrankAttribute> attributes;
-	private LinkedHashMap<String, ConfigChild> configChildren;
+	private LinkedHashMap<ConfigChild.ConfigChildKey, ConfigChild> configChildren;
 	private @Getter List<ConfigChild> aliasSources;
 	private String cachedAlias = null;
 	private @Getter FrankElementStatistics statistics;
@@ -123,11 +123,12 @@ public class FrankElement {
 		return getConfigChildren().stream().filter(filter).collect(Collectors.toList());
 	}
 
-	ElementChild findElementChildMatch(ElementChild elementChild) {
+	@SuppressWarnings("unchecked")
+	<K, T extends ElementChild<K, T>> ElementChild<K, T> findElementChildMatch(ElementChild<K, T> elementChild) {
 		if(elementChild instanceof FrankAttribute) {
-			return findAttributeMatch((FrankAttribute) elementChild);
+			return (ElementChild<K, T>) findAttributeMatch((FrankAttribute) elementChild);
 		} else if(elementChild instanceof ConfigChild) {
-			return findConfigChildMatch((ConfigChild) elementChild);
+			return (ElementChild<K, T>) findConfigChildMatch((ConfigChild) elementChild);
 		} else {
 			throw new IllegalArgumentException(String.format(
 					"Expected a FrankAttribute or ConfigChild, but got a [%s]",
@@ -143,38 +144,46 @@ public class FrankElement {
 		return configChildren.get(configChild.getKey());
 	}
 
-	public <T extends ElementChild> FrankElement getNextAncestorThatHasChildren(Predicate<ElementChild> childFilter, Class<T> kind) {
+	public FrankElement getNextAncestorThatHasChildren(Predicate<FrankElement> noChildren) {
 		FrankElement ancestor = parent;
-		while((ancestor != null) && (ancestor.getChildren(childFilter, kind).size() == 0)) {
+		while((ancestor != null) && noChildren.test(ancestor)) {
 			ancestor = ancestor.getParent();
 		}
 		return ancestor;
 	}
 
-	public <T extends ElementChild> List<ElementChild> getChildren(Predicate<ElementChild> selector, Class<T> kind) {
-		List<ElementChild> result = new ArrayList<>();
+	@SuppressWarnings("unchecked")
+	public <K, T extends ElementChild<K, T>> List<ElementChild<K, T>> getChildren(
+			Predicate<ElementChild<?, ?>> selector, Class<T> kind) {
+		List<ElementChild<K, T>> result = new ArrayList<>();
 		if(kind.isAssignableFrom(FrankAttribute.class)) {
-			result.addAll(getAttributes(selector));
+			for(FrankAttribute a: getAttributes(selector)) {
+				result.add((ElementChild<K, T>) a);
+			}
 		}
-		if(kind.isAssignableFrom(ConfigChild.class)) {
-			result.addAll(getConfigChildren(selector));
+		else if(kind.isAssignableFrom(ConfigChild.class)) {
+			for(ConfigChild c: getConfigChildren(selector)) {
+				result.add((ElementChild<K, T>) c);
+			}
+		} else {
+			throw new RuntimeException("Please either ask for ConfigChild or FrankAttribute children");
 		}
 		return result;
 	}
 
 	public void walkCumulativeAttributes(
 			CumulativeChildHandler<FrankAttribute> handler,
-			Predicate<ElementChild> childSelector,
-			Predicate<ElementChild> childRejector) {
+			Predicate<ElementChild<?, ?>> childSelector,
+			Predicate<ElementChild<?, ?>> childRejector) {
 		new AncestorChildNavigation<String, FrankAttribute>(
 				handler, childSelector, childRejector, FrankAttribute.class).run(this);
 	}
 
 	public void walkCumulativeConfigChildren(
 			CumulativeChildHandler<ConfigChild> handler,
-			Predicate<ElementChild> childSelector,
-			Predicate<ElementChild> childRejector) {
-		new AncestorChildNavigation<String, ConfigChild>(
+			Predicate<ElementChild<?, ?>> childSelector,
+			Predicate<ElementChild<?, ?>> childRejector) {
+		new AncestorChildNavigation<ConfigChild.ConfigChildKey, ConfigChild>(
 				handler, childSelector, childRejector, ConfigChild.class).run(this);		
 	}
 

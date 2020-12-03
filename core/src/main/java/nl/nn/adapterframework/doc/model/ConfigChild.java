@@ -16,20 +16,33 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
+public class ConfigChild extends ElementChild<ConfigChild.ConfigChildKey, ConfigChild> implements Comparable<ConfigChild> {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
+
+	@EqualsAndHashCode
+	static final class ConfigChildKey {
+		private final @Getter String syntax1Name;
+		private final @Getter ElementType elementType;
+		private final @Getter boolean mandatory;
+		private final @Getter boolean allowMultiple;
+
+		public ConfigChildKey(ConfigChild configChild) {
+			syntax1Name = configChild.getSyntax1Name();
+			elementType = configChild.getElementType();
+			mandatory = configChild.isMandatory();
+			allowMultiple = configChild.isAllowMultiple();
+		}
+	}
 
 	private @Getter @Setter ElementType elementType;
 	private @Getter int sequenceInConfig;
@@ -42,17 +55,8 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	}
 
 	@Override
-	String getKey() {
-		List<String> keyComponents = new ArrayList<>();
-		keyComponents.add(syntax1Name);
-		keyComponents.add(elementType.getSimpleName());
-		keyComponents.add(Boolean.toString(mandatory));
-		keyComponents.add(Boolean.toString(allowMultiple));
-		// Keys should be quickly comparable, even if they are not used
-		// in a hash map. This is achieved by putting the most meaningful
-		// values at the start of the key.
-		keyComponents.add(elementType.getFullName());
-		return keyComponents.stream().collect(Collectors.joining());
+	ConfigChildKey getKey() {
+		return new ConfigChildKey(this);
 	}
 
 	public void setSequenceInConfigFromIbisDocAnnotation(IbisDoc ibisDoc) {

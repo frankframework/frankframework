@@ -86,10 +86,10 @@ public class NavigationTest {
 	public String simpleClassName;
 
 	@Parameter(1)
-	public Predicate<ElementChild> childSelector;
+	public Predicate<ElementChild<?, ?>> childSelector;
 
 	@Parameter(2)
-	public Predicate<ElementChild> childRejector;
+	public Predicate<ElementChild<?, ?>> childRejector;
 
 	@Parameter(3)
 	public List<Ref> expectedRefs;

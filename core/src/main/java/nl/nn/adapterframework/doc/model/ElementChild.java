@@ -33,9 +33,12 @@ import nl.nn.adapterframework.doc.DocWriterNew;
  * items and declared groups that hold only items at the present level of the
  * inheritance hierarchy. Please see this in action at {@link DocWriterNew}.
  *
+ * @param <K> The type used to store keys, which are used to search for overrides.
+ * @param <T> {@link FrankAttribute} or {@link ConfigChild}
+ * 
  * @author martijn
  */
-public abstract class ElementChild {
+public abstract class ElementChild<K, T extends ElementChild<K, T>> {
 	private @Getter FrankElement owningElement;
 	
 	/**
@@ -56,13 +59,13 @@ public abstract class ElementChild {
 	private @Getter @Setter boolean documented;
 	private @Getter FrankElement overriddenFrom;
 
-	public static Predicate<ElementChild> IN_XSD = c ->
+	public static Predicate<ElementChild<?, ?>> IN_XSD = c ->
 		(! c.isDeprecated())
 		&& (c.isDocumented() || (c.getOverriddenFrom() == null));
 
-	public static Predicate<ElementChild> DEPRECATED = c -> c.isDeprecated();
-	public static Predicate<ElementChild> ALL = c -> true;
-	public static Predicate<ElementChild> NONE = c -> false;
+	public static Predicate<ElementChild<?, ?>> DEPRECATED = c -> c.isDeprecated();
+	public static Predicate<ElementChild<?, ?>> ALL = c -> true;
+	public static Predicate<ElementChild<?, ?>> NONE = c -> false;
 
 	ElementChild(final FrankElement owningElement) {
 		this.owningElement = owningElement;
@@ -72,7 +75,7 @@ public abstract class ElementChild {
 		FrankElement match = getOwningElement();
 		while(match.getParent() != null) {
 			match = match.getParent();
-			ElementChild matchingChild = match.findElementChildMatch(this);
+			ElementChild<K, T> matchingChild = match.findElementChildMatch(this);
 			if(matchingChild != null) {
 				overriddenFrom = match;
 				return;
@@ -87,5 +90,5 @@ public abstract class ElementChild {
 	 * then attribute <code>a</code> is assumed to override attribute <code>b</b>.
 	 * This function has the same purpose for config children.
 	 */
-	abstract String getKey();
+	abstract K getKey();
 }

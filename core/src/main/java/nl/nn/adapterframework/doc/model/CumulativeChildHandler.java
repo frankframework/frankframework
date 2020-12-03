@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @param <T> {@link FrankAttribute} or {@link ConfigChild}.
  */
-public interface CumulativeChildHandler<T extends ElementChild> {
+public interface CumulativeChildHandler<T extends ElementChild<?, T>> {
 	/**
 	 * Explicitly adds children to the cumulative group.
 	 * @param children The children to add

@@ -26,25 +26,24 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-class AncestorChildNavigation<K, T extends ElementChild> {
+class AncestorChildNavigation<K, T extends ElementChild<K, T>> {
 	private final CumulativeChildHandler<T> handler;
-	private final Predicate<ElementChild> childSelector;
-	private final ChildRejector<T> rejector;
+	private final ChildRejector<K, T> rejector;
 	private final Class<T> kind;
 	private FrankElement current;
-	private Map<String, Boolean> items;
-	private Set<String> overridden;
-	
+	private Map<K, Boolean> items;
+	private Set<K> overridden;
+	private Predicate<FrankElement> noChildren;
 
 	AncestorChildNavigation(
 			CumulativeChildHandler<T> handler,
-			Predicate<ElementChild> childSelector,
-			Predicate<ElementChild> childRejector,
+			Predicate<ElementChild<?, ?>> childSelector,
+			Predicate<ElementChild<?, ?>> childRejector,
 			Class<T> kind) {
 		this.handler = handler;
-		this.childSelector = childSelector;
-		this.rejector = new ChildRejector<T>(childSelector, childRejector, kind);
+		this.rejector = new ChildRejector<K, T>(childSelector, childRejector, kind);
 		this.kind = kind;
+		this.noChildren = el -> el.getChildren(childSelector, kind).isEmpty();
 	}
 
 	void run(FrankElement start) {
@@ -52,8 +51,8 @@ class AncestorChildNavigation<K, T extends ElementChild> {
 		enter(start);
 		overridden = new HashSet<>();
 		addDeclaredGroupOrRepeatChildrenInXsd();
-		while(current.getNextAncestorThatHasChildren(childSelector, kind) != null) {
-			enter(current.getNextAncestorThatHasChildren(childSelector, kind));
+		while(current.getNextAncestorThatHasChildren(noChildren) != null) {
+			enter(current.getNextAncestorThatHasChildren(noChildren));
 			if(overridden.isEmpty() && rejector.isNoCumulativeRejected(current)) {
 				safeAddCumulative();
 				return;
@@ -64,15 +63,15 @@ class AncestorChildNavigation<K, T extends ElementChild> {
 
 	private void enter(FrankElement current) {
 		this.current = current;
-		List<ElementChild> children = rejector.getChildrenFor(current);
+		List<ElementChild<K, T>> children = rejector.getChildrenFor(current);
 		items = new HashMap<>();
-		for(ElementChild c: children) {
+		for(ElementChild<K, T> c: children) {
 			items.put(c.getKey(), c.getOverriddenFrom() != null);
 		}
 	}
 
 	private void addDeclaredGroupOrRepeatChildrenInXsd() {
-		Set<String> omit = new HashSet<>(items.keySet());
+		Set<K> omit = new HashSet<>(items.keySet());
 		omit.retainAll(overridden);
 		if(omit.isEmpty() && rejector.isNoDeclaredRejected(current)) {
 			handler.handleChildrenOf(current);
@@ -85,7 +84,7 @@ class AncestorChildNavigation<K, T extends ElementChild> {
 	}
 
 	private void safeAddCumulative() {
-		if(current.getNextAncestorThatHasChildren(childSelector, kind) == null) {
+		if(current.getNextAncestorThatHasChildren(noChildren) == null) {
 			handler.handleChildrenOf(current);
 		} else {
 			handler.handleCumulativeChildrenOf(current);
@@ -93,7 +92,7 @@ class AncestorChildNavigation<K, T extends ElementChild> {
 	}
 
 	private void repeatNonOverriddenItems() {
-		Set<String> retain = new HashSet<>(items.keySet());
+		Set<K> retain = new HashSet<>(items.keySet());
 		retain.removeAll(overridden);
 		if(! retain.isEmpty()) {
 			handler.handleSelectedChildren(selectChildren(retain), current);
@@ -101,7 +100,7 @@ class AncestorChildNavigation<K, T extends ElementChild> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<T> selectChildren(Set<String> keys) {
+	private List<T> selectChildren(Set<K> keys) {
 		return current.getChildren(ALL, kind).stream()
 				.filter(c -> keys.contains(c.getKey()))
 				.map(c -> (T) c)
@@ -109,15 +108,15 @@ class AncestorChildNavigation<K, T extends ElementChild> {
 						
 	}
 
-	private Set<String> getCurrentOverrides() {
+	private Set<K> getCurrentOverrides() {
 		return getWithOverrideStatus(true);
 	}
 
-	private Set<String> getCurrentNonOverrides() {
+	private Set<K> getCurrentNonOverrides() {
 		return getWithOverrideStatus(false);
 	}
 
-	private Set<String> getWithOverrideStatus(final boolean overrideStatus) {
+	private Set<K> getWithOverrideStatus(final boolean overrideStatus) {
 		return items.keySet().stream()
 				.filter(k -> items.get(k).booleanValue() == overrideStatus)
 				.collect(Collectors.toSet());		
