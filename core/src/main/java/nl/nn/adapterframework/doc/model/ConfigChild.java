@@ -26,17 +26,17 @@ import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigChild extends ElementChild<ConfigChild.ConfigChildKey, ConfigChild> implements Comparable<ConfigChild> {
+public class ConfigChild extends ElementChild<ConfigChild.Key, ConfigChild> implements Comparable<ConfigChild> {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
 
 	@EqualsAndHashCode
-	static final class ConfigChildKey {
+	static final class Key {
 		private final @Getter String syntax1Name;
 		private final @Getter ElementType elementType;
 		private final @Getter boolean mandatory;
 		private final @Getter boolean allowMultiple;
 
-		public ConfigChildKey(ConfigChild configChild) {
+		public Key(ConfigChild configChild) {
 			syntax1Name = configChild.getSyntax1Name();
 			elementType = configChild.getElementType();
 			mandatory = configChild.isMandatory();
@@ -55,8 +55,8 @@ public class ConfigChild extends ElementChild<ConfigChild.ConfigChildKey, Config
 	}
 
 	@Override
-	ConfigChildKey getKey() {
-		return new ConfigChildKey(this);
+	Key getKey() {
+		return new Key(this);
 	}
 
 	public void setSequenceInConfigFromIbisDocAnnotation(IbisDoc ibisDoc) {

@@ -42,7 +42,7 @@ public class FrankElement {
 	private @Getter FrankElement parent;
 
 	private LinkedHashMap<String, FrankAttribute> attributes;
-	private LinkedHashMap<ConfigChild.ConfigChildKey, ConfigChild> configChildren;
+	private LinkedHashMap<ConfigChild.Key, ConfigChild> configChildren;
 	private @Getter List<ConfigChild> aliasSources;
 	private String cachedAlias = null;
 	private @Getter FrankElementStatistics statistics;
@@ -183,7 +183,7 @@ public class FrankElement {
 			CumulativeChildHandler<ConfigChild> handler,
 			Predicate<ElementChild<?, ?>> childSelector,
 			Predicate<ElementChild<?, ?>> childRejector) {
-		new AncestorChildNavigation<ConfigChild.ConfigChildKey, ConfigChild>(
+		new AncestorChildNavigation<ConfigChild.Key, ConfigChild>(
 				handler, childSelector, childRejector, ConfigChild.class).run(this);		
 	}
 
