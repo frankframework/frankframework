@@ -94,6 +94,7 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 
 	@Override
 	public void close() {
+		// nothing special in this case
 	}
 
 }
