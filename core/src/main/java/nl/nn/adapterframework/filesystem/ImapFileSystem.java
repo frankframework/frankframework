@@ -41,6 +41,7 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.Transport;
 import javax.mail.UIDFolder;
+import javax.mail.URLName;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -75,7 +76,9 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		// TODO Auto-generated method stub
+		if (StringUtils.isEmpty(getHost())) {
+			throw new ConfigurationException("attribute host needs to be specified");
+		}
 	}
 
 	@Override
@@ -90,6 +93,17 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 			findBaseFolder();
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public void close() throws FileSystemException {
+		if (store != null) {
+			try {
+				store.close();
+			} catch (MessagingException e) {
+				throw new FileSystemException(e);
+			}
 		}
 	}
 
@@ -122,17 +136,6 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 			folder = (IMAPFolder)folder.getFolder(name);
 		}
 		return folder;
-	}
-
-	@Override
-	public void close() throws FileSystemException {
-		if (store != null) {
-			try {
-				store.close();
-			} catch (MessagingException e) {
-				throw new FileSystemException(e);
-			}
-		}
 	}
 
 	private String uidToName(long uid) {
@@ -516,7 +519,9 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return Misc.concatStrings(store.getURLName().toString()," ", super.getPhysicalDestinationName());
+		URLName urlName = store == null ? null : store.getURLName();
+		String name = urlName == null ? "<no url>" : urlName.toString();
+		return Misc.concatStrings(name," ", super.getPhysicalDestinationName());
 	}
 
 	@Override

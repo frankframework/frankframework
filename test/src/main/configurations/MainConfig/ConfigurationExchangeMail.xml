@@ -1,6 +1,6 @@
 <module>
-	<adapter name="ExchangeMail" active="${exchangemail.active}">
-		<receiver>
+	<adapter name="ExchangeMail" >
+		<receiver name="ExchangeMail" active="${exchangemail.active}">
 			<listener
 				className="nl.nn.adapterframework.receivers.ExchangeMailListener"
 				url="${exchangemail.url}"
@@ -14,7 +14,24 @@
 				processedFolder="${exchangemail.processedFolder}"
 				errorFolder="${exchangemail.errorFolder}"
 				createFolders="true"
-				disableFolderBrowsers="true"
+				disableFolderBrowsers="${exchangemail.disableFolderBrowsers}"
+			/>
+		</receiver>
+		<receiver name="ImapMail" active="${imapmail.active}">
+			<listener
+				className="nl.nn.adapterframework.receivers.ImapListener"
+				host="${imapmail.host}"
+				port="${imapmail.port}"
+				authAlias="${imapmail.authAlias}"
+				username="${imapmail.username}"
+				password="${imapmail.password}"
+				baseFolder="${imapmail.baseFolder}"
+				inputFolder="${imapmail.inputFolder}"
+				inProcessFolder="${imapmail.inProcessFolder}"
+				processedFolder="${imapmail.processedFolder}"
+				errorFolder="${imapmail.errorFolder}"
+				createFolders="true"
+				disableFolderBrowsers="${imapmail.disableFolderBrowsers}"
 			/>
 		</receiver>
 		<pipeline>
