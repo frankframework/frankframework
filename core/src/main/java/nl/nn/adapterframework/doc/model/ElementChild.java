@@ -18,9 +18,12 @@ package nl.nn.adapterframework.doc.model;
 
 import java.util.function.Predicate;
 
+import org.apache.logging.log4j.Logger;
+
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.DocWriterNew;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Base class of FrankAttribute and ConfigChild. This class was introduced
@@ -36,6 +39,8 @@ import nl.nn.adapterframework.doc.DocWriterNew;
  * @author martijn
  */
 public abstract class ElementChild implements Comparable<ElementChild> {
+	private static Logger log = LogUtil.getLogger(ElementChild.class);
+
 	private @Getter FrankElement owningElement;
 	
 	/**
@@ -81,10 +86,19 @@ public abstract class ElementChild implements Comparable<ElementChild> {
 			match = match.getParent();
 			ElementChild matchingChild = match.findElementChildMatch(this, this.getClass());
 			if(matchingChild != null) {
+				if(matchingChild.isDeprecated()) {
+					log.warn(String.format("Element child overrides deprecated ElementChild: descendant [%s], super [%s]",
+							toString(), matchingChild.toString()));
+				}
 				overriddenFrom = match;
 				return;
 			}
 		}
+	}
+
+	@Override
+	public String toString() {
+		return owningElement.getFullName() + " " + getKey().toString();
 	}
 
 	/**
