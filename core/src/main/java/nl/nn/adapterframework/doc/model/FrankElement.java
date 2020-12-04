@@ -19,8 +19,10 @@ package nl.nn.adapterframework.doc.model;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import lombok.Getter;
 import nl.nn.adapterframework.doc.DocWriterNew;
 import nl.nn.adapterframework.doc.Utils;
+import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankElement {
@@ -41,8 +44,7 @@ public class FrankElement {
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;
 
-	private LinkedHashMap<FrankAttribute.Key, FrankAttribute> attributes;
-	private LinkedHashMap<ConfigChild.Key, ConfigChild> configChildren;
+	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
 	private @Getter List<ConfigChild> aliasSources;
 	private String cachedAlias = null;
 	private @Getter FrankElementStatistics statistics;
@@ -61,6 +63,9 @@ public class FrankElement {
 		this.simpleName = simpleName;
 		this.isAbstract = isAbstract;
 		this.aliasSources = new ArrayList<>();
+		this.allChildren = new HashMap<>();
+		this.allChildren.put(FrankAttribute.class, new LinkedHashMap<>());
+		this.allChildren.put(ConfigChild.class, new LinkedHashMap<>());
 	}
 
 	public FrankElement(final String fullName, final String simpleName) {
@@ -73,69 +78,48 @@ public class FrankElement {
 	}
 
 	public void setAttributes(List<FrankAttribute> inputAttributes) {
-		Collections.sort(inputAttributes);
-		attributes = new LinkedHashMap<>();
-		for(FrankAttribute a: inputAttributes) {
-			if(attributes.containsKey(a.getKey())) {
-				log.warn(String.format("Frank element [%s] has multiple attributes with name [%s]",
-						fullName, a.getKey()));
+		setChildrenOfKind(inputAttributes, FrankAttribute.class);
+	}
+
+	public <C extends ElementChild> void setChildrenOfKind(List<C> inputChildren, Class<C> kind) {
+		Collections.sort(inputChildren);
+		LinkedHashMap<AbstractKey, C> children = new LinkedHashMap<>();
+		for(C c: inputChildren) {
+			if(children.containsKey(c.getKey())) {
+				log.warn(String.format("Frank element [%s] has multiple attributes / config children with key [%s]",
+						fullName, c.getKey().toString()));
 			} else {
-				attributes.put(a.getKey(), a);
+				children.put(c.getKey(), c);
 			}
 		}
+		allChildren.put(kind, children);
 	}
 
 	public List<FrankAttribute> getAttributes() {
-		return new ArrayList<>(attributes.values());
+		return allChildren.get(FrankAttribute.class).values().stream()
+				.map(c -> (FrankAttribute) c).collect(Collectors.toList());
 	}
 
 	public List<FrankAttribute> getAttributes(Predicate<? super FrankAttribute> filter) {
 		return getAttributes().stream().filter(filter).collect(Collectors.toList());
 	}
 
-	/**
-	 * Setter for config children. We prevent modifying the list of config children
-	 * because we want to maintain the private field configChildLookup.
-	 * @param children
-	 */
 	public void setConfigChildren(List<ConfigChild> children) {
-		Collections.sort(children);
-		configChildren = new LinkedHashMap<>();
-		for(ConfigChild c: children) {
-			if(configChildren.containsKey(c.getKey())) {
-				log.warn(String.format("Different config children of Frank element [%s] have the same key", fullName));
-			} else {
-				configChildren.put(c.getKey(), c);
-			}
-		}
+		setChildrenOfKind(children, ConfigChild.class);
 	}
 
 	public List<ConfigChild> getConfigChildren() {
-		return new ArrayList<>(configChildren.values());
+		return allChildren.get(ConfigChild.class).values().stream()
+			.map(c -> (ConfigChild) c).collect(Collectors.toList());
 	}
 
 	public List<ConfigChild> getConfigChildren(Predicate<? super ConfigChild> filter) {
 		return getConfigChildren().stream().filter(filter).collect(Collectors.toList());
 	}
 
-	ElementChild findElementChildMatch(ElementChild elementChild) {
-		if(elementChild instanceof FrankAttribute) {
-			return findAttributeMatch((FrankAttribute) elementChild);
-		} else if(elementChild instanceof ConfigChild) {
-			return findConfigChildMatch((ConfigChild) elementChild);
-		} else {
-			throw new IllegalArgumentException(String.format(
-					"Expected a FrankAttribute or ConfigChild, but got a [%s]",
-					elementChild.getClass().getName()));
-		}
-	}
-
-	FrankAttribute findAttributeMatch(FrankAttribute attribute) {
-		return attributes.get(attribute.getKey());
-	}
-
-	ConfigChild findConfigChildMatch(ConfigChild configChild) {
-		return configChildren.get(configChild.getKey());
+	ElementChild findElementChildMatch(ElementChild elementChild, Class<? extends ElementChild> kind) {
+		Map<? extends AbstractKey, ? extends ElementChild> lookup = allChildren.get(kind);
+		return lookup.get(elementChild.getKey());
 	}
 
 	public FrankElement getNextAncestorThatHasChildren(Predicate<FrankElement> noChildren) {
@@ -146,22 +130,11 @@ public class FrankElement {
 		return ancestor;
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T extends ElementChild> List<ElementChild> getChildren(
 			Predicate<ElementChild> selector, Class<T> kind) {
-		List<ElementChild> result = new ArrayList<>();
-		if(kind.isAssignableFrom(FrankAttribute.class)) {
-			for(FrankAttribute a: getAttributes(selector)) {
-				result.add(a);
-			}
-		}
-		else if(kind.isAssignableFrom(ConfigChild.class)) {
-			for(ConfigChild c: getConfigChildren(selector)) {
-				result.add(c);
-			}
-		} else {
-			throw new RuntimeException("Please either ask for ConfigChild or FrankAttribute children");
-		}
-		return result;
+		Map<? extends AbstractKey, ? extends ElementChild> lookup = allChildren.get(kind);
+		return lookup.values().stream().filter(selector).map(c -> (T) c).collect(Collectors.toList());
 	}
 
 	public void walkCumulativeAttributes(

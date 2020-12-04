@@ -35,7 +35,7 @@ import nl.nn.adapterframework.doc.DocWriterNew;
  *
  * @author martijn
  */
-public abstract class ElementChild {
+public abstract class ElementChild implements Comparable<ElementChild> {
 	private @Getter FrankElement owningElement;
 	
 	/**
@@ -79,7 +79,7 @@ public abstract class ElementChild {
 		FrankElement match = getOwningElement();
 		while(match.getParent() != null) {
 			match = match.getParent();
-			ElementChild matchingChild = match.findElementChildMatch(this);
+			ElementChild matchingChild = match.findElementChildMatch(this, this.getClass());
 			if(matchingChild != null) {
 				overriddenFrom = match;
 				return;

@@ -16,7 +16,10 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +29,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
+public class ConfigChild extends ElementChild {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
 
 	@EqualsAndHashCode(callSuper = false)
@@ -41,6 +44,16 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 			elementType = configChild.getElementType();
 			mandatory = configChild.isMandatory();
 			allowMultiple = configChild.isAllowMultiple();
+		}
+
+		@Override
+		public String toString() {
+			List<String> components = new ArrayList<>();
+			components.add(syntax1Name);
+			components.add(elementType.getSimpleName());
+			components.add("mandatory " + Boolean.toString(mandatory));
+			components.add("multiple " + Boolean.toString(allowMultiple));
+			return components.stream().collect(Collectors.joining(", "));
 		}
 	}
 
@@ -96,7 +109,7 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	}
 
 	@Override
-	public int compareTo(ConfigChild other) {
+	public int compareTo(ElementChild other) {
 		return CONFIG_CHILD_COMPARATOR.compare(this, (ConfigChild) other);
 	}
 
