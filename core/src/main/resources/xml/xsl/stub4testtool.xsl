@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
 	<!-- Parameter disableValidators has been used to test the impact of validators on memory usage -->
 	<xsl:param name="disableValidators"/>
@@ -25,6 +25,7 @@
 	<xsl:template match="/">
 		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
 	</xsl:template>
+	
 	<xsl:template match="*|@*|comment()|processing-instruction()">
 		<xsl:call-template name="copy" />
 	</xsl:template>
@@ -47,12 +48,15 @@
 										or @className='nl.nn.adapterframework.http.rest.ApiListener']]">
 		<xsl:call-template name="copy" />
 		<xsl:call-template name="stubReceiver">
-			<xsl:with-param name="receiverName" select="string-join((parent::adapter/@name,position()),'-')"/>
+			<xsl:with-param name="receiverName" select="string-join((parent::adapter/@name,xs:string(count(preceding-sibling::receiver)+1)),'-')"/>
 		</xsl:call-template>
 	</xsl:template>
+	
 	<xsl:template match="receiver">
 		<xsl:call-template name="disable" />
-		<xsl:call-template name="stubReceiver" />
+		<xsl:call-template name="stubReceiver">
+			<xsl:with-param name="receiverName" select="string-join((parent::adapter/@name,xs:string(count(preceding-sibling::receiver)+1)),'-')"/>
+		</xsl:call-template>
 	</xsl:template>	
 	
 	<xsl:template name="stubReceiver">
@@ -98,10 +102,11 @@
 								or @className='nl.nn.adapterframework.senders.LocalFileSystemSender']">
 		<xsl:call-template name="copy" />
 	</xsl:template>
+	
 	<xsl:template match="sender">
 		<xsl:call-template name="disable" />
 		
-		<xsl:variable name="pipeName" select="parent::*[name()='pipe']/@name" />
+		<xsl:variable name="pipeName" select="ancestor::pipe/@name" />
 		<xsl:element name="sender">
 			<xsl:if test="string-length(@name)&gt;0">
 				<xsl:attribute name="name">
@@ -110,7 +115,25 @@
 			</xsl:if>
 			<xsl:attribute name="className">nl.nn.adapterframework.senders.IbisJavaSender</xsl:attribute>
 			<xsl:attribute name="serviceName">
-				<xsl:value-of select="concat('testtool-',$pipeName)" />
+				<xsl:choose>
+					<xsl:when test="parent::pipe">
+						<xsl:value-of select="concat('testtool-',$pipeName)" />
+					</xsl:when>
+					<xsl:when test="@name">
+						<xsl:value-of select="concat('testtool-',@name)" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:variable name="senderNames">
+							<xsl:element name="senderNames">
+								<xsl:call-template name="determineStubSenderNames">
+									<xsl:with-param name="node" select="."/>
+								</xsl:call-template>
+							</xsl:element>
+						</xsl:variable>
+					<!--TBD-->
+						<xsl:value-of select="string-join(('testtool',$senderNames/senderNames/stubName),'-')" />
+					</xsl:otherwise>
+				</xsl:choose>
 			</xsl:attribute>
 			<xsl:if test="string-length(@multipartResponse)&gt;0">
 				<xsl:attribute name="multipartResponse">
@@ -119,10 +142,30 @@
 			</xsl:if>
 		</xsl:element>
 	</xsl:template>
+
+	<xsl:template name="determineStubSenderNames">
+		<xsl:param name="node" as="node()"/>
+		<xsl:choose>
+			<xsl:when test="@name">
+				<xsl:element name="stubName">
+					<xsl:value-of select="@name"/>
+				</xsl:element>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:element name="stubName">
+					<xsl:value-of select="string-join((tokenize($node/@className,'\.')[last()],xs:string($node/position())),'-')"/>
+				</xsl:element>
+				<xsl:call-template name="determineStubSenderNames">
+					<xsl:with-param name="node" select="$node/parent::*"/>
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>	
 	
 	<xsl:template match="pipe/listener">
 		<xsl:call-template name="disable" />
 	</xsl:template>
+	
 	<xsl:template match="listener">
 		<xsl:call-template name="copy" />
 	</xsl:template>
