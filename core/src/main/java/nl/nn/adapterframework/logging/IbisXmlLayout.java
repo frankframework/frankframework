@@ -58,7 +58,7 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 	@Override
 	protected String serializeEvent(LogEvent event) {
 		XmlBuilder eventBuilder = XmlBuilder.create("event");
-		eventBuilder.addAttribute("logger", event.getLoggerFqcn());
+		eventBuilder.addAttribute("logger", event.getLoggerName());
 		eventBuilder.addAttribute("timestamp", ""+event.getTimeMillis());
 		eventBuilder.addAttribute("level", event.getLevel().name());
 		eventBuilder.addAttribute("thread", event.getThreadName());
