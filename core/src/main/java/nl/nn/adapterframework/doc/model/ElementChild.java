@@ -34,11 +34,10 @@ import nl.nn.adapterframework.doc.DocWriterNew;
  * inheritance hierarchy. Please see this in action at {@link DocWriterNew}.
  *
  * @param <K> The type used to store keys, which are used to search for overrides.
- * @param <T> {@link FrankAttribute} or {@link ConfigChild}
  * 
  * @author martijn
  */
-public abstract class ElementChild<K, T extends ElementChild<K, T>> {
+public abstract class ElementChild<K> {
 	private @Getter FrankElement owningElement;
 	
 	/**
@@ -59,13 +58,13 @@ public abstract class ElementChild<K, T extends ElementChild<K, T>> {
 	private @Getter @Setter boolean documented;
 	private @Getter FrankElement overriddenFrom;
 
-	public static Predicate<ElementChild<?, ?>> IN_XSD = c ->
+	public static Predicate<ElementChild<?>> IN_XSD = c ->
 		(! c.isDeprecated())
 		&& (c.isDocumented() || (c.getOverriddenFrom() == null));
 
-	public static Predicate<ElementChild<?, ?>> DEPRECATED = c -> c.isDeprecated();
-	public static Predicate<ElementChild<?, ?>> ALL = c -> true;
-	public static Predicate<ElementChild<?, ?>> NONE = c -> false;
+	public static Predicate<ElementChild<?>> DEPRECATED = c -> c.isDeprecated();
+	public static Predicate<ElementChild<?>> ALL = c -> true;
+	public static Predicate<ElementChild<?>> NONE = c -> false;
 
 	ElementChild(final FrankElement owningElement) {
 		this.owningElement = owningElement;
@@ -75,7 +74,7 @@ public abstract class ElementChild<K, T extends ElementChild<K, T>> {
 		FrankElement match = getOwningElement();
 		while(match.getParent() != null) {
 			match = match.getParent();
-			ElementChild<K, T> matchingChild = match.findElementChildMatch(this);
+			ElementChild<K> matchingChild = match.findElementChildMatch(this);
 			if(matchingChild != null) {
 				overriddenFrom = match;
 				return;

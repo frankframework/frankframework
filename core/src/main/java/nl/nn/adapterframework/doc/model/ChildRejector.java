@@ -10,16 +10,16 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-class ChildRejector<K, T extends ElementChild<K, T>> {
-	private final Predicate<ElementChild<?, ?>> selector;
-	private final Predicate<ElementChild<?, ?>> rejector;
+class ChildRejector<K, T extends ElementChild<K>> {
+	private final Predicate<ElementChild<?>> selector;
+	private final Predicate<ElementChild<?>> rejector;
 	private final Class<T> kind;
 
 	private Predicate<FrankElement> noChildren;
 
 	private Map<String, Level> levels = new HashMap<>();
 
-	ChildRejector(Predicate<ElementChild<?, ?>> selector, Predicate<ElementChild<?, ?>> rejector, Class<T> kind) {
+	ChildRejector(Predicate<ElementChild<?>> selector, Predicate<ElementChild<?>> rejector, Class<T> kind) {
 		this.selector = selector;
 		this.rejector = rejector;
 		this.kind = kind;
@@ -76,11 +76,11 @@ class ChildRejector<K, T extends ElementChild<K, T>> {
 		addLevelsFor(subject, new HashSet<>());
 	}
 
-	List<ElementChild<K, T>> getChildrenFor(FrankElement levelOwner) {
+	List<ElementChild<K>> getChildrenFor(FrankElement levelOwner) {
 		return childrenFor(levelOwner, getChildKeysFor(levelOwner));
 	}
 
-	private List<ElementChild<K, T>> childrenFor(FrankElement levelOwner, Set<K> childKeys) {
+	private List<ElementChild<K>> childrenFor(FrankElement levelOwner, Set<K> childKeys) {
 		return levelOwner.getChildren(ALL, kind).stream()
 				.filter(c -> childKeys.contains(c.getKey()))
 				.collect(Collectors.toList());

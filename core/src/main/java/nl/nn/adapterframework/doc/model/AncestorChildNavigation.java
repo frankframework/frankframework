@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-class AncestorChildNavigation<K, T extends ElementChild<K, T>> {
+class AncestorChildNavigation<K, T extends ElementChild<K>> {
 	private final CumulativeChildHandler<T> handler;
 	private final ChildRejector<K, T> rejector;
 	private final Class<T> kind;
@@ -37,8 +37,8 @@ class AncestorChildNavigation<K, T extends ElementChild<K, T>> {
 
 	AncestorChildNavigation(
 			CumulativeChildHandler<T> handler,
-			Predicate<ElementChild<?, ?>> childSelector,
-			Predicate<ElementChild<?, ?>> childRejector,
+			Predicate<ElementChild<?>> childSelector,
+			Predicate<ElementChild<?>> childRejector,
 			Class<T> kind) {
 		this.handler = handler;
 		this.rejector = new ChildRejector<K, T>(childSelector, childRejector, kind);
@@ -63,9 +63,9 @@ class AncestorChildNavigation<K, T extends ElementChild<K, T>> {
 
 	private void enter(FrankElement current) {
 		this.current = current;
-		List<ElementChild<K, T>> children = rejector.getChildrenFor(current);
+		List<ElementChild<K>> children = rejector.getChildrenFor(current);
 		items = new HashMap<>();
-		for(ElementChild<K, T> c: children) {
+		for(ElementChild<K> c: children) {
 			items.put(c.getKey(), c.getOverriddenFrom() != null);
 		}
 	}

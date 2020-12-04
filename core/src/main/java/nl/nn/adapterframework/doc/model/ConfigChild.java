@@ -26,7 +26,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigChild extends ElementChild<ConfigChild.Key, ConfigChild> implements Comparable<ConfigChild> {
+public class ConfigChild extends ElementChild<ConfigChild.Key> implements Comparable<ConfigChild> {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
 
 	@EqualsAndHashCode

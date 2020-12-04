@@ -30,8 +30,8 @@ import nl.nn.adapterframework.doc.model.FrankElement;
  * @author martijn
  *
  */
-class GroupCreator<T extends ElementChild<?, T>> {
-	static interface Callback<T extends ElementChild<?, T>> extends CumulativeChildHandler<T> {
+class GroupCreator<T extends ElementChild<?>> {
+	static interface Callback<T extends ElementChild<?>> extends CumulativeChildHandler<T> {
 		List<T> getChildrenOf(FrankElement elem);
 		FrankElement getAncestorOf(FrankElement elem);
 		void addDeclaredGroup();

@@ -119,11 +119,11 @@ public class FrankElement {
 	}
 
 	@SuppressWarnings("unchecked")
-	<K, T extends ElementChild<K, T>> ElementChild<K, T> findElementChildMatch(ElementChild<K, T> elementChild) {
+	<K> ElementChild<K> findElementChildMatch(ElementChild<K> elementChild) {
 		if(elementChild instanceof FrankAttribute) {
-			return (ElementChild<K, T>) findAttributeMatch((FrankAttribute) elementChild);
+			return (ElementChild<K>) findAttributeMatch((FrankAttribute) elementChild);
 		} else if(elementChild instanceof ConfigChild) {
-			return (ElementChild<K, T>) findConfigChildMatch((ConfigChild) elementChild);
+			return (ElementChild<K>) findConfigChildMatch((ConfigChild) elementChild);
 		} else {
 			throw new IllegalArgumentException(String.format(
 					"Expected a FrankAttribute or ConfigChild, but got a [%s]",
@@ -148,17 +148,17 @@ public class FrankElement {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <K, T extends ElementChild<K, T>> List<ElementChild<K, T>> getChildren(
-			Predicate<ElementChild<?, ?>> selector, Class<T> kind) {
-		List<ElementChild<K, T>> result = new ArrayList<>();
+	public <K, T extends ElementChild<K>> List<ElementChild<K>> getChildren(
+			Predicate<ElementChild<?>> selector, Class<T> kind) {
+		List<ElementChild<K>> result = new ArrayList<>();
 		if(kind.isAssignableFrom(FrankAttribute.class)) {
 			for(FrankAttribute a: getAttributes(selector)) {
-				result.add((ElementChild<K, T>) a);
+				result.add((ElementChild<K>) a);
 			}
 		}
 		else if(kind.isAssignableFrom(ConfigChild.class)) {
 			for(ConfigChild c: getConfigChildren(selector)) {
-				result.add((ElementChild<K, T>) c);
+				result.add((ElementChild<K>) c);
 			}
 		} else {
 			throw new RuntimeException("Please either ask for ConfigChild or FrankAttribute children");
@@ -168,16 +168,16 @@ public class FrankElement {
 
 	public void walkCumulativeAttributes(
 			CumulativeChildHandler<FrankAttribute> handler,
-			Predicate<ElementChild<?, ?>> childSelector,
-			Predicate<ElementChild<?, ?>> childRejector) {
+			Predicate<ElementChild<?>> childSelector,
+			Predicate<ElementChild<?>> childRejector) {
 		new AncestorChildNavigation<String, FrankAttribute>(
 				handler, childSelector, childRejector, FrankAttribute.class).run(this);
 	}
 
 	public void walkCumulativeConfigChildren(
 			CumulativeChildHandler<ConfigChild> handler,
-			Predicate<ElementChild<?, ?>> childSelector,
-			Predicate<ElementChild<?, ?>> childRejector) {
+			Predicate<ElementChild<?>> childSelector,
+			Predicate<ElementChild<?>> childRejector) {
 		new AncestorChildNavigation<ConfigChild.Key, ConfigChild>(
 				handler, childSelector, childRejector, ConfigChild.class).run(this);		
 	}
