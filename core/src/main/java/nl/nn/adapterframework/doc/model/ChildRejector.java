@@ -25,7 +25,7 @@ class ChildRejector<T extends ElementChild> {
 		this.selector = selector;
 		this.rejector = rejector;
 		this.kind = kind;
-		this.noChildren = el -> el.getChildren(selector, kind).isEmpty();
+		this.noChildren = el -> el.getChildrenOfKind(selector, kind).isEmpty();
 	}
 
 	private Level addLevelsFor(FrankElement owner, Set<AbstractKey> rejectCandidates) {
@@ -42,7 +42,7 @@ class ChildRejector<T extends ElementChild> {
 		Level(FrankElement levelOwner, Set<AbstractKey> downstreamRejectCandidates) {
 			calculateRejectCandidates(levelOwner, downstreamRejectCandidates);
 			Level parentLevel = addParentLevelsFor(levelOwner);
-			isRejectsDeclared = levelOwner.getChildren(selector, kind).stream()
+			isRejectsDeclared = levelOwner.getChildrenOfKind(selector, kind).stream()
 					.map(ElementChild::getKey)
 					.filter(rejectCandidates::contains)
 					.collect(Collectors.counting()) >= 1;
@@ -54,7 +54,7 @@ class ChildRejector<T extends ElementChild> {
 		}
 
 		private void calculateRejectCandidates(FrankElement levelOwner, Set<AbstractKey> downstreamRejectCandidates) {
-			rejectCandidates = levelOwner.getChildren(rejector, kind).stream()
+			rejectCandidates = levelOwner.getChildrenOfKind(rejector, kind).stream()
 					.map(ElementChild::getKey)
 					.collect(Collectors.toSet());
 			rejectCandidates.addAll(downstreamRejectCandidates);
@@ -83,13 +83,13 @@ class ChildRejector<T extends ElementChild> {
 	}
 
 	private List<ElementChild> childrenFor(FrankElement levelOwner, Set<AbstractKey> childKeys) {
-		return levelOwner.getChildren(ALL, kind).stream()
+		return levelOwner.getChildrenOfKind(ALL, kind).stream()
 				.filter(c -> childKeys.contains(c.getKey()))
 				.collect(Collectors.toList());
 	}
 
 	private Set<AbstractKey> getChildKeysFor(FrankElement levelOwner) {
-		return levelOwner.getChildren(selector, kind).stream()
+		return levelOwner.getChildrenOfKind(selector, kind).stream()
 				.map(ElementChild::getKey)
 				.filter(k -> levels.get(levelOwner.getFullName()).acceptsChildKey(k))
 				.collect(Collectors.toSet());

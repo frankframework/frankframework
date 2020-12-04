@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.doc.model;
 
+import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
 import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -34,8 +35,8 @@ public class FrankDocModelConfigChildrenTest {
 		instance.findOrCreateElementType(
 				Utils.getClass(CONTAINER_DERIVED));
 		instance.setOverriddenFrom();
-		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren();
-		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren();
+		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren(ALL);
+		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren(ALL);
 	}
 
 	@Test

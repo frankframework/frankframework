@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.doc.model;
 
+import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
 import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -120,7 +121,7 @@ public class FrankDocModelTest {
 		assertFalse(actualParent.isAbstract());
 		// We check here that protected method getChildAttribute does not produce
 		// an attribute
-		assertEquals(2, actualParent.getAttributes().size());
+		assertEquals(2, actualParent.getAttributes(ALL).size());
 		FrankAttribute actualParentAttribute = findAttribute(actualParent, "parentAttribute");
 		assertEquals("parentAttribute", actualParentAttribute.getName());
 		assertSame(actualParent, actualParentAttribute.getDescribingElement());
@@ -132,7 +133,7 @@ public class FrankDocModelTest {
 		assertSame(actualParent, actualChild.getParent());
 		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
 		assertEquals("ListenerChild", actualChild.getSimpleName());
-		assertEquals(2, actualChild.getAttributes().size());
+		assertEquals(2, actualChild.getAttributes(ALL).size());
 		FrankAttribute actualChildAttribute = findAttribute(actualChild, "childAttribute");
 		assertEquals("childAttribute", actualChildAttribute.getName());
 		assertSame(actualChild, actualChildAttribute.getOwningElement());
@@ -143,8 +144,8 @@ public class FrankDocModelTest {
 		assertSame(actualParent, actualInheritedAttribute.getOverriddenFrom());
 		FrankElement actualGrandChild = actualAllElements.get(SIMPLE_GRNAD_CHILD);
 		assertEquals(SIMPLE_GRNAD_CHILD, actualGrandChild.getFullName());
-		assertEquals(1, actualGrandChild.getAttributes().size());
-		actualInheritedAttribute = actualGrandChild.getAttributes().get(0);
+		assertEquals(1, actualGrandChild.getAttributes(ALL).size());
+		actualInheritedAttribute = actualGrandChild.getAttributes(ALL).get(0);
 		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
 		assertSame(actualChild, actualInheritedAttribute.getOverriddenFrom());
 		// actualParent and actualChild are not config children of a non-interface
@@ -154,7 +155,7 @@ public class FrankDocModelTest {
 	}
 
 	private FrankAttribute findAttribute(final FrankElement elem, String name) {
-		for(FrankAttribute attribute: elem.getAttributes()) {
+		for(FrankAttribute attribute: elem.getAttributes(ALL)) {
 			if(attribute.getName().contentEquals(name)) {
 				return attribute;
 			}

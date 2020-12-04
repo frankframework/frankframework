@@ -16,6 +16,8 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -429,8 +431,8 @@ public class FrankDocModel {
 			while((current.getParent() != null) && (remainingElements.contains(current.getParent().getFullName()))) {
 				current = current.getParent();
 			}
-			current.getConfigChildren().forEach(c -> c.calculateOverriddenFrom());
-			current.getAttributes().forEach(c -> c.calculateOverriddenFrom());
+			current.getConfigChildren(ALL).forEach(c -> c.calculateOverriddenFrom());
+			current.getAttributes(ALL).forEach(c -> c.calculateOverriddenFrom());
 			current.getStatistics().finish();
 			remainingElements.remove(current.getFullName());
 		}

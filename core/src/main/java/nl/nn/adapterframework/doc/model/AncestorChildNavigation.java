@@ -45,7 +45,7 @@ class AncestorChildNavigation<T extends ElementChild> {
 		this.handler = handler;
 		this.rejector = new ChildRejector<T>(childSelector, childRejector, kind);
 		this.kind = kind;
-		this.noChildren = el -> el.getChildren(childSelector, kind).isEmpty();
+		this.noChildren = el -> el.getChildrenOfKind(childSelector, kind).isEmpty();
 	}
 
 	void run(FrankElement start) {
@@ -101,9 +101,8 @@ class AncestorChildNavigation<T extends ElementChild> {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private List<T> selectChildren(Set<AbstractKey> keys) {
-		return current.getChildren(ALL, kind).stream()
+		return current.getChildrenOfKind(ALL, kind).stream()
 				.filter(c -> keys.contains(c.getKey()))
 				.map(c -> (T) c)
 				.collect(Collectors.toList());

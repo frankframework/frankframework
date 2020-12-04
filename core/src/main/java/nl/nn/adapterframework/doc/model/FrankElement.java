@@ -81,7 +81,7 @@ public class FrankElement {
 		setChildrenOfKind(inputAttributes, FrankAttribute.class);
 	}
 
-	public <C extends ElementChild> void setChildrenOfKind(List<C> inputChildren, Class<C> kind) {
+	private <C extends ElementChild> void setChildrenOfKind(List<C> inputChildren, Class<C> kind) {
 		Collections.sort(inputChildren);
 		LinkedHashMap<AbstractKey, C> children = new LinkedHashMap<>();
 		for(C c: inputChildren) {
@@ -95,26 +95,23 @@ public class FrankElement {
 		allChildren.put(kind, children);
 	}
 
-	public List<FrankAttribute> getAttributes() {
-		return allChildren.get(FrankAttribute.class).values().stream()
-				.map(c -> (FrankAttribute) c).collect(Collectors.toList());
+	public List<FrankAttribute> getAttributes(Predicate<ElementChild> filter) {
+		return getChildrenOfKind(filter, FrankAttribute.class);
 	}
 
-	public List<FrankAttribute> getAttributes(Predicate<? super FrankAttribute> filter) {
-		return getAttributes().stream().filter(filter).collect(Collectors.toList());
+	@SuppressWarnings("unchecked")
+	public <T extends ElementChild> List<T> getChildrenOfKind(
+			Predicate<ElementChild> selector, Class<T> kind) {
+		Map<? extends AbstractKey, ? extends ElementChild> lookup = allChildren.get(kind);
+		return lookup.values().stream().filter(selector).map(c -> (T) c).collect(Collectors.toList());
 	}
 
 	public void setConfigChildren(List<ConfigChild> children) {
 		setChildrenOfKind(children, ConfigChild.class);
 	}
 
-	public List<ConfigChild> getConfigChildren() {
-		return allChildren.get(ConfigChild.class).values().stream()
-			.map(c -> (ConfigChild) c).collect(Collectors.toList());
-	}
-
-	public List<ConfigChild> getConfigChildren(Predicate<? super ConfigChild> filter) {
-		return getConfigChildren().stream().filter(filter).collect(Collectors.toList());
+	public List<ConfigChild> getConfigChildren(Predicate<ElementChild> filter) {
+		return getChildrenOfKind(filter, ConfigChild.class);
 	}
 
 	ElementChild findElementChildMatch(ElementChild elementChild, Class<? extends ElementChild> kind) {
@@ -128,13 +125,6 @@ public class FrankElement {
 			ancestor = ancestor.getParent();
 		}
 		return ancestor;
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T extends ElementChild> List<ElementChild> getChildren(
-			Predicate<ElementChild> selector, Class<T> kind) {
-		Map<? extends AbstractKey, ? extends ElementChild> lookup = allChildren.get(kind);
-		return lookup.values().stream().filter(selector).map(c -> (T) c).collect(Collectors.toList());
 	}
 
 	public void walkCumulativeAttributes(

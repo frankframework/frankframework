@@ -16,6 +16,8 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -92,8 +94,8 @@ public class FrankElementStatistics {
 	}
 
 	private void finishDescendantStatistics() {
-		numConfigChildren = subject.getConfigChildren().size();
-		numAttributes = subject.getAttributes().size();
+		numConfigChildren = subject.getConfigChildren(ALL).size();
+		numAttributes = subject.getAttributes(ALL).size();
 		boolean isFirstAncestor = true;
 		FrankElement ancestor = subject;
 		while(ancestor.getParent() != null) {
@@ -107,7 +109,7 @@ public class FrankElementStatistics {
 	}
 
 	private void finishConfigChildOverrideStatistics() {
-		for(ConfigChild configChild: subject.getConfigChildren()) {
+		for(ConfigChild configChild: subject.getConfigChildren(ALL)) {
 			if(configChild.getOverriddenFrom() != null) {
 				numOverriddenConfigChildren++;
 				addConfigChildOverriddenFrom(configChild.getOverriddenFrom());
@@ -146,7 +148,7 @@ public class FrankElementStatistics {
 	}
 
 	private void finishAttributeOverrideStatistics() {
-		for(FrankAttribute attribute: subject.getAttributes()) {
+		for(FrankAttribute attribute: subject.getAttributes(ALL)) {
 			if(attribute.getOverriddenFrom() != null) {
 				numOverriddenAttributes++;
 				addAttributeOverriddenFrom(attribute.getOverriddenFrom());
