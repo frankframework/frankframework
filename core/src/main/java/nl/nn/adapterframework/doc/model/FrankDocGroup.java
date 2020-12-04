@@ -32,9 +32,12 @@ import lombok.Getter;
  * There are two kinds of groups that are represented by two subclasses of
  * {@link FrankDocGroup} that are also inner classes, namely
  * <code>FromType</code> and <code>Other</code>. <code>FromType</code>
- * holds a group that has the classes of an {@link ElementType}.
- * <code>Other</code> holds a group of remaining {@link FrankElement}
- * that can be part of different {@link ElementType} objects.
+ * holds a group that has the {@link FrankElement} objects that represent
+ * the Java classes that implement a Java interface.
+ * That Java interface is represented by a model object of class
+ * {@link ElementType}. <code>Other</code> holds a group of remaining
+ * {@link FrankElement}
+ * that are each defined with a class rather then with an interface.
  * <p>
  * The Frank!Doc website has not been created yet.
  *

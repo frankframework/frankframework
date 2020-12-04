@@ -85,7 +85,7 @@ public abstract class ElementChild<K, T extends ElementChild<K, T>> {
 
 	/**
 	 * Get key that is used to match overrides. If {@link FrankElement} <code>A</code>
-	 * is a descendant of {@link FrankAttribute} <code>B</code> and if their
+	 * is a descendant of {@link FrankElement} <code>B</code> and if their
 	 * respective attributes <code>a</code> and <code>b</code> have an equal key,
 	 * then attribute <code>a</code> is assumed to override attribute <code>b</b>.
 	 * This function has the same purpose for config children.
