@@ -25,7 +25,7 @@
 				notFoundForwardName="readFile">
 			</pipe>
 
-			<pipe name="noImageAvailable" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="noImageAvailable" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				fileName="/GenerateFlowDiagram/svg/no_image_available.svg">
 				<forward name="success" path="EXIT" />
 			</pipe>

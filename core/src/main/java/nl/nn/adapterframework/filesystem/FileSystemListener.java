@@ -69,6 +69,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private boolean fileTimeSensitive=false;
 	private String messageType="path";
 	private String messageIdProperty = null;
+	
+	private boolean disableMessageBrowsers = false;
 
 	private long minStableTime = 1000;
 //	private Long fileListFirstFileFound;
@@ -208,7 +210,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		FS fileSystem=getFileSystem();
 		if ((rawMessageOrWrapper instanceof MessageWrapper)) { 
 			// if it is a MessageWrapper, it comes from an errorStorage, and then the state cannot be managed using folders by the listener itself.
-			MessageWrapper wrapper = (MessageWrapper)rawMessageOrWrapper;
+			MessageWrapper<?> wrapper = (MessageWrapper<?>)rawMessageOrWrapper;
 			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {
 				log.warn("cannot write ["+wrapper.getId()+"] to logFolder, errorFolder or processedFolder after manual retry from errorStorage");
 			}
@@ -297,6 +299,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			if (attributes!=null) {
 				threadContext.putAll(attributes);
 			}
+			if (!"path".equals(getMessageType())) {
+				threadContext.put("filepath", fileSystem.getCanonicalName(rawMessage));
+			}
+			if (!"name".equals(getMessageType())) {
+				threadContext.put("filename", fileSystem.getName(rawMessage));
+			}
 			return messageId;
 		} catch (Exception e) {
 			throw new ListenerException("Could not get filetime for filename ["+filename+"]",e);
@@ -305,7 +313,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public IMessageBrowser<F> getInProcessBrowser() {
-		if (StringUtils.isEmpty(getInProcessFolder())) {
+		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getInProcessFolder())) {
 			return null;
 		}
 		return new FileSystemMessageBrowser<F, FS>(fileSystem, getInProcessFolder());
@@ -313,7 +321,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public IMessageBrowser<F> getMessageLogBrowser() {
-		if (StringUtils.isEmpty(getProcessedFolder())) {
+		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getProcessedFolder())) {
 			return null;
 		}
 		return new FileSystemMessageBrowser<F, FS>(fileSystem, getProcessedFolder());
@@ -321,7 +329,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	
 	@Override
 	public IMessageBrowser<F> getErrorStoreBrowser() {
-		if (StringUtils.isEmpty(getErrorFolder())) {
+		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getErrorFolder())) {
 			return null;
 		}
 		return new FileSystemMessageBrowser<F, FS>(fileSystem, getErrorFolder());
@@ -482,4 +490,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public String getMessageIdProperty() {
 		return messageIdProperty;
 	}
+
+	@IbisDoc({"15", "If set <code>true</code>, no browsers for process folders are generated", "false"})
+	public void setDisableMessageBrowsers(boolean disableMessageBrowsers) {
+		this.disableMessageBrowsers = disableMessageBrowsers;
+	}
+	public boolean isDisableMessageBrowsers() {
+		return disableMessageBrowsers;
+	}
+
 }

@@ -17,8 +17,9 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +54,7 @@ public class Base64Pipe extends StreamingPipe {
 	private String direction = "encode";
 	private int lineLength = 76;
 	private String lineSeparator = "auto";
-	private String charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String charset = null;
 	private String outputType = "string";
 	private boolean convertToString = true; // Deprecated, but set to true, apparently for backward compatibility. We could consider setting it false, avoiding needless conversions from bytes to string
 
@@ -89,6 +90,7 @@ public class Base64Pipe extends StreamingPipe {
 		if(!convertToString && getDirection().equals("decode")) {
 			setOutputType("bytes");
 		}
+
 	}
 
 	private void setLineSeparatorArray(String separator) {
@@ -97,28 +99,37 @@ public class Base64Pipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		boolean directionEncode = "encode".equals(getDirection());//TRUE encode - FALSE decode
+
 		InputStream binaryInputStream;
 		try {
-			binaryInputStream = message.asInputStream(getCharset());
+			binaryInputStream = message.asInputStream(directionEncode ? getCharset() : null);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		boolean directionEncode = "encode".equals(getDirection());//TRUE encode - FALSE decode
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
-		if(getOutputType().equals("stream")) {
-			return new PipeRunResult(getForward(), base64);
+		Message result = new Message(base64);
+		if (!directionEncode && StringUtils.isNotEmpty(getCharset())) {
+			try {
+				result = new Message(result.asReader(getCharset()));
+			} catch (IOException e) {
+				throw new PipeRunException(this,"cannot open stream", e);
+			}
 		}
-		
+		if(getOutputType().equals("stream")) {
+			return new PipeRunResult(getForward(), result);
+		}
+
 		try (MessageOutputStream target=getTargetStream(session)) {
-			if (getOutputType().equals("string")) {
+			if(getOutputType().equals("string")) {
 				try (Writer writer = target.asWriter()) {
-					Misc.readerToWriter(new InputStreamReader(base64, getCharset()), writer);
+					Misc.readerToWriter(result.asReader(), writer);
 				}
 			} else {
 				try (OutputStream out = target.asStream()) {
-					Misc.streamToStream(base64, out);
+					Misc.streamToStream(result.asInputStream(), out);
 				}
 			}
 			return target.getPipeRunResult();
@@ -133,12 +144,19 @@ public class Base64Pipe extends StreamingPipe {
 		MessageOutputStream target = getTargetStream(session);
 		boolean directionEncode = "encode".equals(getDirection());//TRUE encode - FALSE decode
 		OutputStream targetStream;
-		if (getOutputType().equals("string")) {
+		if (!directionEncode && StringUtils.isNotEmpty(getCharset())) {
 			targetStream = new WriterOutputStream(target.asWriter(), getCharset());
 		} else {
 			targetStream = target.asStream();
 		}
 		OutputStream base64 = new Base64OutputStream(targetStream, directionEncode, getLineLength(), lineSeparatorArray);
+		if (directionEncode && StringUtils.isNotEmpty(getCharset())) {
+			try {
+				return new MessageOutputStream(this, new OutputStreamWriter(base64, getCharset()), target);
+			} catch (UnsupportedEncodingException e) {
+				throw new StreamingException("cannot open OutputStreamWriter", e);
+			}
+		}
 		return new MessageOutputStream(this, base64, target);
 	}
 
@@ -171,7 +189,7 @@ public class Base64Pipe extends StreamingPipe {
 		return outputType;
 	}
 
-	@IbisDoc({"3", "Character encoding to be used to encode or decode message to or from string. (Only used when outputType=string or convert2string=true)", "utf-8"})
+	@IbisDoc({"3", "Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode.", ""})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -194,5 +212,4 @@ public class Base64Pipe extends StreamingPipe {
 	public int getLineLength() {
 		return lineLength;
 	}
-
 }

@@ -1225,7 +1225,7 @@ public class JobDef {
 		return cronExpression;
 	}
 
-	@IbisDoc({"repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 the keep waiting indefinitely instead of max 60 seconds for the adapter to start.", ""})
+	@IbisDoc({"repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 to keep waiting indefinitely instead of max 60 seconds for the adapter to start.", ""})
 	public void setInterval(long interval) {
 		this.interval = interval;
 	}

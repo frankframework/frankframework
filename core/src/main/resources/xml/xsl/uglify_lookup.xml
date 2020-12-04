@@ -602,7 +602,7 @@
   <Element>
     <Name>FixedResultPipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.FixedResult</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.FixedResultPipe</ClassName>
   </Element>
   <Element>
     <Name>ForEachAttachmentPipe</Name>

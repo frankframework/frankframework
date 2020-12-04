@@ -1,10 +1,10 @@
 <email>
 	<recipients>
-		<recipient type="to">gerrit@wearefrank.nl</recipient>
+		<recipient type="to">Gerrit van Brakel &lt;gerrit@wearefrank.nl&gt;</recipient>
 	</recipients>
-	<from>gerrit@wearefrank.nl</from>
-	<sender>gerrit@wearefrank.nl</sender>
-	<bestReplyAddress>gerrit@wearefrank.nl</bestReplyAddress>
+	<from>Gerrit van Brakel &lt;gerrit@wearefrank.nl&gt;</from>
+	<sender>Gerrit van Brakel &lt;gerrit@wearefrank.nl&gt;</sender>
+	<bestReplyAddress>Gerrit van Brakel &lt;gerrit@wearefrank.nl&gt;</bestReplyAddress>
 	<subject>attached messages</subject>
 	<DateTimeSent>2020-11-10T11:01:48.000+0100</DateTimeSent>
 	<DateTimeReceived>2020-11-10T11:01:58.000+0100</DateTimeReceived>
@@ -13,13 +13,13 @@
 	<attachments>
 		<attachment name="[ibissource/iaf] Ladybug randomly stops report generation (#875)">
 			<recipients>
-				<recipient type="to">iaf@noreply.github.com</recipient>
-				<recipient type="cc">subscribed@noreply.github.com</recipient>
+				<recipient type="to">ibissource/iaf &lt;iaf@noreply.github.com&gt;</recipient>
+				<recipient type="cc">Subscribed &lt;subscribed@noreply.github.com&gt;</recipient>
 			</recipients>
-			<from>notifications@github.com</from>
-			<sender>notifications@github.com</sender>
-			<replyTo>reply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com</replyTo>
-			<bestReplyAddress>reply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com</bestReplyAddress>
+			<from>ricardovh &lt;notifications@github.com&gt;</from>
+			<sender>ricardovh &lt;notifications@github.com&gt;</sender>
+			<replyTo>ibissource/iaf &lt;reply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com&gt;</replyTo>
+			<bestReplyAddress>ibissource/iaf &lt;reply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com&gt;</bestReplyAddress>
 			<subject>Re: [ibissource/iaf] Ladybug randomly stops report generation (#875)</subject>
 			<DateTimeSent>2020-09-30T12:35:41.000+0200</DateTimeSent>
 			<DateTimeReceived>2020-09-30T12:35:45.000+0200</DateTimeReceived>

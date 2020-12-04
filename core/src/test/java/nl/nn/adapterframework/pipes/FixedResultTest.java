@@ -17,11 +17,11 @@ import static org.junit.Assert.fail;
 
 
 /**
- * FixedResult Tester.
+ * FixedResultPipe Tester.
  *
  * @author <Sina Sen>
  */
-public class FixedResultTest extends PipeTestBase<FixedResult> {
+public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
     @ClassRule
     public static TemporaryFolder testFolderSource = new TemporaryFolder();
@@ -31,8 +31,8 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
     private IPipeLineSession session1 = new PipeLineSessionBase();
 
     @Override
-    public FixedResult createPipe() {
-        return new FixedResult();
+    public FixedResultPipe createPipe() {
+        return new FixedResultPipe();
     }
 
     @BeforeClass
@@ -72,7 +72,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
 
     @Test
     public void testFailAsWrongDirectory() throws Exception {
-        exception.expectMessage("Pipe [FixedResult under test] cannot find resource [/Pipes/2.txt/something]");
+        exception.expectMessage("Pipe [FixedResultPipe under test] cannot find resource [/Pipes/2.txt/something]");
         Parameter param = setUp(session1);
         pipe.addParameter(param);
         pipe.setFileName(sourceFolderPath + "/something");
@@ -86,7 +86,7 @@ public class FixedResultTest extends PipeTestBase<FixedResult> {
 
     @Test
     public void testEmptyFileName() throws Exception{
-        exception.expectMessage("Pipe [FixedResult under test] has neither fileName nor fileNameSessionKey nor returnString specified");
+        exception.expectMessage("Pipe [FixedResultPipe under test] has neither fileName nor fileNameSessionKey nor returnString specified");
         pipe.configure();
         fail("this should fail");
     }

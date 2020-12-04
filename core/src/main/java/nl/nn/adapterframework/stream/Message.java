@@ -155,28 +155,29 @@ public class Message implements Serializable {
 			log.debug("returning Reader as Reader");
 			return (Reader) request;
 		}
-		if (StringUtils.isEmpty(charset)) {
-			charset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		String readerCharset = charset; //Don't overwrite the Message's charset
+		if (StringUtils.isEmpty(readerCharset)) {
+			readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		if (request instanceof InputStream) {
 			log.debug("returning InputStream as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream) request, charset);
+			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream) request, readerCharset);
 		}
 		if (request instanceof URL) {
 			log.debug("returning URL as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader(((URL) request).openStream(), charset);
+			return StreamUtil.getCharsetDetectingInputStreamReader(((URL) request).openStream(), readerCharset);
 		}
 		if (request instanceof File) {
 			log.debug("returning File as Reader");
 			try {
-				return StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream((File)request), charset);
+				return StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream((File)request), readerCharset);
 			} catch (IOException e) {
 				throw new IOException("Cannot open file ["+((File)request).getPath()+"]");
 			}
 		}
 		if (request instanceof byte[]) {
 			log.debug("returning byte[] as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream((byte[]) request), charset);
+			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream((byte[]) request), readerCharset);
 		}
 		log.debug("returning String as Reader");
 		return new StringReader(request.toString());
@@ -188,7 +189,10 @@ public class Message implements Serializable {
 	public InputStream asInputStream() throws IOException {
 		return asInputStream(null);
 	}
-	
+
+	/**
+	 * @param defaultCharset is only used when the Message object is of character type (String)
+	 */
 	public InputStream asInputStream(String defaultCharset) throws IOException {
 		if (request == null) {
 			return null;
@@ -320,8 +324,8 @@ public class Message implements Serializable {
 	}
 
 	public static Message asMessage(Object object) {
-		if (object!=null && object instanceof Message) {
-			return (Message)object;
+		if (object instanceof Message) {
+			return (Message) object;
 		}
 		return new Message(object, null);
 	}
@@ -382,7 +386,7 @@ public class Message implements Serializable {
 		if (object instanceof String) {
 			return (String)object;
 		}
-		return Message.asMessage(object).asString();
+		return Message.asMessage(object).asString(defaultCharset);
 	}
 
 	public static byte[] asByteArray(Object object) throws IOException {
