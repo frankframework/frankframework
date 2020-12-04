@@ -1061,7 +1061,6 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 		TransactionStatus txStatus = itx.getStatus();
 		Serializable msg=null;
 		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
-		threadContext.put("retry", "true");
 		try {
 			try {
 				msg = errorStorage.getMessage(storageKey);
@@ -1395,7 +1394,9 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	 */
 	@SuppressWarnings("unchecked")
 	private boolean hasProblematicHistory(String messageId, boolean manualRetry, Object rawMessageOrWrapper, Message message, Map<String,Object>threadContext, String correlationId) throws ListenerException {
-		if (!manualRetry) {
+		if (manualRetry) {
+			threadContext.put("retry", "true");
+		} else {
 			IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
 			ProcessResultCacheItem prci = getCachedProcessResult(messageId);
@@ -1407,6 +1408,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 					}
 					if (deliveryCount>1) {
 						log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has delivery count ["+(deliveryCount)+"]");
+						threadContext.put("retry", "true");
 					}
 					if (deliveryCount>getMaxDeliveries()) {
 						warn("message with messageId ["+messageId+"] has already been delivered ["+deliveryCount+"] times, will not process; maxDeliveries=["+getMaxDeliveries()+"]");
@@ -1419,6 +1421,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 				resetRetryInterval();
 				return false;
 			} else {
+				threadContext.put("retry", "true");
 				if (getMaxRetries()<0) {
 					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times; maxRetries=["+getMaxRetries()+"]");
 					return false;
