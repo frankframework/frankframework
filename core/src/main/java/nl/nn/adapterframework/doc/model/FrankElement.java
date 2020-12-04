@@ -72,11 +72,6 @@ public class FrankElement {
 		this.statistics = new FrankElementStatistics(this);
 	}
 
-	/**
-	 * Setter for attributes. We prevent modifying the list of attributes
-	 * because we want to maintain the private field attributeLookup.
-	 * @param inputAttributes
-	 */
 	public void setAttributes(List<FrankAttribute> inputAttributes) {
 		Collections.sort(inputAttributes);
 		attributes = new LinkedHashMap<>();
