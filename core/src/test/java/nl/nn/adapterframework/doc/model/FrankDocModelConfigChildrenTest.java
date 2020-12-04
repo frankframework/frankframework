@@ -21,6 +21,7 @@ import nl.nn.adapterframework.doc.Utils;
 public class FrankDocModelConfigChildrenTest {
 	private static String CONTAINER = "nl.nn.adapterframework.doc.testtarget.children.Container";
 	private static String CONTAINER_DERIVED = "nl.nn.adapterframework.doc.testtarget.children.ContainerDerived";
+	private static String CONTAINER_OTHER = "nl.nn.adapterframework.doc.testtarget.children.ContainerOther";
 
 	private FrankDocModel instance;
 	private List<ConfigChild> configChildren;
@@ -34,6 +35,8 @@ public class FrankDocModelConfigChildrenTest {
 				Utils.getClass(CONTAINER));
 		instance.findOrCreateElementType(
 				Utils.getClass(CONTAINER_DERIVED));
+		instance.findOrCreateElementType(
+				Utils.getClass(CONTAINER_OTHER));
 		instance.setOverriddenFrom();
 		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren(ALL);
 		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren(ALL);
@@ -185,9 +188,16 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("ChildOverriddenOnlyParentAnnotated", actual.getElementType().getSimpleName());
 		assertFalse(actual.isDocumented());
 		assertEquals(110, actual.getSequenceInConfig());
-		assertTrue(actual.isDeprecated());
+		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
 		// Not selected because deprecated
 		assertFalse(IN_XSD.test(actual));
+	}
+
+	@Test
+	public void whenInheritedConfigChildNotDeprecatedInheritedFromDeprecatedThenNotDeprecated() throws Exception {
+		ConfigChild theConfigChild = instance.findOrCreateFrankElement(Utils.getClass(CONTAINER_OTHER))
+				.getConfigChildren(c -> ((ConfigChild)c).getSequenceInConfig() == 110).get(0);
+		assertFalse(theConfigChild.isDeprecated());
 	}
 }

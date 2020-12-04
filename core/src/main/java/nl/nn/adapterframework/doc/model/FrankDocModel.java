@@ -245,7 +245,7 @@ public class FrankDocModel {
 	}
 
 	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) throws ReflectiveOperationException {
-		attribute.setDeprecated(AnnotationUtils.findAnnotation(method, Deprecated.class) != null);
+		attribute.setDeprecated(method.getAnnotation(Deprecated.class) != null);
 		attribute.setDocumented(
 				(method.getAnnotation(IbisDoc.class) != null)
 				|| (method.getAnnotation(IbisDocRef.class) != null));
@@ -364,7 +364,7 @@ public class FrankDocModel {
 	}
 
 	private boolean isDeprecated(Method m) {
-		Deprecated deprecated = AnnotationUtils.findAnnotation(m, Deprecated.class);
+		Deprecated deprecated = m.getAnnotation(Deprecated.class);
 		return (deprecated != null);
 	}
 

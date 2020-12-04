@@ -121,7 +121,7 @@ public class FrankDocModelTest {
 		assertFalse(actualParent.isAbstract());
 		// We check here that protected method getChildAttribute does not produce
 		// an attribute
-		assertEquals(2, actualParent.getAttributes(ALL).size());
+		assertEquals(3, actualParent.getAttributes(ALL).size());
 		FrankAttribute actualParentAttribute = findAttribute(actualParent, "parentAttribute");
 		assertEquals("parentAttribute", actualParentAttribute.getName());
 		assertSame(actualParent, actualParentAttribute.getDescribingElement());
@@ -133,7 +133,7 @@ public class FrankDocModelTest {
 		assertSame(actualParent, actualChild.getParent());
 		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
 		assertEquals("ListenerChild", actualChild.getSimpleName());
-		assertEquals(2, actualChild.getAttributes(ALL).size());
+		assertEquals(3, actualChild.getAttributes(ALL).size());
 		FrankAttribute actualChildAttribute = findAttribute(actualChild, "childAttribute");
 		assertEquals("childAttribute", actualChildAttribute.getName());
 		assertSame(actualChild, actualChildAttribute.getOwningElement());
@@ -152,6 +152,13 @@ public class FrankDocModelTest {
 		// element type. Therefore the alias equals the syntax 1 name with a capital.
 		assertEquals(Utils.toUpperCamelCase(actualParent.getSimpleName()), actualParent.getAlias());
 		assertEquals(Utils.toUpperCamelCase(actualChild.getSimpleName()), actualChild.getAlias());
+		// Deprecated
+		FrankAttribute attribute = actualParent.getAttributes(a -> ((FrankAttribute) a).getName().equals(
+				"deprecatedInParentAttribute")).get(0);
+		assertTrue(attribute.isDeprecated());
+		attribute = actualChild.getAttributes(a -> ((FrankAttribute) a).getName().equals(
+				"deprecatedInParentAttribute")).get(0);
+		assertFalse(attribute.isDeprecated());
 	}
 
 	private FrankAttribute findAttribute(final FrankElement elem, String name) {

@@ -13,4 +13,8 @@ public class ListenerParent extends AbstractGrandParent {
 
 	public void setInheritedAttribute(String value) {
 	}
+
+	@Deprecated
+	public void setDeprecatedInParentAttribute(String value) {
+	}
 }
