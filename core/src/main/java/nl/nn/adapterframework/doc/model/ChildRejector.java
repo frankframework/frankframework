@@ -10,34 +10,36 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-class ChildRejector<K, T extends ElementChild<K>> {
-	private final Predicate<ElementChild<?>> selector;
-	private final Predicate<ElementChild<?>> rejector;
+import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
+
+class ChildRejector<T extends ElementChild> {
+	private final Predicate<ElementChild> selector;
+	private final Predicate<ElementChild> rejector;
 	private final Class<T> kind;
 
 	private Predicate<FrankElement> noChildren;
 
 	private Map<String, Level> levels = new HashMap<>();
 
-	ChildRejector(Predicate<ElementChild<?>> selector, Predicate<ElementChild<?>> rejector, Class<T> kind) {
+	ChildRejector(Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Class<T> kind) {
 		this.selector = selector;
 		this.rejector = rejector;
 		this.kind = kind;
 		this.noChildren = el -> el.getChildren(selector, kind).isEmpty();
 	}
 
-	private Level addLevelsFor(FrankElement owner, Set<K> rejectCandidates) {
+	private Level addLevelsFor(FrankElement owner, Set<AbstractKey> rejectCandidates) {
 		Level result = new Level(owner, rejectCandidates);
 		levels.put(owner.getFullName(), result);
 		return result;
 	}
 
 	private class Level {
-		Set<K> rejectCandidates = new HashSet<>();
+		Set<AbstractKey> rejectCandidates = new HashSet<>();
 		boolean isRejectsDeclared = false;
 		boolean isRejectsDeclaredOrInherited = false;
 
-		Level(FrankElement levelOwner, Set<K> downstreamRejectCandidates) {
+		Level(FrankElement levelOwner, Set<AbstractKey> downstreamRejectCandidates) {
 			calculateRejectCandidates(levelOwner, downstreamRejectCandidates);
 			Level parentLevel = addParentLevelsFor(levelOwner);
 			isRejectsDeclared = levelOwner.getChildren(selector, kind).stream()
@@ -51,7 +53,7 @@ class ChildRejector<K, T extends ElementChild<K>> {
 			}
 		}
 
-		private void calculateRejectCandidates(FrankElement levelOwner, Set<K> downstreamRejectCandidates) {
+		private void calculateRejectCandidates(FrankElement levelOwner, Set<AbstractKey> downstreamRejectCandidates) {
 			rejectCandidates = levelOwner.getChildren(rejector, kind).stream()
 					.map(ElementChild::getKey)
 					.collect(Collectors.toSet());
@@ -67,7 +69,7 @@ class ChildRejector<K, T extends ElementChild<K>> {
 			return parentLevel;
 		}
 
-		boolean acceptsChildKey(K childKey) {
+		boolean acceptsChildKey(AbstractKey childKey) {
 			return ! rejectCandidates.contains(childKey);
 		}
 	}
@@ -76,17 +78,17 @@ class ChildRejector<K, T extends ElementChild<K>> {
 		addLevelsFor(subject, new HashSet<>());
 	}
 
-	List<ElementChild<K>> getChildrenFor(FrankElement levelOwner) {
+	List<ElementChild> getChildrenFor(FrankElement levelOwner) {
 		return childrenFor(levelOwner, getChildKeysFor(levelOwner));
 	}
 
-	private List<ElementChild<K>> childrenFor(FrankElement levelOwner, Set<K> childKeys) {
+	private List<ElementChild> childrenFor(FrankElement levelOwner, Set<AbstractKey> childKeys) {
 		return levelOwner.getChildren(ALL, kind).stream()
 				.filter(c -> childKeys.contains(c.getKey()))
 				.collect(Collectors.toList());
 	}
 
-	private Set<K> getChildKeysFor(FrankElement levelOwner) {
+	private Set<AbstractKey> getChildKeysFor(FrankElement levelOwner) {
 		return levelOwner.getChildren(selector, kind).stream()
 				.map(ElementChild::getKey)
 				.filter(k -> levels.get(levelOwner.getFullName()).acceptsChildKey(k))

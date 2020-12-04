@@ -26,22 +26,24 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-class AncestorChildNavigation<K, T extends ElementChild<K>> {
+import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
+
+class AncestorChildNavigation<T extends ElementChild> {
 	private final CumulativeChildHandler<T> handler;
-	private final ChildRejector<K, T> rejector;
+	private final ChildRejector<T> rejector;
 	private final Class<T> kind;
 	private FrankElement current;
-	private Map<K, Boolean> items;
-	private Set<K> overridden;
+	private Map<AbstractKey, Boolean> items;
+	private Set<AbstractKey> overridden;
 	private Predicate<FrankElement> noChildren;
 
 	AncestorChildNavigation(
 			CumulativeChildHandler<T> handler,
-			Predicate<ElementChild<?>> childSelector,
-			Predicate<ElementChild<?>> childRejector,
+			Predicate<ElementChild> childSelector,
+			Predicate<ElementChild> childRejector,
 			Class<T> kind) {
 		this.handler = handler;
-		this.rejector = new ChildRejector<K, T>(childSelector, childRejector, kind);
+		this.rejector = new ChildRejector<T>(childSelector, childRejector, kind);
 		this.kind = kind;
 		this.noChildren = el -> el.getChildren(childSelector, kind).isEmpty();
 	}
@@ -63,15 +65,15 @@ class AncestorChildNavigation<K, T extends ElementChild<K>> {
 
 	private void enter(FrankElement current) {
 		this.current = current;
-		List<ElementChild<K>> children = rejector.getChildrenFor(current);
+		List<ElementChild> children = rejector.getChildrenFor(current);
 		items = new HashMap<>();
-		for(ElementChild<K> c: children) {
+		for(ElementChild c: children) {
 			items.put(c.getKey(), c.getOverriddenFrom() != null);
 		}
 	}
 
 	private void addDeclaredGroupOrRepeatChildrenInXsd() {
-		Set<K> omit = new HashSet<>(items.keySet());
+		Set<AbstractKey> omit = new HashSet<>(items.keySet());
 		omit.retainAll(overridden);
 		if(omit.isEmpty() && rejector.isNoDeclaredRejected(current)) {
 			handler.handleChildrenOf(current);
@@ -92,7 +94,7 @@ class AncestorChildNavigation<K, T extends ElementChild<K>> {
 	}
 
 	private void repeatNonOverriddenItems() {
-		Set<K> retain = new HashSet<>(items.keySet());
+		Set<AbstractKey> retain = new HashSet<>(items.keySet());
 		retain.removeAll(overridden);
 		if(! retain.isEmpty()) {
 			handler.handleSelectedChildren(selectChildren(retain), current);
@@ -100,7 +102,7 @@ class AncestorChildNavigation<K, T extends ElementChild<K>> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<T> selectChildren(Set<K> keys) {
+	private List<T> selectChildren(Set<AbstractKey> keys) {
 		return current.getChildren(ALL, kind).stream()
 				.filter(c -> keys.contains(c.getKey()))
 				.map(c -> (T) c)
@@ -108,15 +110,15 @@ class AncestorChildNavigation<K, T extends ElementChild<K>> {
 						
 	}
 
-	private Set<K> getCurrentOverrides() {
+	private Set<AbstractKey> getCurrentOverrides() {
 		return getWithOverrideStatus(true);
 	}
 
-	private Set<K> getCurrentNonOverrides() {
+	private Set<AbstractKey> getCurrentNonOverrides() {
 		return getWithOverrideStatus(false);
 	}
 
-	private Set<K> getWithOverrideStatus(final boolean overrideStatus) {
+	private Set<AbstractKey> getWithOverrideStatus(final boolean overrideStatus) {
 		return items.keySet().stream()
 				.filter(k -> items.get(k).booleanValue() == overrideStatus)
 				.collect(Collectors.toSet());		

@@ -20,13 +20,23 @@ import java.util.Comparator;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class FrankAttribute extends ElementChild<String> implements Comparable<FrankAttribute> {
+public class FrankAttribute extends ElementChild implements Comparable<FrankAttribute> {
 	private static Logger log = LogUtil.getLogger(FrankAttribute.class);
+
+	@EqualsAndHashCode(callSuper = false)
+	static class Key extends AbstractKey {
+		private String name;
+
+		Key(String name) {
+			this.name = name;
+		}
+	}
 
 	private @Getter String name;
 	
@@ -46,8 +56,8 @@ public class FrankAttribute extends ElementChild<String> implements Comparable<F
 	}
 
 	@Override
-	public String getKey() {
-		return name;
+	public Key getKey() {
+		return new Key(name);
 	}
 
 	void parseIbisDocAnnotation(IbisDoc ibisDoc) {

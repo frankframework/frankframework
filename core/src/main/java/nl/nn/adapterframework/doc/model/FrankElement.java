@@ -41,7 +41,7 @@ public class FrankElement {
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;
 
-	private LinkedHashMap<String, FrankAttribute> attributes;
+	private LinkedHashMap<FrankAttribute.Key, FrankAttribute> attributes;
 	private LinkedHashMap<ConfigChild.Key, ConfigChild> configChildren;
 	private @Getter List<ConfigChild> aliasSources;
 	private String cachedAlias = null;
@@ -118,12 +118,11 @@ public class FrankElement {
 		return getConfigChildren().stream().filter(filter).collect(Collectors.toList());
 	}
 
-	@SuppressWarnings("unchecked")
-	<K> ElementChild<K> findElementChildMatch(ElementChild<K> elementChild) {
+	ElementChild findElementChildMatch(ElementChild elementChild) {
 		if(elementChild instanceof FrankAttribute) {
-			return (ElementChild<K>) findAttributeMatch((FrankAttribute) elementChild);
+			return findAttributeMatch((FrankAttribute) elementChild);
 		} else if(elementChild instanceof ConfigChild) {
-			return (ElementChild<K>) findConfigChildMatch((ConfigChild) elementChild);
+			return findConfigChildMatch((ConfigChild) elementChild);
 		} else {
 			throw new IllegalArgumentException(String.format(
 					"Expected a FrankAttribute or ConfigChild, but got a [%s]",
@@ -147,18 +146,17 @@ public class FrankElement {
 		return ancestor;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <K, T extends ElementChild<K>> List<ElementChild<K>> getChildren(
-			Predicate<ElementChild<?>> selector, Class<T> kind) {
-		List<ElementChild<K>> result = new ArrayList<>();
+	public <T extends ElementChild> List<ElementChild> getChildren(
+			Predicate<ElementChild> selector, Class<T> kind) {
+		List<ElementChild> result = new ArrayList<>();
 		if(kind.isAssignableFrom(FrankAttribute.class)) {
 			for(FrankAttribute a: getAttributes(selector)) {
-				result.add((ElementChild<K>) a);
+				result.add(a);
 			}
 		}
 		else if(kind.isAssignableFrom(ConfigChild.class)) {
 			for(ConfigChild c: getConfigChildren(selector)) {
-				result.add((ElementChild<K>) c);
+				result.add(c);
 			}
 		} else {
 			throw new RuntimeException("Please either ask for ConfigChild or FrankAttribute children");
@@ -168,17 +166,17 @@ public class FrankElement {
 
 	public void walkCumulativeAttributes(
 			CumulativeChildHandler<FrankAttribute> handler,
-			Predicate<ElementChild<?>> childSelector,
-			Predicate<ElementChild<?>> childRejector) {
-		new AncestorChildNavigation<String, FrankAttribute>(
+			Predicate<ElementChild> childSelector,
+			Predicate<ElementChild> childRejector) {
+		new AncestorChildNavigation<FrankAttribute>(
 				handler, childSelector, childRejector, FrankAttribute.class).run(this);
 	}
 
 	public void walkCumulativeConfigChildren(
 			CumulativeChildHandler<ConfigChild> handler,
-			Predicate<ElementChild<?>> childSelector,
-			Predicate<ElementChild<?>> childRejector) {
-		new AncestorChildNavigation<ConfigChild.Key, ConfigChild>(
+			Predicate<ElementChild> childSelector,
+			Predicate<ElementChild> childRejector) {
+		new AncestorChildNavigation<ConfigChild>(
 				handler, childSelector, childRejector, ConfigChild.class).run(this);		
 	}
 

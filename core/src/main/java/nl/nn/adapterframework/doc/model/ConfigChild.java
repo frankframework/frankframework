@@ -26,11 +26,11 @@ import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigChild extends ElementChild<ConfigChild.Key> implements Comparable<ConfigChild> {
+public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
 
-	@EqualsAndHashCode
-	static final class Key {
+	@EqualsAndHashCode(callSuper = false)
+	static final class Key extends AbstractKey {
 		private final @Getter String syntax1Name;
 		private final @Getter ElementType elementType;
 		private final @Getter boolean mandatory;
