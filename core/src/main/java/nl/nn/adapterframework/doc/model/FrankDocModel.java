@@ -56,7 +56,7 @@ public class FrankDocModel {
 	private static final String DIGESTER_RULES = "digester-rules.xml";
 	static final String OTHER = "Other";
 
-	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors;
+	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
 	private @Getter LinkedHashMap<String, FrankDocGroup> groups = new LinkedHashMap<>();
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
@@ -82,11 +82,6 @@ public class FrankDocModel {
 			return null;
 		}
 		return result;
-	}
-
-	public FrankDocModel() {
-		configChildDescriptors = new HashMap<>();
-		groups = new LinkedHashMap<>();
 	}
 
 	public void createConfigChildDescriptorsFrom(String path) throws IOException, SAXException {

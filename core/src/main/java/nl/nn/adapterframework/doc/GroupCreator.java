@@ -54,9 +54,9 @@ class GroupCreator<T extends ElementChild> {
 	}
 
 	void run() {
-		boolean hasNoConfigChildren = callback.getChildrenOf(frankElement).isEmpty();
+		boolean hasNoElementChildrenOfKind = callback.getChildrenOf(frankElement).isEmpty();
 		FrankElement ancestor = callback.getAncestorOf(frankElement);
-		if(hasNoConfigChildren) {
+		if(hasNoElementChildrenOfKind) {
 			if(ancestor == null) {
 				return;
 			}
