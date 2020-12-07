@@ -41,6 +41,15 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
+	public void whenElementTypeIsNotInterfaceThenSyntax1NameBecomesElementName() throws Exception {
+		String classAndTypeName = PACKAGE + "ListenerParent";
+		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(classAndTypeName));
+		ElementType elementType = model.findOrCreateElementType(Utils.getClass(classAndTypeName));
+		String actual = instance.getXsdElementName(elementType, "someName");
+		assertEquals("SomeName", actual);
+	}
+
+	@Test
 	public void whenConfigChildInXsdThenItsSyntax1NameRegisteredWithElementType() throws Exception {
 		String typeName = PACKAGE + "IListener";
 		ElementType elementType = model.findOrCreateElementType(Utils.getClass(typeName));

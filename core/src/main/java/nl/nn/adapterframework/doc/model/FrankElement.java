@@ -187,6 +187,9 @@ public class FrankElement {
 	}
 
 	public String getXsdElementName(final ElementType elementType, final String groupSyntax1Name) {
+		if(! elementType.isFromJavaInterface()) {
+			return Utils.toUpperCamelCase(groupSyntax1Name);
+		}
 		String postfixToRemove = elementType.getSimpleName();
 		if(postfixToRemove.startsWith("I")) {
 			postfixToRemove = postfixToRemove.substring(1);
