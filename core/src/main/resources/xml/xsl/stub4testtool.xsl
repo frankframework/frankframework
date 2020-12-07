@@ -162,12 +162,12 @@
 				</xsl:element>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:element name="stubName">
-					<xsl:value-of select="string-join((tokenize(@className,'\.')[last()],xs:string(count(preceding-sibling::sender)+1)),'-')"/>
-				</xsl:element>
 				<xsl:for-each select="parent::*">
 					<xsl:call-template name="determineStubSenderNames"/>
 				</xsl:for-each>
+				<xsl:element name="stubName">
+					<xsl:value-of select="string-join((tokenize(@className,'\.')[last()],xs:string(count(preceding-sibling::sender)+1)),'-')"/>
+				</xsl:element>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>	
