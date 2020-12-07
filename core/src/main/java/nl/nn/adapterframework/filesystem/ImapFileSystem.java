@@ -195,6 +195,20 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 	}
 
 	@Override
+	public int getNumberOfFilesInFolder(String foldername) throws FileSystemException {
+		try {
+			Folder folder = getFolder(foldername);
+			if (!folder.isOpen()) {
+				folder.open(Folder.READ_WRITE);
+			}
+			Message messages[] = folder.getMessages();
+			return messages.length;
+		} catch (MessagingException e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
 	public DirectoryStream<Message> listFiles(String foldername) throws FileSystemException {
 		try {
 			Folder folder = getFolder(foldername);

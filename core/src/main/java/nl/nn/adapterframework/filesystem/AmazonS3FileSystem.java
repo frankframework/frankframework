@@ -33,7 +33,6 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
@@ -60,11 +59,8 @@ import com.amazonaws.services.s3.model.Tier;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
 
-public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
-
-	protected Logger log = LogUtil.getLogger(this);
+public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
 
 	public static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 	public static final List<String> STORAGE_CLASSES = getStorageClasses();
@@ -108,7 +104,7 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 	}
 
 	@Override
-	public void open() {
+	public void open() throws FileSystemException {
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
 		BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
@@ -117,10 +113,12 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 				.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
 				.withClientConfiguration(this.getProxyConfig());
 		s3Client = s3ClientBuilder.build();
+		super.open();
 	}
 
 	@Override
-	public void close() {
+	public void close() throws FileSystemException {
+		super.close();
 		if(s3Client != null) {
 			s3Client.shutdown();
 		}
@@ -138,6 +136,24 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 		return toFile(folder+"/"+filename);
 	}
 
+
+	@Override
+	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
+		List<S3ObjectSummary> summaries = null;
+		String prefix = folder != null ? folder + "/" : "";
+		try {
+			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
+			summaries = listing.getObjectSummaries();
+			int result = summaries.size();
+			while (listing.isTruncated() && (getMaxNumberOfMessagesToList()<0 || getMaxNumberOfMessagesToList() > result)) {
+				listing = s3Client.listNextBatchOfObjects(listing);
+				result += listing.getObjectSummaries().size();
+			}
+			return result;
+		} catch (AmazonServiceException e) {
+			throw new FileSystemException("Cannot process requested action", e);
+		}
+	}
 
 	@Override
 	public DirectoryStream<S3Object> listFiles(String folder) throws FileSystemException {
@@ -642,5 +658,4 @@ public class AmazonS3FileSystem implements IWritableFileSystem<S3Object> {
 		this.proxyPort = proxyPort;
 	}
 
-	
 }

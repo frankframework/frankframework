@@ -151,12 +151,21 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
-		return null;
+		try {
+			getFileSystem().openThread();
+			return null;
+		} catch (FileSystemException e) {
+			throw new ListenerException("Cannot open thread for fileSystem",e);
+		}
 	}
 
 	@Override
 	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
-		// nothing special here
+		try {
+			getFileSystem().closeThread();
+		} catch (FileSystemException e) {
+			throw new ListenerException("Cannot close thread for fileSystem",e);
+		}
 	}
 
 	@Override

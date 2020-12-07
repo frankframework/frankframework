@@ -44,6 +44,11 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	public void configure() throws ConfigurationException;
 	public void open() throws FileSystemException;
 	public void close() throws FileSystemException;
+	
+	public boolean isOpen();
+	
+	public void openThread() throws FileSystemException;
+	public void closeThread() throws FileSystemException;
 
 	
 	/**
@@ -51,7 +56,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	 * Should list only 'files', no folders.
 	 */
 	public DirectoryStream<F> listFiles(String folder) throws FileSystemException;
-	
+	public int getNumberOfFilesInFolder(String folder) throws FileSystemException;
 	/**
 	 * Get a string representation of an identification of a file, expected to be in the 'root' folder. 
 	 * Must pair up with the implementation of {@link #toFile(String)}.

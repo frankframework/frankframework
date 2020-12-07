@@ -61,6 +61,19 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		
 	}
 
+	@Override
+	public boolean isOpen() {
+		return opened;
+	}
+
+	@Override
+	public void openThread() throws FileSystemException {
+	}
+
+	@Override
+	public void closeThread() throws FileSystemException {
+	}
+
 	private void checkOpenAndExists(MockFile f) throws FileSystemException {
 		checkOpen();
 		MockFolder folder = f.getOwner();
@@ -284,6 +297,13 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public String getPhysicalDestinationName() {
 		return "Mock!";
+	}
+
+
+	@Override
+	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 

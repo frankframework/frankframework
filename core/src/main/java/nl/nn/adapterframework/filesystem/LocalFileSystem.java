@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.WildCardFilter;
  * @author Gerrit van Brakel
  *
  */
-public class LocalFileSystem implements IWritableFileSystem<Path> {
+public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFileSystem<Path> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String root;
@@ -53,15 +53,6 @@ public class LocalFileSystem implements IWritableFileSystem<Path> {
 		// No Action is required
 	}
 
-	@Override
-	public void open() {
-		// No Action is required
-	}
-
-	@Override
-	public void close() {
-		// No Action is required
-	}
 
 	@Override
 	public Path toFile(String filename) {

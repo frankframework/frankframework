@@ -17,7 +17,6 @@ package nl.nn.adapterframework.filesystem;
 
 import org.apache.logging.log4j.Logger;
 
-import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -27,7 +26,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Gerrit van Brakel
  *
  */
-public abstract class MailFileSystemBase<M,A> implements IMailFileSystem<M,A> {
+public abstract class MailFileSystemBase<M,A> extends FileSystemBase<M> implements IMailFileSystem<M,A> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String authAlias;
@@ -35,20 +34,7 @@ public abstract class MailFileSystemBase<M,A> implements IMailFileSystem<M,A> {
 	private String password;
 	private String basefolder;
 	private boolean readMimeContents=false;
-	private int maxNumberOfMessagesToList=100;
 	private String replyAddressFields = REPLY_ADDRESS_FIELDS_DEFAULT;
-
-	private @Getter boolean fsOpen = false;
-
-	@Override
-	public void open() throws FileSystemException {
-		fsOpen = true;
-	}
-
-	@Override
-	public void close() throws FileSystemException {
-		fsOpen = false;
-	}
 
 	@Override
 	public String getPhysicalDestinationName() {
@@ -98,15 +84,7 @@ public abstract class MailFileSystemBase<M,A> implements IMailFileSystem<M,A> {
 		return readMimeContents;
 	}
 
-	@IbisDoc({"6", "The maximum number of messages to be retrieved from a folder", "100"})
-	public void setMaxNumberOfMessagesToList(int maxNumberOfMessagesToList) {
-		this.maxNumberOfMessagesToList = maxNumberOfMessagesToList;
-	}
-	public int getMaxNumberOfMessagesToList() {
-		return maxNumberOfMessagesToList;
-	}
-
-	@IbisDoc({"7", "Comma separated list of fields to try as response address", REPLY_ADDRESS_FIELDS_DEFAULT})
+	@IbisDoc({"6", "Comma separated list of fields to try as response address", REPLY_ADDRESS_FIELDS_DEFAULT})
 	public void setReplyAddressFields(String replyAddressFields) {
 		this.replyAddressFields = replyAddressFields;
 	}
@@ -114,6 +92,5 @@ public abstract class MailFileSystemBase<M,A> implements IMailFileSystem<M,A> {
 	public String getReplyAddressFields() {
 		return replyAddressFields;
 	}
-
 
 }
