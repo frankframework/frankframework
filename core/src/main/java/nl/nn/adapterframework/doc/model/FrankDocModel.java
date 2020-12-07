@@ -75,7 +75,7 @@ public class FrankDocModel {
 		try {
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
-			result.setOverriddenFrom();
+			result.setOverriddenFromAndRegisterSyntax1NamesInElementTypes();
 			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -419,7 +419,7 @@ public class FrankDocModel {
 		}
 	}
 
-	public void setOverriddenFrom() {
+	public void setOverriddenFromAndRegisterSyntax1NamesInElementTypes() {
 		Set<String> remainingElements = allElements.values().stream().map(FrankElement::getFullName).collect(Collectors.toSet());
 		while(! remainingElements.isEmpty()) {
 			FrankElement current = allElements.get(remainingElements.iterator().next());
@@ -428,6 +428,8 @@ public class FrankDocModel {
 			}
 			current.getConfigChildren(ALL).forEach(c -> c.calculateOverriddenFrom());
 			current.getAttributes(ALL).forEach(c -> c.calculateOverriddenFrom());
+			current.getConfigChildren(ALL).forEach(
+					c -> c.recursivelyRegisterSyntax1NameWithElementType(c.getSyntax1Name()));
 			current.getStatistics().finish();
 			remainingElements.remove(current.getFullName());
 		}

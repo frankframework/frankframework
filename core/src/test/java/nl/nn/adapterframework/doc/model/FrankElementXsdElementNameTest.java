@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.doc.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,5 +38,13 @@ public class FrankElementXsdElementNameTest {
 		ElementType elementType = model.findOrCreateElementType(Utils.getClass(typeName));
 		String actual = instance.getXsdElementName(elementType, "testListener");
 		assertEquals("ParentTestListener", actual);
+	}
+
+	@Test
+	public void whenConfigChildInXsdThenItsSyntax1NameRegisteredWithElementType() throws Exception {
+		String typeName = PACKAGE + "IListener";
+		ElementType elementType = model.findOrCreateElementType(Utils.getClass(typeName));
+		// The syntax 1 name corresponding to setter Container.setTestListener.
+		assertTrue(elementType.getConfigChildSyntax1Names().contains("testListener"));
 	}
 }

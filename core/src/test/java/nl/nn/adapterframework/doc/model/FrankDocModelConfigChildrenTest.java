@@ -22,7 +22,7 @@ public class FrankDocModelConfigChildrenTest {
 	private static String CONTAINER = "nl.nn.adapterframework.doc.testtarget.children.Container";
 	private static String CONTAINER_DERIVED = "nl.nn.adapterframework.doc.testtarget.children.ContainerDerived";
 	private static String CONTAINER_OTHER = "nl.nn.adapterframework.doc.testtarget.children.ContainerOther";
-
+	
 	private FrankDocModel instance;
 	private List<ConfigChild> configChildren;
 	private List<ConfigChild> configChildrenOfDerived;
@@ -37,7 +37,7 @@ public class FrankDocModelConfigChildrenTest {
 				Utils.getClass(CONTAINER_DERIVED));
 		instance.findOrCreateElementType(
 				Utils.getClass(CONTAINER_OTHER));
-		instance.setOverriddenFrom();
+		instance.setOverriddenFromAndRegisterSyntax1NamesInElementTypes();
 		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren(ALL);
 		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren(ALL);
 	}

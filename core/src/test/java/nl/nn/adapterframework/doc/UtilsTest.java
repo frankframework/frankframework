@@ -20,7 +20,7 @@ public class UtilsTest {
 	public void testGetSpringBeans() throws ReflectiveOperationException {
 		List<SpringBean> actual = Utils.getSpringBeans(SIMPLE + ".IListener");
 		actual.sort((b1, b2) -> b1.compareTo(b2));
-		assertEquals(3, actual.size());
+		assertEquals(4, actual.size());
 		for(SpringBean a: actual) {
 			assertEquals(a.getClazz().getName(), a.getName());					
 		}

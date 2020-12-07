@@ -53,7 +53,7 @@ public class DocWriterNewExamplesTest {
 		FrankDocModel result = new FrankDocModel();
 		result.createConfigChildDescriptorsFrom(getDigesterRulesPath(digesterRulesFileName));
 		result.findOrCreateFrankElement(Utils.getClass(startClassName));
-		result.setOverriddenFrom();
+		result.setOverriddenFromAndRegisterSyntax1NamesInElementTypes();
 		result.buildGroups();
 		return result;
 	}

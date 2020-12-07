@@ -113,6 +113,29 @@ public class ConfigChild extends ElementChild {
 		return CONFIG_CHILD_COMPARATOR.compare(this, (ConfigChild) other);
 	}
 
+	/**
+	 * Registers the syntax 1 name of this {@link ConfigChild} with the
+	 * {@link ElementType}. This is done recursively because the XSD does
+	 * not only use the declared config children, but also the inherited
+	 * config children of a {@link FrankElement}. For each combination of
+	 * a syntax 1 name and an {@link ElementChild}, we have &lt;xs:group&gt;
+	 * declarations in the XSD. The recursion ensures that references to
+	 * ancestor groups are valid.
+	 */
+	void recursivelyRegisterSyntax1NameWithElementType(final String syntax1Name) {
+		if(IN_XSD.test(this)) {
+			elementType.addConfigChildSyntax1Name(syntax1Name);
+			FrankElement parent = getOwningElement().getNextAncestorThatHasChildren(
+					f -> f.getChildrenOfKind(IN_XSD, ConfigChild.class).isEmpty());
+			if(parent != null) {
+				ConfigChild match = (ConfigChild) parent.findElementChildMatch(this, ConfigChild.class);
+				if(match != null) {
+					match.recursivelyRegisterSyntax1NameWithElementType(syntax1Name);
+				}
+			}
+		}
+	}
+
 	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
 			Comparator.comparing(ConfigChild::getSequenceInConfig)
 			.thenComparing(ConfigChild::getSyntax1Name);

@@ -93,7 +93,7 @@ public class FrankDocModelTest {
 		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD));
 		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT));
 		instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_GRNAD_CHILD));
-		instance.setOverriddenFrom();
+		instance.setOverriddenFromAndRegisterSyntax1NamesInElementTypes();
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
 
@@ -102,7 +102,7 @@ public class FrankDocModelTest {
 		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT));
 		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD));
 		instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_GRNAD_CHILD));
-		instance.setOverriddenFrom();
+		instance.setOverriddenFromAndRegisterSyntax1NamesInElementTypes();
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
 

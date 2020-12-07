@@ -18,6 +18,8 @@ package nl.nn.adapterframework.doc.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import lombok.Getter;
 
@@ -35,6 +37,15 @@ public class ElementType {
 	private @Getter String simpleName;
 	private @Getter Map<String, FrankElement> members;
 	private @Getter boolean fromJavaInterface;
+	
+	/**
+	 * For each syntax 1 name in this set, an &lt;xs:choice&gt; of &lt;xs:element&gt;
+	 * is created in the XSD. The elements in a group correspond to the Java
+	 * classes that implement the Java interface represented by this {@link ElementChild}.
+	 * For each syntax 1 name a different group is needed because the syntax 2
+	 * names of the elements are different.
+	 */
+	private @Getter Set<String> configChildSyntax1Names = new TreeSet<>();
 
 	ElementType(Class<?> clazz) {
 		fullName = clazz.getName();
@@ -52,5 +63,9 @@ public class ElementType {
 			throw new ReflectiveOperationException(String.format("Expected that ElementType [%s] contains exactly one element", fullName));
 		}
 		return members.values().iterator().next();
+	}
+
+	void addConfigChildSyntax1Name(String syntax1Name) {
+		configChildSyntax1Names.add(syntax1Name);
 	}
 }
