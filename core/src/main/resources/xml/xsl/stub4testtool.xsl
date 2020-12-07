@@ -30,13 +30,16 @@
 		<xsl:call-template name="copy" />
 	</xsl:template>
 	
-	<xsl:template match="pipeline">
-		<xsl:for-each select="parent::adapter/receiver[1]">
-			<xsl:call-template name="stubReceiver">
-				<xsl:with-param name="receiverName" select="parent::adapter/@name"/>
-			</xsl:call-template>
-		</xsl:for-each>
-		<xsl:call-template name="copy" />
+	<xsl:template match="adapter">
+		<xsl:element name="adapter">
+			<xsl:apply-templates select="@*" />
+			<xsl:for-each select="receiver[1]">
+				<xsl:call-template name="stubReceiver">
+					<xsl:with-param name="isAdapterStub" select="true()"/>
+				</xsl:call-template>
+			</xsl:for-each>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+		</xsl:element>
 	</xsl:template>
 	
 	<xsl:template match="receiver[listener[@className='nl.nn.adapterframework.jdbc.JdbcQueryListener'
@@ -48,19 +51,31 @@
 										or @className='nl.nn.adapterframework.http.rest.ApiListener']]">
 		<xsl:call-template name="copy" />
 		<xsl:call-template name="stubReceiver">
-			<xsl:with-param name="receiverName" select="string-join((parent::adapter/@name,xs:string(count(preceding-sibling::receiver)+1)),'-')"/>
+			<xsl:with-param name="isAdapterStub" select="false()"/>
 		</xsl:call-template>
 	</xsl:template>
 	
 	<xsl:template match="receiver">
 		<xsl:call-template name="disable" />
 		<xsl:call-template name="stubReceiver">
-			<xsl:with-param name="receiverName" select="string-join((parent::adapter/@name,xs:string(count(preceding-sibling::receiver)+1)),'-')"/>
+			<xsl:with-param name="isAdapterStub" select="false()"/>
 		</xsl:call-template>
 	</xsl:template>	
 	
 	<xsl:template name="stubReceiver">
-		<xsl:param name="receiverName"/>
+		<xsl:param name="isAdapterStub" as="xs:boolean"/>
+
+		<xsl:variable name="receiverName">
+			<xsl:choose>
+				<xsl:when test="$isAdapterStub">
+					<xsl:value-of select="parent::adapter/@name"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="string-join((parent::adapter/@name,xs:string(count(preceding-sibling::receiver)+1)),'-')"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
 		<xsl:element name="receiver">
 			<xsl:attribute name="name">
 				<xsl:value-of select="concat('testtool-',$receiverName)" />
@@ -106,7 +121,6 @@
 	<xsl:template match="sender">
 		<xsl:call-template name="disable" />
 		
-		<xsl:variable name="pipeName" select="ancestor::pipe/@name" />
 		<xsl:element name="sender">
 			<xsl:if test="string-length(@name)&gt;0">
 				<xsl:attribute name="name">
@@ -117,7 +131,7 @@
 			<xsl:attribute name="serviceName">
 				<xsl:choose>
 					<xsl:when test="parent::pipe">
-						<xsl:value-of select="concat('testtool-',$pipeName)" />
+						<xsl:value-of select="concat('testtool-',parent::pipe/@name)" />
 					</xsl:when>
 					<xsl:when test="@name">
 						<xsl:value-of select="concat('testtool-',@name)" />
@@ -125,12 +139,9 @@
 					<xsl:otherwise>
 						<xsl:variable name="senderNames">
 							<xsl:element name="senderNames">
-								<xsl:call-template name="determineStubSenderNames">
-									<xsl:with-param name="node" select="."/>
-								</xsl:call-template>
+								<xsl:call-template name="determineStubSenderNames"/>
 							</xsl:element>
 						</xsl:variable>
-					<!--TBD-->
 						<xsl:value-of select="string-join(('testtool',$senderNames/senderNames/stubName),'-')" />
 					</xsl:otherwise>
 				</xsl:choose>
@@ -144,7 +155,6 @@
 	</xsl:template>
 
 	<xsl:template name="determineStubSenderNames">
-		<xsl:param name="node" as="node()"/>
 		<xsl:choose>
 			<xsl:when test="@name">
 				<xsl:element name="stubName">
@@ -153,11 +163,11 @@
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:element name="stubName">
-					<xsl:value-of select="string-join((tokenize($node/@className,'\.')[last()],xs:string($node/position())),'-')"/>
+					<xsl:value-of select="string-join((tokenize(@className,'\.')[last()],xs:string(count(preceding-sibling::sender)+1)),'-')"/>
 				</xsl:element>
-				<xsl:call-template name="determineStubSenderNames">
-					<xsl:with-param name="node" select="$node/parent::*"/>
-				</xsl:call-template>
+				<xsl:for-each select="parent::*">
+					<xsl:call-template name="determineStubSenderNames"/>
+				</xsl:for-each>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>	
@@ -326,7 +336,9 @@
 	
 	<xsl:template name="disable">
 		<xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
-			<xsl:copy-of select="."/>
+		<xsl:copy>
+			<xsl:apply-templates select="*|@*|processing-instruction()|text()" />
+		</xsl:copy>
 		<xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
 	</xsl:template>
 </xsl:stylesheet>
