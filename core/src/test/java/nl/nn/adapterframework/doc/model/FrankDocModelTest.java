@@ -27,6 +27,7 @@ public class FrankDocModelTest {
 	private static final String SIMPLE_CHILD = SIMPLE + ".ListenerChild";
 	private static final String SIMPLE_GRNAD_CHILD = SIMPLE + ".ListenerGrandChild";
 	private static final String SIMPLE_GRNAD_PARENT = SIMPLE + ".AbstractGrandParent";
+	private static final String FOR_XSD_ELEMENT_NAME_TEST = SIMPLE + ".ParentListener";
 
 	private static final String IBISDOCREF = "nl.nn.adapterframework.doc.testtarget.ibisdocref";
 	private static final String REFERRED_CHILD = IBISDOCREF + ".ChildTarget";
@@ -64,9 +65,10 @@ public class FrankDocModelTest {
 		assertSame(instance.getAllTypes().get(SIMPLE_CHILD), actualChild);
 		Assert.assertSame(instance.getAllElements().get(SIMPLE_CHILD), actualChild.getMembers().get(SIMPLE_CHILD));
 		Assert.assertTrue(instance.getAllElements().containsKey(SIMPLE_PARENT));
+		Assert.assertTrue(instance.getAllElements().containsKey(FOR_XSD_ELEMENT_NAME_TEST));
 		Map<String, FrankElement> listenerMembers = actualListener.getMembers();
 		// Tests that AbstractGrandParent is omitted.
-		assertEquals(3, listenerMembers.size());
+		assertEquals(4, listenerMembers.size());
 		assertTrue(listenerMembers.containsKey(SIMPLE_PARENT));
 		assertTrue(listenerMembers.containsKey(SIMPLE_CHILD));
 		assertTrue(listenerMembers.containsKey(SIMPLE_GRNAD_CHILD));

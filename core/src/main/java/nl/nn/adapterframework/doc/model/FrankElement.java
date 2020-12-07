@@ -164,6 +164,7 @@ public class FrankElement {
 	 *
 	 * @return
 	 */
+	// TODO: Remove this function because of syntax 2 instead of syntax 3.
 	public String getAlias() {
 		if(cachedAlias != null) {
 			return cachedAlias;
@@ -183,5 +184,18 @@ public class FrankElement {
 			cachedAlias = aliasCandidates.get(0);
 		}
 		return cachedAlias;
+	}
+
+	public String getXsdElementName(final ElementType elementType, final String groupSyntax1Name) {
+		String postfixToRemove = elementType.getSimpleName();
+		if(postfixToRemove.startsWith("I")) {
+			postfixToRemove = postfixToRemove.substring(1);
+		}
+		String result = simpleName;
+		if(result.endsWith(postfixToRemove)) {
+			result = result.substring(0, result.lastIndexOf(postfixToRemove));
+		}
+		result = result + Utils.toUpperCamelCase(groupSyntax1Name);
+		return result;
 	}
 }
