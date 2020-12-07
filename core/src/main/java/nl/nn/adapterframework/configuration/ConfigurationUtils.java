@@ -269,7 +269,7 @@ public class ConfigurationUtils {
 			this.buildInfoFilename = buildInfoFilename + ".properties";
 
 			try {
-				jar = Misc.streamToBytes(stream);
+				jar = Misc.streamToBytes(stream, false);
 
 				read();
 				validate();

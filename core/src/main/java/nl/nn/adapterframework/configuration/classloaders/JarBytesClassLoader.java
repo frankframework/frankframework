@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden
+   Copyright 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,13 +52,11 @@ public abstract class JarBytesClassLoader extends BytesClassLoader {
 						}
 					}
 				}
-				resources.put(fileName, Misc.streamToBytes(jarInputStream));
+				resources.put(fileName, Misc.streamToBytes(jarInputStream, false));
 			}
 			return resources;
 		} catch (IOException e) {
-			throw new ConfigurationException(
-					"Could not read resources from jar input stream for configuration '"
-					+ getConfigurationName() + "'", e);
+			throw new ConfigurationException("Could not read resources from jar input stream for configuration '" + getConfigurationName() + "'", e);
 		}
 	}
 }
