@@ -279,17 +279,27 @@ public class Misc {
 	 * </p>
 	 */
 	public static byte[] streamToBytes(InputStream inputStream) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		byte[] buffer = new byte[1024];
-		while (true) {
-			int r = inputStream.read(buffer);
-			if (r == -1) {
-				break;
+		return streamToBytes(inputStream, true);
+	}
+	
+	public static byte[] streamToBytes(InputStream inputStream, boolean closeInput) throws IOException {
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			while (true) {
+				int r = inputStream.read(buffer);
+				if (r == -1) {
+					break;
+				}
+				out.write(buffer, 0, r);
 			}
-			out.write(buffer, 0, r);
+	
+			return out.toByteArray();
+		} finally {
+			if (closeInput) {
+				inputStream.close();
+			}
 		}
-
-		return out.toByteArray();
 	}
 
 	/**
