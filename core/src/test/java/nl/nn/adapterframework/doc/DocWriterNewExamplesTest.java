@@ -50,12 +50,8 @@ public class DocWriterNewExamplesTest {
 	}
 
 	private FrankDocModel createModel() throws Exception {
-		FrankDocModel result = new FrankDocModel();
-		result.createConfigChildDescriptorsFrom(getDigesterRulesPath(digesterRulesFileName));
-		result.findFrankElement(startClassName);
-		result.setOverriddenFromAndRegisterSyntax1NamesInElementTypes();
-		result.buildGroups();
-		return result;
+		return FrankDocModel.populate(
+				getDigesterRulesPath(digesterRulesFileName), startClassName);
 	}
 
 	private String getDigesterRulesPath(String fileName) {

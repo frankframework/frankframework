@@ -37,7 +37,7 @@ public class FrankDocModelConfigChildrenTest {
 				Utils.getClass(CONTAINER_DERIVED));
 		instance.findOrCreateElementType(
 				Utils.getClass(CONTAINER_OTHER));
-		instance.setOverriddenFromAndRegisterSyntax1NamesInElementTypes();
+		instance.setOverriddenFrom();
 		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren(ALL);
 		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren(ALL);
 	}

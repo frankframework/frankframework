@@ -17,9 +17,8 @@ limitations under the License.
 package nl.nn.adapterframework.doc.model;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import lombok.Getter;
 
@@ -44,8 +43,11 @@ public class ElementType {
 	 * classes that implement the Java interface represented by this {@link ElementChild}.
 	 * For each syntax 1 name a different group is needed because the syntax 2
 	 * names of the elements are different.
+	 * <p>
+	 * A {@link LinkedHashSet} is being used to preserve the sequence with which
+	 * the syntax 1 names were inserted.
 	 */
-	private @Getter Set<String> configChildSyntax1Names = new TreeSet<>();
+	private @Getter LinkedHashSet<String> configChildSyntax1Names = new LinkedHashSet<>();
 
 	ElementType(Class<?> clazz) {
 		fullName = clazz.getName();

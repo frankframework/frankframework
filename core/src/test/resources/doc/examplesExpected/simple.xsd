@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-  <xs:element name="Start">
-    <xs:complexType>
-      <xs:group ref="StartDeclaredChildGroup" />
-      <xs:attributeGroup ref="StartCumulativeAttributeGroup" />
-    </xs:complexType>
-  </xs:element>
+  <xs:element name="Start" type="StartType" />
+  <xs:complexType name="StartType">
+    <xs:group ref="StartDeclaredChildGroup" />
+    <xs:attributeGroup ref="StartCumulativeAttributeGroup" />
+  </xs:complexType>
   <xs:group name="StartDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="Syntax1NameIChild" minOccurs="0" maxOccurs="1">
-        <xs:complexType>
-          <xs:group ref="IChildElementGroup" minOccurs="1" maxOccurs="1" />
-        </xs:complexType>
-      </xs:element>
-      <xs:element ref="Syntax1NameTChild" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="IChildSyntax1NameIChildElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="TChildSyntax1NameTChildElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="StartCumulativeAttributeGroup">
@@ -23,23 +18,57 @@
   <xs:attributeGroup name="StartDeclaredAttributeGroup">
     <xs:attribute name="attribute" type="xs:string" />
   </xs:attributeGroup>
-  <xs:group name="IChildElementGroup">
+  <xs:group name="IChildSyntax1NameIChildElementGroup">
     <xs:choice>
-      <xs:element ref="DescribedPossibleIChild" />
-      <xs:element ref="NotDescribedPossibleIChild" />
+      <xs:element name="syntax1NameIChild">
+        <xs:complexType>
+          <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DescribedPossibleISyntax1NameIChild">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DescribedPossibleIChildType">
+              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="NotDescribedPossibleISyntax1NameIChild">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="NotDescribedPossibleIChildType">
+              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:element name="Syntax1NameTChild">
-    <xs:complexType />
-  </xs:element>
+  <xs:group name="TChildSyntax1NameTChildElementGroup">
+    <xs:choice>
+      <xs:element name="Syntax1NameTChild">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="TChildType">
+              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameTChild" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
   <xs:attributeGroup name="AbstractParentOfStartDeclaredAttributeGroup">
     <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
   </xs:attributeGroup>
-  <xs:element name="DescribedPossibleIChild">
-    <xs:complexType>
-      <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />
-    </xs:complexType>
-  </xs:element>
+  <xs:complexType name="DescribedPossibleIChildType">
+    <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />
+  </xs:complexType>
   <xs:attributeGroup name="DescribedPossibleIChildDeclaredAttributeGroup">
     <xs:attribute name="firstAttribute" type="xs:string">
       <xs:annotation>
@@ -52,13 +81,12 @@
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:element name="NotDescribedPossibleIChild">
-    <xs:complexType>
-      <xs:attributeGroup ref="NotDescribedPossibleIChildDeclaredAttributeGroup" />
-    </xs:complexType>
-  </xs:element>
+  <xs:complexType name="NotDescribedPossibleIChildType">
+    <xs:attributeGroup ref="NotDescribedPossibleIChildDeclaredAttributeGroup" />
+  </xs:complexType>
   <xs:attributeGroup name="NotDescribedPossibleIChildDeclaredAttributeGroup">
     <xs:attribute name="firstAttribute" type="xs:string" />
     <xs:attribute name="secondAttribute" type="xs:string" />
   </xs:attributeGroup>
+  <xs:complexType name="TChildType" />
 </xs:schema>
