@@ -348,6 +348,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	private EMail getEmailAddress(Element element, String type) throws SenderException {
+		if (element == null) {
+			return null;
+		}
 		String value = XmlUtils.getStringValue(element);
 		if (StringUtils.isNotEmpty(value)) {
 			return new EMail(value, element.getAttribute("name"), type);
