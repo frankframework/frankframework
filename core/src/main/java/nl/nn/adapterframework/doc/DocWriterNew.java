@@ -16,10 +16,12 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAnyAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeFixed;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroupRef;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeUseRequired;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexContent;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
@@ -529,13 +531,26 @@ public class DocWriterNew {
 	private void defineElementTypeGroup(ElementType elementType, String syntax1Name) {
 		XmlBuilder group = addGroup(xsdRoot, xsdGroupOf(elementType, syntax1Name));
 		XmlBuilder choice = addChoice(group);
+		if(elementType.isFromJavaInterface()) {
+			addGenericElementOption(choice, syntax1Name);
+		}
 		List<FrankElement> frankElementOptions = elementType.getMembers().values().stream()
 				.filter(f -> ! f.isDeprecated())
+				.filter(f -> ! f.isAbstract())
 				.collect(Collectors.toList());
 		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
 		for(FrankElement frankElement: frankElementOptions) {
 			addElementToElementGroup(choice, frankElement, elementType, syntax1Name);
 		}		
+	}
+
+	private void addGenericElementOption(XmlBuilder choice, String syntax1Name) {
+		XmlBuilder topChoice = addElementWithType(choice, syntax1Name);
+		XmlBuilder complexType = addComplexType(topChoice);
+		addAttributeFixed(complexType, "elementType", syntax1Name);
+		addAttributeUseRequired(complexType, "className");
+		// My XSD is invalid if I add addAnyAttribute before attributes elementType and className.
+		addAnyAttribute(complexType);
 	}
 
 	private void addElementToElementGroup(XmlBuilder context, FrankElement frankElement, ElementType elementType, String syntax1Name) {

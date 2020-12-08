@@ -135,6 +135,21 @@ class DocWriterNewXmlUtils {
 		return attribute;
 	}
 
+	static XmlBuilder addAttributeUseRequired(XmlBuilder context, String name) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("name", name);
+		attribute.addAttribute("type", "xs:string");
+		attribute.addAttribute("use", "required");
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
+	static XmlBuilder addAnyAttribute(XmlBuilder context) {
+		XmlBuilder attribute = new XmlBuilder("anyAttribute", "xs", XML_SCHEMA_URI);
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
 	static void addDocumentation(XmlBuilder context, String description) {
 		XmlBuilder annotation = new XmlBuilder("annotation", "xs", XML_SCHEMA_URI);
 		context.addSubElement(annotation);
