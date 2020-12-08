@@ -44,7 +44,7 @@
 				<xsl:value-of select="@firstPipe" />
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:value-of select="//pipe[1]/@name" />
+				<xsl:value-of select="pipe[1]/@name" />
 			</xsl:otherwise>
 		</xsl:choose>
 		<xsl:text>&quot;</xsl:text>
@@ -139,7 +139,7 @@
 				</xsl:if>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:if test="count(forward[@name='success'])=0">
+				<xsl:if test="not(forward[@name='success'])">
 					<xsl:call-template name="forward">
 						<xsl:with-param name="pipeName" select="@name" />
 						<xsl:with-param name="forwardPath">
