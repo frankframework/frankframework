@@ -4,6 +4,7 @@ import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
 import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -150,10 +151,6 @@ public class FrankDocModelTest {
 		actualInheritedAttribute = actualGrandChild.getAttributes(ALL).get(0);
 		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
 		assertSame(actualChild, actualInheritedAttribute.getOverriddenFrom());
-		// actualParent and actualChild are not config children of a non-interface
-		// element type. Therefore the alias equals the syntax 1 name with a capital.
-		assertEquals(Utils.toUpperCamelCase(actualParent.getSimpleName()), actualParent.getAlias());
-		assertEquals(Utils.toUpperCamelCase(actualChild.getSimpleName()), actualChild.getAlias());
 		// Deprecated
 		FrankAttribute attribute = actualParent.getAttributes(a -> ((FrankAttribute) a).getName().equals(
 				"deprecatedInParentAttribute")).get(0);
@@ -400,5 +397,14 @@ public class FrankDocModelTest {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault", REFERRER_CHILD);
 		assertFalse(actual.isDocumented());
 		assertEquals("Description of ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault", actual.getDescription());
+	}
+
+	@Test
+	public void testFrankElementDeprecatedAttribute() throws Exception {
+		FrankElement element = instance.findOrCreateFrankElement(
+				Utils.getClass(SIMPLE + ".NonDeprecatedDescendant"));
+		assertNotNull(element);
+		assertFalse(element.isDeprecated());
+		assertTrue(element.getParent().isDeprecated());
 	}
 }

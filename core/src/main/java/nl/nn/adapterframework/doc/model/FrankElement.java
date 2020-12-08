@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
-import nl.nn.adapterframework.doc.DocWriterNew;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
@@ -40,17 +39,18 @@ public class FrankElement {
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
 	private final @Getter boolean isAbstract;
+	private @Getter boolean isDeprecated = false;
 
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;
 
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
 	private @Getter List<ConfigChild> aliasSources;
-	private String cachedAlias = null;
 	private @Getter FrankElementStatistics statistics;
 
 	FrankElement(Class<?> clazz) {
 		this(clazz.getName(), clazz.getSimpleName(), Modifier.isAbstract(clazz.getModifiers()));
+		isDeprecated = clazz.getAnnotation(Deprecated.class) != null;
 	}
 
 	/**
@@ -145,45 +145,6 @@ public class FrankElement {
 
 	public void addAliasSource(ConfigChild aliasSource) {
 		aliasSources.add(aliasSource);
-	}
-
-	/**
-	 * Name to be applied in the &lt;xs:element&gt; in the XSD.
-	 * A <code>FrankElement</code> can be contained in another <code>FrankElement</code>.
-	 * In some cases, such a child <code>FrankElement</code> has to appear in the XSD
-	 * with a different name in the <code>&lt;xs:element&gt;</code>. The alias is this
-	 * different name when applicable or equals the <code>simpleName</code>. See also
-	 * {@link DocWriterNew}.
-	 * <p>
-	 * The rule for the alias is as follows. If a config child has an {@link ElementType}
-	 * that does not come from a Java interface, then the alias has to differ from the
-	 * simple name. The alias then equals the syntax 1 name of the config child with the
-	 * first letter capitalized. In theory, there can be different config children that
-	 * apply that have different syntax 1 names, but this should not happen in practice.
-	 * This method emits a warning if this ambiguity occurs.
-	 *
-	 * @return
-	 */
-	// TODO: Remove this function because of syntax 2 instead of syntax 3.
-	public String getAlias() {
-		if(cachedAlias != null) {
-			return cachedAlias;
-		}
-		List<String> aliasCandidates = aliasSources.stream()
-				.filter(c -> ! c.isDeprecated())
-				.map(c -> Utils.toUpperCamelCase(c.getSyntax1Name()))
-				.collect(Collectors.toSet())
-				.stream().sorted().collect(Collectors.toList());
-		if(aliasCandidates.size() == 0) {
-			cachedAlias = simpleName;
-		} else if(aliasCandidates.size() == 1) {
-			cachedAlias = aliasCandidates.iterator().next();
-		} else {
-			log.warn(String.format("Multiple aliases for config FrankElement %s, which are: %s",
-					fullName, aliasCandidates.stream().collect(Collectors.joining(", "))));
-			cachedAlias = aliasCandidates.get(0);
-		}
-		return cachedAlias;
 	}
 
 	public String getXsdElementName(final ElementType elementType, final String groupSyntax1Name) {

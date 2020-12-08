@@ -23,7 +23,7 @@ import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.model.FrankElementStatistics;
 
-@Ignore("Test takes a long time to run, and gives little information")
+// @Ignore("Test takes a long time to run, and gives little information")
 public class DocWriterNewIntegrationTest {
 
 	@Test
@@ -41,47 +41,6 @@ public class DocWriterNewIntegrationTest {
 		finally {
 			writer.close();
 		}
-	}
-
-	@Test
-	public void testNoXsdTypesOmittedBySorting() {
-		FrankDocModel model = FrankDocModel.populate();
-		DocWriterNew docWriter = new DocWriterNew(model);
-		docWriter.init();
-		List<SortKeyForXsd> xsdSortOrder = docWriter.xsdSortOrder;
-		List<FrankElement> reconstructedElementsList = xsdSortOrder.stream()
-				.filter(item -> item.getKind() == SortKeyForXsd.Kind.ELEMENT)
-				.map(SortKeyForXsd::getName)
-				.map(model.getAllElements()::get)
-				.collect(Collectors.toList());
-		Map<String, FrankElement> reconstructedElements = new HashMap<>();
-		for(FrankElement element: reconstructedElementsList) {
-			reconstructedElements.put(element.getFullName(), element);
-		}
-		List<ElementType> reconstructedTypesList = xsdSortOrder.stream()
-				.filter(item -> item.getKind() == SortKeyForXsd.Kind.TYPE)
-				.map(SortKeyForXsd::getName)
-				.map(model.getAllTypes()::get)
-				.collect(Collectors.toList());
-		Map<String, ElementType> reconstructedTypes = new HashMap<>();
-		for(ElementType type: reconstructedTypesList) {
-			reconstructedTypes.put(type.getFullName(), type);
-		}
-		Map<String, ElementType> expectedTypes = new HashMap<>();
-		for(String k: model.getAllTypes().keySet()) {
-			ElementType t = model.getAllTypes().get(k);
-			if(t.isFromJavaInterface()) {
-				expectedTypes.put(k, t);
-			}
-		}
-		Set<String> missedElements = new HashSet<>();
-		for(String name: model.getAllElements().keySet()) {
-			if(! reconstructedElements.containsKey(name)) {
-				missedElements.add(name);
-			}
-		}
-		assertTrue(missedElements.size() <= 10);
-		assertEquals(expectedTypes, reconstructedTypes);
 	}
 
 	@Test

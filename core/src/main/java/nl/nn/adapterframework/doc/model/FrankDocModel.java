@@ -133,7 +133,7 @@ public class FrankDocModel {
 		}
 	}
 
-	public ElementType findOrCreateElementType(Class<?> clazz) throws ReflectiveOperationException {
+	ElementType findOrCreateElementType(Class<?> clazz) throws ReflectiveOperationException {
 		if(allTypes.containsKey(clazz.getName())) {
 			return allTypes.get(clazz.getName());
 		}
@@ -153,11 +153,15 @@ public class FrankDocModel {
 		return result;
 	}
 
+	public ElementType findElementType(String fullName) {
+		return allTypes.get(fullName);
+	}
+
 	public boolean hasType(String typeName) {
 		return allTypes.containsKey(typeName);
 	}
 
-	public FrankElement findOrCreateFrankElement(Class<?> clazz) throws ReflectiveOperationException {
+	FrankElement findOrCreateFrankElement(Class<?> clazz) throws ReflectiveOperationException {
 		if(allElements.containsKey(clazz.getName())) {
 			return allElements.get(clazz.getName());
 		}
@@ -169,6 +173,10 @@ public class FrankDocModel {
 		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current));
 		current.setConfigChildren(createConfigChildren(clazz.getDeclaredMethods(), current));
 		return current;
+	}
+
+	public FrankElement findFrankElement(String fullName) {
+		return allElements.get(fullName);
 	}
 
 	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner) throws ReflectiveOperationException {
@@ -429,7 +437,7 @@ public class FrankDocModel {
 			current.getConfigChildren(ALL).forEach(c -> c.calculateOverriddenFrom());
 			current.getAttributes(ALL).forEach(c -> c.calculateOverriddenFrom());
 			current.getConfigChildren(ALL).forEach(
-					c -> c.recursivelyRegisterSyntax1NameWithElementType(c.getSyntax1Name()));
+					c -> c.registerSyntax1NameWithElementType(c.getSyntax1Name()));
 			current.getStatistics().finish();
 			remainingElements.remove(current.getFullName());
 		}
