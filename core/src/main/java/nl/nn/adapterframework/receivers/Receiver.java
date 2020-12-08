@@ -198,6 +198,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	// Should be smaller than the transaction timeout as the delay takes place
 	// within the transaction. WebSphere default transaction timeout is 120.
 	public static final int MAX_RETRY_INTERVAL=100;
+	public final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_RECOVER = "recover";
@@ -1395,7 +1396,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	@SuppressWarnings("unchecked")
 	private boolean hasProblematicHistory(String messageId, boolean manualRetry, Object rawMessageOrWrapper, Message message, Map<String,Object>threadContext, String correlationId) throws ListenerException {
 		if (manualRetry) {
-			threadContext.put("retry", "true");
+			threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
 		} else {
 			IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
@@ -1408,7 +1409,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 					}
 					if (deliveryCount>1) {
 						log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has delivery count ["+(deliveryCount)+"]");
-						threadContext.put("retry", "true");
+						threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
 					}
 					if (deliveryCount>getMaxDeliveries()) {
 						warn("message with messageId ["+messageId+"] has already been delivered ["+deliveryCount+"] times, will not process; maxDeliveries=["+getMaxDeliveries()+"]");
@@ -1421,7 +1422,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 				resetRetryInterval();
 				return false;
 			} else {
-				threadContext.put("retry", "true");
+				threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
 				if (getMaxRetries()<0) {
 					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times; maxRetries=["+getMaxRetries()+"]");
 					return false;
