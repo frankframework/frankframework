@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.ElementType;
@@ -63,39 +64,62 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Frank configuration XML file. The XML Schema is written based on the information
  * in a {@link FrankDocModel} object (the model).
  * 
+ * <h1>The syntax 2 name</h1>
+ *
+ * Below, a few implementation details are explained. First, the integration specialist
+ * references an element by a name the reveals both the requested Java class
+ * (expressed as a {@link FrankElement} in the model)
+ * and the role it plays (e.g. sender or error sender). These requirements are
+ * implemented by model method {@link FrankElement#getXsdElementName}. This
+ * method takes as an argument the relevant {@link ElementType} to which the {@link FrankElement}
+ * of the Java class belongs. The link between this {@link ElementType} and the
+ * containing &lt;xs:element&gt; is made through a {@link ConfigChild}.
+ * The <code>syntax1Name</code> attribute of this {@link ConfigChild}
+ * is the other argument required by {@link FrankElement#getXsdElementName}.
+ * <p>
+ * Each element within the Frank!Framework appears as an &lt;complexType&gt;
+ * under the XSD root. It is not duplicated for the different roles it
+ * can play. This complex type references a group of config children and a group
+ * of attributes. A group of config children consists of &lt;xs:choice&gt; elements that
+ * each list the allowed elements available to the integration specialist, element groups.
+ * An option within an element group appears as an &lt;xs:element&gt; that has
+ * the syntax 2 name as name and the XSD type of the referenced {@link FrankElement} as type.
+ * <p>
+ * There is a different element group for each combination of an {@link ElementType} and
+ * config child syntax 1 name, so there can be multiple element groups per {@link ElementType}. This is
+ * the only duplication we need because of syntax 2 names. A {@link FrankElement} is
+ * represented in the XSD with a top-level &lt;xs:complexType&gt; item. That item references
+ * attribute groups and XSD sequences for config children, but these are not duplicated
+ * because of the syntax 2 name issue.
+ *
  * <h1>Inheritance of attributes and config children</h1>
  * 
- * Below, a few implementation details are explained. Each XML tag that is
- * allowed in a Frank configuration appears as an &lt;xs:element&gt; in the XSD.
- * Each &lt;xs:element&gt; in the XSD has a corresponding
- * {@link FrankElement} object in the model. Each element in the 
- * XSD can have attributes or other elements. These correspond to {@link FrankAttribute}
+ * Each {@link FrankElement} is represented by a top-level &lt;xs:complexType&gt;.
+ * Each Frank!Framework element can have attributes or other elements. 
+ * These correspond to {@link FrankAttribute}
  * objects or {@link ConfigChild} objects in the model.
  * <p>
  * In the model, a {@link FrankElement} only holds its declared attributes, but
- * the &lt;xs:element&gt; should allow both the declared attributes and the attributes
+ * the top-level &lt;xs:complexType&gt; should allow both the declared attributes and the attributes
  * inherited from the ancestors of the {@link FrankElement} (the inherited attributes).
  * The same holds for configuration children. This similarity appears in the model
  * through the common base class {@link ElementChild}, which is a parent class of both
  * {@link FrankAttribute} and {@link ConfigChild}. An attribute defined high in the
- * class hierarchy of the Frank!Framework can be allowed for many &lt;xs:element&gt; tags in
- * the XSD, but we do not want to repeat the same &lt;xs:attribute&gt; tags in all these cases.
+ * class hierarchy of the Frank!Framework can be allowed for many FF! elements,
+ * but we do not want to repeat the same &lt;xs:attribute&gt; tags in all these cases.
  * We solve this by grouping the attributes, and the config children, in the XSD, for example:
  * 
  * <pre>
  * {@code
-<xs:element name="Configuration">
-  <xs:complexType>
-    <xs:group ref="ConfigurationDeclaredChildGroup" />
-    <xs:attributeGroup ref="ConfigurationDeclaredAttributeGroup" />
-  </xs:complexType>
-</xs:element>
+<xs:complexType name="ConfigurationType">
+  <xs:group ref="ConfigurationDeclaredChildGroup" />
+  <xs:attributeGroup ref="ConfigurationDeclaredAttributeGroup" />
+</xs:complexType>
 }
  * </pre>
  * <p>
  * The example shows a group named <code>ConfigurationDeclaredChildGroup</code>. This group
- * declares all &lt;xs:element&gt; that are allowed as children of Frank config tag
- * &lt;Configuration&gt;.
+ * declares all allowed child FF! elements.
  * <p>
  * An XSD group ending with "DeclaredChildGroup" only holds the <em>declared</em> configuration children
  * or attributes. This is sufficient for Frank config element &lt;Configuration&gt; because the corresponding
@@ -121,7 +145,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Another issue about groups needs explanation. Some Java classes of the Frank!Framework override
  * attributes that become then duplicate in the model. They appear as declared attributes
  * in two {@link FrankElement} objects, one modeling the Java subclass and one modeling the
- * Java ancestor class. In this situation, only the &lt;xs:element&gt; corresponding
+ * Java ancestor class. In this situation, only the attribute (or config child) corresponding
  * to the Java subclass is needed. The attribute
  * of the ancestor class is omitted. The following example illustrates this:
  * <pre>
@@ -167,50 +191,13 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * the following XML schema:
  * <pre>
  * {@code
-<xs:element name="Listener" minOccurs="0" maxOccurs="1">
-  <xs:complexType>
-    <xs:group ref="IListenerElementGroup" minOccurs="1" maxOccurs="1" />
-  </xs:complexType>
-</xs:element>
+<xs:group ref="IListenerListenerElementGroup" minOccurs="0" maxOccurs="1" />
 }
  * </pre>
  * This snippet appears within <code>&lt;xs:group name="ReceiverDeclaredChildGroup"&gt;&lt;xs:sequence&gt;</code>.
- * The snippet states that a Receiver can contain a &lt;Listener&gt; that in turn can contain any
- * &lt;xs:element&gt; that is related to a Java class that implements Java interface <code>IListener</code>.
- * To summarize, a Frank config is allowed to contain <code>&lt;Receiver&gt;&lt;Listener&gt;&ltJavaListener...&gt;</code>.
- * <p>
- * A simpler syntax is required for config children that allow only one option, for example
- * "<code>PipeForward</code>". The {@link ConfigChild} for the combination of owning element "<code>AbstractPipe</code>"
- * and {@link ElementType} "<code>PipeForward</code>" produces just the following:
- * <pre>
- * {@code
-<xs:element ref="Forward" minOccurs="0" maxOccurs="unbounded" />
-}
- * </pre>
- * This snippet is contained in <code>&lt;xs:group name="AbstractPipeDeclaredChildGroup"&gt;&lt;xs:sequence&gt;</code>.
- * It states that any pipe (all inherit <code>AbstractPipe</code>) can hold <code>&lt;Forward ... &gt;</code> instead of
- * <code>&lt;Forward&gt;&lt;PipeForward ... &gt;</code>. The XML tag <code>&lt;Forward&gt;</code> does not come
- * from the Frank!Framework Java code. Instead, it comes from the file <code>digester-rules.xml</code> that
- * is a resource within the Frank!Framework source code. The model supports producing this XML schema
- * by the method <code>FrankElement.getAlias()</code>.
- * <p>
- * Finally, the XSD allows Frank config like:
- * <pre>
- * {@code
-<Pipes>
-  <FixedResult returnString="HelloWorld">
-    <Forward name="success" path="next" />
-  </FixedResult>
-  <FixedResult returnString="HelloWorld again">
-    <Forward name="success" path="EXIT" />
-  </FixedResult>
-</Pipes>
-}
- * </pre>
- * The tag <code>&lt;Pipes&gt;</code> is obtained as follows. The word "<code>Pipe</code>" is found in
- * resource <code>digester-rules.xml</code>, available through the method
- * <code>ConfigChild.getSyntax1Name()</code>. This word is made plural by adding an "s", which
- * is implemented in method <code>ConfigChild.getSyntax1NamePlural()</code>.
+ * The snippet states that a Receiver can contain all elements related to a Java class implementing
+ * {@link IListener}, playing the role of a listener. The duplication because of syntax 2 names becomes
+ * visible here.
  *
  * @author martijn
  *
