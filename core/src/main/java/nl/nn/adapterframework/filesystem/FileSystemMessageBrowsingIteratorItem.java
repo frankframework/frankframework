@@ -27,12 +27,12 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 
 	private FS fileSystem;
 	private F item;
-	private String messageIdProperty;
+	private String messageIdPropertyKey;
 
-	public FileSystemMessageBrowsingIteratorItem(FS fileSystem, F item, String messageIdProperty) {
+	public FileSystemMessageBrowsingIteratorItem(FS fileSystem, F item, String messageIdPropertyKey) {
 		this.fileSystem = fileSystem;
 		this.item = item;
-		this.messageIdProperty = messageIdProperty;
+		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
 	
 	@Override
@@ -43,9 +43,9 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	@Override
 	public String getOriginalId() throws ListenerException {
 		try {
-			if (StringUtils.isNotEmpty(messageIdProperty)) {
+			if (StringUtils.isNotEmpty(messageIdPropertyKey)) {
 				Map<String,Object> properties = fileSystem.getAdditionalFileProperties(item);
-				return (String)properties.get(messageIdProperty);
+				return (String)properties.get(messageIdPropertyKey);
 			}
 			return fileSystem.getName(item);
 		} catch (FileSystemException e) {

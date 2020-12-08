@@ -66,7 +66,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 	
 	{
 		setMessageType(EMAIL_MESSAGE_TYPE);
-		setMessageIdProperty(IMailFileSystem.MAIL_MESSAGE_ID);
+		setMessageIdPropertyKey(IMailFileSystem.MAIL_MESSAGE_ID);
 	}
 	
 

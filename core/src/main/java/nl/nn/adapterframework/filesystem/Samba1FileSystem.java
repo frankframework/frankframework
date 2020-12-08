@@ -85,11 +85,6 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public void close() throws FileSystemException {
-		super.close();
-	}
-
-	@Override
 	public SmbFile toFile(String filename) throws FileSystemException {
 		try {
 			return new SmbFile(smbContext, filename);

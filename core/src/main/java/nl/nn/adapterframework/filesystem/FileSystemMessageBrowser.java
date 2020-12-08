@@ -33,16 +33,16 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 
 	private FS fileSystem;
 	private String folder;
-	private String messageIdProperty;
+	private String messageIdPropertyKey;
 	
 	private String hideRegex = null;
 	private String hideMethod = "all";
 
 
-	public FileSystemMessageBrowser(FS fileSystem, String folder, String messageIdProperty) {
+	public FileSystemMessageBrowser(FS fileSystem, String folder, String messageIdPropertyKey) {
 		this.fileSystem = fileSystem;
 		this.folder = folder;
-		this.messageIdProperty = messageIdProperty;
+		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
 	
 	@Override
@@ -53,7 +53,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	@Override
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		try {
-			return new FileSystemMessageBrowsingIterator<F, FS>(fileSystem, folder, messageIdProperty);
+			return new FileSystemMessageBrowsingIterator<F, FS>(fileSystem, folder, messageIdPropertyKey);
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}
@@ -66,7 +66,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
-		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, browseMessage(storageKey), messageIdProperty);
+		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, browseMessage(storageKey), messageIdPropertyKey);
 	}
 
 	@Override

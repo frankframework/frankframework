@@ -28,13 +28,13 @@ public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>
 	private FS fileSystem;
 	private DirectoryStream<F> directoryStream;
 	private Iterator<F> iterator;
-	private String messageIdProperty;
+	private String messageIdPropertyKey;
 
-	public FileSystemMessageBrowsingIterator(FS fileSystem, String folder, String messageIdProperty) throws FileSystemException {
+	public FileSystemMessageBrowsingIterator(FS fileSystem, String folder, String messageIdPropertyKey) throws FileSystemException {
 		this.fileSystem = fileSystem;
 		directoryStream = fileSystem.listFiles(folder);
 		iterator = directoryStream.iterator();
-		this.messageIdProperty = messageIdProperty;
+		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
 	
 	@Override
@@ -44,7 +44,7 @@ public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>
 
 	@Override
 	public IMessageBrowsingIteratorItem next() throws ListenerException {
-		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, iterator.next(), messageIdProperty);
+		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, iterator.next(), messageIdPropertyKey);
 	}
 
 	@Override

@@ -68,7 +68,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private int numberOfBackups=0;
 	private boolean fileTimeSensitive=false;
 	private String messageType="path";
-	private String messageIdProperty = null;
+	private String messageIdPropertyKey = null;
 	
 	private boolean disableMessageBrowsers = false;
 	
@@ -288,12 +288,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			filename=fileSystem.getName(rawMessage);
 			Map <String,Object> attributes = fileSystem.getAdditionalFileProperties(rawMessage);
 			String messageId = null;
-			if (StringUtils.isNotEmpty(getMessageIdProperty())) {
+			if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
 				if (attributes != null) {
-					messageId = (String)attributes.get(getMessageIdProperty());
+					messageId = (String)attributes.get(getMessageIdPropertyKey());
 				}
 				if (StringUtils.isEmpty(messageId)) {
-					log.warn("no attribute ["+getMessageIdProperty()+"] found, will use filename as messageId");
+					log.warn("no attribute ["+getMessageIdPropertyKey()+"] found, will use filename as messageId");
 				}
 			}
 			if (StringUtils.isEmpty(messageId)) {
@@ -325,7 +325,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		if (isDisableMessageBrowsers() || StringUtils.isEmpty(folder)) {
 			return null;
 		}
-		return new FileSystemMessageBrowser<F, FS>(fileSystem, folder, getMessageIdProperty());
+		return new FileSystemMessageBrowser<F, FS>(fileSystem, folder, getMessageIdPropertyKey());
 	}	
 	
 	@Override
@@ -491,12 +491,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return minStableTime;
 	}
 
-	@IbisDoc({"14", "Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId", "for MailFileSystems: Message-ID"})
-	public void setMessageIdProperty(String messageIdProperty) {
-		this.messageIdProperty = messageIdProperty;
+	@IbisDoc({"14", "Key of Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId", "for MailFileSystems: Message-ID"})
+	public void setMessageIdPropertyKey(String messageIdPropertyKey) {
+		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
-	public String getMessageIdProperty() {
-		return messageIdProperty;
+	public String getMessageIdPropertyKey() {
+		return messageIdPropertyKey;
 	}
 
 	@IbisDoc({"15", "If set <code>true</code>, no browsers for process folders are generated", "false"})
