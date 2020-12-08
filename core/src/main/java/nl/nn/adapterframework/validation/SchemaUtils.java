@@ -52,6 +52,7 @@ import javax.xml.stream.events.XMLEvent;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.logging.log4j.Logger;
@@ -440,13 +441,8 @@ public class SchemaUtils {
 	}
 
 
-	public static InputStream toInputStream(
-			javax.wsdl.Definition wsdlDefinition,
-			javax.wsdl.extensions.schema.Schema wsdlSchema
-			) throws javax.wsdl.WSDLException,
-			UnsupportedEncodingException {
-		return new ByteArrayInputStream(
-				toString(wsdlDefinition, wsdlSchema).getBytes("UTF-8"));
+	public static InputStream toInputStream(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
+		return new ByteArrayInputStream(toString(wsdlDefinition, wsdlSchema).getBytes(StreamUtil.DEFAULT_CHARSET));
 	}
 
 	public static String toString(

@@ -16,8 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -95,12 +93,8 @@ public class TransactionalStorage extends Base {
 		else
 			storage = receiver.getErrorStorageBrowser();
 
-		try {
-			// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-			messageId = URLDecoder.decode(messageId,"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
-		}
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		return getMessage(storage, receiver.getListener(), messageId);
 	}
@@ -134,12 +128,8 @@ public class TransactionalStorage extends Base {
 		else
 			storage = receiver.getErrorStorageBrowser();
 
-		try {
-			// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-			messageId = URLDecoder.decode(messageId,"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
-		}
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		return getMessage(storage, receiver.getListener(), messageId);
 	}
@@ -232,12 +222,8 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		try {
-			// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-			messageId = URLDecoder.decode(messageId,"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
-		}
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		resendMessage(receiver, messageId);
 
@@ -312,12 +298,8 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		try {
-			// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-			messageId = URLDecoder.decode(messageId,"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
-		}
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		deleteMessage(receiver.getErrorStorageBrowser(), messageId);
 
@@ -391,12 +373,8 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Pipe ["+pipeName+"] not found!");
 		}
 
-		try {
-			// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-			messageId = URLDecoder.decode(messageId,"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
-		}
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		return getMessage(pipe.getMessageLog(), messageId);
 	}
@@ -422,12 +400,8 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Pipe ["+pipeName+"] not found!");
 		}
 
-		try {
-			// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-			messageId = URLDecoder.decode(messageId,"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
-		}
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		return getMessage(pipe.getMessageLog(), messageId);
 	}

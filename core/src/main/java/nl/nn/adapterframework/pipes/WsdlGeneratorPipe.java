@@ -28,6 +28,7 @@ import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.soap.Wsdl;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Generate WSDL of parent or specified adapter.
@@ -74,7 +75,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			wsdl.init();
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			wsdl.wsdl(outputStream, null);
-			result = outputStream.toString("UTF-8");
+			result = outputStream.toString(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Could not generate WSDL for adapter [" + adapter.getName() + "]", e); 
 		}

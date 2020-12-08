@@ -154,7 +154,7 @@ public class XmlUtils {
 	public static final XMLInputFactory INPUT_FACTORY;
 	public static final XMLOutputFactory OUTPUT_FACTORY;
 	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY;
-	public static final String STREAM_FACTORY_ENCODING  = "UTF-8";
+	public static final String STREAM_FACTORY_ENCODING  = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	static {
 		// Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation

@@ -17,8 +17,6 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -62,6 +60,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.NameComparatorBase;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
@@ -310,12 +309,7 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		String version = null;
-		try {
-			version = URLDecoder.decode(encodedVersion, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new ApiException("unable to decode encodedVersion ["+encodedVersion+"] with charset [UTF-8]", e);
-		}
+		String version = Misc.urlDecode(encodedVersion);
 
 		try {
 			for (Entry<String, Object> entry : json.entrySet()) {

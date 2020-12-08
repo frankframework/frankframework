@@ -49,7 +49,8 @@ import java.util.zip.Inflater;
 public class Misc {
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
-	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
+	@Deprecated
+	public static final String DEFAULT_INPUT_STREAM_ENCODING=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
 	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
 	public static final String FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY = "force.fixed.forwarding.default";
@@ -1291,15 +1292,8 @@ public class Misc {
 	}
 
 	public static String getBuildOutputDirectory() {
-		String path = new File(
-				AppConstants.class.getClassLoader().getResource("").getPath())
-				.getPath();
-		try {
-			return URLDecoder.decode(path, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			log.warn("Error decoding path [" + path + "]", e);
-			return null;
-		}
+		String path = new File(AppConstants.class.getClassLoader().getResource("").getPath()).getPath();
+		return urlDecode(path);
 	}
 
 	public static String getProjectBaseDir() {
@@ -1348,4 +1342,14 @@ public class Misc {
 			count++;
 		return count;
 	}
+	
+	public static String urlDecode(String input) {
+		try {
+			return URLDecoder.decode(input,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			log.warn(e);
+			return null;
+		}
+	}
+	
 }
