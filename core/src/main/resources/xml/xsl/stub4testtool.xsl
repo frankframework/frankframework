@@ -42,6 +42,7 @@
 		</xsl:element>
 	</xsl:template>
 	
+	<!-- All receivers are disabled except those with listeners in the list below -->
 	<xsl:template match="receiver[listener[@className='nl.nn.adapterframework.jdbc.JdbcQueryListener'
 										or @className='nl.nn.adapterframework.receivers.DirectoryListener'
 										or @className='nl.nn.adapterframework.receivers.JavaListener'
@@ -96,6 +97,7 @@
 		</xsl:element>
 	</xsl:template>
 	
+	<!-- All senders are stubbed except those in the list below -->
 	<xsl:template match="sender[   @className='nl.nn.adapterframework.jdbc.ResultSet2FileSender'
 								or @className='nl.nn.adapterframework.jdbc.DirectQuerySender'
 								or @className='nl.nn.adapterframework.jdbc.FixedQuerySender'
@@ -130,6 +132,7 @@
 			<xsl:attribute name="className">nl.nn.adapterframework.senders.IbisJavaSender</xsl:attribute>
 			<xsl:attribute name="serviceName">
 				<xsl:choose>
+					<!-- For backwards compatibility, the servicename based on the parent pipe name is the first option -->
 					<xsl:when test="parent::pipe">
 						<xsl:value-of select="concat('testtool-',parent::pipe/@name)" />
 					</xsl:when>
