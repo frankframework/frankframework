@@ -497,14 +497,14 @@ public class Misc {
 
 	/**
 	 * Concatenates two strings, if specified, uses the separator in between two strings. 
-	 * Does not use any seperators if both or one of the strings are empty.
+	 * Does not use any separators if both or one of the strings are empty.
 	 *<p>
 	 *     Example:
 	 *     <pre>
 	 *         String a = "We";
 	 *         String b = "Frank";
-	 *         String seperator = "Are";
-	 *         String res = Misc.concatStrings(a, seperator, b);
+	 *         String separator = "Are";
+	 *         String res = Misc.concatStrings(a, separator, b);
 	 *         System.out.println(res); // prints "WeAreFrank"
 	 *     </pre>
 	 * </p>
@@ -1037,7 +1037,7 @@ public class Misc {
 	}
 
 	/**
-	 * Adds items on a string, added by comma seperator (ex: "1,2,3"), into a list.
+	 * Adds items on a string, added by comma separator (ex: "1,2,3"), into a list.
 	 * @param collectionDescription description of the list
 	 */
 	public static void addItemsToList(Collection<String> collection, String list, String collectionDescription, boolean lowercase) {
