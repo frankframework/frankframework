@@ -18,6 +18,8 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -71,6 +73,34 @@ public class StreamUtil {
 			return (Writer)target;
 		}
 		return null;
+	}
+	
+	public static InputStream dontClose(InputStream stream) {
+		class nonClosingInputStreamFilter extends FilterInputStream {
+			public nonClosingInputStreamFilter(InputStream in) {
+				super(in);
+			}
+			@Override
+			public void close() throws IOException {
+				// do not close
+			}
+		};
+		
+		return new nonClosingInputStreamFilter(stream);
+	}
+
+	public static Reader dontClose(Reader reader) {
+		class nonClosingReaderFilter extends FilterReader {
+			public nonClosingReaderFilter(Reader in) {
+				super(in);
+			}
+			@Override
+			public void close() throws IOException {
+				// do not close
+			}
+		};
+		
+		return new nonClosingReaderFilter(reader);
 	}
 	
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {

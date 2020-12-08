@@ -60,6 +60,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -569,7 +570,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						contents = new Message(contents.asReader(getStreamCharset()));
 					}
 					InputStream inputStream = contents.asInputStream(getBlobCharset());
-					Misc.streamToStream(inputStream,blobOutputStream,isCloseInputstreamOnExit());
+					if (!isCloseInputstreamOnExit()) {
+						inputStream = StreamUtil.dontClose(inputStream);
+					}
+					Misc.streamToStream(inputStream,blobOutputStream);
 				}
 			} finally {
 				if (blobOutputStream!=null) {
@@ -600,7 +604,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				clobWriter = getClobWriter(statement, getClobColumn());
 				if (contents!=null) {
 					Reader reader = contents.asReader(getStreamCharset());
-					Misc.readerToWriter(reader, clobWriter, isCloseInputstreamOnExit());
+					if (!isCloseInputstreamOnExit()) {
+						reader = StreamUtil.dontClose(reader);
+					}
+					Misc.readerToWriter(reader, clobWriter);
 				}
 			} finally {
 				if (clobWriter!=null) {
@@ -1168,7 +1175,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return clobSessionKey;
 	}
 
-	@IbisDoc({"40", "When set to <code>false</code>, the Inputstream is not closed after it has been used to read a BLOB or CLOB", "true"})
+	@IbisDoc({"40", "When set to <code>false</code>, the Inputstream is not closed after it has been used to update a BLOB or CLOB", "true"})
+	@Deprecated
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}

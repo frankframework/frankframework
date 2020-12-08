@@ -41,6 +41,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -234,11 +235,11 @@ public class UnzipPipe extends FixedForwardPipe {
 								}
 							}
 						}
-						FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
-						log.debug(getLogPrefix(session)+"writing ZipEntry ["+filename+"] to file ["+tmpFile.getPath()+"]");
-						count++;
-						Misc.streamToStream(inputStream, fileOutputStream, false);
-						fileOutputStream.close();
+						try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
+							log.debug(getLogPrefix(session)+"writing ZipEntry ["+filename+"] to file ["+tmpFile.getPath()+"]");
+							count++;
+							Misc.streamToStream(StreamUtil.dontClose(inputStream), fileOutputStream);
+						}
 					}
 					if (isCollectResults()) {
 						entryResults += "<result item=\"" + count + "\"><zipEntry>"
