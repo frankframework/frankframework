@@ -17,12 +17,16 @@ limitations under the License.
 package nl.nn.adapterframework.doc;
 
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeFixed;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroupRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexContent;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElement;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementWithType;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addExtension;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addGroupRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
@@ -530,9 +534,16 @@ public class DocWriterNew {
 				.collect(Collectors.toList());
 		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
 		for(FrankElement frankElement: frankElementOptions) {
-			addElement(choice,
-					frankElement.getXsdElementName(elementType, syntax1Name),
-					xsdElementType(frankElement));
+			addElementToElementGroup(choice, frankElement, elementType, syntax1Name);
 		}		
+	}
+
+	private void addElementToElementGroup(XmlBuilder context, FrankElement frankElement, ElementType elementType, String syntax1Name) {
+		XmlBuilder element = addElementWithType(context, frankElement.getXsdElementName(elementType, syntax1Name));
+		XmlBuilder complexType = addComplexType(element);
+		XmlBuilder complexContent = addComplexContent(complexType);
+		XmlBuilder extension = addExtension(complexContent, xsdElementType(frankElement));
+		addAttributeFixed(extension, "elementType", syntax1Name);
+		addAttributeFixed(extension, "className", frankElement.getFullName());
 	}
 }

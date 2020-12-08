@@ -126,6 +126,15 @@ class DocWriterNewXmlUtils {
 		return attribute;
 	}
 
+	static XmlBuilder addAttributeFixed(XmlBuilder context, String name, String fixedValue) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("name", name);
+		attribute.addAttribute("type", "xs:string");
+		attribute.addAttribute("fixed", fixedValue);
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
 	static void addDocumentation(XmlBuilder context, String description) {
 		XmlBuilder annotation = new XmlBuilder("annotation", "xs", XML_SCHEMA_URI);
 		context.addSubElement(annotation);
@@ -169,5 +178,18 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(group);
 		group.addAttribute("ref", name);
 		return group;
+	}
+
+	static XmlBuilder addComplexContent(XmlBuilder context) {
+		XmlBuilder complexContent = new XmlBuilder("complexContent", "xs", XML_SCHEMA_URI);
+		context.addSubElement(complexContent);
+		return complexContent;
+	}
+
+	static XmlBuilder addExtension(XmlBuilder context, String base) {
+		XmlBuilder extension = new XmlBuilder("extension", "xs", XML_SCHEMA_URI);
+		context.addSubElement(extension);
+		extension.addAttribute("base", base);
+		return extension;
 	}
 }
