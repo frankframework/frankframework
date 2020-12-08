@@ -365,7 +365,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog==null) {
-			if (!getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) { // sender is asynchronous and not a local sender, but has no messageLog
+			if (StringUtils.isEmpty(getStubFileName()) && !getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) { // sender is asynchronous and not a local sender, but has no messageLog
 				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed(SuppressKeys.INTEGRITY_CHECK_SUPPRESS_KEY, getAdapter(), getConfigurationClassLoader());
 				if (!suppressIntegrityCheckWarning) {
 					boolean legacyCheckMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", true);
