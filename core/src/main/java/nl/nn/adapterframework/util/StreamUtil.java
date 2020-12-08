@@ -76,8 +76,8 @@ public class StreamUtil {
 	}
 	
 	public static InputStream dontClose(InputStream stream) {
-		class nonClosingInputStreamFilter extends FilterInputStream {
-			public nonClosingInputStreamFilter(InputStream in) {
+		class NonClosingInputStreamFilter extends FilterInputStream {
+			public NonClosingInputStreamFilter(InputStream in) {
 				super(in);
 			}
 			@Override
@@ -86,12 +86,12 @@ public class StreamUtil {
 			}
 		};
 		
-		return new nonClosingInputStreamFilter(stream);
+		return new NonClosingInputStreamFilter(stream);
 	}
 
 	public static Reader dontClose(Reader reader) {
-		class nonClosingReaderFilter extends FilterReader {
-			public nonClosingReaderFilter(Reader in) {
+		class NonClosingReaderFilter extends FilterReader {
+			public NonClosingReaderFilter(Reader in) {
 				super(in);
 			}
 			@Override
@@ -100,7 +100,7 @@ public class StreamUtil {
 			}
 		};
 		
-		return new nonClosingReaderFilter(reader);
+		return new NonClosingReaderFilter(reader);
 	}
 	
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
