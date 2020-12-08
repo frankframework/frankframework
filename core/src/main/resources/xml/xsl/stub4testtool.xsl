@@ -322,12 +322,12 @@
 		<xsl:attribute name="pattern"><xsl:value-of select="replace(.,'\{now,','{fixedDate,')"/></xsl:attribute>
 	</xsl:template>
 	
-	<xsl:template match="pipe/*[errorStorage or messageLog][@className!='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' 
-														and @className!='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
+	<xsl:template match="pipe/*[local-name()='errorStorage' or local-name()='messageLog'][@className!='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' 
+																					  and @className!='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
 		<xsl:call-template name="disable" />
 	</xsl:template>
 	
-	<xsl:template match="*[inputValidator or outputValidator][$disableValidators]">
+	<xsl:template match="inputValidator[$disableValidators]|outputValidator[$disableValidators]">
 		<xsl:call-template name="disable" />
 	</xsl:template>
 	
