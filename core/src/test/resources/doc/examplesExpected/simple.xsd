@@ -8,16 +8,9 @@
   <xs:group name="StartDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="Syntax1NameIChildElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:group ref="Syntax1NameTChildElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element ref="Syntax1NameTChild" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
-  <xs:attributeGroup name="StartCumulativeAttributeGroup">
-    <xs:attributeGroup ref="StartDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractParentOfStartDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="StartDeclaredAttributeGroup">
-    <xs:attribute name="attribute" type="xs:string" />
-  </xs:attributeGroup>
   <xs:group name="Syntax1NameIChildElementGroup">
     <xs:choice>
       <xs:element name="syntax1NameIChild">
@@ -49,23 +42,6 @@
       </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:group name="Syntax1NameTChildElementGroup">
-    <xs:choice>
-      <xs:element name="Syntax1NameTChild">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="TChildType">
-              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameTChild" use="prohibited" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-    </xs:choice>
-  </xs:group>
-  <xs:attributeGroup name="AbstractParentOfStartDeclaredAttributeGroup">
-    <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
-  </xs:attributeGroup>
   <xs:complexType name="DescribedPossibleIChildType">
     <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />
   </xs:complexType>
@@ -88,5 +64,21 @@
     <xs:attribute name="firstAttribute" type="xs:string" />
     <xs:attribute name="secondAttribute" type="xs:string" />
   </xs:attributeGroup>
-  <xs:complexType name="TChildType" />
+  <xs:element name="Syntax1NameTChild">
+    <xs:complexType>
+      <xs:sequence />
+      <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameTChild" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="StartDeclaredAttributeGroup">
+    <xs:attribute name="attribute" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="StartCumulativeAttributeGroup">
+    <xs:attributeGroup ref="StartDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractParentOfStartDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractParentOfStartDeclaredAttributeGroup">
+    <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
+  </xs:attributeGroup>
 </xs:schema>

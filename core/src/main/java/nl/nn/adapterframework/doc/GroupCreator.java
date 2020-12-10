@@ -71,6 +71,7 @@ class GroupCreator<T extends ElementChild> {
 			}
 		}
 		else {
+			callback.addDeclaredGroup();
 			if(ancestor == null) {
 				callback.addDeclaredGroupRef(frankElement);
 			}
@@ -78,7 +79,6 @@ class GroupCreator<T extends ElementChild> {
 				callback.addCumulativeGroupRef(frankElement);
 				addCumulativeChildGroup();
 			}
-			callback.addDeclaredGroup();
 		}
 	}
 
