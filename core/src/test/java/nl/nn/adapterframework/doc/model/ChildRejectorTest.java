@@ -35,7 +35,7 @@ public class ChildRejectorTest {
 
 	private FrankElement getElement(String simpleName) throws Exception {
 		String rootClassName = PACKAGE + "." + simpleName;
-		return model.findOrCreateFrankElement(Utils.getClass(rootClassName), null);
+		return model.findOrCreateFrankElement(Utils.getClass(rootClassName));
 	}
 
 	private Set<String> childNames(String frankElementSimpleName) throws Exception {
