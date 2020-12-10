@@ -472,7 +472,7 @@ public class DocWriterNew {
 	}
 
 	private static String xsdGroupOf(ElementType elementType, String syntax1Name) {
-		return elementType.getSimpleName() + Utils.toUpperCamelCase(syntax1Name) + "ElementGroup";
+		return Utils.toUpperCamelCase(syntax1Name) + "ElementGroup";
 	}
 
 	private static String getMinOccurs(ConfigChild child) {

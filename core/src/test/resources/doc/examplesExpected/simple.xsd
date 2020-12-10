@@ -7,8 +7,8 @@
   </xs:complexType>
   <xs:group name="StartDeclaredChildGroup">
     <xs:sequence>
-      <xs:group ref="IChildSyntax1NameIChildElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:group ref="TChildSyntax1NameTChildElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="Syntax1NameIChildElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="Syntax1NameTChildElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="StartCumulativeAttributeGroup">
@@ -18,7 +18,7 @@
   <xs:attributeGroup name="StartDeclaredAttributeGroup">
     <xs:attribute name="attribute" type="xs:string" />
   </xs:attributeGroup>
-  <xs:group name="IChildSyntax1NameIChildElementGroup">
+  <xs:group name="Syntax1NameIChildElementGroup">
     <xs:choice>
       <xs:element name="syntax1NameIChild">
         <xs:complexType>
@@ -49,7 +49,7 @@
       </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:group name="TChildSyntax1NameTChildElementGroup">
+  <xs:group name="Syntax1NameTChildElementGroup">
     <xs:choice>
       <xs:element name="Syntax1NameTChild">
         <xs:complexType>
