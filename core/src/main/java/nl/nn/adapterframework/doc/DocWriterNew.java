@@ -53,9 +53,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.ElementType;
