@@ -39,7 +39,14 @@
 		</xsl:choose>
 		<xsl:value-of select="$space" />
 		<xsl:text>&quot;</xsl:text>
-		<xsl:value-of select="@firstPipe" />
+		<xsl:choose>
+			<xsl:when test="string-length(@firstPipe) > 0">
+				<xsl:value-of select="@firstPipe" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="pipe[1]/@name" />
+			</xsl:otherwise>
+		</xsl:choose>
 		<xsl:text>&quot;</xsl:text>
 		<xsl:text>;</xsl:text>
 		<xsl:text>&#10;</xsl:text>
@@ -98,41 +105,41 @@
 				<xsl:value-of select="$space" />
 				<xsl:text>[shape=diamond]</xsl:text>
 				<xsl:text>&#10;</xsl:text>
-				<xsl:variable name="nffn" select="@notFoundForwardName" />
-				<xsl:if test="string-length($nffn)&gt;0 and (forward/@name=$nffn)=false()">
+				<xsl:variable name="notFoundForwardName" select="@notFoundForwardName" />
+				<xsl:if test="string-length($notFoundForwardName)&gt;0 and (forward/@name=$notFoundForwardName)=false()">
 					<xsl:call-template name="forward">
 						<xsl:with-param name="pipeName" select="@name" />
-						<xsl:with-param name="forwardPath" select="$nffn" />
+						<xsl:with-param name="forwardPath" select="$notFoundForwardName" />
 						<xsl:with-param name="forwardName">notFoundForwardName</xsl:with-param>
 					</xsl:call-template>
 				</xsl:if>
-				<xsl:variable name="efn" select="@emptyForwardName" />
-				<xsl:if test="string-length($efn)&gt;0 and (forward/@name=$efn)=false()">
+				<xsl:variable name="emptyForwardName" select="@emptyForwardName" />
+				<xsl:if test="string-length($emptyForwardName)&gt;0 and (forward/@name=$emptyForwardName)=false()">
 					<xsl:call-template name="forward">
 						<xsl:with-param name="pipeName" select="@name" />
-						<xsl:with-param name="forwardPath" select="$efn" />
+						<xsl:with-param name="forwardPath" select="$emptyForwardName" />
 						<xsl:with-param name="forwardName">emptyForwardName</xsl:with-param>
 					</xsl:call-template>
 				</xsl:if>
-				<xsl:variable name="tfn" select="@thenForwardName" />
-				<xsl:if test="string-length($tfn)&gt;0 and (forward/@name=$tfn)=false()">
+				<xsl:variable name="thenForwardName" select="@thenForwardName" />
+				<xsl:if test="string-length($thenForwardName)&gt;0 and (forward/@name=$thenForwardName)=false()">
 					<xsl:call-template name="forward">
 						<xsl:with-param name="pipeName" select="@name" />
-						<xsl:with-param name="forwardPath" select="$tfn" />
+						<xsl:with-param name="forwardPath" select="$thenForwardName" />
 						<xsl:with-param name="forwardName">thenForwardName</xsl:with-param>
 					</xsl:call-template>
 				</xsl:if>
-				<xsl:variable name="efn" select="@elseForwardName" />
-				<xsl:if test="string-length($efn)&gt;0 and (forward/@name=$efn)=false()">
+				<xsl:variable name="elseForwardName" select="@elseForwardName" />
+				<xsl:if test="string-length($elseForwardName)&gt;0 and (forward/@name=$elseForwardName)=false()">
 					<xsl:call-template name="forward">
 						<xsl:with-param name="pipeName" select="@name" />
-						<xsl:with-param name="forwardPath" select="$efn" />
+						<xsl:with-param name="forwardPath" select="$elseForwardName" />
 						<xsl:with-param name="forwardName">elseForwardName</xsl:with-param>
 					</xsl:call-template>
 				</xsl:if>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:if test="forward=false()">
+				<xsl:if test="not(forward[@name='success'])">
 					<xsl:call-template name="forward">
 						<xsl:with-param name="pipeName" select="@name" />
 						<xsl:with-param name="forwardPath">
