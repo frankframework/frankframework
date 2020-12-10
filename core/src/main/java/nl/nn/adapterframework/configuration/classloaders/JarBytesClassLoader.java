@@ -25,6 +25,7 @@ import java.util.jar.JarInputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class JarBytesClassLoader extends BytesClassLoader {
 
@@ -52,7 +53,7 @@ public abstract class JarBytesClassLoader extends BytesClassLoader {
 						}
 					}
 				}
-				resources.put(fileName, Misc.streamToBytes(jarInputStream, false));
+				resources.put(fileName, Misc.streamToBytes(StreamUtil.dontClose(jarInputStream)));
 			}
 			return resources;
 		} catch (IOException e) {

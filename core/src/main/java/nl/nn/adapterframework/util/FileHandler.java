@@ -366,7 +366,7 @@ public class FileHandler {
 			}
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
 			try(FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append)){
-				Misc.streamToStream(in, fos, true, isWriteLineSeparator() ? eolArray : null);
+				Misc.streamToStream(in, fos, isWriteLineSeparator() ? eolArray : null);
 			}
 			return tmpFile.getPath().getBytes();
 		}

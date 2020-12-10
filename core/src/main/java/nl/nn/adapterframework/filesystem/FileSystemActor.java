@@ -461,9 +461,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			out = new Base64OutputStream(out, getBase64().equals(BASE64_ENCODE));
 		}
 		if (contents instanceof Message) {
-			Misc.streamToStream(((Message)contents).asInputStream(), out, true);
+			Misc.streamToStream(((Message)contents).asInputStream(), out);
 		} else if (contents instanceof InputStream) {
-			Misc.streamToStream((InputStream)contents, out, true);
+			Misc.streamToStream((InputStream)contents, out);
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {

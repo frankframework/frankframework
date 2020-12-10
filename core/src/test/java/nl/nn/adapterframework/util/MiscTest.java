@@ -191,7 +191,7 @@ public class MiscTest {
 		String test = "test";
 		ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
 		OutputStream baos = new ByteArrayOutputStream();
-		Misc.streamToStream(bais, baos, true);
+		Misc.streamToStream(bais, baos);
 		assertEquals("test", baos.toString());
 	}
 
