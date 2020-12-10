@@ -102,19 +102,19 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try {
 				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
 			} catch (Throwable e) {
-				throw new ConfigurationException(getLogPrefix(null)+"got exception searching for ["+getFileName()+"]", e);
+				throw new ConfigurationException("got exception searching for ["+getFileName()+"]", e);
 			}
 			if (resource==null) {
-				throw new ConfigurationException(getLogPrefix(null)+"cannot find resource ["+getFileName()+"]");
+				throw new ConfigurationException("cannot find resource ["+getFileName()+"]");
 			}
             try {
 				returnString = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
             } catch (Throwable e) {
-                throw new ConfigurationException(getLogPrefix(null)+"got exception loading ["+getFileName()+"]", e);
+                throw new ConfigurationException("got exception loading ["+getFileName()+"]", e);
             }
         }
         if ((StringUtils.isEmpty(fileName)) && (StringUtils.isEmpty(fileNameSessionKey)) && returnString==null) {  // allow an empty returnString to be specified
-            throw new ConfigurationException(getLogPrefix(null)+"has neither fileName nor fileNameSessionKey nor returnString specified");
+            throw new ConfigurationException("has neither fileName nor fileNameSessionKey nor returnString specified");
         }
 		if (StringUtils.isNotEmpty(replaceFrom)) {
 			returnString = replace(returnString, replaceFrom, replaceTo );

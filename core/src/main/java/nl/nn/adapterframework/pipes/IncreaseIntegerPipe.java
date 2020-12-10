@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(sessionKey))
-			throw new ConfigurationException(getLogPrefix(null)+"sessionKey must be filled");
+			throw new ConfigurationException("sessionKey must be filled");
 	}
 
 	@Override

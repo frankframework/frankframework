@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!"parent".equals(getFrom()) && !"input".equals(getFrom())) {
-			throw new ConfigurationException(getLogPrefix(null) + " from should either be parent or input");
+			throw new ConfigurationException("from should either be parent or input");
 		}
 		dtapStage=AppConstants.getInstance().getResolvedProperty("dtap.stage");
 		dtapSide=AppConstants.getInstance().getResolvedProperty("dtap.side");

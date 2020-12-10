@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -224,13 +224,13 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-			throw new ConfigurationException(getLogPrefix(null) + "soapHeaderSessionKey is not allowed");
+			throw new ConfigurationException("soapHeaderSessionKey is not allowed");
 		}
 		if (StringUtils.isEmpty(getBisMessageHeaderSessionKey())) {
-			throw new ConfigurationException(getLogPrefix(null) + "messageHeaderSessionKey must be set");
+			throw new ConfigurationException("messageHeaderSessionKey must be set");
 		}
 		if (isAddOutputNamespace() && StringUtils.isEmpty(outputNamespace)) {
-			throw new ConfigurationException(getLogPrefix(null) + "outputNamespace must be set when addOutputnamespace=true");
+			throw new ConfigurationException("outputNamespace must be set when addOutputnamespace=true");
 		}
 		try {
 			if (StringUtils.isNotEmpty(getInputXPath())) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getXqueryName())) {
 			url = ClassUtils.getResourceURL(getConfigurationClassLoader(), getXqueryName());
 			if (url == null) {
-				throw new ConfigurationException(getLogPrefix(null) + "could not find XQuery '" + getXqueryName() + "'");
+				throw new ConfigurationException("could not find XQuery '" + getXqueryName() + "'");
 			}
 		} else if (StringUtils.isNotEmpty(getXqueryFile())) {
 			File file = new File(getXqueryFile());
@@ -76,13 +76,13 @@ public class XQueryPipe extends FixedForwardPipe {
 				throw new ConfigurationException(getLogPrefix(null) + "could not create url for XQuery file", e);
 			}
 		} else {
-			throw new ConfigurationException(getLogPrefix(null) + "no XQuery name or file specified");
+			throw new ConfigurationException("no XQuery name or file specified");
 		}
 
 		try {
 			xquery = Misc.resourceToString(url);
 		} catch (IOException e) {
-			throw new ConfigurationException(getLogPrefix(null) + "could not read XQuery", e);
+			throw new ConfigurationException("could not read XQuery", e);
 		}
 		SaxonXQDataSource dataSource = new SaxonXQDataSource();
 		XQConnection connection;
@@ -90,7 +90,7 @@ public class XQueryPipe extends FixedForwardPipe {
 			connection = dataSource.getConnection();
 			preparedExpression = connection.prepareExpression(xquery);
 		} catch (XQException e) {
-			throw new ConfigurationException(getLogPrefix(null) + "could not create prepared expression", e);
+			throw new ConfigurationException("could not create prepared expression", e);
 		}
 	}
 

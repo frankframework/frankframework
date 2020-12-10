@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public class XmlSwitch extends AbstractPipe {
 
 		if (StringUtils.isNotEmpty(getXpathExpression())) {
 			if (!StringUtils.isEmpty(getStyleSheetName())) {
-				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a styleSheetName specified");
+				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
 			}
 			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), null, "text", false, getParameterList(), 0);
 		} 
@@ -97,13 +97,13 @@ public class XmlSwitch extends AbstractPipe {
 				try {
 					Resource stylesheet = Resource.getResource(getConfigurationClassLoader(), getStyleSheetName());
 					if (stylesheet==null) {
-						throw new ConfigurationException(getLogPrefix(null) + "cannot find stylesheet ["+getStyleSheetName()+"]");
+						throw new ConfigurationException("cannot find stylesheet ["+getStyleSheetName()+"]");
 					}
 					transformerPool = TransformerPool.getInstance(stylesheet, getXsltVersion());
 				} catch (IOException e) {
-					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ styleSheetName + "]", e);
+					throw new ConfigurationException("cannot retrieve ["+ styleSheetName + "]", e);
 				} catch (TransformerConfigurationException te) {
-					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from file [" + styleSheetName + "]", te);
+					throw new ConfigurationException("got error creating transformer from file [" + styleSheetName + "]", te);
 				}
 			} else {
 				if (StringUtils.isEmpty(getSessionKey())) {
@@ -111,7 +111,7 @@ public class XmlSwitch extends AbstractPipe {
 						// create a transformer that looks to the root node 
 						transformerPool = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(DEFAULT_SERVICESELECTION_XPATH, "text"));
 					} catch (TransformerConfigurationException te) {
-						throw new ConfigurationException(getLogPrefix(null) + "got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", te);
+						throw new ConfigurationException("got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", te);
 					}
 				}
 			}

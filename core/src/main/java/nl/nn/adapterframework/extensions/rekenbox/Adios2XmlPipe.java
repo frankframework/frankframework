@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -265,7 +265,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 			try {
 				URL url = ClassUtils.getResourceURL(getConfigurationClassLoader(), getAdiosDefinities()); 
 				if (url==null) {
-					throw new ConfigurationException(getLogPrefix(null)+"cannot find adios definitions from resource ["+getAdiosDefinities()+"]");
+					throw new ConfigurationException("cannot find adios definitions from resource ["+getAdiosDefinities()+"]");
 				}
 		    	BufferedReader bufinput = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(url.openStream()));
 		 		String line,labelnr,waarde;
@@ -292,7 +292,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		       					
 		       					// als de key al bestaat betekend dit dat er een fout zit in de invoer
 		       					if (nummer2rubriek.containsKey(labelnr)) {
-			       					throw new ConfigurationException(getLogPrefix(null)+"rubriek ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2rubriek.get(labelnr)+"], Waarde2: ["+waarde+"]");
+			       					throw new ConfigurationException("rubriek ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2rubriek.get(labelnr)+"], Waarde2: ["+waarde+"]");
 		       					}
 		       					nummer2rubriek.put(labelnr,waarde);
 		       					rubriek2nummer.put(waarde,labelnr);
@@ -317,7 +317,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		         				//System.out.println("record label: " + labelnr + "   \t" + waarde);
 		
 		         				if (nummer2record.containsKey(labelnr))	{
-			       					throw new ConfigurationException(getLogPrefix(null)+"record ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2record.get(labelnr)+"], Waarde2: ["+waarde+"]");
+			       					throw new ConfigurationException("record ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2record.get(labelnr)+"], Waarde2: ["+waarde+"]");
 		       					}
 		       					nummer2record.put(labelnr,waarde);
 		       					record2nummer.put(waarde,labelnr);
@@ -331,7 +331,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		 		bufinput.close();
 		 	}
 		 	catch (IOException e) {
-			 	throw new ConfigurationException(getLogPrefix(null)+"IOException on ["+getAdiosDefinities()+"]", e);
+			 	throw new ConfigurationException("IOException on ["+getAdiosDefinities()+"]", e);
 		 	}
 		}
 	}

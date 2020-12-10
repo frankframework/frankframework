@@ -396,10 +396,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
 			//congestionSensors.addSensor(pipe);
 		} catch (Throwable t) {
-			if (t instanceof ConfigurationException) {
-				throw (ConfigurationException)t;
-			}
-			throw new ConfigurationException("Exception configuring Pipe ["+pipe.getName()+"]",t);
+			throw new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe) +" ["+pipe.getName()+"]",t);
 		}
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"pipe ["+pipe.getName()+"] successfully configured: ["+pipe.toString()+"]");

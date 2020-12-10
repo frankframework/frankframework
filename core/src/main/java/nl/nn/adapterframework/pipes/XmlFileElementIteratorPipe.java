@@ -59,11 +59,11 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		super.configure();
 		if (!StringUtils.isEmpty(getElementName())) {
 			if (!StringUtils.isEmpty(getElementChain())) {
-				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an elementName and an elementChain specified");
+				throw new ConfigurationException("cannot have both an elementName and an elementChain specified");
 			}
 		} else {
 			if (StringUtils.isEmpty(getElementChain())) {
-				throw new ConfigurationException(getLogPrefix(null) + "an elementName or an elementChain must be specified");
+				throw new ConfigurationException("an elementName or an elementChain must be specified");
 			}
 		}
 	}

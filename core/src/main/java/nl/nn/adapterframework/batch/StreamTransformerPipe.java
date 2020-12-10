@@ -130,11 +130,11 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				registerManager(manager);
 			} catch (Exception e) {
-				throw new ConfigurationException(getLogPrefix(null)+"could not register default manager and flow");
+				throw new ConfigurationException("could not register default manager and flow");
 			}
 		}
 		if (initialManager==null) {
-			throw new ConfigurationException(getLogPrefix(null)+"no initial manager specified");
+			throw new ConfigurationException("no initial manager specified");
 		}
 		for (String managerName: registeredManagers.keySet()) {
 			IRecordHandlerManager manager = getManager(managerName);

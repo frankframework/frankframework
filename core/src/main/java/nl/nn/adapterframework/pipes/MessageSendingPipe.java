@@ -261,20 +261,20 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			try {
 				stubUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), getStubFileName());
 			} catch (Throwable e) {
-				throw new ConfigurationException(getLogPrefix(null)+"got exception finding resource for stubfile ["+getStubFileName()+"]", e);
+				throw new ConfigurationException("got exception finding resource for stubfile ["+getStubFileName()+"]", e);
 			}
 			if (stubUrl==null) {
-				throw new ConfigurationException(getLogPrefix(null)+"could not find resource for stubfile ["+getStubFileName()+"]");
+				throw new ConfigurationException("could not find resource for stubfile ["+getStubFileName()+"]");
 			}
 			try {
 				returnString = Misc.resourceToString(stubUrl, SystemUtils.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new ConfigurationException(getLogPrefix(null)+"got exception loading stubfile ["+getStubFileName()+"] from resource ["+stubUrl.toExternalForm()+"]", e);
+				throw new ConfigurationException("got exception loading stubfile ["+getStubFileName()+"] from resource ["+stubUrl.toExternalForm()+"]", e);
 			}
 		} else {
 			propagateName();
 			if (getSender() == null) {
-				throw new ConfigurationException(getLogPrefix(null) + "no sender defined ");
+				throw new ConfigurationException("no sender defined ");
 			}
 			
 			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
@@ -306,21 +306,19 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					getSender().configure();
 				}
 			} catch (ConfigurationException e) {
-				throw new ConfigurationException(getLogPrefix(null)+"while configuring sender",e);
+				throw new ConfigurationException("while configuring sender",e);
 			}
 			if (getSender() instanceof HasPhysicalDestination) {
 				log.info(getLogPrefix(null)+"has sender on "+((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
 			}
 			if (getListener() != null) {
 				if (getSender().isSynchronous()) {
-					throw new ConfigurationException(
-						getLogPrefix(null)
-							+ "cannot have listener with synchronous sender");
+					throw new ConfigurationException("cannot have listener with synchronous sender");
 				}
 				try {
 					getListener().configure();
 				} catch (ConfigurationException e) {
-					throw new ConfigurationException(getLogPrefix(null)+"while configuring listener",e);
+					throw new ConfigurationException("while configuring listener",e);
 				}
 				if (getListener() instanceof HasPhysicalDestination) {
 					log.info(getLogPrefix(null)+"has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
@@ -328,24 +326,24 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 			if (!(getLinkMethod().equalsIgnoreCase("MESSAGEID"))
 				&& (!(getLinkMethod().equalsIgnoreCase("CORRELATIONID")))) {
-				throw new ConfigurationException(getLogPrefix(null)+ "Invalid argument for property LinkMethod ["+getLinkMethod()+ "]. it should be either MESSAGEID or CORRELATIONID");
+				throw new ConfigurationException("Invalid argument for property LinkMethod ["+getLinkMethod()+ "]. it should be either MESSAGEID or CORRELATIONID");
 			}	
 
 			if (!(getHideMethod().equalsIgnoreCase("all"))
 					&& (!(getHideMethod().equalsIgnoreCase("firstHalf")))) {
-				throw new ConfigurationException(getLogPrefix(null) + "invalid value for hideMethod [" + getHideMethod() + "], must be 'all' or 'firstHalf'");
+				throw new ConfigurationException("invalid value for hideMethod [" + getHideMethod() + "], must be 'all' or 'firstHalf'");
 			}
 
 			if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
 				if (findForward(ILLEGAL_RESULT_FORWARD) == null)
-					throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [illegalResult]");
+					throw new ConfigurationException("has no forward with name [illegalResult]");
 			}
 			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
 				if (StringUtils.isNotEmpty(getTimeOutOnResult())) {
-					throw new ConfigurationException(getLogPrefix(null)+"timeOutOnResult only allowed in stub mode");
+					throw new ConfigurationException("timeOutOnResult only allowed in stub mode");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult())) {
-					throw new ConfigurationException(getLogPrefix(null)+"exceptionOnResult only allowed in stub mode");
+					throw new ConfigurationException("exceptionOnResult only allowed in stub mode");
 				}
 			}
 			if (getMaxRetries()>0) {

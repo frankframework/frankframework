@@ -63,18 +63,18 @@ public class CompareIntegerPipe extends AbstractPipe {
 		super.configure();
 
 		if (null == findForward(LESSTHANFORWARD))
-			throw new ConfigurationException(getLogPrefix(null)	+ "forward ["+ LESSTHANFORWARD+ "] is not defined");
+			throw new ConfigurationException("forward ["+ LESSTHANFORWARD+ "] is not defined");
 
 		if (null == findForward(GREATERTHANFORWARD))
-			throw new ConfigurationException(getLogPrefix(null)	+ "forward ["+ GREATERTHANFORWARD+ "] is not defined");
+			throw new ConfigurationException("forward ["+ GREATERTHANFORWARD+ "] is not defined");
 
 		if (null == findForward(EQUALSFORWARD))
-			throw new ConfigurationException(getLogPrefix(null)	+ "forward ["+ EQUALSFORWARD+ "] is not defined");
+			throw new ConfigurationException("forward ["+ EQUALSFORWARD+ "] is not defined");
 
 		if (StringUtils.isEmpty(getSessionKey1()) && StringUtils.isEmpty(getSessionKey2())) {
 			ParameterList parameterList = getParameterList();
 			if (parameterList.findParameter(OPERAND1) == null && parameterList.findParameter(OPERAND2) == null) {
-				throw new ConfigurationException(getLogPrefix(null) + "has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
+				throw new ConfigurationException("has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
 			}
 		}
 	}

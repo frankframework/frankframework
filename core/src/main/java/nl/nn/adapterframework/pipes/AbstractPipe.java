@@ -166,7 +166,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		}
 
 		if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
-			throw new ConfigurationException(getLogPrefix(null)+"cannot have both an elementToMove and an elementToMoveChain specified");
+			throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 		}
 
 		if (pipeForwards.isEmpty()) {
