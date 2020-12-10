@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.doc.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
@@ -24,8 +25,8 @@ public class FrankElementXsdElementNameTest {
 	public void whenNameDoesNotEndWithInterfaceNameThenGroupSyntax1NameAppended() throws Exception {
 		String className = PACKAGE + "ListenerParent";
 		String typeName = PACKAGE + "IListener";
-		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(className));
-		ElementType elementType = model.findOrCreateElementType(Utils.getClass(typeName));
+		FrankElement instance = model.findFrankElement(className);
+		ElementType elementType = model.findElementType(typeName);
 		String actual = instance.getXsdElementName(elementType, "testListener");
 		assertEquals("ListenerParentTestListener", actual);
 	}
@@ -34,7 +35,7 @@ public class FrankElementXsdElementNameTest {
 	public void whenNameEndsWithInterfaceNameThenRemovedAndGroupSyntax1NameAppended() throws Exception {
 		String className = PACKAGE + "ParentListener";
 		String typeName = PACKAGE + "IListener";
-		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(className));
+		FrankElement instance = model.findFrankElement(className);
 		ElementType elementType = model.findOrCreateElementType(Utils.getClass(typeName));
 		String actual = instance.getXsdElementName(elementType, "testListener");
 		assertEquals("ParentTestListener", actual);
@@ -43,7 +44,7 @@ public class FrankElementXsdElementNameTest {
 	@Test
 	public void whenElementTypeIsNotInterfaceThenSyntax1NameBecomesElementName() throws Exception {
 		String classAndTypeName = PACKAGE + "ListenerParent";
-		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(classAndTypeName));
+		FrankElement instance = model.findFrankElement(classAndTypeName);
 		ElementType elementType = model.findOrCreateElementType(Utils.getClass(classAndTypeName));
 		String actual = instance.getXsdElementName(elementType, "someName");
 		assertEquals("SomeName", actual);
@@ -55,5 +56,15 @@ public class FrankElementXsdElementNameTest {
 		ElementType elementType = model.findOrCreateElementType(Utils.getClass(typeName));
 		// The syntax 1 name corresponding to setter Container.setTestListener.
 		assertTrue(elementType.getConfigChildSyntax1Names().contains("testListener"));
+	}
+
+	@Test
+	public void testFrankElementNotInInterfaceElementType() {
+		assertFalse(model.findFrankElement(CONTAINER).isInElementTypeFromJavaInterface());
+	}
+
+	@Test
+	public void testFrankElementInInterfaceElementType() {
+		assertTrue(model.findFrankElement(PACKAGE + "ListenerParent").isInElementTypeFromJavaInterface());
 	}
 }

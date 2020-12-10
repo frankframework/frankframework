@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,7 +73,7 @@ public class FrankDocModel {
 		FrankDocModel result = new FrankDocModel();
 		try {
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
-			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
+			result.findOrCreateFrankElement(Utils.getClass(rootClassName), null);
 			result.setOverriddenFrom();
 			result.buildGroups();
 		} catch(Exception e) {
@@ -135,6 +134,9 @@ public class FrankDocModel {
 
 	ElementType findOrCreateElementType(Class<?> clazz) throws ReflectiveOperationException {
 		if(allTypes.containsKey(clazz.getName())) {
+			// All members have been created here, and when a member
+			// is created then its creatingElementType is set. It follows
+			// that there is no need to iterate over the members again.
 			return allTypes.get(clazz.getName());
 		}
 		final ElementType result = new ElementType(clazz);
@@ -144,11 +146,18 @@ public class FrankDocModel {
 		if(result.isFromJavaInterface()) {
 			List<SpringBean> springBeans = Utils.getSpringBeans(clazz.getName());
 			for(SpringBean b: springBeans) {
-				FrankElement frankElement = findOrCreateFrankElement(b.getClazz());
+				// This frankElement may exist already because it is the describing element
+				// of some attribute. In this case, the call to findOrCreateFrankElement
+				// sets the creatingElementType. If the frankElement exists because it
+				// belongs to another element type already, then we check that its
+				// existing element type also corresponds to a Java interface.
+				FrankElement frankElement = findOrCreateFrankElement(b.getClazz(), result);
 				result.addMember(frankElement);
 			}
 		} else {
-			result.addMember(findOrCreateFrankElement(clazz));
+			// If the frankElement already exists, then we check that its existing
+			// element type (if present) does not belong to a Java interface.
+			result.addMember(findOrCreateFrankElement(clazz, result));
 		}
 		return result;
 	}
@@ -161,14 +170,16 @@ public class FrankDocModel {
 		return allTypes.containsKey(typeName);
 	}
 
-	FrankElement findOrCreateFrankElement(Class<?> clazz) throws ReflectiveOperationException {
+	FrankElement findOrCreateFrankElement(Class<?> clazz, ElementType creatingElementType) throws ReflectiveOperationException {
 		if(allElements.containsKey(clazz.getName())) {
-			return allElements.get(clazz.getName());
+			FrankElement found = allElements.get(clazz.getName());
+			found.registerCreatingElementTypeOrCheckConflict(creatingElementType);
+			return found;
 		}
-		FrankElement current = new FrankElement(clazz);
+		FrankElement current = new FrankElement(clazz, creatingElementType);
 		allElements.put(clazz.getName(), current);
 		Class<?> superClass = clazz.getSuperclass();
-		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass);
+		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass, creatingElementType);
 		current.setParent(parent);
 		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current));
 		current.setConfigChildren(createConfigChildren(clazz.getDeclaredMethods(), current));
@@ -263,7 +274,10 @@ public class FrankDocModel {
 			if(parsed.getReferredMethod() != null) {
 				ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
 				if(ibisDoc != null) {
-					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass()));
+					// If the describing element is part of a relevant element type, then
+					// the creatingElementType will be set when that element type is created.
+					attribute.setDescribingElement(findOrCreateFrankElement(
+							parsed.getReferredMethod().getDeclaringClass(), null));
 					attribute.parseIbisDocAnnotation(ibisDoc);
 					if(parsed.hasOrder) {
 						attribute.setOrder(parsed.getOrder());

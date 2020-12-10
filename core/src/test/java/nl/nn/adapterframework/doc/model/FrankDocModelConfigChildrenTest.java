@@ -190,7 +190,7 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void whenInheritedConfigChildNotDeprecatedInheritedFromDeprecatedThenNotDeprecated() throws Exception {
-		ConfigChild theConfigChild = instance.findOrCreateFrankElement(Utils.getClass(CONTAINER_OTHER))
+		ConfigChild theConfigChild = instance.findOrCreateFrankElement(Utils.getClass(CONTAINER_OTHER), null)
 				.getConfigChildren(c -> ((ConfigChild)c).getSequenceInConfig() == 110).get(0);
 		assertFalse(theConfigChild.isDeprecated());
 	}

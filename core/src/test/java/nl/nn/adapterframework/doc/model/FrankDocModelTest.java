@@ -91,18 +91,18 @@ public class FrankDocModelTest {
 
 	@Test
 	public void whenChildElementAddedBeforeParentThenCorrectModel() throws ReflectiveOperationException {
-		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD));
-		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT));
-		instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_GRNAD_CHILD));
+		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD), null);
+		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT), null);
+		instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_GRNAD_CHILD), null);
 		instance.setOverriddenFrom();
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
 
 	@Test
 	public void whenParentElementAddedBeforeChildThenCorrectModel() throws ReflectiveOperationException {
-		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT));
-		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD));
-		instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_GRNAD_CHILD));
+		FrankElement parent = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_PARENT), null);
+		FrankElement child = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_CHILD), null);
+		instance.findOrCreateFrankElement(Utils.getClass(SIMPLE_GRNAD_CHILD), null);
 		instance.setOverriddenFrom();
 		checkModelAfterChildAndParentAdded(parent, child);
 	}
@@ -402,7 +402,7 @@ public class FrankDocModelTest {
 	@Test
 	public void testFrankElementDeprecatedAttribute() throws Exception {
 		FrankElement element = instance.findOrCreateFrankElement(
-				Utils.getClass(SIMPLE + ".NonDeprecatedDescendant"));
+				Utils.getClass(SIMPLE + ".NonDeprecatedDescendant"), null);
 		assertNotNull(element);
 		assertFalse(element.isDeprecated());
 		assertTrue(element.getParent().isDeprecated());

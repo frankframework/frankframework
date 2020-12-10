@@ -17,7 +17,6 @@ limitations under the License.
 package nl.nn.adapterframework.doc.model;
 
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -44,11 +43,63 @@ public class FrankElement {
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;
 
+	private ElementType creatingElementType;
+
+	/**
+	 * If this property is true and if there is no relevant ancestor, then
+	 * this {@link FrankElement} can be created without a type definition in
+	 * the XSD, allowing for simpler content there. In this case there is
+	 * no need to define child groups or attribute groups.
+	 */
+	public boolean isInElementTypeFromJavaInterface() {
+		return creatingElementType == null ? false : creatingElementType.isFromJavaInterface();
+	}
+
+	/**
+	 * Sets the creating element type if it was null, or otherwise
+	 * verify that both the existing and the new element type model
+	 * a Java interface or none of the two. See also the constructors.
+	 */
+	void registerCreatingElementTypeOrCheckConflict(ElementType otherElementType) {
+		if(otherElementType == null) {
+			// Can occur if a FrankElement is first created with a non-null
+			// creatingElementType and appears later as the describing element
+			// of some attribute. In that case, we should not cancel the
+			// creatingElementType.
+			return;
+		}
+		if(creatingElementType == null) {
+			// Can occur if a FrankElement first appears as the describing element
+			// of some attribute, and is later assigned to a non-null element type.
+			creatingElementType = otherElementType;
+			return;
+		}
+		if(isInElementTypeFromJavaInterface() != otherElementType.isFromJavaInterface()) {
+			log.warn(String.format(
+					"Conflict about isInElementType for FrankElement [%s], conflicting types are [%s] and [%s]",
+					simpleName,
+					this.creatingElementType.getFullName(),
+					otherElementType.getFullName()));
+		}
+	}
+
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
 	private @Getter FrankElementStatistics statistics;
 
-	FrankElement(Class<?> clazz) {
-		this(clazz.getName(), clazz.getSimpleName(), Modifier.isAbstract(clazz.getModifiers()));
+	/**
+	 * @param clazz The Java class being modeled by this {@link FrankElement}.
+	 * @param creatingElementType An ElementType to which this object belongs,
+	 * or null. The value null should be passed in the following cases:
+	 * <ul>
+	 * <li> This object is the first {@link FrankElement} being created (the root).
+	 * <li> This object is first created as the describing element of an attribute.
+	 * </ul>
+	 * In theory, there can be multiple {@link ElementType} objects to which this
+	 * object belongs. This is not a problem, because it is only relevant whether
+	 * the {@link ElementType} comes from a Java interface or not.
+	 */
+	FrankElement(Class<?> clazz, ElementType creatingElementType) {
+		this(clazz.getName(), clazz.getSimpleName(), Modifier.isAbstract(clazz.getModifiers()), creatingElementType);
 		isDeprecated = clazz.getAnnotation(Deprecated.class) != null;
 	}
 
@@ -57,17 +108,18 @@ public class FrankElement {
 	 * in which case we do not have a parent.
 	 * TODO: Reorganize files such that this test constructor need not be public.
 	 */
-	public FrankElement(final String fullName, final String simpleName, boolean isAbstract) {
+	private FrankElement(final String fullName, final String simpleName, boolean isAbstract, ElementType creatingElementType) {
 		this.fullName = fullName;
 		this.simpleName = simpleName;
 		this.isAbstract = isAbstract;
+		this.creatingElementType = creatingElementType;
 		this.allChildren = new HashMap<>();
 		this.allChildren.put(FrankAttribute.class, new LinkedHashMap<>());
 		this.allChildren.put(ConfigChild.class, new LinkedHashMap<>());
 	}
 
 	public FrankElement(final String fullName, final String simpleName) {
-		this(fullName, simpleName, false);
+		this(fullName, simpleName, false, null);
 	}
 	
 	public void setParent(FrankElement parent) {
