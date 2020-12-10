@@ -45,7 +45,6 @@ public class FrankElement {
 	private @Getter FrankElement parent;
 
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
-	private @Getter List<ConfigChild> aliasSources;
 	private @Getter FrankElementStatistics statistics;
 
 	FrankElement(Class<?> clazz) {
@@ -62,7 +61,6 @@ public class FrankElement {
 		this.fullName = fullName;
 		this.simpleName = simpleName;
 		this.isAbstract = isAbstract;
-		this.aliasSources = new ArrayList<>();
 		this.allChildren = new HashMap<>();
 		this.allChildren.put(FrankAttribute.class, new LinkedHashMap<>());
 		this.allChildren.put(ConfigChild.class, new LinkedHashMap<>());
@@ -141,10 +139,6 @@ public class FrankElement {
 			Predicate<ElementChild> childRejector) {
 		new AncestorChildNavigation<ConfigChild>(
 				handler, childSelector, childRejector, ConfigChild.class).run(this);		
-	}
-
-	public void addAliasSource(ConfigChild aliasSource) {
-		aliasSources.add(aliasSource);
 	}
 
 	public String getXsdElementName(final ElementType elementType, final String groupSyntax1Name) {

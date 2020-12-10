@@ -365,7 +365,6 @@ public class FrankDocModel {
 			configChild.setDeprecated(isDeprecated(m));
 			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
 			result.add(configChild);
-			calculateAliases(configChild);
 		}
 		return result;
 	}
@@ -373,19 +372,6 @@ public class FrankDocModel {
 	private boolean isDeprecated(Method m) {
 		Deprecated deprecated = m.getAnnotation(Deprecated.class);
 		return (deprecated != null);
-	}
-
-	// TODO: Unit test this
-	private void calculateAliases(ConfigChild configChild) {
-		if(! configChild.getElementType().isFromJavaInterface()) {
-			Collection<FrankElement> members = configChild.getElementType().getMembers().values();
-			if(members.size() >= 1) {
-				FrankElement aliased = members.iterator().next();
-				aliased.addAliasSource(configChild);
-			} else {
-				log.warn(String.format("Found empty element type: [%s]", configChild.getElementType().getFullName()));
-			}
-		}
 	}
 
 	public void buildGroups() {
