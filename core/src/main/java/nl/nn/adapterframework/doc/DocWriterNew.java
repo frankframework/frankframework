@@ -40,8 +40,10 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeValueStat
 import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
 import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -51,7 +53,9 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.ElementType;
@@ -223,9 +227,49 @@ public class DocWriterNew {
 			this.elementTypeName = elementType.getFullName();
 			this.syntax1Name = syntax1Name;
 		}
+
+		String getBaseXsdName() {
+			return Utils.toUpperCamelCase(syntax1Name) + "ElementGroup";
+		}
 	}
 
 	private Set<ElementGroupId> idsCreatedElementGroups = new HashSet<>();
+
+	/*
+	 * There is a name clash for the combination of ElementType IListener
+	 * and syntax 1 name "listener":
+	 * 
+	 * In Receiver:
+	 * public void setListener(IListener<M> newListener)
+	 *
+	 * In GenericMessageSendingPipe:
+	 * public void setListener(ICorrelatedPullingListener listener)
+	 *
+	 * In PostboxRetrieverPipe:
+	 * public void setListener(IPostboxListener listener)
+	 *
+	 * We solve this here by using names like:
+	 * 
+	 * <syntax 1 name>"ElementGroup_"<sequence number>
+	 */
+	private String getName(ElementGroupId id) {
+		if(groupId2Name.containsKey(id)) {
+			return groupId2Name.get(id);
+		} else {
+			String baseName = id.getBaseXsdName();
+			String name = baseName;
+			int seq = 1;
+			while(name2GroupId.containsKey(name)) {
+				name = String.format("%s_%d", baseName, ++seq);
+			}
+			groupId2Name.put(id, name);
+			name2GroupId.put(name, id);
+			return name;
+		}
+	}
+
+	private Map<ElementGroupId, String> groupId2Name = new HashMap<>();
+	private Map<String, ElementGroupId> name2GroupId = new HashMap<>();
 
 	public DocWriterNew(FrankDocModel model) {
 		this.model = model;
@@ -448,7 +492,7 @@ public class DocWriterNew {
 					getMaxOccurs(child));
 			recursivelyDefineXsdElement(elementInType, elementType, syntax1Name);	
 		} else {
-			addGroupRef(context, xsdGroupOf(elementType, syntax1Name), getMinOccurs(child), getMaxOccurs(child));
+			addGroupRef(context, getName(new ElementGroupId(elementType, syntax1Name)), getMinOccurs(child), getMaxOccurs(child));
 			defineElementTypeGroup(elementType, syntax1Name);
 		}
 	}
@@ -483,7 +527,7 @@ public class DocWriterNew {
 	}
 
 	private void defineElementTypeGroupUnchecked(ElementType elementType, String syntax1Name) {
-		XmlBuilder group = addGroup(xsdRoot, xsdGroupOf(elementType, syntax1Name));
+		XmlBuilder group = addGroup(xsdRoot, getName(new ElementGroupId(elementType, syntax1Name)));
 		XmlBuilder choice = addChoice(group);
 		addGenericElementOption(choice, syntax1Name);
 		List<FrankElement> frankElementOptions = elementType.getMembers().values().stream()
@@ -529,10 +573,6 @@ public class DocWriterNew {
 	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, String syntax1Name) {
 		addAttribute(context, "elementType", FIXED, syntax1Name, PROHIBITED);
 		addClassNameAttribute(context, frankElement);
-	}
-
-	private static String xsdGroupOf(ElementType elementType, String syntax1Name) {
-		return Utils.toUpperCamelCase(syntax1Name) + "ElementGroup";
 	}
 
 	private static String getMinOccurs(ConfigChild child) {
