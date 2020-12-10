@@ -16,12 +16,17 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.REQUIRED;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.OPTIONAL;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.PROHIBITED;
+
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeValueStatus.DEFAULT;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeValueStatus.FIXED;
+
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAnyAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeFixed;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeGroupRef;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeUseRequired;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexContent;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
@@ -551,7 +556,9 @@ public class DocWriterNew {
 
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> frankAttributes) {
 		for(FrankAttribute frankAttribute: frankAttributes) {
-			XmlBuilder attribute = addAttribute(context, frankAttribute.getName(), frankAttribute.getDefaultValue());
+			// The default value is allowed to be null.
+			XmlBuilder attribute = addAttribute(
+					context, frankAttribute.getName(), DEFAULT, frankAttribute.getDefaultValue(), OPTIONAL);
 			if(! StringUtils.isEmpty(frankAttribute.getDescription())) {
 				addDocumentation(attribute, frankAttribute.getDescription());
 			}
@@ -583,8 +590,8 @@ public class DocWriterNew {
 	private void addGenericElementOption(XmlBuilder choice, String syntax1Name) {
 		XmlBuilder topChoice = addElementWithType(choice, syntax1Name);
 		XmlBuilder complexType = addComplexType(topChoice);
-		addAttributeFixed(complexType, "elementType", syntax1Name);
-		addAttributeUseRequired(complexType, "className");
+		addAttribute(complexType, "elementType", FIXED, syntax1Name, PROHIBITED);
+		addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
 		// My XSD is invalid if I add addAnyAttribute before attributes elementType and className.
 		addAnyAttribute(complexType);
 	}
@@ -594,7 +601,7 @@ public class DocWriterNew {
 		XmlBuilder complexType = addComplexType(element);
 		XmlBuilder complexContent = addComplexContent(complexType);
 		XmlBuilder extension = addExtension(complexContent, xsdElementType(frankElement));
-		addAttributeFixed(extension, "elementType", syntax1Name);
-		addAttributeFixed(extension, "className", frankElement.getFullName());
+		addAttribute(extension, "elementType", FIXED, syntax1Name, PROHIBITED);
+		addAttribute(extension, "className", FIXED, frankElement.getFullName(), PROHIBITED);
 	}
 }

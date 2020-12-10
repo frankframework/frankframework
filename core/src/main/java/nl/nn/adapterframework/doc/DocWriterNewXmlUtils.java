@@ -16,9 +16,15 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
+import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 class DocWriterNewXmlUtils {
+	private static Logger log = LogUtil.getLogger(DocWriterNewXmlUtils.class);
+
 	private static final String XML_SCHEMA_URI = "http://www.w3.org/2001/XMLSchema";
 
 	private DocWriterNewXmlUtils() {
@@ -115,33 +121,77 @@ class DocWriterNewXmlUtils {
 		return sequence;
 	}
 
-	static XmlBuilder addAttribute(XmlBuilder context, String name, String defaultValue) {
-		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
-		attribute.addAttribute("name", name);
-		attribute.addAttribute("type", "xs:string");
-		if(defaultValue != null) {
-			attribute.addAttribute("default", defaultValue);
+	enum AttributeUse {
+		OPTIONAL,
+		REQUIRED,
+		PROHIBITED;
+	}
+
+	enum AttributeValueStatus {
+		DEFAULT("default"),
+		FIXED("fixed");
+
+		@Getter
+		private final String xsdWord;
+
+		private AttributeValueStatus(String xsdWord) {
+			this.xsdWord = xsdWord;
 		}
+	}
+
+	static XmlBuilder addAttribute(
+			XmlBuilder context,
+			String name,
+			AttributeValueStatus valueStatus,
+			String value,
+			AttributeUse attributeUse) {
+		XmlBuilder result = startAddingAttribute(context, name);
+		try {
+			addValueToAttribute(result, valueStatus, value);
+		} catch(AttributeFormatException e) {
+			log.warn(String.format("Error formatting attribute [%s]", name), e);
+		}
+		addUsageToAttribute(result, attributeUse);
+		return result;
+	}
+
+	private static XmlBuilder startAddingAttribute(XmlBuilder context, String name) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("name", name);
+		attribute.addAttribute("type", "xs:string");
 		context.addSubElement(attribute);
 		return attribute;
 	}
 
-	static XmlBuilder addAttributeFixed(XmlBuilder context, String name, String fixedValue) {
-		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
-		attribute.addAttribute("name", name);
-		attribute.addAttribute("type", "xs:string");
-		attribute.addAttribute("fixed", fixedValue);
-		context.addSubElement(attribute);
-		return attribute;
+	@SuppressWarnings("serial")
+	private static class AttributeFormatException extends Exception {
+		AttributeFormatException(String msg) {
+			super(msg);
+		}
 	}
 
-	static XmlBuilder addAttributeUseRequired(XmlBuilder context, String name) {
-		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
-		attribute.addAttribute("name", name);
-		attribute.addAttribute("type", "xs:string");
-		attribute.addAttribute("use", "required");
-		context.addSubElement(attribute);
-		return attribute;
+	private static void addValueToAttribute(XmlBuilder result, AttributeValueStatus valueStatus, String value) throws AttributeFormatException {
+		if(value == null) {
+			if(valueStatus == AttributeValueStatus.FIXED) {
+				throw new AttributeFormatException("Attribute values can be omitted, but then they cannot be fixed");
+			}
+		}
+		else {
+			result.addAttribute(valueStatus.getXsdWord(), value);
+		}
+	}
+
+	private static void addUsageToAttribute(XmlBuilder result, AttributeUse attributeUse) {
+		switch(attributeUse) {
+		case OPTIONAL:
+			break;
+		case REQUIRED:
+			result.addAttribute("use", "required");
+			break;
+		case PROHIBITED:
+			result.addAttribute("use", "prohibited");
+			break;
+		}
 	}
 
 	static XmlBuilder addAnyAttribute(XmlBuilder context) {

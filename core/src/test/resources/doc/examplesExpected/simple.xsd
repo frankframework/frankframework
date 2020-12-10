@@ -22,7 +22,7 @@
     <xs:choice>
       <xs:element name="syntax1NameIChild">
         <xs:complexType>
-          <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" />
+          <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute />
         </xs:complexType>
@@ -31,8 +31,8 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="DescribedPossibleIChildType">
-              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild" />
+              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -41,8 +41,8 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="NotDescribedPossibleIChildType">
-              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild" />
+              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -55,8 +55,8 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="TChildType">
-              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameTChild" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" />
+              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameTChild" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
