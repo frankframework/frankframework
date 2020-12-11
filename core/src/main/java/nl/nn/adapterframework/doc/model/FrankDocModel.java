@@ -59,8 +59,8 @@ public class FrankDocModel {
 	private @Getter LinkedHashMap<String, FrankDocGroup> groups = new LinkedHashMap<>();
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
-	private @Getter Map<ElementTypeRole.Key, ElementTypeRole> allElementTypeRoles = new HashMap<>();
-	private final ElementTypeRole.Factory elementTypeRoleFactory = new ElementTypeRole.Factory();
+	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
+	private final ElementRole.Factory ElementRoleFactory = new ElementRole.Factory();
 
 	/**
 	 * Get the FrankDocModel needed in production. This is just a first draft. The
@@ -365,7 +365,7 @@ public class FrankDocModel {
 			configChild.setMandatory(configChildDescriptor.isMandatory());
 			configChild.setDeprecated(isDeprecated(m));
 			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
-			createElementTypeRoleIfNotPresent(configChild);
+			createElementRoleIfNotPresent(configChild);
 			result.add(configChild);
 		}
 		return result;
@@ -376,19 +376,19 @@ public class FrankDocModel {
 		return (deprecated != null);
 	}
 
-	void createElementTypeRoleIfNotPresent(ConfigChild configChild) {
-		ElementTypeRole.Key key = new ElementTypeRole.Key(configChild);
-		if(! allElementTypeRoles.containsKey(key)) {
-			allElementTypeRoles.put(key, elementTypeRoleFactory.create(configChild));
+	void createElementRoleIfNotPresent(ConfigChild configChild) {
+		ElementRole.Key key = new ElementRole.Key(configChild);
+		if(! allElementRoles.containsKey(key)) {
+			allElementRoles.put(key, ElementRoleFactory.create(configChild));
 		}
 	}
 
-	public ElementTypeRole findElementTypeRole(ConfigChild configChild) {
-		return allElementTypeRoles.get(new ElementTypeRole.Key(configChild));
+	public ElementRole findElementRole(ConfigChild configChild) {
+		return allElementRoles.get(new ElementRole.Key(configChild));
 	}
 
-	ElementTypeRole findElementTypeRole(String fullElementTypeName, String syntax1Name) {
-		return allElementTypeRoles.get(new ElementTypeRole.Key(fullElementTypeName, syntax1Name));
+	ElementRole findElementRole(String fullElementTypeName, String syntax1Name) {
+		return allElementRoles.get(new ElementRole.Key(fullElementTypeName, syntax1Name));
 	}
 
 	void buildGroups() {

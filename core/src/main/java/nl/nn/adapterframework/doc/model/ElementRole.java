@@ -7,12 +7,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import nl.nn.adapterframework.doc.Utils;
 
-public class ElementTypeRole {
+public class ElementRole {
 	private final @Getter ElementType elementType;
 	private final @Getter String syntax1Name;
 	private final int syntax1NameSeq;
 
-	private ElementTypeRole(ElementType elementType, String syntax1Name, int syntax1NameSeq) {
+	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq) {
 		this.elementType = elementType;
 		this.syntax1Name = syntax1Name;
 		this.syntax1NameSeq = syntax1NameSeq;
@@ -33,11 +33,11 @@ public class ElementTypeRole {
 	static class Factory {
 		private final Map<String, Integer> numUsagePerSyntax1Name = new HashMap<>();
 
-		ElementTypeRole create(ElementType elementType, String syntax1Name) {
-			return new ElementTypeRole(elementType, syntax1Name, newSyntax1NameSeq(syntax1Name));
+		ElementRole create(ElementType elementType, String syntax1Name) {
+			return new ElementRole(elementType, syntax1Name, newSyntax1NameSeq(syntax1Name));
 		}
 
-		ElementTypeRole create(ConfigChild configChild) {
+		ElementRole create(ConfigChild configChild) {
 			return create(configChild.getElementType(), configChild.getSyntax1Name());
 		}
 

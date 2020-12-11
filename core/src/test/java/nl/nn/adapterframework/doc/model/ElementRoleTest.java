@@ -6,32 +6,32 @@ import static org.junit.Assert.assertFalse;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.doc.model.ElementTypeRole.Key;
+import nl.nn.adapterframework.doc.model.ElementRole.Key;
 
-public class ElementTypeRoleTest {
+public class ElementRoleTest {
 	private static final String ELEMENT = "Element";
 
-	private ElementTypeRole.Factory factory;
+	private ElementRole.Factory factory;
 
 	@Before
 	public void setUp() {
-		factory = new ElementTypeRole.Factory();
+		factory = new ElementRole.Factory();
 	}
 
 	@Test
-	public void whenTwoElementTypeRolesWithSameSyntax1NameCreatedThenDifferentSeqs() {
-		ElementTypeRole first = factory.create(null, "x");
+	public void whenTwoElementRolesWithSameSyntax1NameCreatedThenDifferentSeqs() {
+		ElementRole first = factory.create(null, "x");
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
-		ElementTypeRole second = factory.create(null, "x");
+		ElementRole second = factory.create(null, "x");
 		assertEquals("XElement_2", second.createXsdElementName(ELEMENT));
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
 	}
 
 	@Test
-	public void whenTwoElementTypeRolesWithDifferentSyntax1NameCreatedThenNoSeqsInNames() {
-		ElementTypeRole first = factory.create(null, "x");
+	public void whenTwoElementRolesWithDifferentSyntax1NameCreatedThenNoSeqsInNames() {
+		ElementRole first = factory.create(null, "x");
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
-		ElementTypeRole second = factory.create(null, "y");
+		ElementRole second = factory.create(null, "y");
 		assertEquals("YElement", second.createXsdElementName(ELEMENT));
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
 	}
