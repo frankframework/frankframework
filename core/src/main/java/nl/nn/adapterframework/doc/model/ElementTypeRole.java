@@ -3,6 +3,7 @@ package nl.nn.adapterframework.doc.model;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import nl.nn.adapterframework.doc.Utils;
 
@@ -48,6 +49,22 @@ public class ElementTypeRole {
 			return "";
 		} else {
 			return "_" + syntax1NameSeq;
+		}
+	}
+
+	@EqualsAndHashCode
+	public static class Key {
+		private @Getter String elementTypeName;
+		private @Getter String syntax1Name;
+
+		public Key(String elementTypeName, String syntax1Name) {
+			this.elementTypeName = elementTypeName;
+			this.syntax1Name = syntax1Name;
+		}
+
+		@Override
+		public String toString() {
+			return "(" + elementTypeName + ", " + syntax1Name + ")"; 
 		}
 	}
 }
