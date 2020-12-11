@@ -124,6 +124,24 @@ public class FrankElement {
 		return ancestor;
 	}
 
+	public boolean hasAncestorThatHasConfigChildrenOrAttributes(Predicate<ElementChild> selector) {
+		FrankElement ancestorAttributes = getNextAncestorThatHasAttributes(selector);
+		FrankElement ancestorConfigChildren = getNextAncestorThatHasConfigChildren(selector);
+		return (ancestorAttributes != null) || (ancestorConfigChildren != null);
+	}
+
+	public FrankElement getNextAncestorThatHasConfigChildren(Predicate<ElementChild> selector) {
+		FrankElement ancestorConfigChildren = getNextAncestorThatHasChildren(
+				el -> el.getChildrenOfKind(selector, ConfigChild.class).isEmpty());
+		return ancestorConfigChildren;
+	}
+
+	public FrankElement getNextAncestorThatHasAttributes(Predicate<ElementChild> selector) {
+		FrankElement ancestorAttributes = getNextAncestorThatHasChildren(
+				el -> el.getChildrenOfKind(selector, FrankAttribute.class).isEmpty());
+		return ancestorAttributes;
+	}
+
 	public void walkCumulativeAttributes(
 			CumulativeChildHandler<FrankAttribute> handler,
 			Predicate<ElementChild> childSelector,

@@ -284,31 +284,13 @@ public class DocWriterNew {
 	public String getSchema() {
 		xsdRoot = getXmlSchema();
 		FrankElement rootElement = model.findFrankElement(startClassName);
-		if(hasAncestorWithConfigChildrenOrAttributes(rootElement)) {
+		if(rootElement.hasAncestorThatHasConfigChildrenOrAttributes(IN_XSD)) {
 			addElement(xsdRoot, rootElement.getSimpleName(), xsdElementType(rootElement));
 			recursivelyDefineXsdElementType(rootElement);
 		} else {
 			recursivelyDefineXsdElementOfRoot(rootElement);
 		}
 		return xsdRoot.toXML(true);
-	}
-
-	private boolean hasAncestorWithConfigChildrenOrAttributes(FrankElement frankElement) {
-		FrankElement ancestorAttributes = getNextAncestorWithAttributes(frankElement);
-		FrankElement ancestorConfigChildren = getNextAncestorWithConfigChildren(frankElement);
-		return (ancestorAttributes != null) || (ancestorConfigChildren != null);
-	}
-
-	private FrankElement getNextAncestorWithConfigChildren(FrankElement frankElement) {
-		FrankElement ancestorConfigChildren = frankElement.getNextAncestorThatHasChildren(
-				el -> el.getChildrenOfKind(IN_XSD, ConfigChild.class).isEmpty());
-		return ancestorConfigChildren;
-	}
-
-	private FrankElement getNextAncestorWithAttributes(FrankElement frankElement) {
-		FrankElement ancestorAttributes = frankElement.getNextAncestorThatHasChildren(
-				el -> el.getChildrenOfKind(IN_XSD, FrankAttribute.class).isEmpty());
-		return ancestorAttributes;
 	}
 
 	private String xsdElementType(FrankElement frankElement) {
@@ -342,8 +324,8 @@ public class DocWriterNew {
 			ElementBuildingStrategy elementBuildingStrategy = getElementBuildingStrategy(frankElement);
 			addConfigChildren(elementBuildingStrategy, frankElement);
 			addAttributes(elementBuildingStrategy, frankElement);
-			recursivelyDefineXsdElementType(getNextAncestorWithConfigChildren(frankElement));
-			recursivelyDefineXsdElementType(getNextAncestorWithAttributes(frankElement));
+			recursivelyDefineXsdElementType(frankElement.getNextAncestorThatHasConfigChildren(IN_XSD));
+			recursivelyDefineXsdElementType(frankElement.getNextAncestorThatHasAttributes(IN_XSD));
 		}
 	}
 
@@ -425,8 +407,7 @@ public class DocWriterNew {
 			
 			@Override
 			public FrankElement getAncestorOf(FrankElement elem) {
-				return elem.getNextAncestorThatHasChildren(
-						el -> el.getChildrenOfKind(IN_XSD, ConfigChild.class).isEmpty());
+				return elem.getNextAncestorThatHasConfigChildren(IN_XSD);
 			}
 			
 			@Override
@@ -501,7 +482,7 @@ public class DocWriterNew {
 		}
 		else {
 			FrankElement childInType = singleElementOf(elementType);
-			if(hasAncestorWithConfigChildrenOrAttributes(childInType)) {
+			if(childInType.hasAncestorThatHasConfigChildrenOrAttributes(IN_XSD)) {
 				log.warn(String.format("FrankElement [%s] is not expected to inherit config children or attributes because it is in type [%s]",
 						childInType.getSimpleName(), elementType.getFullName()));
 				return false;
@@ -602,8 +583,7 @@ public class DocWriterNew {
 
 			@Override
 			public FrankElement getAncestorOf(FrankElement elem) {
-				return elem.getNextAncestorThatHasChildren(
-						el -> el.getChildrenOfKind(IN_XSD, FrankAttribute.class).isEmpty());
+				return elem.getNextAncestorThatHasAttributes(IN_XSD);
 			}
 
 			@Override
