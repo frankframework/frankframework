@@ -60,6 +60,7 @@ public class FrankDocModel {
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
 	private @Getter Map<ElementTypeRole.Key, ElementTypeRole> allElementTypeRoles = new HashMap<>();
+	private final ElementTypeRole.Factory elementTypeRoleFactory = new ElementTypeRole.Factory();
 
 	/**
 	 * Get the FrankDocModel needed in production. This is just a first draft. The
@@ -378,7 +379,7 @@ public class FrankDocModel {
 	void createElementTypeRoleIfNotPresent(ConfigChild configChild) {
 		ElementTypeRole.Key key = new ElementTypeRole.Key(configChild);
 		if(! allElementTypeRoles.containsKey(key)) {
-			allElementTypeRoles.put(key, new ElementTypeRole(configChild));
+			allElementTypeRoles.put(key, elementTypeRoleFactory.create(configChild));
 		}
 	}
 

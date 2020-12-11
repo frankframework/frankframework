@@ -18,32 +18,6 @@ public class ElementTypeRole {
 		this.syntax1NameSeq = syntax1NameSeq;
 	}
 
-	public ElementTypeRole(ElementType elementType, String syntax1Name) {
-		this(elementType, syntax1Name, newSyntax1NameSeq(syntax1Name));
-	}
-
-	public ElementTypeRole(ConfigChild configChild) {
-		this(configChild.getElementType(), configChild.getSyntax1Name());
-	}
-
-	private static int newSyntax1NameSeq(String syntax1Name) {
-		int maxExistingSyntax1NameSeq = numUsagePerSyntax1Name.getOrDefault(syntax1Name, 0);
-		int syntax1NameSeq = maxExistingSyntax1NameSeq + 1;
-		numUsagePerSyntax1Name.put(syntax1Name, syntax1NameSeq);
-		return syntax1NameSeq;
-	}
-
-	private static Map<String, Integer> numUsagePerSyntax1Name;
-
-	// Only for unit tests, to make them independent of each other
-	static void init() {
-		numUsagePerSyntax1Name = new HashMap<>();
-	}
-	
-	static {
-		init();
-	}
-
 	public String createXsdElementName(String kindDifferentiatingWord) {
 		return Utils.toUpperCamelCase(syntax1Name) + kindDifferentiatingWord + disambiguation();
 	}
@@ -53,6 +27,25 @@ public class ElementTypeRole {
 			return "";
 		} else {
 			return "_" + syntax1NameSeq;
+		}
+	}
+
+	static class Factory {
+		private final Map<String, Integer> numUsagePerSyntax1Name = new HashMap<>();
+
+		ElementTypeRole create(ElementType elementType, String syntax1Name) {
+			return new ElementTypeRole(elementType, syntax1Name, newSyntax1NameSeq(syntax1Name));
+		}
+
+		ElementTypeRole create(ConfigChild configChild) {
+			return create(configChild.getElementType(), configChild.getSyntax1Name());
+		}
+
+		private int newSyntax1NameSeq(String syntax1Name) {
+			int maxExistingSyntax1NameSeq = numUsagePerSyntax1Name.getOrDefault(syntax1Name, 0);
+			int syntax1NameSeq = maxExistingSyntax1NameSeq + 1;
+			numUsagePerSyntax1Name.put(syntax1Name, syntax1NameSeq);
+			return syntax1NameSeq;
 		}
 	}
 

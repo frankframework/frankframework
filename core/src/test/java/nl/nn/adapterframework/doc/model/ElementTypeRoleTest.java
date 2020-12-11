@@ -11,25 +11,27 @@ import nl.nn.adapterframework.doc.model.ElementTypeRole.Key;
 public class ElementTypeRoleTest {
 	private static final String ELEMENT = "Element";
 
+	private ElementTypeRole.Factory factory;
+
 	@Before
 	public void setUp() {
-		ElementTypeRole.init();
+		factory = new ElementTypeRole.Factory();
 	}
 
 	@Test
 	public void whenTwoElementTypeRolesWithSameSyntax1NameCreatedThenDifferentSeqs() {
-		ElementTypeRole first = new ElementTypeRole(null, "x");
+		ElementTypeRole first = factory.create(null, "x");
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
-		ElementTypeRole second = new ElementTypeRole(null, "x");
+		ElementTypeRole second = factory.create(null, "x");
 		assertEquals("XElement_2", second.createXsdElementName(ELEMENT));
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
 	}
 
 	@Test
 	public void whenTwoElementTypeRolesWithDifferentSyntax1NameCreatedThenNoSeqsInNames() {
-		ElementTypeRole first = new ElementTypeRole(null, "x");
+		ElementTypeRole first = factory.create(null, "x");
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
-		ElementTypeRole second = new ElementTypeRole(null, "y");
+		ElementTypeRole second = factory.create(null, "y");
 		assertEquals("YElement", second.createXsdElementName(ELEMENT));
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
 	}
