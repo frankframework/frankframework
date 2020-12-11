@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
@@ -30,6 +31,8 @@ import nl.nn.adapterframework.util.FileHandler;
  *
  * @author Jaco de Groot
  */
+@Deprecated
+@ConfigurationWarning("Please replace with LocalFileSystemSender")
 public class FileSender extends FileHandler implements ISenderWithParameters {
 	private String name;
 	protected ParameterList paramList = null;
@@ -37,11 +40,8 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (!outputType.equalsIgnoreCase("string")
-				&& !outputType.equalsIgnoreCase("base64")) {
-			throw new ConfigurationException(getLogPrefix(null)
-					+ "sender doesn't support outputType ["
-					+ outputType + "], use file pipe instead");
+		if (!outputType.equalsIgnoreCase("string") && !outputType.equalsIgnoreCase("base64")) {
+			throw new ConfigurationException(getLogPrefix(null) + "sender doesn't support outputType [" + outputType + "], use file pipe instead");
 		}
 		if (paramList!=null) {
 			paramList.configure();
