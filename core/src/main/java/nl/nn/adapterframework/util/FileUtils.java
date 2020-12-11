@@ -614,46 +614,32 @@ public class FileUtils {
 		return encodedFileName.toString();
 	}
 
-	public static void unzipStream(InputStream inputStream, File dir)
-			throws IOException {
-		ZipInputStream zis = new ZipInputStream(new BufferedInputStream(
-				inputStream));
-		try {
+	public static void unzipStream(InputStream inputStream, File dir) throws IOException {
+		try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream))) {
 			ZipEntry ze;
 			while ((ze = zis.getNextEntry()) != null) {
 				String filename = ze.getName();
 				File zipFile = new File(dir, filename);
 				if (ze.isDirectory()) {
 					if (!zipFile.exists()) {
-						log.debug("creating directory [" + zipFile.getPath()
-								+ "] for ZipEntry [" + ze.getName() + "]");
+						log.debug("creating directory [" + zipFile.getPath() + "] for ZipEntry [" + ze.getName() + "]");
 						if (!zipFile.mkdir()) {
-							throw new IOException(zipFile.getPath()
-									+ " could not be created");
+							throw new IOException(zipFile.getPath() + " could not be created");
 						}
 					}
 				} else {
 					File zipParentFile = zipFile.getParentFile(); 
 					if (!zipParentFile.exists()) {
-						log.debug("creating directory [" + zipParentFile.getPath()
-								+ "] for ZipEntry [" + ze.getName() + "]");
+						log.debug("creating directory [" + zipParentFile.getPath() + "] for ZipEntry [" + ze.getName() + "]");
 						if (!zipParentFile.mkdir()) {
-							throw new IOException(zipParentFile.getPath()
-									+ " could not be created");
+							throw new IOException(zipParentFile.getPath() + " could not be created");
 						}
 					}
-					FileOutputStream fos = new FileOutputStream(zipFile);
-					log.debug("writing ZipEntry [" + ze.getName()
-							+ "] to file [" + zipFile.getPath() + "]");
-					Misc.streamToStream(zis, fos, false);
-					fos.close();
+					try (FileOutputStream fos = new FileOutputStream(zipFile)) {
+						log.debug("writing ZipEntry [" + ze.getName() + "] to file [" + zipFile.getPath() + "]");
+						Misc.streamToStream(StreamUtil.dontClose(zis), fos);
+					}
 				}
-			}
-		} finally {
-			try {
-				zis.close();
-			} catch (IOException e) {
-				log.warn("exception closing unzip", e);
 			}
 		}
 	}

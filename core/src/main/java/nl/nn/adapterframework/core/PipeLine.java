@@ -43,6 +43,7 @@ import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
@@ -172,7 +173,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		}
 		String name = pipe.getName();
 		if (StringUtils.isEmpty(name)) {
-			throw new ConfigurationException("pipe [" + pipe.getClass().getName()+"] to be added has no name, pipelineTable size ["+pipesByName.size()+"]");
+			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe)+"] to be added has no name, pipelineTable size ["+pipesByName.size()+"]");
 		}
 		IPipe current = getPipe(name);
 		if (current != null) {

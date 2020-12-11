@@ -57,6 +57,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -300,7 +301,7 @@ public class ConfigurationUtils {
 				}
 			}
 			if(!isBuildInfoPresent) {
-				throw new ConfigurationException("no ["+buildInfoFilename+"] persent in configuration");
+				throw new ConfigurationException("no ["+buildInfoFilename+"] present in configuration");
 			}
 		}
 
@@ -335,7 +336,7 @@ public class ConfigurationUtils {
 					}
 
 					try {
-						result += entryName + ":" + ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, entryName, zipInputStream, ruser);
+						result += entryName + ":" + ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
 					} catch (ConfigurationException e) {
 						log.error("an error occured while trying to store new configuration using datasource ["+datasource+"]", e);
 						result += entryName + ":false";

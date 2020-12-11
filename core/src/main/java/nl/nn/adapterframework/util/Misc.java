@@ -204,18 +204,10 @@ public class Misc {
 		streamToStream(new FileInputStream(filename), output);
 	}
 
-	/**
-	 * Overloaded version of streamToStream that calls the main version with closeInput set to true.
-	 * @see #streamToStream(InputStream, OutputStream, boolean, byte[])
-	 */
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
-		streamToStream(input, output, true, null);
+		streamToStream(input, output, null);
 	}
 	
-	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput) throws IOException {
-		streamToStream(input, output, closeInput, null);
-	}
-
 	/**
 	 * Writes the content of an input stream to an output stream by copying the buffer of input stream to the buffer of the output stream.
 	 * If eof is specified, appends the eof(could represent a new line) to the outputstream
@@ -230,20 +222,20 @@ public class Misc {
 	 *         System.out.println(baos.toString()); // prints "test"
 	 *     </pre>
 	 * </p>
-	 * @param closeInput if set to 'true', the input stream gets closed.
-	 * @throws IOException  exception to be thrown if an I/O eexception occurs
+	 * @throws IOException  exception to be thrown if an I/O exception occurs
 	 */
-	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput, byte[] eof) throws IOException {
+	public static void streamToStream(InputStream input, OutputStream output, byte[] eof) throws IOException {
 		if (input!=null) {
-			byte[] buffer=new byte[BUFFERSIZE];
-			int bytesRead;
-			while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>-1) {
-				output.write(buffer,0,bytesRead);
-			}
-			if(eof != null) {
-				output.write(eof);
-			}
-			if (closeInput) {
+			try {
+				byte[] buffer=new byte[BUFFERSIZE];
+				int bytesRead;
+				while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>-1) {
+					output.write(buffer,0,bytesRead);
+				}
+				if(eof != null) {
+					output.write(eof);
+				}
+			} finally {
 				input.close();
 			}
 		}
@@ -280,24 +272,21 @@ public class Misc {
 	 * </p>
 	 */
 	public static byte[] streamToBytes(InputStream inputStream) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		byte[] buffer = new byte[1024];
-		while (true) {
-			int r = inputStream.read(buffer);
-			if (r == -1) {
-				break;
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			while (true) {
+				int r = inputStream.read(buffer);
+				if (r == -1) {
+					break;
+				}
+				out.write(buffer, 0, r);
 			}
-			out.write(buffer, 0, r);
+	
+			return out.toByteArray();
+		} finally {
+			inputStream.close();
 		}
-
-		return out.toByteArray();
-	}
-
-	/**
-	 * @see #readerToWriter(Reader, Writer, boolean)
-	 */
-	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
-		readerToWriter(reader,writer,true);
 	}
 
 	/**
@@ -312,7 +301,7 @@ public class Misc {
 	 *     </pre>
 	 * </p>
 	 */
-	public static void readerToWriter(Reader reader, Writer writer, boolean closeInput) throws IOException {
+	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
 		if (reader!=null) {
 			try {
 				char[] buffer=new char[BUFFERSIZE];
@@ -321,9 +310,7 @@ public class Misc {
 					writer.write(buffer,0,charsRead);
 				}
 			} finally {
-				if (closeInput) {
-					reader.close();
-				}
+				reader.close();
 			}
 		}
 	}
@@ -488,14 +475,14 @@ public class Misc {
 
 	/**
 	 * Concatenates two strings, if specified, uses the separator in between two strings. 
-	 * Does not use any seperators if both or one of the strings are empty.
+	 * Does not use any separators if both or one of the strings are empty.
 	 *<p>
 	 *     Example:
 	 *     <pre>
 	 *         String a = "We";
 	 *         String b = "Frank";
-	 *         String seperator = "Are";
-	 *         String res = Misc.concatStrings(a, seperator, b);
+	 *         String separator = "Are";
+	 *         String res = Misc.concatStrings(a, separator, b);
 	 *         System.out.println(res); // prints "WeAreFrank"
 	 *     </pre>
 	 * </p>
@@ -1028,7 +1015,7 @@ public class Misc {
 	}
 
 	/**
-	 * Adds items on a string, added by comma seperator (ex: "1,2,3"), into a list.
+	 * Adds items on a string, added by comma separator (ex: "1,2,3"), into a list.
 	 * @param collectionDescription description of the list
 	 */
 	public static void addItemsToList(Collection<String> collection, String list, String collectionDescription, boolean lowercase) {

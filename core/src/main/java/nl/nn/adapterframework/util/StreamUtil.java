@@ -46,8 +46,6 @@ public class StreamUtil {
 	public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
 	
-	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
-	
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
 			return (OutputStream) target;
@@ -62,7 +60,7 @@ public class StreamUtil {
 			} catch (FileNotFoundException e) {
 				FileNotFoundException fnfe = new FileNotFoundException("cannot create file ["+filename+"]");
 				fnfe.initCause(e);
-				throw fnfe;					
+				throw fnfe;
 			}
 		}
 		return null;
@@ -78,65 +76,70 @@ public class StreamUtil {
 		return null;
 	}
 	
+	public static InputStream dontClose(InputStream stream) {
+		class NonClosingInputStreamFilter extends FilterInputStream {
+			public NonClosingInputStreamFilter(InputStream in) {
+				super(in);
+			}
+			@Override
+			public void close() throws IOException {
+				// do not close
+			}
+		};
+		
+		return new NonClosingInputStreamFilter(stream);
+	}
+
+	public static Reader dontClose(Reader reader) {
+		class NonClosingReaderFilter extends FilterReader {
+			public NonClosingReaderFilter(Reader in) {
+				super(in);
+			}
+			@Override
+			public void close() throws IOException {
+				// do not close
+			}
+		};
+		
+		return new NonClosingReaderFilter(reader);
+	}
+	
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
-		StringBuffer sb = new StringBuffer();
-		int curChar = -1;
-		int prevChar = -1;
-		while ((curChar = reader.read()) != -1 || prevChar == '\r') {
-			if (prevChar == '\r' || curChar == '\n') {
-				if (endOfLineString == null) {
-					if (prevChar == '\r')
-						sb.append((char) prevChar);
-					if (curChar == '\n')
-						sb.append((char) curChar);
+		try {
+			StringBuffer sb = new StringBuffer();
+			int curChar = -1;
+			int prevChar = -1;
+			while ((curChar = reader.read()) != -1 || prevChar == '\r') {
+				if (prevChar == '\r' || curChar == '\n') {
+					if (endOfLineString == null) {
+						if (prevChar == '\r')
+							sb.append((char) prevChar);
+						if (curChar == '\n')
+							sb.append((char) curChar);
+					}
+					else {
+						sb.append(endOfLineString);
+					}
 				}
-				else {
-					sb.append(endOfLineString);
+				if (curChar != '\r' && curChar != '\n' && curChar != -1) {
+					String appendStr =""+(char) curChar;
+					sb.append(appendStr);
 				}
+				prevChar = curChar;
 			}
-			if (curChar != '\r' && curChar != '\n' && curChar != -1) {
-				String appendStr =""+(char) curChar;
-				sb.append(appendStr);
-			}
-			prevChar = curChar;
+			return sb.toString();
+		} finally {
+			reader.close();
 		}
-		return sb.toString();
 	}
 
 	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding) throws IOException {
 		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream,streamEncoding), endOfLineString);
 	}
 
-	public static byte[] streamToByteArray(InputStream servletinputstream, int contentLength) throws IOException {
-		byte[] result=null;
-		if(contentLength > 0) {
-			result = new byte[contentLength];
-			int position = 0;
-			do {
-				int bytesRead = servletinputstream.read(result, position, contentLength - position);
-				if(bytesRead <= 0) {
-					throw new IOException("post body contains less bytes ["+position+"] than specified by content-length ["+contentLength+"]");
-				}
-				position += bytesRead;
-			} while(contentLength - position > 0);
-		}
-		return result;
-	}
-
 	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM) throws IOException {
-		byte[] result = Misc.streamToBytes(inputStream);
-		if (skipBOM) {
-			//log.debug("checking BOM");
-			if ((result[0] == BOM_UTF_8[0]) && (result[1] == BOM_UTF_8[1]) && (result[2] == BOM_UTF_8[2])) {
-			    byte[] resultWithoutBOM = new byte[result.length-3];
-			    for(int i = 3; i < result.length; ++i)
-			    	resultWithoutBOM[i-3]=result[i];
-			    //log.debug("removed UTF-8 BOM");
-			    return resultWithoutBOM;
-			}
-		}
-		//log.debug("no UTF-8 BOM found");
-		return result;
+		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, !skipBOM, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
+		return Misc.streamToBytes(bOMInputStream);
 	}
 	
 	/**
