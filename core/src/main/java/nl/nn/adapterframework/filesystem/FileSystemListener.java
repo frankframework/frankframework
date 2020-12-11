@@ -151,21 +151,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
-		try {
-			getFileSystem().openThread();
-			return null;
-		} catch (FileSystemException e) {
-			throw new ListenerException("Cannot open thread for fileSystem",e);
-		}
+		return null;
 	}
 
 	@Override
 	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
-		try {
-			getFileSystem().closeThread();
-		} catch (FileSystemException e) {
-			throw new ListenerException("Cannot close thread for fileSystem",e);
-		}
+		// nothing to do
 	}
 
 	@Override
@@ -202,7 +193,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 				}
 				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
+					if (threadContext!=null) threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
 					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
 					return inprocessFile;
 				}
@@ -296,24 +287,26 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					log.warn("no attribute ["+getMessageIdPropertyKey()+"] found, will use filename as messageId");
 				}
 			}
-			if (StringUtils.isEmpty(messageId)) {
+			if (StringUtils.isEmpty(messageId) && threadContext!=null) {
 				messageId = (String)threadContext.get(ORIGINAL_FILENAME_KEY);
-				if (StringUtils.isEmpty(messageId)) {
-					messageId = fileSystem.getName(rawMessage);
-				}
+			}
+			if (StringUtils.isEmpty(messageId)) {
+				messageId = fileSystem.getName(rawMessage);
 			}
 			if (isFileTimeSensitive()) {
 				messageId+="-"+DateUtils.format(fileSystem.getModificationTime(file));
 			}
-			PipeLineSessionBase.setListenerParameters(threadContext, messageId, messageId, null, null);
-			if (attributes!=null) {
-				threadContext.putAll(attributes);
-			}
-			if (!"path".equals(getMessageType())) {
-				threadContext.put("filepath", fileSystem.getCanonicalName(rawMessage));
-			}
-			if (!"name".equals(getMessageType())) {
-				threadContext.put("filename", fileSystem.getName(rawMessage));
+			if (threadContext!=null) {
+				PipeLineSessionBase.setListenerParameters(threadContext, messageId, messageId, null, null);
+				if (attributes!=null) {
+					threadContext.putAll(attributes);
+				}
+				if (!"path".equals(getMessageType())) {
+					threadContext.put("filepath", fileSystem.getCanonicalName(rawMessage));
+				}
+				if (!"name".equals(getMessageType())) {
+					threadContext.put("filename", fileSystem.getName(rawMessage));
+				}
 			}
 			return messageId;
 		} catch (Exception e) {

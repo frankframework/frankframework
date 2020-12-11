@@ -68,15 +68,6 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		closeClient();
 	}
 
-	@Override
-	public void openThread() throws FileSystemException{
-		// nothing special
-	}
-	
-	@Override
-	public void closeThread() throws FileSystemException{
-		// nothing special
-	}
 
 	@Override
 	public boolean isOpen() {

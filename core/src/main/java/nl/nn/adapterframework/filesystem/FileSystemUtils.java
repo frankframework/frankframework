@@ -181,11 +181,21 @@ public class FileSystemUtils {
 	}
 	
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator){
+		return getDirectoryStream(iterator, null);
+	}
+	
+	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, AutoCloseable resourceToCloseOnClose){
 		final DirectoryStream<F> ds = new DirectoryStream<F>() {
 
 			@Override
 			public void close() throws IOException {
-				// nothing to close for now 
+				if (resourceToCloseOnClose!=null) {
+					try {
+						resourceToCloseOnClose.close();
+					} catch (Exception e) {
+						throw new IOException(e);
+					}
+				}
 			}
 
 			@Override

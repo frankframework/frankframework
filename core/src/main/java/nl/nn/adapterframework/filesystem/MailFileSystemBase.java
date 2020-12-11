@@ -26,7 +26,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Gerrit van Brakel
  *
  */
-public abstract class MailFileSystemBase<M,A> extends FileSystemBase<M> implements IMailFileSystem<M,A> {
+public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends ConnectedFileSystemBase<M,C> implements IMailFileSystem<M,A> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String authAlias;

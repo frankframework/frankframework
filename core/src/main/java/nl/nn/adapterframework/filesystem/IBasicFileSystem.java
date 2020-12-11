@@ -44,13 +44,10 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	public void configure() throws ConfigurationException;
 	public void open() throws FileSystemException;
 	public void close() throws FileSystemException;
-	
-	public boolean isOpen();
-	
-	public void openThread() throws FileSystemException;
-	public void closeThread() throws FileSystemException;
 
-	
+	public boolean isOpen();
+
+
 	/**
 	 * Lists all files in 'folder' or in the 'root' of the filesystem (when folder is null). 
 	 * Should list only 'files', no folders.

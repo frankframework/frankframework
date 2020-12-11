@@ -219,8 +219,7 @@ public class Browse extends ActionBase {
 				FileViewerServlet.showReaderContents(new StringReader(msg),"msg"+messageId,type,response,"message ["+messageId+"]");
 				return null;
 			} else {
-				IMessageBrowsingIterator mbi=mb.getIterator(startDate, endDate, SortOrder.NONE);
-				try {
+				try (IMessageBrowsingIterator mbi=mb.getIterator(startDate, endDate, SortOrder.NONE)) {
 					XmlBuilder messages=new XmlBuilder("messages");
 					messages.addAttribute("storageType",storageType);
 					messages.addAttribute("action",action);
@@ -315,15 +314,13 @@ public class Browse extends ActionBase {
 					}
 					messages.addAttribute("messageCount",Integer.toString(messageCount-skipMessages));
 					request.setAttribute("messages",messages.toXML());
-				} finally {
-					mbi.close();
 				}
 			}
 		} catch (Throwable e) {
 			error("Caught Exception", e);
 			throw new ServletException(e);
 		}
-		
+
 		if (!errors.isEmpty()) {
 			saveErrors(request, errors);
 		}		

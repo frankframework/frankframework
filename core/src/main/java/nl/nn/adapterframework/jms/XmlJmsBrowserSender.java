@@ -120,89 +120,90 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		}
 
-		JmsBrowser<javax.jms.Message> jmsBrowser = new JmsBrowser<>();
-		jmsBrowser.setName("XmlQueueBrowserSender");
-		if (jmsRealm != null) {
-			jmsBrowser.setJmsRealm(jmsRealm);
-		}
-		if (queueConnectionFactoryName != null) {
-			jmsBrowser.setQueueConnectionFactoryName(queueConnectionFactoryName);
-		}
-		jmsBrowser.setDestinationName(destinationName);
-		jmsBrowser.setDestinationType(destinationType);
-		IMessageBrowsingIterator it = null;
-
-		boolean remove = false;
-
-		if (root.equalsIgnoreCase("browse")) {
-			// OK
-		} else {
-			if (root.equalsIgnoreCase("remove")) {
-				remove = true;
-			} else {
-				throw new SenderException(getLogPrefix()
-						+ "unknown root element [" + root + "]");
+		try (JmsBrowser<javax.jms.Message> jmsBrowser = new JmsBrowser<>()) {
+			jmsBrowser.setName("XmlQueueBrowserSender");
+			if (jmsRealm != null) {
+				jmsBrowser.setJmsRealm(jmsRealm);
 			}
-		}
-
-		XmlBuilder result = new XmlBuilder("result");
-		XmlBuilder items;
-		if (remove) {
-			items = new XmlBuilder("itemsRemoved");
-		} else {
-			items = new XmlBuilder("items");
-		}
-		try {
-			int count = 0;
-			it = jmsBrowser.getIterator();
-			while (it.hasNext()) {
-				count++;
-				JmsMessageBrowserIteratorItem jmsMessageBrowserIteratorItem = (JmsMessageBrowserIteratorItem) it
-						.next();
-				if (remove) {
-					jmsBrowser.deleteMessage(jmsMessageBrowserIteratorItem
-							.getJMSMessageID());
+			if (queueConnectionFactoryName != null) {
+				jmsBrowser.setQueueConnectionFactoryName(queueConnectionFactoryName);
+			}
+			jmsBrowser.setDestinationName(destinationName);
+			jmsBrowser.setDestinationType(destinationType);
+			IMessageBrowsingIterator it = null;
+	
+			boolean remove = false;
+	
+			if (root.equalsIgnoreCase("browse")) {
+				// OK
+			} else {
+				if (root.equalsIgnoreCase("remove")) {
+					remove = true;
 				} else {
-					// browse
-					XmlBuilder item = new XmlBuilder("item");
-					XmlBuilder timestamp = new XmlBuilder("timestamp");
-					timestamp.setValue(new java.util.Date(
-							jmsMessageBrowserIteratorItem.getJMSTimestamp())
-							.toString());
-					item.addSubElement(timestamp);
-					XmlBuilder messageId = new XmlBuilder("messageId");
-					messageId.setValue(jmsMessageBrowserIteratorItem
-							.getJMSMessageID());
-					item.addSubElement(messageId);
-					XmlBuilder correlationId = new XmlBuilder("correlationId");
-					correlationId.setValue(jmsMessageBrowserIteratorItem
-							.getCorrelationId());
-					item.addSubElement(correlationId);
-					XmlBuilder msg = new XmlBuilder("message");
-					msg.setCdataValue(jmsMessageBrowserIteratorItem.getText());
-					item.addSubElement(msg);
-					items.addSubElement(item);
+					throw new SenderException(getLogPrefix()
+							+ "unknown root element [" + root + "]");
 				}
 			}
+	
+			XmlBuilder result = new XmlBuilder("result");
+			XmlBuilder items;
 			if (remove) {
-				items.setValue(Integer.toString(count));
+				items = new XmlBuilder("itemsRemoved");
 			} else {
-				items.addAttribute("count", count);
+				items = new XmlBuilder("items");
 			}
-			result.addSubElement(items);
-		} catch (ListenerException e) {
-			throw new SenderException(getLogPrefix()
-					+ "got exception browsing messages", e);
-		} finally {
 			try {
-				if (it != null) {
-					it.close();
+				int count = 0;
+				it = jmsBrowser.getIterator();
+				while (it.hasNext()) {
+					count++;
+					JmsMessageBrowserIteratorItem jmsMessageBrowserIteratorItem = (JmsMessageBrowserIteratorItem) it
+							.next();
+					if (remove) {
+						jmsBrowser.deleteMessage(jmsMessageBrowserIteratorItem
+								.getJMSMessageID());
+					} else {
+						// browse
+						XmlBuilder item = new XmlBuilder("item");
+						XmlBuilder timestamp = new XmlBuilder("timestamp");
+						timestamp.setValue(new java.util.Date(
+								jmsMessageBrowserIteratorItem.getJMSTimestamp())
+								.toString());
+						item.addSubElement(timestamp);
+						XmlBuilder messageId = new XmlBuilder("messageId");
+						messageId.setValue(jmsMessageBrowserIteratorItem
+								.getJMSMessageID());
+						item.addSubElement(messageId);
+						XmlBuilder correlationId = new XmlBuilder("correlationId");
+						correlationId.setValue(jmsMessageBrowserIteratorItem
+								.getCorrelationId());
+						item.addSubElement(correlationId);
+						XmlBuilder msg = new XmlBuilder("message");
+						msg.setCdataValue(jmsMessageBrowserIteratorItem.getText());
+						item.addSubElement(msg);
+						items.addSubElement(item);
+					}
 				}
+				if (remove) {
+					items.setValue(Integer.toString(count));
+				} else {
+					items.addAttribute("count", count);
+				}
+				result.addSubElement(items);
 			} catch (ListenerException e) {
-				log.warn(getLogPrefix()
-						+ "exception on closing message browser iterator", e);
+				throw new SenderException(getLogPrefix()
+						+ "got exception browsing messages", e);
+			} finally {
+				try {
+					if (it != null) {
+						it.close();
+					}
+				} catch (ListenerException e) {
+					log.warn(getLogPrefix()
+							+ "exception on closing message browser iterator", e);
+				}
 			}
+			return new Message(result.toXML());
 		}
-		return new Message(result.toXML());
 	}
 }

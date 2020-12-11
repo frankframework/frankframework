@@ -66,13 +66,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return opened;
 	}
 
-	@Override
-	public void openThread() throws FileSystemException {
-	}
-
-	@Override
-	public void closeThread() throws FileSystemException {
-	}
 
 	private void checkOpenAndExists(MockFile f) throws FileSystemException {
 		checkOpen();
@@ -126,6 +119,19 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return (M)new MockFile(filename,destFolder);
 	}
 
+	@Override
+	public int getNumberOfFilesInFolder(String folderName) throws FileSystemException {
+		checkOpen();
+		MockFolder folder=folderName==null?this:getFolders().get(folderName);
+		if (folder==null) {
+			throw new FileSystemException("folder ["+folderName+"] is null");
+		}
+		Map<String,MockFile>files = folder.getFiles();
+		if (files==null) {
+			throw new FileSystemException("files in folder ["+folderName+"] is null");
+		}
+		return files.size();
+	}
 	@Override
 	public DirectoryStream<M> listFiles(String folderName) throws FileSystemException {
 		checkOpen();
@@ -299,12 +305,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return "Mock!";
 	}
 
-
-	@Override
-	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
 
 

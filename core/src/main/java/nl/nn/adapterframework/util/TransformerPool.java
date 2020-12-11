@@ -38,9 +38,11 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.pool.BasePoolableObjectFactory;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.SoftReferenceObjectPool;
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.SoftReferenceObjectPool;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
@@ -141,7 +143,7 @@ public class TransformerPool {
 
 	private static Map<TransformerPoolKey, TransformerPool> transformerPools = new ConcurrentHashMap<TransformerPoolKey, TransformerPool>();
 
-	private ObjectPool pool;
+	private ObjectPool<Transformer> pool;
 
 
 	private TransformerPool(Source source, String sysId, int xsltVersion, Source configSource, ClassLoader classLoader) throws TransformerConfigurationException {
@@ -370,11 +372,18 @@ public class TransformerPool {
 
 	public void open() {
 		if (pool==null) {
-			pool=new SoftReferenceObjectPool(new BasePoolableObjectFactory() {
+			pool=new SoftReferenceObjectPool<>(new BasePooledObjectFactory<Transformer>() {
+
 				@Override
-				public Object makeObject() throws Exception {
+				public Transformer create() throws Exception {
 					return createTransformer();
 				}
+
+				@Override
+				public PooledObject<Transformer> wrap(Transformer transformer) {
+					return new DefaultPooledObject<Transformer>(transformer);
+				}
+
 			}); 
 		}
 	}

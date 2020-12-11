@@ -18,6 +18,9 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -212,5 +215,60 @@ public class StreamUtil {
 		ZipOutputStream zipOutputStream = new ZipOutputStream(out);
 		return zipOutputStream;
 	}
+
+	public static InputStream closeOnClose(InputStream stream, AutoCloseable resource) {
+		class ResourceClosingInputStreamFilter extends FilterInputStream {
+			public ResourceClosingInputStreamFilter(InputStream in) {
+				super(in);
+			}
+			@Override
+			public void close() throws IOException {
+				try (AutoCloseable closeable = resource) {
+					super.close();
+				} catch (Exception e) {
+					throw new IOException(e);
+				}
+			}
+		};
+
+		return new ResourceClosingInputStreamFilter(stream);
+	}
+
+	public static Reader closeOnClose(Reader reader, AutoCloseable resource) {
+		class ResourceClosingReaderFilter extends FilterReader {
+			public ResourceClosingReaderFilter(Reader in) {
+				super(in);
+			}
+			@Override
+			public void close() throws IOException {
+				try (AutoCloseable closeable = resource) {
+					super.close();
+				} catch (Exception e) {
+					throw new IOException(e);
+				}
+			}
+		};
+
+		return new ResourceClosingReaderFilter(reader);
+	}
+	
+	public static OutputStream closeOnClose(OutputStream stream, AutoCloseable resource) {
+		class ResourceClosingOutputStreamFilter extends FilterOutputStream {
+			public ResourceClosingOutputStreamFilter(OutputStream out) {
+				super(out);
+			}
+			@Override
+			public void close() throws IOException {
+				try (AutoCloseable closeable = resource) {
+					super.close();
+				} catch (Exception e) {
+					throw new IOException(e);
+				}
+			}
+		};
+
+		return new ResourceClosingOutputStreamFilter(stream);
+	}
+
 
 }

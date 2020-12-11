@@ -52,17 +52,6 @@ public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
 	}
 
 	@Override
-	public void openThread() throws FileSystemException{
-		// nothing special by default
-	}
-	
-	@Override
-	public void closeThread() throws FileSystemException{
-		// nothing special by default
-	}
-
-
-	@Override
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		int count = 0;
 		int stopAt = getMaxNumberOfMessagesToList();
