@@ -59,6 +59,7 @@ public class FrankDocModel {
 	private @Getter LinkedHashMap<String, FrankDocGroup> groups = new LinkedHashMap<>();
 	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
+	private @Getter Map<ElementTypeRole.Key, ElementTypeRole> allElementTypeRoles = new HashMap<>();
 
 	/**
 	 * Get the FrankDocModel needed in production. This is just a first draft. The
@@ -83,7 +84,7 @@ public class FrankDocModel {
 		return result;
 	}
 
-	public void createConfigChildDescriptorsFrom(String path) throws IOException, SAXException {
+	void createConfigChildDescriptorsFrom(String path) throws IOException, SAXException {
 		Resource resource = Resource.getResource(path);
 		if(resource == null) {
 			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
@@ -363,6 +364,7 @@ public class FrankDocModel {
 			configChild.setMandatory(configChildDescriptor.isMandatory());
 			configChild.setDeprecated(isDeprecated(m));
 			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
+			createElementTypeRoleIfNotPresent(configChild);
 			result.add(configChild);
 		}
 		return result;
@@ -373,7 +375,22 @@ public class FrankDocModel {
 		return (deprecated != null);
 	}
 
-	public void buildGroups() {
+	void createElementTypeRoleIfNotPresent(ConfigChild configChild) {
+		ElementTypeRole.Key key = new ElementTypeRole.Key(configChild);
+		if(! allElementTypeRoles.containsKey(key)) {
+			allElementTypeRoles.put(key, new ElementTypeRole(configChild));
+		}
+	}
+
+	public ElementTypeRole findElementTypeRole(ConfigChild configChild) {
+		return allElementTypeRoles.get(new ElementTypeRole.Key(configChild));
+	}
+
+	ElementTypeRole findElementTypeRole(String fullElementTypeName, String syntax1Name) {
+		return allElementTypeRoles.get(new ElementTypeRole.Key(fullElementTypeName, syntax1Name));
+	}
+
+	void buildGroups() {
 		Map<String, List<FrankDocGroup>> groupsBase = new HashMap<>();
 		List<FrankElement> membersOfOther = new ArrayList<>();
 		for(ElementType elementType: getAllTypes().values()) {
@@ -416,7 +433,7 @@ public class FrankDocModel {
 		}
 	}
 
-	public void setOverriddenFrom() {
+	void setOverriddenFrom() {
 		Set<String> remainingElements = allElements.values().stream().map(FrankElement::getFullName).collect(Collectors.toSet());
 		while(! remainingElements.isEmpty()) {
 			FrankElement current = allElements.get(remainingElements.iterator().next());

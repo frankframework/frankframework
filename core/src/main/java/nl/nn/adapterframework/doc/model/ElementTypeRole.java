@@ -22,6 +22,10 @@ public class ElementTypeRole {
 		this(elementType, syntax1Name, newSyntax1NameSeq(syntax1Name));
 	}
 
+	public ElementTypeRole(ConfigChild configChild) {
+		this(configChild.getElementType(), configChild.getSyntax1Name());
+	}
+
 	private static int newSyntax1NameSeq(String syntax1Name) {
 		int maxExistingSyntax1NameSeq = numUsagePerSyntax1Name.getOrDefault(syntax1Name, 0);
 		int syntax1NameSeq = maxExistingSyntax1NameSeq + 1;
@@ -60,6 +64,10 @@ public class ElementTypeRole {
 		public Key(String elementTypeName, String syntax1Name) {
 			this.elementTypeName = elementTypeName;
 			this.syntax1Name = syntax1Name;
+		}
+
+		public Key(ConfigChild configChild) {
+			this(configChild.getElementType().getFullName(), configChild.getSyntax1Name());
 		}
 
 		@Override
