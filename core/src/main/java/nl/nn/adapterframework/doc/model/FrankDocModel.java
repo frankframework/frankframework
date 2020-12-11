@@ -57,7 +57,9 @@ public class FrankDocModel {
 
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
 	private @Getter LinkedHashMap<String, FrankDocGroup> groups = new LinkedHashMap<>();
-	private @Getter Map<String, FrankElement> allElements = new HashMap<>();
+	// We want to iterate FrankElement in the order they are created, to be able
+	// to create the ElementRole objects in the right order. 
+	private @Getter Map<String, FrankElement> allElements = new LinkedHashMap<>();
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
 	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
 	private final ElementRole.Factory ElementRoleFactory = new ElementRole.Factory();
@@ -76,6 +78,7 @@ public class FrankDocModel {
 		try {
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
+			result.createElementRoles();
 			result.setOverriddenFrom();
 			result.buildGroups();
 		} catch(Exception e) {
@@ -365,7 +368,6 @@ public class FrankDocModel {
 			configChild.setMandatory(configChildDescriptor.isMandatory());
 			configChild.setDeprecated(isDeprecated(m));
 			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
-			createElementRoleIfNotPresent(configChild);
 			result.add(configChild);
 		}
 		return result;
@@ -374,6 +376,16 @@ public class FrankDocModel {
 	private boolean isDeprecated(Method m) {
 		Deprecated deprecated = m.getAnnotation(Deprecated.class);
 		return (deprecated != null);
+	}
+
+	// This should be done after creating all elements. If we would do it
+	// while creating the elements, the recursion would reverse the
+	// creation order of the element groups. The order is important
+	// for generating the right names in the XSD.
+	void createElementRoles() {
+		allElements.values().stream()
+			.flatMap(elem -> elem.getConfigChildren(ALL).stream())
+			.forEach(this::createElementRoleIfNotPresent);				
 	}
 
 	void createElementRoleIfNotPresent(ConfigChild configChild) {
