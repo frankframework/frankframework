@@ -87,6 +87,10 @@ public class TransformerPool {
 
 	private URIResolver classLoaderURIResolver;
 
+	private ObjectPool<Transformer> pool;
+
+	private static Map<TransformerPoolKey, TransformerPool> transformerPools = new ConcurrentHashMap<TransformerPoolKey, TransformerPool>();
+
 	private static class TransformerPoolKey {
 		private String xsltString;
 		private String urlString;
@@ -141,9 +145,6 @@ public class TransformerPool {
 		}
 	}
 
-	private static Map<TransformerPoolKey, TransformerPool> transformerPools = new ConcurrentHashMap<TransformerPoolKey, TransformerPool>();
-
-	private ObjectPool<Transformer> pool;
 
 
 	private TransformerPool(Source source, String sysId, int xsltVersion, Source configSource, ClassLoader classLoader) throws TransformerConfigurationException {

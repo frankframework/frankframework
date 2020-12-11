@@ -156,7 +156,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
-		// nothing to do
+		// nothing special here
 	}
 
 	@Override
