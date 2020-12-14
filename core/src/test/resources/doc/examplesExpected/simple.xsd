@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
   <xs:element name="Start" type="StartType" />
+  <xs:element name="Syntax1NameTChild">
+    <xs:complexType>
+      <xs:sequence />
+      <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameTChild" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
   <xs:complexType name="StartType">
     <xs:group ref="StartDeclaredChildGroup" />
     <xs:attributeGroup ref="StartCumulativeAttributeGroup" />
@@ -64,13 +71,6 @@
     <xs:attribute name="firstAttribute" type="xs:string" />
     <xs:attribute name="secondAttribute" type="xs:string" />
   </xs:attributeGroup>
-  <xs:element name="Syntax1NameTChild">
-    <xs:complexType>
-      <xs:sequence />
-      <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameTChild" use="prohibited" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" use="prohibited" />
-    </xs:complexType>
-  </xs:element>
   <xs:attributeGroup name="StartDeclaredAttributeGroup">
     <xs:attribute name="attribute" type="xs:string" />
   </xs:attributeGroup>
