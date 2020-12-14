@@ -150,14 +150,17 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	@Override
 	public Message toFile(String defaultFolder, String filename) throws FileSystemException {
 		try (Connector<IMAPFolder> connector = getConnector()) {
-			IMAPFolder baseFolder = connector.getConnection();
-			IMAPFolder folder = getFolder(baseFolder, defaultFolder);
-			if (!folder.isOpen()) {
-				folder.open(Folder.READ_WRITE);
+			try {
+				IMAPFolder baseFolder = connector.getConnection();
+				IMAPFolder folder = getFolder(baseFolder, defaultFolder);
+				if (!folder.isOpen()) {
+					folder.open(Folder.READ_WRITE);
+				}
+				return folder.getMessageByUID(nameToUid(filename));
+			} catch (MessagingException e) {
+				invalidateConnector(connector);
+				throw new FileSystemException(e);
 			}
-			return folder.getMessageByUID(nameToUid(filename));
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
 		}
 	}
 
@@ -175,41 +178,50 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	@Override
 	public boolean folderExists(String foldername) throws FileSystemException {
 		try (Connector<IMAPFolder> connector = getConnector()) {
-			IMAPFolder baseFolder = connector.getConnection();
-			IMAPFolder folder = getFolder(baseFolder, foldername);
-			return folder.exists();
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
+			try {
+				IMAPFolder baseFolder = connector.getConnection();
+				IMAPFolder folder = getFolder(baseFolder, foldername);
+				return folder.exists();
+			} catch (MessagingException e) {
+				invalidateConnector(connector);
+				throw new FileSystemException(e);
+			}
 		}
 	}
 
 	@Override
 	public int getNumberOfFilesInFolder(String foldername) throws FileSystemException {
 		try (Connector<IMAPFolder> connector = getConnector()) {
-			IMAPFolder baseFolder = connector.getConnection();
-			IMAPFolder folder = getFolder(baseFolder, foldername);
-			if (!folder.isOpen()) {
-				folder.open(Folder.READ_WRITE);
+			try {
+				IMAPFolder baseFolder = connector.getConnection();
+				IMAPFolder folder = getFolder(baseFolder, foldername);
+				if (!folder.isOpen()) {
+					folder.open(Folder.READ_WRITE);
+				}
+				Message messages[] = folder.getMessages();
+				return messages.length;
+			} catch (MessagingException e) {
+				invalidateConnector(connector);
+				throw new FileSystemException(e);
 			}
-			Message messages[] = folder.getMessages();
-			return messages.length;
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
 		}
 	}
 
 	@Override
 	public DirectoryStream<Message> listFiles(String foldername) throws FileSystemException {
 		try (Connector<IMAPFolder> connector = getConnector()) {
-			IMAPFolder baseFolder = connector.getConnection();
-			IMAPFolder folder = getFolder(baseFolder, foldername);
-			if (!folder.isOpen()) {
-				folder.open(Folder.READ_WRITE);
+			try {
+				IMAPFolder baseFolder = connector.getConnection();
+				IMAPFolder folder = getFolder(baseFolder, foldername);
+				if (!folder.isOpen()) {
+					folder.open(Folder.READ_WRITE);
+				}
+				Message messages[] = folder.getMessages();
+				return FileSystemUtils.getDirectoryStream(Arrays.asList(messages));
+			} catch (MessagingException e) {
+				invalidateConnector(connector);
+				throw new FileSystemException(e);
 			}
-			Message messages[] = folder.getMessages();
-			return FileSystemUtils.getDirectoryStream(Arrays.asList(messages));
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
 		}
 	}
 
@@ -225,77 +237,89 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	@Override
 	public Message moveFile(Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		try (Connector<IMAPFolder> connector = getConnector()) {
-			IMAPFolder baseFolder = connector.getConnection();
-			AppendUID results[];
-			try (IMAPFolder destination = getFolder(baseFolder, destinationFolder)) {
-				Message messages[] = new Message[1];
-				messages[0] = f;
+			try {
+				IMAPFolder baseFolder = connector.getConnection();
+				AppendUID results[];
+				try (IMAPFolder destination = getFolder(baseFolder, destinationFolder)) {
+					Message messages[] = new Message[1];
+					messages[0] = f;
+					destination.open(Folder.READ_WRITE);
+					IMAPFolder src = (IMAPFolder) f.getFolder();
+					results = src.moveUIDMessages(messages, destination);
+				}
+				if (results[0] == null) {
+					log.warn("could not find new name of message in folder [" + destinationFolder + "]");
+					return null;
+				}
+				IMAPFolder destination = getFolder(baseFolder, destinationFolder);
 				destination.open(Folder.READ_WRITE);
-				IMAPFolder src = (IMAPFolder) f.getFolder();
-				results = src.moveUIDMessages(messages, destination);
+				return destination.getMessageByUID(results[0].uid);
+			} catch (MessagingException e) {
+				invalidateConnector(connector);
+				throw new FileSystemException(e);
 			}
-			if (results[0] == null) {
-				log.warn("could not find new name of message in folder [" + destinationFolder + "]");
-				return null;
-			}
-			IMAPFolder destination = getFolder(baseFolder, destinationFolder);
-			destination.open(Folder.READ_WRITE);
-			return destination.getMessageByUID(results[0].uid);
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
 		}
 	}
 
 	@Override
 	public Message copyFile(final Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		try (Connector<IMAPFolder> connector = getConnector()) {
-			IMAPFolder baseFolder = connector.getConnection();
-			AppendUID results[];
-			try (IMAPFolder destination = getFolder(baseFolder, destinationFolder)) {
-				Message messages[] = new Message[1];
-				messages[0] = f;
+			try {
+				IMAPFolder baseFolder = connector.getConnection();
+				AppendUID results[];
+				try (IMAPFolder destination = getFolder(baseFolder, destinationFolder)) {
+					Message messages[] = new Message[1];
+					messages[0] = f;
+					destination.open(Folder.READ_WRITE);
+					IMAPFolder src = (IMAPFolder) f.getFolder();
+					results = src.copyUIDMessages(messages, destination);
+				}
+				if (results[0] == null) {
+					log.warn("could not find new name of message in folder [" + destinationFolder + "]");
+					return null;
+				}
+				IMAPFolder destination = getFolder(baseFolder, destinationFolder);
 				destination.open(Folder.READ_WRITE);
-				IMAPFolder src = (IMAPFolder) f.getFolder();
-				results = src.copyUIDMessages(messages, destination);
+				return destination.getMessageByUID(results[0].uid);
+			} catch (MessagingException e) {
+				invalidateConnector(connector);
+				throw new FileSystemException(e);
 			}
-			if (results[0] == null) {
-				log.warn("could not find new name of message in folder [" + destinationFolder + "]");
-				return null;
-			}
-			IMAPFolder destination = getFolder(baseFolder, destinationFolder);
-			destination.open(Folder.READ_WRITE);
-			return destination.getMessageByUID(results[0].uid);
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
 		}
 	}
 
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
 		try (Connector<IMAPFolder> connector = getConnector()) {
-			IMAPFolder baseFolder = connector.getConnection();
-			IMAPFolder folder = getFolder(baseFolder, folderName);
-			if (!folder.create(Folder.HOLDS_FOLDERS + Folder.HOLDS_MESSAGES)) {
-				throw new FileSystemException("Could not create folder [" + folderName + "]");
+			try {
+				IMAPFolder baseFolder = connector.getConnection();
+				IMAPFolder folder = getFolder(baseFolder, folderName);
+				if (!folder.create(Folder.HOLDS_FOLDERS + Folder.HOLDS_MESSAGES)) {
+					throw new FileSystemException("Could not create folder [" + folderName + "]");
+				}
+			} catch (MessagingException e) {
+				invalidateConnector(connector);
+				throw new FileSystemException(e);
 			}
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
 		}
 	}
 
 	@Override
 	public void removeFolder(String folderName) throws FileSystemException {
 		try (Connector<IMAPFolder> connector = getConnector()) {
-			IMAPFolder baseFolder = connector.getConnection();
-			IMAPFolder folder = getFolder(baseFolder, folderName);
-			if (folder == null) {
-				throw new FileSystemException("Could not find folder object [" + folderName + "]");
+			try {
+				IMAPFolder baseFolder = connector.getConnection();
+				IMAPFolder folder = getFolder(baseFolder, folderName);
+				if (folder == null) {
+					throw new FileSystemException("Could not find folder object [" + folderName + "]");
+				}
+				if (!folder.delete(false)) {
+					throw new FileSystemException("Could not delete folder [" + folderName + "]");
+				}
+			} catch (MessagingException e) {
+				invalidateConnector(connector);
+				throw new FileSystemException(e);
 			}
-			if (!folder.delete(false)) {
-				throw new FileSystemException("Could not delete folder [" + folderName + "]");
-			}
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
 		}
 	}
 

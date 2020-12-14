@@ -90,6 +90,24 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 		}
 	}
 	
+	/**
+	 * Remove the connector from the pool, e.g. after it has been part of trouble.
+	 */
+	protected void invalidateConnector(Connector<C> connector) {
+		try {
+			if (isPooledConnection()) {
+				connectorPool.invalidateObject(connector);
+			} else {
+				try {
+					closeConnection(globalConnector.getConnection());
+				} finally {
+					globalConnector = new Connector(createConnection(), null);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Cannot invalidate connector", e);
+		}
+	}
 
 	private void openPool() {
 		if (connectorPool==null) {
