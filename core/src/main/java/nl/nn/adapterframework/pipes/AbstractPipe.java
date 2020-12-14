@@ -279,6 +279,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * @see PipeForward
 	 */
 	@Override
+	@IbisDoc({"30"})
 	public void registerForward(PipeForward forward) {
 		PipeForward current = pipeForwards.get(forward.getName());
 		if (current==null){
@@ -350,6 +351,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * Add a parameter to the list of parameters
 	 * @param param the PipeParameter.
 	 */
+	@IbisDoc({"10"})
 	public void addParameter(Parameter param) {
 		log.debug("Pipe ["+getName()+"] added parameter ["+param.toString()+"]");
 		parameterList.add(param);
@@ -620,6 +622,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	@Override
+	@IbisDoc({"20"})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}

@@ -995,9 +995,17 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 
-	/**
-	 * Register a {@link ICorrelatedPullingListener} at this Pipe
-	 */
+	@IbisDoc({"10", "The sender that should send the message"})
+	protected void setSender(ISender sender) {
+		this.sender = sender;
+		log.debug("pipe [" + getName() + "] registered sender [" + sender.getName() + "] with properties [" + sender.toString() + "]");
+	}
+	@Override
+	public ISender getSender() {
+		return sender;
+	}
+
+	@IbisDoc({"20", "Listener for responses on the request sent"})
 	protected void setListener(ICorrelatedPullingListener listener) {
 		this.listener = listener;
 		log.debug("pipe [" + getName() + "] registered listener [" + listener.toString() + "]");
@@ -1006,9 +1014,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return listener;
 	}
 
-	/**
-	 * Sets the messageLog.
-	 */
+	@IbisDoc({"30"})
 	public void setMessageLog(ITransactionalStorage messageLog) {
 		if (messageLog.isActive()) {
 			this.messageLog = messageLog;
@@ -1025,21 +1031,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return messageLog;
 	}
 
- 
-
-	/**
-	 * Register a ISender at this Pipe
-	 * @see ISender
-	 */
-	protected void setSender(ISender sender) {
-		this.sender = sender;
-		log.debug("pipe [" + getName() + "] registered sender [" + sender.getName() + "] with properties [" + sender.toString() + "]");
-	}
-	@Override
-	public ISender getSender() {
-		return sender;
-	}
-
+	@IbisDoc({"40"})
 	public void setInputValidator(IValidatorPipe inputValidator) {
 		inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
 		this.inputValidator = inputValidator;
@@ -1048,6 +1040,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return inputValidator;
 	}
 
+	@IbisDoc({"50"})
 	public void setOutputValidator(IValidatorPipe outputValidator) {
 		if (outputValidator!=null) {
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
@@ -1058,6 +1051,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return outputValidator;
 	}
 
+	@IbisDoc({"60"})
 	public void setInputWrapper(IWrapperPipe inputWrapper) {
 		inputWrapper.setName(INPUT_WRAPPER_NAME_PREFIX+getName()+INPUT_WRAPPER_NAME_SUFFIX);
 		this.inputWrapper = inputWrapper;
@@ -1066,6 +1060,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return inputWrapper;
 	}
 
+	@IbisDoc({"70"})
 	public void setOutputWrapper(IWrapperPipe outputWrapper) {
 		outputWrapper.setName(OUTPUT_WRAPPER_NAME_PREFIX+getName()+OUTPUT_WRAPPER_NAME_SUFFIX);
 		this.outputWrapper = outputWrapper;

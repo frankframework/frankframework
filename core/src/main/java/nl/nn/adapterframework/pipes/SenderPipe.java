@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -52,8 +51,17 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  * @author  Dennis van Loon
  * @since   4.1.1
  */
-@Deprecated
-@ConfigurationWarning("Use SenderPipe instead")
-public class GenericMessageSendingPipe extends SenderPipe {
+
+public class SenderPipe extends MessageSendingPipe {
+
+	@Override
+	public void setListener(ICorrelatedPullingListener listener) {
+		super.setListener(listener);
+	}
+
+	@Override
+	public void setSender(ISender sender) {
+		super.setSender(sender);
+	}
 
 }

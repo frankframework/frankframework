@@ -162,7 +162,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 * to prevail.
 	 * @see AbstractPipe
 	 **/
-	@IbisDoc("80")
+	@IbisDoc("90")
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
@@ -701,13 +701,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return outputWrapper;
 	}
 
-	@IbisDoc({"50", "Global forwards"})
-	public void registerForward(PipeForward forward){
-		globalForwards.put(forward.getName(), forward);
-		log.debug("registered global PipeForward "+forward.toString());
-	}
-
-	@IbisDoc({"60", "PipeLine exits"})
+	@IbisDoc({"50", "PipeLine exits"})
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
 			ConfigurationWarnings.add(null, log, getLogPrefix()+"exit named ["+exit.getPath()+"] already exists");
@@ -715,7 +709,13 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		pipeLineExits.put(exit.getPath(), exit);
 	}
 
-	@IbisDoc({"60", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads or servers"})
+	@IbisDoc({"60", "Global forwards"})
+	public void registerForward(PipeForward forward){
+		globalForwards.put(forward.getName(), forward);
+		log.debug("registered global PipeForward "+forward.toString());
+	}
+
+	@IbisDoc({"70", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads or servers"})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}
@@ -724,7 +724,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	}
 
 	@Override
-	@IbisDoc({"70", "Cache of results"})
+	@IbisDoc({"80", "Cache of results"})
 	public void setCache(ICacheAdapter<String,String> cache) {
 		this.cache=cache;
 	}
