@@ -7,6 +7,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * @author Peter Leeuwenburgh
@@ -36,7 +37,7 @@ public class SoapWrapperTest {
 		String expectedSoapBody = expectedSoapBody11;
 		String soapBody = null;
 		try {
-			soapBody = soapWrapper.getBody(soapMessage);
+			soapBody = soapWrapper.getBody(new Message(soapMessage)).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
@@ -50,7 +51,7 @@ public class SoapWrapperTest {
 		String expectedSoapBody = expectedSoapBody12;
 		String soapBody = null;
 		try {
-			soapBody = soapWrapper.getBody(soapMessage);
+			soapBody = soapWrapper.getBody(new Message(soapMessage)).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
@@ -64,7 +65,7 @@ public class SoapWrapperTest {
 		String expectedSoapBody = "";
 		String soapBody = null;
 		try {
-			soapBody = soapWrapper.getBody(soapMessage);
+			soapBody = soapWrapper.getBody(new Message(soapMessage)).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
@@ -80,7 +81,7 @@ public class SoapWrapperTest {
 		IPipeLineSession session = new PipeLineSessionBase();
 		String sessionKey = "SoapVersion";
 		try {
-			soapBody = soapWrapper.getBody(soapMessage, true, session, sessionKey);
+			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
@@ -98,7 +99,7 @@ public class SoapWrapperTest {
 		IPipeLineSession session = new PipeLineSessionBase();
 		String sessionKey = "SoapVersion";
 		try {
-			soapBody = soapWrapper.getBody(soapMessage, true, session, sessionKey);
+			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
@@ -116,7 +117,7 @@ public class SoapWrapperTest {
 		IPipeLineSession session = new PipeLineSessionBase();
 		String sessionKey = "SoapVersion";
 		try {
-			soapBody = soapWrapper.getBody(soapMessage, true, session, sessionKey);
+			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}

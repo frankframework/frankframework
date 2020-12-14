@@ -22,9 +22,7 @@ import java.util.StringTokenizer;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamSource;
 
-import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
 import org.apache.axis.client.AxisClient;
 import org.apache.axis.configuration.NullProvider;
@@ -46,6 +44,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -101,7 +100,7 @@ public class SoapWrapper {
 		return self;
 	}
 
-	public void checkForSoapFault(String responseBody, Throwable nested) throws SenderException {
+	public void checkForSoapFault(Message responseBody, Throwable nested) throws SenderException {
 		String faultString = null;
 		String faultCode = null;
 		int faultCount = 0;
@@ -125,20 +124,21 @@ public class SoapWrapper {
 		}
 	}
 
-	public String getBody(String message) throws SAXException, TransformerException, IOException  {
+	public Message getBody(Message message) throws SAXException, TransformerException, IOException  {
 		return getBody(message, false, null, null);
 	}
 	
-	public String getBody(String message, boolean allowPlainXml, IPipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
-		String result = extractBodySoap11.transform(message,null,true);
-		if (StringUtils.isNotEmpty(result)) {
+	public Message getBody(Message message, boolean allowPlainXml, IPipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
+		message.preserve();
+		Message result = new Message(extractBodySoap11.transform(message.asSource()));
+		if (!Message.isEmpty(result)) {
 			if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
 				session.put(soapNamespaceSessionKey, SoapVersion.SOAP11.namespace);
 			}
 			return result;
 		}
-		result = extractBodySoap12.transform(message,null,true);
-		if (StringUtils.isNotEmpty(result)) {
+		result = new Message(extractBodySoap12.transform(message.asSource()));
+		if (!Message.isEmpty(result)) {
 			if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
 				session.put(soapNamespaceSessionKey, SoapVersion.SOAP12.namespace);
 			}
@@ -147,24 +147,20 @@ public class SoapWrapper {
 		if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
 			session.put(soapNamespaceSessionKey, SoapVersion.NONE.namespace);
 		}
-		return allowPlainXml ? message : "";
+		return allowPlainXml ? message : new Message(""); // could replace "" with nullMessage(), but then tests fail.
 	}
 
 
-	public String getHeader(String message) throws SAXException, TransformerException, IOException {
-		return extractHeader.transform(message, null, true);
+	public String getHeader(Message message) throws SAXException, TransformerException, IOException {
+		return extractHeader.transform(message.asSource());
 	}
 
-	public String getHeader(InputStream request) throws TransformerException, IOException {
-		return extractHeader.transform(new StreamSource(request));
-	}
-
-	public int getFaultCount(String message) throws SAXException, TransformerException, IOException {
-		if (StringUtils.isEmpty(message)) {
+	public int getFaultCount(Message message) throws SAXException, TransformerException, IOException {
+		if (Message.isEmpty(message)) {
 			log.warn("getFaultCount(): message is empty");
 			return 0;
 		}
-		String faultCount = extractFaultCount.transform(message, null, true);
+		String faultCount = extractFaultCount.transform(message.asSource());
 		if (StringUtils.isEmpty(faultCount)) {
 			log.warn("getFaultCount(): could not extract fault count, result is empty");
 			return 0;
@@ -175,12 +171,12 @@ public class SoapWrapper {
 		return Integer.parseInt(faultCount);
 	}
 
-	public String getFaultCode(String message) throws SAXException, TransformerException, IOException {
-		return extractFaultCode.transform(message, null, true);
+	public String getFaultCode(Message message) throws SAXException, TransformerException, IOException {
+		return extractFaultCode.transform(message.asSource());
 	}
 
-	public String getFaultString(String message) throws SAXException, TransformerException, IOException {
-		return extractFaultString.transform(message, null, true);
+	public String getFaultString(Message message) throws SAXException, TransformerException, IOException {
+		return extractFaultString.transform(message.asSource());
 	}
 
 	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace) {
@@ -259,7 +255,7 @@ public class SoapWrapper {
 			MessageContext msgContext = new MessageContext(tmpEngine);
 
 			InputStream in = new ByteArrayInputStream(soapMessage.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
-			Message msg = new Message(in);
+			org.apache.axis.Message msg = new org.apache.axis.Message(in);
 			msg.setMessageContext(msgContext);
 
 			// create unsigned envelope

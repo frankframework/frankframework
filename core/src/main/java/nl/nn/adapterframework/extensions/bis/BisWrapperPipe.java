@@ -270,13 +270,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
-		String result;
-		String input;
-		try {
-			input = message.asString();
-		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
-		}
+		Message result;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {
 				String originalBisMessageHeader = (String) session.get(getBisMessageHeaderSessionKey());
@@ -317,9 +311,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				String payload;
 				if (bisErrorCode == null || StringUtils.isEmpty(getOutputRoot())) {
 					if (addOutputNamespaceTp != null) {
-						payload = addOutputNamespaceTp.transform(input, null, true);
+						payload = addOutputNamespaceTp.transform(message.asSource());
 					} else {
-						payload = input;
+						payload = message.asString();
 					}
 					payload = prepareReply(payload, isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
 				} else {
@@ -330,32 +324,32 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 					payload = prepareReply(outputElement.toXML(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
 				}
 
-				result = wrapMessage(payload, isBisMessageHeaderInSoapBody() ? null : messageHeader, session);
+				result = new Message(wrapMessage(payload, isBisMessageHeaderInSoapBody() ? null : messageHeader, session));
 			} else {
-				String body = unwrapMessage(input, session);
-				if (StringUtils.isEmpty(body)) {
+				Message body = unwrapMessage(message, session);
+				if (Message.isEmpty(body)) {
 					throw new PipeRunException(this, getLogPrefix(session) + "SOAP body is empty or message is not a SOAP message");
 				}
 				if (bisMessageHeaderTp != null) {
-					String messageHeader = bisMessageHeaderTp.transform(input, null, true);
+					String messageHeader = bisMessageHeaderTp.transform(message.asSource());
 					if (messageHeader != null) {
 						session.put(getBisMessageHeaderSessionKey(), messageHeader);
 						log.debug(getLogPrefix(session) + "stored [" + messageHeader + "] in pipeLineSession under key [" + getBisMessageHeaderSessionKey() + "]");
 					}
 				}
 				if (bisErrorTp != null) {
-					String bisError = bisErrorTp.transform(input, null, true);
+					String bisError = bisErrorTp.transform(message.asSource());
 					if (Boolean.valueOf(bisError).booleanValue()) {
 						throw new PipeRunException(this, getLogPrefix(session) + "bisErrorXPath [" + bisErrorXe + "] returns true");
 					}
 				}
 				if (bodyMessageTp != null) {
-					result = bodyMessageTp.transform(input, null, true);
+					result = new Message(bodyMessageTp.transform(message.asSource()));
 				} else {
 					result = body;
 				}
 				if (removeOutputNamespacesTp != null) {
-					result = removeOutputNamespacesTp.transform(result, null, true);
+					result = new Message(removeOutputNamespacesTp.transform(result.asSource()));
 				}
 			}
 		} catch (Throwable t) {

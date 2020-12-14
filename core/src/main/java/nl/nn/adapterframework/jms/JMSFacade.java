@@ -682,7 +682,7 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 	 */
 	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 //		TextMessage message = null;
-		String rawMessageText;
+		Message message;
 /*
 		try {
 			message = (TextMessage) rawMessage;
@@ -693,25 +693,26 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 		rawMessageText= message.getText();
 */
 		if (rawMessage instanceof IMessageWrapper) {
-			rawMessageText = ((IMessageWrapper)rawMessage).getMessage().asString();
+			message = ((IMessageWrapper)rawMessage).getMessage();
 		} else if (rawMessage instanceof TextMessage) {
-			rawMessageText = ((TextMessage)rawMessage).getText();
+			message = new Message(((TextMessage)rawMessage).getText());
 		} else {
-			rawMessageText = (String)rawMessage;
+			message = new Message((String)rawMessage);
 		}
 		if (!soap) {
-			return new Message(rawMessageText);
+			return message;
 		}
-		String messageText=extractMessageBody(rawMessageText, context, soapWrapper);
+		message.preserve();
+		Message messageText=extractMessageBody(message, context, soapWrapper);
 		if (StringUtils.isNotEmpty(soapHeaderSessionKey)) {
-			String soapHeader=soapWrapper.getHeader(rawMessageText);
+			String soapHeader=soapWrapper.getHeader(message);
 			context.put(soapHeaderSessionKey,soapHeader);
 		}
-		return new Message(messageText);
+		return messageText;
 	}
 
-	protected String extractMessageBody(String rawMessageText, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
-		return soapWrapper.getBody(rawMessageText);
+	protected Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
+		return soapWrapper.getBody(message);
 	}
 
 	@Override

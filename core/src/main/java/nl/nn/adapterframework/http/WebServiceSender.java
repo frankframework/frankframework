@@ -140,11 +140,12 @@ public class WebServiceSender extends HttpSender {
 
 	@Override
 	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
-		String httpResult = null;
+		Message httpResult = null;
 		try {
-			httpResult = super.extractResult(responseHandler, session).asString();
+			httpResult = super.extractResult(responseHandler, session);
+			httpResult.preserve();
 		} catch (SenderException e) {
-			soapWrapper.checkForSoapFault(getResponseBodyAsString(responseHandler), e);
+			soapWrapper.checkForSoapFault(getResponseBody(responseHandler), e);
 			throw e;
 		}
 
@@ -153,9 +154,9 @@ public class WebServiceSender extends HttpSender {
 		}
 		try {
 			if (isSoap()) {
-				return new Message(soapWrapper.getBody(httpResult));
+				return soapWrapper.getBody(httpResult);
 			} else {
-				return new Message(httpResult);
+				return httpResult;
 			}
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);

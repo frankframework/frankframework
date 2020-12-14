@@ -470,35 +470,38 @@ public class Wsdl {
         return xsds;
     }
 
-    /**
-     * Generates a zip file (and writes it to the given outputstream), containing the WSDL and all referenced XSD's.
-     * @see #wsdl(java.io.OutputStream, String)
-     */
-    public void zip(OutputStream stream, String servletName) throws IOException, ConfigurationException, XMLStreamException, NamingException {
-        ZipOutputStream out = new ZipOutputStream(stream);
+	/**
+	 * Generates a zip file (and writes it to the given outputstream), containing
+	 * the WSDL and all referenced XSD's.
+	 * 
+	 * @see #wsdl(java.io.OutputStream, String)
+	 */
+	public void zip(OutputStream stream, String servletName)
+			throws IOException, ConfigurationException, XMLStreamException, NamingException {
+		try (ZipOutputStream out = new ZipOutputStream(stream)) {
 
-        // First an entry for the WSDL itself:
-        ZipEntry wsdlEntry = new ZipEntry(getFilename() + ".wsdl");
-        out.putNextEntry(wsdlEntry);
-        wsdl(out, servletName);
-        out.closeEntry();
+			// First an entry for the WSDL itself:
+			ZipEntry wsdlEntry = new ZipEntry(getFilename() + ".wsdl");
+			out.putNextEntry(wsdlEntry);
+			wsdl(out, servletName);
+			out.closeEntry();
 
-        //And then all XSD's
-        Set<String> entries = new HashSet<String>();
-        for (XSD xsd : xsds) {
-            String zipName = xsd.getResourceTarget();
-            if (entries.add(zipName)) {
-                ZipEntry xsdEntry = new ZipEntry(zipName);
-                out.putNextEntry(xsdEntry);
-                XMLStreamWriter writer = WsdlUtils.getWriter(out, false);
-                SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
-                out.closeEntry();
-            } else {
-                warn("Duplicate xsds in " + this + " " + xsd + " " + xsds);
-            }
-        }
-        out.close();
-    }
+			// And then all XSD's
+			Set<String> entries = new HashSet<String>();
+			for (XSD xsd : xsds) {
+				String zipName = xsd.getResourceTarget();
+				if (entries.add(zipName)) {
+					ZipEntry xsdEntry = new ZipEntry(zipName);
+					out.putNextEntry(xsdEntry);
+					XMLStreamWriter writer = WsdlUtils.getWriter(out, false);
+					SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
+					out.closeEntry();
+				} else {
+					warn("Duplicate xsds in " + this + " " + xsd + " " + xsds);
+				}
+			}
+		}
+	}
 
     /**
      * Writes the WSDL to an output stream
