@@ -10,6 +10,7 @@ import nl.nn.adapterframework.filesystem.FileNotFoundException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -138,14 +139,18 @@ public class FileUtilsTest {
 		assertEquals("fileToAppend.txt", files[1].getName());
 	}
 
-	@Test
+	@Test //retrieve the first file from a directory. Alphabetically it should first return 'copyFile'. Add a stability period, and check if it skips the first file
 	public void testGetFirstFile() throws Exception {
+		long stabilityPeriod = 5000;
+		getFile("copyFrom.txt").setLastModified(new Date().getTime()-(stabilityPeriod + 500)); //mark file as stable (add 500ms to the stability period because of HDD latency)
+		getFile("copyFile.txt").setLastModified(new Date().getTime()); //update last modified to now, so it fails the stability period
+
 		File directory = getFile(null);
 		File file = FileUtils.getFirstFile(directory);
 		assertEquals("copyFile.txt", file.getName());
 
-		File file2 = FileUtils.getFirstFile(directory.getPath(), 5); //Run again with 5 second stability period
-		assertEquals("copyFile.txt", file2.getName());
+		File file2 = FileUtils.getFirstFile(directory.getPath(), stabilityPeriod); //Run again with 5 second stability period
+		assertEquals("copyFrom.txt", file2.getName());
 	}
 
 	@Test
