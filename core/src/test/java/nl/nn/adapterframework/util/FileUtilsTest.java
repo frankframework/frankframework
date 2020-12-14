@@ -29,8 +29,6 @@ public class FileUtilsTest {
 
 	public static String testFolderPath;
 
-	public final String FILE_SEPERATOR = File.separator;
-
 	@BeforeClass
 	public static void setUpTest() throws IOException {
 		testFolderPath = testFolder.getRoot().getPath();
@@ -143,7 +141,7 @@ public class FileUtilsTest {
 
 	@Test //retrieve the first file from a directory. Alphabetically it should first return 'copyFile'. Add a stability period, and check if it skips the first file
 	public void testGetFirstFile() throws Exception {
-		assumeTrue(!TestAssertions.isTestRunningOnTravis());
+		assumeTrue(TestAssertions.isTestRunningOnWindows());
 
 		long stabilityPeriod = 5000;
 		getFile("copyFrom.txt").setLastModified(new Date().getTime()-(stabilityPeriod + 500)); //mark file as stable (add 500ms to the stability period because of HDD latency)
