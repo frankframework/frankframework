@@ -191,7 +191,7 @@ public class FrankDocModelTest {
 	 * describingElement is only correct if it is parsed from an @IbisDocRef annotation.
 	 */
 	private Map<String, FrankAttribute> getAttributesOfClass(final String className) throws ReflectiveOperationException {
-		fakeAttributeOwner = new FrankElement("dummy.Dummy", "Dummy");
+		fakeAttributeOwner = new FrankElement("dummy.Dummy", "Dummy", false);
 		final List<FrankAttribute> attributes = instance.createAttributes(Utils.getClass(className).getDeclaredMethods(), fakeAttributeOwner);
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}

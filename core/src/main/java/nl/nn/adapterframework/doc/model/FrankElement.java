@@ -65,10 +65,6 @@ public class FrankElement {
 		this.allChildren.put(ConfigChild.class, new LinkedHashMap<>());
 	}
 
-	public FrankElement(final String fullName, final String simpleName) {
-		this(fullName, simpleName, false);
-	}
-	
 	public void setParent(FrankElement parent) {
 		this.parent = parent;
 		this.statistics = new FrankElementStatistics(this);
