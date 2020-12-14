@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2017, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2017, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -331,7 +331,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		super.configure();
 		if (isUseFixedValues()) {
 			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
-				throw new ConfigurationException(getLogPrefix(null)+"returnFixedDate only allowed in stub mode");
+				throw new ConfigurationException("returnFixedDate only allowed in stub mode");
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,16 +49,15 @@ public class EscapePipe extends FixedForwardPipe {
 		super.configure();
 		String dir = getDirection();
 		if (dir == null) {
-			throw new ConfigurationException(
-				getLogPrefix(null) + "direction must be set");
+			throw new ConfigurationException("direction must be set");
 		}
 		if (!dir.equalsIgnoreCase("encode")
 			&& !dir.equalsIgnoreCase("decode")
 				&& !dir.equalsIgnoreCase("cdata2text")) {
-			throw new ConfigurationException(getLogPrefix(null) + "illegal value for direction [" + dir + "], must be 'encode', 'decode' or 'cdata2text'");
+			throw new ConfigurationException("illegal value for direction [" + dir + "], must be 'encode', 'decode' or 'cdata2text'");
 		}
 		if ((substringStart != null && substringEnd == null) || (substringStart == null && substringEnd != null)) {
-			throw new ConfigurationException(getLogPrefix(null) + "cannot have only one of substringStart or substringEnd");
+			throw new ConfigurationException("cannot have only one of substringStart or substringEnd");
 		}
 		if (isEncodeSubstring()) {
 			substringStart = XmlUtils.encodeChars(substringStart);

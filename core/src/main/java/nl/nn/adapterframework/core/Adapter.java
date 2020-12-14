@@ -185,14 +185,15 @@ public class Adapter implements IAdapter, NamedBean {
 			pipeline.setAdapter(this);
 			pipeline.configure();
 			messageKeeper.add("Adapter [" + name + "] pipeline successfully configured");
-			
-			for (Receiver receiver: receivers) {
-				configureReceiver(receiver);
-			}
+
 			configurationSucceeded = true;
 		}
 		catch (ConfigurationException e) {
 			error(true, "error initializing pipeline", e);
+		}
+
+		for (Receiver receiver: receivers) {
+			configureReceiver(receiver);
 		}
 
 		List<String> hrs = new ArrayList<String>();

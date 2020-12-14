@@ -75,7 +75,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	public void configure() throws ConfigurationException {
 		super.configure();
 			if (StringUtils.isEmpty(getContentsSessionKey())) {
-				throw new ConfigurationException(getLogPrefix(null)+"attribute contentsKey must be specified");
+				throw new ConfigurationException("attribute contentsKey must be specified");
 			}
 	}
 	

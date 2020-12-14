@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,12 +43,12 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 		super.configure();
 
 		if (getDivisor() < 2) {
-			throw new ConfigurationException(getLogPrefix(null) + "mod [" + getDivisor() + "] should be greater than or equal to 2");
+			throw new ConfigurationException("mod [" + getDivisor() + "] should be greater than or equal to 2");
 		}
 
 		for (int i = 1; i <= getDivisor(); i++) {
 			if (null == findForward("" + i))
-				throw new ConfigurationException(getLogPrefix(null) + "forward [" + i + "] is not defined");
+				throw new ConfigurationException("forward [" + i + "] is not defined");
 		}
 	}
 

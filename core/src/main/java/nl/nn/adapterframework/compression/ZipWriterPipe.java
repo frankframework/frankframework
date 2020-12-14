@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	public void configure(PipeLine pipeline) throws ConfigurationException {
 		super.configure(pipeline);
 		if (!(ACTION_OPEN.equals(getAction()) || ACTION_WRITE.equals(getAction())  || ACTION_STREAM.equals(getAction()) || ACTION_CLOSE.equals(getAction()))) {
-			throw new ConfigurationException(getLogPrefix(null)+"action must be either '"+ACTION_OPEN+"','"+ACTION_WRITE+"','"+ACTION_STREAM+"' or '"+ACTION_CLOSE+"'");
+			throw new ConfigurationException("action must be either '"+ACTION_OPEN+"','"+ACTION_WRITE+"','"+ACTION_STREAM+"' or '"+ACTION_CLOSE+"'");
 		}
 		if (ACTION_OPEN.equals(getAction())) {
 			filenameParameter=getParameterList().findParameter(PARAMETER_FILENAME);
@@ -89,13 +89,13 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		if (ACTION_WRITE.equals(getAction()) || ACTION_STREAM.equals(getAction())) {
 			filenameParameter=getParameterList().findParameter(PARAMETER_FILENAME);
 			if (filenameParameter==null) {
-				throw new ConfigurationException(getLogPrefix(null)+"a parameter '"+PARAMETER_FILENAME+"' is required");
+				throw new ConfigurationException("a parameter '"+PARAMETER_FILENAME+"' is required");
 			}
 		}
 		if (ACTION_CLOSE.equals(getAction())) {
 			filenameParameter=getParameterList().findParameter(PARAMETER_FILENAME);
 			if (filenameParameter!=null) {
-				throw new ConfigurationException(getLogPrefix(null)+"with action ["+getAction()+"] parameter '"+PARAMETER_FILENAME+"' cannot not be configured");
+				throw new ConfigurationException("with action ["+getAction()+"] parameter '"+PARAMETER_FILENAME+"' cannot not be configured");
 			}
 		}
 	}

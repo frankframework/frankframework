@@ -113,16 +113,16 @@ public class UnzipPipe extends FixedForwardPipe {
 		super.configure();
 		if (StringUtils.isEmpty(getDirectory())) {
 			if (StringUtils.isEmpty(getDirectorySessionKey()) && !isCollectFileContents()) {
-				throw new ConfigurationException(getLogPrefix(null)+"directory or directorySessionKey must be specified");
+				throw new ConfigurationException("directory or directorySessionKey must be specified");
 			}
 		} else {
 			dir = new File(getDirectory());
 			if(!isAssumeDirectoryExists()) {
 				if (!dir.exists()) {
-					throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] does not exist");
+					throw new ConfigurationException("directory ["+getDirectory()+"] does not exist");
 				}
 				if (!dir.isDirectory()) {
-					throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] is not a directory");
+					throw new ConfigurationException("directory ["+getDirectory()+"] is not a directory");
 				}
 			}
 		}

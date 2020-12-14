@@ -54,10 +54,10 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 
 		String action = getAction();
 		if (action==null) {
-			throw new ConfigurationException(getLogPrefix(null)+"action must be set");
+			throw new ConfigurationException("action must be set");
 		}
 		if (!allowedActions.contains(action)) {
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for action ["+action+"], must be one of " + allowedActions.toString());
+			throw new ConfigurationException("illegal value for action ["+action+"], must be one of " + allowedActions.toString());
 		}
 
 		cache = ApiCacheManager.getInstance();

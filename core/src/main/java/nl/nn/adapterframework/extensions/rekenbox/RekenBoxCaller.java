@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -92,14 +92,14 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			!(getCommandLineType().equals("straight") || 
 			  getCommandLineType().equals("switches") || 
 			  getCommandLineType().equals("redirected"))) {
-			  	throw new ConfigurationException(getLogPrefix(null)+"commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
+			  	throw new ConfigurationException("commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
 			  }
 		inputOutputDir= new File(getInputOutputDirectory());
 		if (!inputOutputDir.exists()) {
-			throw new ConfigurationException(getLogPrefix(null)+"inputOutputDirectory ["+getInputOutputDirectory()+"] does not exist");
+			throw new ConfigurationException("inputOutputDirectory ["+getInputOutputDirectory()+"] does not exist");
 		}
 		if (!inputOutputDir.isDirectory()) {
-			throw new ConfigurationException(getLogPrefix(null)+"inputOutputDirectory ["+getInputOutputDirectory()+"] is not a directory");
+			throw new ConfigurationException("inputOutputDirectory ["+getInputOutputDirectory()+"] is not a directory");
 		}
 		formatter = new DecimalFormat("000000000000".substring(0,Long.toString(getMaxRequestNumber()).length()));
 		String baseFileName=getBaseFileName();

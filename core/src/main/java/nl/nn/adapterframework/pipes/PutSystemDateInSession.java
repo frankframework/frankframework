@@ -62,27 +62,27 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 		// check the presence of a sessionKey
 		if (getSessionKey() == null) {
-			throw new ConfigurationException(getLogPrefix(null)+"has a null value for sessionKey");
+			throw new ConfigurationException("has a null value for sessionKey");
 		}
 		// check the presence of a dateformat
 		if (getDateFormat() == null) {
-			throw new ConfigurationException(getLogPrefix(null)+"has a null value for dateFormat");
+			throw new ConfigurationException("has a null value for dateFormat");
 		}
 
 		if (isReturnFixedDate()) {
 			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
-				throw new ConfigurationException(getLogPrefix(null)+"returnFixedDate only allowed in stub mode");
+				throw new ConfigurationException("returnFixedDate only allowed in stub mode");
 			}
 		}
 		
 		if(isGetCurrentTimeStampInMillis() && isReturnFixedDate()) {
-			throw new ConfigurationException(getLogPrefix(null)+"returnFixedDate cannot be used to get current time stamp in millis");
+			throw new ConfigurationException("returnFixedDate cannot be used to get current time stamp in millis");
 		}
 		// check the dateformat
 		try {
 			formatter = new SimpleDateFormat(getDateFormat());
 		} catch (IllegalArgumentException ex){
-			throw new ConfigurationException(getLogPrefix(null)+"has an illegal value for dateFormat", ex);
+			throw new ConfigurationException("has an illegal value for dateFormat", ex);
 		}
 		
 		if (timeZone!=null) {

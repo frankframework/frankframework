@@ -1118,32 +1118,26 @@ public class JobDef {
 				if (!adapterRunState.equals(RunStateEnum.ERROR) && receiverRunState.equals(RunStateEnum.ERROR)) {
 					log.debug("trying to recover receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
 					try {
-						if (receiver!=null) {
-							receiver.setRecover(true);
-						}
+						receiver.setRecover(true);
 						adapter.configureReceiver(receiver);
 					} finally {
-						if (receiver!=null) {
-							receiver.setRecover(false);
-						}
+						receiver.setRecover(false);
 					}
-					if (receiver!=null) {
-						if (receiver.configurationSucceeded()) {
-							receiver.stopRunning();
-							int count = 10;
-							while (count-- >= 0
-									&& !receiver.getRunState().equals(RunStateEnum.STOPPED)) {
-								try {
-									Thread.sleep(1000);
-								} catch (InterruptedException e) {
-									log.debug("Interrupted waiting for receiver to stop", e);
-								}
+					if (receiver.configurationSucceeded()) {
+						receiver.stopRunning();
+						int count = 10;
+						while (count-- >= 0
+								&& !receiver.getRunState().equals(RunStateEnum.STOPPED)) {
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+								log.debug("Interrupted waiting for receiver to stop", e);
 							}
 						}
-						// check for start is in method startRunning in Receiver itself
-						receiver.startRunning();
-						log.debug("finished recovering receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
 					}
+					// check for start is in method startRunning in Receiver itself
+					receiver.startRunning();
+					log.debug("finished recovering receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
 				} else if (receiverRunState
 						.equals(RunStateEnum.STARTED)) {
 					// workaround for started RestListeners of which
@@ -1154,24 +1148,20 @@ public class JobDef {
 						String matchingPattern = RestServiceDispatcher.getInstance().findMatchingPattern("/" + restListener.getUriPattern());
 						if (matchingPattern == null) {
 							log.debug("trying to recover receiver [" + receiver.getName() + "] (restListener) of adapter [" + adapter.getName() + "]");
-							if (receiver!=null) {
-								if (receiver.configurationSucceeded()) {
-									receiver.stopRunning();
-									int count = 10;
-									while (count-- >= 0
-											&& !receiver.getRunState().equals(
-													RunStateEnum.STOPPED)) {
-										try {
-											Thread.sleep(1000);
-										} catch (InterruptedException e) {
-											log.debug("Interrupted waiting for receiver to stop", e);
-										}
+							if (receiver.configurationSucceeded()) {
+								receiver.stopRunning();
+								int count = 10;
+								while (count-- >= 0 && !receiver.getRunState().equals(RunStateEnum.STOPPED)) {
+									try {
+										Thread.sleep(1000);
+									} catch (InterruptedException e) {
+										log.debug("Interrupted waiting for receiver to stop", e);
 									}
 								}
-								// check for start is in method startRunning in Receiver itself
-								receiver.startRunning();
-								log.debug("finished recovering receiver [" + receiver.getName() + "] (restListener) of adapter [" + adapter.getName() + "]");
 							}
+							// check for start is in method startRunning in Receiver itself
+							receiver.startRunning();
+							log.debug("finished recovering receiver [" + receiver.getName() + "] (restListener) of adapter [" + adapter.getName() + "]");
 						}
 					}
 				}

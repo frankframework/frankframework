@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden
+   Copyright 2013-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -101,8 +101,7 @@ public class WsdlXmlValidator extends SoapValidator {
 			throw new ConfigurationException("WSDLException reading WSDL or import from url: " + url, e);
 		}
 		if (wsdlLocator.getIOException() != null) {
-			throw new ConfigurationException("IOException reading WSDL or import from url: " + url,
-					wsdlLocator.getIOException());
+			throw new ConfigurationException("IOException reading WSDL or import from url: " + url, wsdlLocator.getIOException());
 		}
 	}
 
@@ -170,9 +169,7 @@ public class WsdlXmlValidator extends SoapValidator {
 
 		if (StringUtils.isNotEmpty(getSoapBodyNamespace())
 				&& soapBodyFoundCounter > 1) {
-			throw new ConfigurationException(getLogPrefix(null) + "soapBody ["
-					+ getSoapBody()
-					+ "] exists multiple times, not possible to create schemaLocation from soapBodyNamespace");
+			throw new ConfigurationException("soapBody [" + getSoapBody() + "] exists multiple times, not possible to create schemaLocation from soapBodyNamespace");
 
 		}		
 		
@@ -225,7 +222,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	@Override
 	protected void checkSchemaSpecified() throws ConfigurationException {
 		if (StringUtils.isEmpty(getWsdl())) {
-			throw new ConfigurationException(getLogPrefix(null) + "wsdl attribute cannot be empty");
+			throw new ConfigurationException("wsdl attribute cannot be empty");
 		}
 	}
 
