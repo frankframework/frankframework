@@ -40,10 +40,8 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeValueStat
 import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
 import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -51,11 +49,10 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.doc.model.ElementChild;
+import nl.nn.adapterframework.doc.model.ElementRole;
 import nl.nn.adapterframework.doc.model.ElementType;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
@@ -208,6 +205,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class DocWriterNew {
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
+	private static final String ELEMENT_GROUP = "ElementGroup";
 
 	private static Logger log = LogUtil.getLogger(DocWriterNew.class);
 
@@ -215,59 +213,7 @@ public class DocWriterNew {
 	private String startClassName;
 	private XmlBuilder xsdRoot;
 	private Set<String> namesCreatedFrankElements = new HashSet<>();
-
-	@EqualsAndHashCode
-	private class ElementGroupId {
-		private @Getter String elementTypeName;
-		private @Getter String syntax1Name;
-
-		ElementGroupId(ElementType elementType, String syntax1Name) {
-			this.elementTypeName = elementType.getFullName();
-			this.syntax1Name = syntax1Name;
-		}
-
-		String getBaseXsdName() {
-			return Utils.toUpperCamelCase(syntax1Name) + "ElementGroup";
-		}
-	}
-
-	private Set<ElementGroupId> idsCreatedElementGroups = new HashSet<>();
-
-	/*
-	 * There is a name clash for the combination of ElementType IListener
-	 * and syntax 1 name "listener":
-	 * 
-	 * In Receiver:
-	 * public void setListener(IListener<M> newListener)
-	 *
-	 * In GenericMessageSendingPipe:
-	 * public void setListener(ICorrelatedPullingListener listener)
-	 *
-	 * In PostboxRetrieverPipe:
-	 * public void setListener(IPostboxListener listener)
-	 *
-	 * We solve this here by using names like:
-	 * 
-	 * <syntax 1 name>"ElementGroup_"<sequence number>
-	 */
-	private String getName(ElementGroupId id) {
-		if(groupId2Name.containsKey(id)) {
-			return groupId2Name.get(id);
-		} else {
-			String baseName = id.getBaseXsdName();
-			String name = baseName;
-			int seq = 1;
-			while(name2GroupId.containsKey(name)) {
-				name = String.format("%s_%d", baseName, ++seq);
-			}
-			groupId2Name.put(id, name);
-			name2GroupId.put(name, id);
-			return name;
-		}
-	}
-
-	private Map<ElementGroupId, String> groupId2Name = new HashMap<>();
-	private Map<String, ElementGroupId> name2GroupId = new HashMap<>();
+	private Set<ElementRole.Key> idsCreatedElementGroups = new HashSet<>();
 
 	public DocWriterNew(FrankDocModel model) {
 		this.model = model;
@@ -460,23 +406,23 @@ public class DocWriterNew {
 	}
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
-		ElementType elementType = child.getElementType();
-		String syntax1Name = child.getSyntax1Name();
-		if(isNoElementTypeNeeded(elementType)) {
-			FrankElement elementInType = singleElementOf(elementType);
+		ElementRole role = model.findElementRole(child);
+		if(isNoElementTypeNeeded(role)) {
+			FrankElement elementInType = singleElementOf(role.getElementType());
 			addElementRef(
 					context,
-					elementInType.getXsdElementName(elementType, syntax1Name),
+					elementInType.getXsdElementName(role),
 					getMinOccurs(child),
 					getMaxOccurs(child));
-			recursivelyDefineXsdElement(elementInType, elementType, syntax1Name);	
+			recursivelyDefineXsdElement(elementInType, role);	
 		} else {
-			addGroupRef(context, getName(new ElementGroupId(elementType, syntax1Name)), getMinOccurs(child), getMaxOccurs(child));
-			defineElementTypeGroup(elementType, syntax1Name);
+			defineElementTypeGroup(role);
+			addGroupRef(context, role.createXsdElementName(ELEMENT_GROUP), getMinOccurs(child), getMaxOccurs(child));
 		}
 	}
 
-	private boolean isNoElementTypeNeeded(ElementType elementType) {
+	private boolean isNoElementTypeNeeded(ElementRole role) {
+		ElementType elementType = role.getElementType();
 		if(elementType.isFromJavaInterface()) {
 			return false;
 		}
@@ -495,65 +441,6 @@ public class DocWriterNew {
 		return elementType.getMembers().values().iterator().next();
 	}
 
-	private void defineElementTypeGroup(ElementType elementType, String syntax1Name) {
-		ElementGroupId id = new ElementGroupId(elementType, syntax1Name);
-		if(idsCreatedElementGroups.contains(id)) {
-			return;
-		} else {
-			idsCreatedElementGroups.add(id);
-			defineElementTypeGroupUnchecked(elementType, syntax1Name);
-		}
-	}
-
-	private void defineElementTypeGroupUnchecked(ElementType elementType, String syntax1Name) {
-		XmlBuilder group = addGroup(xsdRoot, getName(new ElementGroupId(elementType, syntax1Name)));
-		XmlBuilder choice = addChoice(group);
-		addGenericElementOption(choice, syntax1Name);
-		List<FrankElement> frankElementOptions = elementType.getMembers().values().stream()
-				.filter(f -> ! f.isDeprecated())
-				.filter(f -> ! f.isAbstract())
-				.collect(Collectors.toList());
-		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
-		for(FrankElement frankElement: frankElementOptions) {
-			addElementToElementGroup(choice, frankElement, elementType, syntax1Name);
-		}		
-	}
-
-	private void addGenericElementOption(XmlBuilder choice, String syntax1Name) {
-		XmlBuilder genericElementOption = addElementWithType(choice, syntax1Name);
-		XmlBuilder complexType = addComplexType(genericElementOption);
-		addAttribute(complexType, "elementType", FIXED, syntax1Name, PROHIBITED);
-		addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
-		// My XSD is invalid if I add addAnyAttribute before attributes elementType and className.
-		addAnyAttribute(complexType);
-	}
-
-	private void addElementToElementGroup(XmlBuilder context, FrankElement frankElement, ElementType elementType, String syntax1Name) {
-		addElementTypeRefToElementGroup(context, frankElement, elementType, syntax1Name);
-		recursivelyDefineXsdElementType(frankElement);
-	}
-
-	private void addElementTypeRefToElementGroup(XmlBuilder context, FrankElement frankElement, ElementType elementType, String syntax1Name) {
-		XmlBuilder element = addElementWithType(context, frankElement.getXsdElementName(elementType, syntax1Name));
-		XmlBuilder complexType = addComplexType(element);
-		XmlBuilder complexContent = addComplexContent(complexType);
-		XmlBuilder extension = addExtension(complexContent, xsdElementType(frankElement));
-		addExtraAttributesNotFromModel(extension, frankElement, syntax1Name);
-	}
-
-	private void recursivelyDefineXsdElement(FrankElement frankElement, ElementType elementType, String syntax1Name) {
-		if(checkNotDefined(frankElement)) {
-			String xsdElementName = frankElement.getXsdElementName(elementType, syntax1Name);
-			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(xsdRoot, frankElement, xsdElementName);
-			addExtraAttributesNotFromModel(attributeBuilder, frankElement, syntax1Name);
-		}
-	}
-
-	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, String syntax1Name) {
-		addAttribute(context, "elementType", FIXED, syntax1Name, PROHIBITED);
-		addClassNameAttribute(context, frankElement);
-	}
-
 	private static String getMinOccurs(ConfigChild child) {
 		if(child.isMandatory()) {
 			return "1";
@@ -568,6 +455,63 @@ public class DocWriterNew {
 		} else {
 			return "1";
 		}
+	}
+
+	private void recursivelyDefineXsdElement(FrankElement frankElement, ElementRole role) {
+		if(checkNotDefined(frankElement)) {
+			String xsdElementName = frankElement.getXsdElementName(role);
+			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(xsdRoot, frankElement, xsdElementName);
+			addExtraAttributesNotFromModel(attributeBuilder, frankElement, role);
+		}
+	}
+
+	private void defineElementTypeGroup(ElementRole role) {
+		ElementRole.Key key = role.getKey();
+		if(! idsCreatedElementGroups.contains(key)) {
+			idsCreatedElementGroups.add(key);
+			defineElementTypeGroupUnchecked(role);
+		}
+	}
+
+	private void defineElementTypeGroupUnchecked(ElementRole role) {
+		XmlBuilder group = addGroup(xsdRoot, role.createXsdElementName(ELEMENT_GROUP));
+		XmlBuilder choice = addChoice(group);
+		addGenericElementOption(choice, role.getSyntax1Name());
+		List<FrankElement> frankElementOptions = role.getElementType().getMembers().values().stream()
+				.filter(f -> ! f.isDeprecated())
+				.filter(f -> ! f.isAbstract())
+				.collect(Collectors.toList());
+		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
+		for(FrankElement frankElement: frankElementOptions) {
+			addElementToElementGroup(choice, frankElement, role);
+		}		
+	}
+
+	private void addGenericElementOption(XmlBuilder choice, String syntax1Name) {
+		XmlBuilder genericElementOption = addElementWithType(choice, syntax1Name);
+		XmlBuilder complexType = addComplexType(genericElementOption);
+		addAttribute(complexType, "elementType", FIXED, syntax1Name, PROHIBITED);
+		addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
+		// My XSD is invalid if I add addAnyAttribute before attributes elementType and className.
+		addAnyAttribute(complexType);
+	}
+
+	private void addElementToElementGroup(XmlBuilder context, FrankElement frankElement, ElementRole role) {
+		addElementTypeRefToElementGroup(context, frankElement, role);
+		recursivelyDefineXsdElementType(frankElement);
+	}
+
+	private void addElementTypeRefToElementGroup(XmlBuilder context, FrankElement frankElement, ElementRole role) {
+		XmlBuilder element = addElementWithType(context, frankElement.getXsdElementName(role));
+		XmlBuilder complexType = addComplexType(element);
+		XmlBuilder complexContent = addComplexContent(complexType);
+		XmlBuilder extension = addExtension(complexContent, xsdElementType(frankElement));
+		addExtraAttributesNotFromModel(extension, frankElement, role);
+	}
+
+	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, ElementRole role) {
+		addAttribute(context, "elementType", FIXED, role.getSyntax1Name(), PROHIBITED);
+		addClassNameAttribute(context, frankElement);
 	}
 
 	private void addAttributes(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {

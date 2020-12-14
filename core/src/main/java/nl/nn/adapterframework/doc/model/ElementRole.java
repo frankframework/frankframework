@@ -30,6 +30,10 @@ public class ElementRole {
 		}
 	}
 
+	public Key getKey() {
+		return new Key(elementType.getFullName(), syntax1Name);
+	}
+
 	static class Factory {
 		private final Map<String, Integer> numUsagePerSyntax1Name = new HashMap<>();
 

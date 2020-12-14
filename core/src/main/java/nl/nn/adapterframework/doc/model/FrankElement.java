@@ -154,9 +154,13 @@ public class FrankElement {
 				handler, childSelector, childRejector, ConfigChild.class).run(this);		
 	}
 
-	public String getXsdElementName(final ElementType elementType, final String groupSyntax1Name) {
+	public String getXsdElementName(ElementRole elementRole) {
+		return getXsdElementName(elementRole.getElementType(), elementRole.getSyntax1Name());
+	}
+
+	String getXsdElementName(ElementType elementType, String syntax1Name) {
 		if(! elementType.isFromJavaInterface()) {
-			return Utils.toUpperCamelCase(groupSyntax1Name);
+			return Utils.toUpperCamelCase(syntax1Name);
 		}
 		String postfixToRemove = elementType.getSimpleName();
 		if(postfixToRemove.startsWith("I")) {
@@ -166,7 +170,7 @@ public class FrankElement {
 		if(result.endsWith(postfixToRemove)) {
 			result = result.substring(0, result.lastIndexOf(postfixToRemove));
 		}
-		result = result + Utils.toUpperCamelCase(groupSyntax1Name);
+		result = result + Utils.toUpperCamelCase(syntax1Name);
 		return result;
 	}
 }

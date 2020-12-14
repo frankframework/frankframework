@@ -396,7 +396,11 @@ public class FrankDocModel {
 	}
 
 	public ElementRole findElementRole(ConfigChild configChild) {
-		return allElementRoles.get(new ElementRole.Key(configChild));
+		return findElementRole(new ElementRole.Key(configChild));
+	}
+
+	public ElementRole findElementRole(ElementRole.Key key) {
+		return allElementRoles.get(key);
 	}
 
 	ElementRole findElementRole(String fullElementTypeName, String syntax1Name) {
