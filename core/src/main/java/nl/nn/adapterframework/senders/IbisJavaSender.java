@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * <h4>configuring IbisJavaSender and JavaListener</h4>
  * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisJavaSender</li>
+ *   <li>Define a SenderPipe with an IbisJavaSender</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
  * </ul>
  * In the Adapter to be called:
