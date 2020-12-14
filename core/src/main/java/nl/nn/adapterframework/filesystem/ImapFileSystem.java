@@ -111,7 +111,9 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	@Override
 	protected void closeConnection(IMAPFolder folder) throws FileSystemException {
 		try (Store store = folder.getStore()) {
-			folder.close();
+			if (folder.isOpen()) {
+				folder.close();
+			}
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}
