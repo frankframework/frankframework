@@ -56,11 +56,11 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		super.configure();
 		if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 			if (StringUtils.isNotEmpty(getHost()) || getPort()>0) {
-				throw new ConfigurationException(getLogPrefix(null) + "attributes 'host', 'port' and 'useSsl' cannot be used together with ldapProviderUrl");
+				throw new ConfigurationException("attributes 'host', 'port' and 'useSsl' cannot be used together with ldapProviderUrl");
 			}
 		} else {
 			if (StringUtils.isEmpty(getHost())) {
-				throw new ConfigurationException(getLogPrefix(null) + "either 'ldapProviderUrl' or 'host' (and possibly 'port' and 'useSsl') must be specified");
+				throw new ConfigurationException("either 'ldapProviderUrl' or 'host' (and possibly 'port' and 'useSsl') must be specified");
 			}
 		}
 		cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());

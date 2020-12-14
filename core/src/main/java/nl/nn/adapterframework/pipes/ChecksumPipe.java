@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,13 +55,13 @@ public class ChecksumPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getType())) {
-			throw new ConfigurationException(getLogPrefix(null)+"type must be specified");
+			throw new ConfigurationException("type must be specified");
 		}
 		if (!CHECKSUM_MD5.equals(getType()) && 
 			!CHECKSUM_SHA.equals(getType()) && 
 			!CHECKSUM_CRC32.equals(getType()) && 
 			!CHECKSUM_ADLER32.equals(getType())) {
-			throw new ConfigurationException(getLogPrefix(null)+"type ["+getType()+"] must be one of ["+
+			throw new ConfigurationException("type ["+getType()+"] must be one of ["+
 				CHECKSUM_MD5+","+
 				CHECKSUM_SHA+","+
 				CHECKSUM_CRC32+","+

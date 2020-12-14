@@ -162,8 +162,7 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 				// the default and result in the following exception when (for
 				// example?) a ResultSetIteratingPipe is calling next() on the
 				// ResultSet after it's sender has called a pipeline which
-				// contains a GenericMessageSendingPipe using
-				// transactionAttribute="NotSupported":
+				// contains a SenderPipe using transactionAttribute="NotSupported":
 				//   com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
 				ConfigurationWarnings.add(this, log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
 			}

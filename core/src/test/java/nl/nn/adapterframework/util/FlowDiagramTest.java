@@ -19,6 +19,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 import nl.nn.adapterframework.util.flow.IFlowGenerator;
 import nl.nn.adapterframework.util.flow.V8FlowGenerator;
@@ -75,4 +77,29 @@ public class FlowDiagramTest {
 		assertNotNull(flow);
 		flow.afterPropertiesSet();
 	}
+
+	@Test
+	public void testAdapter2DotXslWithoutFirstPipe() throws Exception {
+		TransformerPool.clearTransformerPools();
+		Resource resource = Resource.getResource("xsl/adapter2dot.xsl");
+		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
+		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.xml");
+		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
+		String result = transformerPool.transform(adapter, null);
+
+		assertEquals(dot, result);
+	}
+
+	@Test
+	public void testAdapter2DotXslExitInMiddle() throws Exception {
+		TransformerPool.clearTransformerPools();
+		Resource resource = Resource.getResource("xsl/adapter2dot.xsl");
+		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
+		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineExitInTheMiddle.xml");
+		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
+		String result = transformerPool.transform(adapter, null);
+
+		assertEquals(dot, result);
+	}
+
 }

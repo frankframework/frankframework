@@ -44,7 +44,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(cacheName)) {
-			throw new ConfigurationException(getLogPrefix(null) + " cacheName should be specified");
+			throw new ConfigurationException("cacheName should be specified");
 		}
 		keyTransformer.configure(getName());
 		ibisCacheManager = IbisCacheManager.getInstance();

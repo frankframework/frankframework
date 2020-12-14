@@ -72,7 +72,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
     @Test
     public void testFailAsWrongDirectory() throws Exception {
-        exception.expectMessage("Pipe [FixedResultPipe under test] cannot find resource [/Pipes/2.txt/something]");
+        exception.expectMessage("cannot find resource [/Pipes/2.txt/something]");
         Parameter param = setUp(session1);
         pipe.addParameter(param);
         pipe.setFileName(sourceFolderPath + "/something");
@@ -86,7 +86,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
     @Test
     public void testEmptyFileName() throws Exception{
-        exception.expectMessage("Pipe [FixedResultPipe under test] has neither fileName nor fileNameSessionKey nor returnString specified");
+        exception.expectMessage("has neither fileName nor fileNameSessionKey nor returnString specified");
         pipe.configure();
         fail("this should fail");
     }

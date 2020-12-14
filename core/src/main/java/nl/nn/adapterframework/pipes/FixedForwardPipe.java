@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		super.configure();
 		forward = findForward(forwardName);
 		if (forward == null)
-			throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [" + forwardName + "]");
+			throw new ConfigurationException("has no forward with name [" + forwardName + "]");
 	}
 
 	/**

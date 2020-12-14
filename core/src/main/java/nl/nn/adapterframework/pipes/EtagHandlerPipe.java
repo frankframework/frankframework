@@ -53,10 +53,10 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		super.configure();
 		String action = getAction();
 		if (action==null) {
-			throw new ConfigurationException(getLogPrefix(null)+"action must be set");
+			throw new ConfigurationException("action must be set");
 		}
 		if (!actions.contains(action)) {
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for action ["+action+"], must be one of " + actions.toString());
+			throw new ConfigurationException("illegal value for action ["+action+"], must be one of " + actions.toString());
 		}
 
 		boolean hasUriPatternParameter = false;
@@ -68,7 +68,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		}
 
 		if(getUriPattern() == null && !hasUriPatternParameter) {
-			throw new ConfigurationException(getLogPrefix(null)+"no uriPattern found!");
+			throw new ConfigurationException("no uriPattern found!");
 		}
 
 		cache = ApiCacheManager.getInstance();

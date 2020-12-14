@@ -43,6 +43,7 @@ import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
@@ -161,7 +162,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 * to prevail.
 	 * @see AbstractPipe
 	 **/
-	@IbisDoc("80")
+	@IbisDoc("90")
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
@@ -172,7 +173,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		}
 		String name = pipe.getName();
 		if (StringUtils.isEmpty(name)) {
-			throw new ConfigurationException("pipe [" + pipe.getClass().getName()+"] to be added has no name, pipelineTable size ["+pipesByName.size()+"]");
+			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe)+"] to be added has no name, pipelineTable size ["+pipesByName.size()+"]");
 		}
 		IPipe current = getPipe(name);
 		if (current != null) {
@@ -395,10 +396,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
 			//congestionSensors.addSensor(pipe);
 		} catch (Throwable t) {
-			if (t instanceof ConfigurationException) {
-				throw (ConfigurationException)t;
-			}
-			throw new ConfigurationException("Exception configuring Pipe ["+pipe.getName()+"]",t);
+			throw new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe) +" ["+pipe.getName()+"]",t);
 		}
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"pipe ["+pipe.getName()+"] successfully configured: ["+pipe.toString()+"]");
@@ -700,13 +698,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		return outputWrapper;
 	}
 
-	@IbisDoc({"50", "Global forwards"})
-	public void registerForward(PipeForward forward){
-		globalForwards.put(forward.getName(), forward);
-		log.debug("registered global PipeForward "+forward.toString());
-	}
-
-	@IbisDoc({"60", "PipeLine exits"})
+	@IbisDoc({"50", "PipeLine exits"})
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
 			ConfigurationWarnings.add(null, log, getLogPrefix()+"exit named ["+exit.getPath()+"] already exists");
@@ -714,7 +706,13 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		pipeLineExits.put(exit.getPath(), exit);
 	}
 
-	@IbisDoc({"60", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads or servers"})
+	@IbisDoc({"60", "Global forwards"})
+	public void registerForward(PipeForward forward){
+		globalForwards.put(forward.getName(), forward);
+		log.debug("registered global PipeForward "+forward.toString());
+	}
+
+	@IbisDoc({"70", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads or servers"})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}
@@ -723,7 +721,7 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	}
 
 	@Override
-	@IbisDoc({"70", "Cache of results"})
+	@IbisDoc({"80", "Cache of results"})
 	public void setCache(ICacheAdapter<String,String> cache) {
 		this.cache=cache;
 	}

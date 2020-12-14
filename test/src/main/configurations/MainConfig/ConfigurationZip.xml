@@ -8,7 +8,7 @@
 				serviceName="ibis4test-unzip"
 			/>
 		</receiver>
-		<pipeline firstPipe="selectSenderBasedOnRootElement">
+		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
@@ -191,14 +191,14 @@
 
 		<receiver
 			name="Java UnZipNested"
-            maxRetries="0">
+			maxRetries="0">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="ibis4test-unzipNested"
 			/>
 		</receiver>
 
-		<pipeline firstPipe="ReadOuterZipEntry">
+		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
@@ -210,7 +210,6 @@
 				streamingContents="false"
 				contentsSessionKey="nestedZipData"
 				charset="ISO-8859-1"
-				closeInputstreamOnExit="false" 
 				>
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender" 
 					fileName="zip/NameAndContents.txt"
@@ -228,7 +227,7 @@
 	<adapter name="Zip-Recreate 1" >
 		<receiver 
 			name="Zip-Recreate 1" 
-            maxRetries="0">
+			maxRetries="0">
 			<listener 
 				className="nl.nn.adapterframework.receivers.JavaListener" 
 				name="ibis4test-RecreateZip"
@@ -263,7 +262,6 @@
 				streamingContents="false"
 				charset="ISO-8859-1"
 				contentsSessionKey="nestedZipData"
-				closeInputstreamOnExit="false" 
 				>
 				<sender className="nl.nn.adapterframework.compression.ZipWriterSender" 
 					zipWriterHandle="zipwriter2"

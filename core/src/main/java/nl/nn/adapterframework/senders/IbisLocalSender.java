@@ -52,7 +52,7 @@ import nl.nn.adapterframework.util.Misc;
  *  
  * <h4>configuring IbisLocalSender and JavaListener</h4>
  * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>
+ *   <li>Define a SenderPipe with an IbisLocalSender</li>
  *   <li>Set the attribute <code>javaListener</code> to <i>yourServiceName</i></li>
  *   <li>Do not set the attribute <code>serviceName</code></li>
  * </ul>
@@ -67,7 +67,7 @@ import nl.nn.adapterframework.util.Misc;
  * <h4>configuring IbisLocalSender and WebServiceListener</h4>
  * 
  * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>
+ *   <li>Define a SenderPipe with an IbisLocalSender</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourIbisWebServiceName</i></li>
  *   <li>Do not set the attribute <code>javaListener</code></li>
  * </ul>

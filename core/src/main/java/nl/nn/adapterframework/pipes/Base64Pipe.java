@@ -67,7 +67,7 @@ public class Base64Pipe extends StreamingPipe {
 		super.configure();
 		String dir=getDirection();
 		if (!dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode"))
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for direction ["+dir+"], must be 'encode' or 'decode'");
+			throw new ConfigurationException("illegal value for direction ["+dir+"], must be 'encode' or 'decode'");
 
 		if(outputTypes != null && !outputTypes.contains(outputType))
 			throw new ConfigurationException("unknown outputType ["+outputType+"] supported attributes are "+outputTypes.toString()+"");

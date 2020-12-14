@@ -128,7 +128,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
 					StringUtils.isNotEmpty(getSchemaLocation())) &&
 					StringUtils.isNotEmpty(getSchemaSessionKey())) {
-				throw new ConfigurationException(getLogPrefix(null) + "cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
+				throw new ConfigurationException("cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
 			}
 			checkSchemaSpecified();
 			if (StringUtils.isNotEmpty(getSoapNamespace())) {
@@ -142,7 +142,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				try {
 					transformerPoolExtractSoapBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
 				} catch (TransformerConfigurationException te) {
-					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
+					throw new ConfigurationException("got error creating transformer from getSoapBody", te);
 				}
 	
 				transformerPoolGetRootNamespace = XmlUtils.getGetRootNamespaceTransformerPool();
@@ -151,7 +151,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	
 			if (!isForwardFailureToSuccess() && !isThrowException()){
 				if (findForward("failure")==null) {
-					throw new ConfigurationException(getLogPrefix(null)+ "must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
+					throw new ConfigurationException("must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
 				}
 			}
 	
@@ -190,7 +190,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) &&
 				StringUtils.isEmpty(getSchemaLocation()) &&
 				StringUtils.isEmpty(getSchemaSessionKey())) {
-			throw new ConfigurationException(getLogPrefix(null) + "must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
+			throw new ConfigurationException("must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
 		}
 	}
 

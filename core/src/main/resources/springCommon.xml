@@ -341,7 +341,7 @@
 	<!-- Default pipe is a message-sending pipe -->
 	<bean
 		name="proto-pipe"
-		class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+		class="nl.nn.adapterframework.pipes.SenderPipe"
 		autowire="byName"
 		scope="prototype"
 	/>

@@ -1,5 +1,7 @@
 dist: trusty
 language: java
+os:
+  - linux
 jdk:
   - openjdk8
 
@@ -20,7 +22,13 @@ before_install:
 install: echo 'Skipping separate install phase'
 
 script:
-  - mvn install -B -V -T1 -Dmaven.javadoc.skip=true -Pibissource,codecoverage
+  - >
+    if [ -z "$TRAVIS_CI_USER" ];
+    then
+    mvn install -B -V -T1 -Dmaven.javadoc.skip=true -Pibissource,codecoverage;
+    else
+    mvn install -B -V -T1 -Dmaven.javadoc.skip=true -Pproprietary,ibissource,codecoverage;
+    fi
 
 notifications:
   email:
