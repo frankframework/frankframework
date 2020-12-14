@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.filesystem.FileNotFoundException;
+import nl.nn.adapterframework.testutil.TestAssertions;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 public class FileUtilsTest {
 	private final String BASE = "/Util/FileUtils/";
@@ -141,6 +143,8 @@ public class FileUtilsTest {
 
 	@Test //retrieve the first file from a directory. Alphabetically it should first return 'copyFile'. Add a stability period, and check if it skips the first file
 	public void testGetFirstFile() throws Exception {
+		assumeTrue(!TestAssertions.isTestRunningOnTravis());
+
 		long stabilityPeriod = 5000;
 		getFile("copyFrom.txt").setLastModified(new Date().getTime()-(stabilityPeriod + 500)); //mark file as stable (add 500ms to the stability period because of HDD latency)
 		getFile("copyFile.txt").setLastModified(new Date().getTime()); //update last modified to now, so it fails the stability period
