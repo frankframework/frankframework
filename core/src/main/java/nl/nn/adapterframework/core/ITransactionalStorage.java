@@ -64,7 +64,7 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	public void setSlotId(String string);
 
 
-	@IbisDoc({"Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). Receiver will always set type to E for errorStorage and always set type to A for messageLog. GenericMessageSendingPipe will set type to L for messageLog (when type isn't specified). See {@link MessagestoreSender} for type M", "E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe"})
+	@IbisDoc({"Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). Receiver will always set type to E for errorStorage and always set type to A for messageLog. SenderPipe will set type to L for messageLog (when type isn't specified). See {@link MessagestoreSender} for type M", "E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe"})
 	public void setType(String string);
 	public String getType();
 	
