@@ -15,6 +15,8 @@
  */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.InputStream;
+
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.PooledObject;
@@ -23,6 +25,8 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Baseclass for {@link IBasicFileSystem FileSystems} that use a 'Connection' to connect to their storage.
@@ -32,14 +36,20 @@ import lombok.Setter;
  */
 public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 
-	// implementations that have a thread-safe connector can set pooledConnection = false to use a shared connection.
+	// implementations that have a thread-safe connection can set pooledConnection = false to use a shared connection.
 	private @Setter @Getter boolean pooledConnection=true;
 	
-	private Connector<C> globalConnector;
-	private ObjectPool<Connector<C>> connectorPool;
+	private C globalConnection;
+	private ObjectPool<C> connectionPool;
 
+	/**
+	 * Create a fresh connection to the FileSystem.
+	 */
 	protected abstract C createConnection() throws FileSystemException;
 	
+	/**
+	 * Close connection to the FileSystem, releasing all resources.
+	 */
 	protected void closeConnection(C connection) throws FileSystemException {
 		if (connection instanceof AutoCloseable) {
 			try {
@@ -56,7 +66,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 		if (isPooledConnection()) {
 			openPool();
 		} else {
-			globalConnector = new Connector<>(createConnection(), null);
+			globalConnection = createConnection();
 		}
 		super.open();
 	}
@@ -69,8 +79,8 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 			if (isPooledConnection()) {
 				closePool();
 			} else {
-				if (globalConnector!=null) {
-					closeConnection(globalConnector.getConnection());
+				if (globalConnection!=null) {
+					closeConnection(globalConnection);
 				}
 			}
 		}
@@ -78,67 +88,72 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	
 
 	/**
-	 * Get the Connector from the thread, or a fresh one from the pool.
-	 * At close(), it is returned to the pool, if it came from the pool; 
-	 * If it was allocated, it is just left allocated.
+	 * Get a Connection from the pool, or the global shared connection.
 	 */
-	protected Connector<C> getConnector() throws FileSystemException {
+	protected C getConnection() throws FileSystemException {
 		try {
-			return isPooledConnection() ? connectorPool.borrowObject() : globalConnector;
+			return isPooledConnection() ? connectionPool.borrowObject() : globalConnection;
 		} catch (Exception e) {
-			throw new FileSystemException("Cannot get connector from pool", e);
+			throw new FileSystemException("Cannot get connection from pool of "+ClassUtils.nameOf(this), e);
+		}
+	}
+	
+	protected void releaseConnection(C connection) {
+		if (isPooledConnection()) {
+			try {
+				connectionPool.returnObject(connection);
+			} catch (Exception e) {
+				log.warn("Cannot return connection of "+ClassUtils.nameOf(this), e);
+			}
 		}
 	}
 	
 	/**
-	 * Remove the connector from the pool, e.g. after it has been part of trouble.
+	 * Remove the connection from the pool, e.g. after it has been part of trouble.
+	 * If a shared (non-pooled) connection is invalidated, the shared connection is recreated.
 	 */
-	protected void invalidateConnector(Connector<C> connector) {
+	protected void invalidateConnection(C connection) {
 		try {
 			if (isPooledConnection()) {
-				connectorPool.invalidateObject(connector);
+				connectionPool.invalidateObject(connection);
 			} else {
 				try {
-					closeConnection(globalConnector.getConnection());
+					closeConnection(globalConnection);
 				} finally {
-					globalConnector = new Connector(createConnection(), null);
+					globalConnection = createConnection();
 				}
 			}
 		} catch (Exception e) {
-			log.warn("Cannot invalidate connector", e);
+			log.warn("Cannot invalidate connection of "+ClassUtils.nameOf(this), e);
 		}
+	}
+	
+	/**
+	 * Postpone the release of the connection to after the stream is closed.
+	 * If any IOExceptions on the stream occur, the connection is invalidated.
+	 */
+	protected InputStream pendingRelease(InputStream stream, C connection) {
+		return StreamUtil.watch(stream, () -> { releaseConnection(connection); } , () -> { invalidateConnection(connection); });
 	}
 
 	private void openPool() {
-		if (connectorPool==null) {
-			connectorPool=new GenericObjectPool<>(new BasePooledObjectFactory<Connector<C>>() {
+		if (connectionPool==null) {
+			connectionPool=new GenericObjectPool<>(new BasePooledObjectFactory<C>() {
 
 				@Override
-				public Connector<C> create() throws Exception {
-					return new Connector<C>(createConnection(), connectorPool);
+				public C create() throws Exception {
+					return createConnection();
 				}
 
 				@Override
-				public PooledObject<Connector<C>> wrap(Connector<C> connector) {
-					return new DefaultPooledObject<Connector<C>>(connector);
+				public PooledObject<C> wrap(C connection) {
+					return new DefaultPooledObject<C>(connection);
 				}
 
 				@Override
-				public void destroyObject(PooledObject<Connector<C>> p) throws Exception {
-					closeConnection(p.getObject().getConnection());
+				public void destroyObject(PooledObject<C> p) throws Exception {
+					closeConnection(p.getObject());
 					super.destroyObject(p);
-				}
-
-				@Override
-				public void activateObject(PooledObject<Connector<C>> p) throws Exception {
-					super.activateObject(p);
-					p.getObject().setActive(true);
-				}
-
-				@Override
-				public void passivateObject(PooledObject<Connector<C>> p) throws Exception {
-					super.passivateObject(p);
-					p.getObject().setActive(false);
 				}
 
 			}); 
@@ -147,12 +162,12 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 
 	private void closePool() {
 		try {
-			if (connectorPool!=null) {
-				connectorPool.close();
-				connectorPool=null;
+			if (connectionPool!=null) {
+				connectionPool.close();
+				connectionPool=null;
 			}
 		} catch (Exception e) {
-			log.warn("exception clearing Pool",e);
+			log.warn("exception clearing Pool of "+ClassUtils.nameOf(this),e);
 		}
 	}
 

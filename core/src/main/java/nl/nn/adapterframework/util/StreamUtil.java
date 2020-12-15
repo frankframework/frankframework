@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.function.Function;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
@@ -237,6 +238,98 @@ public class StreamUtil {
 		return new ResourceClosingInputStreamFilter(stream);
 	}
 
+	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {
+		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; }); 
+	}
+	
+	public static InputStream watch(InputStream stream, Runnable onClose, Function<IOException,IOException> onException) {
+		class WatchedInputStream extends FilterInputStream {
+			public WatchedInputStream(InputStream in) {
+				super(in);
+			}
+			
+			private IOException handleException(IOException e) {
+				if (onException!=null) {
+					IOException r = onException.apply(e);
+					if (r!=null) {
+						return r;
+					}
+				}
+				return e;
+			}
+			
+			@Override
+			public void close() throws IOException {
+				try {
+					super.close();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+				if (onClose!=null) {
+					onClose.run();
+				}
+			}
+
+			@Override
+			public int read() throws IOException {
+				try {
+					return super.read();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public int read(byte[] b) throws IOException {
+				try {
+					return super.read(b);
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public int read(byte[] b, int off, int len) throws IOException {
+				try {
+					return super.read(b, off, len);
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public long skip(long n) throws IOException {
+				try {
+					return super.skip(n);
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public int available() throws IOException {
+				try {
+					return super.available();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public synchronized void reset() throws IOException {
+				try {
+					super.reset();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+		};
+
+		return new WatchedInputStream(stream);
+	}
+
+
 	public static Reader closeOnClose(Reader reader, AutoCloseable resource) {
 		class ResourceClosingReaderFilter extends FilterReader {
 			public ResourceClosingReaderFilter(Reader in) {
@@ -272,6 +365,5 @@ public class StreamUtil {
 
 		return new ResourceClosingOutputStreamFilter(stream);
 	}
-
 
 }
