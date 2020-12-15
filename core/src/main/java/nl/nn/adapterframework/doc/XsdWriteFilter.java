@@ -83,6 +83,13 @@ abstract class XsdWriteFilter {
 		}
 	}
 
+	void addElementRef(
+			XmlBuilder context,
+			String elementName) {
+		if(isWritingOn) {
+			DocWriterNewXmlUtils.addElementRef(context, elementName);
+		}
+	}
 
 	void addElementRef(
 			XmlBuilder context,

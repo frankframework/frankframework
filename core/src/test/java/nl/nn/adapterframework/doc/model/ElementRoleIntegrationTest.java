@@ -59,7 +59,7 @@ public class ElementRoleIntegrationTest {
 
 	private void checkElementRolesAre(String elementTypeSimpleName, List<ElementRole> expected) {
 		ElementType elementType = model.findElementType(PACKAGE + elementTypeSimpleName);
-		List<ElementRole> actual = model.getElementTypeMemberChildRoles(elementType, ALL, NONE);
+		List<ElementRole> actual = model.getElementTypeMemberChildRoles(elementType, ALL, NONE, f -> true);
 		assertEquals(expected.size(), actual.size());
 		for(int i = 0; i < expected.size(); i++) {
 			assertSame(expected.get(i), actual.get(i));

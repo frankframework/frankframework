@@ -415,11 +415,19 @@ public class FrankDocModel {
 	 * objects exist and that the members of the element type are set.
 	 */
 	public List<ElementRole> getElementTypeMemberChildRoles(
-			ElementType elementType, Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+			ElementType elementType,
+			Predicate<ElementChild> selector,
+			Predicate<ElementChild> rejector,
+			Predicate<FrankElement> frankElementFilter) {
 		List<ElementRole> allMemberChildRoles = elementType.getMembers().values().stream()
+				// TODO: Filtering FrankElements, typically no filter or deprecated omitted, is
+				// not covered by unit tests.
+				.filter(frankElementFilter)
 				.map(frankElement -> frankElement.getCumulativeConfigChildren(selector, rejector))
 				.flatMap(l -> l.stream())
 				.map(ElementRole.Key::new)
+				// TODO: Not covered with unit tests that keys should be de-doubled
+				.distinct()
 				.map(this::findElementRole)
 				.collect(Collectors.toList());
 		Collections.sort(allMemberChildRoles, Comparator.comparing(er -> ((ElementRole) er).createXsdElementName("")));

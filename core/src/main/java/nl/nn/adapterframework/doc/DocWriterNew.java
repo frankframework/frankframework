@@ -196,6 +196,7 @@ public class DocWriterNew {
 	private XmlBuilder xsdRoot;
 	private Set<String> namesCreatedFrankElements;
 	private Set<ElementRole.Key> idsCreatedElementGroups;
+	private Set<String> namesElementTypesWithChildMemberGroup;
 	private XsdWriteFilter writeFilter;
 	private XsdWriteFilter.ControlStack writeControl;
 
@@ -220,6 +221,7 @@ public class DocWriterNew {
 			writeControl = new XsdWriteFilter.ControlStack(writeFilter);
 			namesCreatedFrankElements = new HashSet<>();
 			idsCreatedElementGroups = new HashSet<>();
+			namesElementTypesWithChildMemberGroup = new HashSet<>();
 			FrankElement startElement = model.findFrankElement(startClassName);
 			recursivelyDefineXsdElementOfRoot(startElement);
 		}
@@ -473,25 +475,77 @@ public class DocWriterNew {
 	private void defineElementTypeGroupUnchecked(ElementRole role) {
 		XmlBuilder group = writeFilter.addGroup(xsdRoot, role.createXsdElementName(ELEMENT_GROUP));
 		XmlBuilder choice = writeFilter.addChoice(group);
-		addGenericElementOption(choice, role.getSyntax1Name());
 		List<FrankElement> frankElementOptions = role.getElementType().getMembers().values().stream()
 				.filter(f -> ! f.isDeprecated())
 				.filter(f -> ! f.isAbstract())
 				.collect(Collectors.toList());
+		addGenericElementOption(choice, role, disambiguateGenericOptionElementName(role, frankElementOptions));
 		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
 		for(FrankElement frankElement: frankElementOptions) {
 			addElementToElementGroup(choice, frankElement, role);
 		}		
 	}
 
-	private void addGenericElementOption(XmlBuilder choice, String syntax1Name) {
+	// TODO: Move this to the model.
+	private String disambiguateGenericOptionElementName(ElementRole role, List<FrankElement> membersToInclude) {
+		// TODO: This is not nice but it is currently needed to properly disambiguate the
+		// different sequence numbers for Listener. We have generic elements like
+		// "Listener_2" and "Listener_3" for now.
+		String result = Utils.toUpperCamelCase(role.createXsdElementName(""));
+		Set<String> conflictCandidates = membersToInclude.stream()
+				.map(f -> f.getXsdElementName(role))
+				.collect(Collectors.toSet());
+		if(conflictCandidates.contains(result)) {
+			result = "Generic" + result;
+		}
+		return result;
+	}
+
+	private void addGenericElementOption(XmlBuilder choice, ElementRole role, String elementNameGenericOption) {
 		XmlBuilder genericElementOption = writeFilter.addElementWithType(
-				choice, Utils.toUpperCamelCase(syntax1Name));
+				choice, elementNameGenericOption);
 		XmlBuilder complexType = writeFilter.addComplexType(genericElementOption);
-		writeFilter.addAttribute(complexType, "elementType", FIXED, syntax1Name, PROHIBITED);
+		addElementTypeChildMembers(complexType, role);
+		writeFilter.addAttribute(complexType, "elementType", FIXED, role.getSyntax1Name(), PROHIBITED);
 		writeFilter.addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
 		// The XSD is invalid if addAnyAttribute is added before attributes elementType and className.
 		writeFilter.addAnyAttribute(complexType);
+	}
+
+	private void addElementTypeChildMembers(XmlBuilder context, ElementRole role) {
+		writeFilter.addGroupRef(context, xsdElementTypeMemberChildGroup(role.getElementType()), "0", "unbounded");
+		addElementTypeMemberChildGroup(role);
+	}
+
+	private String xsdElementTypeMemberChildGroup(ElementType elementType) {
+		return elementType.getSimpleName() + "MemberChildGroup";
+	}
+
+	private void addElementTypeMemberChildGroup(ElementRole role) {
+		if(! namesElementTypesWithChildMemberGroup.contains(role.getElementType().getFullName())) {
+			namesElementTypesWithChildMemberGroup.add(role.getElementType().getFullName());
+			addElementTypeMemberChildGroupUnchecked(role);
+		}
+	}
+
+	private void addElementTypeMemberChildGroupUnchecked(ElementRole role) {
+		XmlBuilder group = writeFilter.addGroup(xsdRoot, xsdElementTypeMemberChildGroup(role.getElementType()));
+		XmlBuilder choice = writeFilter.addChoice(group);
+		List<ElementRole> childRoles = model.getElementTypeMemberChildRoles(
+				role.getElementType(), IN_XSD, DEPRECATED, f -> ! f.isDeprecated());
+		for(ElementRole childRole: childRoles) {
+			addElementTypeMemberChildGroupOption(choice, childRole);
+		}
+	}
+
+	private void addElementTypeMemberChildGroupOption(XmlBuilder choice, ElementRole childRole) {
+		if(isNoElementTypeNeeded(childRole)) {
+			FrankElement frankElement = singleElementOf(childRole.getElementType());
+			String xsdElementName = frankElement.getXsdElementName(childRole);
+			writeFilter.addElementRef(choice, xsdElementName);
+		} else {
+			writeFilter.addGroupRef(choice, childRole.createXsdElementName(ELEMENT_GROUP));
+		}
 	}
 
 	private void addElementToElementGroup(XmlBuilder context, FrankElement frankElement, ElementRole role) {
