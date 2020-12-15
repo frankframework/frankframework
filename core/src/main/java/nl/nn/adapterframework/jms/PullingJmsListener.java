@@ -212,12 +212,12 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				if (session==null) { 
 					try {
 						session=getSession(threadContext);
-						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext).asString(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException);
+						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException);
 					} finally {
 						releaseSession(session);
 					}
 				} else {
-					send(session, replyTo, cid, plr.getResult().asString(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException); 
+					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException); 
 				}
 			} else {
 				if (getSender()==null) {

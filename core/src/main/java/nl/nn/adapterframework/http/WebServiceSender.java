@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2020 Nationale-Nederlanden
+   Copyright 2013, 2017-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -116,12 +116,12 @@ public class WebServiceSender extends HttpSender {
 			soapActionURI=getSoapAction();
 		}
 
-		String soapmsg;
+		Message soapmsg;
 		try {
 			if (isSoap()) {
-				soapmsg = soapWrapper.putInEnvelope(message.asString(), getEncodingStyle(), serviceNamespaceURI, null, getNamespaceDefs());
+				soapmsg = soapWrapper.putInEnvelope(message, getEncodingStyle(), serviceNamespaceURI, null, getNamespaceDefs());
 			} else {
-				soapmsg = message.asString();
+				soapmsg = message;
 			}
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix()+"error reading message", e);
@@ -132,7 +132,7 @@ public class WebServiceSender extends HttpSender {
 		}
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
 
-		HttpRequestBase method = super.getMethod(uri, new Message(soapmsg), parameters, session);
+		HttpRequestBase method = super.getMethod(uri, soapmsg, parameters, session);
 		log.debug(getLogPrefix()+"setting SOAPAction header ["+soapActionURI+"]");
 		method.setHeader("SOAPAction", soapActionURI);
 		return method;

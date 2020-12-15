@@ -239,7 +239,7 @@ public class StreamPipe extends FixedForwardPipe {
 								throw new PipeRunException(this, errorMessage);
 							} else {
 								if (antiVirusFailureAsSoapFault) {
-									errorMessage = createSoapFaultMessage(errorMessage);
+									errorMessage = createSoapFaultMessage(errorMessage).asString();
 								}
 								if (StringUtils.isEmpty(getAntiVirusFailureReasonSessionKey())) {
 									return new PipeRunResult(antiVirusFailedForward, errorMessage);
@@ -270,7 +270,7 @@ public class StreamPipe extends FixedForwardPipe {
 		}
 	}
 
-	private String createSoapFaultMessage(String errorMessage) throws PipeRunException {
+	private Message createSoapFaultMessage(String errorMessage) throws PipeRunException {
 		try {
 			return SoapWrapper.getInstance().createSoapFaultMessage(errorMessage);
 		} catch (ConfigurationException e) {

@@ -241,22 +241,24 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				return new PipeRunResult(getForward(), message);
 			}
 		}
-		String result;
+		Message result;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {
-				String payload = message.asString();
+				Message payload = message;
 				if (rootTp != null) {
-					payload = rootTp.transform(payload, null, true);
+					payload = new Message(rootTp.transform(payload.asSource()));
 				}
 				if (outputNamespaceTp != null) {
-					payload = outputNamespaceTp.transform(payload, null, true);
+					payload = new Message(outputNamespaceTp.transform(payload.asSource()));
 				}
 				Map<String,Object> parameterValues = null;
 				if (getParameterList()!=null && (soapHeaderTp != null || soapBodyTp != null)) {
-					parameterValues = getParameterList().getValues(new Message(payload), session).getValueMap();
+					payload.preserve();
+					parameterValues = getParameterList().getValues(payload, session).getValueMap();
 				}
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
+					payload.preserve();
 					soapHeader = soapHeaderTp.transform(payload, parameterValues);
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
@@ -264,14 +266,14 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					}
 				}
 				if (soapBodyTp != null) {
-					payload = soapBodyTp.transform(payload, parameterValues);
+					payload = new Message(soapBodyTp.transform(payload, parameterValues));
 				}
 
 				result = wrapMessage(payload, soapHeader, session);
 			} else { // direction==unwrap
 				message.preserve();
-				result = unwrapMessage(message, session).asString();
-				if (StringUtils.isEmpty(result)) {
+				result = unwrapMessage(message, session);
+				if (Message.isEmpty(result)) {
 					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body is empty or message is not a SOAP Message");
 				}
 				if (!isIgnoreSoapFault() && soapWrapper.getFaultCount(message) > 0) {
@@ -282,13 +284,13 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					session.put(getSoapHeaderSessionKey(), soapHeader);
 				}
 				if (removeOutputNamespacesTp != null) {
-					result = removeOutputNamespacesTp.transform(result, null, true);
+					result = new Message(removeOutputNamespacesTp.transform(result.asSource()));
 				}
 				if (removeUnusedOutputNamespacesTp != null) {
-					result = removeUnusedOutputNamespacesTp.transform(result, null, true);
+					result = new Message(removeUnusedOutputNamespacesTp.transform(result.asSource()));
 				}
 				if (rootTp != null) {
-					result = rootTp.transform(result, null, true);
+					result = new Message(rootTp.transform(result.asSource()));
 				}
 			}
 		} catch (Exception t) {
@@ -318,7 +320,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return soapWrapper.getBody(message, isAllowPlainXml(), session, getSoapNamespaceSessionKey());
 	}
 
-	protected String wrapMessage(String message, String soapHeader, IPipeLineSession session) throws DomBuilderException, TransformerException, IOException, SenderException {
+	protected Message wrapMessage(Message message, String soapHeader, IPipeLineSession session) throws DomBuilderException, TransformerException, IOException, SenderException {
 		String soapNamespace = determineSoapNamespace(session);
 		if (soapNamespace==null) {
 			return message;

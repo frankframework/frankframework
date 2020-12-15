@@ -278,11 +278,11 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 		}
 	}
 
-	public javax.jms.Message createMessage(Session session, String correlationID, String message) throws NamingException, JMSException {
+	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws NamingException, JMSException, IOException {
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
 		setMessageCorrelationID(textMessage, correlationID);
-		textMessage.setText(message);
+		textMessage.setText(message.asString());
 		return textMessage;
 	}
 
@@ -514,14 +514,13 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 		return messageConsumer;
 	}
 
-	// TODO: send functions could benefit from have Message messages instead of String
-	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException {
+	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException, IOException {
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, false);
 	}
-	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws NamingException, JMSException, SenderException {
+	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws NamingException, JMSException, SenderException, IOException {
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
 	}
-	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws NamingException, JMSException, SenderException {
+	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws NamingException, JMSException, SenderException, IOException {
 		javax.jms.Message msg = createMessage(session, correlationId, message);
 		MessageProducer mp;
 		try {
@@ -627,8 +626,7 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 		throws NamingException, JMSException {
 		return send(session, dest, message, false);
 	}
-	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException)
-			throws NamingException, JMSException {
+	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws NamingException, JMSException {
 		try {
 			if (useJms102()) {
 				if (dest instanceof Topic) {

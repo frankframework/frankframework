@@ -40,6 +40,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -165,7 +166,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		if (isSoap()) {
 			try {
 				log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
-				String request = soapWrapper.getBody(message);
+				String request = soapWrapper.getBody(new Message(message)).asString();
 				String result = super.processRequest(correlationId, request, requestContext);
 
 				String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
@@ -173,7 +174,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 				if(SOAPConstants.SOAP_1_2_PROTOCOL.equals(soapProtocol))
 					soapNamespace = SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE;
 
-				String reply = soapWrapper.putInEnvelope(result, null, null, null, null, soapNamespace, null, false);
+				String reply = soapWrapper.putInEnvelope(new Message(result), null, null, null, null, soapNamespace, null, false).asString();
 				log.debug(getLogPrefix()+"replied SOAPMSG [" + reply + "]");
 				return reply;
 			} catch (Exception e) {

@@ -186,7 +186,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 					}
 				}
 				Map<String, Object> properties = getMessageProperties(threadContext);
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext).asString(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");
