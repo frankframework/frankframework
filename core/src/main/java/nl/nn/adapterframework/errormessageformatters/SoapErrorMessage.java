@@ -30,7 +30,7 @@ public class SoapErrorMessage extends ErrorMessageFormatter {
 	public String format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 
 		try {
-			return SoapWrapper.getInstance().createSoapFaultMessage(getErrorMessage(errorMessage, t));
+			return SoapWrapper.getInstance().createSoapFaultMessage(getErrorMessage(errorMessage, t)).asString();
 		} catch (Exception e) {
 			log.error("got error getting soapWrapper instance", e);
 			return super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
