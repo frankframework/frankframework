@@ -58,7 +58,6 @@ public class WebServiceSenderResultTest extends Mockito {
 
 		when(statusLine.getStatusCode()).thenReturn(statusCode);
 		when(httpResponse.getStatusLine()).thenReturn(statusLine);
-		when(httpResponse.getStatusLine().getStatusCode()).thenReturn(statusCode);
 
 		if(contentType != null) {
 			Header contentTypeHeader = new BasicHeader("Content-Type", contentType);
@@ -149,6 +148,21 @@ public class WebServiceSenderResultTest extends Mockito {
 		thrown.expectMessage("Missing start boundary");
 
 		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart2.txt", "multipart/form-data", 200);
+
+		IPipeLineSession pls = new PipeLineSessionBase();
+
+		sender.configure();
+		sender.open();
+
+		sender.sendMessage(new Message("tralala"), pls).asString();
+	}
+
+	@Test
+	public void soapFault() throws Exception {
+		thrown.expect(SenderException.class);
+		thrown.expectMessage("SOAP fault [soapenv:Client]: much error");
+
+		WebServiceSender sender = createWebServiceSenderFromFile("soapFault.txt", "text/xml", 500);
 
 		IPipeLineSession pls = new PipeLineSessionBase();
 

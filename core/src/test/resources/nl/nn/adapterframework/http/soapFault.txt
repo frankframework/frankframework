@@ -1,0 +1,9 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<soapenv:Fault>
+			<faultcode xsi:type = "xsd:string">soapenv:Client</faultcode>
+			<faultstring xsi:type = "xsd:string">much error</faultstring>
+		</soapenv:Fault>
+	</soapenv:Body>
+</soapenv:Envelope>

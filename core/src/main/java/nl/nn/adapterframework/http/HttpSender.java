@@ -585,7 +585,10 @@ public class HttpSender extends HttpSenderBase {
 			return Message.asMessage(headersXml.toXML());
 		}
 
-		return new Message(responseHandler.getResponse(), charset);
+		if (responseHandler.isMultipart()) {
+			log.error("message body is not handled as a multipart");
+		}
+		return responseHandler.getResponseMessage();
 	}
 
 	/**
@@ -594,7 +597,11 @@ public class HttpSender extends HttpSenderBase {
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler) {
 		String responseBody = null;
 		try {
-			responseBody = getResponseBody(responseHandler).asString();
+			Message responseMessage = getResponseBody(responseHandler);
+			if(responseMessage != null) {
+				responseMessage.preserve(); //asString preserves the Message as well, but just in case!
+				responseBody = responseMessage.asString();
+			}
 		} catch(IOException e) {
 			log.warn(getLogPrefix()+"unable to parse response", e);
 			return null;
@@ -613,7 +620,7 @@ public class HttpSender extends HttpSenderBase {
 		return responseBody;
 	}
 
-	public Message getResponseBodyAsBase64(InputStream is) throws IOException {
+	public Message getResponseBodyAsBase64(InputStream is) {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
 		return new Message( new Base64InputStream(is, true) );
 	}
@@ -621,44 +628,33 @@ public class HttpSender extends HttpSenderBase {
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the IPipeLineSession
 	 */
-	public static Message handleMultipartResponse(HttpResponseHandler httpHandler, IPipeLineSession session) throws IOException, SenderException {
-		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), session, httpHandler);
+	public static Message handleMultipartResponse(HttpResponseHandler httpHandler, IPipeLineSession session) throws IOException {
+		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), session);
 	}
 
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the IPipeLineSession
 	 */
-	public static Message handleMultipartResponse(String mimeType, InputStream inputStream, IPipeLineSession session, HttpResponseHandler httpHandler) throws IOException, SenderException {
+	public static Message handleMultipartResponse(String mimeType, InputStream inputStream, IPipeLineSession session) throws IOException {
 		Message result = null;
 		try {
-			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream);
+			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream); //the entire InputStream will be read here!
 			MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);
-				boolean lastPart = mimeMultipart.getCount() == i + 1;
 				if (i == 0) {
 					String charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 					ContentType contentType = ContentType.parse(bodyPart.getContentType());
 					if(contentType.getCharset() != null)
 						charset = contentType.getCharset().name();
 
-					//TODO When the steam is never read, the connection won't be closed. For now, always read the message.
-					InputStream bodyPartInputStream = bodyPart.getInputStream();
-					String resultString = Misc.streamToString(bodyPartInputStream, charset);
-
-					result = new Message(resultString);
-					if (lastPart) {
-						bodyPartInputStream.close();
-					}
+					result = new Message(bodyPart.getInputStream(), charset);
 				} else {
-					// When the last stream is read the
-					// httpMethod.releaseConnection() can be called, hence pass
-					// httpMethod to ReleaseConnectionAfterReadInputStream.
-					session.put("multipart" + i, new ReleaseConnectionAfterReadInputStream( lastPart ? httpHandler : null, bodyPart.getInputStream()));
+					session.put("multipart" + i, bodyPart.getInputStream());
 				}
 			}
 		} catch(MessagingException e) {
-			throw new SenderException("Could not read mime multipart response", e);
+			throw new IOException("Could not read mime multipart response", e);
 		}
 		return result;
 	}
