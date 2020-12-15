@@ -102,6 +102,7 @@ public class SoapWrapper {
 		String faultCode = null;
 		int faultCount = 0;
 		try {
+			responseBody.preserve();
 			faultCount = getFaultCount(responseBody);
 			log.debug("fault count=" + faultCount);
 			if (faultCount > 0) {

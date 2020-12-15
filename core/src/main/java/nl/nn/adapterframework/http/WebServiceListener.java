@@ -149,7 +149,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	}
 
 	@Override
-	public String processRequest(String correlationId, String message, Map<String, Object> requestContext) throws ListenerException {
+	public Message processRequest(String correlationId, Message message, Map<String, Object> requestContext) throws ListenerException {
 		if (!attachmentSessionKeysList.isEmpty()) {
 			XmlBuilder xmlMultipart = new XmlBuilder("parts");
 			for(String attachmentSessionKey: attachmentSessionKeysList) {
@@ -166,15 +166,15 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		if (isSoap()) {
 			try {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
-				String request = soapWrapper.getBody(new Message(message)).asString();
-				String result = super.processRequest(correlationId, request, requestContext);
+				Message request = soapWrapper.getBody(message);
+				Message result = super.processRequest(correlationId, request, requestContext);
 
 				String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
 				String soapProtocol = (String) requestContext.get("soapProtocol");
 				if(SOAPConstants.SOAP_1_2_PROTOCOL.equals(soapProtocol)) {
 					soapNamespace = SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE;
 				}
-				String reply = soapWrapper.putInEnvelope(new Message(result), null, null, null, null, soapNamespace, null, false).asString();
+				Message reply = soapWrapper.putInEnvelope(result, null, null, null, null, soapNamespace, null, false);
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"replied SOAPMSG [" + reply + "]");
 				return reply;
 			} catch (Exception e) {
