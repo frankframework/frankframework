@@ -50,7 +50,6 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -94,6 +93,9 @@ public class TransactionalStorage extends Base {
 		else
 			storage = receiver.getErrorStorageBrowser();
 
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
+
 		return getMessage(storage, receiver.getListener(), messageId);
 	}
 
@@ -125,6 +127,9 @@ public class TransactionalStorage extends Base {
 			storage = receiver.getMessageLogBrowser();
 		else
 			storage = receiver.getErrorStorageBrowser();
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		return getMessage(storage, receiver.getListener(), messageId);
 	}
@@ -217,6 +222,9 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
+
 		resendMessage(receiver, messageId);
 
 		return Response.status(Response.Status.OK).build();
@@ -290,6 +298,9 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
+
 		deleteMessage(receiver.getErrorStorageBrowser(), messageId);
 
 		return Response.status(Response.Status.OK).build();
@@ -362,6 +373,9 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Pipe ["+pipeName+"] not found!");
 		}
 
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
+
 		return getMessage(pipe.getMessageLog(), messageId);
 	}
 
@@ -385,6 +399,9 @@ public class TransactionalStorage extends Base {
 		if(pipe == null) {
 			throw new ApiException("Pipe ["+pipeName+"] not found!");
 		}
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		return getMessage(pipe.getMessageLog(), messageId);
 	}
@@ -550,7 +567,7 @@ public class TransactionalStorage extends Base {
 	private Map<String, Object> getMessages(IMessageBrowser transactionalStorage, MessageBrowsingFilter filter) {
 		int messageCount = 0;
 		try {
-			messageCount = ((ITransactionalStorage) transactionalStorage).getMessageCount();
+			messageCount = transactionalStorage.getMessageCount();
 		} catch (Exception e) {
 			log.warn(e);
 			messageCount = -1;
@@ -568,8 +585,7 @@ public class TransactionalStorage extends Base {
 			List<Object> messages = new LinkedList<Object>();
 			
 			for (count=0; iterator.hasNext(); ) {
-				IMessageBrowsingIteratorItem iterItem = iterator.next();
-				try {
+				try (IMessageBrowsingIteratorItem iterItem = iterator.next()) {
 					if(!filter.matchAny(iterItem))
 						continue;
 
@@ -594,8 +610,6 @@ public class TransactionalStorage extends Base {
 						log.warn("stopped iterating messages after ["+count+"]: limit reached");
 						break;
 					}
-				} finally {
-					iterItem.release();
 				}
 			}
 			returnObj.put("messages", messages);

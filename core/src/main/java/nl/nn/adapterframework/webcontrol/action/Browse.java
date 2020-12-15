@@ -37,7 +37,6 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -190,7 +189,7 @@ public class Browse extends ActionBase {
 			listener = receiver.getListener();
 		}
 		try {
-			logCount = "(" + ((ITransactionalStorage) mb).getMessageCount() + ")";
+			logCount = "(" + mb.getMessageCount() + ")";
 		} catch (Exception e) {
 			log.warn(e);
 			logCount = "(?)";
@@ -220,8 +219,7 @@ public class Browse extends ActionBase {
 				FileViewerServlet.showReaderContents(new StringReader(msg),"msg"+messageId,type,response,"message ["+messageId+"]");
 				return null;
 			} else {
-				IMessageBrowsingIterator mbi=mb.getIterator(startDate, endDate, SortOrder.NONE);
-				try {
+				try (IMessageBrowsingIterator mbi=mb.getIterator(startDate, endDate, SortOrder.NONE)) {
 					XmlBuilder messages=new XmlBuilder("messages");
 					messages.addAttribute("storageType",storageType);
 					messages.addAttribute("action",action);
@@ -235,8 +233,7 @@ public class Browse extends ActionBase {
  					}
 					int messageCount;
 					for (messageCount=0; mbi.hasNext(); ) {
-						IMessageBrowsingIteratorItem iterItem = mbi.next();
-						try {
+						try (IMessageBrowsingIteratorItem iterItem = mbi.next()) {
 							String cType=iterItem.getType();
 							String cHost=iterItem.getHost();
 							String cId=iterItem.getId();
@@ -313,21 +310,17 @@ public class Browse extends ActionBase {
 								log.warn("stopped iterating messages after ["+messageCount+"]: limit reached");
 								break;
 							}
-						} finally {
-							iterItem.release();
 						}
 					}
 					messages.addAttribute("messageCount",Integer.toString(messageCount-skipMessages));
 					request.setAttribute("messages",messages.toXML());
-				} finally {
-					mbi.close();
 				}
 			}
 		} catch (Throwable e) {
 			error("Caught Exception", e);
 			throw new ServletException(e);
 		}
-		
+
 		if (!errors.isEmpty()) {
 			saveErrors(request, errors);
 		}		

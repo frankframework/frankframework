@@ -110,7 +110,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	}
 
 	@Test
-	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException, IOException {
+	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
 		fileSystemSender.setAction("createBucket");
 
 		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
@@ -124,7 +124,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	}
 
 	@Test
-	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException, IOException {
+	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
 		fileSystemSender.setAction("deleteBucket");
 
 		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);

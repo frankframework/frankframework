@@ -68,9 +68,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private int numberOfBackups=0;
 	private boolean fileTimeSensitive=false;
 	private String messageType="path";
-	private String messageIdProperty = null;
+	private String messageIdPropertyKey = null;
 	
 	private boolean disableMessageBrowsers = false;
+	
 
 	private long minStableTime = 1000;
 //	private Long fileListFirstFileFound;
@@ -192,7 +193,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 				}
 				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
+					if (threadContext!=null) threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
 					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
 					return inprocessFile;
 				}
@@ -278,32 +279,34 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			filename=fileSystem.getName(rawMessage);
 			Map <String,Object> attributes = fileSystem.getAdditionalFileProperties(rawMessage);
 			String messageId = null;
-			if (StringUtils.isNotEmpty(getMessageIdProperty())) {
+			if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
 				if (attributes != null) {
-					messageId = (String)attributes.get(getMessageIdProperty());
+					messageId = (String)attributes.get(getMessageIdPropertyKey());
 				}
 				if (StringUtils.isEmpty(messageId)) {
-					log.warn("no attribute ["+getMessageIdProperty()+"] found, will use filename as messageId");
+					log.warn("no attribute ["+getMessageIdPropertyKey()+"] found, will use filename as messageId");
 				}
 			}
-			if (StringUtils.isEmpty(messageId)) {
+			if (StringUtils.isEmpty(messageId) && threadContext!=null) {
 				messageId = (String)threadContext.get(ORIGINAL_FILENAME_KEY);
-				if (StringUtils.isEmpty(messageId)) {
-					messageId = fileSystem.getName(rawMessage);
-				}
+			}
+			if (StringUtils.isEmpty(messageId)) {
+				messageId = fileSystem.getName(rawMessage);
 			}
 			if (isFileTimeSensitive()) {
 				messageId+="-"+DateUtils.format(fileSystem.getModificationTime(file));
 			}
-			PipeLineSessionBase.setListenerParameters(threadContext, messageId, messageId, null, null);
-			if (attributes!=null) {
-				threadContext.putAll(attributes);
-			}
-			if (!"path".equals(getMessageType())) {
-				threadContext.put("filepath", fileSystem.getCanonicalName(rawMessage));
-			}
-			if (!"name".equals(getMessageType())) {
-				threadContext.put("filename", fileSystem.getName(rawMessage));
+			if (threadContext!=null) {
+				PipeLineSessionBase.setListenerParameters(threadContext, messageId, messageId, null, null);
+				if (attributes!=null) {
+					threadContext.putAll(attributes);
+				}
+				if (!"path".equals(getMessageType())) {
+					threadContext.put("filepath", fileSystem.getCanonicalName(rawMessage));
+				}
+				if (!"name".equals(getMessageType())) {
+					threadContext.put("filename", fileSystem.getName(rawMessage));
+				}
 			}
 			return messageId;
 		} catch (Exception e) {
@@ -311,28 +314,26 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	@Override
-	public IMessageBrowser<F> getInProcessBrowser() {
-		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getInProcessFolder())) {
+	protected IMessageBrowser<F> getMessageBrowser(String folder) {
+		if (isDisableMessageBrowsers() || StringUtils.isEmpty(folder)) {
 			return null;
 		}
-		return new FileSystemMessageBrowser<F, FS>(fileSystem, getInProcessFolder());
+		return new FileSystemMessageBrowser<F, FS>(fileSystem, folder, getMessageIdPropertyKey());
+	}	
+	
+	@Override
+	public IMessageBrowser<F> getInProcessBrowser() {
+		return getMessageBrowser(getInProcessFolder());
 	}
 
 	@Override
 	public IMessageBrowser<F> getMessageLogBrowser() {
-		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getProcessedFolder())) {
-			return null;
-		}
-		return new FileSystemMessageBrowser<F, FS>(fileSystem, getProcessedFolder());
+		return getMessageBrowser(getProcessedFolder());
 	}
 	
 	@Override
 	public IMessageBrowser<F> getErrorStoreBrowser() {
-		if (isDisableMessageBrowsers() || StringUtils.isEmpty(getErrorFolder())) {
-			return null;
-		}
-		return new FileSystemMessageBrowser<F, FS>(fileSystem, getErrorFolder());
+		return getMessageBrowser(getErrorFolder());
 	}
 
 	@Override
@@ -483,12 +484,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return minStableTime;
 	}
 
-	@IbisDoc({"14", "Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId", "for MailFileSystems: Message-ID"})
-	public void setMessageIdProperty(String messageIdProperty) {
-		this.messageIdProperty = messageIdProperty;
+	@IbisDoc({"14", "Key of Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId", "for MailFileSystems: Message-ID"})
+	public void setMessageIdPropertyKey(String messageIdPropertyKey) {
+		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
-	public String getMessageIdProperty() {
-		return messageIdProperty;
+	public String getMessageIdPropertyKey() {
+		return messageIdPropertyKey;
 	}
 
 	@IbisDoc({"15", "If set <code>true</code>, no browsers for process folders are generated", "false"})

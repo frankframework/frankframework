@@ -1221,7 +1221,7 @@ angular.module('iaf.beheerconsole')
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
 
-		Api.Delete($scope.base_url+"/"+message.id, function() {
+		Api.Delete($scope.base_url+"/"+encodeURIComponent(encodeURIComponent(message.id)), function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
 			$scope.addNote("success", "Successfully deleted message with ID: "+message.id);
@@ -1233,13 +1233,13 @@ angular.module('iaf.beheerconsole')
 		}, false);
 	};
 	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/"+messageId+"/download");
+		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
 	};
 
 	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
 
-		Api.Put($scope.base_url+"/"+message.id, false, function() {
+		Api.Put($scope.base_url+"/"+encodeURIComponent(encodeURIComponent(message.id)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
 			$scope.addNote("success", "Successfully resent message with ID: "+message.id);
@@ -1428,7 +1428,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	Api.Get($scope.base_url+"/"+$scope.message.id, function(data) {
+	Api.Get($scope.base_url+"/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
 		$scope.message.data = data;
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {
@@ -1466,7 +1466,7 @@ angular.module('iaf.beheerconsole')
 
 	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog";
 	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
+		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
 	};
 
 	$scope.updateTable = function() {
@@ -1558,7 +1558,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog/"+$scope.message.id;
+	var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog/"+encodeURIComponent(encodeURIComponent($scope.message.id));
 	Api.Get(url, function(data) {
 		$scope.message.data = data;
 	}, function(_, statusCode, statusText) {
@@ -1583,7 +1583,7 @@ angular.module('iaf.beheerconsole')
 
 	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog";
 	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+messageId+"/download");
+		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
 	};
 
 	$scope.updateTable = function() {
@@ -1675,7 +1675,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	var url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog/"+$scope.message.id;
+	var url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog/"+encodeURIComponent(encodeURIComponent($scope.message.id));
 	Api.Get(url, function(data) {
 		$scope.message.data = data;
 	}, function(_, statusCode, statusText) {

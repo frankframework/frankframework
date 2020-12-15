@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
+public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritableFileSystem<SmbFile> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -81,12 +81,7 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-
-	}
-
-	@Override
-	public void close() {
-		// Automatically closes
+		super.open();
 	}
 
 	@Override

@@ -41,6 +41,7 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.Transport;
 import javax.mail.UIDFolder;
+import javax.mail.URLName;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -59,41 +60,34 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
-public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
+public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String host = "";
 	private @Getter int port = 993;
 	
-	private Store store = null;
-	private Session emailSession;
-	private IMAPFolder basefolderRef; 
+	private Session emailSession = Session.getInstance(System.getProperties());
 
-
+	
 	@Override
 	public void configure() throws ConfigurationException {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void open() throws FileSystemException {
-		emailSession = Session.getInstance(System.getProperties());
-		// emailSession.setDebug(true);
-
-		try {
-			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			store = emailSession.getStore("imaps");
-			store.connect(getHost(), getPort(), cf.getUsername(), cf.getPassword());
-			findBaseFolder();
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
+		if (StringUtils.isEmpty(getHost())) {
+			throw new ConfigurationException("attribute host needs to be specified");
 		}
 	}
 
-	private void findBaseFolder() throws FileSystemException {
+
+	@Override
+	protected IMAPFolder createConnection() throws FileSystemException {
 		try {
+			// emailSession.setDebug(true);
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			Store store = emailSession.getStore("imaps");
+			store.connect(getHost(), getPort(), cf.getUsername(), cf.getPassword());
+
 			IMAPFolder inbox = (IMAPFolder)store.getFolder("INBOX");
 			IMAPFolder folder;
 			String baseFolder = getBaseFolder();
@@ -108,30 +102,28 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 			} else {
 				folder = inbox;
 			}
-			basefolderRef = folder;
+			return folder;
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
-
-	private IMAPFolder getFolder(String name) throws MessagingException {
-		IMAPFolder folder = basefolderRef;
-		if (StringUtils.isNotEmpty(name)) {
-			folder = (IMAPFolder)folder.getFolder(name);
+	@Override
+	protected void closeConnection(IMAPFolder folder) throws FileSystemException {
+		try (Store store = folder.getStore()) {
+			if (folder.isOpen()) {
+				folder.close();
+			}
+		} catch (MessagingException e) {
+			throw new FileSystemException(e);
 		}
-		return folder;
 	}
 
-	@Override
-	public void close() throws FileSystemException {
-		if (store != null) {
-			try {
-				store.close();
-			} catch (MessagingException e) {
-				throw new FileSystemException(e);
-			}
+	private IMAPFolder getFolder(IMAPFolder baseFolder, String name) throws MessagingException, FileSystemException {
+		if (StringUtils.isNotEmpty(name)) {
+			return (IMAPFolder)baseFolder.getFolder(name);
 		}
+		return baseFolder;
 	}
 
 	private String uidToName(long uid) {
@@ -159,14 +151,18 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 
 	@Override
 	public Message toFile(String defaultFolder, String filename) throws FileSystemException {
+		IMAPFolder baseFolder = getConnection();
 		try {
-			IMAPFolder folder = getFolder(defaultFolder);
+			IMAPFolder folder = getFolder(baseFolder, defaultFolder);
 			if (!folder.isOpen()) {
 				folder.open(Folder.READ_WRITE);
 			}
 			return folder.getMessageByUID(nameToUid(filename));
 		} catch (MessagingException e) {
+			invalidateConnection(baseFolder);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(baseFolder);
 		}
 	}
 
@@ -182,25 +178,52 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 	}
 
 	@Override
-	public boolean folderExists(String folder) throws FileSystemException {
+	public boolean folderExists(String foldername) throws FileSystemException {
+		IMAPFolder baseFolder = getConnection();
 		try {
-			return getFolder(folder).exists();
+			IMAPFolder folder = getFolder(baseFolder, foldername);
+			return folder.exists();
 		} catch (MessagingException e) {
+			invalidateConnection(baseFolder);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(baseFolder);
+		}
+	}
+
+	@Override
+	public int getNumberOfFilesInFolder(String foldername) throws FileSystemException {
+		IMAPFolder baseFolder = getConnection();
+		try {
+			IMAPFolder folder = getFolder(baseFolder, foldername);
+			if (!folder.isOpen()) {
+				folder.open(Folder.READ_WRITE);
+			}
+			Message messages[] = folder.getMessages();
+			return messages.length;
+		} catch (MessagingException e) {
+			invalidateConnection(baseFolder);
+			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(baseFolder);
 		}
 	}
 
 	@Override
 	public DirectoryStream<Message> listFiles(String foldername) throws FileSystemException {
+		IMAPFolder baseFolder = getConnection();
 		try {
-			Folder folder = getFolder(foldername);
+			IMAPFolder folder = getFolder(baseFolder, foldername);
 			if (!folder.isOpen()) {
 				folder.open(Folder.READ_WRITE);
 			}
 			Message messages[] = folder.getMessages();
 			return FileSystemUtils.getDirectoryStream(Arrays.asList(messages));
 		} catch (MessagingException e) {
+			invalidateConnection(baseFolder);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(baseFolder);
 		}
 	}
 
@@ -215,9 +238,10 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 
 	@Override
 	public Message moveFile(Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		IMAPFolder baseFolder = getConnection();
 		try {
 			AppendUID results[];
-			try (IMAPFolder destination = getFolder(destinationFolder)) {
+			try (IMAPFolder destination = getFolder(baseFolder, destinationFolder)) {
 				Message messages[] = new Message[1];
 				messages[0] = f;
 				destination.open(Folder.READ_WRITE);
@@ -228,20 +252,23 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 				log.warn("could not find new name of message in folder [" + destinationFolder + "]");
 				return null;
 			}
-			IMAPFolder destination = getFolder(destinationFolder);
+			IMAPFolder destination = getFolder(baseFolder, destinationFolder);
 			destination.open(Folder.READ_WRITE);
 			return destination.getMessageByUID(results[0].uid);
 		} catch (MessagingException e) {
+			invalidateConnection(baseFolder);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(baseFolder);
 		}
 	}
 
 	@Override
-	public Message copyFile(final Message f, String destinationFolder, boolean createFolder)
-			throws FileSystemException {
+	public Message copyFile(final Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		IMAPFolder baseFolder = getConnection();
 		try {
 			AppendUID results[];
-			try (IMAPFolder destination = getFolder(destinationFolder)) {
+			try (IMAPFolder destination = getFolder(baseFolder, destinationFolder)) {
 				Message messages[] = new Message[1];
 				messages[0] = f;
 				destination.open(Folder.READ_WRITE);
@@ -252,30 +279,38 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 				log.warn("could not find new name of message in folder [" + destinationFolder + "]");
 				return null;
 			}
-			IMAPFolder destination = getFolder(destinationFolder);
+			IMAPFolder destination = getFolder(baseFolder, destinationFolder);
 			destination.open(Folder.READ_WRITE);
 			return destination.getMessageByUID(results[0].uid);
 		} catch (MessagingException e) {
+			invalidateConnection(baseFolder);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(baseFolder);
 		}
 	}
 
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
+		IMAPFolder baseFolder = getConnection();
 		try {
-			Folder folder = getFolder(folderName);
+			IMAPFolder folder = getFolder(baseFolder, folderName);
 			if (!folder.create(Folder.HOLDS_FOLDERS + Folder.HOLDS_MESSAGES)) {
 				throw new FileSystemException("Could not create folder [" + folderName + "]");
 			}
 		} catch (MessagingException e) {
+			invalidateConnection(baseFolder);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(baseFolder);
 		}
 	}
 
 	@Override
 	public void removeFolder(String folderName) throws FileSystemException {
+		IMAPFolder baseFolder = getConnection();
 		try {
-			Folder folder = getFolder(folderName);
+			IMAPFolder folder = getFolder(baseFolder, folderName);
 			if (folder == null) {
 				throw new FileSystemException("Could not find folder object [" + folderName + "]");
 			}
@@ -283,7 +318,10 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 				throw new FileSystemException("Could not delete folder [" + folderName + "]");
 			}
 		} catch (MessagingException e) {
+			invalidateConnection(baseFolder);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(baseFolder);
 		}
 	}
 
@@ -457,6 +495,14 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 		return Arrays.asList(recipients).stream().map(InternetAddress::toUnicodeString).collect(Collectors.toList());
 	}
 
+	private List<String> getReplyTo(Message f) throws MessagingException {
+		InternetAddress[] recipients = (InternetAddress[]) f.getReplyTo();
+		if (recipients == null) {
+			return Collections.emptyList();
+		}
+		return Arrays.asList(recipients).stream().map(InternetAddress::toUnicodeString).collect(Collectors.toList());
+	}
+
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(Message f) throws FileSystemException {
 		try {
@@ -466,15 +512,14 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 			result.put(IMailFileSystem.BCC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.BCC));
 			result.put(IMailFileSystem.FROM_ADDRESS_KEY, InternetAddress.toUnicodeString(f.getFrom()));
 			// result.put(IMailFileSystem.SENDER_ADDRESS_KEY, f.getS);
-			result.put(IMailFileSystem.REPLY_TO_RECEPIENTS_KEY, Arrays.asList(f.getReplyTo()));
+			result.put(IMailFileSystem.REPLY_TO_RECEPIENTS_KEY, getReplyTo(f));
 			result.put(IMailFileSystem.DATETIME_SENT_KEY, f.getSentDate());
 			result.put(IMailFileSystem.DATETIME_RECEIVED_KEY, f.getReceivedDate());
 			for (Enumeration<Header> headerEnum = f.getAllHeaders(); headerEnum.hasMoreElements();) {
 				Header header = headerEnum.nextElement();
 				result.put(header.getName(), header.getValue());
 			}
-			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY,
-					MailFileSystemUtils.findBestReplyAddress(result, getReplyAddressFields()));
+			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY, MailFileSystemUtils.findBestReplyAddress(result, getReplyAddressFields()));
 			return result;
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
@@ -515,7 +560,18 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart> {
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return store.getURLName().toString();
+		URLName urlName = null;
+		if (isOpen()) {
+			try {
+				IMAPFolder baseFolder = getConnection();
+				urlName = baseFolder.getStore().getURLName();
+				releaseConnection(baseFolder);
+			} catch (FileSystemException e) {
+				log.warn("cannot get urlName", e);
+			}
+		}
+		String name = urlName == null ? "<no url>" : urlName.toString();
+		return Misc.concatStrings(name," ", super.getPhysicalDestinationName());
 	}
 
 	@Override

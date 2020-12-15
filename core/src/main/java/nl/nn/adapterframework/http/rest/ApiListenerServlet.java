@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -33,6 +32,13 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
@@ -42,13 +48,8 @@ import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 /**
  * 
@@ -94,7 +95,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		Map<String, Boolean> config = new HashMap<>();
 		config.put(JsonGenerator.PRETTY_PRINTING, true);
 		JsonWriterFactory factory = Json.createWriterFactory(config);
-		try (JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), Charset.forName("UTF-8"))) {
+		try (JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), StreamUtil.DEFAULT_CHARSET)) {
 			jsonWriter.write(json);
 		}
 	}

@@ -61,6 +61,12 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		
 	}
 
+	@Override
+	public boolean isOpen() {
+		return opened;
+	}
+
+
 	private void checkOpenAndExists(MockFile f) throws FileSystemException {
 		checkOpen();
 		MockFolder folder = f.getOwner();
@@ -113,6 +119,19 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return (M)new MockFile(filename,destFolder);
 	}
 
+	@Override
+	public int getNumberOfFilesInFolder(String folderName) throws FileSystemException {
+		checkOpen();
+		MockFolder folder=folderName==null?this:getFolders().get(folderName);
+		if (folder==null) {
+			throw new FileSystemException("folder ["+folderName+"] is null");
+		}
+		Map<String,MockFile>files = folder.getFiles();
+		if (files==null) {
+			throw new FileSystemException("files in folder ["+folderName+"] is null");
+		}
+		return files.size();
+	}
 	@Override
 	public DirectoryStream<M> listFiles(String folderName) throws FileSystemException {
 		checkOpen();
@@ -285,6 +304,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	public String getPhysicalDestinationName() {
 		return "Mock!";
 	}
+
 
 
 

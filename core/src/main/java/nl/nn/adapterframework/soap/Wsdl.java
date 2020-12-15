@@ -50,6 +50,7 @@ import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
@@ -880,7 +881,7 @@ public class Wsdl {
                     warn("Attribute queueConnectionFactoryName empty for listener '" + listener.getName() + "'");
                 } else {
                     try {
-                        qcf = URLEncoder.encode(qcf, "UTF-8");
+                        qcf = URLEncoder.encode(qcf, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
                     } catch (UnsupportedEncodingException e) {
                         warn("Could not encode queueConnectionFactoryName for listener '" + listener.getName() + "'");
                     }
@@ -890,7 +891,7 @@ public class Wsdl {
                     warn("Property dtap.stage empty");
                 } else {
                     try {
-                        stage = URLEncoder.encode(stage, "UTF-8");
+                        stage = URLEncoder.encode(stage, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
                     } catch (UnsupportedEncodingException e) {
                         warn("Could not encode property dtap.stage");
                     }

@@ -26,7 +26,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Gerrit van Brakel
  *
  */
-public abstract class MailFileSystemBase<M,A> implements IMailFileSystem<M,A> {
+public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends ConnectedFileSystemBase<M,C> implements IMailFileSystem<M,A> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String authAlias;
@@ -34,10 +34,12 @@ public abstract class MailFileSystemBase<M,A> implements IMailFileSystem<M,A> {
 	private String password;
 	private String basefolder;
 	private boolean readMimeContents=false;
-	private int maxNumberOfMessagesToList=100;
 	private String replyAddressFields = REPLY_ADDRESS_FIELDS_DEFAULT;
 
-
+	@Override
+	public String getPhysicalDestinationName() {
+		return "baseFolder ["+getBaseFolder()+"]";
+	}
 
 	@IbisDoc({"1", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " + 
 			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " + 
@@ -82,15 +84,7 @@ public abstract class MailFileSystemBase<M,A> implements IMailFileSystem<M,A> {
 		return readMimeContents;
 	}
 
-	@IbisDoc({"6", "The maximum number of messages to be retrieved from a folder", "100"})
-	public void setMaxNumberOfMessagesToList(int maxNumberOfMessagesToList) {
-		this.maxNumberOfMessagesToList = maxNumberOfMessagesToList;
-	}
-	public int getMaxNumberOfMessagesToList() {
-		return maxNumberOfMessagesToList;
-	}
-
-	@IbisDoc({"7", "Comma separated list of fields to try as response address", REPLY_ADDRESS_FIELDS_DEFAULT})
+	@IbisDoc({"6", "Comma separated list of fields to try as response address", REPLY_ADDRESS_FIELDS_DEFAULT})
 	public void setReplyAddressFields(String replyAddressFields) {
 		this.replyAddressFields = replyAddressFields;
 	}
@@ -98,6 +92,5 @@ public abstract class MailFileSystemBase<M,A> implements IMailFileSystem<M,A> {
 	public String getReplyAddressFields() {
 		return replyAddressFields;
 	}
-
 
 }

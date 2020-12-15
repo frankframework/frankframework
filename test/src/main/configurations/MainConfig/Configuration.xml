@@ -6,6 +6,7 @@
 	<!ENTITY Zip SYSTEM "./ConfigurationZip.xml">
 	<!ENTITY ErrorMessageFormatter SYSTEM "./ConfigurationErrorMessageFormatter.xml">
 	<!ENTITY ExceptionPipe SYSTEM "./ConfigurationExceptionPipe.xml">
+	<!ENTITY ExchangeMail SYSTEM "./ConfigurationExchangeMail.xml">
 	<!ENTITY ReplacerPipe SYSTEM "./ConfigurationReplacerPipe.xml">
 	<!ENTITY ReplaceInputAndPreserve SYSTEM "./ConfigurationReplaceInputAndPreserve.xml">
 	<!ENTITY CompareStringPipe SYSTEM "./ConfigurationCompareStringPipe.xml">
@@ -65,6 +66,7 @@
 	&Zip;
 	&ErrorMessageFormatter;
 	&ExceptionPipe;
+	&ExchangeMail;
 	&ReplacerPipe;
 	&ReplaceInputAndPreserve;
 	&CompareStringPipe;

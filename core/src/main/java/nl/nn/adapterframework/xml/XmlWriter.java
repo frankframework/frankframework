@@ -84,7 +84,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public void startDocument() throws SAXException {
 		try {
 			if (includeXmlDeclaration) {
-				writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+				writer.append("<?xml version=\"1.0\" encoding=\""+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"\"?>");
 				if (newlineAfterXmlDeclaration) {
 					writer.append("\n");
 				}

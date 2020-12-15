@@ -76,7 +76,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-public class Samba2FileSystem implements IWritableFileSystem<String> {
+public class Samba2FileSystem extends FileSystemBase<String> implements IWritableFileSystem<String> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -131,10 +131,12 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot connect to samba server", e);
 		}
+		super.open();
 	}
 
 	@Override
 	public void close() throws FileSystemException {
+		super.close();
 		try {
 			if(diskShare != null) {
 				diskShare.close();

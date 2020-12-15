@@ -73,7 +73,7 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	 * Deletes the message.
 	 */
 	public void deleteMessage(String storageKey) throws ListenerException;
-	public int getMessageCount() throws ListenerException;
+	public int getMessageCount() throws ListenerException; // may return -1 when the count cannot be determined
 
 	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
 	public void setHideRegex(String hideRegex);

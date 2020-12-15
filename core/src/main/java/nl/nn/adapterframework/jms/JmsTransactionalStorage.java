@@ -94,9 +94,9 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	}
 
 	@Override
-	public S browseMessage(String messageId) throws ListenerException {
+	public S browseMessage(String storageKey) throws ListenerException {
 		try {
-			ObjectMessage msg=browseJmsMessage(messageId);
+			ObjectMessage msg=browseJmsMessage(storageKey);
 			return(S)msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
@@ -104,9 +104,9 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	}
 
 	@Override
-	public S getMessage(String messageId) throws ListenerException {
+	public S getMessage(String storageKey) throws ListenerException {
 		try {
-			ObjectMessage msg=getJmsMessage(messageId);
+			ObjectMessage msg=getJmsMessage(storageKey);
 		return (S)msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,11 +33,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javanet.staxutils.XMLStreamEventWriter;
-import javanet.staxutils.XMLStreamUtils;
-import javanet.staxutils.events.AttributeEvent;
-import javanet.staxutils.events.StartElementEvent;
-
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -50,11 +44,16 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import org.apache.logging.log4j.Logger;
+
+import javanet.staxutils.XMLStreamEventWriter;
+import javanet.staxutils.XMLStreamUtils;
+import javanet.staxutils.events.AttributeEvent;
+import javanet.staxutils.events.StartElementEvent;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * @author Michiel Meeuwissen
@@ -440,13 +439,8 @@ public class SchemaUtils {
 	}
 
 
-	public static InputStream toInputStream(
-			javax.wsdl.Definition wsdlDefinition,
-			javax.wsdl.extensions.schema.Schema wsdlSchema
-			) throws javax.wsdl.WSDLException,
-			UnsupportedEncodingException {
-		return new ByteArrayInputStream(
-				toString(wsdlDefinition, wsdlSchema).getBytes("UTF-8"));
+	public static InputStream toInputStream(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
+		return new ByteArrayInputStream(toString(wsdlDefinition, wsdlSchema).getBytes(StreamUtil.DEFAULT_CHARSET));
 	}
 
 	public static String toString(

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.util.Collections;
 import java.util.Date;
@@ -79,6 +80,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -101,7 +103,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  * @author Gerrit van Brakel
  *
  */
-public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment> {
+public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
 
 	private String mailAddress;
 	private boolean validateAllRedirectUrls=true;
@@ -116,9 +118,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private String proxyAuthAlias = null;
 	private String proxyDomain = null;
 
-	private ExchangeService exchangeService;
 	private FolderId basefolderId;
-
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -134,141 +134,158 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	
 	@Override
 	public void open() throws FileSystemException {
-		try {
-			exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
-			
-			String defaultUsername = StringUtils.isEmpty(getAccessToken())? getUsername() : null;
-			String defaultPassword = StringUtils.isEmpty(getAccessToken())? getPassword() : getAccessToken();
+		super.open();
+		log.debug("searching inbox");
+		FolderId inboxId;
+		if (StringUtils.isNotEmpty(getMailAddress())) {
+			Mailbox mailbox = new Mailbox(getMailAddress());
+			inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
+		} else {
+			inboxId = new FolderId(WellKnownFolderName.Inbox);
+		}
+		log.debug("determined inbox ["+inboxId+"] foldername ["+inboxId.getFolderName()+"]");
 
-			CredentialFactory cf = new CredentialFactory(getAuthAlias(), defaultUsername, defaultPassword);
-			if (StringUtils.isEmpty(cf.getUsername())) {
-				// use OAuth Bearer token authentication
-				exchangeService.getHttpHeaders().put("Authorization", "Bearer "+cf.getPassword());
-			} else {
-				// use deprecated Basic Authentication. Support will end 2021-Q3!
-				log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
-				ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
-				exchangeService.setCredentials(credentials);
+		if (StringUtils.isNotEmpty(getBaseFolder())) {
+			try {
+				basefolderId=findFolder(inboxId,getBaseFolder());
+			} catch (Exception e) {
+				throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
+			}	
+			if (basefolderId==null) {
+				log.debug("Could not get baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
+				basefolderId=findFolder(null,getBaseFolder());
 			}
-
-			
-			
-			if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
-				CredentialFactory proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
-				WebProxyCredentials webProxyCredentials = new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain());
-				WebProxy webProxy = new WebProxy(getProxyHost(), getProxyPort(), webProxyCredentials);
-				exchangeService.setWebProxy(webProxy);
+			if (basefolderId==null) {
+				throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"]");
 			}
-
-			RedirectionUrlCallback redirectionUrlCallback = new RedirectionUrlCallback() {
-
-				@Override
-				public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
-					if (isValidateAllRedirectUrls()) {
-						log.debug("validated redirection url ["+redirectionUrl+"]");
-						return true;
-					}
-					log.debug("did not validate redirection url ["+redirectionUrl+"]");
-					return super.autodiscoverRedirectionUrlValidationCallback(redirectionUrl);
-				}
-				
-			};
-
-			if (StringUtils.isEmpty(getUrl())) {
-				log.debug("performing autodiscovery for ["+getMailAddress()+"]");
-				exchangeService.autodiscoverUrl(getMailAddress(),redirectionUrlCallback);
-			} else {
-				exchangeService.setUrl(new URI(getUrl()));
-			}
-			log.debug("using url ["+exchangeService.getUrl()+"]");
-			
-			log.debug("searching inbox");
-			FolderId inboxId;
-			if (StringUtils.isNotEmpty(getMailAddress())) {
-				Mailbox mailbox = new Mailbox(getMailAddress());
-				inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
-			} else {
-				inboxId = new FolderId(WellKnownFolderName.Inbox);
-			}
-			log.debug("determined inbox ["+inboxId+"] foldername ["+inboxId.getFolderName()+"]");
-	
-			if (StringUtils.isNotEmpty(getBaseFolder())) {
-				try {
-					basefolderId=findFolder(inboxId,getBaseFolder());
-				} catch (Exception e) {
-					throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
-				}	
-				if (basefolderId==null) {
-					log.debug("Could not get baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
-					basefolderId=findFolder(null,getBaseFolder());
-				}
-				if (basefolderId==null) {
-					throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"]");
-				}
-			} else {
-				basefolderId=inboxId;
-			}
-		} catch (Exception e) {
-			throw new FileSystemException(e);
+		} else {
+			basefolderId=inboxId;
 		}
 	}
+
+
+	@Override
+	protected ExchangeService createConnection() throws FileSystemException {
+		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
+		
+		String defaultUsername = StringUtils.isEmpty(getAccessToken())? getUsername() : null;
+		String defaultPassword = StringUtils.isEmpty(getAccessToken())? getPassword() : getAccessToken();
+
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), defaultUsername, defaultPassword);
+		if (StringUtils.isEmpty(cf.getUsername())) {
+			// use OAuth Bearer token authentication
+			exchangeService.getHttpHeaders().put("Authorization", "Bearer "+cf.getPassword());
+		} else {
+			// use deprecated Basic Authentication. Support will end 2021-Q3!
+			log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
+			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
+			exchangeService.setCredentials(credentials);
+		}
+
+		
+		
+		if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
+			CredentialFactory proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
+			WebProxyCredentials webProxyCredentials = new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain());
+			WebProxy webProxy = new WebProxy(getProxyHost(), getProxyPort(), webProxyCredentials);
+			exchangeService.setWebProxy(webProxy);
+		}
+
+		RedirectionUrlCallback redirectionUrlCallback = new RedirectionUrlCallback() {
+
+			@Override
+			public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
+				if (isValidateAllRedirectUrls()) {
+					log.debug("validated redirection url ["+redirectionUrl+"]");
+					return true;
+				}
+				log.debug("did not validate redirection url ["+redirectionUrl+"]");
+				return super.autodiscoverRedirectionUrlValidationCallback(redirectionUrl);
+			}
+			
+		};
+
+		if (StringUtils.isEmpty(getUrl())) {
+			log.debug("performing autodiscovery for ["+getMailAddress()+"]");
+			try {
+				exchangeService.autodiscoverUrl(getMailAddress(),redirectionUrlCallback);
+				//TODO call setUrl() here to avoid repeated autodiscovery
+			} catch (Exception e) {
+				throw new FileSystemException("cannot autodiscover for ["+getMailAddress()+"]", e);
+			}
+		} else {
+			try {
+				exchangeService.setUrl(new URI(getUrl()));
+			} catch (URISyntaxException e) {
+				throw new FileSystemException("cannot set URL ["+getUrl()+"]", e);
+			}
+		}
+		log.debug("using url ["+exchangeService.getUrl()+"]");
+		return exchangeService;
+	}
+
 	
 	public FolderId findFolder(String folderName) throws Exception {
 		return findFolder(basefolderId, folderName);
 	}
 	
-	public FolderId findFolder(FolderId baseFolderId, String folderName) throws Exception {
-		FindFoldersResults findFoldersResultsIn;
-		FolderId result;
-		FolderView folderViewIn = new FolderView(10);
-		if (StringUtils.isNotEmpty(folderName)) {
-			log.debug("searching folder ["+folderName+"]");
-			SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName);
-			if (baseFolderId==null) {
-				findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
-			} else {
-				findFoldersResultsIn = exchangeService.findFolders(baseFolderId, searchFilterIn, folderViewIn);
-			}
-			if (findFoldersResultsIn.getTotalCount() == 0) {
-				if(log.isDebugEnabled()) log.debug("no folder found with name [" + folderName + "] in basefolder ["+baseFolderId+"]");
-				return null;
-			} 
-			if (findFoldersResultsIn.getTotalCount() > 1) {
-				if (log.isDebugEnabled()) {
-					for (Folder folder:findFoldersResultsIn.getFolders()) {
-						log.debug("found folder ["+folder.getDisplayName()+"]");
-					}
+	public FolderId findFolder(FolderId baseFolderId, String folderName) throws FileSystemException {
+		ExchangeService exchangeService = getConnection();
+		try {
+			FindFoldersResults findFoldersResultsIn;
+			FolderId result;
+			FolderView folderViewIn = new FolderView(10);
+			if (StringUtils.isNotEmpty(folderName)) {
+				log.debug("searching folder ["+folderName+"]");
+				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName);
+				if (baseFolderId==null) {
+					findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
+				} else {
+					findFoldersResultsIn = exchangeService.findFolders(baseFolderId, searchFilterIn, folderViewIn);
 				}
-				throw new ConfigurationException("multiple folders found with name ["+ folderName + "]");
+				if (findFoldersResultsIn.getTotalCount() == 0) {
+					if(log.isDebugEnabled()) log.debug("no folder found with name [" + folderName + "] in basefolder ["+baseFolderId+"]");
+					return null;
+				} 
+				if (findFoldersResultsIn.getTotalCount() > 1) {
+					if (log.isDebugEnabled()) {
+						for (Folder folder:findFoldersResultsIn.getFolders()) {
+							log.debug("found folder ["+folder.getDisplayName()+"]");
+						}
+					}
+					throw new ConfigurationException("multiple folders found with name ["+ folderName + "]");
+				}
+			} else {
+				//findFoldersResultsIn = getExchangeService().findFolders(baseFolderId, folderViewIn);
+				return baseFolderId;
 			}
-		} else {
-			//findFoldersResultsIn = exchangeService.findFolders(baseFolderId, folderViewIn);
-			return baseFolderId;
+			if (findFoldersResultsIn.getFolders().isEmpty()) {
+				result=baseFolderId;
+			} else {
+				result=findFoldersResultsIn.getFolders().get(0).getId();
+			}
+			return result;
+		} catch (Exception e) {
+			invalidateConnection(exchangeService);
+			throw new FileSystemException("Cannot find folder ["+folderName+"]", e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
-		if (findFoldersResultsIn.getFolders().isEmpty()) {
-			result=baseFolderId;
-		} else {
-			result=findFoldersResultsIn.getFolders().get(0).getId();
-		}
-		return result;
 	}
 
-	@Override
-	public void close() throws FileSystemException {
-		if (exchangeService!=null) {
-			exchangeService.close();
-		}
-	}
-	
-	
+
 	@Override
 	public EmailMessage toFile(String filename) throws FileSystemException {
+		ExchangeService exchangeService = getConnection();
 		try {
 			ItemId itemId = ItemId.getItemIdFromString(filename);
 			EmailMessage item = EmailMessage.bind(exchangeService,itemId);
 			return item;
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException("Cannot convert filename ["+filename+"] into an ItemId", e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
 	}
 
@@ -277,24 +294,21 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return toFile(filename);
 	}
 
-	private boolean itemExistsInFolder(FolderId folderId, String itemId) throws FileSystemException{
-		try {
-			ItemView view = new ItemView(1);
-			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
-			SearchFilter searchFilter =  new SearchFilter.IsEqualTo(ItemSchema.Id, itemId);
-			FindItemsResults<Item> findResults;
-			findResults = exchangeService.findItems(folderId,searchFilter, view);
-			return findResults.getTotalCount()!=0;
-		} catch (Exception e) {
-			throw new FileSystemException(e);
-		}
+	private boolean itemExistsInFolder(ExchangeService exchangeService, FolderId folderId, String itemId) throws Exception {
+		ItemView view = new ItemView(1);
+		view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
+		SearchFilter searchFilter =  new SearchFilter.IsEqualTo(ItemSchema.Id, itemId);
+		FindItemsResults<Item> findResults;
+		findResults = exchangeService.findItems(folderId,searchFilter, view);
+		return findResults.getTotalCount()!=0;
 	}
 
 	@Override
 	public boolean exists(EmailMessage f) throws FileSystemException {
+		ExchangeService exchangeService = getConnection();
 		try {
 			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
-			return itemExistsInFolder(emailMessage.getParentFolderId(), f.getId().toString());
+			return itemExistsInFolder(exchangeService, emailMessage.getParentFolderId(), f.getId().toString());
 		} catch (ServiceResponseException e) {
 			ServiceError errorCode = e.getErrorCode();
 			if (errorCode == ServiceError.ErrorItemNotFound) {
@@ -302,7 +316,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			throw new FileSystemException(e);
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
 	}
 
@@ -310,9 +327,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public DirectoryStream<EmailMessage> listFiles(String folder) throws FileSystemException {
+		if (!isOpen()) {
+			return null;
+		}
+		ExchangeService exchangeService = getConnection();
 		try {
 			FolderId folderId = findFolder(basefolderId,folder);
-			ItemView view = new ItemView(getMaxNumberOfMessagesToList());
+			ItemView view = new ItemView(getMaxNumberOfMessagesToList()<0?100:getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			FindItemsResults<Item> findResults;
 			if ("NDR".equalsIgnoreCase(getFilter())) {
@@ -322,6 +343,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				findResults = exchangeService.findItems(folderId, view);
 			}
 			if (findResults.getTotalCount() == 0) {
+				releaseConnection(exchangeService);
 				return FileSystemUtils.getDirectoryStream((Iterator)null);
 			} else {
 				Iterator<Item> itemIterator = findResults.getItems().iterator();
@@ -338,9 +360,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 						return (EmailMessage)itemIterator.next();
 					}
 					
-				});
+				}, (Runnable)() -> { releaseConnection(exchangeService); });
 			}
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException("Cannot list messages in folder ["+folder+"]", e);
 		}
 	}
@@ -367,6 +390,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 //				EmailMessageSchema.Body,
 //				EmailMessageSchema.DateTimeSent);
 //		
+		ExchangeService exchangeService = getConnection();
 		try {
 			if (f.getId()!=null) {
 				emailMessage = EmailMessage.bind(exchangeService, f.getId(), ps);
@@ -388,7 +412,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			ByteArrayInputStream bis = new ByteArrayInputStream(body.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 			return bis;
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
 	}
 	
@@ -402,21 +429,29 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 	@Override
 	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		ExchangeService exchangeService = getConnection();
 		try {
-			FolderId destinationFolderId = getFolderIdByFolderName(destinationFolder, createFolder);
+			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, destinationFolder, createFolder);
 			return (EmailMessage)f.move(destinationFolderId);
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
 	}
 
 	@Override
 	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		ExchangeService exchangeService = getConnection();
 		try {
-			FolderId destinationFolderId = getFolderIdByFolderName(destinationFolder, createFolder);
+			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, destinationFolder, createFolder);
 			return (EmailMessage)f.copy(destinationFolderId);
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
 	}
 
@@ -477,6 +512,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(EmailMessage f) throws FileSystemException {
 		EmailMessage emailMessage;
+		ExchangeService exchangeService = getConnection();
 		try {
 			if (f.getId()!=null) {
 				PropertySet ps=PropertySet.FirstClassProperties;
@@ -488,31 +524,38 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			result.put(IMailFileSystem.TO_RECEPIENTS_KEY, asList(emailMessage.getToRecipients()));
 			result.put(IMailFileSystem.CC_RECEPIENTS_KEY, asList(emailMessage.getCcRecipients()));
 			result.put(IMailFileSystem.BCC_RECEPIENTS_KEY, asList(emailMessage.getBccRecipients()));
-			result.put(IMailFileSystem.FROM_ADDRESS_KEY, cleanAddress(emailMessage.getFrom())); 
+			result.put(IMailFileSystem.FROM_ADDRESS_KEY, getFrom(emailMessage)); 
 			result.put(IMailFileSystem.SENDER_ADDRESS_KEY, getSender(emailMessage)); 
 			result.put(IMailFileSystem.REPLY_TO_RECEPIENTS_KEY, getReplyTo(emailMessage)); 
-			result.put(IMailFileSystem.DATETIME_SENT_KEY, emailMessage.getDateTimeSent()); 
-			result.put(IMailFileSystem.DATETIME_RECEIVED_KEY, emailMessage.getDateTimeReceived()); 
-			for(InternetMessageHeader internetMessageHeader : emailMessage.getInternetMessageHeaders()) {
-				Object curEntry = result.get(internetMessageHeader.getName());
-				if (curEntry==null) {
-					result.put(internetMessageHeader.getName(), internetMessageHeader.getValue());
-					continue;
+			result.put(IMailFileSystem.DATETIME_SENT_KEY, getDateTimeSent(emailMessage)); 
+			result.put(IMailFileSystem.DATETIME_RECEIVED_KEY, getDateTimeReceived(emailMessage)); 
+			try {
+				for(InternetMessageHeader internetMessageHeader : emailMessage.getInternetMessageHeaders()) {
+					Object curEntry = result.get(internetMessageHeader.getName());
+					if (curEntry==null) {
+						result.put(internetMessageHeader.getName(), internetMessageHeader.getValue());
+						continue;
+					}
+					List<Object> values;
+					if (curEntry instanceof List) {
+						values = (List<Object>)curEntry;
+					} else {
+						values = new LinkedList<Object>();
+						values.add(curEntry);
+						result.put(internetMessageHeader.getName(),values);
+					}
+					values.add(internetMessageHeader.getValue());
 				}
-				List<Object> values;
-				if (curEntry instanceof List) {
-					values = (List<Object>)curEntry;
-				} else {
-					values = new LinkedList<Object>();
-					values.add(curEntry);
-					result.put(internetMessageHeader.getName(),values);
-				}
-				values.add(internetMessageHeader.getValue());
+			} catch (ServiceLocalException e) {
+				log.warn("Message ["+f.getId()+"] Cannot load message headers: "+ e.getMessage());
 			}
-			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY, MailFileSystemUtils.findBestReplyAddress(result,getReplyAddressFields()));
+ 			result.put(IMailFileSystem.BEST_REPLY_ADDRESS_KEY, MailFileSystemUtils.findBestReplyAddress(result,getReplyAddressFields()));
 			return result;
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
 	}
 
@@ -545,6 +588,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public Iterator<Attachment> listAttachments(EmailMessage f) throws FileSystemException {
 		List<Attachment> result=new LinkedList<Attachment>();
+		ExchangeService exchangeService = getConnection();
 		try {
 			EmailMessage emailMessage;
 			if (f.getId()!=null) {
@@ -558,10 +602,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				result.add(attachment);
 			}
 			return result.iterator();
-		} catch (ServiceLocalException e) {
-			throw new FileSystemException("cannot read attachments",e);
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException("cannot read attachments",e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
 	}
 
@@ -644,7 +689,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	
 	
-	public FolderId getFolderIdByFolderName(String folderName, boolean create) throws Exception{
+	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
 		FindFoldersResults findResults;
 		findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
 		if (create && findResults.getTotalCount()==0) {
@@ -666,29 +711,46 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
+		ExchangeService exchangeService = getConnection();
 		try {
 			Folder folder = new Folder(exchangeService);
 			folder.setDisplayName(folderName);
 			folder.save(new FolderId(basefolderId.getUniqueId()));
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException("cannot create folder ["+folderName+"]", e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
 	}
 
 
 	@Override
 	public void removeFolder(String folderName) throws FileSystemException {
+		ExchangeService exchangeService = getConnection();
 		try {
-			FolderId folderId = getFolderIdByFolderName(folderName, false);
+			FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, false);
 			Folder folder = Folder.bind(exchangeService, folderId);
 			folder.delete(DeleteMode.HardDelete);
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
 	}
 
 	
-	public String getSender(EmailMessage emailMessage) throws FileSystemException {
+	protected String getFrom(EmailMessage emailMessage) throws FileSystemException {
+		try {
+			return cleanAddress(emailMessage.getFrom());
+		} catch (ServiceLocalException e) {
+			log.warn("Could not get From Address: "+ e.getMessage());
+			return null;
+		}
+	}
+	
+	protected String getSender(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			EmailAddress sender = emailMessage.getSender();
 			return sender==null ? null : cleanAddress(sender);
@@ -698,11 +760,30 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	public List<String> getReplyTo(EmailMessage emailMessage) throws FileSystemException {
+	protected List<String> getReplyTo(EmailMessage emailMessage) throws FileSystemException {
 		try {
 			return asList(emailMessage.getReplyTo());
 		} catch (ServiceLocalException e) {
-			throw new FileSystemException("Could not get ReplyTo Addresses", e);
+			log.warn("Could not get ReplyTo Addresses: "+ e.getMessage());
+			return null;
+		}
+	}
+	
+	protected Date getDateTimeSent(EmailMessage emailMessage) throws FileSystemException {
+		try {
+			return emailMessage.getDateTimeSent();
+		} catch (ServiceLocalException e) {
+			log.warn("Could not get DateTimeSent: "+ e.getMessage());
+			return null;
+		}
+	}
+	
+	protected Date getDateTimeReceived(EmailMessage emailMessage) throws FileSystemException {
+		try {
+			return emailMessage.getDateTimeReceived();
+		} catch (ServiceLocalException e) {
+			log.warn("Could not get getDateTimeReceived: "+ e.getMessage());
+			return null;
 		}
 	}
 	
@@ -757,10 +838,21 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public String getPhysicalDestinationName() {
-		if (exchangeService != null) {
-			return "url [" + (exchangeService == null ? "" : exchangeService.getUrl()) + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]";
+		String result = super.getPhysicalDestinationName();
+		String url = "";
+		try {
+			if (isOpen()) {
+				ExchangeService exchangeService = getConnection();
+				try {
+					url = exchangeService.getUrl().toString();
+				} finally {
+					releaseConnection(exchangeService);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Could not get url", e);
 		}
-		return null;
+		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
 	}
 
 
@@ -771,11 +863,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			return redirectionUrl.toLowerCase().startsWith("https://"); //TODO: provide better test on how to trust this url
 		}
 	}
-
-	public ExchangeService getExchangeService() {
-		return exchangeService;
-	}
-
 
 	@IbisDoc({"1", "The mail address of the mailbox connected to (also used for auto discovery)", ""})
 	public void setMailAddress(String mailAddress) {

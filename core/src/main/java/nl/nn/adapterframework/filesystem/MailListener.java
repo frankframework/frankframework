@@ -21,7 +21,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -57,7 +56,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * 
  * @author Peter Leeuwenburgh, Gerrit van Brakel
  */
-public abstract class MailListener<M, A, FS extends IMailFileSystem<M,A>> extends FileSystemListener<M,FS> implements HasPhysicalDestination {
+public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends FileSystemListener<M,S> {
 
 	public final String EMAIL_MESSAGE_TYPE="email";
 	public final String MIME_MESSAGE_TYPE="mime";
@@ -67,7 +66,7 @@ public abstract class MailListener<M, A, FS extends IMailFileSystem<M,A>> extend
 	
 	{
 		setMessageType(EMAIL_MESSAGE_TYPE);
-		setMessageIdProperty(IMailFileSystem.MAIL_MESSAGE_ID);
+		setMessageIdPropertyKey(IMailFileSystem.MAIL_MESSAGE_ID);
 	}
 	
 
