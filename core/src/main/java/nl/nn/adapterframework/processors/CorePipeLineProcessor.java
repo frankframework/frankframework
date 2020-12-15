@@ -207,7 +207,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								log.debug("wrap succeeded");
 								message = wrapResult.getResult();
 							}
-							log.debug("PipeLineResult after wrapping: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ));
+							if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ));
 						}
 
 						if (!outputWrapError) {

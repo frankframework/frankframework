@@ -105,10 +105,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		Message result = super.processRequest(correlationId, message, requestContext);
 
 		//Return null when super.processRequest() returns an empty string
-		if(result != null && result.isEmpty())
+		if(Message.isEmpty(result)) {
 			return null;
-		else
-			return result;
+		}
+
+		return result;
 	}
 
 	@Override

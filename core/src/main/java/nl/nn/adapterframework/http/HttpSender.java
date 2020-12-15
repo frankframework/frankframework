@@ -75,6 +75,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -527,9 +528,19 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		if (!ok) {
+			Message responseBody = responseHandler.getResponseMessage();
+			String body = "";
+			if(responseBody != null) {
+				responseBody.preserve();
+				try {
+					body = responseBody.asString();
+				} catch(IOException e) {
+					body = "(" + ClassUtils.nameOf(e) + "): " + e.getMessage();
+				}
+			}
 			throw new SenderException(getLogPrefix() + "httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
-					+ " body: " + getResponseBodyAsString(responseHandler));
+					+ " body: " + body);
 			
 		}
 
@@ -570,9 +581,6 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	public Message getResponseBody(HttpResponseHandler responseHandler) {
-		String charset = responseHandler.getCharset();
-		log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
-
 		if ("HEAD".equals(getMethodType())) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			Header[] headers = responseHandler.getAllHeaders();
@@ -589,35 +597,6 @@ public class HttpSender extends HttpSenderBase {
 			log.error("message body is not handled as a multipart");
 		}
 		return responseHandler.getResponseMessage();
-	}
-
-	/**
-	 * Tries to parse the response as a String. If unsuccessful return null.
-	 */
-	public String getResponseBodyAsString(HttpResponseHandler responseHandler) {
-		String responseBody = null;
-		try {
-			Message responseMessage = getResponseBody(responseHandler);
-			if(responseMessage != null) {
-				responseMessage.preserve(); //asString preserves the Message as well, but just in case!
-				responseBody = responseMessage.asString();
-			}
-		} catch(IOException e) {
-			log.warn(getLogPrefix()+"unable to parse response", e);
-			return null;
-		}
-
-		if (StringUtils.isEmpty(responseBody)) {
-			log.warn(getLogPrefix()+"responseBody is empty");
-		} else {
-			int rbLength = responseBody.length();
-			long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
-			if (rbLength >= rbSizeWarn) {
-				log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
-			}
-		}
-
-		return responseBody;
 	}
 
 	public Message getResponseBodyAsBase64(InputStream is) {
