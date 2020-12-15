@@ -226,7 +226,7 @@ public class Wsdl {
                     warn("Could not determine operation version");
                 } else {
                     String wsdlType = "abstract";
-                    for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                    for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                         if (listener instanceof WebServiceListener
                                 || listener instanceof JmsListener) {
                             wsdlType = "concrete";
@@ -273,7 +273,7 @@ public class Wsdl {
                 }
             }
             if (tns == null) {
-                for(IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                for(IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                     if (listener instanceof WebServiceListener) {
                         webServiceListenerNamespace = ((WebServiceListener)listener).getServiceNamespaceURI();
                         tns = webServiceListenerNamespace;
@@ -413,7 +413,7 @@ public class Wsdl {
         	outputHeaderIsOptional = isHeaderOptional(outputValidator);
             outputBodyElement = getBodyElement(outputValidator, outputXsds, "outputValidator");
         }
-        for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+        for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
             if (listener instanceof WebServiceListener) {
                 httpActive = true;
             } else if (listener instanceof JmsListener) {
@@ -476,8 +476,7 @@ public class Wsdl {
 	 * 
 	 * @see #wsdl(java.io.OutputStream, String)
 	 */
-	public void zip(OutputStream stream, String servletName)
-			throws IOException, ConfigurationException, XMLStreamException, NamingException {
+	public void zip(OutputStream stream, String servletName) throws IOException, ConfigurationException, XMLStreamException, NamingException {
 		try (ZipOutputStream out = new ZipOutputStream(stream)) {
 
 			// First an entry for the WSDL itself:
@@ -645,7 +644,7 @@ public class Wsdl {
     protected void portType(XMLStreamWriter w) throws XMLStreamException, IOException {
         w.writeStartElement(WSDL_NAMESPACE, "portType");
         w.writeAttribute("name", "PortType_" + getName()); {
-        	for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+        	for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                 if (listener instanceof WebServiceListener || listener instanceof JmsListener) {
 		        	w.writeStartElement(WSDL_NAMESPACE, "operation");
 		            w.writeAttribute("name", "Operation_" + WsdlUtils.getNCName(getSoapAction(listener))); {
@@ -665,7 +664,7 @@ public class Wsdl {
         w.writeEndElement();
     }
 
-    protected String getSoapAction(IListener listener) {
+    protected String getSoapAction(IListener<?> listener) {
         AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
         String sa = appConstants.getResolvedProperty("wsdl." + getName() + "." + listener.getName() + ".soapAction");
         if (sa != null) {
@@ -720,7 +719,7 @@ public class Wsdl {
             w.writeEmptyElement(wsdlSoapNamespace, "binding");
             w.writeAttribute("transport", SOAP_HTTP_NAMESPACE);
             w.writeAttribute("style", "document");
-            for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+            for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                 if (listener instanceof WebServiceListener) {
                     writeSoapOperation(w, listener);
                 }
@@ -729,7 +728,7 @@ public class Wsdl {
         w.writeEndElement();
     }
 
-    protected void writeSoapOperation(XMLStreamWriter w, IListener listener) throws XMLStreamException, IOException, ConfigurationException {
+    protected void writeSoapOperation(XMLStreamWriter w, IListener<?> listener) throws XMLStreamException, IOException, ConfigurationException {
         w.writeStartElement(WSDL_NAMESPACE, "operation");
         w.writeAttribute("name", "Operation_" + WsdlUtils.getNCName(getSoapAction(listener))); {
             w.writeEmptyElement(wsdlSoapNamespace, "operation");
@@ -778,7 +777,7 @@ public class Wsdl {
                 w.writeAttribute("transport", ESB_SOAP_JMS_NAMESPACE);
                 w.writeEmptyElement(ESB_SOAP_JMS_NAMESPACE, "binding");
                 w.writeAttribute("messageFormat", "Text");
-                for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                     if (listener instanceof JmsListener) {
                         writeSoapOperation(w, listener);
                     }
@@ -801,7 +800,7 @@ public class Wsdl {
             httpService(w, servlet, httpPrefix);
         }
         if (jmsActive) {
-            for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+            for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                 if (listener instanceof JmsListener) {
                     jmsService(w, (JmsListener)listener, jmsPrefix);
                 }

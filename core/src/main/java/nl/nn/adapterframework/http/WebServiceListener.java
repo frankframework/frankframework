@@ -165,17 +165,17 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 		if (isSoap()) {
 			try {
-				log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
 				String request = soapWrapper.getBody(new Message(message)).asString();
 				String result = super.processRequest(correlationId, request, requestContext);
 
 				String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
 				String soapProtocol = (String) requestContext.get("soapProtocol");
-				if(SOAPConstants.SOAP_1_2_PROTOCOL.equals(soapProtocol))
+				if(SOAPConstants.SOAP_1_2_PROTOCOL.equals(soapProtocol)) {
 					soapNamespace = SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE;
-
+				}
 				String reply = soapWrapper.putInEnvelope(new Message(result), null, null, null, null, soapNamespace, null, false).asString();
-				log.debug(getLogPrefix()+"replied SOAPMSG [" + reply + "]");
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"replied SOAPMSG [" + reply + "]");
 				return reply;
 			} catch (Exception e) {
 				throw new ListenerException(e);

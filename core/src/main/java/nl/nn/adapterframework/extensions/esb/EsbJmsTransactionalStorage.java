@@ -138,7 +138,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		Session session = null;
 		try {
-			Map<String,Object> parameterValues = createParameterValues(messageId, correlationId, receivedDate, comments, label, message);
+			Map<String,Object> parameterValues = createParameterValues(messageId, correlationId, receivedDate, comments, message);
 			String logRequest;
 			if (getType().equalsIgnoreCase("E")) {
 				log.debug(getLogPrefix() + "creating exceptionLog request");
@@ -159,7 +159,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 		}
 	}
 
-	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws JMSException, DomBuilderException, TransformerException, IOException {
+	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, S message) throws JMSException, DomBuilderException, TransformerException, IOException {
 		Map<String,Object> parameterValues = new HashMap<>();
 		parameterValues.put("fromId", AppConstants.getInstance().getProperty("instance.name", ""));
 		parameterValues.put("conversationId", 	Misc.getHostname() + "_" + Misc.createSimpleUUID());
