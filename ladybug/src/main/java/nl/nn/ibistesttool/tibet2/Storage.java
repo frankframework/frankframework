@@ -16,7 +16,6 @@
 package nl.nn.ibistesttool.tibet2;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -45,7 +43,6 @@ import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -58,7 +55,6 @@ import nl.nn.testtool.util.SearchUtil;
  * @author Jaco de Groot
  */
 public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudStorage {
-	private static final Logger log = LogUtil.getLogger(MethodHandles.lookup().lookupClass()); // Overwrite log of parent (using package nl.nn.ibistesttool for which logging will go to testtool4${ctx:instance.name.lc}.log)
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	private static final String DELETE_ADAPTER = "DeleteFromExceptionLog";
 	private String name;
