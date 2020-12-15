@@ -17,6 +17,7 @@ limitations under the License.
 package nl.nn.adapterframework.doc.model;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -152,6 +153,40 @@ public class FrankElement {
 			Predicate<ElementChild> childRejector) {
 		new AncestorChildNavigation<ConfigChild>(
 				handler, childSelector, childRejector, ConfigChild.class).run(this);		
+	}
+
+	public List<ConfigChild> getCumulativeConfigChildren(
+			Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		return getCumulativeChildren(selector, rejector, ConfigChild.class).stream()
+				.map(c -> (ConfigChild) c).collect(Collectors.toList());
+	}
+
+	public List<FrankAttribute> getCumulativeAttributes(
+			Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		return getCumulativeChildren(selector, rejector, FrankAttribute.class).stream()
+				.map(c -> (FrankAttribute) c).collect(Collectors.toList());
+	}
+
+	private <T extends ElementChild> List<T> getCumulativeChildren(
+			Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Class<T> kind) {
+		final List<T> result = new ArrayList<>();
+		new AncestorChildNavigation<T>(new CumulativeChildHandler<T>() {
+			@Override
+			public void handleSelectedChildren(List<T> children, FrankElement owner) {
+				result.addAll(children);
+			}
+
+			@Override
+			public void handleChildrenOf(FrankElement frankElement) {
+				result.addAll(frankElement.getChildrenOfKind(selector, kind));
+			}
+
+			@Override
+			public void handleCumulativeChildrenOf(FrankElement frankElement) {
+				result.addAll(frankElement.getCumulativeChildren(selector, rejector, kind));
+			}
+		}, selector, rejector, kind).run(this);
+		return result;
 	}
 
 	public String getXsdElementName(ElementRole elementRole) {
