@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -40,11 +40,10 @@ import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
+import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.storage.file.TestStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.util.LogUtil;
 
 /**
  * Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)
@@ -61,7 +60,6 @@ import nl.nn.testtool.util.LogUtil;
  *
  */
 public class LadybugPipe extends FixedForwardPipe {
-	private static final Logger log = LogUtil.getLogger(LadybugPipe.class); // Overwrites log of JdbcFacade (using nl.nn.testtool.util.LogUtil instead of nl.nn.adapterframework.util.LogUtil)
 	private static String FAILURE_FORWARD_NAME = "failure";
 	private PipeForward failureForward;
 	private boolean writeToLog = false;
@@ -69,7 +67,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	private boolean checkRoles = false;
 	private boolean enableReportGenerator = false;
 	private TestTool testTool;
-	private TestStorage testStorage;
+	private CrudStorage testStorage;
 	private Storage debugStorage; 
 	private ReportXmlTransformer reportXmlTransformer;
 	private String exclude;
@@ -239,11 +237,11 @@ public class LadybugPipe extends FixedForwardPipe {
 		this.testTool = testTool;
 	}
 
-	public void setRunStorage(TestStorage testStorage) {
+	public void setTestStorage(CrudStorage testStorage) {
 		this.testStorage = testStorage;
 	}
 
-	public void setLogStorage(Storage debugStorage) {
+	public void setDebugStorage(Storage debugStorage) {
 		this.debugStorage = debugStorage;
 	}
 

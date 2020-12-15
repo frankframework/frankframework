@@ -47,6 +47,7 @@
 		<property name="maxMemoryUsage"><ref bean="maxMemoryUsage"/></property>
 		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
 		<property name="regexFilter"><ref bean="regexFilter"/></property>
+		<property name="securityLoggerName" value="SEC"/>
 	</bean>
 
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
