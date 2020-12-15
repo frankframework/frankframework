@@ -23,11 +23,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
@@ -405,6 +407,23 @@ public class FrankDocModel {
 
 	ElementRole findElementRole(String fullElementTypeName, String syntax1Name) {
 		return allElementRoles.get(new ElementRole.Key(fullElementTypeName, syntax1Name));
+	}
+
+	/**
+	 * For an {@link ElementType} assemble all config children of members and calculate
+	 * a list of {@link ElementRole} from that. Assume that the {@link ElementRole}
+	 * objects exist and that the members of the element type are set.
+	 */
+	public List<ElementRole> getElementTypeMemberChildRoles(
+			ElementType elementType, Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		List<ElementRole> allMemberChildRoles = elementType.getMembers().values().stream()
+				.map(frankElement -> frankElement.getCumulativeConfigChildren(selector, rejector))
+				.flatMap(l -> l.stream())
+				.map(ElementRole.Key::new)
+				.map(this::findElementRole)
+				.collect(Collectors.toList());
+		Collections.sort(allMemberChildRoles, Comparator.comparing(er -> ((ElementRole) er).createXsdElementName("")));
+		return allMemberChildRoles;
 	}
 
 	void buildGroups() {
