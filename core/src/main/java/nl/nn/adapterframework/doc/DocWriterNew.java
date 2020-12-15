@@ -499,7 +499,8 @@ public class DocWriterNew {
 	}
 
 	private void addGenericElementOption(XmlBuilder choice, String syntax1Name) {
-		XmlBuilder genericElementOption = writeFilter.addElementWithType(choice, syntax1Name);
+		XmlBuilder genericElementOption = writeFilter.addElementWithType(
+				choice, Utils.toUpperCamelCase(syntax1Name));
 		XmlBuilder complexType = writeFilter.addComplexType(genericElementOption);
 		writeFilter.addAttribute(complexType, "elementType", FIXED, syntax1Name, PROHIBITED);
 		writeFilter.addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
