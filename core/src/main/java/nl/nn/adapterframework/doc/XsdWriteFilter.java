@@ -46,6 +46,8 @@ abstract class XsdWriteFilter {
 
 		ControlStack(XsdWriteFilter slave) {
 			this.slave = slave;
+			// If all other write controls are popped, then we have complex stuff.
+			pushComplexStuff();
 		}
 
 		void pushSimpleElement() {

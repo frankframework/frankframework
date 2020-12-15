@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-  <xs:element name="Start" type="StartType" />
+  <xs:element name="Start">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="Syntax1NameIChildElementGroup" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="Syntax1NameTChild" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attribute name="attribute" type="xs:string" />
+      <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.Start" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Syntax1NameTChild">
     <xs:complexType>
       <xs:sequence />
@@ -8,16 +18,6 @@
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" use="prohibited" />
     </xs:complexType>
   </xs:element>
-  <xs:complexType name="StartType">
-    <xs:group ref="StartDeclaredChildGroup" />
-    <xs:attributeGroup ref="StartCumulativeAttributeGroup" />
-  </xs:complexType>
-  <xs:group name="StartDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="Syntax1NameIChildElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:element ref="Syntax1NameTChild" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:group>
   <xs:group name="Syntax1NameIChildElementGroup">
     <xs:choice>
       <xs:element name="Syntax1NameIChild">
@@ -70,15 +70,5 @@
   <xs:attributeGroup name="NotDescribedPossibleIChildDeclaredAttributeGroup">
     <xs:attribute name="firstAttribute" type="xs:string" />
     <xs:attribute name="secondAttribute" type="xs:string" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="StartDeclaredAttributeGroup">
-    <xs:attribute name="attribute" type="xs:string" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="StartCumulativeAttributeGroup">
-    <xs:attributeGroup ref="StartDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractParentOfStartDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractParentOfStartDeclaredAttributeGroup">
-    <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
   </xs:attributeGroup>
 </xs:schema>

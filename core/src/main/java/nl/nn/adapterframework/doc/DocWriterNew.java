@@ -33,7 +33,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.doc.model.ConfigChild;
@@ -43,7 +42,6 @@ import nl.nn.adapterframework.doc.model.ElementType;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -193,8 +191,6 @@ public class DocWriterNew {
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 	private static final String ELEMENT_GROUP = "ElementGroup";
 
-	private static Logger log = LogUtil.getLogger(DocWriterNew.class);
-
 	private FrankDocModel model;
 	private String startClassName;
 	private XmlBuilder xsdRoot;
@@ -224,23 +220,10 @@ public class DocWriterNew {
 			writeControl = new XsdWriteFilter.ControlStack(writeFilter);
 			namesCreatedFrankElements = new HashSet<>();
 			idsCreatedElementGroups = new HashSet<>();
-			writeItemsForXsdWriteFilter();
-		}
-		return xsdRoot.toXML(true);
-	}
-
-	private void writeItemsForXsdWriteFilter() {
-		// If all other write controls are popped, then we have complex stuff.
-		writeControl.pushComplexStuff();
-		FrankElement startElement = model.findFrankElement(startClassName);
-		if(startElement.hasAncestorThatHasConfigChildrenOrAttributes(IN_XSD)) {
-			writeControl.pushSimpleElement();
-			writeFilter.addElement(xsdRoot, startElement.getSimpleName(), xsdElementType(startElement));
-			writeControl.pop();
-			recursivelyDefineXsdElementType(startElement);
-		} else {
+			FrankElement startElement = model.findFrankElement(startClassName);
 			recursivelyDefineXsdElementOfRoot(startElement);
 		}
+		return xsdRoot.toXML(true);
 	}
 
 	private String xsdElementType(FrankElement frankElement) {
@@ -249,7 +232,6 @@ public class DocWriterNew {
 
 	private void recursivelyDefineXsdElementOfRoot(FrankElement frankElement) {
 		if(checkNotDefined(frankElement)) {
-			
 			writeControl.pushSimpleElement();
 			String xsdElementName = frankElement.getSimpleName();
 			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(
@@ -267,8 +249,8 @@ public class DocWriterNew {
 		XmlBuilder elementBuilder = writeFilter.addElementWithType(context, xsdElementName);
 		XmlBuilder complexType = writeFilter.addComplexType(elementBuilder);
 		XmlBuilder sequence = writeFilter.addSequence(complexType);
-		frankElement.getConfigChildren(IN_XSD).forEach(c -> addConfigChild(sequence, c));
-		addAttributeList(complexType, frankElement.getAttributes(IN_XSD));
+		frankElement.getCumulativeConfigChildren(IN_XSD, DEPRECATED).forEach(c -> addConfigChild(sequence, c));
+		addAttributeList(complexType, frankElement.getCumulativeAttributes(IN_XSD, DEPRECATED));
 		return complexType;
 	}
 
@@ -413,22 +395,11 @@ public class DocWriterNew {
 	}
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
-		ElementRole role = model.findElementRole(child);
-		if(isNoElementTypeNeeded(role)) {
-			FrankElement elementInType = singleElementOf(role.getElementType());
-			writeFilter.addElementRef(
-					context,
-					elementInType.getXsdElementName(role),
-					getMinOccurs(child),
-					getMaxOccurs(child));
-			writeControl.pushSimpleElement();
-			recursivelyDefineXsdElement(elementInType, role);
-			writeControl.pop();
+		ElementRole theRole = model.findElementRole(child);
+		if(isNoElementTypeNeeded(theRole)) {
+			addConfigChildSingleReferredElement(context, child);
 		} else {
-			writeControl.pushComplexStuff();
-			defineElementTypeGroup(role);
-			writeControl.pop();
-			writeFilter.addGroupRef(context, role.createXsdElementName(ELEMENT_GROUP), getMinOccurs(child), getMaxOccurs(child));
+			addConfigChildWithElementGroup(context, child);
 		}
 	}
 
@@ -438,14 +409,29 @@ public class DocWriterNew {
 			return false;
 		}
 		else {
-			FrankElement childInType = singleElementOf(elementType);
-			if(childInType.hasAncestorThatHasConfigChildrenOrAttributes(IN_XSD)) {
-				log.warn(String.format("FrankElement [%s] is not expected to inherit config children or attributes because it is in type [%s]",
-						childInType.getSimpleName(), elementType.getFullName()));
-				return false;
-			}
 			return true;
 		}
+	}
+
+	private void addConfigChildSingleReferredElement(XmlBuilder context, ConfigChild child) {
+		ElementRole role = model.findElementRole(child);
+		FrankElement elementInType = singleElementOf(role.getElementType());
+		writeFilter.addElementRef(
+				context,
+				elementInType.getXsdElementName(role),
+				getMinOccurs(child),
+				getMaxOccurs(child));
+		writeControl.pushSimpleElement();
+		recursivelyDefineXsdElement(elementInType, role);
+		writeControl.pop();
+	}
+
+	private void addConfigChildWithElementGroup(XmlBuilder context, ConfigChild child) {
+		ElementRole role = model.findElementRole(child);
+		writeControl.pushComplexStuff();
+		defineElementTypeGroup(role);
+		writeControl.pop();
+		writeFilter.addGroupRef(context, role.createXsdElementName(ELEMENT_GROUP), getMinOccurs(child), getMaxOccurs(child));
 	}
 
 	private FrankElement singleElementOf(ElementType elementType) {
