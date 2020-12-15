@@ -169,7 +169,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(new Message("tralala"), pls).asString();
+		sender.sendMessage(new Message("tralala"), pls);
 	}
 
 	@Test

@@ -61,6 +61,10 @@ public class HttpResponseHandler {
 	 * @return an {@link ReleaseConnectionAfterReadInputStream InputStream} retrieved from {@link HttpEntity#getContent()} or NULL when no {@link HttpEntity} is present
 	 */
 	public InputStream getResponse() throws IOException {
+		if(responseMessage == null) {
+			return null;
+		}
+
 		return responseMessage.asInputStream();// IOException cannot occur as the input and output are both InputStreams
 	}
 
