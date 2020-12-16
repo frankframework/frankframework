@@ -33,6 +33,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -269,7 +271,7 @@ public class MessageTest {
 	
 	
 	@Test
-	public void testURLArrayAsStream() throws Exception {
+	public void testURLAsStream() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
 		Message adapter = new Message(source);
 		testAsStream(adapter);
@@ -309,6 +311,93 @@ public class MessageTest {
 		Message adapter = new Message(source);
 		testToString(adapter,URL.class);
 	}
+
+
+	@Test
+	public void testFileAsStream() throws Exception {
+		File source = new File(this.getClass().getResource(testStringFile).getPath());
+		Message adapter = new Message(source);
+		testAsStream(adapter);
+	}
+
+	@Test
+	public void testFileAsReader() throws Exception {
+		File source = new File(this.getClass().getResource(testStringFile).getPath());
+		Message adapter = new Message(source);
+		testAsReader(adapter);
+	}
+
+	@Test
+	public void testFileAsInputSource() throws Exception {
+		File source = new File(this.getClass().getResource(testStringFile).getPath());
+		Message adapter = new Message(source);
+		testAsInputSource(adapter);
+	}
+
+	@Test
+	public void testFileAsByteArray() throws Exception {
+		File source = new File(this.getClass().getResource(testStringFile).getPath());
+		Message adapter = new Message(source);
+		testAsByteArray(adapter);
+	}
+
+	@Test
+	public void testFileAsString() throws Exception {
+		File source = new File(this.getClass().getResource(testStringFile).getPath());
+		Message adapter = new Message(source);
+		testAsString(adapter);
+	}
+
+	@Test
+	public void testFileToString() throws Exception {
+		File source = new File(this.getClass().getResource(testStringFile).getPath());
+		Message adapter = new Message(source);
+		testToString(adapter,File.class);
+	}
+
+	
+	@Test
+	public void testPathAsStream() throws Exception {
+		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
+		Message adapter = new Message(source);
+		testAsStream(adapter);
+	}
+
+	@Test
+	public void testPathAsReader() throws Exception {
+		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
+		Message adapter = new Message(source);
+		testAsReader(adapter);
+	}
+
+	@Test
+	public void testPathAsInputSource() throws Exception {
+		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
+		Message adapter = new Message(source);
+		testAsInputSource(adapter);
+	}
+
+	@Test
+	public void testPathAsByteArray() throws Exception {
+		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
+		Message adapter = new Message(source);
+		testAsByteArray(adapter);
+	}
+
+	@Test
+	public void testPathAsString() throws Exception {
+		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
+		Message adapter = new Message(source);
+		testAsString(adapter);
+	}
+
+	@Test
+	public void testPathToString() throws Exception {
+		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
+		Message adapter = new Message(source);
+		testToString(adapter,source.getClass());
+	}
+
 
 	@Test
 	public void testSerializeWithString() throws Exception {
