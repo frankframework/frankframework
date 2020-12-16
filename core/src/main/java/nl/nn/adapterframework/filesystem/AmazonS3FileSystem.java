@@ -21,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
@@ -58,6 +57,7 @@ import com.amazonaws.services.s3.model.Tier;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
@@ -229,12 +229,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public InputStream readFile(S3Object f) throws FileSystemException, IOException {
+	public Message readFile(S3Object f) throws FileSystemException, IOException {
 		try {
 			final S3Object file = s3Client.getObject(bucketName, f.getKey());
 			final S3ObjectInputStream is = file.getObjectContent();
 
-			return is;
+			return new Message(is);
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}

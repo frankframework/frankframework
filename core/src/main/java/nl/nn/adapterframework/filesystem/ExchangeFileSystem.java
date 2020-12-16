@@ -382,7 +382,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	
 	@Override
-	public InputStream readFile(EmailMessage f) throws FileSystemException, IOException {
+	public Message readFile(EmailMessage f) throws FileSystemException, IOException {
 		EmailMessage emailMessage;
 		PropertySet ps = new PropertySet(EmailMessageSchema.Subject);
 //		ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
@@ -405,12 +405,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			if (isReadMimeContents()) {
 				MimeContent mc = emailMessage.getMimeContent();
-				ByteArrayInputStream bis = new ByteArrayInputStream(mc.getContent());
-				return bis;
+				return new Message(mc.getContent());
 			}
-			String body =MessageBody.getStringFromMessageBody(emailMessage.getBody());
-			ByteArrayInputStream bis = new ByteArrayInputStream(body.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
-			return bis;
+			return new Message(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
@@ -618,7 +615,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 
 	@Override
-	public InputStream readAttachment(Attachment a) throws FileSystemException, IOException {
+	public Message readAttachment(Attachment a) throws FileSystemException, IOException {
 		try {
 			a.load();
 		} catch (Exception e) {
@@ -637,8 +634,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			log.warn("content of attachment is null");
 			content = new byte[0];
 		}
-		InputStream binaryInputStream = new ByteArrayInputStream(content);
-		return binaryInputStream;
+		return new Message(content);
 	}
 
 	@Override

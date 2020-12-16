@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.DirectoryStream;
@@ -18,7 +17,7 @@ import org.junit.Test;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.StringEndsWith.endsWith;
 
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.stream.Message;
 
 public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends HelperedBasicFileSystemTest<F,FS> {
 
@@ -387,11 +386,8 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		F file = fileSystem.toFile(filename);
 		assertTrue("Expected the file ["+filename+"] to be present", _fileExists(filename));
 		
-		InputStream is = fileSystem.readFile(file);
-		String result = Misc.streamToString(is);
-		is.close();
-		
-		assertEquals(result, content);
+		Message result = fileSystem.readFile(file);
+		assertEquals(content, result.asString());
 		
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();

@@ -254,7 +254,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				return new Message(getFileSystem().getCanonicalName(rawMessage));
 			}
 			if (getMessageType().equalsIgnoreCase("contents")) {
-				return new Message(getFileSystem().readFile(rawMessage));
+				return getFileSystem().readFile(rawMessage);
 			}
 			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(rawMessage);
 			if (attributes!=null) {

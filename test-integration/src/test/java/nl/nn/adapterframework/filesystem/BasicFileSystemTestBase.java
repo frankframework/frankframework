@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.HashSet;
@@ -25,9 +24,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> {
 	protected Logger log = LogUtil.getLogger(this);
@@ -116,9 +115,9 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 			
 			// read each the files
 			for(F f: files) {
-				InputStream in=fileSystem.readFile(f); 
+				Message in=fileSystem.readFile(f); 
 				log.debug("reading file ["+fileSystem.getName(f)+"]");
-				String contentsString=StreamUtil.streamToString(in, "\n", "utf-8");
+				String contentsString= in.asString();
 				log.debug("contents ["+contentsString+"]");
 				long len=fileSystem.getFileSize(f);
 				log.debug("length of contents ["+contentsString.length()+"], reported length ["+len+"]");

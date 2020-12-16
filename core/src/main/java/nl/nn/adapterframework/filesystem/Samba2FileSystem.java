@@ -68,6 +68,7 @@ import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -287,7 +288,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public InputStream readFile(String filename) throws FileSystemException, IOException {
+	public Message readFile(String filename) throws FileSystemException, IOException {
 		final File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
 		InputStream is = file.getInputStream();
 		FilterInputStream fis = new FilterInputStream(is) {
@@ -302,7 +303,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 				file.close();
 			}
 		};
-		return fis;
+		return new Message(fis);
 	}
 
 	@Override

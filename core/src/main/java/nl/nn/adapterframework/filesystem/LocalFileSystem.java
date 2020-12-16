@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -32,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.WildCardFilter;
 
@@ -114,8 +114,8 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public InputStream readFile(Path f) throws IOException {
-		return Files.newInputStream(f);
+	public Message readFile(Path f) throws IOException {
+		return new Message(Files.newInputStream(f));
 	}
 
 	@Override

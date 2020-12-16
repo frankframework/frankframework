@@ -34,6 +34,7 @@ import org.apache.commons.net.ftp.FTPReply;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * 
@@ -145,10 +146,10 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public InputStream readFile(FTPFile f) throws FileSystemException, IOException {
+	public Message readFile(FTPFile f) throws FileSystemException, IOException {
 		InputStream inputStream = ftpClient.retrieveFileStream(f.getName());
 		ftpClient.completePendingCommand();
-		return inputStream;
+		return new Message(inputStream);
 	}
 
 	@Override
