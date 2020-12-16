@@ -26,6 +26,8 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.xml.transform.Source;
 
@@ -86,6 +88,13 @@ public class Message implements Serializable {
 		this((Object)request, charset);
 	}
 	public Message(File request) {
+		this((Object)request, null);
+	}
+
+	public Message(Path request, String charset) {
+		this((Object)request, charset);
+	}
+	public Message(Path request) {
 		this((Object)request, null);
 	}
 
@@ -175,6 +184,14 @@ public class Message implements Serializable {
 				throw new IOException("Cannot open file ["+((File)request).getPath()+"]");
 			}
 		}
+		if (request instanceof Path) {
+			log.debug("returning Path as Reader");
+			try {
+				return StreamUtil.getCharsetDetectingInputStreamReader(Files.newInputStream((Path)request), readerCharset);
+			} catch (IOException e) {
+				throw new IOException("Cannot open file ["+((Path)request).getFileName()+"]");
+			}
+		}
 		if (request instanceof byte[]) {
 			log.debug("returning byte[] as Reader");
 			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream((byte[]) request), readerCharset);
@@ -211,6 +228,14 @@ public class Message implements Serializable {
 				return new FileInputStream((File)request);
 			} catch (IOException e) {
 				throw new IOException("Cannot open file ["+((File)request).getPath()+"]");
+			}
+		}
+		if (request instanceof Path) {
+			log.debug("returning Path as InputStream");
+			try {
+				return Files.newInputStream((Path)request);
+			} catch (IOException e) {
+				throw new IOException("Cannot open file ["+((Path)request).getFileName()+"]");
 			}
 		}
 		if (StringUtils.isEmpty(defaultCharset)) {
@@ -430,13 +455,13 @@ public class Message implements Serializable {
 			return 0;
 		}
 
-		try {
-			if (request instanceof FileInputStream) {
+		if (request instanceof FileInputStream) {
+			try {
 				FileInputStream fileStream = (FileInputStream) request;
 				return fileStream.getChannel().size();
+			} catch (IOException e) {
+				log.debug("unable to determine size of stream ["+ClassUtils.nameOf(request)+"]", e);
 			}
-		} catch (IOException e) {
-			log.debug("unable to determine size of stream ["+ClassUtils.nameOf(request)+"]", e);
 		}
 
 		if(request instanceof String) {
@@ -444,6 +469,13 @@ public class Message implements Serializable {
 		}
 		if (request instanceof File) {
 			return ((File) request).length();
+		}
+		if (request instanceof Path) {
+			try {
+				return Files.size((Path) request);
+			} catch (IOException e) {
+				log.debug("unable to determine size of stream ["+ClassUtils.nameOf(request)+"]", e);
+			}
 		}
 		if (request instanceof byte[]) {
 			return ((byte[]) request).length;
