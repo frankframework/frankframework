@@ -164,37 +164,13 @@ public class Message implements Serializable {
 			log.debug("returning Reader as Reader");
 			return (Reader) request;
 		}
-		String readerCharset = charset; //Don't overwrite the Message's charset
-		if (StringUtils.isEmpty(readerCharset)) {
-			readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		}
-		if (request instanceof InputStream) {
+		if (request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[]) {
+			String readerCharset = charset; //Don't overwrite the Message's charset
+			if (StringUtils.isEmpty(readerCharset)) {
+				readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			}
 			log.debug("returning InputStream as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader((InputStream) request, readerCharset);
-		}
-		if (request instanceof URL) {
-			log.debug("returning URL as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader(((URL) request).openStream(), readerCharset);
-		}
-		if (request instanceof File) {
-			log.debug("returning File as Reader");
-			try {
-				return StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream((File)request), readerCharset);
-			} catch (IOException e) {
-				throw new IOException("Cannot open file ["+((File)request).getPath()+"]");
-			}
-		}
-		if (request instanceof Path) {
-			log.debug("returning Path as Reader");
-			try {
-				return StreamUtil.getCharsetDetectingInputStreamReader(Files.newInputStream((Path)request), readerCharset);
-			} catch (IOException e) {
-				throw new IOException("Cannot open file ["+((Path)request).getFileName()+"]");
-			}
-		}
-		if (request instanceof byte[]) {
-			log.debug("returning byte[] as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream((byte[]) request), readerCharset);
+			return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(), readerCharset);
 		}
 		log.debug("returning String as Reader");
 		return new StringReader(request.toString());
@@ -227,7 +203,7 @@ public class Message implements Serializable {
 			try {
 				return new FileInputStream((File)request);
 			} catch (IOException e) {
-				throw new IOException("Cannot open file ["+((File)request).getPath()+"]");
+				throw new IOException("Cannot open file ["+((File)request).getPath()+"]", e);
 			}
 		}
 		if (request instanceof Path) {
@@ -235,7 +211,7 @@ public class Message implements Serializable {
 			try {
 				return Files.newInputStream((Path)request);
 			} catch (IOException e) {
-				throw new IOException("Cannot open file ["+((Path)request).getFileName()+"]");
+				throw new IOException("Cannot open file ["+((Path)request).getFileName()+"]", e);
 			}
 		}
 		if (StringUtils.isEmpty(defaultCharset)) {
