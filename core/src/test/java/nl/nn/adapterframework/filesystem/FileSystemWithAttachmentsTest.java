@@ -10,8 +10,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.util.Misc;
-
 public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttachments<F,A>> extends HelperedBasicFileSystemTest<F,FS> {
 
 	protected IFileSystemWithAttachmentsTestHelper<A> getHelper() {
