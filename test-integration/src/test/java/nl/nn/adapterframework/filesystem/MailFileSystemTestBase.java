@@ -71,7 +71,7 @@ public abstract class MailFileSystemTestBase<M,A,FS> extends SelfContainedBasicF
 	@Test
 	public void testNormalMessageContents() throws Exception {
 		M emailMessage = getFirstFileFromFolder(null);
-		Message content = new Message(fileSystem.readFile(emailMessage));
+		Message content = fileSystem.readFile(emailMessage);
 		String expected = TestFileUtils.getTestFile("/ExchangeMailNormalContents.txt");
 		assertEquals(expected.trim(), content.asString().replaceAll("\r\n", "\n").trim());
 	}
@@ -145,6 +145,16 @@ public abstract class MailFileSystemTestBase<M,A,FS> extends SelfContainedBasicF
 		fileSystem.extractEmail(emailMessage, xml);
 		xml.close();
 		String expected = TestFileUtils.getTestFile("/ExchangeMailProblem.xml");
+		MatchUtils.assertXmlEquals(expected,xml.toString());
+	}
+
+	@Test
+	public void testExtractProblematicMessage2() throws Exception {
+		M emailMessage = getFirstFileFromFolder("XmlProblem2");
+		SaxElementBuilder xml = new SaxElementBuilder("email");
+		fileSystem.extractEmail(emailMessage, xml);
+		xml.close();
+		String expected = TestFileUtils.getTestFile("/ExchangeMailProblem2.xml");
 		MatchUtils.assertXmlEquals(expected,xml.toString());
 	}
 

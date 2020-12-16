@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import nl.nn.adapterframework.stream.Message;
 
 public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAttachments> implements IWithAttachments<MockFileWithAttachments, MockAttachment> {
 
@@ -21,8 +21,8 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 	}
 
 	@Override
-	public InputStream readAttachment(MockAttachment a) throws FileSystemException, IOException {
-		return a.getContents()==null?null:new ByteArrayInputStream(a.getContents());
+	public Message readAttachment(MockAttachment a) throws FileSystemException, IOException {
+		return a.getContents()==null?null:new Message(a.getContents());
 	}
 
 	@Override

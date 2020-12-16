@@ -318,14 +318,14 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {
 				F file=getFile(input, pvl);
-				InputStream in = fileSystem.readFile(file);
+				Message in = fileSystem.readFile(file);
 				if (StringUtils.isNotEmpty(getBase64())) {
-					in = new Base64InputStream(in, getBase64().equals(BASE64_ENCODE));
+					return new Base64InputStream(in.asInputStream(), getBase64().equals(BASE64_ENCODE));
 				}
 				return in;
 			} else if (action.equalsIgnoreCase(ACTION_READ_DELETE)) {
 				F file=getFile(input, pvl);
-				InputStream in = new FilterInputStream(fileSystem.readFile(file)) {
+				InputStream in = new FilterInputStream(fileSystem.readFile(file).asInputStream()) {
 
 					@Override
 					public void close() throws IOException {

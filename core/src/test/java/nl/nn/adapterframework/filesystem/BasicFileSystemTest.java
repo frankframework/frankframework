@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.HashSet;
@@ -112,8 +111,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	public void testReadFile(F file, String expectedContents) throws IOException, FileSystemException {
-		InputStream in = fileSystem.readFile(file);
-		String actual = Message.asString(in);
+		Message in = fileSystem.readFile(file);
+		String actual = in.asString();
 		// test
 		equalsCheck(expectedContents.trim(), actual.trim());
 	}

@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.Arrays;
@@ -13,6 +12,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M> {
@@ -175,9 +175,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public InputStream readFile(MockFile f) throws FileSystemException, IOException {
+	public Message readFile(MockFile f) throws FileSystemException, IOException {
 		checkOpenAndExists(f);
-		return f.getInputStream();
+		return new Message(f.getInputStream());
 	}
 
 	@Override

@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -33,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class MailFileSystemUtils {
@@ -100,8 +98,8 @@ public class MailFileSystemUtils {
 		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
 		addPropertyAsHeader(emailXml,IMailFileSystem.DATETIME_SENT_KEY, properties.get(IMailFileSystem.DATETIME_SENT_KEY));
 		addPropertyAsHeader(emailXml,IMailFileSystem.DATETIME_RECEIVED_KEY, properties.get(IMailFileSystem.DATETIME_RECEIVED_KEY));
-		try (InputStream bodyStream = fileSystem.readFile(emailMessage)) {
-			emailXml.addElement("message", Misc.streamToString(bodyStream));
+		try {
+			emailXml.addElement("message", fileSystem.readFile(emailMessage).asString());
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot read message body",e);
 		}

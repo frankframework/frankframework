@@ -89,6 +89,7 @@
 		<Logger name="nl.nn.adapterframework.testtool" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
+		<Logger name="org.apache.cxf" level="WARN" />
 		<Logger name="bitronix.tm" level="INFO" />
 		
 		<Logger name="GALM" additivity="false" level="INFO">

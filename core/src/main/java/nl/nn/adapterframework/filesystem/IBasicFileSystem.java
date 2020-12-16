@@ -16,13 +16,13 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Interface to represent a basic filesystem, in which files can be 
@@ -71,7 +71,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	public boolean exists(F f) throws FileSystemException;
 
 	public boolean folderExists(String folder) throws FileSystemException;
-	public InputStream readFile(F f) throws FileSystemException, IOException;
+	public Message readFile(F f) throws FileSystemException, IOException;
 	public void deleteFile(F f) throws FileSystemException;
 
 	/**

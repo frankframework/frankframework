@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 
-import org.hamcrest.core.IsInstanceOf;
 import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -29,7 +28,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.util.Misc;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -133,10 +131,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(filename);
 		ParameterValueList pvl = params.getValues(null, session);
 
-		Object result = actor.doAction(message, pvl, session);
-		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
-		String actualContents = Misc.streamToString((InputStream)result);
-		assertEquals(contents, actualContents);
+		Message result = (Message)actor.doAction(message, pvl, session);
+		assertEquals(contents, result.asString());
 	}
 
 	@Test
@@ -165,10 +161,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(filename);
 		ParameterValueList pvl = params.getValues(null, session);
 
-		Object result = actor.doAction(message, pvl, session);
-		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
-		String actualContents = Misc.streamToString((InputStream)result);
-		assertEquals(contents, actualContents);
+		Message result = (Message)actor.doAction(message, pvl, session);
+		assertEquals(contents, result.asString());
 	}
 
 	@Test
@@ -421,10 +415,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
 
-		Object result = actor.doAction(message, pvl, session);
-		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
-		String actualContents = Misc.streamToString((InputStream)result);
-		assertEquals(contents, actualContents);
+		Message result = (Message)actor.doAction(message, pvl, session);
+		assertEquals(contents, result.asString());
 		assertTrue(_fileExists(filename));
 	}
 
@@ -444,10 +436,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		Message message= new Message(fileViaAttribute?null:filename);
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
-		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
-		String actualContents = Misc.streamToString((InputStream)result);
-		assertEquals(contents, actualContents);
+
+		Message result = Message.asMessage(actor.doAction(message, pvl, session));
+		assertEquals(contents, result.asString());
 		assertEquals(fileShouldStillExistAfterwards, _fileExists(filename));
 	}
 
