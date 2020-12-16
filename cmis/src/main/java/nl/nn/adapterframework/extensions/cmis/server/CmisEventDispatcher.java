@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.extensions.cmis.server;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.extensions.cmis.CmisEventListener;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.receivers.JavaListener;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -86,7 +88,7 @@ public class CmisEventDispatcher {
 		try {
 			messageContext.put("CmisEvent", event.name());
 			CmisEventListener listener = eventListeners.get(event);
-			String result = listener.processRequest(null, message, messageContext);
+			String result = listener.processRequest(null, new Message(message), messageContext).asString();
 			if(StringUtils.isEmpty(result))
 				return XmlUtils.buildElement("<cmis/>");
 			else if (XmlUtils.isWellFormed(result, "cmis")) {
@@ -95,7 +97,10 @@ public class CmisEventDispatcher {
 			else {
 				throw new CmisRuntimeException("invalid or unparsable result");
 			}
+		} catch (IOException e) {
+			throw new CmisRuntimeException("invalid or unparsable result", e);
 		}
+
 		//Try and catch the original CMIS exception and throw that instead
 		catch (ListenerException e) {
 			if(e.getCause() instanceof PipeRunException) {

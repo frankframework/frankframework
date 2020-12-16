@@ -45,6 +45,7 @@ import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -375,7 +376,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			/**
 			 * Map multipart parts into messageContext
 			 */
-			String body = "";
+			Message body = new Message("");
 			if (ServletFileUpload.isMultipartContent(request)) {
 				DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 				ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
@@ -388,7 +389,8 @@ public class ApiListenerServlet extends HttpServletBase {
 					//First part -> pipeline input when multipartBodyName=null
 					if((i == 0 && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
 						//TODO this is possible because it's been read from disk multiple times, ideally you want to stream it directly!
-						body = Misc.streamToString(item.getInputStream(),"\n",false);
+						// TODO: avoid converting stream to string before turning it into a message. 
+						body = new Message(Misc.streamToString(item.getInputStream(),"\n",false));
 					}
 
 					XmlBuilder attachment = new XmlBuilder("part");
@@ -452,7 +454,8 @@ public class ApiListenerServlet extends HttpServletBase {
 			 * Process the request through the pipeline
 			 */
 			if (!ServletFileUpload.isMultipartContent(request)) {
-				body = Misc.streamToString(request.getInputStream(),"\n",false);
+				// TODO: avoid converting stream to string before turning it into a message. 
+				body = new Message(Misc.streamToString(request.getInputStream(),"\n",false));
 			}
 
 			String messageId = null;
@@ -463,7 +466,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 			}
 			PipeLineSessionBase.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
-			String result = listener.processRequest(null, body, messageContext);
+			Message result = listener.processRequest(null, body, messageContext);
 
 			/**
 			 * Calculate an eTag over the processed result and store in cache
@@ -471,8 +474,8 @@ public class ApiListenerServlet extends HttpServletBase {
 			if(messageContext.get("updateEtag", true)) {
 				log.debug("calculating etags over processed result");
 				String cleanPattern = listener.getCleanPattern();
-				if(result != null && method.equals("GET") && cleanPattern != null) {
-					String eTag = ApiCacheManager.buildEtag(cleanPattern, result.hashCode());
+				if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) {
+					String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asString().hashCode());
 					log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
 					cache.put(etagCacheKey, eTag);
 					response.addHeader("etag", eTag);
@@ -511,8 +514,9 @@ public class ApiListenerServlet extends HttpServletBase {
 			/**
 			 * Finalize the pipeline and write the result to the response
 			 */
-			if(result != null)
-				response.getWriter().print(result);
+			if(!Message.isEmpty(result)) {
+				StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4000, false, false);
+			}
 			if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
 		}
 		catch (Exception e) {

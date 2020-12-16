@@ -101,7 +101,7 @@ public class IMSSender extends MQSender {
 	}
 	
 	@Override
-	public javax.jms.Message createMessage(Session session, String correlationID, String message) throws NamingException, JMSException {
+	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws NamingException, JMSException {
 		
 		BytesMessage bytesMessage = null;
 		bytesMessage = session.createBytesMessage();
@@ -128,7 +128,7 @@ public class IMSSender extends MQSender {
 			bos.write(IIH_HEADER_SECURITY_SCOPE.getBytes(CHARSET));
 			bos.write(IIH_HEADER_RESERVED.getBytes(CHARSET));
 			
-			byte[] data = message.getBytes(CHARSET);
+			byte[] data = message.asByteArray(CHARSET.name());
 
 			bos.write(shortToBytes(data.length + 13)); //LL, +13 is for LL, ZZ and transaction code bytes
 			bos.write(new byte[2]); //ZZ

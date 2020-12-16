@@ -124,7 +124,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			String correlationID = session==null ? null : (String)session.get(IPipeLineSession.businessCorrelationIdKey);
 			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
 			if (isMultipartResponse()) {
-				return HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session, null);
+				return HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session);
 			}
 		
 		} catch (ParameterException e) {

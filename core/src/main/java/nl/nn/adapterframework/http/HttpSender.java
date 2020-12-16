@@ -75,6 +75,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -527,9 +528,19 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		if (!ok) {
+			Message responseBody = responseHandler.getResponseMessage();
+			String body = "";
+			if(responseBody != null) {
+				responseBody.preserve();
+				try {
+					body = responseBody.asString();
+				} catch(IOException e) {
+					body = "(" + ClassUtils.nameOf(e) + "): " + e.getMessage();
+				}
+			}
 			throw new SenderException(getLogPrefix() + "httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
-					+ " body: " + getResponseBodyAsString(responseHandler));
+					+ " body: " + body);
 			
 		}
 
@@ -570,9 +581,6 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	public Message getResponseBody(HttpResponseHandler responseHandler) {
-		String charset = responseHandler.getCharset();
-		log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
-
 		if ("HEAD".equals(getMethodType())) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			Header[] headers = responseHandler.getAllHeaders();
@@ -585,35 +593,13 @@ public class HttpSender extends HttpSenderBase {
 			return Message.asMessage(headersXml.toXML());
 		}
 
-		return new Message(responseHandler.getResponse(), charset);
+		if (responseHandler.isMultipart()) {
+			log.error("message body is not handled as a multipart");
+		}
+		return responseHandler.getResponseMessage();
 	}
 
-	/**
-	 * Tries to parse the response as a String. If unsuccessful return null.
-	 */
-	public String getResponseBodyAsString(HttpResponseHandler responseHandler) {
-		String responseBody = null;
-		try {
-			responseBody = getResponseBody(responseHandler).asString();
-		} catch(IOException e) {
-			log.warn(getLogPrefix()+"unable to parse response", e);
-			return null;
-		}
-
-		if (StringUtils.isEmpty(responseBody)) {
-			log.warn(getLogPrefix()+"responseBody is empty");
-		} else {
-			int rbLength = responseBody.length();
-			long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
-			if (rbLength >= rbSizeWarn) {
-				log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
-			}
-		}
-
-		return responseBody;
-	}
-
-	public Message getResponseBodyAsBase64(InputStream is) throws IOException {
+	public Message getResponseBodyAsBase64(InputStream is) {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
 		return new Message( new Base64InputStream(is, true) );
 	}
@@ -621,44 +607,33 @@ public class HttpSender extends HttpSenderBase {
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the IPipeLineSession
 	 */
-	public static Message handleMultipartResponse(HttpResponseHandler httpHandler, IPipeLineSession session) throws IOException, SenderException {
-		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), session, httpHandler);
+	public static Message handleMultipartResponse(HttpResponseHandler httpHandler, IPipeLineSession session) throws IOException {
+		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), session);
 	}
 
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the IPipeLineSession
 	 */
-	public static Message handleMultipartResponse(String mimeType, InputStream inputStream, IPipeLineSession session, HttpResponseHandler httpHandler) throws IOException, SenderException {
+	public static Message handleMultipartResponse(String mimeType, InputStream inputStream, IPipeLineSession session) throws IOException {
 		Message result = null;
 		try {
-			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream);
+			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream); //the entire InputStream will be read here!
 			MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);
-				boolean lastPart = mimeMultipart.getCount() == i + 1;
 				if (i == 0) {
 					String charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 					ContentType contentType = ContentType.parse(bodyPart.getContentType());
 					if(contentType.getCharset() != null)
 						charset = contentType.getCharset().name();
 
-					//TODO When the steam is never read, the connection won't be closed. For now, always read the message.
-					InputStream bodyPartInputStream = bodyPart.getInputStream();
-					String resultString = Misc.streamToString(bodyPartInputStream, charset);
-
-					result = new Message(resultString);
-					if (lastPart) {
-						bodyPartInputStream.close();
-					}
+					result = new Message(bodyPart.getInputStream(), charset);
 				} else {
-					// When the last stream is read the
-					// httpMethod.releaseConnection() can be called, hence pass
-					// httpMethod to ReleaseConnectionAfterReadInputStream.
-					session.put("multipart" + i, new ReleaseConnectionAfterReadInputStream( lastPart ? httpHandler : null, bodyPart.getInputStream()));
+					session.put("multipart" + i, bodyPart.getInputStream());
 				}
 			}
 		} catch(MessagingException e) {
-			throw new SenderException("Could not read mime multipart response", e);
+			throw new IOException("Could not read mime multipart response", e);
 		}
 		return result;
 	}

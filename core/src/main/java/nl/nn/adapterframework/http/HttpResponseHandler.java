@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.http.Header;
@@ -35,13 +36,15 @@ import org.apache.http.util.EntityUtils;
 public class HttpResponseHandler {
 	private HttpResponse httpResponse;
 	private HttpEntity httpEntity;
-	private InputStream content;
+	private Message responseMessage = null;
 
 	public HttpResponseHandler(HttpResponse resp) throws IOException {
 		httpResponse = resp;
 		if(httpResponse.getEntity() != null) {
 			httpEntity = httpResponse.getEntity();
-			content = httpEntity.getContent();
+
+			InputStream entityStream = new ReleaseConnectionAfterReadInputStream(this, httpEntity.getContent()); //Wrap the contentStream in a ReleaseConnectionAfterReadInputStream
+			responseMessage = new Message(entityStream, getCharset());
 		}
 	}
 
@@ -55,11 +58,18 @@ public class HttpResponseHandler {
 
 	/**
 	 * Returns an {@link ReleaseConnectionAfterReadInputStream InputStream} that will automatically close the HttpRequest when fully read
-	 * @return an {@link ReleaseConnectionAfterReadInputStream InputStream} retrieved from {@link HttpEntity#getContent()}
+	 * @return an {@link ReleaseConnectionAfterReadInputStream InputStream} retrieved from {@link HttpEntity#getContent()} or NULL when no {@link HttpEntity} is present
 	 */
-	public InputStream getResponse() {
-		//TODO content may be optional
-		return new ReleaseConnectionAfterReadInputStream(this, content);
+	public InputStream getResponse() throws IOException {
+		if(responseMessage == null) {
+			return null;
+		}
+
+		return responseMessage.asInputStream();// IOException cannot occur as the input and output are both InputStreams
+	}
+
+	public Message getResponseMessage() {
+		return responseMessage;
 	}
 
 	public String getHeader(String header) {

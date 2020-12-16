@@ -128,7 +128,11 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			if(getProduces().equalsIgnoreCase("TEXT"))
 				requestContext.put("contentType", "text/plain");
 
-			response = super.processRequest(correlationId, message, requestContext);
+			try {
+				response = super.processRequest(correlationId, new Message(message), requestContext).asString();
+			} catch (IOException e) {
+				throw new ListenerException("Failed to read result", e);
+			}
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 
@@ -141,7 +145,11 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			}
 		}
 		else {
-			response = super.processRequest(correlationId, message, requestContext);
+			try {
+				response = super.processRequest(correlationId, new Message(message), requestContext).asString();
+			} catch (IOException e) {
+				throw new ListenerException("Failed to read result", e);
+			}
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 		}
