@@ -24,22 +24,22 @@ import org.apache.commons.lang.StringUtils;
 
 
 public enum SoapVersion {
-	
+
 	SOAP11("1.1", SOAPConstants.URI_NS_SOAP_ENVELOPE,     "/xml/xsd/soap/envelope.xsd"),
 	SOAP12("1.2", SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE, "/xml/xsd/soap/envelope-1.2.xsd"),
 	NONE("none", null, null),
 	AUTO("auto", null, null);
 
-	public final String description;;
+	public final String description;
 	public final String namespace;
 	public final String location;
-	
+
 	private SoapVersion(String description, String namespace, String location) {
 		this.description = description;
 		this.namespace = namespace;
 		this.location = location;
 	}
-	
+
 	public static SoapVersion getSoapVersion(String s) {
 		if (StringUtils.isEmpty(s)) {
 			return SOAP11;
@@ -68,6 +68,7 @@ public enum SoapVersion {
 		}
 		return result;
 	}
+
 	public String getSchemaLocation() {
 		switch (this) {
 		case SOAP11:
@@ -84,5 +85,4 @@ public enum SoapVersion {
 	public String toString() {
 		return namespace + " " + location;
 	}
-
 }
