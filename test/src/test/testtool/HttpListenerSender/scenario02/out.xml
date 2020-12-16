@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TIMEOUT>
+<<<<<<< HEAD
   <errorMessage timestamp="Wed Dec 16 13:29:52 CET 2020" originator="IAF_ss9 7.6-SNAPSHOT" message="Pipe [LocalHttp] msgId [Test Tool correlation id] : (SocketTimeoutException) Read timed out">
     <location class="nl.nn.adapterframework.pipes.SenderPipe" name="LocalHttp"/>
     <details>nl.nn.adapterframework.core.TimeOutException: (SocketTimeoutException) Read timed out
+=======
+	<errorMessage timestamp="Mon Dec 14 17:48:42 CET 2020" originator="IAF_ss9 7.6-SNAPSHOT" message="Pipe [LocalHttp] msgId [Test Tool correlation id] : (SocketTimeoutException) Read timed out">
+		<location class="nl.nn.adapterframework.pipes.SenderPipe" name="LocalHttp"/>
+		<details>nl.nn.adapterframework.core.TimeOutException: (SocketTimeoutException) Read timed out
+>>>>>>> origin/master
 	at nl.nn.adapterframework.http.HttpSenderBase.sendMessage(HttpSenderBase.java:700)
 	at nl.nn.adapterframework.http.HttpSenderBase$$FastClassBySpringCGLIB$$f73d91f3.invoke(&lt;generated&gt;)
 	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
@@ -11,7 +17,11 @@
 	at org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint.proceed(MethodInvocationProceedingJoinPoint.java:96)
 	at nl.nn.ibistesttool.IbisDebuggerAdvice.debugSenderInputOutputAbort(IbisDebuggerAdvice.java:180)
 	at nl.nn.ibistesttool.IbisDebuggerAdvice.debugSenderInputOutputAbort(IbisDebuggerAdvice.java:210)
+<<<<<<< HEAD
 	at sun.reflect.GeneratedMethodAccessor532.invoke(Unknown Source)
+=======
+	at sun.reflect.GeneratedMethodAccessor482.invoke(Unknown Source)
+>>>>>>> origin/master
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.lang.reflect.Method.invoke(Method.java:498)
 	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethodWithGivenArgs(AbstractAspectJAdvice.java:627)
@@ -21,7 +31,11 @@
 	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:92)
 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:671)
+<<<<<<< HEAD
 	at nl.nn.adapterframework.http.HttpSender$$EnhancerBySpringCGLIB$$5049d63.sendMessage(&lt;generated&gt;)
+=======
+	at nl.nn.adapterframework.http.HttpSender$$EnhancerBySpringCGLIB$$d1a0b95.sendMessage(&lt;generated&gt;)
+>>>>>>> origin/master
 	at nl.nn.adapterframework.pipes.MessageSendingPipe.sendMessage(MessageSendingPipe.java:849)
 	at nl.nn.adapterframework.pipes.MessageSendingPipe.doPipe(MessageSendingPipe.java:605)
 	at nl.nn.adapterframework.pipes.MessageSendingPipe$$FastClassBySpringCGLIB$$b131b2cb.invoke(&lt;generated&gt;)
@@ -31,7 +45,11 @@
 	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:92)
 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:671)
+<<<<<<< HEAD
 	at nl.nn.adapterframework.pipes.SenderPipe$$EnhancerBySpringCGLIB$$6ba00244.doPipe(&lt;generated&gt;)
+=======
+	at nl.nn.adapterframework.pipes.SenderPipe$$EnhancerBySpringCGLIB$$73b57076.doPipe(&lt;generated&gt;)
+>>>>>>> origin/master
 	at nl.nn.adapterframework.processors.CorePipeProcessor.processPipe(CorePipeProcessor.java:32)
 	at nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor.processPipe(CheckMessageSizePipeProcessor.java:37)
 	at nl.nn.adapterframework.processors.LockerPipeProcessor.processPipe(LockerPipeProcessor.java:60)
@@ -43,7 +61,11 @@
 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:157)
 	at org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint.proceed(MethodInvocationProceedingJoinPoint.java:96)
 	at nl.nn.ibistesttool.IbisDebuggerAdvice.debugPipeGetInputFrom(IbisDebuggerAdvice.java:155)
+<<<<<<< HEAD
 	at sun.reflect.GeneratedMethodAccessor519.invoke(Unknown Source)
+=======
+	at sun.reflect.GeneratedMethodAccessor470.invoke(Unknown Source)
+>>>>>>> origin/master
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.lang.reflect.Method.invoke(Method.java:498)
 	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethodWithGivenArgs(AbstractAspectJAdvice.java:627)
@@ -53,7 +75,11 @@
 	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:92)
 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:671)
+<<<<<<< HEAD
 	at nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor$$EnhancerBySpringCGLIB$$37243d71.processPipe(&lt;generated&gt;)
+=======
+	at nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor$$EnhancerBySpringCGLIB$$3f39aba3.processPipe(&lt;generated&gt;)
+>>>>>>> origin/master
 	at nl.nn.adapterframework.processors.InputOutputPipeProcessor.processPipe(InputOutputPipeProcessor.java:80)
 	at nl.nn.adapterframework.processors.InputOutputPipeProcessor$$FastClassBySpringCGLIB$$feb9be85.invoke(&lt;generated&gt;)
 	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
@@ -61,7 +87,11 @@
 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:157)
 	at org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint.proceed(MethodInvocationProceedingJoinPoint.java:96)
 	at nl.nn.ibistesttool.IbisDebuggerAdvice.debugPipeInputOutputAbort(IbisDebuggerAdvice.java:125)
+<<<<<<< HEAD
 	at sun.reflect.GeneratedMethodAccessor517.invoke(Unknown Source)
+=======
+	at sun.reflect.GeneratedMethodAccessor469.invoke(Unknown Source)
+>>>>>>> origin/master
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.lang.reflect.Method.invoke(Method.java:498)
 	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethodWithGivenArgs(AbstractAspectJAdvice.java:627)
@@ -71,7 +101,11 @@
 	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:92)
 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:671)
+<<<<<<< HEAD
 	at nl.nn.adapterframework.processors.InputOutputPipeProcessor$$EnhancerBySpringCGLIB$$3b3ccacc.processPipe(&lt;generated&gt;)
+=======
+	at nl.nn.adapterframework.processors.InputOutputPipeProcessor$$EnhancerBySpringCGLIB$$435238fe.processPipe(&lt;generated&gt;)
+>>>>>>> origin/master
 	at nl.nn.adapterframework.processors.ExceptionHandlingPipeProcessor.processPipe(ExceptionHandlingPipeProcessor.java:37)
 	at nl.nn.adapterframework.processors.MonitoringPipeProcessor.processPipe(MonitoringPipeProcessor.java:81)
 	at nl.nn.adapterframework.processors.CorePipeLineProcessor.processPipeLine(CorePipeLineProcessor.java:165)
@@ -81,7 +115,11 @@
 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:157)
 	at org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint.proceed(MethodInvocationProceedingJoinPoint.java:96)
 	at nl.nn.ibistesttool.IbisDebuggerAdvice.debugPipeLineInputOutputAbort(IbisDebuggerAdvice.java:104)
+<<<<<<< HEAD
 	at sun.reflect.GeneratedMethodAccessor523.invoke(Unknown Source)
+=======
+	at sun.reflect.GeneratedMethodAccessor473.invoke(Unknown Source)
+>>>>>>> origin/master
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.lang.reflect.Method.invoke(Method.java:498)
 	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethodWithGivenArgs(AbstractAspectJAdvice.java:627)
@@ -91,16 +129,26 @@
 	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:92)
 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:671)
+<<<<<<< HEAD
 	at nl.nn.adapterframework.processors.CorePipeLineProcessor$$EnhancerBySpringCGLIB$$1df060ec.processPipeLine(&lt;generated&gt;)
+=======
+	at nl.nn.adapterframework.processors.CorePipeLineProcessor$$EnhancerBySpringCGLIB$$2605cf1e.processPipeLine(&lt;generated&gt;)
+>>>>>>> origin/master
 	at nl.nn.adapterframework.processors.LockerPipeLineProcessor.processPipeLine(LockerPipeLineProcessor.java:70)
 	at nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor.processPipeLine(TransactionAttributePipeLineProcessor.java:49)
 	at nl.nn.adapterframework.processors.CachePipeLineProcessor.processPipeLine(CachePipeLineProcessor.java:39)
 	at nl.nn.adapterframework.processors.InputOutputPipeLineProcessor.processPipeLine(InputOutputPipeLineProcessor.java:48)
 	at nl.nn.adapterframework.core.PipeLine.process(PipeLine.java:524)
 	at nl.nn.adapterframework.core.Adapter.processMessageWithExceptions(Adapter.java:667)
+<<<<<<< HEAD
 	at nl.nn.adapterframework.receivers.Receiver.processMessageInAdapter(Receiver.java:1251)
 	at nl.nn.adapterframework.receivers.Receiver.processRequest(Receiver.java:970)
 	at nl.nn.adapterframework.receivers.Receiver.processRequest(Receiver.java:937)
+=======
+	at nl.nn.adapterframework.receivers.Receiver.processMessageInAdapter(Receiver.java:1257)
+	at nl.nn.adapterframework.receivers.Receiver.processRequest(Receiver.java:976)
+	at nl.nn.adapterframework.receivers.Receiver.processRequest(Receiver.java:943)
+>>>>>>> origin/master
 	at nl.nn.adapterframework.receivers.JavaListener.processRequest(JavaListener.java:152)
 	at nl.nn.adapterframework.dispatcher.DispatcherManagerImpl.processRequest(DispatcherManagerImpl.java:123)
 	at nl.nn.adapterframework.senders.IbisJavaSender.sendMessage(IbisJavaSender.java:125)
@@ -127,6 +175,11 @@ Caused by: java.net.SocketTimeoutException: Read timed out
 	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:72)
 	at nl.nn.adapterframework.http.HttpSenderBase.sendMessage(HttpSenderBase.java:663)
 	... 101 more</details>
+<<<<<<< HEAD
     <originalMessage messageId="Test Tool correlation id">&lt;HttpListerSenderREQ/&gt;</originalMessage>
   </errorMessage>
+=======
+		<originalMessage messageId="Test Tool correlation id">&lt;HttpListerSenderREQ/&gt;</originalMessage>
+	</errorMessage>
+>>>>>>> origin/master
 </TIMEOUT>

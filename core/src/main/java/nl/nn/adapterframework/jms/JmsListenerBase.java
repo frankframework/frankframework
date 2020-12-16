@@ -274,7 +274,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 			}
 		}
 		try {
-			replyMessage = new Message(soapWrapper.putInEnvelope(rawReply.asString(), getReplyEncodingStyleURI(),getReplyNamespaceURI(),soapHeader));
+			replyMessage = soapWrapper.putInEnvelope(rawReply, getReplyEncodingStyleURI(),getReplyNamespaceURI(),soapHeader);
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert message",e);
 		}

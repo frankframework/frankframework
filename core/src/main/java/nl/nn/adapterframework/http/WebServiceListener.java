@@ -40,6 +40,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -148,7 +149,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	}
 
 	@Override
-	public String processRequest(String correlationId, String message, Map<String, Object> requestContext) throws ListenerException {
+	public Message processRequest(String correlationId, Message message, Map<String, Object> requestContext) throws ListenerException {
 		if (!attachmentSessionKeysList.isEmpty()) {
 			XmlBuilder xmlMultipart = new XmlBuilder("parts");
 			for(String attachmentSessionKey: attachmentSessionKeysList) {
@@ -164,17 +165,17 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 		if (isSoap()) {
 			try {
-				log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
-				String request = soapWrapper.getBody(message);
-				String result = super.processRequest(correlationId, request, requestContext);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
+				Message request = soapWrapper.getBody(message);
+				Message result = super.processRequest(correlationId, request, requestContext);
 
 				String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
 				String soapProtocol = (String) requestContext.get("soapProtocol");
-				if(SOAPConstants.SOAP_1_2_PROTOCOL.equals(soapProtocol))
+				if(SOAPConstants.SOAP_1_2_PROTOCOL.equals(soapProtocol)) {
 					soapNamespace = SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE;
-
-				String reply = soapWrapper.putInEnvelope(result, null, null, null, null, soapNamespace, null, false);
-				log.debug(getLogPrefix()+"replied SOAPMSG [" + reply + "]");
+				}
+				Message reply = soapWrapper.putInEnvelope(result, null, null, null, null, soapNamespace, null, false);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"replied SOAPMSG [" + reply + "]");
 				return reply;
 			} catch (Exception e) {
 				throw new ListenerException(e);

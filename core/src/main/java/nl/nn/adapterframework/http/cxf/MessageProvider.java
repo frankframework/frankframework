@@ -21,6 +21,7 @@ import javax.xml.ws.ServiceMode;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * A JAX-WS wired message provider for handling soap messages
@@ -42,7 +43,7 @@ public class MessageProvider extends SOAPProviderBase {
 	}
 
 	@Override
-	String processRequest(String correlationId, String message, IPipeLineSession pipelineSession) throws ListenerException {
+	Message processRequest(String correlationId, Message message, IPipeLineSession pipelineSession) throws ListenerException {
 		return listener.processRequest(correlationId, message, pipelineSession);
 	}
 

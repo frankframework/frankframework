@@ -207,7 +207,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								log.debug("wrap succeeded");
 								message = wrapResult.getResult();
 							}
-							log.debug("PipeLineResult after wrapping [" + message.toString() + "]");
+							if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ));
 						}
 
 						if (!outputWrapError) {
@@ -268,7 +268,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								skString = skString + "\n " + key + "=[" + value + "]";
 							}
 							log.debug("Available session keys at finishing pipeline of adapter [" + pipeLine.getOwner().getName() + "]:" + skString);
-							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: ["+ (message.asObject()==null?"<null>":"("+message.asObject().getClass().getSimpleName()+") ["+message.asObject() +"]" )+ "] with exit-state ["+state+"]");
+							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ) + " with exit-state ["+state+"]");
 						}
 					}
 				} else {

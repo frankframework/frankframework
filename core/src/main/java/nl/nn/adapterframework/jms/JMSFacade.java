@@ -278,11 +278,11 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 		}
 	}
 
-	public javax.jms.Message createMessage(Session session, String correlationID, String message) throws NamingException, JMSException {
+	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws NamingException, JMSException, IOException {
 		TextMessage textMessage = null;
 		textMessage = session.createTextMessage();
 		setMessageCorrelationID(textMessage, correlationID);
-		textMessage.setText(message);
+		textMessage.setText(message.asString());
 		return textMessage;
 	}
 
@@ -514,14 +514,13 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 		return messageConsumer;
 	}
 
-	// TODO: send functions could benefit from have Message messages instead of String
-	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException {
+	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException, IOException {
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, false);
 	}
-	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws NamingException, JMSException, SenderException {
+	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws NamingException, JMSException, SenderException, IOException {
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
 	}
-	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws NamingException, JMSException, SenderException {
+	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws NamingException, JMSException, SenderException, IOException {
 		javax.jms.Message msg = createMessage(session, correlationId, message);
 		MessageProducer mp;
 		try {
@@ -627,8 +626,7 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 		throws NamingException, JMSException {
 		return send(session, dest, message, false);
 	}
-	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException)
-			throws NamingException, JMSException {
+	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws NamingException, JMSException {
 		try {
 			if (useJms102()) {
 				if (dest instanceof Topic) {
@@ -682,7 +680,7 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 	 */
 	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 //		TextMessage message = null;
-		String rawMessageText;
+		Message message;
 /*
 		try {
 			message = (TextMessage) rawMessage;
@@ -693,25 +691,26 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 		rawMessageText= message.getText();
 */
 		if (rawMessage instanceof IMessageWrapper) {
-			rawMessageText = ((IMessageWrapper)rawMessage).getMessage().asString();
+			message = ((IMessageWrapper)rawMessage).getMessage();
 		} else if (rawMessage instanceof TextMessage) {
-			rawMessageText = ((TextMessage)rawMessage).getText();
+			message = new Message(((TextMessage)rawMessage).getText());
 		} else {
-			rawMessageText = (String)rawMessage;
+			message = new Message((String)rawMessage);
 		}
 		if (!soap) {
-			return new Message(rawMessageText);
+			return message;
 		}
-		String messageText=extractMessageBody(rawMessageText, context, soapWrapper);
+		message.preserve();
+		Message messageText=extractMessageBody(message, context, soapWrapper);
 		if (StringUtils.isNotEmpty(soapHeaderSessionKey)) {
-			String soapHeader=soapWrapper.getHeader(rawMessageText);
+			String soapHeader=soapWrapper.getHeader(message);
 			context.put(soapHeaderSessionKey,soapHeader);
 		}
-		return new Message(messageText);
+		return messageText;
 	}
 
-	protected String extractMessageBody(String rawMessageText, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
-		return soapWrapper.getBody(rawMessageText);
+	protected Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
+		return soapWrapper.getBody(message);
 	}
 
 	@Override

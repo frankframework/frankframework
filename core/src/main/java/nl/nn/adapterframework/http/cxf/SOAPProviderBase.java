@@ -52,6 +52,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -172,9 +173,8 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 			try {
 				log.debug(getLogPrefix(correlationId)+"processing message");
-				result = processRequest(correlationId, message, pipelineSession);
-			}
-			catch (ListenerException e) {
+				result = processRequest(correlationId, new Message(message), pipelineSession).asString();
+			} catch (ListenerException | IOException e) {
 				String m = "Could not process SOAP message: " + e.getMessage();
 				log.error(m);
 				throw new WebServiceException(m, e);
@@ -284,7 +284,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	 * @param pipelineSession messageContext (containing attachments if available)
 	 * @return response to send back
 	 */
-	abstract String processRequest(String correlationId, String message, IPipeLineSession pipelineSession) throws ListenerException;
+	abstract Message processRequest(String correlationId, Message message, IPipeLineSession pipelineSession) throws ListenerException;
 
 	/**
 	 * SessionKey containing attachment information, or null if no attachments

@@ -30,6 +30,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
@@ -100,14 +101,15 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
 	}
 
-	public String processRequest(String correlationId, String message, IPipeLineSession requestContext) throws ListenerException {
-		String result = super.processRequest(correlationId, message, requestContext);
+	public Message processRequest(String correlationId, Message message, IPipeLineSession requestContext) throws ListenerException {
+		Message result = super.processRequest(correlationId, message, requestContext);
 
 		//Return null when super.processRequest() returns an empty string
-		if(result != null && result.isEmpty())
+		if(Message.isEmpty(result)) {
 			return null;
-		else
-			return result;
+		}
+
+		return result;
 	}
 
 	@Override
