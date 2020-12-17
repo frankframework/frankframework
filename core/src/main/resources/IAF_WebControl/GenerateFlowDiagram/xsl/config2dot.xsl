@@ -65,7 +65,7 @@
 		<xsl:value-of select="@name" />
 		<xsl:text>\n(</xsl:text>
 		<xsl:choose>
-			<xsl:when test="@className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe'">
+			<xsl:when test="@className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe' or @className='nl.nn.adapterframework.pipes.SenderPipe'">
 				<xsl:call-template name="lastIndexOf">
 					<xsl:with-param name="string" select="sender/@className" />
 				</xsl:call-template>
@@ -78,7 +78,7 @@
 		</xsl:choose>
 		<xsl:text>)</xsl:text>
 		<xsl:text>&quot;</xsl:text>
-		<xsl:if test="@className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe'">
+		<xsl:if test="@className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe' or @className='nl.nn.adapterframework.pipes.SenderPipe'">
 			<xsl:text>, shape=parallelogram</xsl:text>
 		</xsl:if>
 		<xsl:text>]</xsl:text>

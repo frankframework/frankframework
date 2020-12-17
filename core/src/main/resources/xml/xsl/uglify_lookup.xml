@@ -10,6 +10,11 @@
     <ClassName>nl.nn.adapterframework.extensions.bis.BisJmsListener</ClassName>
   </Element>
   <Element>
+    <Name>CmisEventListener</Name>
+    <Type>listener</Type>
+    <ClassName>nl.nn.adapterframework.extensions.cmis.CmisEventListener</ClassName>
+  </Element>
+  <Element>
     <Name>DirectoryListener</Name>
     <Type>listener</Type>
     <ClassName>nl.nn.adapterframework.receivers.DirectoryListener</ClassName>
@@ -148,6 +153,16 @@
     <Name>BisJmsSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.extensions.bis.BisJmsSender</ClassName>
+  </Element>
+  <Element>
+    <Name>CmisHttpSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.extensions.cmis.CmisHttpSender</ClassName>
+  </Element>
+  <Element>
+    <Name>CmisSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.extensions.cmis.CmisSender</ClassName>
   </Element>
   <Element>
     <Name>CommandSender</Name>
@@ -1008,6 +1023,16 @@
     <Name>BisJmsErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.extensions.bis.BisJmsSender</ClassName>
+  </Element>
+  <Element>
+    <Name>CmisErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.extensions.cmis.CmisSender</ClassName>
+  </Element>
+  <Element>
+    <Name>CmisHttpErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.extensions.cmis.CmisHttpSender</ClassName>
   </Element>
   <Element>
     <Name>CommandErrorSender</Name>
