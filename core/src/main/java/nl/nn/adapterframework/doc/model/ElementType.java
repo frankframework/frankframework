@@ -16,11 +16,20 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import static java.util.Arrays.asList;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Represents a type of FrankElement instances, which appears in the FF! Java code as
@@ -32,8 +41,7 @@ import lombok.Getter;
  *
  */
 public class ElementType {
-	private @Getter String fullName;
-	private @Getter String simpleName;
+	private static Logger log = LogUtil.getLogger(ElementType.class);
 	private @Getter Map<String, FrankElement> members;
 	private @Getter boolean fromJavaInterface;
 	
@@ -49,11 +57,50 @@ public class ElementType {
 	 */
 	private @Getter LinkedHashSet<String> configChildSyntax1Names = new LinkedHashSet<>();
 
+	private static class InterfaceHierarchyItem {
+		private @Getter String fullName;
+		private @Getter String simpleName;
+		private @Getter Map<String, InterfaceHierarchyItem> parentInterfaces = new TreeMap<>();
+
+		InterfaceHierarchyItem(Class<?> clazz) {
+			this.fullName = clazz.getName();
+			this.simpleName = clazz.getSimpleName();
+			if(clazz.isInterface()) {
+				for(Class<?> superInterface: clazz.getInterfaces()) {
+					InterfaceHierarchyItem superInterfaceHierarchyItem = new InterfaceHierarchyItem(superInterface);
+					parentInterfaces.put(superInterfaceHierarchyItem.getFullName(), superInterfaceHierarchyItem);
+				}
+			}
+		}
+
+		List<ElementType> findMatchingElementTypes(FrankDocModel model) {
+			ElementType currentMatch = model.findElementType(fullName);
+			if(currentMatch != null) {
+				return asList(currentMatch);
+			}
+			List<ElementType> result = new ArrayList<>();
+			for(String parentKey: parentInterfaces.keySet()) {
+				result.addAll(parentInterfaces.get(parentKey).findMatchingElementTypes(model));
+			}
+			return result;
+		}
+	}
+
+	private final InterfaceHierarchyItem interfaceHierarchy;
+	private @Getter ElementType founder;
+
 	ElementType(Class<?> clazz) {
-		fullName = clazz.getName();
-		simpleName = clazz.getSimpleName();
+		interfaceHierarchy = new InterfaceHierarchyItem(clazz);
 		members = new HashMap<>();
 		this.fromJavaInterface = clazz.isInterface();
+	}
+
+	public String getFullName() {
+		return interfaceHierarchy.getFullName();
+	}
+
+	public String getSimpleName() {
+		return interfaceHierarchy.getSimpleName();
 	}
 
 	void addMember(FrankElement member) {
@@ -62,12 +109,34 @@ public class ElementType {
 
 	FrankElement getSingletonElement() throws ReflectiveOperationException {
 		if(members.size() != 1) {
-			throw new ReflectiveOperationException(String.format("Expected that ElementType [%s] contains exactly one element", fullName));
+			throw new ReflectiveOperationException(String.format("Expected that ElementType [%s] contains exactly one element", getFullName()));
 		}
 		return members.values().iterator().next();
 	}
 
 	void addConfigChildSyntax1Name(String syntax1Name) {
 		configChildSyntax1Names.add(syntax1Name);
+	}
+
+	void calculateFounder(FrankDocModel model) {
+		if(! fromJavaInterface) {
+			founder = this;
+			return;
+		}
+		List<ElementType> candidates = new ArrayList<>();
+		for(String key: interfaceHierarchy.getParentInterfaces().keySet()) {
+			candidates.addAll(interfaceHierarchy.getParentInterfaces().get(key).findMatchingElementTypes(model));
+		}
+		if(candidates.isEmpty()) {
+			founder = this;
+		} else {
+			founder = candidates.get(0);
+			if(candidates.size() >= 2) {
+				log.warn(String.format("There are multiple candidates for the founder of ElementType [%s], which are [%s]. Chose [%s]",
+						getFullName(),
+						candidates.stream().map(ElementType::getFullName).collect(Collectors.joining(", ")),
+						founder.getFullName()));
+			}
+		}
 	}
 }

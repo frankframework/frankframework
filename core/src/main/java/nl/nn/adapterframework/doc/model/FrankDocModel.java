@@ -387,13 +387,30 @@ public class FrankDocModel {
 	void createElementRoles() {
 		allElements.values().stream()
 			.flatMap(elem -> elem.getConfigChildren(ALL).stream())
-			.forEach(this::createElementRoleIfNotPresent);				
+			.forEach(this::createElementRoleIfNotPresent);	
+		allTypes.values().forEach(et -> et.calculateFounder(this));
+		allElementRoles.values().forEach(this::calculateRoleFounder);
 	}
 
 	void createElementRoleIfNotPresent(ConfigChild configChild) {
 		ElementRole.Key key = new ElementRole.Key(configChild);
 		if(! allElementRoles.containsKey(key)) {
 			allElementRoles.put(key, elementRoleFactory.create(configChild));
+		}
+	}
+
+	private void calculateRoleFounder(ElementRole role) {
+		ElementRole candidateFounder = findElementRole(
+				role.getElementType().getFounder().getFullName(),
+				role.getSyntax1Name());
+		if(candidateFounder == null) {
+			log.warn(String.format("No element role present for the founder [%s] of element type [%s] with syntax 1 name [%s]",
+					role.getElementType().getFounder().getFullName(),
+					role.getElementType().getFullName(),
+					role.getSyntax1Name()));
+			role.setFounder(role);
+		} else {
+			role.setFounder(candidateFounder);
 		}
 	}
 

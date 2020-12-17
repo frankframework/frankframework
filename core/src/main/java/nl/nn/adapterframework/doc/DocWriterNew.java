@@ -533,6 +533,10 @@ public class DocWriterNew {
 		XmlBuilder choice = writeFilter.addChoice(group);
 		List<ElementRole> childRoles = model.getElementTypeMemberChildRoles(
 				role.getElementType(), IN_XSD, DEPRECATED, f -> ! f.isDeprecated());
+		childRoles = childRoles.stream()
+				.map(ElementRole::getFounder)
+				.distinct()
+				.collect(Collectors.toList());
 		for(ElementRole childRole: childRoles) {
 			addElementTypeMemberChildGroupOption(choice, childRole);
 		}

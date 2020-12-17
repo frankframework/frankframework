@@ -5,12 +5,14 @@ import java.util.Map;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.doc.Utils;
 
 public class ElementRole {
 	private final @Getter ElementType elementType;
 	private final @Getter String syntax1Name;
 	private final int syntax1NameSeq;
+	private @Getter @Setter ElementRole founder;
 
 	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq) {
 		this.elementType = elementType;
