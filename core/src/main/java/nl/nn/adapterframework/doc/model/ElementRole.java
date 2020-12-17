@@ -43,10 +43,6 @@ public class ElementRole {
 			return new ElementRole(elementType, syntax1Name, newSyntax1NameSeq(syntax1Name));
 		}
 
-		ElementRole create(ConfigChild configChild) {
-			return create(configChild.getElementType(), configChild.getSyntax1Name());
-		}
-
 		private int newSyntax1NameSeq(String syntax1Name) {
 			int maxExistingSyntax1NameSeq = numUsagePerSyntax1Name.getOrDefault(syntax1Name, 0);
 			int syntax1NameSeq = maxExistingSyntax1NameSeq + 1;

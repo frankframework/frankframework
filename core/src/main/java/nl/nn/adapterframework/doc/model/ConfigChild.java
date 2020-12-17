@@ -120,14 +120,16 @@ public class ConfigChild extends ElementChild {
 		}
 	}
 
-	private @Getter @Setter ElementType elementType;
 	private @Getter @Setter int sequenceInConfig;
 	private @Getter @Setter boolean mandatory;
 	private @Getter @Setter boolean allowMultiple;
-	private @Getter @Setter String syntax1Name;
+	private @Getter @Setter ElementRole elementRole;
 
-	ConfigChild(FrankElement owningElement) {
+	ConfigChild(FrankElement owningElement, SortNode sortNode) {
 		super(owningElement);
+		setDocumented(sortNode.isDocumented());
+		setSequenceInConfig(sortNode.getSequenceInConfig());
+		setDeprecated(sortNode.isDeprecated());
 	}
 
 	@Override
@@ -136,16 +138,24 @@ public class ConfigChild extends ElementChild {
 	}
 
 	public String getSyntax1NamePlural() {
-		if(syntax1Name.endsWith("s")) {
-			return syntax1Name;
+		if(getSyntax1Name().endsWith("s")) {
+			return getSyntax1Name();
 		} else {
-			return syntax1Name + "s";
+			return getSyntax1Name() + "s";
 		}
+	}
+
+	public String getSyntax1Name() {
+		return elementRole.getSyntax1Name();
+	}
+
+	public ElementType getElementType() {
+		return elementRole.getElementType();
 	}
 
 	void registerSyntax1NameWithElementType(final String syntax1Name) {
 		if(IN_XSD.test(this)) {
-			elementType.addConfigChildSyntax1Name(syntax1Name);
+			elementRole.getElementType().addConfigChildSyntax1Name(syntax1Name);
 		}
 	}
 

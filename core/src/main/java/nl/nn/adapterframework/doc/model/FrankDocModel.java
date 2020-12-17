@@ -355,22 +355,19 @@ public class FrankDocModel {
 	private List<ConfigChild> createConfigChildren(Method[] methods, FrankElement parent) throws ReflectiveOperationException {
 		List<ConfigChild> result = new ArrayList<>();
 		for(ConfigChild.SortNode sortNode: createSortNodes(methods, parent)) {
-			ConfigChild configChild = new ConfigChild(parent);
+			ConfigChild configChild = new ConfigChild(parent, sortNode);
 			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(sortNode.getName());
-			Class<?> elementClass = sortNode.getMethod().getParameterTypes()[0];
-			configChild.setElementType(findOrCreateElementType(elementClass));
-			configChild.setDocumented(sortNode.isDocumented());
-			configChild.setSequenceInConfig(sortNode.getSequenceInConfig());
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
-			configChild.setDeprecated(sortNode.isDeprecated());
-			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
+			Class<?> elementTypeClass = sortNode.getMethod().getParameterTypes()[0];
+			configChild.setElementRole(findOrCreateElementRole(
+					elementTypeClass, configChildDescriptor.getSyntax1Name()));
 			result.add(configChild);
 		}
 		return result;
 	}
 
-	private List<ConfigChild.SortNode>createSortNodes(Method[] methods, FrankElement parent) {
+	private List<ConfigChild.SortNode> createSortNodes(Method[] methods, FrankElement parent) {
 		List<Method> configChildSetters = Arrays.asList(methods).stream()
 				.filter(m -> Modifier.isPublic(m.getModifiers()))
 				.filter(Utils::isConfigChildSetter)
@@ -390,23 +387,25 @@ public class FrankDocModel {
 		return sortNodes;
 	}
 
+	ElementRole findOrCreateElementRole(Class<?> elementTypeClass, String syntax1Name) throws ReflectiveOperationException {
+		ElementType elementType = findOrCreateElementType(elementTypeClass);
+		ElementRole.Key key = new ElementRole.Key(elementType.getFullName(), syntax1Name);
+		if(allElementRoles.containsKey(key)) {
+			return allElementRoles.get(key);
+		} else {
+			ElementRole result = elementRoleFactory.create(elementType, syntax1Name);
+			allElementRoles.put(key, result);
+			return result;
+		}
+	}
+
 	// This should be done after creating all elements. If we would do it
 	// while creating the elements, the recursion would reverse the
 	// creation order of the element groups. The order is important
 	// for generating the right names in the XSD.
 	void createElementRoles() {
-		allElements.values().stream()
-			.flatMap(elem -> elem.getConfigChildren(ALL).stream())
-			.forEach(this::createElementRoleIfNotPresent);	
 		allTypes.values().forEach(et -> et.calculateFounder(this));
 		allElementRoles.values().forEach(this::calculateRoleFounder);
-	}
-
-	void createElementRoleIfNotPresent(ConfigChild configChild) {
-		ElementRole.Key key = new ElementRole.Key(configChild);
-		if(! allElementRoles.containsKey(key)) {
-			allElementRoles.put(key, elementRoleFactory.create(configChild));
-		}
 	}
 
 	private void calculateRoleFounder(ElementRole role) {
