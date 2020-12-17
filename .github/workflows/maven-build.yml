@@ -23,5 +23,5 @@ jobs:
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
-        TZ: GMT
+        TZ: Europe/Amsterdam
       run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -Pibissource,codecoverage
