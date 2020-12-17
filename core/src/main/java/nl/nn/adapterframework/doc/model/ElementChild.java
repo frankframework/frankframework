@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  * @author martijn
  */
-public abstract class ElementChild implements Comparable<ElementChild> {
+public abstract class ElementChild {
 	private static Logger log = LogUtil.getLogger(ElementChild.class);
 
 	private @Getter FrankElement owningElement;

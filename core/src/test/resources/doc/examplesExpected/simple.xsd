@@ -3,8 +3,8 @@
   <xs:element name="Start">
     <xs:complexType>
       <xs:sequence>
-        <xs:group ref="Syntax1NameIChildElementGroup" minOccurs="0" maxOccurs="1" />
         <xs:element ref="Syntax1NameTChild" minOccurs="0" maxOccurs="unbounded" />
+        <xs:group ref="Syntax1NameIChildElementGroup" minOccurs="0" maxOccurs="1" />
       </xs:sequence>
       <xs:attribute name="attribute" type="xs:string" />
       <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
@@ -14,7 +14,7 @@
   <xs:element name="Syntax1NameTChild">
     <xs:complexType>
       <xs:sequence />
-      <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameTChild" use="prohibited" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="syntax1NameTChild" use="prohibited" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" use="prohibited" />
     </xs:complexType>
   </xs:element>
@@ -23,7 +23,7 @@
       <xs:element name="Syntax1NameIChild">
         <xs:complexType>
           <xs:group ref="IChildMemberChildGroup" minOccurs="0" maxOccurs="unbounded" />
-          <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute />
         </xs:complexType>
@@ -32,7 +32,7 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="DescribedPossibleIChildType">
-              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -42,7 +42,7 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="NotDescribedPossibleIChildType">
-              <xs:attribute name="elementType" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild" use="prohibited" />
             </xs:extension>
           </xs:complexContent>

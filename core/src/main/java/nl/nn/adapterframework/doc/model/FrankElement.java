@@ -18,7 +18,6 @@ package nl.nn.adapterframework.doc.model;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -76,7 +75,6 @@ public class FrankElement {
 	}
 
 	private <C extends ElementChild> void setChildrenOfKind(List<C> inputChildren, Class<C> kind) {
-		Collections.sort(inputChildren);
 		LinkedHashMap<AbstractKey, C> children = new LinkedHashMap<>();
 		for(C c: inputChildren) {
 			if(children.containsKey(c.getKey())) {

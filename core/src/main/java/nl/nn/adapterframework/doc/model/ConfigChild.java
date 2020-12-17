@@ -16,21 +16,84 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
+import org.springframework.core.annotation.AnnotationUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.LogUtil;
 
 public class ConfigChild extends ElementChild {
-	private static Logger log = LogUtil.getLogger(ConfigChild.class);
+	private static final Comparator<SortNode> SORT_NODE_COMPARATOR =
+			Comparator.comparing(SortNode::getSequenceInConfig)
+			.thenComparing(SortNode::getName);
+
+	static final class SortNode implements Comparable<SortNode> {
+		private @Getter int sequenceInConfig = Integer.MAX_VALUE;
+		private @Getter String name;
+		private @Getter boolean documented;
+		private @Getter boolean deprecated;
+		private @Getter Method method;
+
+		SortNode(Method method) {
+			this.name = method.getName();
+			this.method = method;
+			this.documented = (method.getAnnotation(IbisDoc.class) != null);
+			this.deprecated = isDeprecated(method);
+		}
+
+		void parseIbisDocAnnotation() throws IbisDocAnnotationException {
+			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+			if(ibisDoc == null) {
+				throw new IbisDocAnnotationException(String.format(
+						"No @IbisDoc annotation on method [%s]", name));
+			}
+			Integer optionalOrder = parseIbisDocAnnotation(ibisDoc);
+			if(optionalOrder != null) {
+				sequenceInConfig = optionalOrder;
+			}
+		}
+
+		private Integer parseIbisDocAnnotation(IbisDoc ibisDoc) throws IbisDocAnnotationException {
+			Integer result = null;
+			if(ibisDoc.value().length >= 1) {
+				try {
+					result = Integer.valueOf(ibisDoc.value()[0]);
+				} catch(Exception e) {
+					throw new IbisDocAnnotationException(String.format(
+							"@IbisDoc annotation on method [%s] has no valid order", name));
+				}
+			}
+			return result;
+		}
+
+		private static boolean isDeprecated(Method m) {
+			Deprecated deprecated = m.getAnnotation(Deprecated.class);
+			return (deprecated != null);
+		}
+
+		@Override
+		public int compareTo(SortNode other) {
+			return SORT_NODE_COMPARATOR.compare(this, other);
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class IbisDocAnnotationException extends Exception {		
+		IbisDocAnnotationException(String message) {
+			super(message);
+		}
+
+		IbisDocAnnotationException(String message, Throwable cause) {
+			super(message, cause);
+		}
+	}
 
 	@EqualsAndHashCode(callSuper = false)
 	static final class Key extends AbstractKey {
@@ -58,7 +121,7 @@ public class ConfigChild extends ElementChild {
 	}
 
 	private @Getter @Setter ElementType elementType;
-	private @Getter int sequenceInConfig;
+	private @Getter @Setter int sequenceInConfig;
 	private @Getter @Setter boolean mandatory;
 	private @Getter @Setter boolean allowMultiple;
 	private @Getter @Setter String syntax1Name;
@@ -72,34 +135,6 @@ public class ConfigChild extends ElementChild {
 		return new Key(this);
 	}
 
-	public void setSequenceInConfigFromIbisDocAnnotation(IbisDoc ibisDoc) {
-		sequenceInConfig = Integer.MAX_VALUE;
-		if(ibisDoc == null) {
-			log.warn(String.format("No @IbisDoc annotation for config child, parent [%s] and element type [%s]",
-					getOwningElement().getSimpleName(), elementType.getSimpleName()));
-			return;
-		}
-		Integer optionalOrder = parseIbisDocAnnotation(ibisDoc);
-		if(optionalOrder != null) {
-			sequenceInConfig = optionalOrder;
-		}
-	}
-
-	private Integer parseIbisDocAnnotation(IbisDoc ibisDoc) {
-		Integer result = null;
-		if(ibisDoc.value().length >= 1) {
-			try {
-				result = Integer.valueOf(ibisDoc.value()[0]);
-			} catch(Exception e) {
-				log.warn(String.format("@IbisDoc for config child with parent [%s] and type [%s] has a non-integer order [%s], ignored",
-						getOwningElement().getSimpleName(),
-						elementType.getSimpleName(),
-						ibisDoc.value()[0]));
-			}
-		}
-		return result;
-	}
-
 	public String getSyntax1NamePlural() {
 		if(syntax1Name.endsWith("s")) {
 			return syntax1Name;
@@ -108,18 +143,10 @@ public class ConfigChild extends ElementChild {
 		}
 	}
 
-	@Override
-	public int compareTo(ElementChild other) {
-		return CONFIG_CHILD_COMPARATOR.compare(this, (ConfigChild) other);
-	}
-
 	void registerSyntax1NameWithElementType(final String syntax1Name) {
 		if(IN_XSD.test(this)) {
 			elementType.addConfigChildSyntax1Name(syntax1Name);
 		}
 	}
 
-	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
-			Comparator.comparing(ConfigChild::getSequenceInConfig)
-			.thenComparing(ConfigChild::getSyntax1Name);
 }

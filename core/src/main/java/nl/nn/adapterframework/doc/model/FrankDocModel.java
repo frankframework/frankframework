@@ -29,9 +29,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -203,6 +203,7 @@ public class FrankDocModel {
 			documentAttribute(attribute, method, attributeOwner);
 			result.add(attribute);
 		}
+		Collections.sort(result);
 		return result;
 	}
 
@@ -352,32 +353,41 @@ public class FrankDocModel {
 	}
 
 	private List<ConfigChild> createConfigChildren(Method[] methods, FrankElement parent) throws ReflectiveOperationException {
-		List<Method> configChildSetters = Arrays.asList(methods).stream()
-				.filter(m -> Modifier.isPublic(m.getModifiers()))
-				.filter(Utils::isConfigChildSetter)
-				.filter(m -> configChildDescriptors.get(m.getName()) != null)
-				.collect(Collectors.toList());
 		List<ConfigChild> result = new ArrayList<>();
-		for(Method m: configChildSetters) {
+		for(ConfigChild.SortNode sortNode: createSortNodes(methods, parent)) {
 			ConfigChild configChild = new ConfigChild(parent);
-			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(m.getName());
-			Class<?> elementClass = m.getParameterTypes()[0];
+			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(sortNode.getName());
+			Class<?> elementClass = sortNode.getMethod().getParameterTypes()[0];
 			configChild.setElementType(findOrCreateElementType(elementClass));
-			configChild.setDocumented(m.getAnnotation(IbisDoc.class) != null);
-			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(m, IbisDoc.class);
-			configChild.setSequenceInConfigFromIbisDocAnnotation(ibisDoc);
+			configChild.setDocumented(sortNode.isDocumented());
+			configChild.setSequenceInConfig(sortNode.getSequenceInConfig());
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
-			configChild.setDeprecated(isDeprecated(m));
+			configChild.setDeprecated(sortNode.isDeprecated());
 			configChild.setSyntax1Name(configChildDescriptor.getSyntax1Name());
 			result.add(configChild);
 		}
 		return result;
 	}
 
-	private boolean isDeprecated(Method m) {
-		Deprecated deprecated = m.getAnnotation(Deprecated.class);
-		return (deprecated != null);
+	private List<ConfigChild.SortNode>createSortNodes(Method[] methods, FrankElement parent) {
+		List<Method> configChildSetters = Arrays.asList(methods).stream()
+				.filter(m -> Modifier.isPublic(m.getModifiers()))
+				.filter(Utils::isConfigChildSetter)
+				.filter(m -> configChildDescriptors.get(m.getName()) != null)
+				.collect(Collectors.toList());
+		List<ConfigChild.SortNode> sortNodes = new ArrayList<>();
+		for(Method setter: configChildSetters) {
+			ConfigChild.SortNode sortNode = new ConfigChild.SortNode(setter);
+			try {
+				sortNode.parseIbisDocAnnotation();
+			} catch(ConfigChild.IbisDocAnnotationException e) {
+				log.warn(String.format("For FrankElement [%s]: %s", parent.getSimpleName(), e.getMessage()));
+			}
+			sortNodes.add(sortNode);
+		}
+		Collections.sort(sortNodes);
+		return sortNodes;
 	}
 
 	// This should be done after creating all elements. If we would do it
