@@ -190,6 +190,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class DocWriterNew {
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 	private static final String ELEMENT_GROUP = "ElementGroup";
+	private static final String ELEMENT_ROLE = "elementRole";
 
 	private FrankDocModel model;
 	private String startClassName;
@@ -506,7 +507,7 @@ public class DocWriterNew {
 				choice, elementNameGenericOption);
 		XmlBuilder complexType = writeFilter.addComplexType(genericElementOption);
 		addElementTypeChildMembers(complexType, role);
-		writeFilter.addAttribute(complexType, "elementType", FIXED, role.getSyntax1Name(), PROHIBITED);
+		writeFilter.addAttribute(complexType, ELEMENT_ROLE, FIXED, role.getSyntax1Name(), PROHIBITED);
 		writeFilter.addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
 		// The XSD is invalid if addAnyAttribute is added before attributes elementType and className.
 		writeFilter.addAnyAttribute(complexType);
@@ -566,7 +567,7 @@ public class DocWriterNew {
 	}
 
 	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, ElementRole role) {
-		writeFilter.addAttribute(context, "elementType", FIXED, role.getSyntax1Name(), PROHIBITED);
+		writeFilter.addAttribute(context, ELEMENT_ROLE, FIXED, role.getSyntax1Name(), PROHIBITED);
 		addClassNameAttribute(context, frankElement);
 	}
 
