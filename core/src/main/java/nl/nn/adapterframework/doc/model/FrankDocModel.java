@@ -80,7 +80,7 @@ public class FrankDocModel {
 		try {
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
-			result.createElementRoles();
+			result.calculateFoundersElementRoles();
 			result.setOverriddenFrom();
 			result.buildGroups();
 		} catch(Exception e) {
@@ -137,30 +137,6 @@ public class FrankDocModel {
 				configChildDescriptors.put(item.getMethodName(), item);
 			}
 		}
-	}
-
-	ElementType findOrCreateElementType(Class<?> clazz) throws ReflectiveOperationException {
-		if(allTypes.containsKey(clazz.getName())) {
-			return allTypes.get(clazz.getName());
-		}
-		final ElementType result = new ElementType(clazz);
-		// If a containing FrankElement contains the type being created, we do not
-		// want recursion.
-		allTypes.put(result.getFullName(), result);
-		if(result.isFromJavaInterface()) {
-			List<SpringBean> springBeans = Utils.getSpringBeans(clazz.getName());
-			for(SpringBean b: springBeans) {
-				FrankElement frankElement = findOrCreateFrankElement(b.getClazz());
-				result.addMember(frankElement);
-			}
-		} else {
-			result.addMember(findOrCreateFrankElement(clazz));
-		}
-		return result;
-	}
-
-	public ElementType findElementType(String fullName) {
-		return allTypes.get(fullName);
 	}
 
 	public boolean hasType(String typeName) {
@@ -399,11 +375,43 @@ public class FrankDocModel {
 		}
 	}
 
-	// This should be done after creating all elements. If we would do it
-	// while creating the elements, the recursion would reverse the
-	// creation order of the element groups. The order is important
-	// for generating the right names in the XSD.
-	void createElementRoles() {
+	public ElementRole findElementRole(ElementRole.Key key) {
+		return allElementRoles.get(key);
+	}
+
+	public ElementRole findElementRole(ConfigChild configChild) {
+		return findElementRole(new ElementRole.Key(configChild));
+	}
+
+	ElementRole findElementRole(String fullElementTypeName, String syntax1Name) {
+		return allElementRoles.get(new ElementRole.Key(fullElementTypeName, syntax1Name));
+	}
+
+	ElementType findOrCreateElementType(Class<?> clazz) throws ReflectiveOperationException {
+		if(allTypes.containsKey(clazz.getName())) {
+			return allTypes.get(clazz.getName());
+		}
+		final ElementType result = new ElementType(clazz);
+		// If a containing FrankElement contains the type being created, we do not
+		// want recursion.
+		allTypes.put(result.getFullName(), result);
+		if(result.isFromJavaInterface()) {
+			List<SpringBean> springBeans = Utils.getSpringBeans(clazz.getName());
+			for(SpringBean b: springBeans) {
+				FrankElement frankElement = findOrCreateFrankElement(b.getClazz());
+				result.addMember(frankElement);
+			}
+		} else {
+			result.addMember(findOrCreateFrankElement(clazz));
+		}
+		return result;
+	}
+
+	public ElementType findElementType(String fullName) {
+		return allTypes.get(fullName);
+	}
+
+	void calculateFoundersElementRoles() {
 		allTypes.values().forEach(et -> et.calculateFounder(this));
 		allElementRoles.values().forEach(this::calculateRoleFounder);
 	}
@@ -421,18 +429,6 @@ public class FrankDocModel {
 		} else {
 			role.setFounder(candidateFounder);
 		}
-	}
-
-	public ElementRole findElementRole(ConfigChild configChild) {
-		return findElementRole(new ElementRole.Key(configChild));
-	}
-
-	public ElementRole findElementRole(ElementRole.Key key) {
-		return allElementRoles.get(key);
-	}
-
-	ElementRole findElementRole(String fullElementTypeName, String syntax1Name) {
-		return allElementRoles.get(new ElementRole.Key(fullElementTypeName, syntax1Name));
 	}
 
 	/**
