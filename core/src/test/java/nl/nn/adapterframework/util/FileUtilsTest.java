@@ -135,8 +135,16 @@ public class FileUtilsTest {
 	public void testGetFilesWithWildcard() throws Exception {
 		String directory = getFile(null).getPath();
 		File[] files = FileUtils.getFiles(directory, "file*", null, 5);
-		assertEquals("file.txt", files[0].getName());
-		assertEquals("fileToAppend.txt", files[1].getName());
+		assertEquals(2, files.length); // check if there are 2 files persent
+
+		int containsBothFiles = 0; //Stupid way to check file names ... sigh
+		for(File file : files) {
+			if("file.txt".equals(file.getName()) || "fileToAppend.txt".equals(file.getName())) {
+				containsBothFiles++;
+			}
+		}
+
+		assertEquals(2, containsBothFiles);
 	}
 
 	@Test //retrieve the first file from a directory. Alphabetically it should first return 'copyFile'. Add a stability period, and check if it skips the first file
