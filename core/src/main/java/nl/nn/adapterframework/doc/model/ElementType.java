@@ -120,21 +120,25 @@ public class ElementType {
 
 	void calculateHighestCommonInterface(FrankDocModel model) {
 		highestCommonInterface = this;
-		while(highestCommonInterface.getNextCommonInterface(model) != highestCommonInterface) {
-			highestCommonInterface = highestCommonInterface.getNextCommonInterface(model);
+		ElementType nextCandidate = highestCommonInterface.getNextCommonInterface(model);
+		// The same nextCandidate can appear multiple times, because different InterfaceHierarchyItem
+		// can produce the same ElementType match.
+		while(nextCandidate != null) {
+			highestCommonInterface = nextCandidate;
+			nextCandidate = highestCommonInterface.getNextCommonInterface(model);
 		}
 	}
 
 	private ElementType getNextCommonInterface(FrankDocModel model) {
 		if(! fromJavaInterface) {
-			return this;
+			return null;
 		}
 		List<ElementType> candidates = new ArrayList<>();
 		for(String key: interfaceHierarchy.getParentInterfaces().keySet()) {
 			candidates.addAll(interfaceHierarchy.getParentInterfaces().get(key).findMatchingElementTypes(model));
 		}
 		if(candidates.isEmpty()) {
-			return this;
+			return null;
 		} else {
 			ElementType result = candidates.get(0);
 			if(candidates.size() >= 2) {

@@ -191,7 +191,8 @@ public class DocWriterNew {
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 	private static final String ELEMENT_GROUP = "ElementGroup";
 	private static final String ELEMENT_ROLE = "elementRole";
-
+	static final String MEMBER_CHILD_GROUP = "MemberChildGroup";
+	
 	private FrankDocModel model;
 	private String startClassName;
 	private XmlBuilder xsdRoot;
@@ -429,14 +430,6 @@ public class DocWriterNew {
 		writeControl.pop();
 	}
 
-	private void addConfigChildWithElementGroup(XmlBuilder context, ConfigChild child) {
-		ElementRole role = model.findElementRole(child);
-		writeControl.pushComplexStuff();
-		defineElementTypeGroup(role);
-		writeControl.pop();
-		writeFilter.addGroupRef(context, role.createXsdElementName(ELEMENT_GROUP), getMinOccurs(child), getMaxOccurs(child));
-	}
-
 	private FrankElement singleElementOf(ElementType elementType) {
 		return elementType.getMembers().values().iterator().next();
 	}
@@ -465,6 +458,19 @@ public class DocWriterNew {
 		}
 	}
 
+	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, ElementRole role) {
+		writeFilter.addAttribute(context, ELEMENT_ROLE, FIXED, role.getSyntax1Name(), PROHIBITED);
+		addClassNameAttribute(context, frankElement);
+	}
+
+	private void addConfigChildWithElementGroup(XmlBuilder context, ConfigChild child) {
+		ElementRole role = model.findElementRole(child);
+		writeControl.pushComplexStuff();
+		defineElementTypeGroup(role);
+		writeControl.pop();
+		writeFilter.addGroupRef(context, role.createXsdElementName(ELEMENT_GROUP), getMinOccurs(child), getMaxOccurs(child));
+	}
+
 	private void defineElementTypeGroup(ElementRole role) {
 		ElementRole.Key key = role.getKey();
 		if(! idsCreatedElementGroups.contains(key)) {
@@ -480,8 +486,8 @@ public class DocWriterNew {
 				.filter(f -> ! f.isDeprecated())
 				.filter(f -> ! f.isAbstract())
 				.collect(Collectors.toList());
-		addGenericElementOption(choice, role, disambiguateGenericOptionElementName(role, frankElementOptions));
 		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
+		addGenericElementOption(choice, role, disambiguateGenericOptionElementName(role, frankElementOptions));
 		for(FrankElement frankElement: frankElementOptions) {
 			addElementToElementGroup(choice, frankElement, role);
 		}		
@@ -489,10 +495,8 @@ public class DocWriterNew {
 
 	// TODO: Move this to the model.
 	private String disambiguateGenericOptionElementName(ElementRole role, List<FrankElement> membersToInclude) {
-		// TODO: This is not nice but it is currently needed to properly disambiguate the
-		// different sequence numbers for Listener. We have generic elements like
-		// "Listener_2" and "Listener_3" for now.
-		String result = Utils.toUpperCamelCase(role.createXsdElementName(""));
+		// Do not include sequence number that made the role name unique.
+		String result = Utils.toUpperCamelCase(role.getSyntax1Name());
 		Set<String> conflictCandidates = membersToInclude.stream()
 				.map(f -> f.getXsdElementName(role))
 				.collect(Collectors.toSet());
@@ -519,7 +523,7 @@ public class DocWriterNew {
 	}
 
 	private String xsdElementTypeMemberChildGroup(ElementType elementType) {
-		return elementType.getSimpleName() + "MemberChildGroup";
+		return elementType.getSimpleName() + MEMBER_CHILD_GROUP;
 	}
 
 	private void addElementTypeMemberChildGroup(ElementRole role) {
@@ -532,13 +536,7 @@ public class DocWriterNew {
 	private void addElementTypeMemberChildGroupUnchecked(ElementRole role) {
 		XmlBuilder group = writeFilter.addGroup(xsdRoot, xsdElementTypeMemberChildGroup(role.getElementType()));
 		XmlBuilder choice = writeFilter.addChoice(group);
-		List<ElementRole> childRoles = model.getElementTypeMemberChildRoles(
-				role.getElementType(), IN_XSD, DEPRECATED, f -> ! f.isDeprecated());
-		childRoles = childRoles.stream()
-				.map(ElementRole::getFounder)
-				.distinct()
-				.collect(Collectors.toList());
-		for(ElementRole childRole: childRoles) {
+		for(ElementRole childRole: new MemberChildrenCalculator(role, model).getMemberChildOptions()) {
 			addElementTypeMemberChildGroupOption(choice, childRole);
 		}
 	}
@@ -564,11 +562,6 @@ public class DocWriterNew {
 		XmlBuilder complexContent = writeFilter.addComplexContent(complexType);
 		XmlBuilder extension = writeFilter.addExtension(complexContent, xsdElementType(frankElement));
 		addExtraAttributesNotFromModel(extension, frankElement, role);
-	}
-
-	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, ElementRole role) {
-		writeFilter.addAttribute(context, ELEMENT_ROLE, FIXED, role.getSyntax1Name(), PROHIBITED);
-		addClassNameAttribute(context, frankElement);
 	}
 
 	private void addAttributes(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {

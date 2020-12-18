@@ -413,22 +413,6 @@ public class FrankDocModel {
 
 	void calculateFoundersElementRoles() {
 		allTypes.values().forEach(et -> et.calculateHighestCommonInterface(this));
-		allElementRoles.values().forEach(this::calculateRoleFounder);
-	}
-
-	private void calculateRoleFounder(ElementRole role) {
-		ElementRole candidateFounder = findElementRole(
-				role.getElementType().getHighestCommonInterface().getFullName(),
-				role.getSyntax1Name());
-		if(candidateFounder == null) {
-			log.warn(String.format("No element role present for the founder [%s] of element type [%s] with syntax 1 name [%s]",
-					role.getElementType().getHighestCommonInterface().getFullName(),
-					role.getElementType().getFullName(),
-					role.getSyntax1Name()));
-			role.setFounder(role);
-		} else {
-			role.setFounder(candidateFounder);
-		}
 	}
 
 	/**

@@ -9,4 +9,7 @@ public class Master {
 
 	public void setChild(IFounder child) {
 	}
+
+	public void setChild(IInterface2 child) {
+	}
 }

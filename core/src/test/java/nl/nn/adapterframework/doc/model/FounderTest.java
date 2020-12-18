@@ -7,12 +7,13 @@ import static org.junit.Assert.assertSame;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FounderAndMemberChildTest {
+public class FounderTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.role.inherit.";
 	private FrankDocModel model;
 	private ElementType founder;
 	private ElementType interfaceParent;
 	private ElementType interfaceElementType;
+	private ElementType interface2ElementType;
 
 	@Before
 	public void setUp() {
@@ -20,6 +21,7 @@ public class FounderAndMemberChildTest {
 		founder = model.findElementType(PACKAGE + "IFounder");
 		interfaceParent = model.findElementType(PACKAGE + "IInterfaceParent");
 		interfaceElementType = model.findElementType(PACKAGE + "IInterface");
+		interface2ElementType = model.findElementType(PACKAGE + "IInterface2");
 	}
 
 	@Test
@@ -28,6 +30,8 @@ public class FounderAndMemberChildTest {
 		assertNotNull(interfaceParent);
 		assertNotNull(interfaceElementType);
 		assertNull(model.findElementType(PACKAGE + "IIrrelevantAncestor"));
+		assertNull(model.findElementType(PACKAGE + "IIrrelevant"));
+		assertNotNull(interface2ElementType);
 	}
 
 	@Test
@@ -35,5 +39,6 @@ public class FounderAndMemberChildTest {
 		assertSame(founder, founder.getHighestCommonInterface());
 		assertSame(founder, interfaceParent.getHighestCommonInterface());
 		assertSame(founder, interfaceElementType.getHighestCommonInterface());
+		assertSame(founder, interface2ElementType.getHighestCommonInterface());
 	}
 }
