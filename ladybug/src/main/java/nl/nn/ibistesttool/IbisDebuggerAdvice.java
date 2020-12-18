@@ -133,7 +133,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 			throw ibisDebugger.pipeAbort(pipeLine, pipe, messageId, throwable);
 		} finally {
 			if (captured && ibisDebugger instanceof Debugger) {
-				((Debugger)ibisDebugger).capturedInput(messageId, "pipe input: "+message.getCapturedStream());
+				((Debugger)ibisDebugger).capturedInput(messageId, message.getCapturedStream());
 			}
 		}
 		if (pipe instanceof IExtendedPipe && ((IExtendedPipe)pipe).isPreserveInput()) {
@@ -193,7 +193,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 				throw ibisDebugger.senderAbort(sender, messageId, throwable);
 			} finally {
 				if (captured && ibisDebugger instanceof Debugger) {
-					((Debugger)ibisDebugger).capturedInput(messageId, "sender input: "+message.getCapturedStream());
+					((Debugger)ibisDebugger).capturedInput(messageId, message.getCapturedStream());
 				}
 			}
 		} else {
