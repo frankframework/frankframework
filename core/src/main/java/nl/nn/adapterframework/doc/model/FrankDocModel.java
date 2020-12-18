@@ -154,10 +154,6 @@ public class FrankDocModel {
 		current.setParent(parent);
 		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current));
 		current.setConfigChildren(createConfigChildren(clazz.getDeclaredMethods(), current));
-		// Cannot be done directly by ConfigChild because the sequence is important.
-		// The call to setConfigChildren does the sorting.
-		current.getConfigChildren(ALL).forEach(
-				c -> c.registerSyntax1NameWithElementType(c.getSyntax1Name()));
 		return current;
 	}
 
@@ -370,6 +366,7 @@ public class FrankDocModel {
 			return allElementRoles.get(key);
 		} else {
 			ElementRole result = elementRoleFactory.create(elementType, syntax1Name);
+			elementType.registerElementRole(result);
 			allElementRoles.put(key, result);
 			return result;
 		}

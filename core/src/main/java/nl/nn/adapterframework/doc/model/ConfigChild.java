@@ -137,14 +137,6 @@ public class ConfigChild extends ElementChild {
 		return new Key(this);
 	}
 
-	public String getSyntax1NamePlural() {
-		if(getSyntax1Name().endsWith("s")) {
-			return getSyntax1Name();
-		} else {
-			return getSyntax1Name() + "s";
-		}
-	}
-
 	public String getSyntax1Name() {
 		return elementRole.getSyntax1Name();
 	}
@@ -152,11 +144,4 @@ public class ConfigChild extends ElementChild {
 	public ElementType getElementType() {
 		return elementRole.getElementType();
 	}
-
-	void registerSyntax1NameWithElementType(final String syntax1Name) {
-		if(IN_XSD.test(this)) {
-			elementRole.getElementType().addConfigChildSyntax1Name(syntax1Name);
-		}
-	}
-
 }

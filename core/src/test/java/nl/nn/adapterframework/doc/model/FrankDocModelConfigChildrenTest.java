@@ -46,7 +46,6 @@ public class FrankDocModelConfigChildrenTest {
 	public void whenConfigChildMethodThenConfigChildProduced() throws Exception {
 		ConfigChild actual = selectChild("syntax1NameChild");
 		assertEquals("syntax1NameChild", actual.getSyntax1Name());
-		assertEquals("syntax1NameChilds", actual.getSyntax1NamePlural());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
@@ -85,7 +84,6 @@ public class FrankDocModelConfigChildrenTest {
 	public void whenChildInheritedFromProtectedThenChildAndNotOverriddenButAnnotationsInherited() {
 		ConfigChild actual = selectChild("syntax1NameInheritedChilds");
 		assertEquals("syntax1NameInheritedChilds", actual.getSyntax1Name());
-		assertEquals("syntax1NameInheritedChilds", actual.getSyntax1NamePlural());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChild", actual.getElementType().getSimpleName());
 		assertFalse(actual.isDocumented());

@@ -45,17 +45,7 @@ public class ElementType {
 	private @Getter Map<String, FrankElement> members;
 	private @Getter boolean fromJavaInterface;
 	
-	/**
-	 * For each syntax 1 name in this set, an &lt;xs:choice&gt; of &lt;xs:element&gt;
-	 * is created in the XSD. The elements in a group correspond to the Java
-	 * classes that implement the Java interface represented by this {@link ElementChild}.
-	 * For each syntax 1 name a different group is needed because the syntax 2
-	 * names of the elements are different.
-	 * <p>
-	 * A {@link LinkedHashSet} is being used to preserve the sequence with which
-	 * the syntax 1 names were inserted.
-	 */
-	private @Getter LinkedHashSet<String> configChildSyntax1Names = new LinkedHashSet<>();
+	private @Getter LinkedHashSet<ElementRole> elementRoles = new LinkedHashSet<>();
 
 	private static class InterfaceHierarchyItem {
 		private @Getter String fullName;
@@ -114,15 +104,13 @@ public class ElementType {
 		return members.values().iterator().next();
 	}
 
-	void addConfigChildSyntax1Name(String syntax1Name) {
-		configChildSyntax1Names.add(syntax1Name);
+	void registerElementRole(ElementRole elementRole) {
+		elementRoles.add(elementRole);
 	}
 
 	void calculateHighestCommonInterface(FrankDocModel model) {
 		highestCommonInterface = this;
 		ElementType nextCandidate = highestCommonInterface.getNextCommonInterface(model);
-		// The same nextCandidate can appear multiple times, because different InterfaceHierarchyItem
-		// can produce the same ElementType match.
 		while(nextCandidate != null) {
 			highestCommonInterface = nextCandidate;
 			nextCandidate = highestCommonInterface.getNextCommonInterface(model);
