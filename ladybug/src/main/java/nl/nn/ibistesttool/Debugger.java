@@ -192,11 +192,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		return testTool.inputpoint(correlationId, null, "getEmptyInputReplacement", replacementValue);
 	}
 
+	public Object capturedInput(String correlationId, String value) {
+		return testTool.inputpoint(correlationId, null, "Captured input ", value);
+	}
+
 	@Override
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value) {
 		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value);
 	}
-
 	@Override
 	public Object storeInSessionKey(String correlationId, Object sessionKey, Object result) {
 		return testTool.outputpoint(correlationId, null, "SessionKey " + sessionKey.toString(), result);
