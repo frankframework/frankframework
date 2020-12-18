@@ -119,24 +119,36 @@ public class ElementType {
 	}
 
 	void calculateFounder(FrankDocModel model) {
+		founder = this;
+		while(founder.getParent(model) != founder) {
+			founder = founder.getParent(model);
+		}
+	}
+
+	private ElementType getParent(FrankDocModel model) {
 		if(! fromJavaInterface) {
-			founder = this;
-			return;
+			return this;
 		}
 		List<ElementType> candidates = new ArrayList<>();
 		for(String key: interfaceHierarchy.getParentInterfaces().keySet()) {
 			candidates.addAll(interfaceHierarchy.getParentInterfaces().get(key).findMatchingElementTypes(model));
 		}
 		if(candidates.isEmpty()) {
-			founder = this;
+			return this;
 		} else {
-			founder = candidates.get(0);
+			ElementType result = candidates.get(0);
 			if(candidates.size() >= 2) {
-				log.warn(String.format("There are multiple candidates for the founder of ElementType [%s], which are [%s]. Chose [%s]",
+				log.warn(String.format("There are multiple candidates for the parent of ElementType [%s], which are [%s]. Chose [%s]",
 						getFullName(),
 						candidates.stream().map(ElementType::getFullName).collect(Collectors.joining(", ")),
-						founder.getFullName()));
+						result.getFullName()));
 			}
+			return result;
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "ElementType " + interfaceHierarchy.getFullName();
 	}
 }
