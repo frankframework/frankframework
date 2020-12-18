@@ -87,7 +87,7 @@ public class ElementType {
 	}
 
 	private final InterfaceHierarchyItem interfaceHierarchy;
-	private @Getter ElementType founder;
+	private @Getter ElementType highestCommonInterface;
 
 	ElementType(Class<?> clazz) {
 		interfaceHierarchy = new InterfaceHierarchyItem(clazz);
@@ -118,14 +118,14 @@ public class ElementType {
 		configChildSyntax1Names.add(syntax1Name);
 	}
 
-	void calculateFounder(FrankDocModel model) {
-		founder = this;
-		while(founder.getParent(model) != founder) {
-			founder = founder.getParent(model);
+	void calculateHighestCommonInterface(FrankDocModel model) {
+		highestCommonInterface = this;
+		while(highestCommonInterface.getNextCommonInterface(model) != highestCommonInterface) {
+			highestCommonInterface = highestCommonInterface.getNextCommonInterface(model);
 		}
 	}
 
-	private ElementType getParent(FrankDocModel model) {
+	private ElementType getNextCommonInterface(FrankDocModel model) {
 		if(! fromJavaInterface) {
 			return this;
 		}
@@ -138,7 +138,7 @@ public class ElementType {
 		} else {
 			ElementType result = candidates.get(0);
 			if(candidates.size() >= 2) {
-				log.warn(String.format("There are multiple candidates for the parent of ElementType [%s], which are [%s]. Chose [%s]",
+				log.warn(String.format("There are multiple candidates for the next common interface of ElementType [%s], which are [%s]. Chose [%s]",
 						getFullName(),
 						candidates.stream().map(ElementType::getFullName).collect(Collectors.joining(", ")),
 						result.getFullName()));

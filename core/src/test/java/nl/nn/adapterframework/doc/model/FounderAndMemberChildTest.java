@@ -32,8 +32,8 @@ public class FounderAndMemberChildTest {
 
 	@Test
 	public void testFounder() {
-		assertSame(founder, founder.getFounder());
-		assertSame(founder, interfaceParent.getFounder());
-		assertSame(founder, interfaceElementType.getFounder());
+		assertSame(founder, founder.getHighestCommonInterface());
+		assertSame(founder, interfaceParent.getHighestCommonInterface());
+		assertSame(founder, interfaceElementType.getHighestCommonInterface());
 	}
 }
