@@ -16,8 +16,11 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilterInputStream;
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -25,6 +28,7 @@ import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,6 +54,7 @@ public class Message implements Serializable {
 
 	private Object request;
 	private String charset; // representing a charset of byte typed requests
+	private Object capturedStream;
 
 	private Message(Object request, String charset) {
 		if (request instanceof Message) {
@@ -145,11 +150,13 @@ public class Message implements Serializable {
 	}
 
 	public boolean isBinary() {
-		if (request == null) {
-			return false;
-		}
-		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof byte[];
+		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
 	}
+	
+	public boolean isRepeatedlyReadable() {
+		return request instanceof String || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
+	}
+	
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -164,7 +171,7 @@ public class Message implements Serializable {
 			log.debug("returning Reader as Reader");
 			return (Reader) request;
 		}
-		if (request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[]) {
+		if (isBinary()) {
 			String readerCharset = charset; //Don't overwrite the Message's charset
 			if (StringUtils.isEmpty(readerCharset)) {
 				readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
@@ -464,4 +471,104 @@ public class Message implements Serializable {
 		
 		return -1;
 	}
+	
+	/**
+	 * Can be called to be able to retrieve a String representation of the inputStream or reader that 
+	 * is in this message, after the stream has been closed.
+	 * 
+	 * @param maxSize
+	 */
+	public void captureStream(int maxSize) throws IOException {
+		if (isRepeatedlyReadable()) {
+			return;
+		}
+		if (isBinary()) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			capturedStream = baos;
+			request = new FilterInputStream(asInputStream()) {
+				
+				int pos;
+				
+				@Override
+				public int read() throws IOException {
+					int result = super.read();
+					if (result>=0 && pos++<maxSize) {
+						baos.write((byte)result);
+					}
+					return result;
+				}
+
+				@Override
+				public int read(byte[] b) throws IOException {
+					int result = super.read(b);
+					if (result>=0 && pos<maxSize) {
+						pos+=result;
+						baos.write(b,0,result);
+					}
+					return result;
+				}
+
+				@Override
+				public int read(byte[] b, int off, int len) throws IOException {
+					int result = super.read(b, off, len);
+					if (result>=0 && pos<maxSize) {
+						pos+=result;
+						baos.write(b, off, result);
+					}
+					return result;
+				}
+
+			};
+		} else {
+			StringWriter stringwriter = new StringWriter();
+			capturedStream = stringwriter;
+			request = new FilterReader(asReader()) {
+
+				int pos;
+				
+				@Override
+				public int read() throws IOException {
+					int result = super.read();
+					if (result>=0 && pos++<maxSize) {
+						stringwriter.write((char)result);
+					}
+					return result;
+				}
+
+				@Override
+				public int read(char[] cbuf, int off, int len) throws IOException {
+					int result = super.read(cbuf, off, len);
+					if (result>=0 && pos<maxSize) {
+						pos+=result;
+						stringwriter.write(cbuf, off, result);
+					}
+					return result;
+				}
+
+			};
+			
+		}
+	}
+	
+	public String getCapturedStream() throws IOException {
+		if (capturedStream instanceof ByteArrayOutputStream) { 
+			return asString(((ByteArrayOutputStream)capturedStream).toByteArray());
+		}
+		if (capturedStream != null) {
+			return capturedStream.toString();
+		}
+		if (request instanceof String) {
+			return (String)request;
+		}
+		if (request instanceof byte[]) {
+			try {
+				return asString(request);
+			} catch (IOException e) {
+				log.warn("could not render bytes",e);
+				return e.getMessage();
+			}
+		}
+		return toString();
+	}
+	
 }
