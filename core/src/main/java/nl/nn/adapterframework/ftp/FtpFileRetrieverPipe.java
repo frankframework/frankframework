@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -311,11 +311,6 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	@IbisDoc({"(ftps) ", " "})
 	public void setTruststorePassword(String truststorePassword) {
 		ftpSession.setTruststorePassword(truststorePassword);
-	}
-
-	@IbisDoc({"(ftps) enables the use of certificates on jdk 1.3.x. the sun reference implementation jsse 1.0.3 is included for convenience", "false"})
-	public void setJdk13Compatibility(boolean jdk13Compatibility) {
-		ftpSession.setJdk13Compatibility(jdk13Compatibility);
 	}
 
 	@IbisDoc({"(ftps) when true, the hostname in the certificate will be checked against the actual hostname", "true"})
