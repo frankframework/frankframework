@@ -355,6 +355,10 @@ public class ServerStatistics extends Base {
 				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
 				if (applicationEventPublisher!=null) {
 					log.info("setting debugger enabled ["+enableDebugger+"]");
+					if(msg.length() > 0)
+						msg.append(", enableDebugger from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
+					else
+						msg.append("enableDebugger changed from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
 					applicationEventPublisher.publishEvent(event);
 				} else {
 					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
