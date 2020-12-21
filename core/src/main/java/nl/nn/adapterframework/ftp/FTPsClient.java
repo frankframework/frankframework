@@ -70,7 +70,7 @@ public class FTPsClient extends FTPClient {
 		// if implicit ftps, use SSL from the beginning
 		if (this.session.getFtpType() == FtpSession.FTPS_IMPLICIT) {
 			// instruct the FTPClient to use this SSLSocketFactory
-			socketFactory.initSSLContext();
+			socketFactory.getSSLContext();
 			setSocketFactory(socketFactory);
 		}
 	}
@@ -85,6 +85,7 @@ public class FTPsClient extends FTPClient {
 	// FTPsClient did hang when positive completion was send without 
 	// preliminary positive. Therefore completePendingCommand is 
 	// overriden. 2006-01-18 GvB
+	@Override
 	public boolean completePendingCommand() throws IOException
 	{
 		if (FTPReply.isPositiveCompletion(getReplyCode())) {
@@ -95,6 +96,7 @@ public class FTPsClient extends FTPClient {
 
 		
 	
+	@Override
 	protected void _connectAction_() throws IOException {
 		// if explicit FTPS, the socket connection is establisch unsecure
 		if (session.getFtpType() == FtpSession.FTPS_EXPLICIT_SSL ||
@@ -113,7 +115,7 @@ public class FTPsClient extends FTPClient {
 			
 			// replace the normal socket with the secure one 
 			try {
-				socketFactory.initSSLContext();
+				socketFactory.getSSLContext();
 				_socket_ = socketFactory.createSocket(orgSocket, orgSocket.getInetAddress().getHostAddress(), orgSocket.getPort(), true);
 
 				// send a dummy command over the secure connection without reading 
@@ -136,6 +138,7 @@ public class FTPsClient extends FTPClient {
 		}
 	}
 	
+	@Override
 	protected Socket _openDataConnection_(int cmdNr, String param) throws IOException {
 		// if explicit FTPS, the socket connection is establisch unsecure
 		if (session.getFtpType() == FtpSession.FTPS_EXPLICIT_SSL || session.getFtpType() == FtpSession.FTPS_EXPLICIT_TLS) {

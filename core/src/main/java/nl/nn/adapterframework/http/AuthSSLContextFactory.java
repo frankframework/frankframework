@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -33,55 +34,33 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.PkiUtil;
 
 public class AuthSSLContextFactory {
-	private static Logger log = LogUtil.getLogger(AuthSSLContextFactory.class);
-	private String protocol = "SSL";
+	protected static Logger log = LogUtil.getLogger(MethodHandles.lookup().lookupClass());
 
-	private boolean allowSelfSignedCertificates = false;
-	private URL keystoreUrl = null;
-	private String keystorePassword = null;
-	private String keystoreType = "null";
-	private String keyManagerAlgorithm = null;
-	private URL truststoreUrl = null;
-	private String truststorePassword = null;
-	private String truststoreType = "null";
-	private String trustManagerAlgorithm = null;
-	private SSLContext sslContext = null;
-	private boolean ignoreCertificateExpiredException=false;
+	protected @Setter @Getter String protocol = "SSL";
 
-//	public static SSLContext createSSLContext(
-//			URL keystoreUrl, 
-//			String keystorePassword, 
-//			String keystoreType, 
-//			String keyManagerAlgorithm, 
-//			URL truststoreUrl, 
-//			String truststorePassword, 
-//			String truststoreType, 
-//			String trustManagerAlgorithm, 
-//			boolean allowSelfSignedCertificates, 
-//			boolean verifyHostname, 
-//			boolean ignoreCertificateExpiredException) throws GeneralSecurityException, IOException {
-//		AuthSSLContextFactory socket = new AuthSSLContextFactory(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
-//				trustManagerAlgorithm, allowSelfSignedCertificates, ignoreCertificateExpiredException, null);
-//		return socket.getSSLContext();
-//	}
+	protected URL keystoreUrl = null;
+	protected String keystorePassword = null;
+	protected String keystoreType = "null";
+	protected String keyManagerAlgorithm = null;
+	protected URL truststoreUrl = null;
+	protected String truststorePassword = null;
+	protected String truststoreType = "null";
+	protected String trustManagerAlgorithm = null;
+	protected boolean allowSelfSignedCertificates = false;
+	protected boolean ignoreCertificateExpiredException=false;
+
+	protected SSLContext sslContext = null;
 
 	public static SSLContext createSSLContext(
-			URL keystoreUrl, 
-			String keystorePassword, 
-			String keystoreType, 
-			String keyManagerAlgorithm, 
-			URL truststoreUrl, 
-			String truststorePassword, 
-			String truststoreType, 
-			String trustManagerAlgorithm, 
-			boolean allowSelfSignedCertificates, 
-			boolean verifyHostname, 
-			boolean ignoreCertificateExpiredException, 
-			String protocol) throws GeneralSecurityException, IOException {
+			URL keystoreUrl, String keystorePassword, String keystoreType, String keyManagerAlgorithm, 
+			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
+			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException, String protocol) throws GeneralSecurityException, IOException {
 		AuthSSLContextFactory socket = new AuthSSLContextFactory(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
 				trustManagerAlgorithm, allowSelfSignedCertificates, ignoreCertificateExpiredException, protocol);
 		return socket.getSSLContext();
@@ -89,7 +68,7 @@ public class AuthSSLContextFactory {
 
 	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyManagerAlgorithm, 
 			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
-			boolean allowSelfSignedCertificates, boolean verifyHostname, boolean ignoreCertificateExpiredException) {
+			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException) {
 		this(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
 				trustManagerAlgorithm, allowSelfSignedCertificates, ignoreCertificateExpiredException, null);
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -190,11 +190,6 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 	@IbisDoc({"Selects the algorithm to generate trustmanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		getFileSystem().setTrustManagerAlgorithm(trustManagerAlgorithm);
-	}
-
-	@IbisDoc({"(ftps) enables the use of certificates on jdk 1.3.x. the sun reference implementation jsse 1.0.3 is included for convenience", "false"})
-	public void setJdk13Compatibility(boolean jdk13Compatibility) {
-		getFileSystem().setJdk13Compatibility(jdk13Compatibility);
 	}
 
 	@IbisDoc({"(ftps) when true, the hostname in the certificate will be checked against the actual hostname", "true"})

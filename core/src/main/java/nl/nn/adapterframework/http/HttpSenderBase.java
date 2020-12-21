@@ -369,7 +369,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					SSLContext sslContext = AuthSSLContextFactory.createSSLContext(
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
 							truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException(), getProtocol());
+							isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getProtocol());
 
 					sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
 					log.debug(getLogPrefix()+"created custom SSLConnectionSocketFactory");
