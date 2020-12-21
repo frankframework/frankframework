@@ -25,10 +25,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +38,7 @@ import java.nio.file.Path;
 import javax.xml.transform.Source;
 
 import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -54,8 +57,6 @@ public class Message implements Serializable {
 
 	private Object request;
 	private String charset; // representing a charset of byte typed requests
-	private Object capturedStream;
-	private boolean capturedStreamClosed;
 
 	private Message(Object request, String charset) {
 		if (request instanceof Message) {
@@ -477,18 +478,19 @@ public class Message implements Serializable {
 	 * Can be called to be able to retrieve a String representation of the inputStream or reader that 
 	 * is in this message, after the stream has been closed.
 	 */
-	public boolean captureStream() throws IOException {
-		return captureStream(10000);
+	public StringWriter captureStream() throws IOException {
+		return captureStream(new StringWriter());
 	}
-	public boolean captureStream(int maxSize) {
+	public <W extends Writer> W captureStream(W writer) throws IOException {
+		return captureStream(10000, writer);
+	}
+	public <W extends Writer> W captureStream(int maxSize, W writer) {
 		if (isRepeatable()) {
-			return false;
+			return null;
 		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
-		capturedStreamClosed = false;
 		if (isBinary()) {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			capturedStream = baos;
+			OutputStream stream = new WriterOutputStream(writer, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			try {
 				request = new FilterInputStream(asInputStream()) {
 					
@@ -499,7 +501,7 @@ public class Message implements Serializable {
 						if (log.isTraceEnabled()) log.trace("FilterInputStream.read");
 						int result = super.read();
 						if (result>=0 && pos++<maxSize) {
-							baos.write((byte)result);
+							stream.write((byte)result);
 							if (log.isTraceEnabled()) log.trace("captured byte ["+result+"]");
 						}
 						return result;
@@ -511,7 +513,7 @@ public class Message implements Serializable {
 						int result = super.read(b, off, len);
 						if (result>=0 && pos<maxSize) {
 							pos+=result;
-							baos.write(b, off, result);
+							stream.write(b, off, result);
 							if (log.isTraceEnabled()) log.trace("captured ["+result+"] bytes");
 						}
 						return result;
@@ -522,25 +524,23 @@ public class Message implements Serializable {
 						if (log.isTraceEnabled()) log.trace("FilterInputStream.close");
 						if (available()>0) {
 							if (log.isTraceEnabled()) log.trace("bytes available at close");
-							baos.write("(--MoreBytesAvailable--)[".getBytes());
+							stream.write("(--MoreBytesAvailable--)[".getBytes());
 							read(new byte[1000]);
-							baos.write("]".getBytes());
+							stream.write("]".getBytes());
 							if (read()>0) {
-								baos.write("...".getBytes());
+								stream.write("...".getBytes());
 							}
 						}
-						capturedStreamClosed = true;
 						super.close();
+						stream.close();
 					}
 
 				};
 			} catch (IOException e) {
 				log.warn("Cannot capture stream", e);
-				return false;
+				return null;
 			}
 		} else {
-			StringWriter stringwriter = new StringWriter();
-			capturedStream = stringwriter;
 			try {
 				request = new FilterReader(asReader()) {
 
@@ -551,7 +551,7 @@ public class Message implements Serializable {
 						if (log.isTraceEnabled()) log.trace("FilterReader.read");
 						int result = super.read();
 						if (result>=0 && pos++<maxSize) {
-							stringwriter.write((char)result);
+							writer.write((char)result);
 						}
 						return result;
 					}
@@ -562,7 +562,7 @@ public class Message implements Serializable {
 						int result = super.read(cbuf, off, len);
 						if (result>=0 && pos<maxSize) {
 							pos+=result;
-							stringwriter.write(cbuf, off, result);
+							writer.write(cbuf, off, result);
 						}
 						return result;
 					}
@@ -574,60 +574,21 @@ public class Message implements Serializable {
 							char buf[] = new char[1000];
 							int len = read(buf);
 							if (len>0) {
-								stringwriter.write("(--read "+len+" more characters at close() --)");
+								writer.write("(--read "+len+" more characters at close() --)");
 							}
 						} catch (Exception e) {
 							log.warn("Caught exception while trying to read more characters at close()", e);
 						}
-						capturedStreamClosed = true;
 						super.close();
 					}
 				};
 			} catch (IOException e) {
 				log.warn("Cannot capture reader", e);
-				return false;
+				return null;
 			}
 			
 		}
-		return true;
-	}
-	
-	public String getCapturedStream() {
-		log.debug("returning capture of "+ClassUtils.nameOf(request)+", capturedStream ["+capturedStream+"]");
-		if (request instanceof String) {
-			return (String)request;
-		}
-		if (request instanceof byte[]) {
-			try {
-				return asString(request);
-			} catch (IOException e) {
-				log.warn("could not render bytes",e);
-				return e.getMessage();
-			}
-		}
-		if (capturedStream instanceof ByteArrayOutputStream) { 
-			try {
-				String result = asString(((ByteArrayOutputStream)capturedStream).toByteArray());
-				if (!capturedStreamClosed) {
-					result += " -- input stream is still open --";
-				}
-				return result;
-			} catch (IOException e) {
-				log.warn("Cannot render captured stream", e);
-				return e.getMessage();
-			}
-		}
-		if (capturedStream != null) {
-			String result = capturedStream.toString();
-			if (!capturedStreamClosed) {
-				result += " -- input stream is still open --";
-			}
-			return result;
-		}
-		if (request==null) {
-			return null;
-		}
-		return request.toString();
+		return writer;
 	}
 	
 }
