@@ -154,7 +154,7 @@ public class Message implements Serializable {
 		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
 	}
 	
-	public boolean isRepeatedlyReadable() {
+	public boolean isRepeatable() {
 		return request instanceof String || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
 	}
 	
@@ -481,7 +481,7 @@ public class Message implements Serializable {
 		return captureStream(10000);
 	}
 	public boolean captureStream(int maxSize) {
-		if (isRepeatedlyReadable()) {
+		if (isRepeatable()) {
 			return false;
 		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
