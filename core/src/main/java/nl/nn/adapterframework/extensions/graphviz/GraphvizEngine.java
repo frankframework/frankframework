@@ -37,7 +37,9 @@ import nl.nn.adapterframework.util.Misc;
 public class GraphvizEngine {
 	protected Logger log = LogUtil.getLogger(this);
 	private Engine engine;
-	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
+	private static String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
+	// Available JS Engines. Lower index has priority.
+	private static String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8,nl.nn.adapterframework.extensions.javascript.Nashorn").split(",");
 
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
@@ -154,8 +156,6 @@ public class GraphvizEngine {
 		private ResultHandler resultHandler;
 
 		Engine(String initScript, String graphvisJsLibrary) {
-			// Available JS Engines. Lower index has priority.
-			String[] engines = AppConstants.getInstance().getString("javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8,nl.nn.adapterframework.extensions.javascript.Nashorn").split(",");
 
 			for (int i = 0; i < engines.length && jsEngine == null; i++) {
 				try {
