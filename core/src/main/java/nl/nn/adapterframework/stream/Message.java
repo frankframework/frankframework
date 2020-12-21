@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilterInputStream;
@@ -485,7 +484,7 @@ public class Message implements Serializable {
 		return captureStream(10000, writer);
 	}
 	public <W extends Writer> W captureStream(int maxSize, W writer) {
-		if (isRepeatable()) {
+		if (request instanceof String || request instanceof byte[]) {
 			return null;
 		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
