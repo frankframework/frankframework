@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JmsListener;
-import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -74,14 +73,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
 			setForceMessageIdAsCorrelationId(true);
 			if (CACHE_CONSUMER.equals(getCacheMode())) {
-				boolean recovered = false;
-				Receiver receiver = getReceiver();
-				if (receiver != null) {
-					recovered = (receiver.isRecover() || receiver.isRecoverAdapter());
-				}
-				if (!recovered) {
-					ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, receiver.getAdapter());
-				}
+				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
 			}
 			setCacheMode("CACHE_CONSUMER");
 		} else {

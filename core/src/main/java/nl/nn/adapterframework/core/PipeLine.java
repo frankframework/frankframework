@@ -311,15 +311,13 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			log.debug(getLogPrefix()+"configuring OutputWrapper");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
-			if (getOutputWrapper() instanceof AbstractPipe) {
-				((AbstractPipe) getOutputWrapper()).setRecoverAdapter(adapter.isRecover());
-			}
+
 			getOutputWrapper().registerForward(pf);
 			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
 			if (getOutputWrapper() instanceof EsbSoapWrapperPipe) {
 				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getOutputWrapper();
-				for (Receiver receiver: adapter.getReceivers()) {
-					IListener listener = receiver.getListener();
+				for (Receiver<?> receiver: adapter.getReceivers()) {
+					IListener<?> listener = receiver.getListener();
 					try {
 						if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
 							break;
@@ -579,16 +577,51 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			cache.open();
 		}
 
+		if (getInputWrapper()!=null) {
+			log.debug(getLogPrefix()+"starting InputWrapper ["+getInputWrapper().getName()+"]");
+			getInputWrapper().start();
+		}
+
+		if (getInputValidator()!=null) {
+			log.debug(getLogPrefix()+"starting InputValidator ["+getInputValidator().getName()+"]");
+			getInputValidator().start();
+		}
+
 		for (int i=0; i<pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 			String pipeName = pipe.getName();
 
 			log.debug(getLogPrefix()+"starting pipe [" + pipeName+"]");
+			if (pipe instanceof MessageSendingPipe) {
+				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
+				if (messageSendingPipe.getInputValidator() != null) {
+					messageSendingPipe.getInputValidator().start();
+				}
+				if (messageSendingPipe.getOutputValidator() != null) {
+					messageSendingPipe.getOutputValidator().start();
+				}
+				if (messageSendingPipe.getInputWrapper() != null) {
+					messageSendingPipe.getInputWrapper().start();
+				}
+				if (messageSendingPipe.getOutputWrapper() != null) {
+					messageSendingPipe.getOutputWrapper().start();
+				}
+			}
 			pipe.start();
 			log.debug(getLogPrefix()+"successfully started pipe [" + pipeName + "]");
 		}
-	log.info(getLogPrefix()+"is successfully started pipeline");
 
+		if (getOutputValidator()!=null) {
+			log.debug(getLogPrefix()+"starting OutputValidator ["+getOutputValidator().getName()+"]");
+			getOutputValidator().start();
+		}
+
+		if (getOutputWrapper()!=null) {
+			log.debug(getLogPrefix()+"starting OutputWrapper ["+getOutputWrapper().getName()+"]");
+			getOutputWrapper().start();
+		}
+
+		log.info(getLogPrefix()+"is successfully started pipeline");
 	}
 
 	/**
@@ -598,13 +631,49 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 	 */
 	public void stop() {
 		log.info(getLogPrefix()+"is closing pipeline");
+
+		if (getInputWrapper()!=null) {
+			log.debug(getLogPrefix()+"stopping InputWrapper ["+getInputWrapper().getName()+"]");
+			getInputWrapper().stop();
+		}
+
+		if (getInputValidator()!=null) {
+			log.debug(getLogPrefix()+"stopping InputValidator ["+getInputValidator().getName()+"]");
+			getInputValidator().stop();
+		}
+
 		for (int i=0; i<pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 			String pipeName = pipe.getName();
 
 			log.debug(getLogPrefix()+"is stopping [" + pipeName+"]");
+			if (pipe instanceof MessageSendingPipe) {
+				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
+				if (messageSendingPipe.getInputValidator() != null) {
+					messageSendingPipe.getInputValidator().stop();
+				}
+				if (messageSendingPipe.getOutputValidator() != null) {
+					messageSendingPipe.getOutputValidator().stop();
+				}
+				if (messageSendingPipe.getInputWrapper() != null) {
+					messageSendingPipe.getInputWrapper().stop();
+				}
+				if (messageSendingPipe.getOutputWrapper() != null) {
+					messageSendingPipe.getOutputWrapper().stop();
+				}
+			}
 			pipe.stop();
 			log.debug(getLogPrefix()+"successfully stopped pipe [" + pipeName + "]");
+		}
+
+		if (getOutputValidator()!=null) {
+			log.debug(getLogPrefix()+"stopping OutputValidator ["+getOutputValidator().getName()+"]");
+			getOutputValidator().stop();
+		}
+
+		if (getOutputWrapper()!=null) {
+			log.debug(getLogPrefix()+"stopping OutputWrapper ["+getOutputWrapper().getName()+"]");
+			getOutputWrapper().stop();
 		}
 
 		if (cache!=null) {

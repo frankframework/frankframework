@@ -9,7 +9,6 @@ import java.io.StringReader;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -38,7 +37,7 @@ public class WsdlXmlValidatorMixedModeTest {
 
     
     
-    public WsdlXmlValidator getInputValidator() throws ConfigurationException {
+    public WsdlXmlValidator getInputValidator() throws Exception {
         WsdlXmlValidator val = new ApiWsdlXmlValidator();
         val.setWsdl(WSDL);
         val.setSoapBody(REQUEST_SOAP_BODY);
@@ -46,19 +45,21 @@ public class WsdlXmlValidatorMixedModeTest {
         val.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://api.ibissource.org/GetPolicyDetails schema2");
         val.registerForward(new PipeForward("success", null));
         val.configure();
+        val.start();
         return val;
     }
-    public WsdlXmlValidator getOutputValidator() throws ConfigurationException {
+    public WsdlXmlValidator getOutputValidator() throws Exception {
         WsdlXmlValidator val = new ApiWsdlXmlValidator();
         val.setWsdl(WSDL);
         val.setSoapBody(RESPONSE_SOAP_BODY);
         val.setThrowException(true);
         val.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://api.ibissource.org/GetPolicyDetails schema2");
         val.registerForward(new PipeForward("success", null));
-        val.configure();    	
+        val.configure();
+        val.start();
         return val;
     }
-    public WsdlXmlValidator getMixedValidator() throws ConfigurationException  {
+    public WsdlXmlValidator getMixedValidator() throws Exception  {
         WsdlXmlValidator val = new ApiWsdlXmlValidator();
         val.setWsdl(WSDL);
         val.setSoapBody(REQUEST_SOAP_BODY);
@@ -68,6 +69,8 @@ public class WsdlXmlValidatorMixedModeTest {
         val.registerForward(new PipeForward("success", null));
         val.configure();
         val.getResponseValidator().configure();
+        val.start();
+        val.getResponseValidator().start();
         return val;
     }
 

@@ -214,7 +214,7 @@ public final class ShowConfigurationStatus extends Base {
 		RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 		if(state.equals(RunStateEnum.STARTED)) {
-			for (Receiver receiver: adapter.getReceivers()) {
+			for (Receiver<?> receiver: adapter.getReceivers()) {
 				RunStateEnum rState = receiver.getRunState();
 
 				if(!rState.equals(RunStateEnum.STARTED)) {
@@ -249,7 +249,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
 		String action = null;
-		ArrayList<String> adapters = new ArrayList<String>();
+		ArrayList<String> adapters = new ArrayList<>();
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -270,7 +270,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		if(action != null) {
 			response.status(Response.Status.ACCEPTED);
-			if(adapters.size() == 0) {
+			if(adapters.isEmpty()) {
 				getIbisManager().handleAdapter(action, "*ALL*", "*ALL*", null, null, false);
 			}
 			else {
@@ -321,7 +321,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		Adapter adapter = getAdapter(adapterName);
 
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -568,7 +568,7 @@ public final class ShowConfigurationStatus extends Base {
 						pipesInfo.put("listenerDestination", pd);
 					}
 				}
-				ITransactionalStorage messageLog = msp.getMessageLog();
+				ITransactionalStorage<?> messageLog = msp.getMessageLog();
 				if (messageLog!=null) {
 					pipesInfo.put("hasMessageLog", true);
 					String messageLogCount;
@@ -600,8 +600,8 @@ public final class ShowConfigurationStatus extends Base {
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
 		ArrayList<Object> receivers = new ArrayList<Object>();
 
-		for (Receiver receiver: adapter.getReceivers()) {
-			Map<String, Object> receiverInfo = new HashMap<String, Object>();
+		for (Receiver<?> receiver: adapter.getReceivers()) {
+			Map<String, Object> receiverInfo = new HashMap<>();
 
 			RunStateEnum receiverRunState = receiver.getRunState();
 
@@ -628,7 +628,7 @@ public final class ShowConfigurationStatus extends Base {
 				sender = ((HasSender)listener).getSender();
 			}
 			//receiverInfo.put("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-			IMessageBrowser ts = receiver.getErrorStorageBrowser();
+			IMessageBrowser<?> ts = receiver.getErrorStorageBrowser();
 			receiverInfo.put("hasErrorStorage", (ts!=null));
 			if (ts!=null) {
 				try {

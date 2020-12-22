@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.validation;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,8 +61,8 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		} catch (InstantiationException e) {
 			throw new ConfigurationException(e);
 		}
-    	validator.setThrowException(true);
-    	validator.setFullSchemaChecking(true);
+		validator.setThrowException(true);
+		validator.setFullSchemaChecking(true);
 
 		instance=new Json2XmlValidator();
 		instance.registerForward(new PipeForward("success",null));
@@ -72,8 +71,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 	}
 
 	@Override
-	public String validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws IOException, ConfigurationException, PipeRunException {
+	public String validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception {
 		init();
         PipeLineSessionBase session = new PipeLineSessionBase();
         //instance.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
@@ -86,13 +84,15 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         instance.setTargetNamespace(rootNamespace);
         instance.registerForward(new PipeForward("failure",null));
         instance.registerForward(new PipeForward("parserError",null));
-        instance.configure(null);
         if (rootelement!=null) { 
         	instance.setRoot(rootelement);
         }
+        instance.configure(null);
+        instance.start();
         validator.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
         validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
         validator.configure("setup");
+        validator.start();
 
         String testXml=inputFile!=null?TestFileUtils.getTestFile(inputFile+".xml"):null;
         System.out.println("testXml ["+inputFile+".xml] contents ["+testXml+"]");

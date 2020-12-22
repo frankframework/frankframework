@@ -240,13 +240,18 @@ public class Configuration implements INamedObject{
 	/**
 	 * Register an adapter with the configuration.
 	 */
-	public void registerAdapter(Adapter adapter) throws ConfigurationException {
+	public void registerAdapter(Adapter adapter) {
 		if (!adapter.isActive()) {
 			log.debug("adapter [" + adapter.getName() + "] is not active, therefore not included in configuration");
 			return;
 		}
 		adapter.setConfiguration(this);
-		adapterService.registerAdapter(adapter);
+		try {
+			adapterService.registerAdapter(adapter);
+		} catch (ConfigurationException e) { //For some reason the adapterService configures the adapter...
+			//Do nothing as this will cause the digester to stop digesting the configuration
+			//TODO: this the configuration should have a configure method which configures every adapter.
+		}
 		log.debug("Configuration [" + name + "] registered adapter [" + adapter.toString() + "]");
 	}
 

@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import org.hamcrest.core.StringContains;
@@ -33,13 +33,13 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setThrowException(true);
 		pipe.configure();
 		pipe.start();
-		
+
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
-		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
-		
+		TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
+
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		try {
-			PipeRunResult prr = doPipe(pipe, input,session);
+			doPipe(pipe, input,session);
 			fail("expected to fail");
 		} catch (PipeRunException e) {
 			assertThat(e.getMessage(),StringContains.containsString("Cannot find the declaration of element 'BusinessPartner'"));
@@ -60,11 +60,11 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.start();
 		
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
-		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
+		TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
 		
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		try {
-			PipeRunResult prr = pipe.doPipe(Message.asMessage(input),session); // cannot use this.doPipe(), because pipe is a XmlValidator, not a Json2XmlValidator
+			pipe.doPipe(Message.asMessage(input),session); // cannot use this.doPipe(), because pipe is a XmlValidator, not a Json2XmlValidator
 			fail("expected to fail");
 		} catch (PipeRunException e) {
 			assertThat(e.getMessage(),StringContains.containsString("Cannot find the declaration of element 'BusinessPartner'"));
@@ -218,19 +218,24 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertEquals("a", (String)session.get("rootElement"));
 	}
 
-	
 	@Test
 	public void testStoreRootElementXml2Json() throws Exception {
 		testStoreRootElement("json","abc.xml",false);
 	}
 	@Test
-	public void testStoreRootElementJson2Xml() throws Exception {
+	public void testStoreRootElementJson2XmlFull() throws Exception {
 		testStoreRootElement("xml","abc-full.json",false);
+	}
+	@Test
+	public void testStoreRootElementJson2XmlCompact() throws Exception {
 		testStoreRootElement("xml","abc-compact.json",true);
 	}
 	@Test
-	public void testStoreRootElementJson2Json() throws Exception {
+	public void testStoreRootElementJson2JsonFull() throws Exception {
 		testStoreRootElement("json","abc-full.json",false);
+	}
+	@Test
+	public void testStoreRootElementJson2JsonCompact() throws Exception {
 		testStoreRootElement("json","abc-compact.json",true);
 	}
 	@Test

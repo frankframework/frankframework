@@ -200,16 +200,14 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	public static final int MAX_RETRY_INTERVAL=100;
 	public final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
 
-	public static final String ONERROR_CONTINUE = "continue";
-	public static final String ONERROR_RECOVER = "recover";
-	public static final String ONERROR_CLOSE = "close";
+	public enum ON_ERROR { CONTINUE, RECOVER, CLOSE };
 
 	private String name;
 	private boolean active=true;
 
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
-	private String onError = ONERROR_CONTINUE; 
+	private ON_ERROR onError = ON_ERROR.CONTINUE; 
 
 	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
 	private int numThreads = 1;
@@ -242,9 +240,6 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	private String hideRegex = null;
 	private String hideMethod = "all";
 	private String hiddenInputSessionKeys=null;
-
-	private boolean recover = false;
-
 
 
 	private int retryInterval=1;
@@ -517,7 +512,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
  	 * @throws ConfigurationException when initialization did not succeed.
  	 */ 
 	@Override
-	public void configure() throws ConfigurationException {		
+	public void configure() throws ConfigurationException {
 		configurationSucceeded = false;
 		try {
 			if (StringUtils.isEmpty(getName())) {
@@ -1462,10 +1457,9 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	@Override
 	public void exceptionThrown(INamedObject object, Throwable t) {
 		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"]";
-		if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
-//			warn(msg+", will continue processing messages when they arrive: "+ t.getMessage());
-			error(msg+", will continue processing messages when they arrive",t);
-		} else if (ONERROR_RECOVER.equalsIgnoreCase(getOnError())) {
+		if (ON_ERROR.CONTINUE.equals(getOnErrorEnum())) {
+			error(msg+", will continue processing messages when they arrive", t);
+		} else if (ON_ERROR.RECOVER.equals(getOnErrorEnum())) {
 			// Make JobDef.recoverAdapters() try to recover
 			setRunState(RunStateEnum.ERROR);
 			error(msg+", will try to recover",t);
@@ -1642,6 +1636,10 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	}
 
 	public void setRunState(RunStateEnum state) {
+		if(RunStateEnum.ERROR.equals(state)) {
+			stopRunning(); //Always stop the receiver when state is `**ERROR**`
+		}
+
 		runState.setRunState(state);
 	}
 
@@ -1674,7 +1672,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 			String msg = "caught exception in message post processing";
 			error(msg, e);
 			errorMessage = msg + ": " + e.getMessage();
-			if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
+			if (ON_ERROR.CLOSE.equals(getOnErrorEnum())) {
 				log.info("closing after exception in post processing");
 				stopRunning();
 			}
@@ -1798,10 +1796,11 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	public void setAdapter(Adapter adapter) {
 		this.adapter = adapter;
 	}
-	
+
 	public boolean isOnErrorContinue() {
-		return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
+		return ON_ERROR.CONTINUE.equals(getOnErrorEnum());
 	}
+
 	@Override
 	public Adapter getAdapter() {
 		return adapter;
@@ -1929,7 +1928,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed messages. If present, this storage will be managed by the Receiver.
 	 */
 	public ITransactionalStorage<Serializable> getErrorStorage() {
-		return errorStorage!=null && errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
+		return errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
 	}
 	/**
 	 * returns a browser for the errorStorage, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage} in the configuration. 
@@ -1954,7 +1953,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed successfully. If present, this storage will be managed by the Receiver.
 	 */
 	public ITransactionalStorage<Serializable> getMessageLog() {
-		return messageLog!=null && messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
+		return messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
 	}
 	/**
 	 * returns a browser for the messageLog, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage messageLog} in the configuration. 
@@ -2074,10 +2073,12 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	}
 
 	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
-	public void setOnError(String newOnError) {
-		onError = newOnError;
+	public void setOnError(String value) {
+		if(StringUtils.isNotEmpty(value)) {
+			onError = ON_ERROR.valueOf(value.toUpperCase());
+		}
 	}
-	public String getOnError() {
+	public ON_ERROR getOnErrorEnum() {
 		return onError;
 	}
 
@@ -2275,18 +2276,6 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	}
 	public String getHiddenInputSessionKeys() {
 		return hiddenInputSessionKeys;
-	}
-
-	
-	public void setRecover(boolean b) {
-		recover = b;
-	}
-	public boolean isRecover() {
-		return recover;
-	}
-
-	public boolean isRecoverAdapter() {
-		return getAdapter().isRecover();
 	}
 
 }

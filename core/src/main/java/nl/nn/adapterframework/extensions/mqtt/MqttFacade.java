@@ -124,9 +124,11 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 		return ts.toString();
 	}
 
+	@Override
 	public void setName(String newName) {
 		name = newName;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}

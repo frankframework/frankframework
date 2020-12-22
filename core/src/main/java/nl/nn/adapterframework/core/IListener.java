@@ -36,20 +36,21 @@ public interface IListener<M> extends IConfigurable {
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> or <code>open()</code> method, to improve performance.
 	 */ 
+	@Override
 	public void configure() throws ConfigurationException;
-	
+
 	/**
 	 * Prepares the listener for receiving messages.
 	 * <code>open()</code> is called once each time the listener is started.
 	 */
-	void open() throws ListenerException;
-	
+	public void open() throws ListenerException;
+
 	/**
 	 * Close all resources used for listening.
 	 * Called once once each time the listener is stopped.
 	 */
-	void close() throws ListenerException;
-	
+	public void close() throws ListenerException;
+
 	/**
 	 * Extracts ID-string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the context.

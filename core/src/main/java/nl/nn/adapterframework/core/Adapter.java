@@ -185,18 +185,17 @@ public class Adapter implements IAdapter, NamedBean {
 			pipeline.setAdapter(this);
 			pipeline.configure();
 			messageKeeper.add("Adapter [" + name + "] pipeline successfully configured");
-
-			configurationSucceeded = true;
 		}
 		catch (ConfigurationException e) {
-			error(true, "error initializing pipeline", e);
+			getMessageKeeper().add("ERROR: error initializing pipeline, " + e.getMessage(), MessageKeeperLevel.ERROR);
+			throw e;
 		}
 
-		for (Receiver receiver: receivers) {
+		for (Receiver<?> receiver: receivers) {
 			configureReceiver(receiver);
 		}
 
-		List<String> hrs = new ArrayList<String>();
+		List<String> hrs = new ArrayList<>();
 		for (IPipe pipe : pipeline.getPipes()) {
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe aPipe = (AbstractPipe) pipe;
@@ -219,16 +218,19 @@ public class Adapter implements IAdapter, NamedBean {
 		if (sb.length() > 0) {
 			composedHideRegex = sb.toString();
 		}
+
+		configurationSucceeded = true; //Only if there are no errors mark the adapter as `configurationSucceeded`!
 	}
 
-	public void configureReceiver(Receiver receiver) {
+	public void configureReceiver(Receiver<?> receiver) throws ConfigurationException {
 		log.info("Adapter [" + name + "] is initializing receiver [" + receiver.getName() + "]");
 		receiver.setAdapter(this);
 		try {
 			receiver.configure();
 			getMessageKeeper().add("Receiver [" + receiver.getName() + "] successfully configured");
 		} catch (ConfigurationException e) {
-			error(true, "error initializing receiver [" + receiver.getName() + "]",e);
+			getMessageKeeper().add("ERROR: error initializing receiver [" + receiver.getName() + "], " + e.getMessage(), MessageKeeperLevel.ERROR);
+			throw e;
 		}
 	}
 
@@ -243,7 +245,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/** 
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
-	protected void error(boolean critical, String msg, Throwable t) {
+	protected void addErrorMessageToMessageKeeper(String msg, Throwable t) {
 		log.error("Adapter [" + getName() + "] " + msg, t);
 		if (!(t instanceof IbisException)) {
 			msg += " (" + t.getClass().getName() + ")";
@@ -348,9 +350,9 @@ public class Adapter implements IAdapter, NamedBean {
 			return formattedErrorMessage;
 		}
 		catch (Exception e) {
-			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
-			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
-			error(false, "got error while formatting errormessage", e);
+//			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
+//			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
+			addErrorMessageToMessageKeeper("got error while formatting errormessage", e);
 			return errorMessage;
 		}
 	}
@@ -692,7 +694,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			processingSuccess = false;
 			incNumOfMessagesInError();
-			error(false, "error processing message with messageId [" + messageId+"]: ",e);
+			addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
 			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
@@ -816,6 +818,10 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@Override
 	public void startRunning() {
+		if(RunStateEnum.STARTED.equals(getRunState())) {
+			throw new IllegalStateException("cannot start a running adapter!");
+		}
+
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
@@ -847,7 +853,7 @@ public class Adapter implements IAdapter, NamedBean {
 						log.debug("Adapter [" + getName() + "] is starting pipeline");
 						pipeline.start();
 					} catch (PipeStartException pre) {
-						error(true, "got error starting PipeLine", pre);
+						addErrorMessageToMessageKeeper("got error starting PipeLine", pre);
 						runState.setRunState(RunStateEnum.ERROR);
 						return;
 					}
@@ -863,7 +869,7 @@ public class Adapter implements IAdapter, NamedBean {
 						receiver.startRunning();
 					}
 				} catch (Throwable t) {
-					error(true, "got error starting Adapter", t);
+					addErrorMessageToMessageKeeper("got error starting Adapter", t);
 					runState.setRunState(RunStateEnum.ERROR);
 				} finally {
 					configuration.removeStartAdapterThread(this);
@@ -937,7 +943,7 @@ public class Adapter implements IAdapter, NamedBean {
 					runState.setRunState(RunStateEnum.STOPPED);
 					getMessageKeeper().add("Adapter stopped");
 				} catch (Throwable t) {
-					error(true, "got error stopping Adapter", t);
+					addErrorMessageToMessageKeeper("got error stopping Adapter", t);
 					runState.setRunState(RunStateEnum.ERROR);
 				} finally {
 					configuration.removeStopAdapterThread(this);
@@ -1074,14 +1080,6 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	public boolean isMsgLogHidden() {
 		return msgLogHidden;
-	}
-
-	public void setRecover(boolean b) {
-		recover = b;
-	}
-
-	public boolean isRecover() {
-		return recover;
 	}
 
 	@IbisDoc({"when <code>true</code> a null message is replaced by an empty message", "false"})
