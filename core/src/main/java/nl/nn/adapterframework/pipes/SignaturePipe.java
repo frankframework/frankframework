@@ -69,14 +69,6 @@ public class SignaturePipe extends FixedForwardPipe {
 	public final String[] ACTIONS= {ACTION_SIGN, ACTION_VERIFY};
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS));
 
-	/**
-	 * Action to be taken by pipe.
-	 * Available Actions:
-	 * <ul>
-	 *     <li>Sign: signs the given input</li>
-	 *     <li>Verify: verifies the given input</li>
-	 * </ul>
-	 */
 	private @Getter String action = ACTION_SIGN;
 	private @Getter String algorithm;
 	private @Getter String provider;
@@ -110,7 +102,7 @@ public class SignaturePipe extends FixedForwardPipe {
 		if (keystoreUrl == null) {
 			throw new ConfigurationException("cannot find URL for keystore resource ["+getKeystore()+"]");
 		}
-		log.info("resolved keystore-URL to ["+keystoreUrl.toString()+"]");
+		log.debug("resolved keystore-URL to ["+keystoreUrl.toString()+"]");
 		if (getAction().equals(ACTION_VERIFY)) {
 			if (getParameterList().findParameter(PARAMETER_SIGNATURE)==null) {
 				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specfied for action [" + action + "]");
@@ -125,23 +117,27 @@ public class SignaturePipe extends FixedForwardPipe {
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
-		try {
-			if (getAction().equals(ACTION_SIGN)) {
+		if (getAction().equals(ACTION_SIGN)) {
+			try {
 				if ("pem".equals(getKeystoreType())) {
 					privateKey = PkiUtil.getPrivateKeyFromPem(keystoreUrl);
 				} else {
 					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystorePassword, keystoreType, "Keys for action ["+getAction()+"]");
 					KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, keystorePassword, keyManagerAlgorithm);
 					if (keymanagers==null || keymanagers.length==0) {
-						throw new PipeStartException("No keymanager");
+						throw new PipeStartException("No keymanager found for keystore ["+keystoreUrl+"]");
 					}
 					X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
 					privateKey = keyManager.getPrivateKey(getKeystoreAlias());
 				}
 				if (privateKey==null) {
-					throw new PipeStartException("No Signing Key found in alias ["+getKeystoreAlias()+"]");
+					throw new PipeStartException("No Signing Key found in alias ["+getKeystoreAlias()+"] of keystore ["+keystoreUrl+"]");
 				}
-			} else {
+			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | UnrecoverableKeyException | InvalidKeySpecException e) {
+				throw new PipeStartException("cannot get Private Key for signing in alias ["+getKeystoreAlias()+"] of keystore ["+keystoreUrl+"]", e);
+			}
+		} else {
+			try {
 				Certificate certificate;
 				if ("pem".equals(getKeystoreType())) {
 					certificate = PkiUtil.getCertificateFromPem(keystoreUrl);
@@ -149,19 +145,19 @@ public class SignaturePipe extends FixedForwardPipe {
 					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystorePassword, keystoreType, "Keys for action ["+getAction()+"]");
 					TrustManager[] trustmanagers = PkiUtil.createTrustManagers(keystore, keyManagerAlgorithm);
 					if (trustmanagers==null || trustmanagers.length==0) {
-						throw new PipeStartException("No trustmanager");
+						throw new PipeStartException("No trustmanager for keystore ["+keystoreUrl+"]");
 					}
 					X509TrustManager trustManager = (X509TrustManager)trustmanagers[0];
 					X509Certificate[] certificates = trustManager.getAcceptedIssuers();
 					if (certificates==null || certificates.length==0) {
-						throw new PipeStartException("No Verfication Key found in alias ["+getKeystoreAlias()+"]");
+						throw new PipeStartException("No Verfication Key found in keystore ["+keystoreUrl+"]");
 					}
 					certificate = certificates[0];
 				}
 				publicKey = certificate.getPublicKey();
+			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+				throw new PipeStartException("cannot get Public Key for verification in keystore ["+keystoreUrl+"]", e);
 			}
-		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | UnrecoverableKeyException | InvalidKeySpecException e) {
-			throw new PipeStartException("cannot get key for action ["+getAction()+"]", e);
 		}
 	}
 
@@ -205,7 +201,7 @@ public class SignaturePipe extends FixedForwardPipe {
 		this.action = action;
 	}
 
-	@IbisDoc({"2", "The sigining algorithm", ALGORITHM_DEFAULT})
+	@IbisDoc({"2", "The signing algorithm", ALGORITHM_DEFAULT})
 	public void setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
 	}
@@ -214,6 +210,12 @@ public class SignaturePipe extends FixedForwardPipe {
 	public void setProvider(String provider) {
 		this.provider = provider;
 	}
+	
+	@IbisDoc({"4", "if true, the signature is (expected to be) base64 encoded", "true"})
+	public void setSignatureBase64(boolean signatureBase64) {
+		this.signatureBase64 = signatureBase64;
+	}
+
 
 	@IbisDoc({"10", "Keystore to obtain signing key", ""})
 	public void setKeystore(String string) {
