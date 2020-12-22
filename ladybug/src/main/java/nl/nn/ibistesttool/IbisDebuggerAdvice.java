@@ -15,6 +15,7 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -87,6 +88,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 			return (PipeLineResult)proceedingJoinPoint.proceed();
 		}
 		message = ibisDebugger.pipeLineInput(pipeLine, correlationId, message);
+		StringWriter capture = message.captureStream();
 		TreeSet<String> keys = new TreeSet<String>(pipeLineSession.keySet());
 		Iterator<String> iterator = keys.iterator();
 		while (iterator.hasNext()) {
@@ -104,6 +106,10 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 			pipeLineResult = (PipeLineResult)proceedingJoinPoint.proceed(args);
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeLineAbort(pipeLine, correlationId, throwable);
+		} finally {
+			if (capture!=null && ibisDebugger instanceof Debugger) {
+				((Debugger)ibisDebugger).capturedInput(correlationId, capture.toString());
+			}
 		}
 		pipeLineResult.setResult(ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult()));
 		return pipeLineResult;
@@ -118,6 +124,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		}
 		String messageId = pipeLineSession.getMessageId();
 		message = ibisDebugger.pipeInput(pipeLine, pipe, messageId, message);
+		StringWriter capture = message.captureStream();
 		PipeRunResult pipeRunResult = null;
 		try {
 			Object[] args = proceedingJoinPoint.getArgs();
@@ -125,6 +132,10 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 			pipeRunResult = (PipeRunResult)proceedingJoinPoint.proceed(args); // in case of 'preserveInput', this result is already replaced with the preserved input
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeAbort(pipeLine, pipe, messageId, throwable);
+		} finally {
+			if (capture!=null && ibisDebugger instanceof Debugger) {
+				((Debugger)ibisDebugger).capturedInput(messageId, capture.toString());
+			}
 		}
 		if (pipe instanceof IExtendedPipe && ((IExtendedPipe)pipe).isPreserveInput()) {
 			// signal in the debugger that the result of the pipe has been replaced with the original input
@@ -167,6 +178,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 
 		String messageId = session == null ? null : session.getMessageId();
 		message = ibisDebugger.senderInput(sender, messageId, message); 
+		StringWriter capture = message.captureStream();
 
 		M result = null; // result can be PipeRunResult (for StreamingSenders) or Message (for all other Senders)
 		// For SenderWrapperBase continue even when it needs to be stubbed
@@ -180,6 +192,10 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 				result = (M)proceedingJoinPoint.proceed(args);
 			} catch(Throwable throwable) {
 				throw ibisDebugger.senderAbort(sender, messageId, throwable);
+			} finally {
+				if (capture!=null && ibisDebugger instanceof Debugger) {
+					((Debugger)ibisDebugger).capturedInput(messageId, capture.toString());
+				}
 			}
 		} else {
 			// Resolve parameters so they will be added to the report like when the sender was not stubbed and would
@@ -189,6 +205,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 				if (parameterList!=null) {
 					parameterList.getValues(message, session);
 				}
+			}
+			if (capture!=null && ibisDebugger instanceof Debugger) {
+				((Debugger)ibisDebugger).capturedInput(messageId, capture.toString());
 			}
 		}
 		if (sender instanceof SenderWrapperBase && ((SenderWrapperBase)sender).isPreserveInput()) {
