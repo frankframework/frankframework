@@ -44,7 +44,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.IValidatorPipe;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IWrapperPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
@@ -215,8 +215,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public final static String MESSAGE_LOG_NAME_PREFIX="- ";
 	public final static String MESSAGE_LOG_NAME_SUFFIX=": message log";
 
-	private IValidatorPipe inputValidator=null;
-	private IValidatorPipe outputValidator=null;
+	private IValidator inputValidator=null;
+	private IValidator outputValidator=null;
 	private IWrapperPipe inputWrapper=null;
 	private IWrapperPipe outputWrapper=null;
 	
@@ -403,8 +403,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
 			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
 		}
-		IValidatorPipe inputValidator = getInputValidator();
-		IValidatorPipe outputValidator = getOutputValidator();
+		IValidator inputValidator = getInputValidator();
+		IValidator outputValidator = getOutputValidator();
 		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
 			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator();
 			setOutputValidator(outputValidator);
@@ -1029,22 +1029,22 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@IbisDoc({"40"})
-	public void setInputValidator(IValidatorPipe inputValidator) {
+	public void setInputValidator(IValidator inputValidator) {
 		inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
 		this.inputValidator = inputValidator;
 	}
-	public IValidatorPipe getInputValidator() {
+	public IValidator getInputValidator() {
 		return inputValidator;
 	}
 
 	@IbisDoc({"50"})
-	public void setOutputValidator(IValidatorPipe outputValidator) {
+	public void setOutputValidator(IValidator outputValidator) {
 		if (outputValidator!=null) {
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
 		}
 		this.outputValidator = outputValidator;
 	}
-	public IValidatorPipe getOutputValidator() {
+	public IValidator getOutputValidator() {
 		return outputValidator;
 	}
 
