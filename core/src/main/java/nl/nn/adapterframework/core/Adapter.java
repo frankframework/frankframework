@@ -350,9 +350,9 @@ public class Adapter implements IAdapter, NamedBean {
 			return formattedErrorMessage;
 		}
 		catch (Exception e) {
-//			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
-//			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
-			addErrorMessageToMessageKeeper("got error while formatting errormessage", e);
+			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
+			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
+			addErrorMessageToMessageKeeper(msg, e);
 			return errorMessage;
 		}
 	}
@@ -818,8 +818,9 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@Override
 	public void startRunning() {
-		if(RunStateEnum.STARTED.equals(getRunState())) {
-			throw new IllegalStateException("cannot start a running adapter!");
+		if(RunStateEnum.STARTING == getRunState() || RunStateEnum.STARTED == getRunState() || RunStateEnum.STOPPING == getRunState()) {
+			log.warn("cannot start adapter ["+getName()+"] that is stopping, starting or already started");
+			return;
 		}
 
 		Runnable runnable = new Runnable() {

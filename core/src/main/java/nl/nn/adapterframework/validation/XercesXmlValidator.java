@@ -141,7 +141,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		preparseResultId = "" + counter.getAndIncrement();
 	}
 
-	boolean isConfigured = false;
 	@Override
 	public void configure(String logPrefix) throws ConfigurationException {
 		if (StringUtils.isEmpty(getXmlSchemaVersion())) {
@@ -151,7 +150,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			}
 		}
 		super.configure(logPrefix);
-		isConfigured = true;
 	}
 
 	@Override
@@ -254,8 +252,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			if (cache == null || isIgnoreCaching()) {
 				preparseResult = this.preparseResult;
 				if (preparseResult == null) {
-					System.out.println(isConfigured);
-//					start(); //If I remove start here 97 tests will fail...
 					preparseResult = this.preparseResult;
 				}
 			} else {

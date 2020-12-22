@@ -375,18 +375,6 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			}
 			if (pipe instanceof MessageSendingPipe) {
 				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
-				if (messageSendingPipe.getInputValidator() != null) {
-					configure(messageSendingPipe.getInputValidator());
-				}
-				if (messageSendingPipe.getOutputValidator() != null) {
-					configure(messageSendingPipe.getOutputValidator());
-				}
-				if (messageSendingPipe.getInputWrapper() != null) {
-					configure(messageSendingPipe.getInputWrapper());
-				}
-				if (messageSendingPipe.getOutputWrapper() != null) {
-					configure(messageSendingPipe.getOutputWrapper());
-				}
 				if (messageSendingPipe.getMessageLog() != null) {
 					pipeStatistics.put(messageSendingPipe.getMessageLog().getName(), new StatisticsKeeper(messageSendingPipe.getMessageLog().getName()));
 				}
@@ -592,21 +580,6 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			String pipeName = pipe.getName();
 
 			log.debug(getLogPrefix()+"starting pipe [" + pipeName+"]");
-			if (pipe instanceof MessageSendingPipe) {
-				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
-				if (messageSendingPipe.getInputValidator() != null) {
-					messageSendingPipe.getInputValidator().start();
-				}
-				if (messageSendingPipe.getOutputValidator() != null) {
-					messageSendingPipe.getOutputValidator().start();
-				}
-				if (messageSendingPipe.getInputWrapper() != null) {
-					messageSendingPipe.getInputWrapper().start();
-				}
-				if (messageSendingPipe.getOutputWrapper() != null) {
-					messageSendingPipe.getOutputWrapper().start();
-				}
-			}
 			pipe.start();
 			log.debug(getLogPrefix()+"successfully started pipe [" + pipeName + "]");
 		}
@@ -647,21 +620,6 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			String pipeName = pipe.getName();
 
 			log.debug(getLogPrefix()+"is stopping [" + pipeName+"]");
-			if (pipe instanceof MessageSendingPipe) {
-				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
-				if (messageSendingPipe.getInputValidator() != null) {
-					messageSendingPipe.getInputValidator().stop();
-				}
-				if (messageSendingPipe.getOutputValidator() != null) {
-					messageSendingPipe.getOutputValidator().stop();
-				}
-				if (messageSendingPipe.getInputWrapper() != null) {
-					messageSendingPipe.getInputWrapper().stop();
-				}
-				if (messageSendingPipe.getOutputWrapper() != null) {
-					messageSendingPipe.getOutputWrapper().stop();
-				}
-			}
 			pipe.stop();
 			log.debug(getLogPrefix()+"successfully stopped pipe [" + pipeName + "]");
 		}

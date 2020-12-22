@@ -404,6 +404,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
 			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
 		}
+
 		IValidatorPipe inputValidator = getInputValidator();
 		IValidatorPipe outputValidator = getOutputValidator();
 		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
@@ -414,13 +415,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			PipeForward pf = new PipeForward();
 			pf.setName(SUCCESS_FORWARD);
 			inputValidator.registerForward(pf);
-			//inputValidator.configure(); // configure is handled in PipeLine.configure()
+			inputValidator.configure();
 		}
 		if (outputValidator!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName(SUCCESS_FORWARD);
 			outputValidator.registerForward(pf);
-			//outputValidator.configure(); // configure is handled in PipeLine.configure()
+			outputValidator.configure();
 		}
 		if (getInputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
@@ -431,11 +432,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				ISender sender = getSender();
 				eswPipe.retrievePhysicalDestinationFromSender(sender);
 			}
+			getInputWrapper().configure();
 		}
 		if (getOutputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName(SUCCESS_FORWARD);
 			getOutputWrapper().registerForward(pf);
+			getOutputWrapper().configure();
 		}
 
 		registerEvent(PIPE_TIMEOUT_MONITOR_EVENT);
@@ -521,7 +524,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			throw new PipeRunException(this,getLogPrefix(session)+"cannot preserve message",e);
 		}
 	}
-	
+
 	@Override
 	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		String correlationID = session==null?null:session.getMessageId();
@@ -937,7 +940,21 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw pse;
 			}
 		}
-		ITransactionalStorage messageLog = getMessageLog();
+
+		if (getInputValidator() != null) {
+			getInputValidator().start();
+		}
+		if (getOutputValidator() != null) {
+			getOutputValidator().start();
+		}
+		if (getInputWrapper() != null) {
+			getInputWrapper().start();
+		}
+		if (getOutputWrapper() != null) {
+			getOutputWrapper().start();
+		}
+
+		ITransactionalStorage<?> messageLog = getMessageLog();
 		if (messageLog!=null) {
 			try {
 				messageLog.open();
@@ -966,6 +983,20 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 		}
+
+		if (getInputValidator() != null) {
+			getInputValidator().stop();
+		}
+		if (getOutputValidator() != null) {
+			getOutputValidator().stop();
+		}
+		if (getInputWrapper() != null) {
+			getInputWrapper().stop();
+		}
+		if (getOutputWrapper() != null) {
+			getOutputWrapper().stop();
+		}
+
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog!=null) {
 			try {

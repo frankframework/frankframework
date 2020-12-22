@@ -200,6 +200,14 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	public static final int MAX_RETRY_INTERVAL=100;
 	public final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
 
+	/**
+	 * CONTINUE: don't stop the receiver and an error occurs.
+	 * RECOVER: when an error occurs (eq. connection is lost) the receiver will be stopped and marked as ERROR
+	 * Once every `recover.adapters.interval` it will attempt to (re-) start the receiver.
+	 * CLOSE: stop the receiver when an error occurs.
+	 * 
+	 * Currently, this feature is only implemented for `IPushingListeners`, like Tibco and SAP.
+	 */
 	public enum ON_ERROR { CONTINUE, RECOVER, CLOSE };
 
 	private String name;
@@ -1457,15 +1465,19 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	@Override
 	public void exceptionThrown(INamedObject object, Throwable t) {
 		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"]";
-		if (ON_ERROR.CONTINUE.equals(getOnErrorEnum())) {
-			error(msg+", will continue processing messages when they arrive", t);
-		} else if (ON_ERROR.RECOVER.equals(getOnErrorEnum())) {
-			// Make JobDef.recoverAdapters() try to recover
-			setRunState(RunStateEnum.ERROR);
-			error(msg+", will try to recover",t);
-		} else {
-			error(msg+", stopping receiver", t);
-			stopRunning();
+		switch (getOnErrorEnum()) {
+			case CONTINUE:
+				error(msg+", will continue processing messages when they arrive", t);
+				break;
+			case RECOVER:
+				// Make JobDef.recoverAdapters() try to recover
+				setRunState(RunStateEnum.ERROR);
+				error(msg+", will try to recover",t);
+				break;
+			case CLOSE:
+				error(msg+", stopping receiver", t);
+				stopRunning();
+				break;
 		}
 	}
 

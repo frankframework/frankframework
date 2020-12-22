@@ -1088,7 +1088,7 @@ public class JobDef {
 				heartbeatLog.warn(message);
 			}
 
-			for (Receiver receiver: adapter.getReceivers()) {
+			for (Receiver<?> receiver: adapter.getReceivers()) {
 				countReceiver++;
 
 				RunStateEnum receiverRunState = receiver.getRunState();
@@ -1098,33 +1098,8 @@ public class JobDef {
 					receiver.startRunning();
 
 					log.debug("finished recovering receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
-				} else if (receiverRunState.equals(RunStateEnum.STARTED)) {
-					// workaround for started RestListeners of which
-					// uriPattern is not registered correctly
-					IListener listener = receiver.getListener();
-					if (listener instanceof RestListener) {
-						RestListener restListener = (RestListener) listener;
-						String matchingPattern = RestServiceDispatcher.getInstance().findMatchingPattern("/" + restListener.getUriPattern());
-						if (matchingPattern == null) {
-							System.err.println("yoyoyo matcher dasher in the house");
-//							log.debug("trying to recover receiver [" + receiver.getName() + "] (restListener) of adapter [" + adapter.getName() + "]");
-//							if (receiver.configurationSucceeded()) {
-//								receiver.stopRunning();
-//								int count = 10;
-//								while (count-- >= 0 && !receiver.getRunState().equals(RunStateEnum.STOPPED)) {
-//									try {
-//										Thread.sleep(1000);
-//									} catch (InterruptedException e) {
-//										log.debug("Interrupted waiting for receiver to stop", e);
-//									}
-//								}
-//							}
-//							// check for start is in method startRunning in Receiver itself
-//							receiver.startRunning();
-//							log.debug("finished recovering receiver [" + receiver.getName() + "] (restListener) of adapter [" + adapter.getName() + "]");
-						}
-					}
 				}
+
 				receiverRunState = receiver.getRunState();
 				message = "receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "] has state [" + receiverRunState + "]";
 				if (receiverRunState.equals(RunStateEnum.STARTED)) {

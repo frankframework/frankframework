@@ -246,12 +246,16 @@ public class Configuration implements INamedObject{
 			return;
 		}
 		adapter.setConfiguration(this);
+
 		try {
 			adapterService.registerAdapter(adapter);
 		} catch (ConfigurationException e) { //For some reason the adapterService configures the adapter...
-			//Do nothing as this will cause the digester to stop digesting the configuration
 			//TODO: this the configuration should have a configure method which configures every adapter.
+
+			//Do nothing as this will cause the digester to stop digesting the configuration
+			log.error("error configuring adapter ["+adapter.getName()+"]", e);
 		}
+
 		log.debug("Configuration [" + name + "] registered adapter [" + adapter.toString() + "]");
 	}
 

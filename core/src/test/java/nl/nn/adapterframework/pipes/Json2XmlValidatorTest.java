@@ -35,7 +35,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.start();
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
-		TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
 
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		try {
@@ -58,10 +57,9 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.registerForward(new PipeForward("success",null));
 		pipe.configure();
 		pipe.start();
-		
+
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
-		TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
-		
+
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		try {
 			pipe.doPipe(Message.asMessage(input),session); // cannot use this.doPipe(), because pipe is a XmlValidator, not a Json2XmlValidator
@@ -82,13 +80,13 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setThrowException(true);
 		pipe.configure();
 		pipe.start();
-		
+
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
 		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
-		
+
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		PipeRunResult prr = doPipe(pipe, input,session);
-		
+
 		assertEquals(expected, prr.getResult().asString());
 	}
 
