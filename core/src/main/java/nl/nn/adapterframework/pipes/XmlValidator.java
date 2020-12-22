@@ -42,7 +42,7 @@ import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IValidatorPipe;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -431,7 +431,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@Override
-	public IValidatorPipe getResponseValidator() {
+	public IValidator getResponseValidator() {
 		if (isConfiguredForMixedValidation()) {
 			return new ResponseValidatorWrapper(this);
 		}

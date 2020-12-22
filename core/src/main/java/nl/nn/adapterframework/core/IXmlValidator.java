@@ -20,7 +20,7 @@ import java.util.Set;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.validation.XSD;
 
-public interface IXmlValidator extends IValidatorPipe {
+public interface IXmlValidator extends IValidator {
 
 	public ConfigurationException getConfigurationException();
 

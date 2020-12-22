@@ -6,8 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 
 public class CompressPipeTest extends PipeTestBase<CompressPipe> {
