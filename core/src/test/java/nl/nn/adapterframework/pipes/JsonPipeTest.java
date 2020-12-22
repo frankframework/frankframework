@@ -30,7 +30,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 	public void doPipeInputNull() throws Exception {
 		pipe.configure();
 		pipe.start();
-		exception.expectMessage("Pipe [JsonPipe under test] got null input");
+		exception.expectMessage("Pipe [JsonPipe under test] msgId [null] got null input");
 		doPipe(pipe, null, session);
 	}
 
