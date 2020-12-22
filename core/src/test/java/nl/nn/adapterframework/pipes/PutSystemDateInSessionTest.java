@@ -7,20 +7,11 @@ import static org.junit.Assert.assertTrue;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.util.DateUtils;
 
 public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSession>{
-
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
-
-	private IPipeLineSession session = new PipeLineSessionBase();
 
 	@Override
 	public PutSystemDateInSession createPipe() {
@@ -29,21 +20,21 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 	@Test
 	public void testConfigureNullDateFormat() throws Exception {
-		expectedEx.expectMessage("has a null value for dateFormat");
+		exception.expectMessage("has a null value for dateFormat");
 		pipe.setDateFormat(null);
 		configureAndStartPipe();
 	}
 
 	@Test
 	public void testConfigureNullSessionKey() throws Exception {
-		expectedEx.expectMessage("has a null value for sessionKey");
+		exception.expectMessage("has a null value for sessionKey");
 		pipe.setSessionKey(null);
 		configureAndStartPipe();
 	}
 
 	@Test
 	public void testFixedDateTimeFormatInvalid() throws Exception {
-		expectedEx.expectMessage("cannot parse fixed date");
+		exception.expectMessage("cannot parse fixed date");
 		configureAndStartPipe();
 		pipe.setReturnFixedDate(true);
 		pipe.setDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
@@ -112,7 +103,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 	@Test
 	public void testConfigureIsReturnFixedDatewithoutStub() throws Exception {
-		expectedEx.expectMessage("returnFixedDate only allowed in stub mode");
+		exception.expectMessage("returnFixedDate only allowed in stub mode");
 		pipe.setSessionKey("dummy");
 		pipe.setReturnFixedDate(true);
 		configureAndStartPipe();
@@ -132,7 +123,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 	@Test
 	public void testConfigureInvalidDateFormat() throws Exception {
-		expectedEx.expectMessage("has an illegal value for dateFormat");
+		exception.expectMessage("has an illegal value for dateFormat");
 		pipe.setDateFormat("test");
 		pipe.setSessionKey("dummy");
 		configureAndStartPipe();

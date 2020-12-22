@@ -14,8 +14,6 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	private String dummyString = "dummyString";
 	private String dummyStringSemiColon = dummyString + ";";
 
-	private IPipeLineSession session = new PipeLineSessionBase();
-
 	@Override
 	public CompressPipe createPipe() {
 		return new CompressPipe();

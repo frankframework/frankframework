@@ -12,8 +12,6 @@ import java.io.IOException;
 
 public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingPipe> {
 
-    private IPipeLineSession session = new PipeLineSessionBase();
-
     @Override
     public CredentialCheckingPipe createPipe() {
         return new CredentialCheckingPipe();

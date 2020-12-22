@@ -11,8 +11,6 @@ import static org.junit.Assert.*;
 
 public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
-    private IPipeLineSession session = new PipeLineSessionBase();
-
     @Override
     public EscapePipe createPipe() {
         return new EscapePipe();

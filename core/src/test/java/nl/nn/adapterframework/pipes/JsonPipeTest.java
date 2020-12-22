@@ -6,16 +6,12 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 
 public class JsonPipeTest extends PipeTestBase<JsonPipe> {
-	@Mock
-	private IPipeLineSession session;
 
 	@Override
 	public JsonPipe createPipe() {

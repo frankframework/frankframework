@@ -10,8 +10,6 @@ import static org.junit.Assert.*;
 
 public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
 
-    private IPipeLineSession session = new PipeLineSessionBase();
-
     @Override
     public EtagHandlerPipe createPipe() {
         return new EtagHandlerPipe();

@@ -16,22 +16,30 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Enumeration;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -82,7 +90,7 @@ public class PkiUtil {
 			Enumeration<String> aliases = keystore.aliases();
 			while (aliases.hasMoreElements()) {
 				String alias = (String)aliases.nextElement();
-				log.info(prefix+" '" + alias + "':");
+				log.info(prefix+" alias [" + alias + "]:");
 				Certificate trustedcert = keystore.getCertificate(alias);
 				if (trustedcert != null && trustedcert instanceof X509Certificate) {
 					X509Certificate cert = (X509Certificate)trustedcert;
@@ -97,5 +105,22 @@ public class PkiUtil {
 		return keystore;
 	}
 
+	public static byte[] loadPEM(URL resource) throws IOException {
+		InputStream in = resource.openStream();
+		String pem = StreamUtil.streamToString(in, null, "ISO_8859_1");
+		Pattern parse = Pattern.compile("(?m)(?s)^---*BEGIN.*---*$(.*)^---*END.*---*$.*");
+		String encoded = parse.matcher(pem).replaceFirst("$1");
+		return Base64.decodeBase64(encoded);
+	}
+	
+	public static PrivateKey getPrivateKeyFromPem(URL resource) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+		KeyFactory kf = KeyFactory.getInstance("RSA");
+		byte[] pkcs8EncodedKeySpec = loadPEM(resource);
+		return kf.generatePrivate(new PKCS8EncodedKeySpec(pkcs8EncodedKeySpec));
+	}
 
+	public static Certificate getCertificateFromPem(URL resource) throws CertificateException, IOException {
+		CertificateFactory fact = CertificateFactory.getInstance("X.509");
+		return fact.generateCertificate(resource.openStream());
+	}
 }
