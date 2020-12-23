@@ -26,6 +26,7 @@ import org.apache.commons.lang.text.StrTokenizer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -139,18 +140,8 @@ public class MessageStoreListener extends JdbcTableListener {
 	}
 	
 	@Override
-	public IMessageBrowser<Object> getInProcessBrowser() {
-		return augmentMessageBrowser(super.getInProcessBrowser());
-	}
-
-	@Override
-	public IMessageBrowser<Object> getMessageLogBrowser() {
-		return augmentMessageBrowser(super.getMessageLogBrowser());
-	}
-
-	@Override
-	public IMessageBrowser<Object> getErrorStoreBrowser() {
-		return augmentMessageBrowser(super.getErrorStoreBrowser());
+	public IMessageBrowser<Object> getMessageBrowser(ProcessState state) {
+		return augmentMessageBrowser(super.getMessageBrowser(state));
 	}
 
 

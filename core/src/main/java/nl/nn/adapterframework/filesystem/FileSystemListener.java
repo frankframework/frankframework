@@ -17,8 +17,10 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +36,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -60,6 +63,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private String inProcessFolder;
 	private String processedFolder;
 	private String errorFolder;
+	private String holdFolder;
 	private String logFolder;
 
 	private boolean createFolders=false;
@@ -77,6 +81,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 //	private Long fileListFirstFileFound;
 
 	private FS fileSystem;
+	
+	private Set<ProcessState> knownProcessStates;
+	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
 
 	protected abstract FS createFileSystem();
 
@@ -91,7 +98,25 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		if (getNumberOfBackups()>0 && !(fileSystem instanceof IWritableFileSystem)) {
 			throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");
 		}
+		knownProcessStates = ProcessState.getMandatoryKnownStates();
+		for (ProcessState state: ProcessState.values()) {
+			if (StringUtils.isNotEmpty(getStateFolder(state))) {
+				knownProcessStates.add(state);
+			}
+		}
+		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
 	}
+
+	@Override
+	public Set<ProcessState> knownProcessStates() {
+		return knownProcessStates;
+	}
+
+	@Override
+	public Map<ProcessState,Set<ProcessState>> targetProcessStates() {
+		return targetProcessStates;
+	}
+
 
 	@Override
 	public void open() throws ListenerException {
@@ -314,28 +339,41 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	protected IMessageBrowser<F> getMessageBrowser(String folder) {
+	@Override
+	public void moveToProcessState(F message, ProcessState toState, Map<String,Object> context) throws ListenerException {
+		try {
+			getFileSystem().moveFile(message, getStateFolder(toState), false);
+		} catch (FileSystemException e) {
+			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message)+"]", e);
+		}
+	}
+
+	public String getStateFolder(ProcessState state) {
+		switch (state) {
+		case AVAILABLE:
+			return getInputFolder();
+		case INPROCESS:
+			return getInProcessFolder();
+		case DONE:
+			return getProcessedFolder();
+		case ERROR:
+			return getErrorFolder();
+		case HOLD:
+			return getHoldFolder();
+		default:
+			throw new IllegalStateException("Unknown state ["+state+"]");
+		}
+	}
+	
+	@Override
+	public IMessageBrowser<F> getMessageBrowser(ProcessState state) {
+		String folder = getStateFolder(state);
 		if (isDisableMessageBrowsers() || StringUtils.isEmpty(folder)) {
 			return null;
 		}
 		return new FileSystemMessageBrowser<F, FS>(fileSystem, folder, getMessageIdPropertyKey());
 	}	
 	
-	@Override
-	public IMessageBrowser<F> getInProcessBrowser() {
-		return getMessageBrowser(getInProcessFolder());
-	}
-
-	@Override
-	public IMessageBrowser<F> getMessageLogBrowser() {
-		return getMessageBrowser(getProcessedFolder());
-	}
-	
-	@Override
-	public IMessageBrowser<F> getErrorStoreBrowser() {
-		return getMessageBrowser(getErrorFolder());
-	}
-
 	@Override
 	@IbisDoc({"1", "Name of the listener", ""})
 	public void setName(String name) {
@@ -394,6 +432,14 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 	public String getErrorFolder() {
 		return errorFolder;
+	}
+
+	@IbisDoc({"6", "Folder where messages from the error folder can be put on Hold, temporarily", ""})
+	public void setHoldFolder(String holdFolder) {
+		this.holdFolder = holdFolder;
+	}
+	public String getHoldFolder() {
+		return holdFolder;
 	}
 
 	@IbisDoc({"6", "Folder where a copy of every file that is received is stored", ""})

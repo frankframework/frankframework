@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -171,7 +172,7 @@ public class Browse extends ActionBase {
 				mb=pipe.getMessageLog();
 			} else {
 				Receiver receiver = adapter.getReceiverByName(receiverName);
-				mb = receiver.getMessageLogBrowser();
+				mb = receiver.getMessageBrowser(ProcessState.DONE);
 			}
 			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
 			if ("export selected".equalsIgnoreCase(action)) {
@@ -183,7 +184,7 @@ public class Browse extends ActionBase {
 				error("cannot find Receiver ["+receiverName+"]", null);
 				return null;
 			}
-			mb = receiver.getErrorStorageBrowser();
+			mb = receiver.getMessageBrowser(ProcessState.ERROR);
 			if (performAction(adapter, receiver, action, mb, messageId, selected, request, response))
 				return null;
 			listener = receiver.getListener();

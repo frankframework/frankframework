@@ -15,17 +15,28 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Interface that can be implemented by Listeners that provide their own management of
  * messages processed and in error.
  */
-public interface IProvidesMessageBrowsers<M> extends IHasProcessState<M> {
-
+public interface IHasProcessState<M> {
 
 	/**
-	 * returns a {@link IMessageBrowser browser} of messages that are in ProcessState 'state', and are stored in a 
-	 * storage managed by the listener itself (as opposed to a storage configured as a messageLog or errorStorage in the configuration).
+	 * Provides the set of ProcessStates used by this listener.
 	 */
-	public IMessageBrowser<M> getMessageBrowser(ProcessState state);
+	public Set<ProcessState> knownProcessStates();
 	
+	/**
+	 * Provides the set of ProcessStates that a message in the specified state can be moved to, e.g. from a MessageBrowser for that state.
+	 */
+	public Map<ProcessState,Set<ProcessState>> targetProcessStates();
+
+	/**
+	 * Change the processState of the message.
+	 */
+	public void moveToProcessState(M message, ProcessState toState, Map<String,Object> context) throws ListenerException;
+
 }
