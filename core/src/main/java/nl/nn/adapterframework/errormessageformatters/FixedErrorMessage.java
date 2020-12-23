@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.errormessageformatters;
 
+import java.io.IOException;
 import java.net.URL;
 
 import nl.nn.adapterframework.core.INamedObject;
@@ -44,7 +45,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	private String styleSheetName = null;
 
 	@Override
-	public String format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 
 		String stringToReturn = getReturnString();
 		if (stringToReturn==null) {
@@ -58,7 +59,11 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 			}
 		}  
 		if (StringUtils.isEmpty(stringToReturn)) {
-			stringToReturn = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
+			try {
+				stringToReturn = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime).asString();
+			} catch (IOException e) {
+				log.error("got error formatting errorMessage", e);
+			}
 		}
 
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
@@ -79,7 +84,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 			}
 		}
 	
-		return stringToReturn;
+		return new Message(stringToReturn);
 	}
 
 
