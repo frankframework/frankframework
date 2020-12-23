@@ -227,17 +227,17 @@ public class SignaturePipe extends FixedForwardPipe {
 		keystoreType = string;
 	}
 
-	@IbisDoc({"12", ""})
+	@IbisDoc({"12", "Alias used to obtain keystore password"})
 	public void setKeystoreAuthAlias(String string) {
 		keystoreAuthAlias = string;
 	}
 
-	@IbisDoc({"13", ""})
+	@IbisDoc({"13", "Keystore password"})
 	public void setKeystorePassword(String string) {
 		keystorePassword = string;
 	}
 
-	@IbisDoc({"14", "", ""})
+	@IbisDoc({"14", "Alias in keystore", ""})
 	public void setKeystoreAlias(String string) {
 		keystoreAlias = string;
 	}
