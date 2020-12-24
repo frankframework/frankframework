@@ -46,7 +46,6 @@ import nl.nn.adapterframework.senders.MailSender;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when the message was successfully sent and no listener was specified</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if a listener was specified.</td></tr>
  * </table>
  * </p>

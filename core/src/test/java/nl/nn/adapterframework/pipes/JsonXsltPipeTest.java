@@ -9,19 +9,14 @@ import javax.json.Json;
 import javax.json.JsonStructure;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
-
-	@Mock
-	private IPipeLineSession session;
 
 	@Override
 	public JsonXsltPipe createPipe() {

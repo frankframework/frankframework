@@ -7,16 +7,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 
 public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
-
-	private IPipeLineSession session = new PipeLineSessionBase();
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();

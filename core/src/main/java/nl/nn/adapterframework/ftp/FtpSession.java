@@ -122,7 +122,6 @@ public class FtpSession implements IConfigurable {
 	private String truststoreAuthAlias;
 	private String truststorePassword = null;
 	private String trustManagerAlgorithm=null;
-	private boolean jdk13Compatibility = false;
 	private boolean verifyHostname = true;
 	private boolean allowSelfSignedCertificates = false;
 	private boolean protP = false;
@@ -913,15 +912,6 @@ public class FtpSession implements IConfigurable {
 	@IbisDoc({"selects the algorithm to generate trustmanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		this.trustManagerAlgorithm = trustManagerAlgorithm;
-	}
-
-	@IbisDoc({"(ftps) enables the use of certificates on jdk 1.3.x. the sun reference implementation jsse 1.0.3 is included for convenience", "false"})
-	public void setJdk13Compatibility(boolean b) {
-		jdk13Compatibility = b;
-	}
-
-	public boolean isJdk13Compatibility() {
-		return jdk13Compatibility;
 	}
 
 	@IbisDoc({"(ftps) when true, the hostname in the certificate will be checked against the actual hostname", "true"})

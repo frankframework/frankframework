@@ -33,7 +33,6 @@ import nl.nn.adapterframework.stream.Message;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
  * <tr><td>"failure"</td><td>if a validation error occurred, probably caused by non-well-formed JSON</td></tr>
  * </table>
  * <br>

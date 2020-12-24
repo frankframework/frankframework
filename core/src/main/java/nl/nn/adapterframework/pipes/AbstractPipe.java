@@ -32,11 +32,11 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
-import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ITransactionAttributes;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -98,7 +98,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @see IPipeLineSession
  */
-public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing, IConfigurable {
+public abstract class AbstractPipe implements IExtendedPipe, ITransactionAttributes, EventThrowing, IConfigurable {
 	protected Logger log = LogUtil.getLogger(this);
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -556,25 +556,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return namespaceAware;
 	}
 
-	@IbisDoc({"3", "Defines transaction and isolation behaviour."
-			+ "For developers: it is equal"
-			+ "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>."
-			+ "Possible values are:"
-			+ "  <table border=\"1\">"
-			+ "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
-			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
-			+ "											      <tr><td>T1</td>  <td>T2</td></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
-			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
-			+ "											      <tr><td>T1</td>  <td>none</td></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
-			+ " 										      <tr><td>T1</td>  <td>T1</td></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
-			+ "											      <tr><td>T1</td>  <td>error</td></tr>"
-			+ "  </table>", "Supports"})
+	@Override
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
@@ -586,16 +568,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
 
-	@IbisDoc({"4", "Like <code>transactionAttribute</code>, but the chosen "
-			+ "option is represented with a number. The numbers mean:"
-			+ "<table>"
-			+ "<tr><td>0</td><td>Required</td></tr>"
-			+ "<tr><td>1</td><td>Supports</td></tr>"
-			+ "<tr><td>2</td><td>Mandatory</td></tr>"
-			+ "<tr><td>3</td><td>RequiresNew</td></tr>"
-			+ "<tr><td>4</td><td>NotSupported</td></tr>"
-			+ "<tr><td>5</td><td>Never</td></tr>"
-			+ "</table>", "1"})
+	@Override
+	@Deprecated
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}
@@ -604,7 +578,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return transactionAttribute;
 	}
 
-	@IbisDoc({"5", "timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
+	@Override
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}

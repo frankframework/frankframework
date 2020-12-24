@@ -1,12 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunResult;
-import org.junit.Test;
-import org.mockito.Mock;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+import nl.nn.adapterframework.core.PipeRunResult;
 
 /** 
 * RemoveFromSession Tester. 
@@ -15,26 +13,23 @@ import static org.junit.Assert.assertEquals;
 */ 
 public class RemoveFromSessionTest extends PipeTestBase<RemoveFromSession> {
 
-    @Mock
-    private IPipeLineSession session = new PipeLineSessionBase();
-    @Override
-    public RemoveFromSession createPipe() {
-        return new RemoveFromSession();
-    }
+	@Override
+	public RemoveFromSession createPipe() {
+		return new RemoveFromSession();
+	}
 
-
-/** 
-* 
-* Method: configure() 
-* 
-*/ 
-@Test
-public void testEmptySessionKeyNonEmptyInput() throws Exception {
-        pipe.setSessionKey(null);
-        session.put("a", "123");
-        PipeRunResult res = doPipe(pipe, "a", session);
-        assertEquals("123", res.getResult().asString());
-}
+	/** 
+	* 
+	* Method: configure() 
+	* 
+	*/ 
+	@Test
+	public void testEmptySessionKeyNonEmptyInput() throws Exception {
+		pipe.setSessionKey(null);
+		session.put("a", "123");
+		PipeRunResult res = doPipe(pipe, "a", session);
+		assertEquals("123", res.getResult().asString());
+	}
 
     @Test
     public void testNonEmptySessionKeyNonEmptyInput() throws Exception {
@@ -69,9 +64,5 @@ public void testEmptySessionKeyNonEmptyInput() throws Exception {
         PipeRunResult res = doPipe(pipe, "ab", session);
         assertEquals("[null]", res.getResult().asString());
     }
-
-
-
-
 
 }

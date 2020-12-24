@@ -1,13 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import org.junit.Test;
-import org.mockito.Mock;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import org.junit.Test;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 /**
  * IncreaseIntegerPipe Tester.
@@ -15,9 +13,6 @@ import static org.junit.Assert.fail;
  * @author <Sina Sen>
  */
 public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
-
-    @Mock
-    private IPipeLineSession session = new PipeLineSessionBase();
 
     @Override
     public IncreaseIntegerPipe createPipe() {

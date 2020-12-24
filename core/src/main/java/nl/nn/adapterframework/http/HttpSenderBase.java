@@ -337,14 +337,14 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				if (certificateUrl == null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
 				}
-				log.info(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
+				log.debug(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
 			}
 			if (!StringUtils.isEmpty(getTruststore())) {
 				truststoreUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), getTruststore());
 				if (truststoreUrl == null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
 				}
-				log.info(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
+				log.debug(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
 			}
 
 			HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
@@ -366,10 +366,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 
-					SSLContext sslContext = AuthSSLConnectionSocket.createSSLContext(
+					SSLContext sslContext = AuthSSLContextFactory.createSSLContext(
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
 							truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException(), getProtocol());
+							isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getProtocol());
 
 					sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
 					log.debug(getLogPrefix()+"created custom SSLConnectionSocketFactory");

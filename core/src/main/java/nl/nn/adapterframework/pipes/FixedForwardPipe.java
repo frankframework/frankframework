@@ -43,7 +43,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public abstract class FixedForwardPipe extends AbstractPipe {
 
-	private String forwardName = "success";
+	private final String forwardName = "success";
 	private PipeForward forward;
 	private boolean skipOnEmptyInput = false;
 	private String ifParam = null;
@@ -108,20 +108,10 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		return null;
 	}
 
-    public PipeForward getForward() {
+	public PipeForward getForward() {
 		return forward;
 	}
-    
- 	/**
- 	 * Sets the name of the <code>forward</code> that is looked up upon completion.
- 	 */
-	@IbisDoc({"1", "Sets the name of the <code>forward</code> that is looked up upon completion.", "success"})
-	public void setForwardName(String forwardName) {
-        this.forwardName = forwardName;
-    }
-	public String getForwardName() {
-		return forwardName;
-	}
+
 
 	@IbisDoc({"2", "when set, the processing continues directly at the forward of this pipe, without executing the pipe itself", "false"})
 	public void setSkipOnEmptyInput(boolean b) {
