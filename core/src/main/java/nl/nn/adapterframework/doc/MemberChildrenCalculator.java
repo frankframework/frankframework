@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.doc;
 
-import static java.util.Arrays.asList;
 import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
 import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -40,7 +40,7 @@ class MemberChildrenCalculator {
 		// This is implemented such that the sort order remains deterministic
 		Map<String, List<ElementRole>> result = new TreeMap<>();
 		for(ElementRole role: elementRoles) {
-			result.merge(role.getSyntax1Name(), asList(role),
+			result.merge(role.getSyntax1Name(), Arrays.asList(role),
 					(l1, l2) -> Stream.concat(l1.stream(), l2.stream()).collect(Collectors.toList()));
 		}
 		return result;
@@ -55,21 +55,15 @@ class MemberChildrenCalculator {
 						.distinct()
 						.collect(Collectors.toList());
 				if(highestElementTypes.size() >= 2) {
+					String elementTypesAsSingleString = highestElementTypes.stream().map(ElementType::getFullName).collect(Collectors.joining(", "));
 					log.warn(String.format("No common ElementType for element types [%s], omitting them from %s [%s]",
-							highestElementTypes.stream().map(ElementType::getFullName).collect(Collectors.joining(", ")),
-							DocWriterNew.MEMBER_CHILD_GROUP,
-							subject.toString()));
+							elementTypesAsSingleString, DocWriterNew.MEMBER_CHILD_GROUP, subject.toString()));
 				} else {
-					ElementRole.Key key = new ElementRole.Key(
-							highestElementTypes.get(0).getFullName(),
-							bucket.get(0).getSyntax1Name());
+					ElementRole.Key key = new ElementRole.Key(highestElementTypes.get(0).getFullName(), bucket.get(0).getSyntax1Name());
 					ElementRole candidate = model.findElementRole(key);
 					if(candidate == null) {
 						log.warn(String.format("No element role available for ElementType [%s] and syntax 1 name [%s], omitting from %s [%s]",
-								key.getElementTypeName(),
-								key.getSyntax1Name(),
-								DocWriterNew.MEMBER_CHILD_GROUP,
-								subject.toString()));
+								key.getElementTypeName(), key.getSyntax1Name(), DocWriterNew.MEMBER_CHILD_GROUP, subject.toString()));
 					} else {
 						result.add(candidate);
 					}

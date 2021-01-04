@@ -85,7 +85,7 @@ public class ConfigChild extends ElementChild {
 	}
 
 	@SuppressWarnings("serial")
-	public static class IbisDocAnnotationException extends Exception {		
+	static class IbisDocAnnotationException extends Exception {		
 		IbisDocAnnotationException(String message) {
 			super(message);
 		}

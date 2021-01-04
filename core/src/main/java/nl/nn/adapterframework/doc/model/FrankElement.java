@@ -92,8 +92,7 @@ public class FrankElement {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends ElementChild> List<T> getChildrenOfKind(
-			Predicate<ElementChild> selector, Class<T> kind) {
+	public <T extends ElementChild> List<T> getChildrenOfKind(Predicate<ElementChild> selector, Class<T> kind) {
 		Map<? extends AbstractKey, ? extends ElementChild> lookup = allChildren.get(kind);
 		return lookup.values().stream().filter(selector).map(c -> (T) c).collect(Collectors.toList());
 	}
@@ -126,47 +125,38 @@ public class FrankElement {
 	}
 
 	public FrankElement getNextAncestorThatHasConfigChildren(Predicate<ElementChild> selector) {
-		FrankElement ancestorConfigChildren = getNextAncestorThatHasChildren(
-				el -> el.getChildrenOfKind(selector, ConfigChild.class).isEmpty());
+		FrankElement ancestorConfigChildren = getNextAncestorThatHasChildren(el -> el.getChildrenOfKind(selector, ConfigChild.class).isEmpty());
 		return ancestorConfigChildren;
 	}
 
 	public FrankElement getNextAncestorThatHasAttributes(Predicate<ElementChild> selector) {
-		FrankElement ancestorAttributes = getNextAncestorThatHasChildren(
-				el -> el.getChildrenOfKind(selector, FrankAttribute.class).isEmpty());
+		FrankElement ancestorAttributes = getNextAncestorThatHasChildren(el -> el.getChildrenOfKind(selector, FrankAttribute.class).isEmpty());
 		return ancestorAttributes;
 	}
 
 	public void walkCumulativeAttributes(
-			CumulativeChildHandler<FrankAttribute> handler,
-			Predicate<ElementChild> childSelector,
-			Predicate<ElementChild> childRejector) {
+			CumulativeChildHandler<FrankAttribute> handler, Predicate<ElementChild> childSelector, Predicate<ElementChild> childRejector) {
 		new AncestorChildNavigation<FrankAttribute>(
 				handler, childSelector, childRejector, FrankAttribute.class).run(this);
 	}
 
 	public void walkCumulativeConfigChildren(
-			CumulativeChildHandler<ConfigChild> handler,
-			Predicate<ElementChild> childSelector,
-			Predicate<ElementChild> childRejector) {
+			CumulativeChildHandler<ConfigChild> handler, Predicate<ElementChild> childSelector, Predicate<ElementChild> childRejector) {
 		new AncestorChildNavigation<ConfigChild>(
 				handler, childSelector, childRejector, ConfigChild.class).run(this);		
 	}
 
-	public List<ConfigChild> getCumulativeConfigChildren(
-			Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+	public List<ConfigChild> getCumulativeConfigChildren(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
 		return getCumulativeChildren(selector, rejector, ConfigChild.class).stream()
 				.map(c -> (ConfigChild) c).collect(Collectors.toList());
 	}
 
-	public List<FrankAttribute> getCumulativeAttributes(
-			Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+	public List<FrankAttribute> getCumulativeAttributes(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
 		return getCumulativeChildren(selector, rejector, FrankAttribute.class).stream()
 				.map(c -> (FrankAttribute) c).collect(Collectors.toList());
 	}
 
-	private <T extends ElementChild> List<T> getCumulativeChildren(
-			Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Class<T> kind) {
+	private <T extends ElementChild> List<T> getCumulativeChildren(Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Class<T> kind) {
 		final List<T> result = new ArrayList<>();
 		new AncestorChildNavigation<T>(new CumulativeChildHandler<T>() {
 			@Override

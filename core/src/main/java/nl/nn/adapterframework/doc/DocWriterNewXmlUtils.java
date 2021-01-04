@@ -44,12 +44,7 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(element);
 	}
 
-	static void addElement(
-			XmlBuilder context,
-			String elementName,
-			String elementType,
-			String minOccurs,
-			String maxOccurs) {
+	static void addElement(XmlBuilder context, String elementName, String elementType, String minOccurs, String maxOccurs) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("name", elementName);
 		element.addAttribute("type", elementType);
@@ -58,11 +53,7 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(element);
 	}
 
-	static void addElementRef(
-			XmlBuilder context,
-			String elementName,
-			String minOccurs,
-			String maxOccurs) {
+	static void addElementRef(XmlBuilder context, String elementName, String minOccurs, String maxOccurs) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("ref", elementName);
 		element.addAttribute("minOccurs", minOccurs);
@@ -70,9 +61,7 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(element);
 	}
 
-	static void addElementRef(
-			XmlBuilder context,
-			String elementName) {
+	static void addElementRef(XmlBuilder context, String elementName) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("ref", elementName);
 		context.addSubElement(element);
@@ -152,12 +141,7 @@ class DocWriterNewXmlUtils {
 		}
 	}
 
-	static XmlBuilder addAttribute(
-			XmlBuilder context,
-			String name,
-			AttributeValueStatus valueStatus,
-			String value,
-			AttributeUse attributeUse) {
+	static XmlBuilder addAttribute(XmlBuilder context, String name, AttributeValueStatus valueStatus, String value, AttributeUse attributeUse) {
 		XmlBuilder result = startAddingAttribute(context, name);
 		try {
 			addValueToAttribute(result, valueStatus, value);

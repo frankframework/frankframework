@@ -44,10 +44,7 @@ class GroupCreator<T extends ElementChild> {
 	private Callback<T> callback;
 	private Consumer<Callback<T>> cumulativeGroupTrigger;
 
-	GroupCreator(
-			FrankElement frankElement,
-			Consumer<Callback<T>> cumulativeGroupTrigger,
-			Callback<T> callback) {
+	GroupCreator(FrankElement frankElement, Consumer<Callback<T>> cumulativeGroupTrigger, Callback<T> callback) {
 		this.frankElement = frankElement;
 		this.cumulativeGroupTrigger = cumulativeGroupTrigger;
 		this.callback = callback;

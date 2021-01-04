@@ -80,7 +80,7 @@ public class FrankDocModel {
 		try {
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
-			result.calculateFoundersElementRoles();
+			result.calculateHighestCommonInterfaces();
 			result.setOverriddenFrom();
 			result.buildGroups();
 		} catch(Exception e) {
@@ -408,7 +408,7 @@ public class FrankDocModel {
 		return allTypes.get(fullName);
 	}
 
-	void calculateFoundersElementRoles() {
+	void calculateHighestCommonInterfaces() {
 		allTypes.values().forEach(et -> et.calculateHighestCommonInterface(this));
 	}
 
@@ -418,10 +418,7 @@ public class FrankDocModel {
 	 * objects exist and that the members of the element type are set.
 	 */
 	public List<ElementRole> getElementTypeMemberChildRoles(
-			ElementType elementType,
-			Predicate<ElementChild> selector,
-			Predicate<ElementChild> rejector,
-			Predicate<FrankElement> frankElementFilter) {
+			ElementType elementType, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Predicate<FrankElement> frankElementFilter) {
 		List<ElementRole> allMemberChildRoles = elementType.getMembers().values().stream()
 				// TODO: Filtering FrankElements, typically no filter or deprecated omitted, is
 				// not covered by unit tests.
@@ -452,10 +449,10 @@ public class FrankDocModel {
 				try {
 					membersOfOther.add(elementType.getSingletonElement());
 				} catch(ReflectiveOperationException e) {
+					String frankElementsString = elementType.getMembers().values().stream()
+							.map(FrankElement::getSimpleName).collect(Collectors.joining(", "));
 					log.warn(String.format("Error adding ElementType [%s] to group other because it has multiple FrankElement objects: [%s]",
-								elementType.getFullName(),
-								elementType.getMembers().values().stream().map(FrankElement::getSimpleName).collect(Collectors.joining(", "))),
-							e);
+								elementType.getFullName(), frankElementsString), e);
 				}
 			}
 		}

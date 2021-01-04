@@ -16,9 +16,8 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
-import static java.util.Arrays.asList;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -66,7 +65,7 @@ public class ElementType {
 		List<ElementType> findMatchingElementTypes(FrankDocModel model) {
 			ElementType currentMatch = model.findElementType(fullName);
 			if(currentMatch != null) {
-				return asList(currentMatch);
+				return Arrays.asList(currentMatch);
 			}
 			List<ElementType> result = new ArrayList<>();
 			for(String parentKey: parentInterfaces.keySet()) {

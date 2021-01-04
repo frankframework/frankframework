@@ -37,11 +37,7 @@ class AncestorChildNavigation<T extends ElementChild> {
 	private Set<AbstractKey> overridden;
 	private Predicate<FrankElement> noChildren;
 
-	AncestorChildNavigation(
-			CumulativeChildHandler<T> handler,
-			Predicate<ElementChild> childSelector,
-			Predicate<ElementChild> childRejector,
-			Class<T> kind) {
+	AncestorChildNavigation(CumulativeChildHandler<T> handler, Predicate<ElementChild> childSelector, Predicate<ElementChild> childRejector, Class<T> kind) {
 		this.handler = handler;
 		this.rejector = new ChildRejector<T>(childSelector, childRejector, kind);
 		this.kind = kind;
