@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.doc;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,6 +16,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.Misc;
 
 @RunWith(Parameterized.class)
@@ -46,7 +45,7 @@ public class DocWriterNewExamplesTest {
 		String actualXsd = docWriter.getSchema();
 		System.out.println(actualXsd);
 		String expectedXsd = getExpectedXsd();
-		assertEquals(expectedXsd.replace("\r\n", "\n"), actualXsd.replace("\r\n", "\n"));
+		TestAssertions.assertEqualsIgnoreCRLF(expectedXsd, actualXsd);
 	}
 
 	private FrankDocModel createModel() throws Exception {
