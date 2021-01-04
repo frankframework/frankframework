@@ -20,12 +20,7 @@ public class ChildRejectorTest {
 	private FrankDocModel model;
 	private ChildRejector<FrankAttribute> instance;
 
-	private void init(
-			String modelPopulateClassSimpleName,
-			Predicate<ElementChild> selector,
-			Predicate<ElementChild> rejector,
-			String subject)
-			throws Exception {
+	private void init(String modelPopulateClassSimpleName, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, String subject) throws Exception {
 		String rootClassName = PACKAGE + "." + modelPopulateClassSimpleName;
 		model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName);
 		instance = new ChildRejector<FrankAttribute>(

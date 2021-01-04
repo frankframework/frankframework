@@ -29,30 +29,20 @@ public class NavigationTest {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return asList(new Object[][] {
-			{"Parent", IN_XSD, NONE, asList(
-					ref(RefKind.DECLARED, "Parent"))},
-			{"Child", IN_XSD, NONE, asList(
-					// Attribute childAttribute is not selected, so we do not have a real override.
-					ref(RefKind.DECLARED, "Child"), ref(RefKind.DECLARED, "Parent"))},
-			{"Child", ALL, NONE, asList(
-					// Attribute parentAttributeFirst is overridden. Keep with Child, omit with Parent
-					ref(RefKind.DECLARED, "Child"), ref(RefKind.CHILD, "parentAttributeSecond"))},
-			{"GrandChild", ALL, NONE, asList(
-					// All attributes of Parent were overridden. Nothing to reference for Parent.
-					ref(RefKind.DECLARED, "GrandChild"), ref(RefKind.DECLARED, "Child"))},
-			{"GrandChild", IN_XSD, NONE, asList(
-					// The override of parentAttributeSecond counts, in Child parentAttributeFirst is ignored as child
-					ref(RefKind.DECLARED, "GrandChild"),
-					ref(RefKind.DECLARED, "Child"),
-					ref(RefKind.CHILD, "parentAttributeFirst"))},
-			{"GrandChild2", ALL, NONE, asList(
-					ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.CUMULATIVE, "Child2"))},
-			{"GrandChild2", IN_XSD, NONE, asList(
-					// All children of Child2 are deprecated, so Child2 is ignored in the ancestor hierarchy
-					ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.DECLARED, "Parent"))},
-			{"GrandChild3", ALL, DEPRECATED, asList(
-					// All attributes of Parent are overridden by deprecated methods and should be de-inherited
-					)}
+			{"Parent", IN_XSD, NONE, asList(ref(RefKind.DECLARED, "Parent"))},
+			// Attribute childAttribute is not selected, so we do not have a real override.
+			{"Child", IN_XSD, NONE, asList(ref(RefKind.DECLARED, "Child"), ref(RefKind.DECLARED, "Parent"))},
+			// Attribute parentAttributeFirst is overridden. Keep with Child, omit with Parent
+			{"Child", ALL, NONE, asList(ref(RefKind.DECLARED, "Child"), ref(RefKind.CHILD, "parentAttributeSecond"))},
+			// All attributes of Parent were overridden. Nothing to reference for Parent.
+			{"GrandChild", ALL, NONE, asList(ref(RefKind.DECLARED, "GrandChild"), ref(RefKind.DECLARED, "Child"))},
+			// The override of parentAttributeSecond counts, in Child parentAttributeFirst is ignored as child
+			{"GrandChild", IN_XSD, NONE, asList(ref(RefKind.DECLARED, "GrandChild"), ref(RefKind.DECLARED, "Child"), ref(RefKind.CHILD, "parentAttributeFirst"))},
+			{"GrandChild2", ALL, NONE, asList(ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.CUMULATIVE, "Child2"))},
+			// All children of Child2 are deprecated, so Child2 is ignored in the ancestor hierarchy
+			{"GrandChild2", IN_XSD, NONE, asList(ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.DECLARED, "Parent"))},
+			// All attributes of Parent are overridden by deprecated methods and should be de-inherited
+			{"GrandChild3", ALL, DEPRECATED, asList()}
 		});
 	}
 

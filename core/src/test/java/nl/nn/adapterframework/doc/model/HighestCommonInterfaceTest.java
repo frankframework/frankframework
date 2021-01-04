@@ -7,7 +7,7 @@ import static org.junit.Assert.assertSame;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FounderTest {
+public class HighestCommonInterfaceTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.role.inherit.";
 	private FrankDocModel model;
 	private ElementType founder;

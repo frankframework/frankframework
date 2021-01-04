@@ -31,12 +31,9 @@ public class FrankDocModelConfigChildrenTest {
 	public void setUp() throws SAXException, IOException, ReflectiveOperationException {
 		instance = new FrankDocModel();
 		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");
-		instance.findOrCreateElementType(
-				Utils.getClass(CONTAINER));
-		instance.findOrCreateElementType(
-				Utils.getClass(CONTAINER_DERIVED));
-		instance.findOrCreateElementType(
-				Utils.getClass(CONTAINER_OTHER));
+		instance.findOrCreateElementType(Utils.getClass(CONTAINER));
+		instance.findOrCreateElementType(Utils.getClass(CONTAINER_DERIVED));
+		instance.findOrCreateElementType(Utils.getClass(CONTAINER_OTHER));
 		instance.setOverriddenFrom();
 		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren(ALL);
 		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren(ALL);

@@ -255,9 +255,7 @@ public class FrankDocModelTest {
 
 	Map<String, String> getAttributeNameMap(String prefix) {
 		Map<String, Method> attributeToMethodMap = FrankDocModel.getAttributeToMethodMap(
-				Utils.getClass("nl.nn.adapterframework.doc.testtarget.reflect.FrankAttributeTarget")
-					.getDeclaredMethods(),
-				prefix);
+				Utils.getClass("nl.nn.adapterframework.doc.testtarget.reflect.FrankAttributeTarget").getDeclaredMethods(), prefix);
 		Map<String, String> result = new HashMap<>();
 		for(String attributeName: attributeToMethodMap.keySet()) {
 			result.put(attributeName, attributeToMethodMap.get(attributeName).getName());
@@ -344,8 +342,7 @@ public class FrankDocModelTest {
 	}
 
 	private FrankAttribute checkIbisdocrefInvestigatedFrankAttribute(String attributeName, String targetClassName) throws ReflectiveOperationException {
-		Map<String, FrankAttribute> attributeMap =
-				getAttributesOfClass(targetClassName);
+		Map<String, FrankAttribute> attributeMap = getAttributesOfClass(targetClassName);
 		assertTrue(attributeMap.containsKey(attributeName));
 		return attributeMap.get(attributeName);
 	}
@@ -368,9 +365,7 @@ public class FrankDocModelTest {
 	public void testReferredIbisDocDescriptiondWithOrderAndInheritance() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
 		assertTrue(actual.isDocumented());
-		assertEquals(
-				"Description of ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited",
-				actual.getDescription());
+		assertEquals("Description of ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited", actual.getDescription());
 	}
 
 	@Test
@@ -384,12 +379,8 @@ public class FrankDocModelTest {
 	public void whenIbisDocRefThenDescribingElementAdjusted() throws ReflectiveOperationException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
 		assertTrue(actual.isDocumented());
-		assertSame(
-				instance.getAllElements().get(REFERRED_PARENT),
-				actual.getDescribingElement());
-		assertSame(
-				fakeAttributeOwner,
-				actual.getOwningElement());
+		assertSame(instance.getAllElements().get(REFERRED_PARENT), actual.getDescribingElement());
+		assertSame(fakeAttributeOwner, actual.getOwningElement());
 	}
 
 	@Test
@@ -401,8 +392,7 @@ public class FrankDocModelTest {
 
 	@Test
 	public void testFrankElementDeprecatedAttribute() throws Exception {
-		FrankElement element = instance.findOrCreateFrankElement(
-				Utils.getClass(SIMPLE + ".NonDeprecatedDescendant"));
+		FrankElement element = instance.findOrCreateFrankElement(Utils.getClass(SIMPLE + ".NonDeprecatedDescendant"));
 		assertNotNull(element);
 		assertFalse(element.isDeprecated());
 		assertTrue(element.getParent().isDeprecated());
