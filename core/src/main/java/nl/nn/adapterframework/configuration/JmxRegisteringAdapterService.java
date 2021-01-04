@@ -71,7 +71,7 @@ public class JmxRegisteringAdapterService extends AdapterService implements Init
 
 		synchronized(registeredAdapters) {
 			ObjectName name = registeredAdapters.remove(adapter);
-			if(!mBeanManager.getServer().isRegistered(name)) {
+			if(name != null && !mBeanManager.getServer().isRegistered(name)) {
 				log.debug("unable to locate the registered MBean ["+name+"] on the JMX server, try to query and manually unregister it");
 				for(ObjectName mbean : queryMBean(name)) {
 					manuallyRemoveMBean(mbean);

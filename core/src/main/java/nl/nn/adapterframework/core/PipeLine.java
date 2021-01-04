@@ -575,15 +575,6 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			getInputValidator().start();
 		}
 
-		for (int i=0; i<pipes.size(); i++) {
-			IPipe pipe = getPipe(i);
-			String pipeName = pipe.getName();
-
-			log.debug(getLogPrefix()+"starting pipe [" + pipeName+"]");
-			pipe.start();
-			log.debug(getLogPrefix()+"successfully started pipe [" + pipeName + "]");
-		}
-
 		if (getOutputValidator()!=null) {
 			log.debug(getLogPrefix()+"starting OutputValidator ["+getOutputValidator().getName()+"]");
 			getOutputValidator().start();
@@ -592,6 +583,15 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		if (getOutputWrapper()!=null) {
 			log.debug(getLogPrefix()+"starting OutputWrapper ["+getOutputWrapper().getName()+"]");
 			getOutputWrapper().start();
+		}
+
+		for (int i=0; i<pipes.size(); i++) {
+			IPipe pipe = getPipe(i);
+			String pipeName = pipe.getName();
+
+			log.debug(getLogPrefix()+"starting pipe [" + pipeName+"]");
+			pipe.start();
+			log.debug(getLogPrefix()+"successfully started pipe [" + pipeName + "]");
 		}
 
 		log.info(getLogPrefix()+"is successfully started pipeline");
@@ -615,15 +615,6 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 			getInputValidator().stop();
 		}
 
-		for (int i=0; i<pipes.size(); i++) {
-			IPipe pipe = getPipe(i);
-			String pipeName = pipe.getName();
-
-			log.debug(getLogPrefix()+"is stopping [" + pipeName+"]");
-			pipe.stop();
-			log.debug(getLogPrefix()+"successfully stopped pipe [" + pipeName + "]");
-		}
-
 		if (getOutputValidator()!=null) {
 			log.debug(getLogPrefix()+"stopping OutputValidator ["+getOutputValidator().getName()+"]");
 			getOutputValidator().stop();
@@ -632,6 +623,15 @@ public class PipeLine implements ICacheEnabled<String,String>, HasStatistics {
 		if (getOutputWrapper()!=null) {
 			log.debug(getLogPrefix()+"stopping OutputWrapper ["+getOutputWrapper().getName()+"]");
 			getOutputWrapper().stop();
+		}
+
+		for (int i=0; i<pipes.size(); i++) {
+			IPipe pipe = getPipe(i);
+			String pipeName = pipe.getName();
+
+			log.debug(getLogPrefix()+"is stopping [" + pipeName+"]");
+			pipe.stop();
+			log.debug(getLogPrefix()+"successfully stopped pipe [" + pipeName + "]");
 		}
 
 		if (cache!=null) {

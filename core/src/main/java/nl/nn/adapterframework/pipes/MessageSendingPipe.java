@@ -38,6 +38,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
+import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -415,13 +416,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			PipeForward pf = new PipeForward();
 			pf.setName(SUCCESS_FORWARD);
 			inputValidator.registerForward(pf);
-			inputValidator.configure();
+			configure(inputValidator);
 		}
 		if (outputValidator!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName(SUCCESS_FORWARD);
 			outputValidator.registerForward(pf);
-			outputValidator.configure();
+			configure(outputValidator);
 		}
 		if (getInputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
@@ -432,18 +433,31 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				ISender sender = getSender();
 				eswPipe.retrievePhysicalDestinationFromSender(sender);
 			}
-			getInputWrapper().configure();
+			configure(getInputWrapper());
 		}
 		if (getOutputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName(SUCCESS_FORWARD);
 			getOutputWrapper().registerForward(pf);
-			getOutputWrapper().configure();
+			configure(getOutputWrapper());
 		}
 
 		registerEvent(PIPE_TIMEOUT_MONITOR_EVENT);
 		registerEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
 		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
+	}
+
+	// configure wrappers/validators
+	private void configure(IPipe pipe) throws ConfigurationException {
+		if (pipe instanceof IExtendedPipe) {
+			if(getPipeLine() == null) {
+				throw new ConfigurationException("unable to configure "+ ClassUtils.nameOf(pipe) +" ["+pipe.getName()+"]");
+			}
+
+			((IExtendedPipe) pipe).configure(getPipeLine());
+		} else {
+			pipe.configure();
+		}
 	}
 
 //	/**
