@@ -47,27 +47,27 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	@Override
 	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 
-		String stringToReturn = getReturnString();
-		if (stringToReturn==null) {
-			stringToReturn="";
+		Message messageToReturn = new Message(getReturnString());
+		if (messageToReturn.isEmpty()) {
+			messageToReturn=new Message("");
 		}
 		if (StringUtils.isNotEmpty(getFileName())) {
 			try {
-				stringToReturn += Misc.resourceToString(ClassUtils.getResourceURL(classLoader, getFileName()), SystemUtils.LINE_SEPARATOR);
+				messageToReturn = new Message(messageToReturn.asString() + Misc.resourceToString(ClassUtils.getResourceURL(classLoader, getFileName()), SystemUtils.LINE_SEPARATOR));
 			} catch (Throwable e) {
 				log.error("got exception loading error message file [" + getFileName() + "]", e);
 			}
-		}  
-		if (StringUtils.isEmpty(stringToReturn)) {
-			try {
-				stringToReturn = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime).asString();
-			} catch (IOException e) {
-				log.error("got error formatting errorMessage", e);
-			}
+		}
+		if (messageToReturn.isEmpty()) {
+			messageToReturn = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
 		}
 
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
-			stringToReturn = Misc.replace(stringToReturn, getReplaceFrom(), getReplaceTo() );
+			try {
+				messageToReturn = new Message(Misc.replace(messageToReturn.asString(), getReplaceFrom(), getReplaceTo()));
+			} catch (IOException e) {
+				log.error("got error formatting errorMessage", e);
+			}
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
@@ -76,15 +76,15 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 				try{
 					String xsltResult = null;
 					Transformer transformer = XmlUtils.createTransformer(xsltSource);
-					xsltResult = XmlUtils.transformXml(transformer, stringToReturn);
-					stringToReturn = xsltResult;
+					xsltResult = XmlUtils.transformXml(transformer, messageToReturn.asSource());
+					messageToReturn = new Message(xsltResult);
 				} catch (Throwable e) {
 					log.error("got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", e);
 				}
 			}
 		}
 	
-		return new Message(stringToReturn);
+		return messageToReturn;
 	}
 
 
