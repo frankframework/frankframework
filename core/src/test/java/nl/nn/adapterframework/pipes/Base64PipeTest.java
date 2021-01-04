@@ -23,10 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -35,9 +33,6 @@ import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.util.Misc;
 
 public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
-
-	@Mock
-	private IPipeLineSession session;
 
 	private String plainText = "Bacon ipsum dolor amet chuck pork loin flank picanha.";
 	private String base64Encoded = "QmFjb24gaXBzdW0gZG9sb3IgYW1ldCBjaHVjayBwb3JrIGxvaW4gZmxhbmsgcGljYW5oYS4=";

@@ -393,7 +393,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 
 	private int retrieveErrorStoragesMessageCount(Adapter adapter) {
 		int totalCounter = 0;
-		for (Receiver receiver: adapter.getReceivers()) {
+		for (Receiver<?> receiver: adapter.getReceivers()) {
 			IMessageBrowser errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
 			if (errorStorage != null) {
 				int counter;
@@ -409,7 +409,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 		return totalCounter;
 	}
 
-	private int getErrorStorageMessageCountWithTimeout(IMessageBrowser errorStorage, int timeout) throws ListenerException, TimeOutException {
+	private int getErrorStorageMessageCountWithTimeout(IMessageBrowser<?> errorStorage, int timeout) throws ListenerException, TimeOutException {
 		if (timeout <= 0) {
 			return errorStorage.getMessageCount();
 		}
@@ -511,13 +511,13 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	}
 
 	private XmlBuilder toReceiversXml(Configuration configurationSelected, Adapter adapter, ShowConfigurationStatusManager showConfigurationStatusManager, ShowConfigurationStatusAdapterManager showConfigurationStatusAdapterManager) {
-		Iterator<Receiver> recIt = adapter.getReceivers().iterator();
+		Iterator<Receiver<?>> recIt = adapter.getReceivers().iterator();
 		if (!recIt.hasNext()) {
 			return null;
 		}
 		XmlBuilder receiversXML = new XmlBuilder("receivers");
 		while (recIt.hasNext()) {
-			Receiver receiver = recIt.next();
+			Receiver<?> receiver = recIt.next();
 			XmlBuilder receiverXML = new XmlBuilder("receiver");
 			receiversXML.addSubElement(receiverXML);
 
@@ -555,7 +555,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			}
 			if (configurationSelected != null) {
 				ISender sender = null;
-				IListener listener = receiver.getListener();
+				IListener<?> listener = receiver.getListener();
 				receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(listener));
 				if (listener instanceof HasPhysicalDestination) {
 					String pd = ((HasPhysicalDestination) listener).getPhysicalDestinationName();
@@ -564,7 +564,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				if (listener instanceof HasSender) {
 					sender = ((HasSender) listener).getSender();
 				}
-				IMessageBrowser ts = receiver.getMessageBrowser(ProcessState.ERROR);
+				IMessageBrowser<?> ts = receiver.getMessageBrowser(ProcessState.ERROR);
 				receiverXML.addAttribute("hasErrorStorage", "" + (ts != null));
 				if (ts != null) {
 					try {
@@ -664,8 +664,8 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 
 	}
 
-	private boolean isAvailable(Receiver receiver) {
-		IListener listener = receiver.getListener();
+	private boolean isAvailable(Receiver<?> receiver) {
+		IListener<?> listener = receiver.getListener();
 		boolean isRestListener = (listener instanceof RestListener);
 		boolean isJavaListener = (listener instanceof JavaListener);
 		boolean isWebServiceListener = (listener instanceof WebServiceListener);
@@ -722,7 +722,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				if (sender instanceof JdbcSenderBase) {
 					pipeElem.addAttribute("isJdbcSender", "true");
 				}
-				IListener listener = msp.getListener();
+				IListener<?> listener = msp.getListener();
 				if (listener != null) {
 					pipeElem.addAttribute("listenerName", listener.getName());
 					pipeElem.addAttribute("listenerClass", ClassUtils.nameOf(listener));
@@ -731,7 +731,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 						pipeElem.addAttribute("listenerDestination", pd);
 					}
 				}
-				ITransactionalStorage messageLog = msp.getMessageLog();
+				ITransactionalStorage<?> messageLog = msp.getMessageLog();
 				if (messageLog != null) {
 					pipeElem.addAttribute("hasMessageLog", "true");
 					String messageLogCount;

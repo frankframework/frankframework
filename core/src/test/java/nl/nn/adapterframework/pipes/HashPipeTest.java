@@ -20,19 +20,14 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HashPipeTest extends PipeTestBase<HashPipe> {
-
-	@Mock
-	private IPipeLineSession session;
 
 	@Override
 	public HashPipe createPipe() {

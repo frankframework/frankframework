@@ -1,22 +1,17 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.Parameter;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
 
-
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.Parameter;
 
 /**
  * FilePipe Tester.
@@ -29,9 +24,6 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
     public static TemporaryFolder testFolderSource = new TemporaryFolder();
 
     private static String sourceFolderPath;
-
-    @Mock
-    private IPipeLineSession session1 = new PipeLineSessionBase();
 
     private byte[] var = "Some String you want".getBytes();
 
@@ -53,7 +45,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
     public void doTestSuccess() throws Exception {
         Parameter p = new Parameter();
         p.setSessionKey("key"); p.setName("p1"); p.setValue("15"); p.setType("int"); p.configure();
-        session1.put("key", p);
+        session.put("key", p);
         PipeForward fw = new PipeForward();
         fw.setName("test");
         pipe.registerForward(fw);
@@ -66,7 +58,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
         pipe.setFileSource("filesystem");
         pipe.setActions("create");
         pipe.configure();
-        PipeRunResult res = doPipe(pipe, var, session1);
+        PipeRunResult res = doPipe(pipe, var, session);
 
         assertEquals("success", res.getPipeForward().getName());
 
@@ -82,7 +74,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
         p.setValue("15");
         p.setType("int");
         p.configure();
-        session1.put("key", p);
+        session.put("key", p);
         PipeForward fw = new PipeForward();
         fw.setName("test");
         pipe.registerForward(fw);
@@ -95,7 +87,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
         pipe.setFileSource("filesystem");
         pipe.setActions("create");
         pipe.configure();
-        doPipe(pipe, var, session1);
+        doPipe(pipe, var, session);
         fail("this will fail");
     }
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -24,30 +25,20 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 
-//import com.sun.net.ssl.KeyManager;
-//import com.sun.net.ssl.KeyManagerFactory;
-//import com.sun.net.ssl.SSLContext;
-//import com.sun.net.ssl.TrustManager;
-//import com.sun.net.ssl.TrustManagerFactory;
-
-// javax.net.ssl is jdk 1.4.x ...
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.ControllerThreadSocketFactory;
 import org.apache.commons.httpclient.protocol.ReflectionSocketFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.apache.commons.net.SocketFactory;
+
+import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * <p>
@@ -154,7 +145,10 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  */
 
-public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBase {
+public class AuthSSLProtocolSocketFactory extends AuthSSLContextFactory implements SocketFactory, SecureProtocolSocketFactory {
+
+	protected boolean verifyHostname=true;
+	protected boolean ignoreCertificateExpiredException=false;
 
     /**
      * Constructor for AuthSSLProtocolSocketFactory. Either a keystore or truststore file
@@ -172,6 +166,7 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
      * @param truststoreType type of the truststore to use, e.q. PKCS12/JKS
      * @param trustManagerAlgorithm TrustManagerFactory algorithm, if not specified it uses the default algorithm
      * @param allowSelfSignedCertificates when true, self signed certificates are accepted
+     *
      * @param verifyHostname  The host name verification flag. If set to 
      * 		  <code>true</code> the SSL sessions server host name will be compared
      * 		  to the host name returned in the server certificates "Common Name" 
@@ -182,120 +177,97 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
      * @param ignoreCertificateExpiredException when true, the CertificateExpiredException is ignored
      */
 	public AuthSSLProtocolSocketFactory(
-    		final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
-    		final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm,
-    		final boolean allowSelfSignedCertificates, final boolean verifyHostname, final boolean ignoreCertificateExpiredException) {
-		super(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, allowSelfSignedCertificates, verifyHostname, ignoreCertificateExpiredException);
-	}
-    
-    private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password, String algorithm)
-        throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException
-    {
-        if (keystore == null) {
-            throw new IllegalArgumentException("Keystore may not be null");
-        }
-        log.debug("Initializing key manager");
-        if (StringUtils.isEmpty(algorithm)) {
-        	algorithm=KeyManagerFactory.getDefaultAlgorithm();
-        	log.debug("using default KeyManager algorithm ["+algorithm+"]");
-        } else {
-        	log.debug("using configured KeyManager algorithm ["+algorithm+"]");
-        }
-        KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(algorithm);
-        kmfactory.init(keystore, password != null ? password.toCharArray(): null);
-        return kmfactory.getKeyManagers(); 
-    }
+			final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
+			final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm,
+			final boolean allowSelfSignedCertificates, final boolean verifyHostname, final boolean ignoreCertificateExpiredException) {
+		super(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, allowSelfSignedCertificates, ignoreCertificateExpiredException);
 
-    private static TrustManager[] createTrustManagers(final KeyStore keystore, String algorithm)
-        throws KeyStoreException, NoSuchAlgorithmException
-    { 
-        if (keystore == null) {
-            throw new IllegalArgumentException("Keystore may not be null");
-        }
-        log.debug("Initializing trust manager");
-        if (StringUtils.isEmpty(algorithm)) {
-        	algorithm=TrustManagerFactory.getDefaultAlgorithm();
-        	log.debug("using default TrustManager algorithm ["+algorithm+"]");
-        } else {
-        	log.debug("using configured TrustManager algorithm ["+algorithm+"]");
-        }
-        TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(algorithm);
-        tmfactory.init(keystore);
-        TrustManager[] trustmanagers = tmfactory.getTrustManagers();
-        return trustmanagers; 
-    }
-
-
-	private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
-		KeyManager[] keymanagers = null;
-		TrustManager[] trustmanagers = null;
-		if (this.keystoreUrl != null) {
-			KeyStore keystore = createKeyStore(this.keystoreUrl, this.keystorePassword, this.keystoreType, "Certificate chain");
-			keymanagers = createKeyManagers(keystore, this.keystorePassword, this.keyManagerAlgorithm);
-		}
-		if (this.truststoreUrl != null) {
-			KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
-			trustmanagers = createTrustManagers(keystore, this.trustManagerAlgorithm);
-			if (allowSelfSignedCertificates) {
-				trustmanagers = new TrustManager[] {
-					new AuthSslTrustManager(keystore, trustmanagers)
-				};
-			}
-		} else if (allowSelfSignedCertificates) {
-			trustmanagers = new TrustManager[] {
-				new AuthSslTrustManager(null, trustmanagers)
-			};
-		}
-		SSLContext sslcontext = SSLContext.getInstance(getProtocol());
-		sslcontext.init(keymanagers, trustmanagers, null);
-		return sslcontext;
+		this.verifyHostname = verifyHostname;
 	}
 
-	public void initSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
-		if (this.sslContext == null) {
-			sslContext = createSSLContext();
+	public static AuthSSLProtocolSocketFactory createSocketFactory(
+			final URL certificateUrl, final String certificateAuthAlias, final String certificatePassword, final String certificateType, final String keyManagerAlgorithm, 
+			final URL truststoreUrl, final String truststoreAuthAlias, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm, 
+			final boolean allowSelfSignedCertificates, final boolean verifyHostname, final boolean ignoreCertificateExpiredException)
+				throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException 
+		{
+
+			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
+			CredentialFactory truststoreCf  = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
+
+			return new AuthSSLProtocolSocketFactory(
+						certificateUrl,
+						certificateCf.getPassword(),
+						certificateType,
+						keyManagerAlgorithm,
+						truststoreUrl,
+						truststoreCf.getPassword(),
+						truststoreType,
+						trustManagerAlgorithm,
+						allowSelfSignedCertificates,
+						verifyHostname,
+						ignoreCertificateExpiredException);
+		}
+
+	protected static void addProvider(String name) {
+		try {
+			Class<?> clazz = Class.forName(name);
+			java.security.Security.addProvider((java.security.Provider)clazz.newInstance());
+		} catch (Throwable t) {
+			log.error("cannot add provider ["+name+"], "+t.getClass().getName(),t);
 		}
 	}
 
-	private SSLContext getSSLContext() {
-		if (this.sslContext == null) {
-			initSSLContextNoExceptions();
+
+
+	public SSLContext getSSLContextLimitedExceptions() throws IOException {
+		try {
+			return getSSLContext();
+		} catch (NoSuchAlgorithmException e) {
+			throw new IOException("Unsupported algorithm exception",e);
+		} catch (KeyStoreException e) {
+			throw new IOException("Keystore exception",e);
+		} catch (GeneralSecurityException e) {
+			throw new IOException("Key management exception",e);
 		}
-		return (SSLContext)this.sslContext;
 	}
 
-    /**
-     * @see javax.net.ssl.SSLSocketFactory#createSocket(InetAddress, int, InetAddress, int)
-     */
-    public Socket createSocket(String host, int port, InetAddress clientHost, int clientPort) throws IOException, UnknownHostException {
-		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port,clientHost,clientPort);
+	/**
+	 * @see javax.net.ssl.SSLSocketFactory#createSocket(InetAddress, int, InetAddress, int)
+	 */
+	@Override
+	public Socket createSocket(String host, int port, InetAddress clientHost, int clientPort) throws IOException, UnknownHostException {
+		SSLSocket sslSocket = (SSLSocket) getSSLContextLimitedExceptions().getSocketFactory().createSocket(host, port, clientHost, clientPort);
 		verifyHostname(sslSocket);
 		return sslSocket;
-    }
+	}
 
-    /**
-     * @see javax.net.ssl.SSLSocketFactory#createSocket(String, int)
-     */
-    public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
-		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port);
+	/**
+	 * @see javax.net.ssl.SSLSocketFactory#createSocket(String, int)
+	 */
+	@Override
+	public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
+		SSLSocket sslSocket = (SSLSocket) getSSLContextLimitedExceptions().getSocketFactory().createSocket(host, port);
 		verifyHostname(sslSocket);
 		return sslSocket;
-    }
+	}
 
-    /**
-     * @see javax.net.ssl.SSLSocketFactory#createSocket(Socket, String, int, boolean)
-     */
-    public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
-		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(socket,host,port,autoClose);
+	/**
+	 * @see javax.net.ssl.SSLSocketFactory#createSocket(Socket, String, int, boolean)
+	 */
+	@Override
+	public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
+		SSLSocket sslSocket = (SSLSocket) getSSLContextLimitedExceptions().getSocketFactory().createSocket(socket, host, port, autoClose);
 		verifyHostname(sslSocket);
 		return sslSocket;
-    }
+	}
 
 	/**
 	 * @see javax.net.ssl.SSLSocketFactory#createSocket(InetAddress, int)
 	 */
+	@Override
 	public Socket createSocket(InetAddress adress, int port) throws IOException {
-		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(adress, port);
+		SSLSocket sslSocket = (SSLSocket) getSSLContextLimitedExceptions().getSocketFactory().createSocket(adress, port);
 		verifyHostname(sslSocket);
 		return sslSocket;
 	}
@@ -303,8 +275,9 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 	/**
 	 * @see javax.net.ssl.SSLSocketFactory#createSocket(InetAddress, int, InetAddress, int)
 	 */
+	@Override
 	public Socket createSocket(InetAddress adress, int port, InetAddress localAdress, int localPort) throws IOException {
-		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(adress, port, localAdress, localPort);
+		SSLSocket sslSocket = (SSLSocket) getSSLContextLimitedExceptions().getSocketFactory().createSocket(adress, port, localAdress, localPort);
 		verifyHostname(sslSocket);
 		return sslSocket;
 	}
@@ -334,6 +307,7 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 	 * 
 	 * Copied from HttpClient 3.0.1 SSLProtocolSocketFactory
 	 */
+	@Override
 	public Socket createSocket(final String host, final int port, final InetAddress localAddress, final int localPort, final HttpConnectionParams params) throws IOException, UnknownHostException, ConnectTimeoutException {
 		if (params == null) {
 			throw new IllegalArgumentException("Parameters may not be null");
@@ -343,59 +317,122 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 			return createSocket(host, port, localAddress, localPort);
 		}
 		// To be eventually deprecated when migrated to Java 1.4 or above
-		Socket socket = ReflectionSocketFactory.createSocket(
-			"javax.net.ssl.SSLSocketFactory", host, port, localAddress, localPort, timeout);
+		Socket socket = ReflectionSocketFactory.createSocket("javax.net.ssl.SSLSocketFactory", host, port, localAddress, localPort, timeout);
 		if (socket == null) {
-			socket = ControllerThreadSocketFactory.createSocket(
-				this, host, port, localAddress, localPort, timeout);
+			socket = ControllerThreadSocketFactory.createSocket(this, host, port, localAddress, localPort, timeout);
 		}
 		return socket;
 	}
 
 
-	/**
-	 * Helper class for testing certificates that are not verified by an 
-	 * authorized organization
+	/* (non-Javadoc)
+	 * These three methods are included to provide compatibility with org.apache.commons.net.SocketFactory.
+	 * The created sockets are probably not secured
+	 * //TODO: find out if these serversockets need to be secured.
+	 * @see org.apache.commons.net.SocketFactory#createServerSocket(int)
+	 * @see org.apache.commons.net.SocketFactory#createServerSocket(int, int)
+	 * @see org.apache.commons.net.SocketFactory#createServerSocket(int, int, java.net.InetAddress)
 	 */
-	class AuthSslTrustManager implements X509TrustManager {
-		private X509TrustManager trustManager = null;
+	@Override
+	public ServerSocket createServerSocket(int port) throws IOException {
+		return new ServerSocket(port);
+	}
+	@Override
+	public ServerSocket createServerSocket(int port, int backlog) throws IOException {
+		return new ServerSocket(port, backlog);
+	}
+	@Override
+	public ServerSocket createServerSocket(int port, int backlog, InetAddress bindAddr) throws IOException {
+		return new ServerSocket(port, backlog, bindAddr);
+	}
 
-		AuthSslTrustManager(KeyStore keystore, TrustManager[] trustmanagers) throws NoSuchAlgorithmException, KeyStoreException {
-			if (trustmanagers == null || trustmanagers.length == 0) {
-				TrustManagerFactory factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-				factory.init(keystore);
-				trustmanagers = factory.getTrustManagers();
+
+
+
+	
+	/**
+	 * Describe <code>verifyHostname</code> method here.
+	 *
+	 * @param socket a <code>SSLSocket</code> value
+	 * @exception SSLPeerUnverifiedException  If there are problems obtaining
+	 * the server certificates from the SSL session, or the server host name 
+	 * does not match with the "Common Name" in the server certificates 
+	 * SubjectDN.
+	 * @exception UnknownHostException  If we are not able to resolve
+	 * the SSL sessions returned server host name. 
+	 */
+	protected void verifyHostname(SSLSocket socket) 
+		throws SSLPeerUnverifiedException, UnknownHostException {
+		if (! verifyHostname) 
+			return;
+
+		SSLSession session = socket.getSession();
+		if (session==null) {
+			throw new UnknownHostException("could not obtain session from socket");
+		}
+		String hostname = session.getPeerHost();
+		try {
+			InetAddress.getByName(hostname);
+		} catch (UnknownHostException uhe) {
+			String msg = "Could not resolve SSL sessions server hostname: " + hostname;
+			// Under WebSphere, hostname can be equal to proxy-hostname
+			log.warn(msg,uhe);
+//			throw new UnknownHostException(msg);
+		}
+
+		javax.security.cert.X509Certificate[] certs = session.getPeerCertificateChain();
+		if (certs == null || certs.length == 0) 
+			throw new SSLPeerUnverifiedException("No server certificates found!");
+
+		//get the servers DN in its string representation
+		String dn = certs[0].getSubjectDN().getName();
+
+		//might be useful to print out all certificates we receive from the
+		//server, in case one has to debug a problem with the installed certs.
+		if (log.isInfoEnabled()) {
+			log.info("Server certificate chain:");
+			for (int i = 0; i < certs.length; i++) {
+				log.info("X509Certificate[" + i + "]=" + certs[i]);
 			}
-			if (trustmanagers.length != 1) {
-				throw new NoSuchAlgorithmException("Only works with X509 trustmanagers");
+		}
+		//get the common name from the first cert
+		String cn = getCN(dn);
+		if (hostname.equalsIgnoreCase(cn)) {
+			if (log.isInfoEnabled()) {
+				log.info("Target hostname valid: " + cn);
 			}
-			trustManager = (X509TrustManager)trustmanagers[0];
+		} else {
+			throw new SSLPeerUnverifiedException(
+				"HTTPS hostname invalid: expected '" + hostname + "', received '" + cn + "'");
 		}
+	}
 
-		public void checkClientTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
-			trustManager.checkClientTrusted(certificates, authType);
+    
+	/**
+	 * Parses a X.500 distinguished name for the value of the 
+	 * "Common Name" field.
+	 * This is done a bit sloppy right now and should probably be done a bit
+	 * more according to <code>RFC 2253</code>.
+	 *
+	 * @param dn  a X.500 distinguished name.
+	 * @return the value of the "Common Name" field.
+	 */
+	protected String getCN(String dn) {
+		int i = 0;
+		i = dn.indexOf("CN=");
+		if (i == -1) {
+			return null;
 		}
-
-		public void checkServerTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
-			try {
-				if (certificates != null) {
-					for (int i = 0; i < certificates.length; i++) {
-						X509Certificate certificate = certificates[i];
-						certificate.checkValidity();
-					}
-				}
-			} catch (CertificateException e) {
-				if (ignoreCertificateExpiredException) {
-					log.warn("error occurred during checking trusted server: " + e.getMessage());
-				} else {
-					throw e;
-				}
+		//get the remaining DN without CN=
+		dn = dn.substring(i + 3);  
+		// System.out.println("dn=" + dn);
+		char[] dncs = dn.toCharArray();
+		for (i = 0; i < dncs.length; i++) {
+			if (dncs[i] == ','  && i > 0 && dncs[i - 1] != '\\') {
+				break;
 			}
 		}
-
-		public X509Certificate[] getAcceptedIssuers() {
-			return trustManager.getAcceptedIssuers();
-		}
+		return dn.substring(0, i);
 	}
 
 }

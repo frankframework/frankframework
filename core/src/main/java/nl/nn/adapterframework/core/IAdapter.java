@@ -48,8 +48,8 @@ public interface IAdapter extends IManagable {
 	 * the web-functions.
 	 */
 	public MessageKeeper getMessageKeeper();
-	public Receiver getReceiverByName(String receiverName);
-	public Iterable<Receiver> getReceivers();
+	public Receiver<?> getReceiverByName(String receiverName);
+	public Iterable<Receiver<?>> getReceivers();
 	public PipeLineResult processMessage(String messageId, Message message, IPipeLineSession pipeLineSession);
 	public PipeLineResult processMessageWithExceptions(String messageId, Message message, IPipeLineSession pipeLineSession) throws ListenerException;
 
@@ -59,7 +59,7 @@ public interface IAdapter extends IManagable {
 	public Configuration getConfiguration();
 	public boolean isAutoStart();
 
-	public String formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime);
+	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime);
 
 	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
 

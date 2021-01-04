@@ -21,6 +21,6 @@ package nl.nn.adapterframework.core;
  * @author Gerrit van Brakel
  *
  */
-public interface IValidatorPipe extends IPipe {
+public interface IValidator extends IPipe {
 
 }

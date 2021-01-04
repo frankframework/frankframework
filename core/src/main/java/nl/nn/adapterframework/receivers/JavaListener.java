@@ -156,9 +156,12 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		} else {
 			try {
 				return handler.processRequest(this, correlationId, rawMessage, message, context).asString();
-			}
-			catch (ListenerException | IOException e) {
-				return handler.formatException(null,correlationId, message, e);
+			} catch (ListenerException | IOException e) {
+				try {
+					return handler.formatException(null,correlationId, message, e).asString();
+				} catch (IOException e1) {
+					throw new ListenerException(e);
+				}
 			}
 		}
 	}

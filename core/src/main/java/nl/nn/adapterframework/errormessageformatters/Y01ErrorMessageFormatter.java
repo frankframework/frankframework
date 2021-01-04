@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.DateUtils;
  */
 public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 	
-	public String format(
+	public Message format(
 	    String message,
 	    Throwable t,
 	    INamedObject location,
@@ -58,6 +58,6 @@ public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 	
 	
 	
-		return result;
+		return new Message(result);
 	}
 }

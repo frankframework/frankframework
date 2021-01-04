@@ -65,6 +65,7 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
+import nl.nn.adapterframework.core.ITransactionAttributes;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -178,7 +179,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHandler<M>, IProvidesMessageBrowsers<Object>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
+public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHandler<M>, IProvidesMessageBrowsers<Object>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware, ITransactionAttributes {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -1334,8 +1335,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 					pipeLineResult=new PipeLineResult();
 				}
 				if (Message.isEmpty(pipeLineResult.getResult())) {
-					String formattedErrorMessage=adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp);
-					pipeLineResult.setResult(new Message(formattedErrorMessage));
+					pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp));
 				}
 				throw wrapExceptionAsListenerException(t);
 			} finally {
@@ -1721,7 +1721,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	}
 
 	@Override
-	public String formatException(String extrainfo, String correlationId, Message message, Throwable t) {
+	public Message formatException(String extrainfo, String correlationId, Message message, Throwable t) {
 		return getAdapter().formatErrorMessage(extrainfo,t,message,correlationId,null,0);
 	}
 
@@ -2057,58 +2057,32 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 				txAtt==TransactionDefinition.PROPAGATION_MANDATORY;
 	}
 
-	@IbisDoc({"4", "The transactionAttribute declares transactional behavior of the receiver. "
-			+ "It applies both to database transactions and XA transactions. "
-			+ "The receiver uses this to start a new transaction or suspend the current one when required. "
-			+ "For developers: it is equal "
-			+ "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. "
-			+ "Possible values for transactionAttribute: "
-			+ "  <table border=\"1\">"
-			+ "	<tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
-			+ "	<tr><td colspan=\"1\" rowspan=\"2\">Required</td> <td>none</td><td>T2</td></tr>"
-			+ "												  <tr><td>T1</td>  <td>T1</td></tr>"
-			+ "	<tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
-			+ "												  <tr><td>T1</td>  <td>T2</td></tr>"
-			+ "	<tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
-			+ "												  <tr><td>T1</td>  <td>T1</td></tr>"
-			+ "	<tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
-			+ "												  <tr><td>T1</td>  <td>none</td></tr>"
-			+ "	<tr><td colspan=\"1\" rowspan=\"2\">Supports</td>	<td>none</td><td>none</td></tr>"
-			+ " 											  <tr><td>T1</td>  <td>T1</td></tr>"
-			+ "	<tr><td colspan=\"1\" rowspan=\"2\">Never</td>	   <td>none</td><td>none</td></tr>"
-			+ "												  <tr><td>T1</td>  <td>error</td></tr>"
-			+ "  </table>", "Supports"})
+	@Override
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
 			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
 		}
 	}
+	@Override
 	public String getTransactionAttribute() {
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
 	
-	@IbisDoc({"5", "Like <code>transactionAttribute</code>, but the chosen "
-			+ "option is represented with a number. The numbers mean:"
-			+ "<table>"
-			+ "<tr><td>0</td><td>Required</td></tr>"
-			+ "<tr><td>1</td><td>Supports</td></tr>"
-			+ "<tr><td>2</td><td>Mandatory</td></tr>"
-			+ "<tr><td>3</td><td>RequiresNew</td></tr>"
-			+ "<tr><td>4</td><td>NotSupported</td></tr>"
-			+ "<tr><td>5</td><td>Never</td></tr>"
-			+ "</table>", "1"})
+	@Override
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}
+	@Override
 	public int getTransactionAttributeNum() {
 		return transactionAttribute;
 	}
 
-	@IbisDoc({"6", "Timeout (in seconds) of transaction started to receive and process a message.", "<code>0</code> (use system default)"})
+	@Override
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
+	@Override
 	public int getTransactionTimeout() {
 		return transactionTimeout;
 	}

@@ -1,24 +1,20 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.util.PasswordHash;
-import org.junit.Test;
-import org.mockito.Mock;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.PasswordHash;
 
 /**
  * PasswordHashPipe Tester.
  * @author <Sina>
  */
 public class PasswordHashPipeTest extends PipeTestBase<PasswordHashPipe> {
-
-    @Mock
-    private PipeLineSessionBase session = new PipeLineSessionBase();
 
     @Override
     public PasswordHashPipe createPipe() {

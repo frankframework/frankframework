@@ -158,6 +158,11 @@ public class Message implements Serializable {
 		return request instanceof String || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
 	}
 	
+	public boolean requiresStream() {
+		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof Reader;
+	}
+	
+	
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -484,7 +489,7 @@ public class Message implements Serializable {
 		return captureStream(10000, writer);
 	}
 	public <W extends Writer> W captureStream(int maxSize, W writer) {
-		if (request instanceof String || request instanceof byte[]) {
+		if (!requiresStream()) {
 			return null;
 		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));

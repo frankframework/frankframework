@@ -1,16 +1,13 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import org.junit.Test;
-
-import org.mockito.Mock;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
+
+import org.junit.Test;
+
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 
 
 /**
@@ -19,9 +16,6 @@ import static org.junit.Assert.fail;
 * @author <Sina Sen>
 */ 
 public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch>{
-
-    @Mock
-    private IPipeLineSession session = new PipeLineSessionBase();
 
     @Override
     public FilenameSwitch createPipe() {

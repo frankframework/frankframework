@@ -135,19 +135,6 @@
 				<forward name="success" path="READY"/>
 			</pipe>
 
-			<pipe name="CreateZipDirectory"
-				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
-				  preserveInput="true"
-				  getInputFromFixedValue="zip">
-				  <sender name="localfilesender"
-						  className="nl.nn.adapterframework.senders.LocalFileSystemSender"
-						  action="mkdir"
-						  root="${testdata.dir}">
-				  </sender>
-				  <forward name="success" path="READY"/>
-				  <forward name="exception" path="READY"/>  <!-- don't fail when folder already exists -->
-			</pipe>
-			
 			<pipe name="RemoveRecreatedZipFile"
 				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				  preserveInput="true"

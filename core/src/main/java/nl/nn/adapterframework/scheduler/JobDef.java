@@ -49,6 +49,7 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.ITransactionAttributes;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
@@ -354,24 +355,24 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * 
  * @author  Johan  Verrips
  */
-public class JobDef {
+public class JobDef implements ITransactionAttributes {
 	protected Logger log=LogUtil.getLogger(this);
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
 
-    private String name;
-    private String cronExpression;
-    private long interval = -1;
-    private JobDefFunctions function;
-    private String configurationName;
-    private String adapterName;
-    private String description;
-    private String receiverName;
+	private String name;
+	private String cronExpression;
+	private long interval = -1;
+	private JobDefFunctions function;
+	private String configurationName;
+	private String adapterName;
+	private String description;
+	private String receiverName;
 	private String query;
 	private int queryTimeout = 0;
 	private String jmsRealm;
-	private Locker locker=null;
+	private Locker locker = null;
 	private int numThreads = 1;
 	private int countThreads = 0;
 	private String message = null;
@@ -665,9 +666,9 @@ public class JobDef {
 	}
 
 	
-	private void collectMessageLogs(List<MessageLogObject> messageLogs, ITransactionalStorage transactionalStorage) {
+	private void collectMessageLogs(List<MessageLogObject> messageLogs, ITransactionalStorage<?> transactionalStorage) {
 		if (transactionalStorage!=null && transactionalStorage instanceof JdbcTransactionalStorage) {
-			JdbcTransactionalStorage messageLog = (JdbcTransactionalStorage)transactionalStorage;
+			JdbcTransactionalStorage<?> messageLog = (JdbcTransactionalStorage<?>)transactionalStorage;
 			String datasourceName = messageLog.getDatasourceName();
 			String expiryDateField = messageLog.getExpiryDateField();
 			String tableName = messageLog.getTableName();
@@ -683,7 +684,7 @@ public class JobDef {
 	private List<MessageLogObject> getAllMessageLogs(IbisManager ibisManager) {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
 		for(IAdapter adapter : ibisManager.getRegisteredAdapters()) {
-			for (Receiver receiver: adapter.getReceivers()) {
+			for (Receiver<?> receiver: adapter.getReceivers()) {
 				collectMessageLogs(messageLogs, receiver.getMessageLog());
 			}
 			PipeLine pipeline = adapter.getPipeLine();
@@ -861,9 +862,7 @@ public class JobDef {
 							ibisManager.getIbisContext().load(currentDbConfigurationName);
 						}
 					}
-				}
-				// unload old (deactivated) configurations
-				if (configNames != null && !configNames.isEmpty()) {
+					// unload old (deactivated) configurations
 					for (String currentConfigurationName : configNames) {
 						if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
 							ibisManager.getIbisContext().unload(currentConfigurationName);
@@ -1111,7 +1110,7 @@ public class JobDef {
 			} else {
 				heartbeatLog.warn(message);
 			}
-			for (Receiver receiver: adapter.getReceivers()) {
+			for (Receiver<?> receiver: adapter.getReceivers()) {
 				countReceiver++;
 
 				RunStateEnum receiverRunState = receiver.getRunState();
@@ -1142,7 +1141,7 @@ public class JobDef {
 						.equals(RunStateEnum.STARTED)) {
 					// workaround for started RestListeners of which
 					// uriPattern is not registered correctly
-					IListener listener = receiver.getListener();
+					IListener<?> listener = receiver.getListener();
 					if (listener instanceof RestListener) {
 						RestListener restListener = (RestListener) listener;
 						String matchingPattern = RestServiceDispatcher.getInstance().findMatchingPattern("/" + restListener.getUriPattern());
@@ -1204,7 +1203,7 @@ public class JobDef {
 		this.description = description;
 	}
 	public String getDescription() {
-	   return description;
+		return description;
 	}
 
 	@IbisDoc({"cron expression that determines the frequency of execution (see below)", ""})
@@ -1297,28 +1296,7 @@ public class JobDef {
 		return locker;
 	}
 
-	@IbisDoc({"The transactionAttribute declares transactional behavior of job execution. It "
-			+ "applies both to database transactions and XA transactions. "
-	        + "In general, a transactionAttribute is used to start a new transaction or suspend the current one when required. "
-			+ "For developers: it is equal "
-	        + "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. "
-	        + "Possible values for transactionAttribute: "
-	        + "  <table border=\"1\">"
-	        + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T2</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>none</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
-	        + " 										      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>error</td></tr>"
-	        + "  </table>", "Supports"})
-
+	@Override
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
@@ -1327,34 +1305,29 @@ public class JobDef {
 			throw new ConfigurationException(msg);
 		}
 	}
+	@Override
 	public String getTransactionAttribute() {
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
 
-    @IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
-    	    + "option is represented with a number. The numbers mean:"
-    	    + "<table>"
-    	    + "<tr><td>0</td><td>Required</td></tr>"
-    	    + "<tr><td>1</td><td>Supports</td></tr>"
-    	    + "<tr><td>2</td><td>Mandatory</td></tr>"
-    	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
-    	    + "<tr><td>4</td><td>NotSupported</td></tr>"
-    	    + "<tr><td>5</td><td>Never</td></tr>"
-    	    + "</table>", "1"})
+	@Override
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}
+	@Override
 	public int getTransactionAttributeNum() {
 		return transactionAttribute;
 	}
 
-	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
+	@Override
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
+	@Override
 	public int getTransactionTimeout() {
 		return transactionTimeout;
 	}
+
 
 	public void setTxManager(PlatformTransactionManager manager) {
 		txManager = manager;
