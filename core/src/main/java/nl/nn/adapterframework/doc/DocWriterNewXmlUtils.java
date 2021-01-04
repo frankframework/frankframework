@@ -85,6 +85,12 @@ class DocWriterNewXmlUtils {
 		return element;
 	}
 
+	static XmlBuilder createElementWithType(String name) {
+		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
+		element.addAttribute("name", name);
+		return element;
+	}
+
 	static XmlBuilder addElementWithType(XmlBuilder context, String name, String minOccurs, String maxOccurs) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("name", name);
@@ -99,6 +105,13 @@ class DocWriterNewXmlUtils {
 		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
 		schema.addSubElement(complexType);
 		return complexType;
+	}
+
+	static XmlBuilder createComplexType(String name) {
+		XmlBuilder complexType;
+		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
+		complexType.addAttribute("name", name);
+		return complexType;		
 	}
 
 	static XmlBuilder addComplexType(XmlBuilder schema, String name) {
@@ -215,6 +228,12 @@ class DocWriterNewXmlUtils {
 		return group;
 	}
 
+	static XmlBuilder createGroup(String name) {
+		XmlBuilder group = new XmlBuilder("group", "xs", XML_SCHEMA_URI);
+		group.addAttribute("name", name);
+		return group;
+	}
+
 	static XmlBuilder addGroupRef(XmlBuilder context, String id) {
 		XmlBuilder group = new XmlBuilder("group", "xs", XML_SCHEMA_URI);
 		context.addSubElement(group);
@@ -234,6 +253,12 @@ class DocWriterNewXmlUtils {
 	static XmlBuilder addAttributeGroup(XmlBuilder context, String name) {
 		XmlBuilder group = new XmlBuilder("attributeGroup", "xs", XML_SCHEMA_URI);
 		context.addSubElement(group);
+		group.addAttribute("name", name);
+		return group;
+	}
+
+	static XmlBuilder createAttributeGroup(String name) {
+		XmlBuilder group = new XmlBuilder("attributeGroup", "xs", XML_SCHEMA_URI);
 		group.addAttribute("name", name);
 		return group;
 	}

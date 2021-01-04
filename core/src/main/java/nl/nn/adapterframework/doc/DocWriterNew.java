@@ -16,7 +16,20 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
-import static java.util.Arrays.asList;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAnyAttribute;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexContent;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementRef;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementWithType;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addExtension;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createAttributeGroup;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createComplexType;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createElementWithType;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.OPTIONAL;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.PROHIBITED;
@@ -26,6 +39,7 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeValueStat
 import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
 import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -195,12 +209,11 @@ public class DocWriterNew {
 	
 	private FrankDocModel model;
 	private String startClassName;
-	private XmlBuilder xsdRoot;
-	private Set<String> namesCreatedFrankElements;
-	private Set<ElementRole.Key> idsCreatedElementGroups;
-	private Set<String> namesElementTypesWithChildMemberGroup;
-	private XsdWriteFilter writeFilter;
-	private XsdWriteFilter.ControlStack writeControl;
+	private List<XmlBuilder> xsdElements = new ArrayList<>();
+	private List<XmlBuilder> xsdComplexItems = new ArrayList<>();
+	private Set<String> namesCreatedFrankElements = new HashSet<>();
+	private Set<ElementRole.Key> idsCreatedElementGroups = new HashSet<>();
+	private Set<String> namesElementTypesWithChildMemberGroup = new HashSet<>();
 
 	public DocWriterNew(FrankDocModel model) {
 		this.model = model;
@@ -215,18 +228,11 @@ public class DocWriterNew {
 	}
 
 	public String getSchema() {
-		xsdRoot = getXmlSchema();
-		List<XsdWriteFilter> writeFilters = asList(
-				new XsdWriteFilter.EnableSimpleElements(), new XsdWriteFilter.EnableComplexStuff());
-		for(XsdWriteFilter writeFilter: writeFilters) {
-			this.writeFilter = writeFilter;
-			writeControl = new XsdWriteFilter.ControlStack(writeFilter);
-			namesCreatedFrankElements = new HashSet<>();
-			idsCreatedElementGroups = new HashSet<>();
-			namesElementTypesWithChildMemberGroup = new HashSet<>();
-			FrankElement startElement = model.findFrankElement(startClassName);
-			recursivelyDefineXsdElementOfRoot(startElement);
-		}
+		XmlBuilder xsdRoot = getXmlSchema();
+		FrankElement startElement = model.findFrankElement(startClassName);
+		recursivelyDefineXsdElementOfRoot(startElement);
+		xsdElements.forEach(xsdRoot::addSubElement);
+		xsdComplexItems.forEach(xsdRoot::addSubElement);
 		return xsdRoot.toXML(true);
 	}
 
@@ -236,23 +242,21 @@ public class DocWriterNew {
 
 	private void recursivelyDefineXsdElementOfRoot(FrankElement frankElement) {
 		if(checkNotDefined(frankElement)) {
-			writeControl.pushSimpleElement();
 			String xsdElementName = frankElement.getSimpleName();
-			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(
-					xsdRoot, frankElement, xsdElementName);
+			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(frankElement, xsdElementName);
 			addClassNameAttribute(attributeBuilder, frankElement);
-			writeControl.pop();
 		}
 	}
 
 	private void addClassNameAttribute(XmlBuilder context, FrankElement frankElement) {
-		writeFilter.addAttribute(context, "className", FIXED, frankElement.getFullName(), PROHIBITED);
+		addAttribute(context, "className", FIXED, frankElement.getFullName(), PROHIBITED);
 	}
 
-	private XmlBuilder recursivelyDefineXsdElementUnchecked(XmlBuilder context, FrankElement frankElement, String xsdElementName) {
-		XmlBuilder elementBuilder = writeFilter.addElementWithType(context, xsdElementName);
-		XmlBuilder complexType = writeFilter.addComplexType(elementBuilder);
-		XmlBuilder sequence = writeFilter.addSequence(complexType);
+	private XmlBuilder recursivelyDefineXsdElementUnchecked(FrankElement frankElement, String xsdElementName) {
+		XmlBuilder elementBuilder = createElementWithType(xsdElementName);
+		xsdElements.add(elementBuilder);
+		XmlBuilder complexType = addComplexType(elementBuilder);
+		XmlBuilder sequence = addSequence(complexType);
 		frankElement.getCumulativeConfigChildren(IN_XSD, DEPRECATED).forEach(c -> addConfigChild(sequence, c));
 		addAttributeList(complexType, frankElement.getCumulativeAttributes(IN_XSD, DEPRECATED));
 		return complexType;
@@ -310,17 +314,18 @@ public class DocWriterNew {
 		private final XmlBuilder complexType;
 		
 		ElementAdder(FrankElement frankElement) {
-			complexType = writeFilter.addComplexType(xsdRoot, xsdElementType(frankElement));
+			complexType = createComplexType(xsdElementType(frankElement));
+			xsdComplexItems.add(complexType);
 		}
 
 		@Override
 		void addGroupRef(String referencedGroupName) {
-			writeFilter.addGroupRef(complexType, referencedGroupName);
+			DocWriterNewXmlUtils.addGroupRef(complexType, referencedGroupName);
 		}
 
 		@Override
 		void addAttributeGroupRef(String referencedGroupName) {
-			writeFilter.addAttributeGroupRef(complexType, referencedGroupName);
+			DocWriterNewXmlUtils.addAttributeGroupRef(complexType, referencedGroupName);
 		}
 	}
 
@@ -361,16 +366,17 @@ public class DocWriterNew {
 
 			@Override
 			public void addDeclaredGroup() {
-				XmlBuilder group = writeFilter.addGroup(xsdRoot, xsdDeclaredGroupNameForChildren(frankElement));
-				XmlBuilder sequence = writeFilter.addSequence(group);
-				frankElement.getConfigChildren(IN_XSD).forEach(
-						c -> addConfigChild(sequence, c));
+				XmlBuilder group = createGroup(xsdDeclaredGroupNameForChildren(frankElement));
+				xsdComplexItems.add(group);
+				XmlBuilder sequence = addSequence(group);
+				frankElement.getConfigChildren(IN_XSD).forEach(c -> addConfigChild(sequence, c));
 			}
 
 			@Override
 			public void addCumulativeGroup() {
-				XmlBuilder group = writeFilter.addGroup(xsdRoot, xsdCumulativeGroupNameForChildren(frankElement));
-				cumulativeBuilder = writeFilter.addSequence(group);
+				XmlBuilder group = createGroup(xsdCumulativeGroupNameForChildren(frankElement));
+				xsdComplexItems.add(group);
+				cumulativeBuilder = addSequence(group);
 			}
 
 			@Override
@@ -380,12 +386,12 @@ public class DocWriterNew {
 			
 			@Override
 			public void handleChildrenOf(FrankElement elem) {
-				writeFilter.addGroupRef(cumulativeBuilder, xsdDeclaredGroupNameForChildren(elem));
+				DocWriterNewXmlUtils.addGroupRef(cumulativeBuilder, xsdDeclaredGroupNameForChildren(elem));
 			}
 
 			@Override
 			public void handleCumulativeChildrenOf(FrankElement elem) {
-				writeFilter.addGroupRef(cumulativeBuilder, xsdCumulativeGroupNameForChildren(elem));
+				DocWriterNewXmlUtils.addGroupRef(cumulativeBuilder, xsdCumulativeGroupNameForChildren(elem));
 			}
 		}).run();
 	}
@@ -420,14 +426,8 @@ public class DocWriterNew {
 	private void addConfigChildSingleReferredElement(XmlBuilder context, ConfigChild child) {
 		ElementRole role = model.findElementRole(child);
 		FrankElement elementInType = singleElementOf(role.getElementType());
-		writeFilter.addElementRef(
-				context,
-				elementInType.getXsdElementName(role),
-				getMinOccurs(child),
-				getMaxOccurs(child));
-		writeControl.pushSimpleElement();
+		addElementRef(context, elementInType.getXsdElementName(role), getMinOccurs(child), getMaxOccurs(child));
 		recursivelyDefineXsdElement(elementInType, role);
-		writeControl.pop();
 	}
 
 	private FrankElement singleElementOf(ElementType elementType) {
@@ -453,22 +453,20 @@ public class DocWriterNew {
 	private void recursivelyDefineXsdElement(FrankElement frankElement, ElementRole role) {
 		if(checkNotDefined(frankElement)) {
 			String xsdElementName = frankElement.getXsdElementName(role);
-			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(xsdRoot, frankElement, xsdElementName);
+			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(frankElement, xsdElementName);
 			addExtraAttributesNotFromModel(attributeBuilder, frankElement, role);
 		}
 	}
 
 	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, ElementRole role) {
-		writeFilter.addAttribute(context, ELEMENT_ROLE, FIXED, role.getSyntax1Name(), PROHIBITED);
+		addAttribute(context, ELEMENT_ROLE, FIXED, role.getSyntax1Name(), PROHIBITED);
 		addClassNameAttribute(context, frankElement);
 	}
 
 	private void addConfigChildWithElementGroup(XmlBuilder context, ConfigChild child) {
 		ElementRole role = model.findElementRole(child);
-		writeControl.pushComplexStuff();
 		defineElementTypeGroup(role);
-		writeControl.pop();
-		writeFilter.addGroupRef(context, role.createXsdElementName(ELEMENT_GROUP), getMinOccurs(child), getMaxOccurs(child));
+		DocWriterNewXmlUtils.addGroupRef(context, role.createXsdElementName(ELEMENT_GROUP), getMinOccurs(child), getMaxOccurs(child));
 	}
 
 	private void defineElementTypeGroup(ElementRole role) {
@@ -480,8 +478,9 @@ public class DocWriterNew {
 	}
 
 	private void defineElementTypeGroupUnchecked(ElementRole role) {
-		XmlBuilder group = writeFilter.addGroup(xsdRoot, role.createXsdElementName(ELEMENT_GROUP));
-		XmlBuilder choice = writeFilter.addChoice(group);
+		XmlBuilder group = createGroup(role.createXsdElementName(ELEMENT_GROUP));
+		xsdComplexItems.add(group);
+		XmlBuilder choice = addChoice(group);
 		List<FrankElement> frankElementOptions = role.getElementType().getMembers().values().stream()
 				.filter(f -> ! f.isDeprecated())
 				.filter(f -> ! f.isAbstract())
@@ -507,18 +506,17 @@ public class DocWriterNew {
 	}
 
 	private void addGenericElementOption(XmlBuilder choice, ElementRole role, String elementNameGenericOption) {
-		XmlBuilder genericElementOption = writeFilter.addElementWithType(
-				choice, elementNameGenericOption);
-		XmlBuilder complexType = writeFilter.addComplexType(genericElementOption);
+		XmlBuilder genericElementOption = addElementWithType(choice, elementNameGenericOption);
+		XmlBuilder complexType = addComplexType(genericElementOption);
 		addElementTypeChildMembers(complexType, role);
-		writeFilter.addAttribute(complexType, ELEMENT_ROLE, FIXED, role.getSyntax1Name(), PROHIBITED);
-		writeFilter.addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
+		addAttribute(complexType, ELEMENT_ROLE, FIXED, role.getSyntax1Name(), PROHIBITED);
+		addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
 		// The XSD is invalid if addAnyAttribute is added before attributes elementType and className.
-		writeFilter.addAnyAttribute(complexType);
+		addAnyAttribute(complexType);
 	}
 
 	private void addElementTypeChildMembers(XmlBuilder context, ElementRole role) {
-		writeFilter.addGroupRef(context, xsdElementTypeMemberChildGroup(role.getElementType()), "0", "unbounded");
+		DocWriterNewXmlUtils.addGroupRef(context, xsdElementTypeMemberChildGroup(role.getElementType()), "0", "unbounded");
 		addElementTypeMemberChildGroup(role);
 	}
 
@@ -534,8 +532,9 @@ public class DocWriterNew {
 	}
 
 	private void addElementTypeMemberChildGroupUnchecked(ElementRole role) {
-		XmlBuilder group = writeFilter.addGroup(xsdRoot, xsdElementTypeMemberChildGroup(role.getElementType()));
-		XmlBuilder choice = writeFilter.addChoice(group);
+		XmlBuilder group = createGroup(xsdElementTypeMemberChildGroup(role.getElementType()));
+		xsdComplexItems.add(group);
+		XmlBuilder choice = addChoice(group);
 		for(ElementRole childRole: new MemberChildrenCalculator(role, model).getMemberChildOptions()) {
 			addElementTypeMemberChildGroupOption(choice, childRole);
 		}
@@ -545,9 +544,9 @@ public class DocWriterNew {
 		if(isNoElementTypeNeeded(childRole)) {
 			FrankElement frankElement = singleElementOf(childRole.getElementType());
 			String xsdElementName = frankElement.getXsdElementName(childRole);
-			writeFilter.addElementRef(choice, xsdElementName);
+			addElementRef(choice, xsdElementName);
 		} else {
-			writeFilter.addGroupRef(choice, childRole.createXsdElementName(ELEMENT_GROUP));
+			DocWriterNewXmlUtils.addGroupRef(choice, childRole.createXsdElementName(ELEMENT_GROUP));
 		}
 	}
 
@@ -557,10 +556,10 @@ public class DocWriterNew {
 	}
 
 	private void addElementTypeRefToElementGroup(XmlBuilder context, FrankElement frankElement, ElementRole role) {
-		XmlBuilder element = writeFilter.addElementWithType(context, frankElement.getXsdElementName(role));
-		XmlBuilder complexType = writeFilter.addComplexType(element);
-		XmlBuilder complexContent = writeFilter.addComplexContent(complexType);
-		XmlBuilder extension = writeFilter.addExtension(complexContent, xsdElementType(frankElement));
+		XmlBuilder element = addElementWithType(context, frankElement.getXsdElementName(role));
+		XmlBuilder complexType = addComplexType(element);
+		XmlBuilder complexContent = addComplexContent(complexType);
+		XmlBuilder extension = addExtension(complexContent, xsdElementType(frankElement));
 		addExtraAttributesNotFromModel(extension, frankElement, role);
 	}
 
@@ -592,13 +591,15 @@ public class DocWriterNew {
 
 			@Override
 			public void addDeclaredGroup() {
-				XmlBuilder attributeGroup = writeFilter.addAttributeGroup(xsdRoot, xsdDeclaredGroupNameForAttributes(frankElement));
+				XmlBuilder attributeGroup = createAttributeGroup(xsdDeclaredGroupNameForAttributes(frankElement));
+				xsdComplexItems.add(attributeGroup);
 				addAttributeList(attributeGroup, frankElement.getAttributes(IN_XSD));
 			}
 
 			@Override
 			public void addCumulativeGroup() {
-				cumulativeBuilder = writeFilter.addAttributeGroup(xsdRoot, xsdCumulativeGroupNameForAttributes(frankElement));				
+				cumulativeBuilder = createAttributeGroup(xsdCumulativeGroupNameForAttributes(frankElement));
+				xsdComplexItems.add(cumulativeBuilder);
 			}
 
 			@Override
@@ -608,12 +609,12 @@ public class DocWriterNew {
 
 			@Override
 			public void handleChildrenOf(FrankElement elem) {
-				writeFilter.addAttributeGroupRef(cumulativeBuilder, xsdDeclaredGroupNameForAttributes(elem));
+				DocWriterNewXmlUtils.addAttributeGroupRef(cumulativeBuilder, xsdDeclaredGroupNameForAttributes(elem));
 			}
 
 			@Override
 			public void handleCumulativeChildrenOf(FrankElement elem) {
-				writeFilter.addAttributeGroupRef(cumulativeBuilder, xsdCumulativeGroupNameForAttributes(elem));				
+				DocWriterNewXmlUtils.addAttributeGroupRef(cumulativeBuilder, xsdCumulativeGroupNameForAttributes(elem));				
 			}
 		}).run();
 	}
@@ -629,10 +630,9 @@ public class DocWriterNew {
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> frankAttributes) {
 		for(FrankAttribute frankAttribute: frankAttributes) {
 			// The default value is allowed to be null.
-			XmlBuilder attribute = writeFilter.addAttribute(
-					context, frankAttribute.getName(), DEFAULT, frankAttribute.getDefaultValue(), OPTIONAL);
+			XmlBuilder attribute = addAttribute(context, frankAttribute.getName(), DEFAULT, frankAttribute.getDefaultValue(), OPTIONAL);
 			if(! StringUtils.isEmpty(frankAttribute.getDescription())) {
-				writeFilter.addDocumentation(attribute, frankAttribute.getDescription());
+				addDocumentation(attribute, frankAttribute.getDescription());
 			}
 		}		
 	}
