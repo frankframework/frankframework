@@ -53,7 +53,7 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 				}
 
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();
-				String errorMessage = emf.format(e.getMessage(), e.getCause(), pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+				Message errorMessage = emf.format(e.getMessage(), e.getCause(), pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
 				return new PipeRunResult(pipe.getForwards().get("exception"), errorMessage);
 			}
 			throw e;

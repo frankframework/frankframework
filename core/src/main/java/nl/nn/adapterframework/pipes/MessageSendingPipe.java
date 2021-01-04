@@ -737,9 +737,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 				}
 				if (timeoutForward!=null) {
-					String resultmsg;
+					Message resultmsg;
 					if (StringUtils.isNotEmpty(getResultOnTimeOut())) {
-						resultmsg =getResultOnTimeOut();
+						resultmsg =new Message(getResultOnTimeOut());
 					} else {
 						resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),toe,this,input,session.getMessageId(),0);
 					}
@@ -752,9 +752,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				PipeForward exceptionForward = findForward(EXCEPTION_FORWARD);
 				if (exceptionForward!=null) {
 					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
-					String resultmsg;
-					resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input,session.getMessageId(),0);
-					return new PipeRunResult(exceptionForward,resultmsg);
+					return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input,session.getMessageId(),0));
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
 			}

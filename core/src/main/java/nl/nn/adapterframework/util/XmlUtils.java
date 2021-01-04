@@ -1643,10 +1643,6 @@ public class XmlUtils {
 		}
 	}
 
-	public static String transformXml(Transformer t, Document d) throws TransformerException, IOException {
-		return transformXml(t, new DOMSource(d));
-	}
-
 	public static String transformXml(Transformer t, String s) throws TransformerException, IOException, SAXException {
 		return transformXml(t, s, isNamespaceAwareByDefault());
 	}

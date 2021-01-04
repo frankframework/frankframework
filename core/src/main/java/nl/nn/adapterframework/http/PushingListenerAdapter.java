@@ -93,7 +93,7 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 				throw e;
 			} 
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
-			return new Message(handler.formatException(null,correlationId, message, e));
+			return handler.formatException(null,correlationId, message, e);
 		}
 	}
 

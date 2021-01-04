@@ -61,6 +61,6 @@ public interface IMessageHandler<M> {
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.
 	 *  Can be used if the calling system has no other way of returnin the exception to the caller. 
 	 */	
-	public String formatException(String extrainfo, String correlationId, Message message, Throwable t);
+	public Message formatException(String extrainfo, String correlationId, Message message, Throwable t);
 
 }

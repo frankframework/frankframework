@@ -1297,8 +1297,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 					pipeLineResult=new PipeLineResult();
 				}
 				if (Message.isEmpty(pipeLineResult.getResult())) {
-					String formattedErrorMessage=adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp);
-					pipeLineResult.setResult(new Message(formattedErrorMessage));
+					pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp));
 				}
 				throw wrapExceptionAsListenerException(t);
 			} finally {
@@ -1684,7 +1683,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	}
 
 	@Override
-	public String formatException(String extrainfo, String correlationId, Message message, Throwable t) {
+	public Message formatException(String extrainfo, String correlationId, Message message, Throwable t) {
 		return getAdapter().formatErrorMessage(extrainfo,t,message,correlationId,null,0);
 	}
 

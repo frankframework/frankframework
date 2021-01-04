@@ -103,7 +103,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private String targetDesignDocument;
 	private boolean active=true;
 
-	private ArrayList<Receiver> receivers = new ArrayList<>();
+	private ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
 	private String lastMessageProcessingState; //"OK" or "ERROR"
 	private PipeLine pipeline;
@@ -326,32 +326,25 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public synchronized String formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime) {
+	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime) {
 		if (errorMessageFormatter == null) {
 			errorMessageFormatter = new ErrorMessageFormatter();
 		}
 		// you never can trust an implementation, so try/catch!
 		try {
-			String formattedErrorMessage= errorMessageFormatter.format(
-				errorMessage,
-				t,
-				objectInError,
-				originalMessage,
-				messageID,
-				receivedTime);
+			Message formattedErrorMessage= errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, messageID, receivedTime);
 
 			if(msgLog.isEnabled(MSGLOG_LEVEL_TERSE)) {
-				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(new Message(formattedErrorMessage)) : formattedErrorMessage;
+				String resultOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(formattedErrorMessage) : formattedErrorMessage.toString();
 				msgLog.log(MSGLOG_LEVEL_TERSE, String.format("Adapter [%s] messageId [%s] formatted errormessage, result [%s]", getName(), messageID, resultOrSize));
 			}
 
 			return formattedErrorMessage;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
 			error(false, "got error while formatting errormessage", e);
-			return errorMessage;
+			return new Message(errorMessage);
 		}
 	}
 	/**
@@ -523,7 +516,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public Iterable<Receiver> getReceivers() {
+	public Iterable<Receiver<?>> getReceivers() {
 		return receivers;
 	}
 
@@ -590,7 +583,7 @@ public class Adapter implements IAdapter, NamedBean {
 					objectInError = this;
 				}
 			}
-			result.setResult(new Message(formatErrorMessage(msg, t, message, messageId, objectInError, startTime)));
+			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
 			//if (isRequestReplyLogging()) {
 
 			String format = "Adapter [%s] messageId [%s] got exit-state [%s] and result [%s] from PipeLine";

@@ -26,5 +26,5 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface IErrorMessageFormatter {
 
-	public String format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);
+	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);
 }
