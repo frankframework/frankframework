@@ -350,7 +350,7 @@ public class FrankDocModel {
 			ConfigChild.SortNode sortNode = new ConfigChild.SortNode(setter);
 			try {
 				sortNode.parseIbisDocAnnotation();
-			} catch(ConfigChild.IbisDocAnnotationException e) {
+			} catch(IbisDocAnnotationException e) {
 				log.warn(String.format("For FrankElement [%s]: %s", parent.getSimpleName(), e.getMessage()));
 			}
 			sortNodes.add(sortNode);

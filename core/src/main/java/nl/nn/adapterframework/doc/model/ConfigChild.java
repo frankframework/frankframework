@@ -84,17 +84,6 @@ public class ConfigChild extends ElementChild {
 		}
 	}
 
-	@SuppressWarnings("serial")
-	static class IbisDocAnnotationException extends Exception {		
-		IbisDocAnnotationException(String message) {
-			super(message);
-		}
-
-		IbisDocAnnotationException(String message, Throwable cause) {
-			super(message, cause);
-		}
-	}
-
 	@EqualsAndHashCode(callSuper = false)
 	static final class Key extends AbstractKey {
 		private final @Getter String syntax1Name;
