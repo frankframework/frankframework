@@ -105,8 +105,8 @@ public class FrankElement {
 		return getChildrenOfKind(filter, ConfigChild.class);
 	}
 
-	ElementChild findElementChildMatch(ElementChild elementChild, Class<? extends ElementChild> kind) {
-		Map<? extends AbstractKey, ? extends ElementChild> lookup = allChildren.get(kind);
+	<C extends ElementChild> ElementChild findElementChildMatch(C elementChild) {
+		Map<? extends AbstractKey, ? extends ElementChild> lookup = allChildren.get(elementChild.getClass());
 		return lookup.get(elementChild.getKey());
 	}
 

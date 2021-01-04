@@ -84,7 +84,7 @@ public abstract class ElementChild {
 		FrankElement match = getOwningElement();
 		while(match.getParent() != null) {
 			match = match.getParent();
-			ElementChild matchingChild = match.findElementChildMatch(this, this.getClass());
+			ElementChild matchingChild = match.findElementChildMatch(this);
 			if(matchingChild != null) {
 				if(matchingChild.isDeprecated()) {
 					log.warn(String.format("Element child overrides deprecated ElementChild: descendant [%s], super [%s]",
