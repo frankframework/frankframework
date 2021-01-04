@@ -236,10 +236,6 @@ public class DocWriterNew {
 		return xsdRoot.toXML(true);
 	}
 
-	private String xsdElementType(FrankElement frankElement) {
-		return frankElement.getSimpleName() + "Type";
-	}
-
 	private void recursivelyDefineXsdElementOfRoot(FrankElement frankElement) {
 		if(checkNotDefined(frankElement)) {
 			String xsdElementName = frankElement.getSimpleName();
@@ -396,14 +392,6 @@ public class DocWriterNew {
 		}).run();
 	}
 
-	private static String xsdDeclaredGroupNameForChildren(FrankElement element) {
-		return element.getSimpleName() + "DeclaredChildGroup";
-	}
-
-	private static String xsdCumulativeGroupNameForChildren(FrankElement element) {
-		return element.getSimpleName() + "CumulativeChildGroup";
-	}
-
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
 		ElementRole theRole = model.findElementRole(child);
 		if(isNoElementTypeNeeded(theRole)) {
@@ -432,22 +420,6 @@ public class DocWriterNew {
 
 	private FrankElement singleElementOf(ElementType elementType) {
 		return elementType.getMembers().values().iterator().next();
-	}
-
-	private static String getMinOccurs(ConfigChild child) {
-		if(child.isMandatory()) {
-			return "1";
-		} else {
-			return "0";
-		}
-	}
-
-	private static String getMaxOccurs(ConfigChild child) {
-		if(child.isAllowMultiple()) {
-			return "unbounded";
-		} else {
-			return "1";
-		}
 	}
 
 	private void recursivelyDefineXsdElement(FrankElement frankElement, ElementRole role) {
@@ -518,10 +490,6 @@ public class DocWriterNew {
 	private void addElementTypeChildMembers(XmlBuilder context, ElementRole role) {
 		DocWriterNewXmlUtils.addGroupRef(context, xsdElementTypeMemberChildGroup(role.getElementType()), "0", "unbounded");
 		addElementTypeMemberChildGroup(role);
-	}
-
-	private String xsdElementTypeMemberChildGroup(ElementType elementType) {
-		return elementType.getSimpleName() + MEMBER_CHILD_GROUP;
 	}
 
 	private void addElementTypeMemberChildGroup(ElementRole role) {
@@ -619,14 +587,6 @@ public class DocWriterNew {
 		}).run();
 	}
 
-	private static String xsdDeclaredGroupNameForAttributes(FrankElement element) {
-		return element.getSimpleName() + "DeclaredAttributeGroup";
-	}
-
-	private static String xsdCumulativeGroupNameForAttributes(FrankElement element) {
-		return element.getSimpleName() + "CumulativeAttributeGroup";
-	}
-
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> frankAttributes) {
 		for(FrankAttribute frankAttribute: frankAttributes) {
 			// The default value is allowed to be null.
@@ -635,5 +595,45 @@ public class DocWriterNew {
 				addDocumentation(attribute, frankAttribute.getDescription());
 			}
 		}		
+	}
+
+	private String xsdElementType(FrankElement frankElement) {
+		return frankElement.getSimpleName() + "Type";
+	}
+
+	private static String xsdDeclaredGroupNameForChildren(FrankElement element) {
+		return element.getSimpleName() + "DeclaredChildGroup";
+	}
+
+	private static String xsdCumulativeGroupNameForChildren(FrankElement element) {
+		return element.getSimpleName() + "CumulativeChildGroup";
+	}
+
+	private String xsdElementTypeMemberChildGroup(ElementType elementType) {
+		return elementType.getSimpleName() + MEMBER_CHILD_GROUP;
+	}
+
+	private static String xsdDeclaredGroupNameForAttributes(FrankElement element) {
+		return element.getSimpleName() + "DeclaredAttributeGroup";
+	}
+
+	private static String xsdCumulativeGroupNameForAttributes(FrankElement element) {
+		return element.getSimpleName() + "CumulativeAttributeGroup";
+	}
+
+	private static String getMinOccurs(ConfigChild child) {
+		if(child.isMandatory()) {
+			return "1";
+		} else {
+			return "0";
+		}
+	}
+
+	private static String getMaxOccurs(ConfigChild child) {
+		if(child.isAllowMultiple()) {
+			return "unbounded";
+		} else {
+			return "1";
+		}
 	}
 }
