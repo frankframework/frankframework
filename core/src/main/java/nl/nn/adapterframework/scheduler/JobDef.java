@@ -36,7 +36,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -49,10 +48,10 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.ITransactionAttributes;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
@@ -75,13 +74,11 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DirectoryCleaner;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -355,8 +352,7 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * 
  * @author  Johan  Verrips
  */
-public class JobDef implements ITransactionAttributes {
-	protected Logger log=LogUtil.getLogger(this);
+public class JobDef extends TransactionAttributes {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
@@ -382,10 +378,6 @@ public class JobDef implements ITransactionAttributes {
 
 	private StatisticsKeeper statsKeeper;
 
-	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
-	private int transactionTimeout=0;
-
-	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
 
 	private String jobGroup = null;
@@ -486,8 +478,7 @@ public class JobDef implements ITransactionAttributes {
 			getLocker().configure();
 		}
 
-		txDef = SpringTxManagerProxy.getTransactionDefinition(getTransactionAttributeNum(),getTransactionTimeout());
-
+		super.configure();
 		messageKeeper.add("job successfully configured");
 	}
 
@@ -512,7 +503,7 @@ public class JobDef implements ITransactionAttributes {
 			TransactionStatus txStatus = null;
 			if (getTxManager()!=null) {
 				//txStatus = getTxManager().getTransaction(txDef);
-				itx = new IbisTransaction(getTxManager(), txDef, "scheduled job ["+getName()+"]");
+				itx = new IbisTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
 				txStatus = itx.getStatus();
 			}
 			try {
@@ -1294,38 +1285,6 @@ public class JobDef implements ITransactionAttributes {
 	}
 	public Locker getLocker() {
 		return locker;
-	}
-
-	@Override
-	public void setTransactionAttribute(String attribute) throws ConfigurationException {
-		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
-		if (transactionAttribute<0) {
-			String msg="illegal value for transactionAttribute ["+attribute+"]";
-			messageKeeper.add(msg);
-			throw new ConfigurationException(msg);
-		}
-	}
-	@Override
-	public String getTransactionAttribute() {
-		return JtaUtil.getTransactionAttributeString(transactionAttribute);
-	}
-
-	@Override
-	public void setTransactionAttributeNum(int i) {
-		transactionAttribute = i;
-	}
-	@Override
-	public int getTransactionAttributeNum() {
-		return transactionAttribute;
-	}
-
-	@Override
-	public void setTransactionTimeout(int i) {
-		transactionTimeout = i;
-	}
-	@Override
-	public int getTransactionTimeout() {
-		return transactionTimeout;
 	}
 
 

@@ -24,7 +24,7 @@ public interface ITransactionAttributes extends HasTransactionAttribute {
 			+ "applies both to database transactions and XA transactions."
 			+ "The pipeline uses this to start a new transaction or suspend the current one when required. "
 			+ "For developers: it is equal"
-			+ "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. "
+			+ "to <a href=\"https://docs.oracle.com/javaee/7/tutorial/transactions003.htm\">EJB transaction attribute</a>. "
 			+ "Possible values for transactionAttribute:"
 			+ "  <table border=\"1\">"
 			+ "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
