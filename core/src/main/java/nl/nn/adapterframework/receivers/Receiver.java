@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -63,7 +62,6 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
-import nl.nn.adapterframework.core.ITransactionAttributes;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -72,6 +70,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
@@ -89,8 +88,6 @@ import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.JtaUtil;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -176,8 +173,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHandler<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware, ITransactionAttributes {
-	protected Logger log = LogUtil.getLogger(this);
+public class Receiver<M> extends TransactionAttributes implements IManagable, IReceiverStatistics, IMessageHandler<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -214,8 +210,6 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	private String name;
 	private boolean active=true;
 
-	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
-	private int transactionTimeout=0;
 	private ON_ERROR onError = ON_ERROR.CONTINUE; 
 
 	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
@@ -1207,10 +1201,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 			throw wrapExceptionAsListenerException(e);
 		}
 		
-		int txOption = this.getTransactionAttributeNum();
-		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
-		//TransactionStatus txStatus = txManager.getTransaction(txDef);
-		IbisTransaction itx = new IbisTransaction(txManager, txDef, "receiver [" + getName() + "]");
+		IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
 		TransactionStatus txStatus = itx.getStatus();
 
 		// update processing statistics
@@ -1250,7 +1241,7 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 				log.debug(getLogPrefix()+"preparing TimeoutGuard");
 				TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
 				try {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+transactionTimeout+"]s");
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+getTransactionTimeout()+"]s");
 					tg.activateGuard(getTransactionTimeout());
 					pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
 					setExitState(threadContext, pipeLineResult.getState(), pipeLineResult.getExitCode());
@@ -2007,56 +1998,6 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 		return active;
 	}
 
-
-	@IbisDoc({"3", "if set to <code>true</code>, messages will be received and processed under transaction control. if processing fails, messages will be sent to the error-sender. (see below)", "<code>false</code>"})
-	@Deprecated
-	public void setTransacted(boolean transacted) {
-//		this.transacted = transacted;
-		if (transacted) {
-			ConfigurationWarnings.add(this, log, "implementing setting of transacted=true as transactionAttribute=Required", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
-			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
-		} else {
-			ConfigurationWarnings.add(this, log, "implementing setting of transacted=false as transactionAttribute=Supports", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
-			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
-		}
-	}
-	public boolean isTransacted() {
-//		return transacted;
-		int txAtt = getTransactionAttributeNum();
-		return  txAtt==TransactionDefinition.PROPAGATION_REQUIRED || 
-				txAtt==TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
-				txAtt==TransactionDefinition.PROPAGATION_MANDATORY;
-	}
-
-	@Override
-	public void setTransactionAttribute(String attribute) throws ConfigurationException {
-		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
-		if (transactionAttribute<0) {
-			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
-		}
-	}
-	@Override
-	public String getTransactionAttribute() {
-		return JtaUtil.getTransactionAttributeString(transactionAttribute);
-	}
-	
-	@Override
-	public void setTransactionAttributeNum(int i) {
-		transactionAttribute = i;
-	}
-	@Override
-	public int getTransactionAttributeNum() {
-		return transactionAttribute;
-	}
-
-	@Override
-	public void setTransactionTimeout(int i) {
-		transactionTimeout = i;
-	}
-	@Override
-	public int getTransactionTimeout() {
-		return transactionTimeout;
-	}
 
 	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
 	public void setOnError(String value) {
