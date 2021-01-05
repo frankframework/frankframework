@@ -370,11 +370,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	
 	@Override
 	public IMessageBrowser<F> getMessageBrowser(ProcessState state) {
-		String folder = getStateFolder(state);
-		if (isDisableMessageBrowsers() || StringUtils.isEmpty(folder)) {
+		if (isDisableMessageBrowsers() || !knownProcessStates().contains(state)) {
 			return null;
 		}
-		return new FileSystemMessageBrowser<F, FS>(fileSystem, folder, getMessageIdPropertyKey());
+		return new FileSystemMessageBrowser<F, FS>(fileSystem, getStateFolder(state), getMessageIdPropertyKey());
 	}	
 	
 	@Override

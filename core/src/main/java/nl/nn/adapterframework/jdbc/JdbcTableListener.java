@@ -110,11 +110,10 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 
 	@Override
 	public IMessageBrowser<Object> getMessageBrowser(ProcessState state) {
-		String statusValue = getStatusValue(state);
-		if (StringUtils.isEmpty(statusValue)) {
+		if (!knownProcessStates().contains(state)) {
 			return null;
 		}
-		return new JdbcTableMessageBrowser<Object>(this, statusValue, getStorageType(state));
+		return new JdbcTableMessageBrowser<Object>(this, getStatusValue(state), getStorageType(state));
 	}
 
 

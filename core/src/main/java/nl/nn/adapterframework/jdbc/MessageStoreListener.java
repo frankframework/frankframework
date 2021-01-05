@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2015-2017 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -141,7 +141,11 @@ public class MessageStoreListener extends JdbcTableListener {
 	
 	@Override
 	public IMessageBrowser<Object> getMessageBrowser(ProcessState state) {
-		return augmentMessageBrowser(super.getMessageBrowser(state));
+		IMessageBrowser<Object> browser = super.getMessageBrowser(state);
+		if (browser!=null) {
+			return augmentMessageBrowser(browser);
+		}
+		return null;
 	}
 
 
