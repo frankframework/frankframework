@@ -20,7 +20,7 @@ jobs:
     - name: Cache local Maven repository
       uses: actions/cache@v2
       env:
-        cache-name: cache-node-modules
+        cache-name: cache-maven-dependencies
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
