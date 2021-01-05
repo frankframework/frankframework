@@ -1198,10 +1198,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			throw wrapExceptionAsListenerException(e);
 		}
 		
-		int txOption = this.getTransactionAttributeNum();
-		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
-		//TransactionStatus txStatus = txManager.getTransaction(txDef);
-		IbisTransaction itx = new IbisTransaction(txManager, txDef, "receiver [" + getName() + "]");
+		IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
 		TransactionStatus txStatus = itx.getStatus();
 
 		// update processing statistics

@@ -36,7 +36,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -500,11 +499,8 @@ public class JobDef extends TransactionAttributes {
 		}
 		try {
 			IbisTransaction itx = null;
-			TransactionStatus txStatus = null;
 			if (getTxManager()!=null) {
-				//txStatus = getTxManager().getTransaction(txDef);
 				itx = new IbisTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
-				txStatus = itx.getStatus();
 			}
 			try {
 				if (getLocker()!=null) {
@@ -553,8 +549,7 @@ public class JobDef extends TransactionAttributes {
 					runJob(ibisManager);
 				}
 			} finally {
-				if (txStatus!=null) {
-					//getTxManager().commit(txStatus);
+				if (itx!=null) {
 					itx.commit();
 				}
 			}
