@@ -47,6 +47,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.doc.model.ConfigChild;
@@ -56,6 +57,7 @@ import nl.nn.adapterframework.doc.model.ElementType;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -202,6 +204,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *
  */
 public class DocWriterNew {
+	private static Logger log = LogUtil.getLogger(DocWriterNew.class);
+
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 	private static final String ELEMENT_GROUP = "ElementGroup";
 	private static final String ELEMENT_ROLE = "elementRole";
@@ -225,22 +229,43 @@ public class DocWriterNew {
 
 	public void init(String startClassName) {
 		this.startClassName = startClassName;
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Initialized DocWriterNew with start element name [%s]", startClassName));
+		}
 	}
 
 	public String getSchema() {
 		XmlBuilder xsdRoot = getXmlSchema();
+		if(log.isTraceEnabled()) {
+			log.trace("Going to create XmlBuilder objects that will be added to the schema root builder afterwards");
+		}
 		FrankElement startElement = model.findFrankElement(startClassName);
 		recursivelyDefineXsdElementOfRoot(startElement);
+		if(log.isTraceEnabled()) {
+			log.trace("Have the XmlBuilder objects. Going to add them in the right order to the schema root builder");
+		}
 		xsdElements.forEach(xsdRoot::addSubElement);
 		xsdComplexItems.forEach(xsdRoot::addSubElement);
+		if(log.isTraceEnabled()) {
+			log.trace("Populating schema root builder is done. Going to create the XML string to return");
+		}
 		return xsdRoot.toXML(true);
 	}
 
 	private void recursivelyDefineXsdElementOfRoot(FrankElement frankElement) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Enter top FrankElement [%s]", frankElement.getFullName()));
+		}
 		if(checkNotDefined(frankElement)) {
 			String xsdElementName = frankElement.getSimpleName();
 			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(frankElement, xsdElementName);
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Adding attribute className for FrankElement [%s]", frankElement.getFullName()));
+			}
 			addClassNameAttribute(attributeBuilder, frankElement);
+		}
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Leave top FrankElement [%s]", frankElement.getFullName()));
 		}
 	}
 
@@ -249,22 +274,48 @@ public class DocWriterNew {
 	}
 
 	private XmlBuilder recursivelyDefineXsdElementUnchecked(FrankElement frankElement, String xsdElementName) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("FrankElement [%s] has XSD element [%s]", frankElement.getFullName(), xsdElementName));
+		}
 		XmlBuilder elementBuilder = createElementWithType(xsdElementName);
 		xsdElements.add(elementBuilder);
 		XmlBuilder complexType = addComplexType(elementBuilder);
 		XmlBuilder sequence = addSequence(complexType);
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Adding cumulative config chidren of FrankElement [%s] to XSD element [%s]", frankElement.getFullName()), xsdElementName);
+		}
 		frankElement.getCumulativeConfigChildren(IN_XSD, DEPRECATED).forEach(c -> addConfigChild(sequence, c));
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Adding cumulative attributes of FrankElement [%s] to XSD element [%s]", frankElement.getFullName(), xsdElementName));
+		}
 		addAttributeList(complexType, frankElement.getCumulativeAttributes(IN_XSD, DEPRECATED));
 		return complexType;
 	}
 
 	private void recursivelyDefineXsdElementType(FrankElement frankElement) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("XML Schema needs type definition (or only groups for config children or attributes) for FrankElement [%s]", frankElement.getFullName()));
+		}
 		if(checkNotDefined(frankElement)) {
 			ElementBuildingStrategy elementBuildingStrategy = getElementBuildingStrategy(frankElement);
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Visiting config children for FrankElement [%s]", frankElement.getFullName()));
+			}
 			addConfigChildren(elementBuildingStrategy, frankElement);
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Visiting attributes for FrankElement [%s]", frankElement.getFullName()));
+			}
 			addAttributes(elementBuildingStrategy, frankElement);
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Creating type definitions (or only groups) for Java ancestors of FrankElement [%s]", frankElement.getFullName()));
+			}
 			recursivelyDefineXsdElementType(frankElement.getNextAncestorThatHasConfigChildren(IN_XSD));
 			recursivelyDefineXsdElementType(frankElement.getNextAncestorThatHasAttributes(IN_XSD));
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Done with XSD type definition of FrankElement [%s]", frankElement.getFullName()));
+			}
+		} else if(log.isTraceEnabled()) {
+			log.trace("Type definition was already included");
 		}
 	}
 
@@ -300,8 +351,15 @@ public class DocWriterNew {
 
 	private ElementBuildingStrategy getElementBuildingStrategy(FrankElement element) {
 		if(element.isAbstract()) {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("FrankElement [%s] is abstract, so we do not actually create an XSD type definition", element.getFullName()));
+				log.trace("We only create config child or attribute groups to be referenced from other XSD types");
+			}
 			return new ElementOmitter();
 		} else {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("FrankElement [%s] is not abstract. We really make the XSD type definition"));
+			}
 			return new ElementAdder(element);
 		}
 	}
@@ -316,11 +374,17 @@ public class DocWriterNew {
 
 		@Override
 		void addGroupRef(String referencedGroupName) {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Adding reference to XSD group [%s] to XSD type definition", referencedGroupName));
+			}
 			DocWriterNewXmlUtils.addGroupRef(complexType, referencedGroupName);
 		}
 
 		@Override
 		void addAttributeGroupRef(String referencedGroupName) {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Adding reference to XSD group [%s] to XSD type definition", referencedGroupName));
+			}
 			DocWriterNewXmlUtils.addAttributeGroupRef(complexType, referencedGroupName);
 		}
 	}
@@ -339,7 +403,8 @@ public class DocWriterNew {
 				ca -> frankElement.walkCumulativeConfigChildren(ca, IN_XSD, DEPRECATED);
 		new GroupCreator<ConfigChild>(frankElement, cumulativeGroupTrigger, new GroupCreator.Callback<ConfigChild>() {
 			private XmlBuilder cumulativeBuilder;
-			
+			private String cumulativeGroupName;
+
 			@Override
 			public List<ConfigChild> getChildrenOf(FrankElement elem) {
 				return elem.getConfigChildren(IN_XSD);
@@ -362,42 +427,71 @@ public class DocWriterNew {
 
 			@Override
 			public void addDeclaredGroup() {
-				XmlBuilder group = createGroup(xsdDeclaredGroupNameForChildren(frankElement));
+				String groupName = xsdDeclaredGroupNameForChildren(frankElement);
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Creating XSD group [%s]", groupName));
+				}
+				XmlBuilder group = createGroup(groupName);
 				xsdComplexItems.add(group);
 				XmlBuilder sequence = addSequence(group);
 				frankElement.getConfigChildren(IN_XSD).forEach(c -> addConfigChild(sequence, c));
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Done creating XSD group [%s] on behalf of FrankElement [%s]", groupName, frankElement.getFullName()));
+				}				
 			}
 
 			@Override
 			public void addCumulativeGroup() {
-				XmlBuilder group = createGroup(xsdCumulativeGroupNameForChildren(frankElement));
+				cumulativeGroupName = xsdCumulativeGroupNameForChildren(frankElement);
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Start creating XSD group [%s]", cumulativeGroupName));
+				}
+				XmlBuilder group = createGroup(cumulativeGroupName);
 				xsdComplexItems.add(group);
 				cumulativeBuilder = addSequence(group);
 			}
 
 			@Override
 			public void handleSelectedChildren(List<ConfigChild> children, FrankElement owner) {
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Appending some of the config children of FrankElement [%s] to XSD group [%s]",
+							owner.getFullName(), cumulativeGroupName));
+				}
 				children.forEach(c -> addConfigChild(cumulativeBuilder, c));
 			}
 			
 			@Override
 			public void handleChildrenOf(FrankElement elem) {
-				DocWriterNewXmlUtils.addGroupRef(cumulativeBuilder, xsdDeclaredGroupNameForChildren(elem));
+				String referencedGroupName = xsdDeclaredGroupNameForChildren(elem);
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Appending XSD group [%s] with reference to [%s]", cumulativeGroupName, referencedGroupName));
+				}
+				DocWriterNewXmlUtils.addGroupRef(cumulativeBuilder, referencedGroupName);
 			}
 
 			@Override
 			public void handleCumulativeChildrenOf(FrankElement elem) {
-				DocWriterNewXmlUtils.addGroupRef(cumulativeBuilder, xsdCumulativeGroupNameForChildren(elem));
+				String referencedGroupName = xsdCumulativeGroupNameForChildren(elem);
+				if(log.isTraceEnabled()) {
+					log.trace("Appending XSD group [%s] with reference to [%s]", cumulativeGroupName, referencedGroupName);
+				}
+				DocWriterNewXmlUtils.addGroupRef(cumulativeBuilder, referencedGroupName);
 			}
 		}).run();
 	}
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Adding config child [%s]", child.toString()));
+		}
 		ElementRole theRole = model.findElementRole(child);
 		if(isNoElementTypeNeeded(theRole)) {
 			addConfigChildSingleReferredElement(context, child);
 		} else {
 			addConfigChildWithElementGroup(context, child);
+		}
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Done adding config child [%s]", child.toString()));
 		}
 	}
 
@@ -414,7 +508,11 @@ public class DocWriterNew {
 	private void addConfigChildSingleReferredElement(XmlBuilder context, ConfigChild child) {
 		ElementRole role = model.findElementRole(child);
 		FrankElement elementInType = singleElementOf(role.getElementType());
-		addElementRef(context, elementInType.getXsdElementName(role), getMinOccurs(child), getMaxOccurs(child));
+		String referredXsdElement = elementInType.getXsdElementName(role);
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Config child appears as element reference to FrankElement [%s], XSD element [%s]", elementInType, referredXsdElement));
+		}
+		addElementRef(context, referredXsdElement, getMinOccurs(child), getMaxOccurs(child));
 		recursivelyDefineXsdElement(elementInType, role);
 	}
 
@@ -423,10 +521,24 @@ public class DocWriterNew {
 	}
 
 	private void recursivelyDefineXsdElement(FrankElement frankElement, ElementRole role) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("FrankElement [%s] is needed in XML Schema", frankElement));
+		}
 		if(checkNotDefined(frankElement)) {
+			if(log.isTraceEnabled()) {
+				log.trace("Not yet defined in XML Schema, going to define it");
+			}
 			String xsdElementName = frankElement.getXsdElementName(role);
 			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(frankElement, xsdElementName);
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Adding attributes className and %s for FrankElement [%s]", ELEMENT_GROUP, frankElement));
+			}
 			addExtraAttributesNotFromModel(attributeBuilder, frankElement, role);
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Done defining FrankElement [%s], XSD element [%s]", frankElement, xsdElementName));
+			}
+		} else if(log.isTraceEnabled()) {
+			log.trace("Already defined in XML Schema");
 		}
 	}
 
@@ -436,16 +548,27 @@ public class DocWriterNew {
 	}
 
 	private void addConfigChildWithElementGroup(XmlBuilder context, ConfigChild child) {
+		if(log.isTraceEnabled()) {
+			log.trace("Config child appears as element group reference");
+		}
 		ElementRole role = model.findElementRole(child);
 		defineElementTypeGroup(role);
 		DocWriterNewXmlUtils.addGroupRef(context, role.createXsdElementName(ELEMENT_GROUP), getMinOccurs(child), getMaxOccurs(child));
 	}
 
 	private void defineElementTypeGroup(ElementRole role) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Element group needed for ElementRole [%s]", role.toString()));
+		}
 		ElementRole.Key key = role.getKey();
 		if(! idsCreatedElementGroups.contains(key)) {
 			idsCreatedElementGroups.add(key);
 			defineElementTypeGroupUnchecked(role);
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Done defining ElementGroup for ElementRole [%s]", role.toString()));
+			}
+		} else if(log.isTraceEnabled()) {
+			log.trace("ElementGroup already defined");
 		}
 	}
 
@@ -460,6 +583,9 @@ public class DocWriterNew {
 		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
 		addGenericElementOption(choice, role, disambiguateGenericOptionElementName(role, frankElementOptions));
 		for(FrankElement frankElement: frankElementOptions) {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Append ElementGroup with FrankElement [%s]", frankElement.getFullName()));
+			}
 			addElementToElementGroup(choice, frankElement, role);
 		}		
 	}
@@ -478,6 +604,9 @@ public class DocWriterNew {
 	}
 
 	private void addGenericElementOption(XmlBuilder choice, ElementRole role, String elementNameGenericOption) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Adding generic element option, XSD element is [%s]", elementNameGenericOption));
+		}
 		XmlBuilder genericElementOption = addElementWithType(choice, elementNameGenericOption);
 		XmlBuilder complexType = addComplexType(genericElementOption);
 		addElementTypeChildMembers(complexType, role);
@@ -485,17 +614,34 @@ public class DocWriterNew {
 		addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
 		// The XSD is invalid if addAnyAttribute is added before attributes elementType and className.
 		addAnyAttribute(complexType);
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Done adding generic element option, XSD element [%s]", elementNameGenericOption));
+		}
 	}
 
 	private void addElementTypeChildMembers(XmlBuilder context, ElementRole role) {
+		if(log.isTraceEnabled()) {
+			log.trace("Generic element option appears as reference to child member group");
+		}
 		DocWriterNewXmlUtils.addGroupRef(context, xsdElementTypeMemberChildGroup(role.getElementType()), "0", "unbounded");
 		addElementTypeMemberChildGroup(role);
 	}
 
 	private void addElementTypeMemberChildGroup(ElementRole role) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Child member group needed in XML Schema for role [%s]", role.toString()));
+		}
 		if(! namesElementTypesWithChildMemberGroup.contains(role.getElementType().getFullName())) {
+			if(log.isTraceEnabled()) {
+				log.trace("Defining child member group");
+			}
 			namesElementTypesWithChildMemberGroup.add(role.getElementType().getFullName());
 			addElementTypeMemberChildGroupUnchecked(role);
+			if(log.isTraceEnabled()) {
+				log.trace("Done defining child member group");
+			}
+		} else if(log.isTraceEnabled()) {
+			log.trace("Child member group already defined");
 		}
 	}
 
@@ -509,12 +655,25 @@ public class DocWriterNew {
 	}
 
 	private void addElementTypeMemberChildGroupOption(XmlBuilder choice, ElementRole childRole) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Adding to child member group: role [%s]", childRole.toString()));
+		}
 		if(isNoElementTypeNeeded(childRole)) {
 			FrankElement frankElement = singleElementOf(childRole.getElementType());
 			String xsdElementName = frankElement.getXsdElementName(childRole);
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Added as element reference to XSD element [%s]", xsdElementName));
+			}
 			addElementRef(choice, xsdElementName);
 		} else {
-			DocWriterNewXmlUtils.addGroupRef(choice, childRole.createXsdElementName(ELEMENT_GROUP));
+			String referencedXsdGroup = childRole.createXsdElementName(ELEMENT_GROUP);
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Added as group reference to [%s]", referencedXsdGroup));
+			}
+			DocWriterNewXmlUtils.addGroupRef(choice, referencedXsdGroup);
+		}
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Done adding to child member group: role [%s]", childRole.toString()));
 		}
 	}
 
@@ -536,6 +695,7 @@ public class DocWriterNew {
 				ca -> frankElement.walkCumulativeAttributes(ca, IN_XSD, DEPRECATED);
 		new GroupCreator<FrankAttribute>(frankElement, cumulativeGroupTrigger, new GroupCreator.Callback<FrankAttribute>() {
 			private XmlBuilder cumulativeBuilder;
+			private String cumulativeGroupName;
 
 			@Override
 			public List<FrankAttribute> getChildrenOf(FrankElement elem) {
@@ -559,41 +719,70 @@ public class DocWriterNew {
 
 			@Override
 			public void addDeclaredGroup() {
-				XmlBuilder attributeGroup = createAttributeGroup(xsdDeclaredGroupNameForAttributes(frankElement));
+				String groupName = xsdDeclaredGroupNameForAttributes(frankElement);
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Creating XSD group [%s]", groupName));
+				}
+				XmlBuilder attributeGroup = createAttributeGroup(groupName);
 				xsdComplexItems.add(attributeGroup);
 				addAttributeList(attributeGroup, frankElement.getAttributes(IN_XSD));
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Done creating XSD group [%s] on behalf of FrankElement [%s]", groupName, frankElement.getFullName()));
+				}				
 			}
 
 			@Override
 			public void addCumulativeGroup() {
-				cumulativeBuilder = createAttributeGroup(xsdCumulativeGroupNameForAttributes(frankElement));
+				cumulativeGroupName = xsdCumulativeGroupNameForAttributes(frankElement);
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Start creating XSD group [%s]", cumulativeGroupName));
+				}
+				cumulativeBuilder = createAttributeGroup(cumulativeGroupName);
 				xsdComplexItems.add(cumulativeBuilder);
 			}
 
 			@Override
 			public void handleSelectedChildren(List<FrankAttribute> children, FrankElement owner) {
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Appending some of the attributes of FrankElement [%s] to XSD group [%s]",
+							owner.getFullName(), cumulativeGroupName));
+				}
 				addAttributeList(cumulativeBuilder, children);
 			}
 
 			@Override
 			public void handleChildrenOf(FrankElement elem) {
-				DocWriterNewXmlUtils.addAttributeGroupRef(cumulativeBuilder, xsdDeclaredGroupNameForAttributes(elem));
+				String referencedGroupName = xsdDeclaredGroupNameForAttributes(elem);
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Appending XSD group [%s] with reference to [%s]", cumulativeGroupName, referencedGroupName));
+				}
+				DocWriterNewXmlUtils.addAttributeGroupRef(cumulativeBuilder, referencedGroupName);
 			}
 
 			@Override
 			public void handleCumulativeChildrenOf(FrankElement elem) {
-				DocWriterNewXmlUtils.addAttributeGroupRef(cumulativeBuilder, xsdCumulativeGroupNameForAttributes(elem));				
+				String referencedGroupName = xsdCumulativeGroupNameForAttributes(elem);
+				if(log.isTraceEnabled()) {
+					log.trace("Appending XSD group [%s] with reference to [%s]", cumulativeGroupName, referencedGroupName);
+				}
+				DocWriterNewXmlUtils.addAttributeGroupRef(cumulativeBuilder, referencedGroupName);				
 			}
 		}).run();
 	}
 
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> frankAttributes) {
 		for(FrankAttribute frankAttribute: frankAttributes) {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Adding attribute [%s]", frankAttribute.getName()));
+			}
 			// The default value in the model is a *description* of the default value.
 			// Therefore, it should be added to the description in the xs:attribute.
 			// The "default" attribute of the xs:attribute should not be set.
 			XmlBuilder attribute = addAttribute(context, frankAttribute.getName(), DEFAULT, null, OPTIONAL);
 			if(needsDocumentation(frankAttribute)) {
+				if(log.isTraceEnabled()) {
+					log.trace("Attribute has documentation");
+				}
 				addDocumentation(attribute, getDocumentationText(frankAttribute));
 			}
 		}		
