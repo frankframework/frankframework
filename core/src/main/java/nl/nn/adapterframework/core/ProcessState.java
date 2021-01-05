@@ -39,11 +39,9 @@ public enum ProcessState {
 		for (ProcessState state:ProcessState.values()) {
 			targetProcessStates.put(state, new LinkedHashSet<>());
 		}
-		if (knownProcessStates.contains(ERROR)) {
-			if (knownProcessStates.contains(HOLD)) {
-				targetProcessStates.get(ERROR).add(HOLD);
-				targetProcessStates.get(HOLD).add(ERROR);
-			}
+		if (knownProcessStates.contains(ERROR) && knownProcessStates.contains(HOLD)) {
+			targetProcessStates.get(ERROR).add(HOLD);
+			targetProcessStates.get(HOLD).add(ERROR);
 		}
 		return targetProcessStates;
 	}

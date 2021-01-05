@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jdbc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 
@@ -28,6 +29,8 @@ import nl.nn.adapterframework.doc.IbisDoc;
  *
  * @since   4.7
  */
+@Deprecated
+@ConfigurationWarning("Please replace with JdbcTableListener for ease of configuration and improved managebility")
 public class JdbcQueryListener extends JdbcListener {
 
 	@Override
