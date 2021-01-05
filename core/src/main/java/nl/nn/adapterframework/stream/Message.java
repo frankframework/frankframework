@@ -18,13 +18,18 @@ package nl.nn.adapterframework.stream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilterInputStream;
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +37,7 @@ import java.nio.file.Path;
 import javax.xml.transform.Source;
 
 import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -145,11 +151,18 @@ public class Message implements Serializable {
 	}
 
 	public boolean isBinary() {
-		if (request == null) {
-			return false;
-		}
-		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof byte[];
+		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
 	}
+	
+	public boolean isRepeatable() {
+		return request instanceof String || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
+	}
+	
+	public boolean requiresStream() {
+		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof Reader;
+	}
+	
+	
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -164,7 +177,7 @@ public class Message implements Serializable {
 			log.debug("returning Reader as Reader");
 			return (Reader) request;
 		}
-		if (request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[]) {
+		if (isBinary()) {
 			String readerCharset = charset; //Don't overwrite the Message's charset
 			if (StringUtils.isEmpty(readerCharset)) {
 				readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
@@ -464,4 +477,122 @@ public class Message implements Serializable {
 		
 		return -1;
 	}
+	
+	/**
+	 * Can be called to be able to retrieve a String representation of the inputStream or reader that 
+	 * is in this message, after the stream has been closed.
+	 */
+	public StringWriter captureStream() throws IOException {
+		return captureStream(new StringWriter());
+	}
+	public <W extends Writer> W captureStream(W writer) throws IOException {
+		return captureStream(10000, writer);
+	}
+	public <W extends Writer> W captureStream(int maxSize, W writer) {
+		if (!requiresStream()) {
+			return null;
+		}
+		log.debug("creating capture of "+ClassUtils.nameOf(request));
+		if (isBinary()) {
+			OutputStream stream = new WriterOutputStream(writer, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			try {
+				request = new FilterInputStream(asInputStream()) {
+					
+					int pos;
+					
+					@Override
+					public int read() throws IOException {
+						if (log.isTraceEnabled()) log.trace("FilterInputStream.read");
+						int result = super.read();
+						if (result>=0 && pos++<maxSize) {
+							stream.write((byte)result);
+							if (log.isTraceEnabled()) log.trace("captured byte ["+result+"]");
+						}
+						return result;
+					}
+
+					@Override
+					public int read(byte[] b, int off, int len) throws IOException {
+						if (log.isTraceEnabled()) log.trace("FilterInputStream.read");
+						int result = super.read(b, off, len);
+						if (result>=0 && pos<maxSize) {
+							pos+=result;
+							stream.write(b, off, result);
+							if (log.isTraceEnabled()) log.trace("captured ["+result+"] bytes");
+						}
+						return result;
+					}
+
+					@Override
+					public void close() throws IOException {
+						if (log.isTraceEnabled()) log.trace("FilterInputStream.close");
+						if (available()>0) {
+							if (log.isTraceEnabled()) log.trace("bytes available at close");
+							stream.write("(--MoreBytesAvailable--)[".getBytes());
+							read(new byte[1000]);
+							stream.write("]".getBytes());
+							if (read()>0) {
+								stream.write("...".getBytes());
+							}
+						}
+						super.close();
+						stream.close();
+					}
+
+				};
+			} catch (IOException e) {
+				log.warn("Cannot capture stream", e);
+				return null;
+			}
+		} else {
+			try {
+				request = new FilterReader(asReader()) {
+
+					int pos;
+					
+					@Override
+					public int read() throws IOException {
+						if (log.isTraceEnabled()) log.trace("FilterReader.read");
+						int result = super.read();
+						if (result>=0 && pos++<maxSize) {
+							writer.write((char)result);
+						}
+						return result;
+					}
+
+					@Override
+					public int read(char[] cbuf, int off, int len) throws IOException {
+						if (log.isTraceEnabled()) log.trace("FilterReader.read");
+						int result = super.read(cbuf, off, len);
+						if (result>=0 && pos<maxSize) {
+							pos+=result;
+							writer.write(cbuf, off, result);
+						}
+						return result;
+					}
+
+					@Override
+					public void close() throws IOException {
+						if (log.isTraceEnabled()) log.trace("FilterReader.close");
+						try {
+							char buf[] = new char[1000];
+							int len = read(buf);
+							if (len>0) {
+								writer.write("(--read "+len+" more characters at close() --)");
+							}
+						} catch (Exception e) {
+							log.warn("Caught exception while trying to read more characters at close()", e);
+						}
+						super.close();
+					}
+				};
+			} catch (IOException e) {
+				log.warn("Cannot capture reader", e);
+				return null;
+			}
+			
+		}
+		return writer;
+	}
+	
 }

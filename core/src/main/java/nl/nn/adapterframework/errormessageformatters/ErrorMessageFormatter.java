@@ -59,7 +59,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 	 * Override this method in descender-classes to obtain the required behaviour.
 	 */
 	@Override
-	public String format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 	
 		String details = null;
 		errorMessage = getErrorMessage(errorMessage, t);
@@ -102,7 +102,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 		}
 		errorXml.addSubElement(originalMessageXml);
 
-		return errorXml.toXML();
+		return new Message(errorXml.toXML());
 	}
 
 	protected String getErrorMessage(String message, Throwable t) {

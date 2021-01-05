@@ -48,7 +48,6 @@ import nl.nn.adapterframework.stream.Message;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when the message was successfully sent</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * </table>
  * </p>
   * 

@@ -149,7 +149,7 @@ public class ListenerMessageHandler implements IMessageHandler {
 	}
 
 	@Override
-	public String formatException(String origin, String arg1, Message arg2, Throwable arg3) {
+	public Message formatException(String origin, String arg1, Message arg2, Throwable arg3) {
 		log.error("formatException(String arg0, String arg1, String arg2, Throwable arg3) not implemented");
 		return null;
 	}

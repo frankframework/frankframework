@@ -704,10 +704,10 @@ public class ApiListenerServletTest extends Mockito {
 		}
 
 		@Override
-		public String formatException(String extrainfo, String correlationId, Message message, Throwable t) {
+		public Message formatException(String extrainfo, String correlationId, Message message, Throwable t) {
 			t.printStackTrace();
 
-			return t.getMessage();
+			return new Message(t.getMessage());
 		}
 	}
 

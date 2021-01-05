@@ -57,9 +57,9 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	private String xpathExpression;
 
 	@Override
-	public String format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 
-		String result = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
+		Message result = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
 
 		if (StringUtils.isNotEmpty(getStyleSheet()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			try {
@@ -94,7 +94,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 					XmlUtils.setTransformerParameters(errorTransformer, parametervalues );
 				}
-				result = XmlUtils.transformXml(errorTransformer, result);
+				result = new Message(XmlUtils.transformXml(errorTransformer, result.asSource()));
 			} catch (IOException e) {
 				log.error(" cannot retrieve [" + styleSheet + "]", e);
 			} catch (javax.xml.transform.TransformerConfigurationException te) {

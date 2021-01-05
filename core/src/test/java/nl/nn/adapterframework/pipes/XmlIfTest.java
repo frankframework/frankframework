@@ -3,20 +3,14 @@ package nl.nn.adapterframework.pipes;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 
 public class XmlIfTest extends PipeTestBase<XmlIf>{
-
-	@Mock
-	private IPipeLineSession session = new PipeLineSessionBase();
 
 	private String pipeForwardThen = "then";
 	private String pipeForwardElse = "else";

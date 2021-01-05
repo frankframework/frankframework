@@ -1,18 +1,16 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
-public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingPipe> {
+import org.junit.Test;
 
-    private IPipeLineSession session = new PipeLineSessionBase();
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunException;
+
+public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingPipe> {
 
     @Override
     public CredentialCheckingPipe createPipe() {

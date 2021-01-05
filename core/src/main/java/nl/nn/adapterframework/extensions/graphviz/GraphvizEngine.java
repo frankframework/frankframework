@@ -15,18 +15,17 @@
 */
 package nl.nn.adapterframework.extensions.graphviz;
 
-import nl.nn.adapterframework.extensions.javascript.J2V8;
+import java.io.IOException;
+import java.net.URL;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
-import nl.nn.adapterframework.extensions.javascript.Nashorn;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.net.URL;
 
 //TODO: consider moving this to a separate module
 /**
@@ -38,7 +37,9 @@ import java.net.URL;
 public class GraphvizEngine {
 	protected Logger log = LogUtil.getLogger(this);
 	private Engine engine;
-	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
+	private static String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
+	// Available JS Engines. Lower index has priority.
+	private static String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8,nl.nn.adapterframework.extensions.javascript.Nashorn").split(",");
 
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
@@ -155,22 +156,21 @@ public class GraphvizEngine {
 		private ResultHandler resultHandler;
 
 		Engine(String initScript, String graphvisJsLibrary) {
-			// Available JS Engines. Lower index has priority.
-			Class<?>[] engines = new Class[]{J2V8.class, Nashorn.class};
 
 			for (int i = 0; i < engines.length && jsEngine == null; i++) {
 				try {
-					log.debug("Trying Javascript engine [" + engines[i].getName() + "] for Graphviz.");
-					JavascriptEngine<?> engine = ((JavascriptEngine<?>) engines[i].newInstance());
+					Class<?> clazz = Class.forName(engines[i]);
+					log.debug("Trying Javascript engine [" + engines[i] + "] for Graphviz.");
+					JavascriptEngine<?> engine = ((JavascriptEngine<?>) clazz.newInstance());
 					ResultHandler resultHandler = new ResultHandler();
 
 					startEngine(engine, resultHandler, initScript, graphvisJsLibrary);
 
-					log.info("Using Javascript engine [" + engines[i].getName() + "] for Graphviz.");
+					log.info("Using Javascript engine [" + engines[i] + "] for Graphviz.");
 					jsEngine = engine;
 					this.resultHandler = resultHandler;
 				} catch (Exception e) {
-					log.error("Javascript engine [" + engines[i].getName() + "] could not be initialized.", e);
+					log.error("Javascript engine [" + engines[i] + "] could not be initialized.", e);
 				}
 			}
 

@@ -45,7 +45,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.IValidatorPipe;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IWrapperPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
@@ -134,7 +134,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified. If "timeout" and <code>resultOnTimeOut</code> are not specified, "exception" is used in such a case</td></tr>
  * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
  * <tr><td>"illegalResult"</td><td>the received data does not comply with <code>checkXmlWellFormed</code> or <code>checkRootTag</code>.</td></tr>
@@ -217,8 +216,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public final static String MESSAGE_LOG_NAME_PREFIX="- ";
 	public final static String MESSAGE_LOG_NAME_SUFFIX=": message log";
 
-	private IValidatorPipe inputValidator=null;
-	private IValidatorPipe outputValidator=null;
+	private IValidator inputValidator=null;
+	private IValidator outputValidator=null;
 	private IWrapperPipe inputWrapper=null;
 	private IWrapperPipe outputWrapper=null;
 	
@@ -406,8 +405,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
 		}
 
-		IValidatorPipe inputValidator = getInputValidator();
-		IValidatorPipe outputValidator = getOutputValidator();
+		IValidator inputValidator = getInputValidator();
+		IValidator outputValidator = getOutputValidator();
 		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
 			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator();
 			setOutputValidator(outputValidator);
@@ -755,9 +754,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 				}
 				if (timeoutForward!=null) {
-					String resultmsg;
+					Message resultmsg;
 					if (StringUtils.isNotEmpty(getResultOnTimeOut())) {
-						resultmsg =getResultOnTimeOut();
+						resultmsg =new Message(getResultOnTimeOut());
 					} else {
 						resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),toe,this,input,session.getMessageId(),0);
 					}
@@ -770,9 +769,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				PipeForward exceptionForward = findForward(EXCEPTION_FORWARD);
 				if (exceptionForward!=null) {
 					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
-					String resultmsg;
-					resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input,session.getMessageId(),0);
-					return new PipeRunResult(exceptionForward,resultmsg);
+					return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input,session.getMessageId(),0));
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
 			}
@@ -1075,22 +1072,22 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@IbisDoc({"40"})
-	public void setInputValidator(IValidatorPipe inputValidator) {
+	public void setInputValidator(IValidator inputValidator) {
 		inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
 		this.inputValidator = inputValidator;
 	}
-	public IValidatorPipe getInputValidator() {
+	public IValidator getInputValidator() {
 		return inputValidator;
 	}
 
 	@IbisDoc({"50"})
-	public void setOutputValidator(IValidatorPipe outputValidator) {
+	public void setOutputValidator(IValidator outputValidator) {
 		if (outputValidator!=null) {
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
 		}
 		this.outputValidator = outputValidator;
 	}
-	public IValidatorPipe getOutputValidator() {
+	public IValidator getOutputValidator() {
 		return outputValidator;
 	}
 
