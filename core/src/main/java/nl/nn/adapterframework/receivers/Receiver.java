@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -845,8 +845,8 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	}
 
 	@Override
-	public boolean moveToProcessState(Object message, ProcessState toState, Map<String, Object> context) throws ListenerException {
-		return ((IHasProcessState<M>)getListener()).moveToProcessState((M)message, toState, context);
+	public boolean changeProcessState(Object message, ProcessState toState, Map<String, Object> context) throws ListenerException {
+		return ((IHasProcessState<M>)getListener()).changeProcessState((M)message, toState, context);
 		
 	}
 
@@ -1683,16 +1683,10 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 		runState.setRunState(state);
 	}
 
-//	public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
-//		runState.waitForRunState(requestedRunState);
-//	}
-//	public boolean waitForRunState(RunStateEnum requestedRunState, long timeout) throws InterruptedException {
-//		return runState.waitForRunState(requestedRunState, timeout);
-//	}
 	
-		/**
-		 * Get the {@link RunStateEnum runstate} of this receiver.
-		 */
+	/**
+	 * Get the {@link RunStateEnum runstate} of this receiver.
+	 */
 	@Override
 	public RunStateEnum getRunState() {
 		return runState.getRunState();
@@ -1970,14 +1964,8 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 		IMessageBrowser<?> errorStorage =  messageBrowsers.get(ProcessState.ERROR);
 		return errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
 	}
-//	/**
-//	 * returns a browser for the errorStorage, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage} in the configuration. 
-//	 */
-//	public IMessageBrowser<Serializable> getErrorStorageBrowser() {
-//		return (IMessageBrowser<Serializable>)messageBrowsers.get(ProcessState.ERROR);
-//	}
-	
-	
+
+
 	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
 	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		if (messageLog.isActive()) {
@@ -1996,20 +1984,6 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 		IMessageBrowser<?> messageLog =  messageBrowsers.get(ProcessState.DONE);
 		return messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
 	}
-//	/**
-//	 * returns a browser for the messageLog, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage messageLog} in the configuration. 
-//	 */
-//	public IMessageBrowser<Serializable> getMessageLogBrowser() {
-//		return (IMessageBrowser<Serializable>)messageBrowsers.get(ProcessState.DONE);
-//	}
-//
-//	/**
-//	 * returns a browser of messages inProcess, if provided as a {@link IMessageBrowser} by the listener itself. 
-//	 */
-//	public IMessageBrowser<Serializable> getInProcessBrowser() {
-//		return (IMessageBrowser<Serializable>)messageBrowsers.get(ProcessState.INPROCESS);
-//	}
-
 
 
 	/**

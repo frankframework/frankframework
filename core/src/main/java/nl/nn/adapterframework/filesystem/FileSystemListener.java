@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -340,9 +340,11 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	public boolean moveToProcessState(F message, ProcessState toState, Map<String,Object> context) throws ListenerException {
+	public boolean changeProcessState(F message, ProcessState toState, Map<String,Object> context) throws ListenerException {
 		try {
-			getFileSystem().moveFile(message, getStateFolder(toState), false);
+			if (knownProcessStates().contains(toState)) {
+				getFileSystem().moveFile(message, getStateFolder(toState), false);
+			}
 			return false;
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message)+"]", e);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,9 +37,9 @@ public interface IHasProcessState<M> {
 	public Map<ProcessState,Set<ProcessState>> targetProcessStates();
 
 	/**
-	 * Change the processState of the message.
+	 * Change the processState of the message to the specified state, if that state is supported. If it is not supported, nothing changes, and <code>false</code> is returned.
 	 * If it returns <code>true</code>, this signals that the active transaction must be committed to make other threads aware of the state change.
 	 */
-	public boolean moveToProcessState(M message, ProcessState toState, Map<String,Object> context) throws ListenerException;
+	public boolean changeProcessState(M message, ProcessState toState, Map<String,Object> context) throws ListenerException;
 
 }

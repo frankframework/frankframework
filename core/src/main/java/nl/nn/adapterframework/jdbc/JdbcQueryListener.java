@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @since   4.7
  */
 @Deprecated
-@ConfigurationWarning("Please replace with JdbcTableListener for ease of configuration and improved managebility")
+@ConfigurationWarning("Please replace with JdbcTableListener for ease of configuration and improved manageability")
 public class JdbcQueryListener extends JdbcListener {
 
 	@Override

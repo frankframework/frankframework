@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -129,11 +129,11 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	}
 
 	@Override
-	public boolean moveToProcessState(Object rawMessage, ProcessState toState, Map<String,Object> context) throws ListenerException {
-		String statusValue = getStatusValue(toState);
-		if (StringUtils.isEmpty(statusValue)) {
+	public boolean changeProcessState(Object rawMessage, ProcessState toState, Map<String,Object> context) throws ListenerException {
+		if (!knownProcessStates().contains(toState)) {
 			return false;
 		}
+		String statusValue = getStatusValue(toState);
 		String query = getUpdateStatusQuery(statusValue, null);
 		String key=getIdFromRawMessage(rawMessage,context);
 		if (isConnectionsArePooled()) {
@@ -147,7 +147,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 				execute(connection, query, key);
 			}
 		}
-		return true;
+		return !getDbmsSupport().hasSkipLockedFunctionality();
 	}
 
 	public String getStatusValue(ProcessState state) {
