@@ -22,14 +22,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.transaction.TransactionDefinition;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
@@ -44,11 +41,8 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 /**
  * Processor and keeper of a line of {@link IPipe Pipes}.
