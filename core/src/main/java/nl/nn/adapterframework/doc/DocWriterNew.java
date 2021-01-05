@@ -589,12 +589,33 @@ public class DocWriterNew {
 
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> frankAttributes) {
 		for(FrankAttribute frankAttribute: frankAttributes) {
-			// The default value is allowed to be null.
-			XmlBuilder attribute = addAttribute(context, frankAttribute.getName(), DEFAULT, frankAttribute.getDefaultValue(), OPTIONAL);
-			if(! StringUtils.isEmpty(frankAttribute.getDescription())) {
-				addDocumentation(attribute, frankAttribute.getDescription());
+			// The default value in the model is a *description* of the default value.
+			// Therefore, it should be added to the description in the xs:attribute.
+			// The "default" attribute of the xs:attribute should not be set.
+			XmlBuilder attribute = addAttribute(context, frankAttribute.getName(), DEFAULT, null, OPTIONAL);
+			if(needsDocumentation(frankAttribute)) {
+				addDocumentation(attribute, getDocumentationText(frankAttribute));
 			}
 		}		
+	}
+
+	private boolean needsDocumentation(FrankAttribute frankAttribute) {
+		return (! StringUtils.isEmpty(frankAttribute.getDescription())) || (! StringUtils.isEmpty(frankAttribute.getDefaultValue()));
+	}
+
+	private String getDocumentationText(FrankAttribute frankAttribute) {
+		StringBuilder result = new StringBuilder();
+		if(! StringUtils.isEmpty(frankAttribute.getDescription())) {
+			result.append(frankAttribute.getDescription());
+		}
+		if(! StringUtils.isEmpty(frankAttribute.getDefaultValue())) {
+			if(result.length() >= 1) {
+				result.append(" ");
+			}
+			result.append("Default: ");
+			result.append(frankAttribute.getDefaultValue());
+		}
+		return result.toString();
 	}
 
 	private String xsdElementType(FrankElement frankElement) {

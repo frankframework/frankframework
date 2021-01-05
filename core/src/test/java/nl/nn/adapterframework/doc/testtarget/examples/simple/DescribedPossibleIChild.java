@@ -7,7 +7,7 @@ public class DescribedPossibleIChild implements IChild {
 	public void setSecondAttribute(String value) {
 	}
 
-	@IbisDoc({"10", "First attribute of DescribedPossibleIChild"})
+	@IbisDoc({"10", "First attribute of DescribedPossibleIChild.", "this default value"})
 	public void setFirstAttribute(String value) {
 	}
 }

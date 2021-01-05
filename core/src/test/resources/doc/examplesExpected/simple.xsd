@@ -59,7 +59,7 @@
   <xs:attributeGroup name="DescribedPossibleIChildDeclaredAttributeGroup">
     <xs:attribute name="firstAttribute" type="xs:string">
       <xs:annotation>
-        <xs:documentation>First attribute of DescribedPossibleIChild</xs:documentation>
+        <xs:documentation>First attribute of DescribedPossibleIChild. Default: this default value</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secondAttribute" type="xs:string">
