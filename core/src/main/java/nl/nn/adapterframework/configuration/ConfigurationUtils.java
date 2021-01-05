@@ -296,7 +296,7 @@ public class ConfigurationUtils {
 				}
 			}
 			if(!isBuildInfoPresent) {
-				throw new ConfigurationException("no ["+buildInfoFilename+"] persent in configuration");
+				throw new ConfigurationException("no ["+buildInfoFilename+"] present in configuration");
 			}
 		}
 
