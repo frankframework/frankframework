@@ -21,11 +21,11 @@ package nl.nn.adapterframework.util;
  */
 public enum RunStateEnum {
 
-	STOPPED("Stopped"),
+	ERROR("**ERROR**"),
+	STARTING("Starting"),
 	STARTED("Started"),
 	STOPPING("Stopping"),
-	STARTING("Starting"),
-	ERROR("**ERROR**");
+	STOPPED("Stopped");
 
 	private final String stateDescriptor;
 
@@ -34,7 +34,9 @@ public enum RunStateEnum {
 	}
 
 	public boolean isState(String state) {
-		return this.equals(valueOf(state));
+		if(state == null) return false;
+
+		return this.equals(valueOf(state.toUpperCase()));
 	}
 
 	public String getName() {
