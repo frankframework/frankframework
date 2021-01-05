@@ -53,7 +53,6 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>no errors and all tests passed</td></tr>
  * <tr><td>"failure"</td><td>errors or failed tests</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * 
  * @author Jaco de Groot
