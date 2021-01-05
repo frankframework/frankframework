@@ -129,8 +129,12 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	}
 
 	@Override
-	public void moveToProcessState(Object rawMessage, ProcessState toState, Map<String,Object> context) throws ListenerException {
-		String query = getUpdateStatusQuery(getStatusValue(toState), null);
+	public boolean moveToProcessState(Object rawMessage, ProcessState toState, Map<String,Object> context) throws ListenerException {
+		String statusValue = getStatusValue(toState);
+		if (StringUtils.isEmpty(statusValue)) {
+			return false;
+		}
+		String query = getUpdateStatusQuery(statusValue, null);
 		String key=getIdFromRawMessage(rawMessage,context);
 		if (isConnectionsArePooled()) {
 			try (Connection conn = getConnection()) {
@@ -143,6 +147,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 				execute(connection, query, key);
 			}
 		}
+		return true;
 	}
 
 	public String getStatusValue(ProcessState state) {
@@ -241,7 +246,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		return statusValueProcessed;
 	}
 
-	@IbisDoc({"10", "Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality", ""})
+	@IbisDoc({"10", "Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality; In that case the transactionAttribute of the Receiver should be set to Required or RequiresNew, to avoid messages being picked up by multiple threads", ""})
 	public void setStatusValueInProcess(String string) {
 		statusValueInProcess = string;
 	}

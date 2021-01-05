@@ -21,6 +21,8 @@ import java.util.Set;
 /**
  * Interface that can be implemented by Listeners that provide their own management of
  * messages processed and in error.
+ * 
+ * @see IUsesInProcessState
  */
 public interface IHasProcessState<M> {
 
@@ -36,7 +38,8 @@ public interface IHasProcessState<M> {
 
 	/**
 	 * Change the processState of the message.
+	 * If it returns <code>true</code>, this signals that the active transaction must be committed to make other threads aware of the state change.
 	 */
-	public void moveToProcessState(M message, ProcessState toState, Map<String,Object> context) throws ListenerException;
+	public boolean moveToProcessState(M message, ProcessState toState, Map<String,Object> context) throws ListenerException;
 
 }

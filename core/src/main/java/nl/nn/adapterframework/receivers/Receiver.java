@@ -845,8 +845,8 @@ public class Receiver<M> implements IManagable, IReceiverStatistics, IMessageHan
 	}
 
 	@Override
-	public void moveToProcessState(Object message, ProcessState toState, Map<String, Object> context) throws ListenerException {
-		((IHasProcessState<M>)getListener()).moveToProcessState((M)message, toState, context);
+	public boolean moveToProcessState(Object message, ProcessState toState, Map<String, Object> context) throws ListenerException {
+		return ((IHasProcessState<M>)getListener()).moveToProcessState((M)message, toState, context);
 		
 	}
 
