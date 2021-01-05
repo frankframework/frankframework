@@ -27,7 +27,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
-public class TransactionAttributes implements ITransactionAttributes {
+public class TransactionAttributes implements HasTransactionAttribute {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private int transactionAttribute = TransactionDefinition.PROPAGATION_SUPPORTS;
