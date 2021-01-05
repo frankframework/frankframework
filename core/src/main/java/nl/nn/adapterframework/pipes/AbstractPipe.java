@@ -24,8 +24,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
-import org.springframework.transaction.TransactionDefinition;
 
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -36,13 +34,13 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ITransactionAttributes;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
@@ -51,9 +49,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -98,8 +94,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @see IPipeLineSession
  */
-public abstract class AbstractPipe implements IExtendedPipe, ITransactionAttributes, EventThrowing, IConfigurable {
-	protected Logger log = LogUtil.getLogger(this);
+public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable {
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
@@ -119,8 +114,6 @@ public abstract class AbstractPipe implements IExtendedPipe, ITransactionAttribu
 	private boolean restoreMovedElements=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	
-	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
-	private int transactionTimeout=0;
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
 	private Locker locker;
 	private String emptyInputReplacement=null;
@@ -195,6 +188,7 @@ public abstract class AbstractPipe implements IExtendedPipe, ITransactionAttribu
 		}
 
 		eventHandler = MonitorManager.getEventHandler();
+		super.configure();
 	}
 
 	/**
@@ -556,36 +550,6 @@ public abstract class AbstractPipe implements IExtendedPipe, ITransactionAttribu
 		return namespaceAware;
 	}
 
-	@Override
-	public void setTransactionAttribute(String attribute) throws ConfigurationException {
-		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
-		if (transactionAttribute<0) {
-			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
-		}
-	}
-	@Override
-	public String getTransactionAttribute() {
-		return JtaUtil.getTransactionAttributeString(transactionAttribute);
-	}
-
-	@Override
-	@Deprecated
-	public void setTransactionAttributeNum(int i) {
-		transactionAttribute = i;
-	}
-	@Override
-	public int getTransactionAttributeNum() {
-		return transactionAttribute;
-	}
-
-	@Override
-	public void setTransactionTimeout(int i) {
-		transactionTimeout = i;
-	}
-	@Override
-	public int getTransactionTimeout() {
-		return transactionTimeout;
-	}
 
 	@Override
 	public boolean hasSizeStatistics() {
