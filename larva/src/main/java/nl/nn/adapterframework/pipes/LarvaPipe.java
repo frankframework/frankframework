@@ -53,7 +53,6 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>no errors and all scenarios passed</td></tr>
  * <tr><td>"fail"</td><td>errors or failed scenarios</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * 
  * @author Jaco de Groot
