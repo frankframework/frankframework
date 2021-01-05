@@ -138,7 +138,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 	}
 
 	@Deprecated
-	@IbisDoc({"reference to one of the session variables to be compared", ""})
+	@IbisDoc({"reference to one of the session variables to be compared. Do not use, but use Parameter operand1 instead", ""})
 	@ConfigurationWarning("Please use the parameter operand1")
 	public void setSessionKey1(String string) {
 		sessionKey1 = string;
@@ -148,7 +148,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 	}
 
 	@Deprecated
-	@IbisDoc({"reference to the other session variables to be compared", ""})
+	@IbisDoc({"reference to the other session variables to be compared. Do not use, but use Parameter operand2 instead", ""})
 	@ConfigurationWarning("Please use the parameter operand2")
 	public void setSessionKey2(String string) {
 		sessionKey2 = string;
