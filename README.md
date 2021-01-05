@@ -5,6 +5,7 @@
 [![total GitHub contributors](https://img.shields.io/github/contributors-anon/ibissource/iaf.svg)](https://github.com/ibissource/iaf/graphs/contributors)
 [![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:org.ibissource)
 [![Latest Snapshot](https://img.shields.io/nexus/public/org.ibissource/ibis-adapterframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.ibissource.org%2F)](https://nexus.ibissource.org/#view-repositories;releases~browsestorage)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fibissource%2Fiaf.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fibissource%2Fiaf?ref=badge_shield)
 
 
 Frank!Framework
@@ -45,3 +46,7 @@ Contributing
 ============
 
 Before [Contributing](CONTRIBUTING.md) please read our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fibissource%2Fiaf.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fibissource%2Fiaf?ref=badge_large)
