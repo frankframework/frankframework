@@ -282,7 +282,7 @@ public class DocWriterNew {
 		XmlBuilder complexType = addComplexType(elementBuilder);
 		XmlBuilder sequence = addSequence(complexType);
 		if(log.isTraceEnabled()) {
-			log.trace(String.format("Adding cumulative config chidren of FrankElement [%s] to XSD element [%s]", frankElement.getFullName()), xsdElementName);
+			log.trace(String.format("Adding cumulative config chidren of FrankElement [%s] to XSD element [%s]", frankElement.getFullName(), xsdElementName));
 		}
 		frankElement.getCumulativeConfigChildren(IN_XSD, DEPRECATED).forEach(c -> addConfigChild(sequence, c));
 		if(log.isTraceEnabled()) {
@@ -294,7 +294,8 @@ public class DocWriterNew {
 
 	private void recursivelyDefineXsdElementType(FrankElement frankElement) {
 		if(log.isTraceEnabled()) {
-			log.trace(String.format("XML Schema needs type definition (or only groups for config children or attributes) for FrankElement [%s]", frankElement.getFullName()));
+			log.trace(String.format("XML Schema needs type definition (or only groups for config children or attributes) for FrankElement [%s]",
+					frankElement == null ? "null" : frankElement.getFullName()));
 		}
 		if(checkNotDefined(frankElement)) {
 			ElementBuildingStrategy elementBuildingStrategy = getElementBuildingStrategy(frankElement);
@@ -358,7 +359,7 @@ public class DocWriterNew {
 			return new ElementOmitter();
 		} else {
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("FrankElement [%s] is not abstract. We really make the XSD type definition"));
+				log.trace(String.format("FrankElement [%s] is not abstract. We really make the XSD type definition", element.getFullName()));
 			}
 			return new ElementAdder(element);
 		}
@@ -366,16 +367,18 @@ public class DocWriterNew {
 
 	private class ElementAdder extends ElementBuildingStrategy {
 		private final XmlBuilder complexType;
-		
+		private final FrankElement addingTo;
+
 		ElementAdder(FrankElement frankElement) {
 			complexType = createComplexType(xsdElementType(frankElement));
 			xsdComplexItems.add(complexType);
+			this.addingTo = frankElement;
 		}
 
 		@Override
 		void addGroupRef(String referencedGroupName) {
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("Adding reference to XSD group [%s] to XSD type definition", referencedGroupName));
+				log.trace(String.format("Appending XSD type def of [%s] with reference to XSD group [%s]", addingTo.getFullName(), referencedGroupName));
 			}
 			DocWriterNewXmlUtils.addGroupRef(complexType, referencedGroupName);
 		}
@@ -383,7 +386,7 @@ public class DocWriterNew {
 		@Override
 		void addAttributeGroupRef(String referencedGroupName) {
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("Adding reference to XSD group [%s] to XSD type definition", referencedGroupName));
+				log.trace(String.format("Appending XSD type def of [%s] with reference to XSD group [%s]", addingTo.getFullName(), referencedGroupName));
 			}
 			DocWriterNewXmlUtils.addAttributeGroupRef(complexType, referencedGroupName);
 		}
@@ -508,11 +511,12 @@ public class DocWriterNew {
 	private void addConfigChildSingleReferredElement(XmlBuilder context, ConfigChild child) {
 		ElementRole role = model.findElementRole(child);
 		FrankElement elementInType = singleElementOf(role.getElementType());
-		String referredXsdElement = elementInType.getXsdElementName(role);
+		String referredXsdElementName = elementInType.getXsdElementName(role);
 		if(log.isTraceEnabled()) {
-			log.trace(String.format("Config child appears as element reference to FrankElement [%s], XSD element [%s]", elementInType, referredXsdElement));
+			log.trace(String.format("Config child appears as element reference to FrankElement [%s], XSD element [%s]",
+					elementInType.getFullName(), referredXsdElementName));
 		}
-		addElementRef(context, referredXsdElement, getMinOccurs(child), getMaxOccurs(child));
+		addElementRef(context, referredXsdElementName, getMinOccurs(child), getMaxOccurs(child));
 		recursivelyDefineXsdElement(elementInType, role);
 	}
 
@@ -522,7 +526,7 @@ public class DocWriterNew {
 
 	private void recursivelyDefineXsdElement(FrankElement frankElement, ElementRole role) {
 		if(log.isTraceEnabled()) {
-			log.trace(String.format("FrankElement [%s] is needed in XML Schema", frankElement));
+			log.trace(String.format("FrankElement [%s] is needed in XML Schema", frankElement.getFullName()));
 		}
 		if(checkNotDefined(frankElement)) {
 			if(log.isTraceEnabled()) {
@@ -531,11 +535,11 @@ public class DocWriterNew {
 			String xsdElementName = frankElement.getXsdElementName(role);
 			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(frankElement, xsdElementName);
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("Adding attributes className and %s for FrankElement [%s]", ELEMENT_GROUP, frankElement));
+				log.trace(String.format("Adding attributes className and %s for FrankElement [%s]", ELEMENT_GROUP, frankElement.getFullName()));
 			}
 			addExtraAttributesNotFromModel(attributeBuilder, frankElement, role);
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("Done defining FrankElement [%s], XSD element [%s]", frankElement, xsdElementName));
+				log.trace(String.format("Done defining FrankElement [%s], XSD element [%s]", frankElement.getFullName(), xsdElementName));
 			}
 		} else if(log.isTraceEnabled()) {
 			log.trace("Already defined in XML Schema");
@@ -666,11 +670,11 @@ public class DocWriterNew {
 			}
 			addElementRef(choice, xsdElementName);
 		} else {
-			String referencedXsdGroup = childRole.createXsdElementName(ELEMENT_GROUP);
+			String referencedXsdGroupName = childRole.createXsdElementName(ELEMENT_GROUP);
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("Added as group reference to [%s]", referencedXsdGroup));
+				log.trace(String.format("Added as group reference to [%s]", referencedXsdGroupName));
 			}
-			DocWriterNewXmlUtils.addGroupRef(choice, referencedXsdGroup);
+			DocWriterNewXmlUtils.addGroupRef(choice, referencedXsdGroupName);
 		}
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Done adding to child member group: role [%s]", childRole.toString()));

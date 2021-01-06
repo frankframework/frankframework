@@ -34,6 +34,11 @@ public class ElementRole {
 		return new Key(elementType.getFullName(), syntax1Name);
 	}
 
+	@Override
+	public String toString() {
+		return getKey().toString();
+	}
+
 	static class Factory {
 		private final Map<String, Integer> numUsagePerSyntax1Name = new HashMap<>();
 

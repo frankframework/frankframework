@@ -17,10 +17,7 @@ limitations under the License.
 package nl.nn.adapterframework.doc.model;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotationUtils;
 
@@ -100,14 +97,10 @@ public class ConfigChild extends ElementChild {
 
 		@Override
 		public String toString() {
-			List<String> components = new ArrayList<>();
-			components.add(syntax1Name);
-			components.add(elementType.getSimpleName());
-			components.add("mandatory " + Boolean.toString(mandatory));
-			components.add("multiple " + Boolean.toString(allowMultiple));
-			return components.stream().collect(Collectors.joining(", "));
+			return "(syntax1Name=" + syntax1Name + ", elementType=" + elementType + ", mandatory=" + mandatory
+					+ ", allowMultiple=" + allowMultiple + ")";
 		}
-	}
+}
 
 	private @Getter @Setter int sequenceInConfig;
 	private @Getter @Setter boolean mandatory;
