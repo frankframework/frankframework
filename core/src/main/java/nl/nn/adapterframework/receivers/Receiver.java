@@ -674,18 +674,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				this.inProcessBrowser = inProcessBrowser;
 			}
 			
-			if (isTransacted()) {
-				
-				if (errorSender==null && errorStorage==null) {
-					ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
-				}
-
-				if (getTransactionTimeout()>0) {
-					Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-					if (maximumTransactionTimeout != null && getTransactionTimeout() > maximumTransactionTimeout) {
-						ConfigurationWarnings.add(null, log, getLogPrefix()+"has a transaction timeout ["+getTransactionTimeout()+"] which exceeds the maximum transaction timeout ["+maximumTransactionTimeout+"]");
-					}
-				}
+			if (isTransacted() && errorSender==null && errorStorage==null) {
+				ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			}
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
