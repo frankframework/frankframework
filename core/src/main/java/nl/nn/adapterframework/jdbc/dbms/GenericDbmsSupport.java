@@ -463,7 +463,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public boolean isUniqueConstraintViolation(SQLException e) {
-		// TODO Auto-generated method stub
+		// TODO improve later
+		if(e.getErrorCode() == 1062) {
+			return true;
+		}
 		return false;
 	}
 	

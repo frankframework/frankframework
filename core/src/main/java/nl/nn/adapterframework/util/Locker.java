@@ -18,17 +18,23 @@ package nl.nn.adapterframework.util;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 
 /**
  * Locker of scheduler jobs and pipes.
@@ -73,6 +79,11 @@ public class Locker extends JdbcFacade {
 	private int firstDelay = 10000;
 	private int retryDelay = 10000;
 	private boolean ignoreTableNotExist = false;
+	private PlatformTransactionManager txManager;
+	
+	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
+	private int transactionTimeout=0;
+	
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -101,6 +112,11 @@ public class Locker extends JdbcFacade {
 	}
 
 	public String lock() throws JdbcException, SQLException, InterruptedException {
+		return lock(null);
+	}
+
+	public String lock(MessageKeeper messageKeeper) throws JdbcException, SQLException, InterruptedException {
+
 		try (Connection conn = getConnection()) {
 			if (!getDbmsSupport().isTablePresent(conn, "IBISLOCK")) {
 				if (isIgnoreTableNotExist()) {
@@ -122,15 +138,22 @@ public class Locker extends JdbcFacade {
 			if (r > 0) {
 				Thread.sleep(retryDelay);
 			}
-			Date date = new Date();
-			objectIdWithSuffix = getObjectId();
-			if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
-				String formattedDate = formatter.format(date);
-				objectIdWithSuffix = objectIdWithSuffix.concat(formattedDate);
+			IbisTransaction itx = null;
+			TransactionStatus txStatus = null;
+			if (getTxManager()!=null) {
+				TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(transactionAttribute, transactionTimeout);
+				itx = new IbisTransaction(getTxManager(), txdef, "locker ["+getName()+"]");
+				txStatus = itx.getStatus();
 			}
-			log.debug("preparing to set lock [" + objectIdWithSuffix + "]");
-			try (Connection conn = getConnection()) {
-				try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
+			try {
+				Date date = new Date();
+				objectIdWithSuffix = getObjectId();
+				if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
+					String formattedDate = formatter.format(date);
+					objectIdWithSuffix = objectIdWithSuffix.concat(formattedDate);
+				}
+				log.debug("preparing to set lock [" + objectIdWithSuffix + "]");
+				try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
 					stmt.clearParameters();
 					stmt.setString(1,objectIdWithSuffix);
 					stmt.setString(2,getType());
@@ -146,18 +169,37 @@ public class Locker extends JdbcFacade {
 					stmt.setTimestamp(5, new Timestamp(cal.getTime().getTime()));
 					stmt.executeUpdate();
 					log.debug("lock ["+objectIdWithSuffix+"] set");
-				}
-			} catch (SQLException e) {
-				log.debug(getLogPrefix()+"error executing insert query (as part of locker): " + e.getMessage());
-				if (numRetries == -1 || r < numRetries) {
-					log.debug(getLogPrefix()+"will try again");
+				} catch (SQLException e) {
+					if(txStatus != null) {
+						txStatus.setRollbackOnly();
+					}
 					objectIdWithSuffix = null;
-				} else {
-					log.debug(getLogPrefix()+"will not try again");
-					throw e;
+					log.debug(getLogPrefix()+"error executing insert query (as part of locker): " + e.getMessage());
+					if (numRetries == -1 || r < numRetries) {
+						log.debug(getLogPrefix()+"will try again");
+					} else {
+						log.debug(getLogPrefix()+"will not try again");
+
+						boolean isUniqueConstraintViolation = false;
+						isUniqueConstraintViolation = getDbmsSupport().isUniqueConstraintViolation(e);
+						String msg = "error while setting lock: " + e.getMessage();
+						if (isUniqueConstraintViolation || e instanceof SQLTimeoutException) {
+							if(messageKeeper != null) {
+								messageKeeper.add(msg, MessageKeeperLevel.INFO);
+							}
+							log.info(getLogPrefix()+msg);
+						} else {
+							throw e;
+						}
+					}
+				}
+			} finally {
+				if(itx != null) {
+					itx.commit();
 				}
 			}
 		}
+
 		return objectIdWithSuffix;
 	}
 
@@ -167,13 +209,27 @@ public class Locker extends JdbcFacade {
 		} else {
 			if (getType().equalsIgnoreCase("T")) {
 				log.debug("preparing to remove lock [" + objectIdWithSuffix + "]");
+				IbisTransaction itx = null;
+				TransactionStatus txStatus = null;
+				if (getTxManager()!=null) {
+					TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(transactionAttribute, transactionTimeout);
+					itx = new IbisTransaction(getTxManager(), txdef, "locker ["+getName()+"]");
+					txStatus = itx.getStatus();
+				}
 
-				try (Connection conn = getConnection()) {
-					try (PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
-						stmt.clearParameters();
-						stmt.setString(1,objectIdWithSuffix);
-						stmt.executeUpdate();
-						log.debug("lock ["+objectIdWithSuffix+"] removed");
+				try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
+					stmt.clearParameters();
+					stmt.setString(1,objectIdWithSuffix);
+					stmt.executeUpdate();
+					log.debug("lock ["+objectIdWithSuffix+"] removed");
+				} catch(JdbcException | SQLException e) {
+					if(txStatus != null) {
+						txStatus.setRollbackOnly();
+					}
+					throw e;
+				} finally {
+					if(itx != null) {
+						itx.commit();
 					}
 				}
 			}
@@ -255,4 +311,45 @@ public class Locker extends JdbcFacade {
 	public boolean isIgnoreTableNotExist() {
 		return ignoreTableNotExist;
 	}
+
+	public void setTxManager(PlatformTransactionManager manager) {
+		txManager = manager;
+	}
+	public PlatformTransactionManager getTxManager() {
+		return txManager;
+	}
+
+	public void setTransactionTimeout(int i) {
+		transactionTimeout = i;
+	}
+
+	@IbisDoc({"3", "Defines transaction and isolation behaviour."
+			+ "For developers: it is equal"
+			+ "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>."
+			+ "Possible values are:"
+			+ "  <table border=\"1\">"
+			+ "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Job excecuted in Transaction</th></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T2</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>none</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
+			+ " 										      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>error</td></tr>"
+			+ "  </table>", "Supports"})
+	public void setTransactionAttribute(String attribute) throws ConfigurationException {
+		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
+		if (transactionAttribute<0) {
+			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
+		}
+	}
+	public String getTransactionAttribute() {
+		return JtaUtil.getTransactionAttributeString(transactionAttribute);
+	}
+
 }

@@ -80,6 +80,14 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return blob;
 	}
 
+	@Override
+	public boolean isUniqueConstraintViolation(SQLException e) {
+		if(e.getErrorCode() == 23505) {
+			return true;
+		}
+		return false;
+	}
+
 //	@Override
 //	// 2020-07-13 GvB: Did not get "SET SESSION CHARACTERISTICS" to work
 //	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {

@@ -38,17 +38,7 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 			try {
 				objectId = locker.lock();
 			} catch (Exception e) {
-				boolean isUniqueConstraintViolation = false;
-				if (e instanceof SQLException) {
-					SQLException sqle = (SQLException) e;
-					isUniqueConstraintViolation = locker.getDbmsSupport().isUniqueConstraintViolation(sqle);
-				}
-				if (isUniqueConstraintViolation) {
-					String msg = "error while setting lock: " + e.getMessage();
-					log.info(msg);
-				} else {
-					throw new PipeRunException(null, "error while setting lock", e);
-				}
+				throw new PipeRunException(null, "error while setting lock", e);
 			}
 			if (objectId != null) {
 				try {

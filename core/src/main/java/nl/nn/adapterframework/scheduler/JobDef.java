@@ -56,6 +56,7 @@ import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
@@ -498,60 +499,41 @@ public class JobDef extends TransactionAttributes {
 			return;
 		}
 		try {
-			IbisTransaction itx = null;
-			if (getTxManager()!=null) {
-				itx = new IbisTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
-			}
-			try {
-				if (getLocker()!=null) {
-					String objectId = null;
+			String objectId = null;
+			if (getLocker() != null) {
+				try {
+					objectId = getLocker().lock(getMessageKeeper());
+				} catch (Exception e) {
+					messageKeeper.add(e.getMessage(), MessageKeeperLevel.ERROR);
+					log.error(getLogPrefix()+e.getMessage());
+				}
+				if (objectId!=null) {
+					TimeoutGuard tg = new TimeoutGuard("Job "+getName());
+					IbisTransaction itx = null;
+					if (getTxManager()!=null) {
+						itx = new IbisTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
+					}
 					try {
-						try {
-							objectId = getLocker().lock();
-						} catch (Exception e) {
-							boolean isUniqueConstraintViolation = false;
-							if (e instanceof SQLException) {
-								SQLException sqle = (SQLException) e;
-								isUniqueConstraintViolation = locker.getDbmsSupport().isUniqueConstraintViolation(sqle);
-							}
-							String msg = "error while setting lock: " + e.getMessage();
-							if (isUniqueConstraintViolation) {
-								getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
-								log.info(getLogPrefix()+msg);
-							} else {
-								getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-								log.error(getLogPrefix()+msg);
-							}
-						}
-						if (objectId!=null) {
-							TimeoutGuard tg = new TimeoutGuard("Job "+getName());
-							try {
-								tg.activateGuard(getTransactionTimeout());
-								runJob(ibisManager);
-							} finally {
-								if (tg.cancel()) {
-									log.error(getLogPrefix()+"thread has been interrupted");
-								} 
-							}
-						}
+						tg.activateGuard(getTransactionTimeout());
+						runJob(ibisManager);
 					} finally {
-						if (objectId!=null) {
-							try {
-								getLocker().unlock(objectId);
-							} catch (Exception e) {
-								String msg = "error while removing lock: " + e.getMessage();
-								getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
-								log.warn(getLogPrefix()+msg);
-							}
+						if(itx != null) {
+							itx.commit();
+						}
+						if (tg.cancel()) {
+							log.error(getLogPrefix()+"thread has been interrupted");
 						}
 					}
-				} else {
-					runJob(ibisManager);
+					try {
+						getLocker().unlock(objectId);
+					} catch (Exception e) {
+						String msg = "error while removing lock: " + e.getMessage();
+						getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
+						log.warn(getLogPrefix()+msg);
+					}
 				}
-			} finally {
-				if (itx!=null) {
-					itx.commit();
-				}
+			} else {
+				runJob(ibisManager);
 			}
 		} finally {
 			decrementCountThreads();
@@ -933,6 +915,7 @@ public class JobDef extends TransactionAttributes {
 
 				if(hasLocker) {
 					Locker locker = (Locker) ibisManager.getIbisContext().createBeanAutowireByName(Locker.class);
+
 					locker.setName(lockKey);
 					locker.setObjectId(lockKey);
 					locker.setJmsRealm(configJmsRealm);
