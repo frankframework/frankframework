@@ -512,9 +512,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
  	 * @throws ConfigurationException when initialization did not succeed.
  	 */ 
 	@Override
-	public void configure() throws ConfigurationException {		
+	public void configure() throws ConfigurationException {
 		configurationSucceeded = false;
 		try {
+			super.configure();
 			if (StringUtils.isEmpty(getName())) {
 				if (getListener()!=null) {
 					setName(ClassUtils.nameOf(getListener()));
@@ -674,19 +675,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			
 			if (isTransacted()) {
-//				if (!(getListener() instanceof IXAEnabled && ((IXAEnabled)getListener()).isTransacted())) {
-//					warn(getLogPrefix()+"sets transacted=true, but listener not. Transactional integrity is not guaranteed"); 
-//				}
 				
 				if (errorSender==null && errorStorage==null) {
 					ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
-				} else {
-//					if (errorSender!=null && !(errorSender instanceof IXAEnabled && ((IXAEnabled)errorSender).isTransacted())) {
-//						warn(getLogPrefix()+"sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
-//					}
-//					if (errorStorage!=null && !(errorStorage instanceof IXAEnabled && ((IXAEnabled)errorStorage).isTransacted())) {
-//						warn(getLogPrefix()+"sets transacted=true, but errorStorage is not. Transactional integrity is not guaranteed"); 
-//					}
 				}
 
 				if (getTransactionTimeout()>0) {
