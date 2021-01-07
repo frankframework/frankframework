@@ -31,10 +31,11 @@ import lombok.Getter;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Represents a type of FrankElement instances, which appears in the FF! Java code as
- * a Java interface. FrankElement objects that represent an abstract Java class should
+ * Models a collection of FrankElement. The collection can be characterized by
+ * a Java interface in the FF! sources, or there can be one member that is referenced
+ * by its FrankElement. FrankElement objects that model an abstract Java class should
  * be omitted as members. This is done automatically when Spring is used to get the
- * implementing classes of a Java interface.
+ * implementing classes of a modeled Java interface.
  *
  * @author martijn
  *

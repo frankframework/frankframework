@@ -19,7 +19,7 @@ package nl.nn.adapterframework.doc.model;
 import java.util.List;
 
 /**
- * Callback interface for {@link FrankElement} to walk all declared as well as all inherited attributes.
+ * Callback interface for {@link FrankElement} to walk all declared as well as all inherited attributes or config children.
  * {@link FrankElement} also uses this class to walk config children.
  *
  * @author martijn

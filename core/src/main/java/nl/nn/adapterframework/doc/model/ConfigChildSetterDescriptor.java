@@ -35,13 +35,13 @@ import lombok.Getter;
  * {@code X.setAbc()} and {@code Y.setAbc()} can have a different {@code sequenceInConfig}.
  * That field is obtained from an {@code IbisDoc} annotation.
  */
-public class ConfigChildSetterDescriptor {
+class ConfigChildSetterDescriptor {
 	private @Getter String methodName;
 	private @Getter boolean mandatory;
 	private @Getter boolean allowMultiple;
 	private @Getter String syntax1Name;
 
-	public ConfigChildSetterDescriptor(String methodName, String syntax1Name) throws SAXException {
+	ConfigChildSetterDescriptor(String methodName, String syntax1Name) throws SAXException {
 		this.methodName = methodName;
 		this.syntax1Name = syntax1Name;
 		mandatory = false;

@@ -68,7 +68,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <h1>The syntax 2 name</h1>
  *
  * Below, a few implementation details are explained. First, the integration specialist
- * references an element by a name the reveals both the requested Java class
+ * references an element by a name that reveals both the requested Java class
  * (expressed as a {@link FrankElement} in the model)
  * and the role it plays (e.g. sender or error sender). These requirements are
  * implemented by model method {@link FrankElement#getXsdElementName}. This
