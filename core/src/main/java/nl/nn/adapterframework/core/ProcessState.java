@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,15 +33,20 @@ public enum ProcessState {
 		knownProcessStates.add(AVAILABLE);
 		return knownProcessStates;
 	}
-	
-	public static Map<ProcessState,Set<ProcessState>> getTargetProcessStates(Set<ProcessState> knownProcessStates) {
-		Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
-		for (ProcessState state:ProcessState.values()) {
+
+	public static Map<ProcessState, Set<ProcessState>> getTargetProcessStates(Set<ProcessState> knownProcessStates) {
+		Map<ProcessState, Set<ProcessState>> targetProcessStates = new HashMap<>();
+		for (ProcessState state : ProcessState.values()) {
 			targetProcessStates.put(state, new LinkedHashSet<>());
 		}
-		if (knownProcessStates.contains(ERROR) && knownProcessStates.contains(HOLD)) {
-			targetProcessStates.get(ERROR).add(HOLD);
-			targetProcessStates.get(HOLD).add(ERROR);
+		if (knownProcessStates.contains(ERROR)) {
+			if (knownProcessStates.contains(AVAILABLE)) {
+				targetProcessStates.get(ERROR).add(AVAILABLE);
+			}
+			if (knownProcessStates.contains(HOLD)) {
+				targetProcessStates.get(ERROR).add(HOLD);
+				targetProcessStates.get(HOLD).add(ERROR);
+			}
 		}
 		return targetProcessStates;
 	}
