@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.util.JdbcUtil;
 import oracle.jdbc.pool.OracleDataSource;
 
@@ -157,7 +158,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1,null);
 			assertEquals("10",rawMessage1);
-			if (listener.setMessageStateToInProcess.operate(connection1, rawMessage1, null)) {
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, null)) {
 				connection1.commit();
 			}
 
@@ -182,7 +183,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1, null);
 			assertEquals("10",rawMessage1);
-			if (listener.setMessageStateToInProcess.operate(connection1, rawMessage1, null)) {
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, null)) {
 				connection1.commit();
 			}
 
@@ -203,7 +204,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1, null);
 			assertEquals("10",rawMessage1);
-			if (listener.setMessageStateToInProcess.operate(connection1, rawMessage1, null)) {
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, null)) {
 				connection1.commit();
 			}
 
@@ -228,7 +229,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			rawMessage = listener.getRawMessage(connection1,null);
 			assertEquals("10",rawMessage);
-			if (useStatusInProcess=listener.setMessageStateToInProcess.operate(connection1, rawMessage, null)) {
+			if (useStatusInProcess=listener.changeProcessState(connection1, rawMessage, ProcessState.INPROCESS, null)) {
 				connection1.commit();
 			} else {
 				connection1.rollback();
@@ -236,7 +237,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		}
 
 		if (useStatusInProcess) {
-			listener.revertInProcessStatusToAvailable.operate(connection, rawMessage, null);
+			listener.changeProcessState(connection, rawMessage, ProcessState.AVAILABLE, null);
 		}
 		String status = JdbcUtil.executeStringQuery(connection, "SELECT TINT FROM TEMP WHERE TKEY=10");
 		assertEquals("status should be returned to available, to be able to try again", "1", status);
