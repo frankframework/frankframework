@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IManagable;
@@ -69,6 +71,7 @@ import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -173,7 +176,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class Receiver<M> extends TransactionAttributes implements IManagable, IReceiverStatistics, IMessageHandler<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
+public class Receiver<M> extends TransactionAttributes implements IManagable, IReceiverStatistics, IMessageHandler<M>, IProvidesMessageBrowsers<Object>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -274,12 +277,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private IListener<M> listener;
 	private ISender errorSender=null;
-	private IMessageBrowser<Serializable> errorStorage=null;
 	// See configure() for explanation on this field
 	private ITransactionalStorage<Serializable> tmpInProcessStorage=null;
 	private ISender sender=null; // answer-sender
-	private IMessageBrowser<Serializable> messageLog=null;
-	private IMessageBrowser<Serializable> inProcessBrowser=null;
+	private Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new HashMap<>();
 	
 	private TransformerPool correlationIDTp=null;
 	private TransformerPool labelTp=null;
@@ -288,6 +289,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private PlatformTransactionManager txManager;
 
 	private EventHandler eventHandler=null;
+
+	private Set<ProcessState> knownProcessStates;
+	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
+
 
 	/**
 	 * The processResultCache acts as a sort of poor-mans error
@@ -549,8 +554,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			// straightforward in the earlier versions, I felt it was safer
 			// to use direct member variables).
 			if (this.tmpInProcessStorage != null) {
-				if (this.errorSender == null && this.errorStorage == null) {
-					this.errorStorage = this.tmpInProcessStorage;
+				if (this.errorSender == null && messageBrowsers.get(ProcessState.ERROR) == null) {
+					messageBrowsers.put(ProcessState.ERROR, this.tmpInProcessStorage);
 					info("has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'. Please update the configuration to change the inProcessStorage element to an errorStorage element, since the inProcessStorage is no longer used.");
 					getErrorStorage().setType(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
 				} else {
@@ -632,6 +637,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 				errorSender.configure();
 			}
+			
+			if (getListener() instanceof IHasProcessState) {
+				knownProcessStates = ((IHasProcessState)getListener()).knownProcessStates();
+				targetProcessStates = ((IHasProcessState)getListener()).targetProcessStates();
+			} else {
+				knownProcessStates = ProcessState.getMandatoryKnownStates();
+			}
+			
 			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 			if (errorStorage!=null) {
 				errorStorage.configure();
@@ -641,11 +654,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
-					IMessageBrowser errorStoreBrowser = ((IProvidesMessageBrowsers)getListener()).getErrorStoreBrowser();
+					IMessageBrowser errorStoreBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(ProcessState.ERROR);
 					if (errorStoreBrowser instanceof IConfigurable) {
 						((IConfigurable)errorStoreBrowser).configure();
 					}
-					this.errorStorage = errorStoreBrowser;
+					messageBrowsers.put(ProcessState.ERROR, errorStoreBrowser);
 				}
 			}
 			ITransactionalStorage<Serializable> messageLog = getMessageLog();
@@ -659,19 +672,22 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
-					IMessageBrowser messageLogBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageLogBrowser();
+					IMessageBrowser messageLogBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(ProcessState.DONE);
 					if (messageLogBrowser!=null && messageLogBrowser instanceof IConfigurable) {
 						((IConfigurable)messageLogBrowser).configure();
 					}
-					this.messageLog = messageLogBrowser;
+					messageBrowsers.put(ProcessState.DONE, messageLogBrowser);
 				}
 			}
 			if (getListener() instanceof IProvidesMessageBrowsers) {
-				IMessageBrowser inProcessBrowser = ((IProvidesMessageBrowsers)getListener()).getInProcessBrowser();
+				IMessageBrowser inProcessBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(ProcessState.INPROCESS);
 				if (inProcessBrowser!=null && inProcessBrowser instanceof IConfigurable) {
 					((IConfigurable)inProcessBrowser).configure();
 				}
-				this.inProcessBrowser = inProcessBrowser;
+				messageBrowsers.put(ProcessState.INPROCESS, inProcessBrowser);
+			}
+			if (targetProcessStates==null) {
+				targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
 			}
 			
 			if (isTransacted() && errorSender==null && errorStorage==null) {
@@ -792,6 +808,28 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		tellResourcesToStop();
 		ThreadContext.removeStack();
 	}
+
+	@Override
+	public Set<ProcessState> knownProcessStates() {
+		return knownProcessStates;
+	}
+
+	@Override
+	public Map<ProcessState,Set<ProcessState>> targetProcessStates() {
+		return targetProcessStates;
+	}
+
+	@Override
+	public boolean changeProcessState(Object message, ProcessState toState, Map<String, Object> context) throws ListenerException {
+		return ((IHasProcessState<M>)getListener()).changeProcessState((M)message, toState, context);
+		
+	}
+
+	@Override
+	public IMessageBrowser<Object> getMessageBrowser(ProcessState state) {
+		return (IMessageBrowser<Object>)messageBrowsers.get(state);
+	}
+
 
 	protected void startProcessingMessage(long waitingDuration) {
 		synchronized (threadsProcessing) {
@@ -1014,14 +1052,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	
 	public void retryMessage(String storageKey) throws ListenerException {
-		if (getErrorStorageBrowser()==null) {
+		if (!messageBrowsers.containsKey(ProcessState.ERROR)) {
 			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry storageKey ["+storageKey+"]");
 		}
 		Map<String,Object>threadContext = new HashMap<>();
 		if (getErrorStorage()==null) {
 			// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 			// then the management of the errorStorage is left to the listener.
-			IMessageBrowser errorStorageBrowser = getErrorStorageBrowser();
+			IMessageBrowser errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
 			Object msg = errorStorageBrowser.browseMessage(storageKey);
 			processRawMessage(msg, threadContext, -1, true);
 			return;
@@ -1617,16 +1655,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		runState.setRunState(state);
 	}
 
-//	public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
-//		runState.waitForRunState(requestedRunState);
-//	}
-//	public boolean waitForRunState(RunStateEnum requestedRunState, long timeout) throws InterruptedException {
-//		return runState.waitForRunState(requestedRunState, timeout);
-//	}
 	
-		/**
-		 * Get the {@link RunStateEnum runstate} of this receiver.
-		 */
+	/**
+	 * Get the {@link RunStateEnum runstate} of this receiver.
+	 */
 	@Override
 	public RunStateEnum getRunState() {
 		return runState.getRunState();
@@ -1889,7 +1921,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@IbisDoc({"40", "Storage to keep track of messages that failed processing"})
 	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
 		if (errorStorage.isActive()) {
-			this.errorStorage = errorStorage;
+			messageBrowsers.put(ProcessState.ERROR, errorStorage);
 			errorStorage.setName("errorStorage of ["+getName()+"]");
 			if (StringUtils.isEmpty(errorStorage.getSlotId())) {
 				errorStorage.setSlotId(getName());
@@ -1901,20 +1933,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed messages. If present, this storage will be managed by the Receiver.
 	 */
 	public ITransactionalStorage<Serializable> getErrorStorage() {
-		return errorStorage!=null && errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
+		IMessageBrowser<?> errorStorage =  messageBrowsers.get(ProcessState.ERROR);
+		return errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
 	}
-	/**
-	 * returns a browser for the errorStorage, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage} in the configuration. 
-	 */
-	public IMessageBrowser<Serializable> getErrorStorageBrowser() {
-		return errorStorage;
-	}
-	
-	
+
+
 	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
 	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		if (messageLog.isActive()) {
-			this.messageLog = messageLog;
+			messageBrowsers.put(ProcessState.DONE, messageLog);
 			messageLog.setName("messageLog of ["+getName()+"]");
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
 				messageLog.setSlotId(getName());
@@ -1926,22 +1953,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed successfully. If present, this storage will be managed by the Receiver.
 	 */
 	public ITransactionalStorage<Serializable> getMessageLog() {
-		return messageLog!=null && messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
+		IMessageBrowser<?> messageLog =  messageBrowsers.get(ProcessState.DONE);
+		return messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
 	}
-	/**
-	 * returns a browser for the messageLog, either provided as a {@link IMessageBrowser} by the listener itself, or as a {@link ITransactionalStorage messageLog} in the configuration. 
-	 */
-	public IMessageBrowser<Serializable> getMessageLogBrowser() {
-		return messageLog;
-	}
-
-	/**
-	 * returns a browser of messages inProcess, if provided as a {@link IMessageBrowser} by the listener itself. 
-	 */
-	public IMessageBrowser<Serializable> getInProcessBrowser() {
-		return inProcessBrowser;
-	}
-
 
 
 	/**

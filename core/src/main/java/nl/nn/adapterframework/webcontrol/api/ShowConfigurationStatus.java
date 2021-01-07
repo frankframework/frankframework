@@ -63,6 +63,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.ftp.FtpSender;
@@ -628,7 +629,7 @@ public final class ShowConfigurationStatus extends Base {
 				sender = ((HasSender)listener).getSender();
 			}
 			//receiverInfo.put("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-			IMessageBrowser ts = receiver.getErrorStorageBrowser();
+			IMessageBrowser ts = receiver.getMessageBrowser(ProcessState.ERROR);
 			receiverInfo.put("hasErrorStorage", (ts!=null));
 			if (ts!=null) {
 				try {
@@ -642,7 +643,7 @@ public final class ShowConfigurationStatus extends Base {
 					receiverInfo.put("errorStorageCount", "error");
 				}
 			}
-			ts=receiver.getMessageLogBrowser();
+			ts=receiver.getMessageBrowser(ProcessState.DONE);
 			receiverInfo.put("hasMessageLog", (ts!=null));
 			if (ts!=null) {
 				try {
@@ -656,7 +657,7 @@ public final class ShowConfigurationStatus extends Base {
 					receiverInfo.put("messageLogCount", "error");
 				}
 			}
-			ts=receiver.getInProcessBrowser();
+			ts=receiver.getMessageBrowser(ProcessState.INPROCESS);
 			receiverInfo.put("hasInProcessLog", (ts!=null));
 			if (ts!=null) {
 				try {
