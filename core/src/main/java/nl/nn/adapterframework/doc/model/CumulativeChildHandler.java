@@ -20,31 +20,13 @@ import java.util.List;
 
 /**
  * Callback interface for {@link FrankElement} to walk all declared as well as all inherited attributes or config children.
- * {@link FrankElement} also uses this class to walk config children.
  *
  * @author martijn
  *
  * @param <T> {@link FrankAttribute} or {@link ConfigChild}.
  */
 public interface CumulativeChildHandler<T extends ElementChild> {
-	/**
-	 * Explicitly adds children to the cumulative group.
-	 * @param children The children to add
-	 * @param owner The FrankElement owning the children.
-	 */
 	void handleSelectedChildren(List<T> children, FrankElement owner);
-
-	/**
-	 * Adds the declared group of the kind given by type paramter <code>T</code> and
-	 * the given {@link FrankElement} to the cumulative group being built. 
-	 * @param frankElement The {@link FrankElement} of the declared group to be added
-	 */
 	void handleChildrenOf(FrankElement frankElement);
-
-	/**
-	 * Adds the cumulative group of the kind given by type paramter <code>T</code> and
-	 * the given {@link FrankElement} to the cumulative group being built.
-	 * @param frankElement The {@link FrankElement} of items to be added to the cumulative group being built.
-	 */
 	void handleCumulativeChildrenOf(FrankElement frankElement);
 }

@@ -15,17 +15,17 @@
  * A tag in a Frank config can contain other tags. A <code>&lt;Receiver&gt;</code> can
  * for example contain <code>&lt;DirectQuerySender&gt;</code> or
  * <code>DirectQueryErrorSender</code>. These two tags reference the same Java class, namely
- * {@code nl.nn.adapterframework.jdbc.DirectQuerySender}, but the first tags uses
+ * {@code nl.nn.adapterframework.jdbc.DirectQuerySender}, but the first tag uses
  * it as a Sender while the second tag uses it as an ErrorSender. The model expresses a set
  * of allowed child tags by relating a containing {@link nl.nn.adapterframework.doc.model.FrankElement} to an {@link nl.nn.adapterframework.doc.model.ElementRole}.
  * An {@link nl.nn.adapterframework.doc.model.ElementRole} has a property <code>syntax1Name</code> to express the role and references
- * a {@link nl.nn.adapterframework.doc.model.ElementType} to define what child {@link nl.nn.adapterframework.doc.model.FrankElement} objects can appear. Each
+ * an {@link nl.nn.adapterframework.doc.model.ElementType} to define what child {@link nl.nn.adapterframework.doc.model.FrankElement} objects can appear. Each
  * {@link nl.nn.adapterframework.doc.model.ElementType} has one or more {@link nl.nn.adapterframework.doc.model.FrankElement} objects as members.
  * <p>
  * There are two
  * flavors of {@link nl.nn.adapterframework.doc.model.ElementType} objects. Some {@link nl.nn.adapterframework.doc.model.ElementType} objects model a Java
  * interface. In this case, the members are the {@link nl.nn.adapterframework.doc.model.FrankElement} objects that model
- * the Java classes that implement the Java interface. Please not that not every Java interface
+ * the Java classes that implement the Java interface. Please note that not every Java interface
  * that appears in the Java source code is modeled by an {@link nl.nn.adapterframework.doc.model.ElementType} object. An
  * {@link nl.nn.adapterframework.doc.model.ElementType} object appears only for Java interfaces that are relevant for nesting
  * tags in a Frank config. Some {@link nl.nn.adapterframework.doc.model.ElementType} objects model Java interfaces that have

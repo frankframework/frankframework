@@ -49,7 +49,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.ElementRole;
@@ -61,87 +60,132 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * This class writes the XML Schema document (XSD) that checks the validity of a
- * Frank configuration XML file. The XML Schema is written based on the information
- * in a {@link FrankDocModel} object (the model).
- * 
- * <h1>The syntax 2 name</h1>
+ * This class writes the XML schema document (XSD) that checks the validity of a
+ * Frank configuration XML file. The XML schema is written based on the information
+ * in a {@link FrankDocModel} object (the model). This class is still under construction.
+ * Presently, class {@link DocWriter} is in use for writing the XML schema file.
+ * <p>
+ * Below, a few implementation details are explained.
  *
- * Below, a few implementation details are explained. First, the integration specialist
+ * <h1>How FrankElement is expressed in the XSD</h1>
+ *
+ * First, the integration specialist
  * references an element by a name that reveals both the requested Java class
- * (expressed as a {@link FrankElement} in the model)
- * and the role it plays (e.g. sender or error sender). These requirements are
- * implemented by model method {@link FrankElement#getXsdElementName}. This
- * method takes as an argument the relevant {@link ElementType} to which the {@link FrankElement}
- * of the Java class belongs. The link between this {@link ElementType} and the
- * containing &lt;xs:element&gt; is made through a {@link ConfigChild}.
- * The <code>syntax1Name</code> attribute of this {@link ConfigChild}
- * is the other argument required by {@link FrankElement#getXsdElementName}.
+ * (expressed as a {@link FrankElement} in the model) and the role it plays
+ * (e.g. sender or error sender). These requirements are implemented by model
+ * method {@link FrankElement#getXsdElementName}. This method takes as an
+ * argument the relevant {@link ElementRole}. This applies to XSD elements that
+ * are nested in some other XSD element. The root XSD element has as its name
+ * the simple name of the corresponding {@link FrankElement}, which is
+ * {@link nl.nn.adapterframework.configuration.Configuration}.
  * <p>
- * Each element within the Frank!Framework appears as an &lt;complexType&gt;
- * under the XSD root. It is not duplicated for the different roles it
- * can play. This complex type references a group of config children and a group
- * of attributes. A group of config children consists of &lt;xs:choice&gt; elements that
- * each list the allowed elements available to the integration specialist, element groups.
- * An option within an element group appears as an &lt;xs:element&gt; that has
- * the syntax 2 name as name and the XSD type of the referenced {@link FrankElement} as type.
+ * This class <code>DocWriterNew</code> can apply two different strategies to express
+ * an {@link ElementRole}. The strategy is chosen based on the {@link ElementType}
+ * referenced by the {@link ElementRole}. If the {@link ElementType} models a Java
+ * class, then it has the {@link FrankElement} of that class as the only member.
+ * In this case, an XSD element definition is added as a child of the XML schema root
+ * element. The second strategy is applied when the {@link ElementType} models a
+ * Java interface. In this case, the {@link FrankElement} is expressed as an XSD
+ * element <em>type</em> definition under the XML schema root element. Using a type definition
+ * allows definitions to be reused when the same {@link FrankElement} can play
+ * different roles. We also reuse XSD definitions for {@link FrankElement} objects
+ * modeling Java classes with an inheritance relation.
  * <p>
- * There is a different element group for each combination of an {@link ElementType} and
- * config child syntax 1 name, so there can be multiple element groups per {@link ElementType}. This is
- * the only duplication we need because of syntax 2 names. A {@link FrankElement} is
- * represented in the XSD with a top-level &lt;xs:complexType&gt; item. That item references
- * attribute groups and XSD sequences for config children, but these are not duplicated
- * because of the syntax 2 name issue.
- *
- * <h1>Inheritance of attributes and config children</h1>
- * 
- * Each {@link FrankElement} is represented by a top-level &lt;xs:complexType&gt;.
- * Each Frank!Framework element can have attributes or other elements. 
- * These correspond to {@link FrankAttribute}
- * objects or {@link ConfigChild} objects in the model.
- * <p>
- * In the model, a {@link FrankElement} only holds its declared attributes, but
- * the top-level &lt;xs:complexType&gt; should allow both the declared attributes and the attributes
- * inherited from the ancestors of the {@link FrankElement} (the inherited attributes).
- * The same holds for configuration children. This similarity appears in the model
- * through the common base class {@link ElementChild}, which is a parent class of both
- * {@link FrankAttribute} and {@link ConfigChild}. An attribute defined high in the
- * class hierarchy of the Frank!Framework can be allowed for many FF! elements,
- * but we do not want to repeat the same &lt;xs:attribute&gt; tags in all these cases.
- * We solve this by grouping the attributes, and the config children, in the XSD, for example:
+ * The XML schema type (<code>xs:complexType</code>) references a group of config children and a group
+ * of attributes. Below, this is shown for the XSD type definition for {@link FrankElement}
+ * {@link nl.nn.adapterframework.pipes.SenderPipe}:
  * 
  * <pre>
  * {@code
-<xs:complexType name="ConfigurationType">
-  <xs:group ref="ConfigurationDeclaredChildGroup" />
-  <xs:attributeGroup ref="ConfigurationDeclaredAttributeGroup" />
+<xs:complexType name="SenderPipeType">
+  <xs:group ref="SenderPipeCumulativeChildGroup" />
+  <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
 </xs:complexType>
+} 
+ * </pre>
+ *  
+ * The {@link ConfigChild} instances in {@link FrankElement}
+ * {@link nl.nn.adapterframework.pipes.SenderPipe} appear in an XSD group
+ * <code>SenderPipeDeclaredChildGroup</code>, as follows:
+ * <pre>
+ * {@code
+<xs:group name="SenderPipeDeclaredChildGroup">
+  <xs:sequence>
+    <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
+    <xs:group ref="ListenerElementGroup_3" minOccurs="0" maxOccurs="1" />
+  </xs:sequence>
+</xs:group>
 }
  * </pre>
+ * This snippet shows <code>SenderPipeDeclaredChildGroup</code>, not
+ * <code>SenderPipeCumulativeChildGroup</code>. This has to do with reusing XSD code
+ * when the Java classes modeled by {@link FrankElement} objects have inheritance
+ * relations. This is explained later.
  * <p>
- * The example shows a group named <code>ConfigurationDeclaredChildGroup</code>. This group
- * declares all allowed child FF! elements.
- * <p>
- * An XSD group ending with "DeclaredChildGroup" only holds the <em>declared</em> configuration children
- * or attributes. This is sufficient for Frank config element &lt;Configuration&gt; because the corresponding
- * Java class has only <code>Object</code> as parent. We also use cumulative groups
- * that allow the declared items (attributes / config children) of a {@link FrankElement}
- * as well as the inherited items. The following example in the XSD illustrates this:
+ * A list of allowed child tags appears in an <code>ElementGroup</code>, for example:
  * <pre>
- {@code
-<xs:attributeGroup name="LockerCumulativeAttributeGroup">
-  <xs:attributeGroup ref="LockerDeclaredAttributeGroup" />
-  <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
+ * {@code
+  <xs:group name="SenderElementGroup">
+    <xs:choice>
+      <xs:element name="Sender">
+        <xs:complexType>
+          <xs:group ref="ISenderMemberChildGroup" minOccurs="0" maxOccurs="unbounded" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Afm2EdiFactSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="Afm2EdiFactSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.afm.Afm2EdiFactSender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      ...
+    </xs:choice>
+  </xs:group>
+}
+ * </pre>
+ * 
+ * This example shows how an interface-based {@link ElementRole} is used to put
+ * an entry in a <code>ChildGroup</code>. A class-based {@link ElementRole} appears just as
+ * an element reference, for example:
+ * <pre>
+ * {@code
+<xs:group name="AbstractPipeDeclaredChildGroup">
+  <xs:sequence>
+    <xs:element ref="Param" minOccurs="0" maxOccurs="unbounded" />
+    <xs:element ref="Locker" minOccurs="0" maxOccurs="1" />
+    <xs:element ref="Forward" minOccurs="0" maxOccurs="unbounded" />
+  </xs:sequence>
+</xs:group>
+}
+ * </pre>
+ *
+ * <h1>Inheritance of attributes and config children</h1>
+ * 
+ * In the model, a {@link FrankElement} only holds its declared attributes,
+ * but a corresponding top-level &lt;xs:complexType&gt; should allow both the declared
+ * attributes and the attributes inherited from the ancestors of the {@link FrankElement}
+ * (the inherited attributes). The same holds for configuration children. This similarity
+ * appears in the model through the common base class {@link ElementChild}, which is a
+ * parent class of both {@link FrankAttribute} and {@link ConfigChild}. An attribute
+ * defined high in the class hierarchy of the Frank!Framework can be allowed for many
+ * FF! elements, but we do not want to repeat the same &lt;xs:attribute&gt; tags in all
+ * these cases. We solve this by grouping the attributes, and the config children,
+ * in the XSD, for example:
+ * <pre>
+ * {@code
+<xs:attributeGroup name="FixedResultPipeCumulativeAttributeGroup">
+  <xs:attributeGroup ref="FixedResultPipeDeclaredAttributeGroup" />
+  <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
 </xs:attributeGroup>
 }
  * </pre>
- * The Frank!Framework has a Java class named <code>Locker</code> that has class
- * <code>JdbcFacade</code> as its parent. The group <code>LockerCumulativeAttributeGroup</code>
- * is defined recursively: all declared attributes of <code>Locker</code> are in, and all
- * declared and inherited attributes of the parent class <code>JdbcFacade</code>. The
- * recursion stops with the ancestor that holds the last inherited attributes, because
- * for that ancestor we do not introduce a cumulative group and use the declared group
- * only.
  * <p>
  * Another issue about groups needs explanation. Some Java classes of the Frank!Framework override
  * attributes that become then duplicate in the model. They appear as declared attributes
@@ -180,25 +224,58 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Finally, 'technical' overrides are ignored by this algorithm, which are
  * setters with an override annotation that are not deprecated and lack
  * IbisDoc or IbisDocRef annotations.
- * 
- * <h1> The options for a config child</h1>
  *
- * The {@link ConfigChild} class in the model determines what &lt;xs:element&gt; are allowed
- * as children of another &lt;xs:element&gt;. The containing &lt;xs:element&gt; is the
- * <code>owningElement</code> field, which is of type {@link FrankElement}. A {@link ConfigChild} is
- * characterized by the combination of an owning element and an {@link ElementType}. As an example
- * consider the {@link ConfigChild} that exists for the combination of owning element
- * "<code>Receiver</code>" and element type "<code>IListener</code>". It produces
- * the following XML schema:
- * <pre>
- * {@code
-<xs:group ref="IListenerListenerElementGroup" minOccurs="0" maxOccurs="1" />
-}
- * </pre>
- * This snippet appears within <code>&lt;xs:group name="ReceiverDeclaredChildGroup"&gt;&lt;xs:sequence&gt;</code>.
- * The snippet states that a Receiver can contain all elements related to a Java class implementing
- * {@link IListener}, playing the role of a listener. The duplication because of syntax 2 names becomes
- * visible here.
+ * <h1>Summary of XSD definitions</h1>
+ *
+ * Here is a summary of all definitions that appear in the XSD:
+ * <p>
+ * <table>
+ *   <tr>
+ *     <th style="text-align:left">Kind</th>
+ *     <th style="text-align:left">Name suffix</th>
+ *     <th style="text-align:left">Explanation</th>
+ *   </tr>
+ *   <tr>
+ *     <td><code>xs:element</code></td>
+ *     <td>n/a</td>
+ *     <td>Allows the integration specialist to use a tag.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>xs:complexType</code>
+ *     <td><code>Type</code></td>
+ *     <td>Expresses a {@link FrankElement} that can be used in multiple roles.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>xs:attributeGroup</code></td>
+ *     <td><code>DeclaredAttributeGroup</code></td>
+ *     <td>Groups the attributes that a {@link FrankElement} allows, omitting inherited attributes.
+ *   </tr>
+ *   <tr>
+ *     <td><code>xs:attributeGroup</code></td>
+ *     <td><code>CumulativeAttributeGroup</code></td>
+ *     <td>Groups the attributes that a {@link FrankElement} allows, including inherited attributes.
+ *   </tr>
+ *   <tr>
+ *     <td><code>xs:group</code></td>
+ *     <td><code>DeclaredChildGroup</code></td>
+ *     <td>Defines a list of tags that is allowed within a parent tag, disregarding inheritance.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>xs:group</code></td>
+ *     <td><code>CumulativeChildGroup</code></td>
+ *     <td>Defines a list of tags that is allowed within a parent tag, including inheritance.</td>
+ *   </tr>
+ *     <td><code>xs:group</code></td>
+ *     <td><code>ElementGroup</code></td>
+ *     <td>Lists all choices that are allowed for a child tag.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>xs:group</code></td>
+ *     <td><code>MemberChildGroup</code></td>
+ *     <td>Lists all choices that are allowed for a child tag of a syntax 1 parent tag
+ *     (e.g. <code>&lt;Listener className="nl.nn.adapterframework.http.rest.ApiListener"&gt;</code>.</td>
+ *   </tr>
+ * </table>
  *
  * @author martijn
  *
