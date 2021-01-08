@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019, 2020 WeAreFrank!
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -52,6 +52,9 @@ public final class BrowseJdbcTable extends Base {
 
 	private static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 	private static final String permissionRules = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
+	private static final String COLUMN_NAME = "COLUMN_NAME"; 
+	private static final String DATA_TYPE = "DATA_TYPE"; 
+	private static final String COLUMN_SIZE = "COLUMN_SIZE"; 
 	private Logger log = LogUtil.getLogger(this);
 	private String countColumnName = "ROWCOUNTER";
 	private String rnumColumnName = "RNUM";
@@ -149,9 +152,9 @@ public final class BrowseJdbcTable extends Base {
 						fielddefinition.append(field);
 						fieldDef.put(rnumColumnName, "INTEGER");
 						while(rs.next()) {
-							field = "<field name=\"" + rs.getString(4) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(5)) + "\" size=\"" + rs.getInt(7) + "\"/>";
+							field = "<field name=\"" + rs.getString(COLUMN_NAME) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
 							fielddefinition.append(field);
-							fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
+							fieldDef.put(rs.getString(COLUMN_NAME), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
 						}
 					} else {
 						field = "<field name=\""+countColumnName+"\" type=\"INTEGER\" />";
@@ -160,9 +163,9 @@ public final class BrowseJdbcTable extends Base {
 						if(StringUtils.isNotEmpty(order)) {
 							rs = conn.getMetaData().getColumns(null, null, tableName, order);
 							while(rs.next()) {
-								field = "<field name=\"" + rs.getString(4) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(5)) + "\" size=\"" + rs.getInt(7) + "\"/>";
+								field = "<field name=\"" + rs.getString(COLUMN_NAME) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
 								fielddefinition.append(field);
-								fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
+								fieldDef.put(rs.getString(COLUMN_NAME), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
 							}
 						}
 					}
