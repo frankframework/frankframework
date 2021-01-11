@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,7 +40,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.xml.sax.SAXException;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.digester.DigesterRule;

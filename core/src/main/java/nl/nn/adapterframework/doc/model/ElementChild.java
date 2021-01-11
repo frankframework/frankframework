@@ -35,6 +35,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * attributes. In both cases, we have cumulative groups that include inherited
  * items and declared groups that hold only items at the present level of the
  * inheritance hierarchy. Please see this in action at {@link DocWriterNew}.
+ * </ul>
  *
  * @author martijn
  */
