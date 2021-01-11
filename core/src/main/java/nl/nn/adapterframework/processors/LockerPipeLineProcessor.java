@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.processors;
 
-import java.sql.SQLException;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
