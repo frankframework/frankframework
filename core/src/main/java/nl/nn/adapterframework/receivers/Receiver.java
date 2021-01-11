@@ -493,7 +493,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	protected void propagateName() {
 		IListener<M> listener=getListener();
 		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
-			listener.setName("listener of ["+getName()+"]");
+			if(StringUtils.isNotEmpty(getName())) {
+				listener.setName("listener of ["+getName()+"]");
+			} else {
+				listener.setName(ClassUtils.nameOf(listener));
+			}
 		}
 		ISender errorSender = getErrorSender();
 		if (errorSender != null) {
@@ -523,7 +527,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			super.configure();
 			if (StringUtils.isEmpty(getName())) {
 				if (getListener()!=null) {
-					setName(ClassUtils.nameOf(getListener()));
+					if(StringUtils.isNotEmpty(getListener().getName())) {
+						setName(getListener().getName() + " " + ClassUtils.nameOf(getListener()));
+					} else {
+						setName(ClassUtils.nameOf(getListener()));
+					}
 				} else {
 					setName(ClassUtils.nameOf(this));
 				}
@@ -1862,15 +1870,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	
 	
 	/**
-	 * Sets the listener. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
-	 * of the listener is empty, the name of this object is given to the listener.
+	 * Sets the listener.
+	 * 
 	 */
 	@IbisDoc({"10", "The source of messages"})
 	public void setListener(IListener<M> newListener) {
 		listener = newListener;
-		if (StringUtils.isEmpty(listener.getName())) {
-			listener.setName("listener of ["+getName()+"]");
-		}
 		if (listener instanceof RunStateEnquiring)  {
 			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
 		}
