@@ -36,17 +36,21 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	private @Getter TransactionDefinition txDef = null;
 
 	public void configure() throws ConfigurationException {
-		if (isTransacted() && getTransactionTimeout()>0) {
+		txDef = configure(log, getTransactionAttributeNum(), getTransactionTimeout());
+	}
+	
+	public static TransactionDefinition configure(Logger log, int transactionAttribute, int transactionTimeout) throws ConfigurationException {
+		if (isTransacted(transactionAttribute) && transactionTimeout>0) {
 			Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-			if (maximumTransactionTimeout != null && getTransactionTimeout() > maximumTransactionTimeout) {
-				ConfigurationWarnings.add(null, log, "transaction timeout ["+getTransactionTimeout()+"] exceeds the maximum transaction timeout ["+maximumTransactionTimeout+"]");
+			if (maximumTransactionTimeout != null && transactionTimeout > maximumTransactionTimeout) {
+				ConfigurationWarnings.add(null, log, "transaction timeout ["+transactionTimeout+"] exceeds the maximum transaction timeout ["+maximumTransactionTimeout+"]");
 			}
 		}
 
-		int txOption = this.getTransactionAttributeNum();
-		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+getTransactionAttribute()+"], timeout ["+getTransactionTimeout()+"]");
-		txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
+		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+JtaUtil.getTransactionAttributeString(transactionAttribute)+"], timeout ["+transactionTimeout+"]");
+		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute,transactionTimeout);
 	}
+	
 	
 	@Override
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
@@ -80,7 +84,10 @@ public class TransactionAttributes implements HasTransactionAttribute {
 		}
 	}
 	public boolean isTransacted() {
-		int txAtt = getTransactionAttributeNum();
+		return isTransacted(getTransactionAttributeNum());
+	}
+
+	public static boolean isTransacted(int txAtt) {
 		return  txAtt==TransactionDefinition.PROPAGATION_REQUIRED || 
 				txAtt==TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
 				txAtt==TransactionDefinition.PROPAGATION_MANDATORY;

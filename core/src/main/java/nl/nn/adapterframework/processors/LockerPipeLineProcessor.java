@@ -38,7 +38,7 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 			try {
 				objectId = locker.lock();
 			} catch (Exception e) {
-				throw new PipeRunException(null, "error while setting lock", e);
+				throw new PipeRunException(null, "error while setting lock ["+locker.getObjectId()+"]", e);
 			}
 			if (objectId != null) {
 				try {
@@ -48,7 +48,7 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 						locker.unlock(objectId);
 					} catch (Exception e) {
 						//throw new PipeRunException(null, "error while removing lock", e);
-						String msg = "error while removing lock: " + e.getMessage();
+						String msg = "error while removing lock ["+locker.getObjectId()+"]: " + e.getMessage();
 						log.warn(msg);
 					}
 				}

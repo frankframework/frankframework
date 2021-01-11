@@ -23,18 +23,24 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeoutException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IbisTransaction;
+import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+
+import lombok.Getter;
 
 /**
  * Locker of scheduler jobs and pipes.
@@ -65,7 +71,7 @@ import org.springframework.transaction.TransactionStatus;
  * 
  * @author  Peter Leeuwenburgh
  */
-public class Locker extends JdbcFacade {
+public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private static final String LOCK_IGNORED="%null%";
 
 	private String objectId;
@@ -79,16 +85,19 @@ public class Locker extends JdbcFacade {
 	private int firstDelay = 10000;
 	private int retryDelay = 10000;
 	private boolean ignoreTableNotExist = false;
-	private PlatformTransactionManager txManager;
 	
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
-	private int transactionTimeout=0;
+	private @Getter int transactionTimeout = 0;
+	private @Getter int lockWaitTimeout = 0;
+	
+	private PlatformTransactionManager txManager;
+	private @Getter TransactionDefinition txDef = null;
 	
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-
+		txDef = TransactionAttributes.configure(log, getTransactionAttributeNum(), getTransactionTimeout());
 		if (StringUtils.isEmpty(getObjectId())) {
 			throw new ConfigurationException(getLogPrefix()+ "an objectId must be specified");
 		}
@@ -111,11 +120,15 @@ public class Locker extends JdbcFacade {
 		}
 	}
 
-	public String lock() throws JdbcException, SQLException, InterruptedException {
+	public String lock() throws JdbcException, SQLException, InterruptedException, TimeoutException {
 		return lock(null);
 	}
 
-	public String lock(MessageKeeper messageKeeper) throws JdbcException, SQLException, InterruptedException {
+	/**
+	 * Obtain the lock. If successful, the non-null lockId is returned. 
+	 * If the lock cannot be obtained within the lock-timeout, null is returned.
+	 */
+	public String lock(MessageKeeper messageKeeper) throws JdbcException, SQLException, InterruptedException, TimeoutException {
 
 		try (Connection conn = getConnection()) {
 			if (!getDbmsSupport().isTablePresent(conn, "IBISLOCK")) {
@@ -141,8 +154,7 @@ public class Locker extends JdbcFacade {
 			IbisTransaction itx = null;
 			TransactionStatus txStatus = null;
 			if (getTxManager()!=null) {
-				TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(transactionAttribute, transactionTimeout);
-				itx = new IbisTransaction(getTxManager(), txdef, "locker ["+getName()+"]");
+				itx = new IbisTransaction(getTxManager(), txDef, "locker ["+getName()+"]");
 				txStatus = itx.getStatus();
 			}
 			try {
@@ -152,6 +164,7 @@ public class Locker extends JdbcFacade {
 					String formattedDate = formatter.format(date);
 					objectIdWithSuffix = objectIdWithSuffix.concat(formattedDate);
 				}
+				
 				log.debug("preparing to set lock [" + objectIdWithSuffix + "]");
 				try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
 					stmt.clearParameters();
@@ -167,8 +180,32 @@ public class Locker extends JdbcFacade {
 						cal.add(Calendar.DAY_OF_MONTH, getRetention());
 					}
 					stmt.setTimestamp(5, new Timestamp(cal.getTime().getTime()));
-					stmt.executeUpdate();
-					log.debug("lock ["+objectIdWithSuffix+"] set");
+					TimeoutGuard timeoutGuard = null;
+					if (lockWaitTimeout > 0) {
+						timeoutGuard = new TimeoutGuard(lockWaitTimeout, "LockerInsert") {
+
+							@Override
+							protected void abort() {
+								try {
+									stmt.cancel();
+								} catch (SQLException e) {
+									log.warn("Could not cancel statement",e);
+								}
+							}
+						};
+					};
+					try {
+						stmt.executeUpdate();
+						log.debug("lock ["+objectIdWithSuffix+"] inserted executed");
+					} finally {
+						if (timeoutGuard!=null && timeoutGuard.cancel()) {
+							if(txStatus != null) {
+								txStatus.setRollbackOnly();
+							}
+							log.warn("Timeout obtaining lock ["+objectId+"]");
+							objectIdWithSuffix = null;
+						};
+					}
 				} catch (SQLException e) {
 					if(txStatus != null) {
 						txStatus.setRollbackOnly();
@@ -194,12 +231,16 @@ public class Locker extends JdbcFacade {
 					}
 				}
 			} finally {
-				if(itx != null) {
-					itx.commit();
+				try {
+					if(itx != null) {
+						itx.commit();
+					}
+				} catch (Exception e) {
+					log.warn("Could not commit locker", e);
+					objectIdWithSuffix = null;
 				}
 			}
 		}
-
 		return objectIdWithSuffix;
 	}
 
@@ -250,64 +291,57 @@ public class Locker extends JdbcFacade {
 		return dateFormatSuffix;
 	}
 
-	@IbisDoc({"type for this lock: p(ermanent) or t(emporary). a temporary lock is deleted after the job has completed", "t"})
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	@IbisDoc({"identifier for this lock", ""})
+	@IbisDoc({"1", "Identifier for this lock", ""})
 	public void setObjectId(String objectId) {
 		this.objectId = objectId;
 	}
-
 	public String getObjectId() {
 		return objectId;
 	}
 
-	@IbisDoc({"the time (for type=p in days and for type=t in hours) to keep the record in the database before making it eligible for deletion by a cleanup process", "30 days (type=p), 4 hours (type=t)"})
+	@IbisDoc({"2", "type for this lock: P(ermanent) or T(emporary). A temporary lock is deleted after the job has completed", "T"})
+	public void setType(String type) {
+		this.type = type;
+	}
+	public String getType() {
+		return type;
+	}
+
+	@IbisDoc({"3", "The time (for type=P in days and for type=T in hours) to keep the record in the database before making it eligible for deletion by a cleanup process", "30 days (type=P), 4 hours (type=T)"})
 	public void setRetention(int retention) {
 		this.retention = retention;
 	}
-
 	public int getRetention() {
 		return retention;
 	}
 
+	@IbisDoc({"4", "The number of times an attempt should be made to acquire a lock, after this many times an exception is thrown when no lock could be acquired, when -1 the number of retries is unlimited", "0"})
+	public void setNumRetries(int numRetries) {
+		this.numRetries = numRetries;
+	}
 	public int getNumRetries() {
 		return numRetries;
 	}
 
-	@IbisDoc({"the number of times an attempt should be made to acquire a lock, after this many times an exception is thrown when no lock could be acquired, when -1 the number of retries is unlimited", "0"})
-	public void setNumRetries(int numRetries) {
-		this.numRetries = numRetries;
+	@IbisDoc({"5", "The time in ms to wait before the first attempt to acquire a lock is made, this may be 0 but keep in mind that the other thread or ibis instance will propably not get much chance to acquire a lock when another message is already waiting for the thread having the current lock in which case it will probably acquire a new lock soon after releasing the current lock", "10000"})
+	public void setFirstDelay(int firstDelay) {
+		this.firstDelay = firstDelay;
 	}
-
 	public int getFirstDelay() {
 		return firstDelay;
 	}
 
-	@IbisDoc({"the time in ms to wait before the first attempt to acquire a lock is made, this may be 0 but keep in mind that the other thread or ibis instance will propably not get much change to acquire a lock when another message is already waiting for the thread having the current lock in which case it will probably acquire a new lock soon after releasing the current lock", "10000"})
-	public void setFirstDelay(int firstDelay) {
-		this.firstDelay = firstDelay;
-	}
-
-	public int getRetryDelay() {
-		return retryDelay;
-	}
-
-	@IbisDoc({"the time in ms to wait before another attempt to acquire a lock is made", "10000"})
+	@IbisDoc({"6", "the time in ms to wait before another attempt to acquire a lock is made", "10000"})
 	public void setRetryDelay(int retryDelay) {
 		this.retryDelay = retryDelay;
+	}
+	public int getRetryDelay() {
+		return retryDelay;
 	}
 
 	public void setIgnoreTableNotExist(boolean b) {
 		ignoreTableNotExist = b;
 	}
-
 	public boolean isIgnoreTableNotExist() {
 		return ignoreTableNotExist;
 	}
@@ -319,37 +353,31 @@ public class Locker extends JdbcFacade {
 		return txManager;
 	}
 
+	@Override
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
 
-	@IbisDoc({"3", "Defines transaction and isolation behaviour."
-			+ "For developers: it is equal"
-			+ "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>."
-			+ "Possible values are:"
-			+ "  <table border=\"1\">"
-			+ "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Job excecuted in Transaction</th></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
-			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
-			+ "											      <tr><td>T1</td>  <td>T2</td></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
-			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
-			+ "											      <tr><td>T1</td>  <td>none</td></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
-			+ " 										      <tr><td>T1</td>  <td>T1</td></tr>"
-			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
-			+ "											      <tr><td>T1</td>  <td>error</td></tr>"
-			+ "  </table>", "Supports"})
+	@Override
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
 			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
 		}
 	}
+	@Override
 	public String getTransactionAttribute() {
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
+	
+	@Override
+	public void setTransactionAttributeNum(int i) {
+		transactionAttribute = i;
+	}
+	@Override
+	public int getTransactionAttributeNum() {
+		return transactionAttribute;
+	}
+
 
 }

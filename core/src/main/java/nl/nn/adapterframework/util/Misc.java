@@ -838,8 +838,7 @@ public class Misc {
 		}
 	}
 
-	public static String getConnectionPoolProperties(String confResString,
-	                                                 String providerType, String jndiName) {
+	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) {
 		try {
 			Class<?>[] args_types = new Class<?>[3];
 			args_types[0] = String.class;
@@ -854,8 +853,7 @@ public class Misc {
 					.getMethod("getConnectionPoolProperties", args_types)
 					.invoke(null, args);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server: "
-					+ e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server: " + e.getMessage());
 			return null;
 		}
 	}
