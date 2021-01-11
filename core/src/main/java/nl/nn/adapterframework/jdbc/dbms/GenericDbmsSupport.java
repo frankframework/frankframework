@@ -463,12 +463,8 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public boolean isUniqueConstraintViolation(SQLException e) {
-		if (e.getErrorCode() == 1062 // MySQL
-			|| "23505".equals(e.getSQLState()) // PostgreSQL, DB2
-			) {
-			return true;
-		}
-		return false;
+		return e.getErrorCode() == 1062 // MySQL
+				|| "23505".equals(e.getSQLState()); // PostgreSQL, DB2
 	}
 	
 	@Override

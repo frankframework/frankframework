@@ -82,10 +82,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public boolean isUniqueConstraintViolation(SQLException e) {
-		if(e.getErrorCode() == 23505) {
-			return true;
-		}
-		return false;
+		return e.getErrorCode() == 23505;
 	}
 
 //	@Override

@@ -184,7 +184,7 @@ public class LockerTest extends JdbcTestBase {
 			timer.schedule(new TimerTask() {
 								@Override
 								public void run() {
-									otherContinue.release();;
+									otherContinue.release();
 								}
 							}, 1000L);
 			String objectId = locker.lock();
@@ -245,7 +245,7 @@ public class LockerTest extends JdbcTestBase {
 								timer.schedule(new TimerTask() {
 													@Override
 													public void run() {
-														waitBeforeCommit.release();;
+														waitBeforeCommit.release();
 													}
 												}, 1000L);
 								stmt.executeUpdate();

@@ -23,8 +23,13 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IbisTransaction;
@@ -34,13 +39,6 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-
-import lombok.Getter;
 
 /**
  * Locker of scheduler jobs and pipes.
@@ -194,7 +192,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 								}
 							}
 						};
-					};
+					}
 					try {
 						stmt.executeUpdate();
 						log.debug("lock ["+objectIdWithSuffix+"] inserted executed");
@@ -205,7 +203,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 							}
 							log.warn("Timeout obtaining lock ["+objectId+"]");
 							objectIdWithSuffix = null;
-						};
+						}
 					}
 				} catch (SQLException e) {
 					if(txStatus != null) {
