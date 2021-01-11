@@ -19,23 +19,13 @@ package nl.nn.adapterframework.core;
  * Interface that can be implemented by Listeners that provide their own management of
  * messages processed and in error.
  */
-public interface IProvidesMessageBrowsers<M> {
+public interface IProvidesMessageBrowsers<M> extends IHasProcessState<M> {
+
 
 	/**
-	 * returns a {@link IMessageBrowser browser} of messages that have a status that they are currently being processed.
+	 * returns a {@link IMessageBrowser browser} of messages that are in ProcessState 'state', and are stored in a 
+	 * storage managed by the listener itself (as opposed to a storage configured as a messageLog or errorStorage in the configuration).
 	 */
-	public IMessageBrowser<M> getInProcessBrowser();
-
-	/**
-	 * returns a {@link IMessageBrowser browser} of messages that have been processed successfully, and are stored in a 
-	 * storage managed by the listener itself (as opposed to a storage configured as a messageLog in the configuration).
-	 */
-	public IMessageBrowser<M> getMessageLogBrowser();
-	
-	/**
-	 * returns a {@link IMessageBrowser browser} of messages that have been processed in error, and are stored in a 
-	 * storage managed by the listener itself (as opposed to a storage configured as a errorStore in the configuration).
-	 */
-	public IMessageBrowser<M> getErrorStoreBrowser();
+	public IMessageBrowser<M> getMessageBrowser(ProcessState state);
 	
 }

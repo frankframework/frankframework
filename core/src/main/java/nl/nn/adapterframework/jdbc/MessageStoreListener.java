@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2015-2017 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.apache.commons.lang.text.StrTokenizer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -139,18 +140,12 @@ public class MessageStoreListener extends JdbcTableListener {
 	}
 	
 	@Override
-	public IMessageBrowser<Object> getInProcessBrowser() {
-		return augmentMessageBrowser(super.getInProcessBrowser());
-	}
-
-	@Override
-	public IMessageBrowser<Object> getMessageLogBrowser() {
-		return augmentMessageBrowser(super.getMessageLogBrowser());
-	}
-
-	@Override
-	public IMessageBrowser<Object> getErrorStoreBrowser() {
-		return augmentMessageBrowser(super.getErrorStoreBrowser());
+	public IMessageBrowser<Object> getMessageBrowser(ProcessState state) {
+		IMessageBrowser<Object> browser = super.getMessageBrowser(state);
+		if (browser!=null) {
+			return augmentMessageBrowser(browser);
+		}
+		return null;
 	}
 
 

@@ -89,6 +89,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	}
 
 	public void stop() {
+		// nothing special here
 	}
 
 	@Override
@@ -127,10 +128,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private class ControllerTask implements SchedulingAwareRunnable {
 
+		@Override
 		public boolean isLongLived() {
 			return true;
 		}
 
+		@Override
 		public void run() {
 			log.debug(receiver.getLogPrefix()+" taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
 			receiver.setRunState(RunStateEnum.STARTED);
@@ -188,39 +191,37 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					TransactionStatus txStatus = null;
 					try {
 						try {
-							boolean messageAvailable = true;
-							if (isIdle() && listener instanceof IPeekableListener) {
-								IPeekableListener peekableListener = (IPeekableListener) listener;
-								if (peekableListener.isPeekUntransacted()) {
-									messageAvailable = peekableListener.hasRawMessageAvailable();
+							try {
+								boolean messageAvailable = true;
+								if (isIdle() && listener instanceof IPeekableListener) {
+									IPeekableListener<?> peekableListener = (IPeekableListener<?>) listener;
+									if (peekableListener.isPeekUntransacted()) {
+										messageAvailable = peekableListener.hasRawMessageAvailable();
+									}
+								}
+								if (messageAvailable) {
+									if (receiver.isTransacted()) {
+										txStatus = txManager.getTransaction(txNew);
+									}
+									rawMessage = listener.getRawMessage(threadContext);
+								}
+								resetRetryInterval();
+								setIdle(rawMessage==null);
+							} catch (Exception e) {
+								if (txStatus!=null) {
+									txManager.rollback(txStatus);
+								}
+								if (receiver.isOnErrorContinue()) {
+									increaseRetryIntervalAndWait(e);
+								} else {
+									receiver.error("stopping receiver after exception in retrieving message", e);
+									receiver.stopRunning();
+									return;
 								}
 							}
-							if (messageAvailable) {
-								if (receiver.isTransacted()) {
-									txStatus = txManager.getTransaction(txNew);
-								}
-								rawMessage = listener.getRawMessage(threadContext);
-							}
-							resetRetryInterval();
-							setIdle(rawMessage==null);
-						} catch (Exception e) {
-							if (txStatus!=null) {
-								txManager.rollback(txStatus);
-							}
-							if (receiver.isOnErrorContinue()) {
-								increaseRetryIntervalAndWait(e);
-							} else {
-								receiver.error("stopping receiver after exception in retrieving message", e);
-								receiver.stopRunning();
+							if (rawMessage == null) {
 								return;
 							}
-						} finally {
-							pollTokenReleased=true;
-							if (pollToken != null) {
-								pollToken.release();
-							}
-						}
-						if (rawMessage != null) {
 							tasksStarted.increase(); 
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
@@ -232,30 +233,36 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								txManager.commit(txStatus);
 								txStatus = txManager.getTransaction(txNew);
 							}
-							try {
-								receiver.processRawMessage(listener, rawMessage, threadContext);
-								if (txStatus != null) {
-									if (txStatus.isRollbackOnly()) {
-										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-										rollBack(txStatus, listener, rawMessage, threadContext);
-									} else {
-										txManager.commit(txStatus);
-									}
+						} finally {
+							// release pollToken after message has been moved to inProcess, so it is not seen as 'available' by the next thread
+							pollTokenReleased=true;
+							if (pollToken != null) {
+								pollToken.release();
+							}
+						}
+						try {
+							receiver.processRawMessage(listener, rawMessage, threadContext);
+							if (txStatus != null) {
+								if (txStatus.isRollbackOnly()) {
+									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
+									rollBack(txStatus, listener, rawMessage, threadContext);
+								} else {
+									txManager.commit(txStatus);
 								}
-							} catch (Exception e) {
-								try {
-									if (txStatus != null && !txStatus.isCompleted()) {
-										rollBack(txStatus, listener, rawMessage, threadContext);
-									}
-								} catch (Exception e2) {
-									receiver.error("caught Exception rolling back transaction after catching Exception", e2);
-								} finally {
-									if (receiver.isOnErrorContinue()) {
-										receiver.error("caught Exception processing message, will continue processing next message", e);
-									} else {
-										receiver.error("stopping receiver after Exception in processing message", e);
-										receiver.stopRunning();
-									}
+							}
+						} catch (Exception e) {
+							try {
+								if (txStatus != null && !txStatus.isCompleted()) {
+									rollBack(txStatus, listener, rawMessage, threadContext);
+								}
+							} catch (Exception e2) {
+								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
+							} finally {
+								if (receiver.isOnErrorContinue()) {
+									receiver.error("caught Exception processing message, will continue processing next message", e);
+								} else {
+									receiver.error("stopping receiver after Exception in processing message", e);
+									receiver.stopRunning();
 								}
 							}
 						}

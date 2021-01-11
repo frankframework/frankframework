@@ -21,7 +21,9 @@ import java.util.Map;
  * a message to 'inProcess' while it is being executed. In case of a rollback of the executing
  * transaction, the status of the message will be reverted to 'available', so that it can be retried. 
  * 
- * @author  Gerrit van Brakel
+ * @see IHasProcessState
+ * 
+ * @author Gerrit van Brakel
  */
 public interface IUsesInProcessState<M> extends IPullingListener<M> {
 

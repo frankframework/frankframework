@@ -51,6 +51,7 @@ import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -89,9 +90,9 @@ public class TransactionalStorage extends Base {
 		//StorageType
 		IMessageBrowser storage;
 		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageLogBrowser();
+			storage = receiver.getMessageBrowser(ProcessState.DONE);
 		else
-			storage = receiver.getErrorStorageBrowser();
+			storage = receiver.getMessageBrowser(ProcessState.ERROR);
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
@@ -124,9 +125,9 @@ public class TransactionalStorage extends Base {
 		//StorageType
 		IMessageBrowser storage;
 		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageLogBrowser();
+			storage = receiver.getMessageBrowser(ProcessState.DONE);
 		else
-			storage = receiver.getErrorStorageBrowser();
+			storage = receiver.getMessageBrowser(ProcessState.ERROR);
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
@@ -171,9 +172,9 @@ public class TransactionalStorage extends Base {
 		//StorageType
 		IMessageBrowser storage;
 		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageLogBrowser();
+			storage = receiver.getMessageBrowser(ProcessState.DONE);
 		else
-			storage = receiver.getErrorStorageBrowser();
+			storage = receiver.getMessageBrowser(ProcessState.ERROR);
 
 		if(storage == null) {
 			throw new ApiException("no IMessageBrowser found");
@@ -301,7 +302,7 @@ public class TransactionalStorage extends Base {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		deleteMessage(receiver.getErrorStorageBrowser(), messageId);
+		deleteMessage(receiver.getMessageBrowser(ProcessState.ERROR), messageId);
 
 		return Response.status(Response.Status.OK).build();
 	}
@@ -334,7 +335,7 @@ public class TransactionalStorage extends Base {
 		List<String> errorMessages = new ArrayList<String>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
-				deleteMessage(receiver.getErrorStorageBrowser(), messageIds[i]);
+				deleteMessage(receiver.getMessageBrowser(ProcessState.ERROR), messageIds[i]);
 			}
 			catch(Exception e) {
 				if(e instanceof ApiException) {

@@ -2231,11 +2231,9 @@ angular.module('iaf.beheerconsole')
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
 
 		$scope.columnNames = [{
-			id: 0,
-			name: "RNUM",
-			desc: "Row Number"
+			
 		}];
-		var columnNameArray = ["RNUM"];
+		var columnNameArray = [];
 		$scope.result = [];
 
 		Api.Post("jdbc/browse", JSON.stringify(formData), function(returnData) {

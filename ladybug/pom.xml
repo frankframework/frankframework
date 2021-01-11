@@ -16,7 +16,7 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-ladybug</artifactId>
-			<version>2.0.15-20201211.235952</version>
+			<version>2.0.15-20210106.180557</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
