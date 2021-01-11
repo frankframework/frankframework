@@ -79,7 +79,7 @@
 
 	<bean name="testStorage,testStoragexxx,testStorageLOC" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
-		<property name="metadataFile" value="${ibistesttool.directory}/metadata.xml"/>
+		<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
 		<property name="reportsFolder" value="${ibistesttool.directory}"/>
 	</bean>
 	<bean name="testStorageDEV,testStorageTST,testStorageACC,testStoragePRD" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
