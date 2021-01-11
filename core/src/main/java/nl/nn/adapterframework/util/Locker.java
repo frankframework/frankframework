@@ -124,8 +124,10 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 
 	/**
 	 * Obtain the lock. If successful, the non-null lockId is returned. 
-	 * If the lock cannot be obtained within the lock-timeout because it held by another party, null is returned.
+	 * If the lock cannot be obtained within the lock-timeout because it is held by another party, null is returned.
+	 * The lock wait timeout of the database can be overridden by setting lockWaitTimeout. 
 	 * A wait timeout beyond the basic lockWaitTimeout and transactionTimeout can be set using numRetries in combination with retryDelay.
+	 * 
 	 */
 	public String lock(MessageKeeper messageKeeper) throws JdbcException, SQLException, InterruptedException {
 
