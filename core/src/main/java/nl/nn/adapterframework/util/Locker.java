@@ -120,15 +120,16 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		}
 	}
 
-	public String lock() throws JdbcException, SQLException, InterruptedException, TimeoutException {
+	public String lock() throws JdbcException, SQLException, InterruptedException {
 		return lock(null);
 	}
 
 	/**
 	 * Obtain the lock. If successful, the non-null lockId is returned. 
-	 * If the lock cannot be obtained within the lock-timeout, null is returned.
+	 * If the lock cannot be obtained within the lock-timeout because it held by another party, null is returned.
+	 * A wait timeout beyond the basic lockWaitTimeout and transactionTimeout can be set using numRetries in combination with retryDelay.
 	 */
-	public String lock(MessageKeeper messageKeeper) throws JdbcException, SQLException, InterruptedException, TimeoutException {
+	public String lock(MessageKeeper messageKeeper) throws JdbcException, SQLException, InterruptedException {
 
 		try (Connection conn = getConnection()) {
 			if (!getDbmsSupport().isTablePresent(conn, "IBISLOCK")) {
@@ -331,7 +332,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		return firstDelay;
 	}
 
-	@IbisDoc({"6", "the time in ms to wait before another attempt to acquire a lock is made", "10000"})
+	@IbisDoc({"6", "The time in ms to wait before another attempt to acquire a lock is made", "10000"})
 	public void setRetryDelay(int retryDelay) {
 		this.retryDelay = retryDelay;
 	}
@@ -379,5 +380,9 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		return transactionAttribute;
 	}
 
+	@IbisDoc({"6", "If > 0: The time in ms to wait before the INSERT statement to obtain the lock is canceled. ", "0"})
+	public void setLockWaitTimeout(int i) {
+		lockWaitTimeout = i;
+	}
 
 }

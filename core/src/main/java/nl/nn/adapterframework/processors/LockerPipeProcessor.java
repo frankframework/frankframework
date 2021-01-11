@@ -43,17 +43,19 @@ public class LockerPipeProcessor extends PipeProcessorBase {
 			try {
 				objectId = locker.lock();
 			} catch (Exception e) {
-				throw new PipeRunException(pipe, "error while setting lock", e);
+				throw new PipeRunException(pipe, "error while trying to obtain lock ["+locker.getObjectId()+"]", e);
 			}
-		}
-		if (objectId != null) {
-			try {
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
-			} finally {
+			if (objectId == null) {
+				throw new PipeRunException(pipe, "could not obtain lock ["+locker.getObjectId()+"]");
+			} else {
 				try {
-					locker.unlock(objectId);
-				} catch (Exception e) {
-					throw new PipeRunException(pipe, "error while removing lock", e);
+					pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+				} finally {
+					try {
+						locker.unlock(objectId);
+					} catch (Exception e) {
+						throw new PipeRunException(pipe, "error while removing lock", e);
+					}
 				}
 			}
 		} else {

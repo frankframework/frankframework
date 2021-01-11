@@ -40,7 +40,11 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 			} catch (Exception e) {
 				throw new PipeRunException(null, "error while setting lock ["+locker.getObjectId()+"]", e);
 			}
-			if (objectId != null) {
+			if (objectId == null) {
+				log.info("could not obtain lock ["+locker.getObjectId()+"]");
+				pipeLineResult = new PipeLineResult();
+				pipeLineResult.setState("success");
+			} else {
 				try {
 					pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 				} finally {
@@ -52,9 +56,6 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 						log.warn(msg);
 					}
 				}
-			} else {
-				pipeLineResult = new PipeLineResult();
-				pipeLineResult.setState("success");
 			}
 		} else {
 			pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);

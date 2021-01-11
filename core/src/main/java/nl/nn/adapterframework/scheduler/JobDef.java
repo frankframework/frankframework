@@ -514,14 +514,20 @@ public class JobDef extends TransactionAttributes {
 						itx = new IbisTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
 					}
 					try {
-						tg.activateGuard(getTransactionTimeout());
-						runJob(ibisManager);
+						try {
+							tg.activateGuard(getTransactionTimeout());
+							runJob(ibisManager);
+						} finally {
+							if (tg.cancel()) {
+								log.error(getLogPrefix()+"thread has been interrupted");
+								if(itx != null) {
+									itx.getStatus().setRollbackOnly();
+								}
+							}
+						}
 					} finally {
 						if(itx != null) {
 							itx.commit();
-						}
-						if (tg.cancel()) {
-							log.error(getLogPrefix()+"thread has been interrupted");
 						}
 					}
 					try {
