@@ -688,8 +688,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		log.debug("registered global PipeForward "+forward.toString());
 	}
 
-	@IbisDoc({"70", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads or servers. When the lock cannot be obtained, " +
-			"what means that another thread, may be in another server, holds the lock, the Pipeline is NOT executed, and is considered to have ended successfully."})
+	@IbisDoc({"70", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads or servers. " + 
+			"The Pipeline is NOT executed (and is considered to have ended successfully) when the lock cannot be obtained, " +
+			"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner."})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}

@@ -101,8 +101,8 @@ public interface IExtendedPipe extends IPipe {
 	public void setDurationThreshold(long maxDuration) ;
 	public long getDurationThreshold();
 
-	@IbisDoc({"Optional Locker, to avoid parallel execution of the Pipe by multiple threads or servers. When the lock cannot be obtained, " +
-			"what means that another thread, may be in another server, holds the lock and does not release it in a timely manner, an exception is thrown."})
+	@IbisDoc({"Optional Locker, to avoid parallel execution of the Pipe by multiple threads or servers. An exception is thrown when the lock cannot be obtained, " +
+			"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner."})
 	public void setLocker(Locker locker);
 	public Locker getLocker();
 
