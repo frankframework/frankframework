@@ -15,9 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.doc;
 
-import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
-import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,16 +35,18 @@ class MemberChildrenCalculator {
 
 	private ElementRole subject;
 	private FrankDocModel model;
+	private XmlSchemaVersionImpl version;
 
-	MemberChildrenCalculator(ElementRole subject, FrankDocModel model) {
+	MemberChildrenCalculator(ElementRole subject, FrankDocModel model, XmlSchemaVersionImpl version) {
 		this.subject = subject;
 		this.model = model;
+		this.version = version;
 	}
 
 	List<ElementRole> getMemberChildOptions() {
 		Map<String, List<ElementRole>> childRolesBySyntax1Name = groupElementRolesBySyntax1Name(
 				model.getElementTypeMemberChildRoles(
-						subject.getElementType(), IN_XSD, DEPRECATED, f -> ! f.isDeprecated()));
+						subject.getElementType(), version.childSelector(), version.childRejector(), version.frankElementFilter()));
 		return disambiguateElementRoles(childRolesBySyntax1Name);
 	}
 

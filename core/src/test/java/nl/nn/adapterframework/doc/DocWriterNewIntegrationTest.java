@@ -13,16 +13,25 @@ import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.model.FrankElementStatistics;
 
-@Ignore("Test takes a long time to run, and gives little information")
+// @Ignore("Test takes a long time to run, and gives little information")
 public class DocWriterNewIntegrationTest {
 
 	@Test
-	public void testXsd() throws IOException {
+	public void testStrict() throws IOException {
+		generateXsd(XmlSchemaVersion.STRICT);
+	}
+
+	@Test
+	public void testCompatibility() throws IOException {
+		generateXsd(XmlSchemaVersion.COMPATIBILITY);
+	}
+
+	private void generateXsd(XmlSchemaVersion version) throws IOException {
 		FrankDocModel model = FrankDocModel.populate();
 		DocWriterNew docWriter = new DocWriterNew(model);
-		docWriter.init();
+		docWriter.init(version);
 		String xsdString = docWriter.getSchema();
-		File output = new File("testFrankdoc.xsd");
+		File output = new File("test" + docWriter.getOutputFileName());
 		System.out.println("Output file of test xsd: " + output.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(output));
 		try {

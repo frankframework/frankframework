@@ -66,6 +66,9 @@ public abstract class ElementChild {
 		(! c.isDeprecated())
 		&& (c.isDocumented() || (c.getOverriddenFrom() == null));
 
+	public static Predicate<ElementChild> IN_COMPATIBILITY_XSD = c ->
+		c.isDocumented() || (c.getOverriddenFrom() == null);
+
 	public static Predicate<ElementChild> DEPRECATED = c -> c.isDeprecated();
 	public static Predicate<ElementChild> ALL = c -> true;
 	public static Predicate<ElementChild> NONE = c -> false;
