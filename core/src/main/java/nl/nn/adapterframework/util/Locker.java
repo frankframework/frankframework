@@ -27,7 +27,6 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -227,13 +226,8 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 					}
 				}
 			} finally {
-				try {
-					if(itx != null) {
-						itx.commit();
-					}
-				} catch (Exception e) {
-					log.warn("Could not commit locker", e);
-					objectIdWithSuffix = null;
+				if(itx != null) {
+					itx.commit();
 				}
 			}
 		}
