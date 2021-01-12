@@ -184,16 +184,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean isUniqueConstraintViolation(SQLException e) {
-		if (e.getErrorCode()==2627) {
-			// Violation of %ls constraint '%.*ls'. Cannot insert duplicate key in object '%.*ls'.
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	@Override
 	public String getRowNumber(String order, String sort) {
 		return "row_number() over (order by "+order+(sort==null?"":" "+sort)+") "+getRowNumberShortName();
 	}

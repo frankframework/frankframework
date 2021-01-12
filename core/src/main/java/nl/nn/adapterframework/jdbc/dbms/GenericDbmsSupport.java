@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -462,9 +462,9 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public boolean isUniqueConstraintViolation(SQLException e) {
-		return e.getErrorCode() == 1062 // MySQL
-				|| "23505".equals(e.getSQLState()); // PostgreSQL, DB2
+	public boolean isConstraintViolation(SQLException e) {
+		String sqlState = e.getSQLState();
+		return sqlState!=null && sqlState.startsWith("23");
 	}
 	
 	@Override

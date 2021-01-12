@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2015, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -80,10 +80,6 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return blob;
 	}
 
-	@Override
-	public boolean isUniqueConstraintViolation(SQLException e) {
-		return e.getErrorCode() == 23505;
-	}
 
 //	@Override
 //	// 2020-07-13 GvB: Did not get "SET SESSION CHARACTERISTICS" to work

@@ -188,6 +188,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 								}
 							}
 						};
+						//timeoutGuard.setInterruptThread(false);
 					}
 					try {
 						stmt.executeUpdate();
@@ -213,7 +214,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 						log.debug(getLogPrefix()+"will not try again");
 
 						boolean isUniqueConstraintViolation = false;
-						isUniqueConstraintViolation = getDbmsSupport().isUniqueConstraintViolation(e);
+						isUniqueConstraintViolation = getDbmsSupport().isConstraintViolation(e);
 						String msg = "error while setting lock: " + e.getMessage();
 						if (isUniqueConstraintViolation || e instanceof SQLTimeoutException) {
 							if(messageKeeper != null) {
@@ -283,7 +284,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		return objectId;
 	}
 
-	@IbisDoc({"2", "type for this lock: P(ermanent) or T(emporary). A temporary lock is deleted after the job has completed", "T"})
+	@IbisDoc({"2", "type for this lock: P(ermanent) or T(emporary). A temporary lock is released after the job has completed", "T"})
 	public void setType(String type) {
 		this.type = type;
 	}

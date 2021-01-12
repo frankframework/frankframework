@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -71,7 +71,6 @@ import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DirectoryCleaner;
-import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -498,17 +497,17 @@ public class JobDef extends TransactionAttributes {
 		}
 		try {
 			String objectId = null;
-			if (getLocker() != null) {
-				try {
-					objectId = getLocker().acquire(getMessageKeeper());
-				} catch (Exception e) {
-					messageKeeper.add(e.getMessage(), MessageKeeperLevel.ERROR);
-					log.error(getLogPrefix()+e.getMessage());
-				}
-				if (objectId!=null) {
-					TimeoutGuard tg = new TimeoutGuard("Job "+getName());
-					IbisTransaction itx = IbisTransaction.getTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
+			IbisTransaction itx = IbisTransaction.getTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
+			try {
+				if (getLocker() != null) {
 					try {
+						objectId = getLocker().acquire(getMessageKeeper());
+					} catch (Exception e) {
+						messageKeeper.add(e.getMessage(), MessageKeeperLevel.ERROR);
+						log.error(getLogPrefix()+e.getMessage());
+					}
+					if (objectId!=null) {
+						TimeoutGuard tg = new TimeoutGuard("Job "+getName());
 						try {
 							tg.activateGuard(getTransactionTimeout());
 							runJob(ibisManager);
@@ -520,21 +519,21 @@ public class JobDef extends TransactionAttributes {
 								}
 							}
 						}
-					} finally {
-						if(itx != null) {
-							itx.commit();
+						try {
+							getLocker().release(objectId);
+						} catch (Exception e) {
+							String msg = "error while removing lock: " + e.getMessage();
+							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
+							log.warn(getLogPrefix()+msg);
 						}
 					}
-					try {
-						getLocker().release(objectId);
-					} catch (Exception e) {
-						String msg = "error while removing lock: " + e.getMessage();
-						getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
-						log.warn(getLogPrefix()+msg);
-					}
+				} else {
+					runJob(ibisManager);
 				}
-			} else {
-				runJob(ibisManager);
+			} finally {
+				if(itx != null) {
+					itx.commit();
+				}
 			}
 		} finally {
 			decrementCountThreads();
@@ -773,8 +772,6 @@ public class JobDef extends TransactionAttributes {
 			List<String> configNames = new ArrayList<String>();
 			List<String> configsToReload = new ArrayList<String>();
 
-			Connection conn = null;
-			ResultSet rs = null;
 			FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
 			qs.setJmsRealm(configJmsRealm);
 			qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
@@ -783,23 +780,24 @@ public class JobDef extends TransactionAttributes {
 			try {
 				qs.configure();
 				qs.open();
-				conn = qs.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(selectQuery);
-				for (Configuration configuration : ibisManager.getConfigurations()) {
-					String configName = configuration.getName();
-					configNames.add(configName);
-					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
-						stmt.setString(1, configName);
-						rs = stmt.executeQuery();
-						if (rs.next()) {
-							String ibisConfigVersion = rs.getString(1);
-							String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
-							if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
-								log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
-							}
-							else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
-								log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
-								configsToReload.add(configName);
+				try (Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
+					for (Configuration configuration : ibisManager.getConfigurations()) {
+						String configName = configuration.getName();
+						configNames.add(configName);
+						if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+							stmt.setString(1, configName);
+							try (ResultSet rs = stmt.executeQuery()) {
+								if (rs.next()) {
+									String ibisConfigVersion = rs.getString(1);
+									String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+									if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
+										log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
+									}
+									else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+										log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
+										configsToReload.add(configName);
+									}
+								}
 							}
 						}
 					}
@@ -807,7 +805,6 @@ public class JobDef extends TransactionAttributes {
 			} catch (Exception e) {
 				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
 			} finally {
-				JdbcUtil.fullClose(conn, rs);
 				qs.close();
 			}
 
@@ -882,80 +879,79 @@ public class JobDef extends TransactionAttributes {
 		qs.setJmsRealm(configJmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 
-		Connection conn = null;
-		ResultSet rs = null;
 		try {
 			qs.configure();
 			qs.open();
-			conn = qs.getConnection();
-			PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES");
-			rs = stmt.executeQuery();
-
-			while(rs.next()) {
-				String jobName = rs.getString("JOBNAME");
-				String jobGroup = rs.getString("JOBGROUP");
-				String adapterName = rs.getString("ADAPTER");
-				String receiverName = rs.getString("RECEIVER");
-				String cronExpression = rs.getString("CRON");
-				int interval = rs.getInt("EXECUTIONINTERVAL");
-				String message = rs.getString("MESSAGE");
-				boolean hasLocker = rs.getBoolean("LOCKER");
-				String lockKey = rs.getString("LOCK_KEY");
-
-				JobKey key = JobKey.jobKey(jobName, jobGroup);
-
-				//Create a new JobDefinition so we can compare it with existing jobs
-				DatabaseJobDef jobdef = new DatabaseJobDef();
-				jobdef.setCronExpression(cronExpression);
-				jobdef.setName(jobName);
-				jobdef.setInterval(interval);
-				jobdef.setJobGroup(jobGroup);
-				jobdef.setAdapterName(adapterName);
-				jobdef.setReceiverName(receiverName);
-				jobdef.setMessage(message);
-
-				if(hasLocker) {
-					Locker locker = (Locker) ibisManager.getIbisContext().createBeanAutowireByName(Locker.class);
-
-					locker.setName(lockKey);
-					locker.setObjectId(lockKey);
-					locker.setJmsRealm(configJmsRealm);
-					jobdef.setLocker(locker);
-				}
-
-				try {
-					jobdef.configure();
-				} catch (ConfigurationException e) {
-					getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
-				}
-
-				// If the job is found, find out if it is different from the existing one and update if necessarily
-				if(databaseJobDetails.containsKey(key)) {
-					IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
-					if(!oldJobDetails.compareWith(jobdef)) {
-						log.debug("updating DatabaseSchedule ["+key+"]");
-						try {
-							sh.scheduleJob(ibisManager, jobdef);
-						} catch (SchedulerException e) {
-							getMessageKeeper().add("unable to update schedule ["+key+"]", e);
+			try (Connection conn = qs.getConnection()) {
+				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
+					try (ResultSet rs = stmt.executeQuery()) {
+						while(rs.next()) {
+							String jobName = rs.getString("JOBNAME");
+							String jobGroup = rs.getString("JOBGROUP");
+							String adapterName = rs.getString("ADAPTER");
+							String receiverName = rs.getString("RECEIVER");
+							String cronExpression = rs.getString("CRON");
+							int interval = rs.getInt("EXECUTIONINTERVAL");
+							String message = rs.getString("MESSAGE");
+							boolean hasLocker = rs.getBoolean("LOCKER");
+							String lockKey = rs.getString("LOCK_KEY");
+			
+							JobKey key = JobKey.jobKey(jobName, jobGroup);
+			
+							//Create a new JobDefinition so we can compare it with existing jobs
+							DatabaseJobDef jobdef = new DatabaseJobDef();
+							jobdef.setCronExpression(cronExpression);
+							jobdef.setName(jobName);
+							jobdef.setInterval(interval);
+							jobdef.setJobGroup(jobGroup);
+							jobdef.setAdapterName(adapterName);
+							jobdef.setReceiverName(receiverName);
+							jobdef.setMessage(message);
+			
+							if(hasLocker) {
+								Locker locker = (Locker) ibisManager.getIbisContext().createBeanAutowireByName(Locker.class);
+			
+								locker.setName(lockKey);
+								locker.setObjectId(lockKey);
+								locker.setJmsRealm(configJmsRealm);
+								jobdef.setLocker(locker);
+							}
+			
+							try {
+								jobdef.configure();
+							} catch (ConfigurationException e) {
+								getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
+							}
+			
+							// If the job is found, find out if it is different from the existing one and update if necessarily
+							if(databaseJobDetails.containsKey(key)) {
+								IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
+								if(!oldJobDetails.compareWith(jobdef)) {
+									log.debug("updating DatabaseSchedule ["+key+"]");
+									try {
+										sh.scheduleJob(ibisManager, jobdef);
+									} catch (SchedulerException e) {
+										getMessageKeeper().add("unable to update schedule ["+key+"]", e);
+									}
+								}
+								// Remove the key that has been found from the databaseJobDetails Map
+								databaseJobDetails.remove(key);
+							} else {
+								// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
+								log.debug("add DatabaseSchedule ["+key+"]");
+								try {
+									sh.scheduleJob(ibisManager, jobdef);
+								} catch (SchedulerException e) {
+									getMessageKeeper().add("unable to add schedule ["+key+"]", e);
+								}
+							}
 						}
-					}
-					// Remove the key that has been found from the databaseJobDetails Map
-					databaseJobDetails.remove(key);
-				} else {
-					// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
-					log.debug("add DatabaseSchedule ["+key+"]");
-					try {
-						sh.scheduleJob(ibisManager, jobdef);
-					} catch (SchedulerException e) {
-						getMessageKeeper().add("unable to add schedule ["+key+"]", e);
 					}
 				}
 			}
 		} catch (Exception e) { // Only catch database related exceptions!
 			getMessageKeeper().add("unable to retrieve schedules from database", e);
 		} finally {
-			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
 
@@ -1258,6 +1254,9 @@ public class JobDef extends TransactionAttributes {
 		return jmsRealm;
 	}
 
+	@IbisDoc({"Optional Locker, to avoid parallel execution of the Job by multiple threads or servers. When the lock cannot be obtained, " +
+				"what means that another thread, may be in another server, has holds the lock, the Job is NOT executed. " +
+				"N.B. To run the locker in a separate transaction, it's transactionAttribute can be set to 'RequiresNew'; otherwise, the locker joins the transaction of the Job."})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 		locker.setName("Locker of job ["+getName()+"]");
