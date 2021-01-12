@@ -85,7 +85,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private @Getter int transactionTimeout = 0;
-	private @Getter int lockWaitTimeout = 0;
+	// private @Getter int lockWaitTimeout = 0; // have to disable this, I cannot get it implemented properly using stmt.cancel().
 	
 	private PlatformTransactionManager txManager;
 	private @Getter TransactionDefinition txDef = null;
@@ -175,32 +175,32 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 						cal.add(Calendar.DAY_OF_MONTH, getRetention());
 					}
 					stmt.setTimestamp(5, new Timestamp(cal.getTime().getTime()));
-					TimeoutGuard timeoutGuard = null;
-					if (lockWaitTimeout > 0) {
-						timeoutGuard = new TimeoutGuard(lockWaitTimeout, "LockerInsert") {
-
-							@Override
-							protected void abort() {
-								try {
-									stmt.cancel();
-								} catch (SQLException e) {
-									log.warn("Could not cancel statement",e);
-								}
-							}
-						};
-						//timeoutGuard.setInterruptThread(false);
-					}
+//					TimeoutGuard timeoutGuard = null;
+//					if (lockWaitTimeout > 0) {
+//						timeoutGuard = new TimeoutGuard(lockWaitTimeout, "lockWaitTimeout") {
+//
+//							@Override
+//							protected void abort() {
+//								try {
+//									stmt.cancel();
+//								} catch (SQLException e) {
+//									log.warn("Could not cancel statement",e);
+//								}
+//							}
+//						};
+//						timeoutGuard.setInterruptThread(false);
+//					}
 					try {
 						stmt.executeUpdate();
 						log.debug("lock ["+objectIdWithSuffix+"] inserted executed");
 					} finally {
-						if (timeoutGuard!=null && timeoutGuard.cancel()) {
-							if(itx != null) {
-								itx.setRollbackOnly();
-							}
-							log.warn("Timeout obtaining lock ["+objectId+"]");
-							objectIdWithSuffix = null;
-						}
+//						if (timeoutGuard!=null && timeoutGuard.cancel()) {
+//							if(itx != null) {
+//								itx.setRollbackOnly();
+//							}
+//							log.warn("Timeout obtaining lock ["+objectId+"]");
+//							objectIdWithSuffix = null;
+//						}
 					}
 				} catch (SQLException e) {
 					if(itx != null) {
@@ -364,9 +364,9 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		return transactionAttribute;
 	}
 
-	@IbisDoc({"6", "If > 0: The time in ms to wait before the INSERT statement to obtain the lock is canceled. ", "0"})
-	public void setLockWaitTimeout(int i) {
-		lockWaitTimeout = i;
-	}
+//	@IbisDoc({"6", "If > 0: The time in ms to wait before the INSERT statement to obtain the lock is canceled. ", "0"})
+//	public void setLockWaitTimeout(int i) {
+//		lockWaitTimeout = i;
+//	}
 
 }

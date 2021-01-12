@@ -89,7 +89,7 @@ public interface IExtendedPipe extends IPipe {
 	public void setRemoveCompactMsgNamespaces(boolean b);
 	public boolean isRemoveCompactMsgNamespaces();
 	
-	@IbisDoc({"", "If set <code>true</code>, compacted messages in the result are restored to their original format (see also  {@link #setElementToMove(java.lang.String)})", "false"})
+	@IbisDoc({"If set <code>true</code>, compacted messages in the result are restored to their original format (see also  {@link #setElementToMove(java.lang.String)})", "false"})
 	public void setRestoreMovedElements(boolean restoreMovedElements);
 	public boolean isRestoreMovedElements();
 
@@ -97,10 +97,12 @@ public interface IExtendedPipe extends IPipe {
 	 * Sets a threshold for the duration of message execution; 
 	 * If the threshold is exceeded, the message is logged to be analyzed.
 	 */
-	@IbisDoc({"", "If durationThreshold >=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory", "-1"})
+	@IbisDoc({"If durationThreshold >=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory", "-1"})
 	public void setDurationThreshold(long maxDuration) ;
 	public long getDurationThreshold();
 
+	@IbisDoc({"Optional Locker, to avoid parallel execution of the Pipe by multiple threads or servers. When the lock cannot be obtained, " +
+			"what means that another thread, may be in another server, holds the lock and does not release it in a timely manner, an exception is thrown."})
 	public void setLocker(Locker locker);
 	public Locker getLocker();
 

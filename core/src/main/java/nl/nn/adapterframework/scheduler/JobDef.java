@@ -1255,8 +1255,8 @@ public class JobDef extends TransactionAttributes {
 	}
 
 	@IbisDoc({"Optional Locker, to avoid parallel execution of the Job by multiple threads or servers. When the lock cannot be obtained, " +
-				"what means that another thread, may be in another server, has holds the lock, the Job is NOT executed. " +
-				"N.B. To run the locker in a separate transaction, it's transactionAttribute can be set to 'RequiresNew'; otherwise, the locker joins the transaction of the Job."})
+				"what means that another thread, may be in another server, hold the lock, the Job is NOT executed. " +
+				"N.B. To retain the lock, even after the transaction of the Job rolled back, set Lockers transactionAttribute=\"RequiresNew\" and type=\"P\"; otherwise, the Locker will join the transaction of the Job and/or the Lock will be released."})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 		locker.setName("Locker of job ["+getName()+"]");
