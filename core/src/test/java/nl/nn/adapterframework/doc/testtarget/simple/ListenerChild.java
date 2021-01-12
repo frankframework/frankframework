@@ -1,11 +1,18 @@
 package nl.nn.adapterframework.doc.testtarget.simple;
 
+import nl.nn.adapterframework.doc.IbisDoc;
+
 public class ListenerChild extends ListenerParent {
+	@Override
 	public void setChildAttribute(String value) {
 	}
 
 	public String getChildAttribute() {
 		return null;
+	}
+
+	@Override
+	public void setInheritedAttribute(String value) {
 	}
 
 	public void setListener(IListener listener) {
@@ -20,5 +27,10 @@ public class ListenerChild extends ListenerParent {
 
 	public String invalidConfigChildSetterReturnsString(IListener listener) {
 		return null;
+	}
+
+	@IbisDoc({"10", "Dummy description"})
+	@Override
+	public void setDeprecatedInParentAttribute(String value) {
 	}
 }
