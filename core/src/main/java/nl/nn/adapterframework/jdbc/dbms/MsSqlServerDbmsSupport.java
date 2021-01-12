@@ -17,7 +17,6 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;

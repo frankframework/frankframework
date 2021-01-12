@@ -496,10 +496,10 @@ public class JobDef extends TransactionAttributes {
 			return;
 		}
 		try {
-			String objectId = null;
 			IbisTransaction itx = IbisTransaction.getTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
 			try {
 				if (getLocker() != null) {
+					String objectId = null;
 					try {
 						objectId = getLocker().acquire(getMessageKeeper());
 					} catch (Exception e) {
