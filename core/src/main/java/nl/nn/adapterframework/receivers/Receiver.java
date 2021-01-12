@@ -526,15 +526,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		try {
 			super.configure();
 			if (StringUtils.isEmpty(getName())) {
-				if (getListener()!=null) {
-					if(StringUtils.isNotEmpty(getListener().getName())) {
-						setName(getListener().getName() + " " + ClassUtils.nameOf(getListener()));
-					} else {
-						setName(ClassUtils.nameOf(getListener()));
-					}
-				} else {
-					setName(ClassUtils.nameOf(this));
-				}
+				setName(generateName());
 			}
 			eventHandler = MonitorManager.getEventHandler();
 			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
@@ -734,6 +726,33 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
+	private String generateName() {
+		String name = null;
+		if (getListener()!=null) {
+			if(StringUtils.isNotEmpty(getListener().getName())) {
+				name = getListener().getName() + " " + ClassUtils.nameOf(getListener());
+			} else {
+				name = ClassUtils.nameOf(getListener());
+			}
+		} else {
+			name = ClassUtils.nameOf(this);
+		}
+
+		
+		StringBuilder nameBuilder = new StringBuilder(name);
+		if(getAdapter().getReceiverByName(name) == null) {
+			return nameBuilder.toString();
+		} else {
+			int i = 1;
+			nameBuilder.append("_");
+			while(getAdapter().getReceiverByName(nameBuilder.toString() + i) != null) {
+				i++;
+			}
+			nameBuilder.append(i);
+		}
+		
+		return nameBuilder.toString();
+	}
 
 	@Override
 	public void startRunning() {

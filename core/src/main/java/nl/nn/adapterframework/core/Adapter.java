@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -496,7 +496,7 @@ public class Adapter implements IAdapter, NamedBean {
 	@Override
 	public Receiver getReceiverByName(String receiverName) {
 		for (Receiver receiver: receivers) {
-			if (receiver.getName().equalsIgnoreCase(receiverName)) {
+			if (receiverName.equalsIgnoreCase(receiver.getName())) {
 				return receiver;
 			}
 		}
@@ -508,7 +508,7 @@ public class Adapter implements IAdapter, NamedBean {
 			return getReceiverByName(receiverName);
 		}
 		for (Receiver receiver: receivers) {
-			if (receiver.getName().equalsIgnoreCase(receiverName) && listenerClass.equals(receiver.getListener().getClass())) {
+			if (receiverName.equalsIgnoreCase(receiver.getName()) && listenerClass.equals(receiver.getListener().getClass())) {
 				return receiver;
 			}
 		}
