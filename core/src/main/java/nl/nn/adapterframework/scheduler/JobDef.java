@@ -500,17 +500,14 @@ public class JobDef extends TransactionAttributes {
 			String objectId = null;
 			if (getLocker() != null) {
 				try {
-					objectId = getLocker().lock(getMessageKeeper());
+					objectId = getLocker().acquire(getMessageKeeper());
 				} catch (Exception e) {
 					messageKeeper.add(e.getMessage(), MessageKeeperLevel.ERROR);
 					log.error(getLogPrefix()+e.getMessage());
 				}
 				if (objectId!=null) {
 					TimeoutGuard tg = new TimeoutGuard("Job "+getName());
-					IbisTransaction itx = null;
-					if (getTxManager()!=null) {
-						itx = new IbisTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
-					}
+					IbisTransaction itx = IbisTransaction.getTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
 					try {
 						try {
 							tg.activateGuard(getTransactionTimeout());
@@ -529,7 +526,7 @@ public class JobDef extends TransactionAttributes {
 						}
 					}
 					try {
-						getLocker().unlock(objectId);
+						getLocker().release(objectId);
 					} catch (Exception e) {
 						String msg = "error while removing lock: " + e.getMessage();
 						getMessageKeeper().add(msg, MessageKeeperLevel.WARN);

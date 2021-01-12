@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 		String objectId = null;
 		if (locker != null) {
 			try {
-				objectId = locker.lock();
+				objectId = locker.acquire();
 			} catch (Exception e) {
 				throw new PipeRunException(null, "error while setting lock ["+locker.getObjectId()+"]", e);
 			}
@@ -47,7 +47,7 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 					pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 				} finally {
 					try {
-						locker.unlock(objectId);
+						locker.release(objectId);
 					} catch (Exception e) {
 						//throw new PipeRunException(null, "error while removing lock", e);
 						String msg = "error while removing lock ["+locker.getObjectId()+"]: " + e.getMessage();

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.processors;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IbisTransaction;
@@ -40,7 +39,6 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 		try {
 			//TransactionStatus txStatus = txManager.getTransaction(txDef);
 			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getOwner().getName() + "]");
-			TransactionStatus txStatus = itx.getStatus();
 			try {
 				TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "]");
 				Throwable tCaught=null;
@@ -61,7 +59,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 					}
 					if (mustRollback) {
 						try {
-							txStatus.setRollbackOnly();
+							itx.setRollbackOnly();
 						} catch (Exception e) {
 							throw new PipeRunException(null,"Could not set RollBackOnly",e);
 						}
@@ -82,7 +80,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 				}
 			} catch (Throwable t) {
 				log.debug("setting RollBackOnly for pipeline after catching exception");
-				txStatus.setRollbackOnly();
+				itx.setRollbackOnly();
 				if (t instanceof Error) {
 					throw (Error)t;
 				} else if (t instanceof RuntimeException) {

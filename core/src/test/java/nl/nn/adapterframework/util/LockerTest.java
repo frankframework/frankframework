@@ -75,7 +75,7 @@ public class LockerTest extends JdbcTestBase {
 		String objectId = null;
 		locker.setObjectId("myLocker");
 		locker.configure();
-		objectId = locker.lock();
+		objectId = locker.acquire();
 
 		assertNotNull(objectId);
 		assertEquals(1, getRowCount());
@@ -88,12 +88,12 @@ public class LockerTest extends JdbcTestBase {
 		String objectId = null;
 		locker.setObjectId("myLocker");
 		locker.configure();
-		objectId = locker.lock();
+		objectId = locker.acquire();
 
 		assertNotNull(objectId);
 		assertEquals(1, getRowCount());
 		
-		objectId = locker.lock();
+		objectId = locker.acquire();
 		assertNull("Should not be possible to obtain the lock a second time", objectId);
 	}
 
@@ -104,7 +104,7 @@ public class LockerTest extends JdbcTestBase {
 		locker.setTxManager(transactionManager);
 		locker.setObjectId("myLocker");
 		locker.configure();
-		objectId = locker.lock();
+		objectId = locker.acquire();
 
 		assertNotNull(objectId);
 		assertEquals(1, getRowCount());
@@ -117,12 +117,12 @@ public class LockerTest extends JdbcTestBase {
 		locker.setTxManager(transactionManager);
 		locker.setObjectId("myLocker");
 		locker.configure();
-		objectId = locker.lock();
+		objectId = locker.acquire();
 
 		assertNotNull(objectId);
 		assertEquals(1, getRowCount());
 
-		objectId = locker.lock();
+		objectId = locker.acquire();
 		assertNull("Should not be possible to obtain the lock a second time", objectId);
 	}
 	
@@ -146,7 +146,7 @@ public class LockerTest extends JdbcTestBase {
 			lockerTester.start();
 			
 			otherReady.acquire();
-			String objectId = locker.lock();
+			String objectId = locker.acquire();
 			otherContinue.release();
 			otherFinished.acquire();
 			
@@ -187,7 +187,7 @@ public class LockerTest extends JdbcTestBase {
 									otherContinue.release();
 								}
 							}, 1000L);
-			String objectId = locker.lock();
+			String objectId = locker.acquire();
 			otherFinished.acquire();
 			
 			assertNull(objectId);
@@ -290,15 +290,15 @@ public class LockerTest extends JdbcTestBase {
 			locker.setDbmsSupport(dbmsSupport);
 			locker.setObjectId("myLocker");
 			locker.configure();
-			lockObjectId = locker.lock();
+			lockObjectId = locker.acquire();
 
 			assertNotNull(lockObjectId);
 			assertEquals(1, getRowCount());
 
-			locker.unlock(lockObjectId);
+			locker.release(lockObjectId);
 			assertEquals(0, getRowCount());
 
-			lockObjectId = locker.lock();
+			lockObjectId = locker.acquire();
 
 			assertNotNull(lockObjectId);
 			assertEquals(1, getRowCount());
@@ -342,12 +342,9 @@ public class LockerTest extends JdbcTestBase {
 		@Override
 		public void run() {
 			try {
-				IbisTransaction mainItx = null;
-				if (transactionManager!=null) {
-					TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
-					
-					mainItx = new IbisTransaction(transactionManager, txdef, "locker ");
-				}
+				TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
+				IbisTransaction mainItx = IbisTransaction.getTransaction(transactionManager, txDef, "locker tester");
+
 				if (beginDone!=null) beginDone.release();
 
 				try {
