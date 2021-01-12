@@ -201,39 +201,41 @@ public class LockerTest extends JdbcTestBase {
 		}
 	}
 	
-//	@Test
-//	public void testLockWaitTimeout() throws Exception {
-//		cleanupLocks();
-//		locker.setTxManager(transactionManager);
-//		locker.setObjectId("myLocker");
-//		locker.setLockWaitTimeout(1);
-//		locker.configure();
-//		
-//		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
-//		try {
-//			Semaphore otherReady = new Semaphore();
-//			Semaphore otherContinue = new Semaphore();
-//			Semaphore otherFinished = new Semaphore();
-//			LockerTester lockerTester = new LockerTester();
-//
-//			lockerTester.setInsertDone(otherReady);
-//			lockerTester.setWaitBeforeCommit(otherContinue);
-//			lockerTester.setCommitDone(otherFinished);
-//			lockerTester.start();
-//			
-//			otherReady.acquire();
-//			String objectId = locker.acquire();
-//			otherFinished.acquire();
-//			
-//			assertNull(objectId);
-//			assertNull(lockerTester.getCaught());
-//			
-//		} finally {
-//			if (testTimeout.cancel()) {
-//				fail("test timed out");
-//			}
-//		}
-//	}
+	@Test
+	public void testLockWaitTimeout() throws Exception {
+		cleanupLocks();
+		locker.setTxManager(transactionManager);
+		locker.setObjectId("myLocker");
+		locker.setLockWaitTimeout(1);
+		locker.configure();
+		
+		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
+		try {
+			Semaphore otherInsertReady = new Semaphore();
+			Semaphore otherContinue = new Semaphore();
+			Semaphore otherFinished = new Semaphore();
+			LockerTester lockerTester = new LockerTester();
+
+			lockerTester.setInsertDone(otherInsertReady);
+			lockerTester.setWaitBeforeCommit(otherContinue);
+			lockerTester.setCommitDone(otherFinished);
+			lockerTester.start();
+			
+			otherInsertReady.acquire();
+			String objectId = locker.acquire();
+
+			otherContinue.release();
+			otherFinished.acquire();
+			
+			assertNull(objectId);
+			assertNull(lockerTester.getCaught());
+			
+		} finally {
+			if (testTimeout.cancel()) {
+				fail("test timed out");
+			}
+		}
+	}
 
 	/*
 	 * Test the mechanism of the locker.

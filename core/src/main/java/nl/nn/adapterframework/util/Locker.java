@@ -79,13 +79,13 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private String deleteQuery = "DELETE FROM IBISLOCK WHERE objectId=?";
 	private SimpleDateFormat formatter;
 	private int numRetries = 0;
-	private int firstDelay = 10000;
+	private int firstDelay = 0;
 	private int retryDelay = 10000;
 	private boolean ignoreTableNotExist = false;
 	
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private @Getter int transactionTimeout = 0;
-	// private @Getter int lockWaitTimeout = 0; // have to disable this, I cannot get it implemented properly using stmt.cancel().
+	private @Getter int lockWaitTimeout = 0;
 	
 	private PlatformTransactionManager txManager;
 	private @Getter TransactionDefinition txDef = null;
@@ -160,6 +160,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 					objectIdWithSuffix = objectIdWithSuffix.concat(formattedDate);
 				}
 				
+				boolean timeout = false;
 				log.debug("preparing to set lock [" + objectIdWithSuffix + "]");
 				try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
 					stmt.clearParameters();
@@ -175,48 +176,46 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 						cal.add(Calendar.DAY_OF_MONTH, getRetention());
 					}
 					stmt.setTimestamp(5, new Timestamp(cal.getTime().getTime()));
-//					TimeoutGuard timeoutGuard = null;
-//					if (lockWaitTimeout > 0) {
-//						timeoutGuard = new TimeoutGuard(lockWaitTimeout, "lockWaitTimeout") {
-//
-//							@Override
-//							protected void abort() {
-//								try {
-//									stmt.cancel();
-//								} catch (SQLException e) {
-//									log.warn("Could not cancel statement",e);
-//								}
-//							}
-//						};
-//						timeoutGuard.setInterruptThread(false);
-//					}
+					TimeoutGuard timeoutGuard = null;
+					if (lockWaitTimeout > 0) {
+						timeoutGuard = new TimeoutGuard(lockWaitTimeout, "lockWaitTimeout") {
+
+							@Override
+							protected void abort() {
+								try {
+									stmt.cancel();
+								} catch (SQLException e) {
+									log.warn("Could not cancel statement",e);
+								}
+							}
+						};
+					}
 					try {
 						stmt.executeUpdate();
 						log.debug("lock ["+objectIdWithSuffix+"] inserted executed");
 					} finally {
-//						if (timeoutGuard!=null && timeoutGuard.cancel()) {
-//							if(itx != null) {
-//								itx.setRollbackOnly();
-//							}
-//							log.warn("Timeout obtaining lock ["+objectId+"]");
-//							objectIdWithSuffix = null;
-//						}
+						if (timeoutGuard!=null && timeoutGuard.cancel()) {
+							if(itx != null) {
+								itx.setRollbackOnly();
+							}
+							timeout=true;
+							log.warn("Timeout obtaining lock ["+objectId+"]");
+							objectIdWithSuffix = null;
+						}
 					}
-				} catch (SQLException e) {
+				} catch (Exception e) {
 					if(itx != null) {
 						itx.setRollbackOnly();
 					}
 					objectIdWithSuffix = null;
-					log.debug(getLogPrefix()+"error executing insert query (as part of locker): " + e.getMessage());
+					log.debug(getLogPrefix()+"error executing insert query (as part of locker): ",e);
 					if (numRetries == -1 || r < numRetries) {
 						log.debug(getLogPrefix()+"will try again");
 					} else {
 						log.debug(getLogPrefix()+"will not try again");
 
-						boolean isUniqueConstraintViolation = false;
-						isUniqueConstraintViolation = getDbmsSupport().isConstraintViolation(e);
-						String msg = "error while setting lock: " + e.getMessage();
-						if (isUniqueConstraintViolation || e instanceof SQLTimeoutException) {
+						if (timeout || e instanceof SQLTimeoutException || e instanceof SQLException && getDbmsSupport().isConstraintViolation((SQLException)e)) {
+							String msg = "error while setting lock: " + e.getMessage();
 							if(messageKeeper != null) {
 								messageKeeper.add(msg, MessageKeeperLevel.INFO);
 							}
@@ -267,7 +266,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		return getName()+" "; 
 	}
 
-	@IbisDoc({"format for date which is added after <code>objectid</code> (e.g. yyyymmdd to be sure the job is executed only once a day)", ""})
+	@IbisDoc({"Format for date which is added after <code>objectid</code> (e.g. yyyymmdd to be sure the job is executed only once a day)", ""})
 	public void setDateFormatSuffix(String dateFormatSuffix) {
 		this.dateFormatSuffix = dateFormatSuffix;
 	}
@@ -284,7 +283,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		return objectId;
 	}
 
-	@IbisDoc({"2", "type for this lock: P(ermanent) or T(emporary). A temporary lock is released after the job has completed", "T"})
+	@IbisDoc({"2", "Type for this lock: P(ermanent) or T(emporary). A temporary lock is released after the job has completed", "T"})
 	public void setType(String type) {
 		this.type = type;
 	}
@@ -308,7 +307,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		return numRetries;
 	}
 
-	@IbisDoc({"5", "The time in ms to wait before the first attempt to acquire a lock is made, this may be 0 but keep in mind that the other thread or ibis instance will propably not get much chance to acquire a lock when another message is already waiting for the thread having the current lock in which case it will probably acquire a new lock soon after releasing the current lock", "10000"})
+	@IbisDoc({"5", "The time in ms to wait before the first attempt to acquire a lock is made", "0"})
 	public void setFirstDelay(int firstDelay) {
 		this.firstDelay = firstDelay;
 	}
@@ -364,9 +363,9 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		return transactionAttribute;
 	}
 
-//	@IbisDoc({"6", "If > 0: The time in ms to wait before the INSERT statement to obtain the lock is canceled. ", "0"})
-//	public void setLockWaitTimeout(int i) {
-//		lockWaitTimeout = i;
-//	}
+	@IbisDoc({"6", "If > 0: The time in s to wait before the INSERT statement to obtain the lock is canceled. ", "0"})
+	public void setLockWaitTimeout(int i) {
+		lockWaitTimeout = i;
+	}
 
 }
