@@ -125,7 +125,8 @@ public class LockerTest extends JdbcTestBase {
 		objectId = locker.acquire();
 		assertNull("Should not be possible to obtain the lock a second time", objectId);
 	}
-	
+
+
 	@Test
 	public void testTakeLockBeforeExecutingInsertInOtherThread() throws Exception {
 		cleanupLocks();
@@ -200,6 +201,39 @@ public class LockerTest extends JdbcTestBase {
 		}
 	}
 	
+	@Test
+	public void testLockWaitTimeout() throws Exception {
+		cleanupLocks();
+		locker.setTxManager(transactionManager);
+		locker.setObjectId("myLocker");
+		locker.setLockWaitTimeout(1000);
+		locker.configure();
+		
+		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
+		try {
+			Semaphore otherReady = new Semaphore();
+			Semaphore otherContinue = new Semaphore();
+			Semaphore otherFinished = new Semaphore();
+			LockerTester lockerTester = new LockerTester();
+
+			lockerTester.setInsertDone(otherReady);
+			lockerTester.setWaitBeforeCommit(otherContinue);
+			lockerTester.setCommitDone(otherFinished);
+			lockerTester.start();
+			
+			otherReady.acquire();
+			String objectId = locker.acquire();
+			otherFinished.acquire();
+			
+			assertNull(objectId);
+			assertNull(lockerTester.getCaught());
+			
+		} finally {
+			if (testTimeout.cancel()) {
+				fail("test timed out");
+			}
+		}
+	}
 
 	/*
 	 * Test the mechanism of the locker.
@@ -252,7 +286,7 @@ public class LockerTest extends JdbcTestBase {
 								log.debug("lock inserted");
 								fail("should not be possible to do a second insert");
 							} catch (SQLException e) {
-								if (locker.getDbmsSupport().isUniqueConstraintViolation(e)) {
+								if (locker.getDbmsSupport().isConstraintViolation(e)) {
 									log.debug("Caught expected UniqueConstraintViolation ("+e.getClass().getName()+"): "+e.getMessage());
 								} else {
 									fail("Expected UniqueConstraintViolation, but was: ("+e.getClass().getName()+"): "+e.getMessage());
