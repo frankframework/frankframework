@@ -28,11 +28,12 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
-import nl.nn.adapterframework.core.IUsesInProcessState;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -228,8 +229,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							// found a message, process it
 							
 							// first check if it needs to be set to 'inProcess'
-							if (listener instanceof IUsesInProcessState &&
-									(useInProcessStatus=((IUsesInProcessState<M>)listener).setMessageStateToInProcess(rawMessage, threadContext)) && txStatus!=null) {
+							if (listener instanceof IHasProcessState &&
+									(useInProcessStatus=((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.INPROCESS, threadContext)) && txStatus!=null) {
 								txManager.commit(txStatus);
 								txStatus = txManager.getTransaction(txNew);
 							}
@@ -297,7 +298,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			} finally {
 				if (useInProcessStatus) {
 					txStatus = txManager.getTransaction(txNew);
-					((IUsesInProcessState<M>)listener).revertInProcessStatusToAvailable(rawMessage, threadContext);
+					((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.AVAILABLE, threadContext);
 					txManager.commit(txStatus);
 				}
 			}

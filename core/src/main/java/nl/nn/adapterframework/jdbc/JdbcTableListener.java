@@ -15,11 +15,8 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -27,7 +24,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 
@@ -44,14 +40,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	private String timestampField;
 	private String selectCondition;
 	
-	private String statusValueAvailable;
-	private String statusValueInProcess;
-	private String statusValueProcessed;
-	private String statusValueError;
-	private String statusValueHold;
-
-	private Set<ProcessState> knownProcessStates;
-	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
+	private Map<ProcessState, String> statusValues = new HashMap<>();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -67,40 +56,29 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		if (StringUtils.isEmpty(getMessageField())) {
 			log.info(getLogPrefix()+"has no messageField specified. Will use keyField as messageField, too");
 		}
-		if (StringUtils.isEmpty(getStatusValueError())) {
+		if (StringUtils.isEmpty(getStatusValue(ProcessState.ERROR))) {
 			throw new ConfigurationException(getLogPrefix()+"must specify statusValueError");
 		}
-		if (StringUtils.isEmpty(getStatusValueProcessed())) {
+		if (StringUtils.isEmpty(getStatusValue(ProcessState.DONE))) {
 			throw new ConfigurationException(getLogPrefix()+"must specify statusValueProcessed");
 		}
 		setSelectQuery("SELECT "+getKeyField() + (StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
 						" FROM "+getTableName()+
 						" WHERE "+getStatusField()+
-						(StringUtils.isNotEmpty(getStatusValueAvailable())?
-						 "='"+getStatusValueAvailable()+"'":
-						 " NOT IN ('"+getStatusValueError()+"','"+getStatusValueProcessed()+"')")+
+						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE))?
+						 "='"+getStatusValue(ProcessState.AVAILABLE)+"'":
+						 " NOT IN ('"+getStatusValue(ProcessState.ERROR)+"','"+getStatusValue(ProcessState.DONE)+(StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD))?"','"+getStatusValue(ProcessState.HOLD):"")+"')")+
 						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND ("+getSelectCondition()+")": "") +
 						 (StringUtils.isNotEmpty(getOrderField())? " ORDER BY "+getOrderField():""));
-		setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed(),null));
-		setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError(),null)); 
-		if (StringUtils.isNotEmpty(getStatusValueInProcess())) {
-			setUpdateStatusToInProcessQuery(getUpdateStatusQuery(getStatusValueInProcess(),null)); 
-			setRevertInProcessStatusQuery(getUpdateStatusQuery(getStatusValueAvailable(),null));
-		}
+		statusValues.forEach((state, value) -> setUpdateStatusQuery(state, createUpdateStatusQuery(value, null)));
 		super.configure();
-		if (StringUtils.isEmpty(getStatusValueInProcess()) && !getDbmsSupport().hasSkipLockedFunctionality()) {
+		if (StringUtils.isEmpty(getStatusValue(ProcessState.INPROCESS)) && !getDbmsSupport().hasSkipLockedFunctionality()) {
 			ConfigurationWarnings.add(this, log, "Database ["+getDbmsSupport().getDbmsName()+"] needs statusValueInProcess to run in multiple threads");
 		}
-		knownProcessStates = ProcessState.getMandatoryKnownStates();
-		for (ProcessState state: ProcessState.values()) {
-			if (StringUtils.isNotEmpty(getStatusValue(state))) {
-				knownProcessStates.add(state);
-			}
-		}
-		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
+		
 	}
 
-	protected String getUpdateStatusQuery(String fieldValue, String additionalSetClause) {
+	protected String createUpdateStatusQuery(String fieldValue, String additionalSetClause) {
 		return "UPDATE "+getTableName()+ 
 				" SET "+getStatusField()+"='"+fieldValue+"'"+
 				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"="+getDbmsSupport().getSysDate():"")+
@@ -117,53 +95,8 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	}
 
 
-	@Override
-	public Set<ProcessState> knownProcessStates() {
-		return knownProcessStates;
-	}
-
-	@Override
-	public Map<ProcessState,Set<ProcessState>> targetProcessStates() {
-		return targetProcessStates;
-	}
-
-	@Override
-	public boolean changeProcessState(Object rawMessage, ProcessState toState, Map<String,Object> context) throws ListenerException {
-		if (!knownProcessStates().contains(toState)) {
-			return false;
-		}
-		String statusValue = getStatusValue(toState);
-		String query = getUpdateStatusQuery(statusValue, null);
-		String key=getIdFromRawMessage(rawMessage,context);
-		if (isConnectionsArePooled()) {
-			try (Connection conn = getConnection()) {
-				execute(conn, query, key);
-			} catch (JdbcException|SQLException e) {
-				throw new ListenerException(e);
-			}
-		} else {
-			synchronized (connection) {
-				execute(connection, query, key);
-			}
-		}
-		return !getDbmsSupport().hasSkipLockedFunctionality();
-	}
-
 	public String getStatusValue(ProcessState state) {
-		switch (state) {
-		case AVAILABLE:
-			return getStatusValueAvailable();
-		case INPROCESS:
-			return getStatusValueInProcess();
-		case DONE:
-			return getStatusValueProcessed();
-		case ERROR:
-			return getStatusValueError();
-		case HOLD:
-			return getStatusValueHold();
-		default:
-			throw new IllegalStateException("Unknown state ["+state+"]");
-		}
+		return statusValues.get(state);
 	}
 	
 	public IMessageBrowser.StorageType getStorageType(ProcessState state) {
@@ -223,42 +156,27 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 
 	@IbisDoc({"7", "(optional) Value of statusField indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.", ""})
 	public void setStatusValueAvailable(String string) {
-		statusValueAvailable = string;
-	}
-	public String getStatusValueAvailable() {
-		return statusValueAvailable;
+		statusValues.put(ProcessState.AVAILABLE,string);
 	}
 
 	@IbisDoc({"8", "Value of statusField indicating the processing of the row resulted in an error", ""})
 	public void setStatusValueError(String string) {
-		statusValueError = string;
-	}
-	public String getStatusValueError() {
-		return statusValueError;
+		statusValues.put(ProcessState.ERROR, string);
 	}
 
 	@IbisDoc({"9", "Value of status field indicating row is processed ok", ""})
 	public void setStatusValueProcessed(String string) {
-		statusValueProcessed = string;
-	}
-	public String getStatusValueProcessed() {
-		return statusValueProcessed;
+		statusValues.put(ProcessState.DONE, string);
 	}
 
 	@IbisDoc({"10", "Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality; In that case the transactionAttribute of the Receiver should be set to Required or RequiresNew, to avoid messages being picked up by multiple threads", ""})
 	public void setStatusValueInProcess(String string) {
-		statusValueInProcess = string;
-	}
-	public String getStatusValueInProcess() {
-		return statusValueInProcess;
+		statusValues.put(ProcessState.INPROCESS, string);
 	}
 
 	@IbisDoc({"11", "Value of status field indicating message is on Hold, temporarily", ""})
 	public void setStatusValueHold(String string) {
-		statusValueHold = string;
-	}
-	public String getStatusValueHold() {
-		return statusValueHold;
+		statusValues.put(ProcessState.HOLD, string);
 	}
 
 	@IbisDoc({"12", "Additional condition for a row to belong to this TableListener", ""})

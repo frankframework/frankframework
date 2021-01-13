@@ -100,12 +100,12 @@ public class MessageStoreListener extends JdbcTableListener {
 		}
 		if (isMoveToMessageLog()) {
 			String setClause = "COMMENTS = '" + Receiver.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
-			setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed(),setClause));
-			setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError(),null)); 
+			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE),setClause));
+			setUpdateStatusQuery(ProcessState.ERROR, createUpdateStatusQuery(getStatusValue(ProcessState.ERROR),null)); 
 		} else {
 			String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
-			setUpdateStatusToProcessedQuery(query);
-			setUpdateStatusToErrorQuery(query);
+			setUpdateStatusQuery(ProcessState.DONE, query);
+			setUpdateStatusQuery(ProcessState.ERROR, query);
 		}
 	}
 

@@ -21,8 +21,13 @@ import java.util.Set;
 /**
  * Interface that can be implemented by Listeners that provide their own management of
  * messages processed and in error.
+ * If the status 'inProcess' is specified, it will be used when messages are processed. In case of a rollback of the executing
+ * transaction, the status of the message will be reverted to 'available', so that it can be retried. 
  * 
- * @see IUsesInProcessState
+ * The method to revert to 'available' is called in a fresh transaction, and only when the original transaction, that hosted
+ * the main processing of the message and the call to afterMessageProcessed(), has failed, and only
+ * when {{@link #changeProcessState(Object, ProcessState, Map)} to INPROCESS returned true.
+ * 
  */
 public interface IHasProcessState<M> {
 
