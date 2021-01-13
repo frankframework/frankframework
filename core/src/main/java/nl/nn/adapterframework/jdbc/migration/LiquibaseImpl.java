@@ -1,5 +1,5 @@
 /*
-Copyright 2017 - 2020 WeAreFrank!
+Copyright 2017 - 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import java.util.List;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.util.LogUtil;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -30,6 +28,10 @@ import liquibase.changelog.ChangeSet;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * LiquiBase implementation for IAF
@@ -100,5 +102,10 @@ public class LiquibaseImpl {
 
 	public void tag(String tagName) throws LiquibaseException {
 		liquibase.tag(tagName);
+	}
+
+	public Writer getUpdateScript(Writer writer) throws LiquibaseException {
+		liquibase.update(contexts, labelExpression, writer);
+		return writer;
 	}
 }
