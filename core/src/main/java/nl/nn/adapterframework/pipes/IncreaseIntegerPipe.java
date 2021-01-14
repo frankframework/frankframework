@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,19 +16,25 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
 import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe that increases the integer values of a session variable.
- * Used to in combination with {@link CompareIntegerPipe} to contstruct loops.
- *
+ * Can be used in combination with {@link CompareIntegerPipe} to construct loops.
+ * 
+ * <p>
+ * <table border="1">
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>reference to the session variable whose value is to be increased</td><td></td></tr>
  * <tr><td>{@link #setIncrement(int) increment}</td><td>amount to increment the value</td><td>1</td></tr>
  * </table>
@@ -39,6 +45,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 
 	private String sessionKey=null;
 	private int increment=1;
+	private final static String INCREMENT = "increment";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -52,6 +59,20 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 
 		String sessionKeyString = (String) session.get(sessionKey);
 		Integer sessionKeyInteger = Integer.valueOf(sessionKeyString);
+
+		ParameterValueList pvl = null;
+		if (getParameterList() != null) {
+			try {
+				pvl = getParameterList().getValues(message, session);
+			} catch (ParameterException e) {
+				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+			}
+		}
+		ParameterValue pv = pvl.getParameterValue(INCREMENT);
+		if(pv != null && pv.getValue() != null) {
+			increment = pv.asIntegerValue(increment);
+		}
+
 		session.put(sessionKey, sessionKeyInteger.intValue() + increment + "");
 
 		if (log.isDebugEnabled()) {
@@ -68,7 +89,9 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		return sessionKey;
 	}
 
+	@Deprecated
 	@IbisDoc({"amount to increment the value", "1"})
+	@ConfigurationWarning("Please use the parameter ["+INCREMENT+"]")
 	public void setIncrement(int i) {
 		increment = i;
 	}

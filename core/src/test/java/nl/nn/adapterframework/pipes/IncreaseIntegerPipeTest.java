@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.parameters.Parameter;
 
 /**
  * IncreaseIntegerPipe Tester.
@@ -43,6 +44,20 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
         pipe.configure();
         doPipe(pipe, "doesnt matter", session);
         fail("this is expected to fail");
+    }
+
+    @Test
+    public void testIncrementParameter() throws Exception {
+    	String numberSession = "number";
+		session.put(numberSession, "4");
+		Parameter inc = new Parameter();
+		inc.setName("increment");
+		inc.setValue("5");
+		pipe.addParameter(inc);
+		pipe.setSessionKey(numberSession);
+		pipe.configure();
+		doPipe(pipe, "message", session);
+		assertEquals("9", session.get(numberSession));
     }
 
 }
