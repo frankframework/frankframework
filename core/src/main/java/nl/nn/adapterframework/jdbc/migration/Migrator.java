@@ -104,6 +104,6 @@ public class Migrator extends JdbcFacade {
 	public Writer getUpdateSql(Writer writer) throws LiquibaseException {
 		if(this.instance != null)
 			return instance.getUpdateScript(writer);
-		return null;
+		return writer;
 	}
 }
