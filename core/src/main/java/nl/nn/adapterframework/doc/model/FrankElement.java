@@ -18,10 +18,13 @@ package nl.nn.adapterframework.doc.model;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -41,7 +44,12 @@ public class FrankElement {
 	private final @Getter String simpleName;
 	private final @Getter boolean isAbstract;
 	private @Getter boolean isDeprecated = false;
-	private @Getter @Setter(AccessLevel.PACKAGE) ElementRole owningElementRole;
+	private Set<ElementRole> elementRoles = new HashSet<>();
+	private @Getter @Setter(AccessLevel.PACKAGE) boolean causesNameConflict;
+
+	void addElementRole(ElementRole role) {
+		elementRoles.add(role);
+	}
 
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;
@@ -206,15 +214,46 @@ public class FrankElement {
 	 * @return
 	 */
 	public String getXsdElementName(ElementRole elementRole) {
-		if(owningElementRole == null) {
+		Set<ElementRole> roleOverruleCandidates = elementRoles.stream()
+				.filter(role -> ! role.getElementType().isFromJavaInterface())
+				.collect(Collectors.toSet());
+		if(roleOverruleCandidates.isEmpty()) {
 			return getXsdElementNameImpl(elementRole);
+		} else if(roleOverruleCandidates.size() == 1) {
+			return getXsdElementNameImpl(roleOverruleCandidates.iterator().next());
 		} else {
-			return getXsdElementNameImpl(owningElementRole);
+			String overruleString = roleOverruleCandidates.stream()
+					.map(role -> role.toString())
+					.collect(Collectors.joining(", "));
+			log.info(String.format("Multiple candidate ElementRole for determing XSD element name of FrankElement [%s]: [%s]",
+					fullName, overruleString));
+			roleOverruleCandidates = roleOverruleCandidates.stream()
+					.filter(role -> ! role.isDeprecated())
+					.collect(Collectors.toSet());
+			if(roleOverruleCandidates.size() == 1) {
+				ElementRole overruleRole = roleOverruleCandidates.iterator().next();
+				log.info(String.format("FrankElement [%s] gets its XSD element name from ElementRole [%s]",
+						fullName, overruleRole.toString()));
+				return getXsdElementNameImpl(overruleRole);
+			} else {
+				String overruleStringFiltered = roleOverruleCandidates.stream()
+						.map(role -> role.toString())
+						.collect(Collectors.joining(", "));
+				log.warn(String.format("Cannot choose ElementRole overrule candidate from [%s], taking role [%s]",
+						overruleStringFiltered, elementRole));
+				return getXsdElementNameImpl(elementRole);
+			}
 		}
 	}
 
 	private String getXsdElementNameImpl(ElementRole elementRole) {
 		return getXsdElementName(elementRole.getElementType(), elementRole.getSyntax1Name());
+	}
+
+	Set<String> getAllXsdElementNames() {
+		return elementRoles.stream()
+				.map(this::getXsdElementName)
+				.collect(Collectors.toSet());
 	}
 
 	String getXsdElementName(ElementType elementType, String syntax1Name) {
@@ -230,6 +269,17 @@ public class FrankElement {
 			result = result.substring(0, result.lastIndexOf(postfixToRemove));
 		}
 		result = result + Utils.toUpperCamelCase(syntax1Name);
+		return result;
+	}
+
+	public static String describe(Collection<FrankElement> c) {
+		return c.stream().map(FrankElement::getFullName).collect(Collectors.joining(", "));
+	}
+
+	public static Set<FrankElement> join(Set<FrankElement> s1, Set<FrankElement> s2) {
+		Set<FrankElement> result = new HashSet<>();
+		result.addAll(s1);
+		result.addAll(s2);
 		return result;
 	}
 }

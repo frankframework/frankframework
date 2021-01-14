@@ -106,6 +106,7 @@ public class ElementType {
 
 	void registerElementRole(ElementRole elementRole) {
 		elementRoles.add(elementRole);
+		members.values().forEach(f -> f.addElementRole(elementRole));
 	}
 
 	void calculateHighestCommonInterface(FrankDocModel model) {

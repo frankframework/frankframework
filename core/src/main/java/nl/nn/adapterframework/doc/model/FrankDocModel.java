@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +86,7 @@ public class FrankDocModel {
 			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
 			result.calculateHighestCommonInterfaces();
 			result.setOverriddenFrom();
-			result.setOwningElementRole();
+			result.setCausesNameConflict();
 			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -412,7 +413,7 @@ public class FrankDocModel {
 				log.trace(String.format("For FrankElement [%s] method [%s], going to search element role", parent.getFullName(), sortNode.getName()));
 			}
 			configChild.setElementRole(findOrCreateElementRole(
-					elementTypeClass, configChildDescriptor.getSyntax1Name()));
+					elementTypeClass, configChildDescriptor.getSyntax1Name(), sortNode.isDeprecated()));
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("For FrankElement [%s] method [%s], have the element role", parent.getFullName(), sortNode.getName()));
 			}
@@ -447,20 +448,26 @@ public class FrankDocModel {
 		return sortNodes;
 	}
 
-	ElementRole findOrCreateElementRole(Class<?> elementTypeClass, String syntax1Name) throws ReflectiveOperationException {
+	ElementRole findOrCreateElementRole(Class<?> elementTypeClass, String syntax1Name, boolean isDeprecated) throws ReflectiveOperationException {
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("ElementRole requested for elementTypeClass [%s] and syntax1Name [%s]", elementTypeClass.getName(), syntax1Name));
 			log.trace("Going to get the ElementType");
 		}
-		ElementType elementType = findOrCreateElementType(elementTypeClass);
-		ElementRole.Key key = new ElementRole.Key(elementType.getFullName(), syntax1Name);
+		ElementRole.Key key = new ElementRole.Key(elementTypeClass.getName(), syntax1Name);
 		if(allElementRoles.containsKey(key)) {
 			if(log.isTraceEnabled()) {
 				log.trace("ElementRole already present");
 			}
-			return allElementRoles.get(key);
+			ElementRole result = allElementRoles.get(key);
+			if(allElementRoles.get(key).isDeprecated() != isDeprecated) {
+				log.info(String.format("Inconsistend deprecation state for ElementRole [%s], chosing deprecated=false", allElementRoles.get(key).toString()));
+				result.setDeprecated(false);
+			}
+			return result;
 		} else {
-			ElementRole result = elementRoleFactory.create(elementType, syntax1Name);
+			ElementRole result = elementRoleFactory.create(syntax1Name, isDeprecated);
+			ElementType elementType = findOrCreateElementType(elementTypeClass);
+			result.setElementType(elementType);
 			elementType.registerElementRole(result);
 			allElementRoles.put(key, result);
 			if(log.isTraceEnabled()) {
@@ -638,22 +645,26 @@ public class FrankDocModel {
 		}
 	}
 
-	void setOwningElementRole() {
-		List<ElementRole> ownerRoles = allElements.values().stream()
-				.flatMap(f -> f.getConfigChildren(ElementChild.ALL).stream())
-				.filter(c -> ! c.isDeprecated())
-				.map(ConfigChild::getElementRole)
-				.distinct()
-				.filter(role -> ! role.getElementType().isFromJavaInterface())
-				.collect(Collectors.toList());
-		for(ElementRole ownerRole: ownerRoles) {
-			FrankElement ownedElement = findFrankElement(ownerRole.getElementType().getFullName());
-			if(ownedElement.getOwningElementRole() == null) {
-				ownedElement.setOwningElementRole(ownerRole);
-			} else {
-				log.warn(String.format("Conflicting owning element roles for FrankElement [%s]: [%s] and [%s], chose the former",
-						ownedElement.getFullName(), ownedElement.getOwningElementRole().toString(), ownerRole.toString()));
+	void setCausesNameConflict() {
+		final Map<String, Set<FrankElement>> elementsByXsdElementName = new HashMap<>();
+		for(FrankElement f: allElements.values()) {
+			for(String name: f.getAllXsdElementNames()) {
+				elementsByXsdElementName.merge(name, new HashSet<>(Arrays.asList(f)), FrankElement::join);
 			}
+		}
+		Set<String> nameConflicts = elementsByXsdElementName.keySet().stream()
+				.filter(name -> elementsByXsdElementName.get(name).size() >= 2)
+				.collect(Collectors.toSet());
+		for(String name: nameConflicts) {
+			Map<Boolean, List<FrankElement>> partitions = elementsByXsdElementName.get(name).stream()
+					.collect(Collectors.partitioningBy(FrankElement::isDeprecated));
+			log.info(String.format("XSD element name [%s] applies to non-deprecated FrankElement objects [%s] and deprecated FrankElement objects [%s]",
+					name, FrankElement.describe(partitions.get(false)), FrankElement.describe(partitions.get(true))));
+			if(partitions.get(false).size() != 1) {
+				log.warn(String.format("Conflict for XSD element name [%s] cannot be resolved, because there are [%d] competing non-deprecated FrankElement",
+						name, partitions.get(false).size()));
+			}
+			partitions.get(true).forEach(f -> f.setCausesNameConflict(true));
 		}
 	}
 }

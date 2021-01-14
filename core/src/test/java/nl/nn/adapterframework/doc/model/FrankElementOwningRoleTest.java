@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.doc.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
 
+// TODO: This test no longer covers all relevant code. Please update.
 public class FrankElementOwningRoleTest {
 	private final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.compatibility.";
 	private final String startClassName = PACKAGE + "Container";
@@ -44,16 +44,16 @@ public class FrankElementOwningRoleTest {
 
 	@Test
 	public void whenElementInInterfaceTypeThenNotOwned() {
-		assertNull(elementInInterface.getOwningElementRole());
+		assertEquals("ChildElementSyntax1NameChildOk", elementInInterface.getXsdElementName(roleInterface));
 	}
 
 	@Test
 	public void whenElementInDeprecatedConfigChildThenNotOwned() {
-		assertNull(elementNotOwned.getOwningElementRole());
+		assertEquals("Syntax1NameChild2", elementNotOwned.getXsdElementName(roleNotOwning));
 	}
 
 	@Test
 	public void whenElementNotInInterfaceAndNonDeprecatedConfigChildThenOwned() {
-		assertEquals(owningRole, elementOwned.getOwningElementRole());
+		assertEquals("Syntax1NameChild1", elementOwned.getXsdElementName(owningRole));
 	}
 }

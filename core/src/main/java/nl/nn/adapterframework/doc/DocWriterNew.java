@@ -659,16 +659,22 @@ public class DocWriterNew {
 	}
 
 	private void defineElementTypeGroupUnchecked(ElementRole role) {
-		XmlBuilder group = createGroup(role.createXsdElementName(ELEMENT_GROUP));
+		String elementGroupName = role.createXsdElementName(ELEMENT_GROUP);
+		XmlBuilder group = createGroup(elementGroupName);
 		xsdComplexItems.add(group);
 		XmlBuilder choice = addChoice(group);
 		List<FrankElement> frankElementOptions = version.getOptionsOfRole(role);
 		addGenericElementOption(choice, role, version.genericOptionElementName(role));
 		for(FrankElement frankElement: frankElementOptions) {
-			if(log.isTraceEnabled()) {
-				log.trace(String.format("Append ElementGroup with FrankElement [%s]", frankElement.getFullName()));
+			if(frankElement.isCausesNameConflict()) {
+				log.info(String.format("Omitting FrankElement [%s] from element group [%s] to avoid name conflict",
+						frankElement.getFullName(), elementGroupName));
+			} else {
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Append ElementGroup with FrankElement [%s]", frankElement.getFullName()));
+				}
+				addElementToElementGroup(choice, frankElement, role);
 			}
-			addElementToElementGroup(choice, frankElement, role);
 		}		
 	}
 
