@@ -85,6 +85,7 @@ public class FrankDocModel {
 			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
 			result.calculateHighestCommonInterfaces();
 			result.setOverriddenFrom();
+			result.setOwningElementRole();
 			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -634,6 +635,25 @@ public class FrankDocModel {
 		}
 		if(log.isTraceEnabled()) {
 			log.trace("Done setting property overriddenFrom");
+		}
+	}
+
+	void setOwningElementRole() {
+		List<ElementRole> ownerRoles = allElements.values().stream()
+				.flatMap(f -> f.getConfigChildren(ElementChild.ALL).stream())
+				.filter(c -> ! c.isDeprecated())
+				.map(ConfigChild::getElementRole)
+				.distinct()
+				.filter(role -> ! role.getElementType().isFromJavaInterface())
+				.collect(Collectors.toList());
+		for(ElementRole ownerRole: ownerRoles) {
+			FrankElement ownedElement = findFrankElement(ownerRole.getElementType().getFullName());
+			if(ownedElement.getOwningElementRole() == null) {
+				ownedElement.setOwningElementRole(ownerRole);
+			} else {
+				log.warn(String.format("Conflicting owning element roles for FrankElement [%s]: [%s] and [%s], chose the former",
+						ownedElement.getFullName(), ownedElement.getOwningElementRole().toString(), ownerRole.toString()));
+			}
 		}
 	}
 }

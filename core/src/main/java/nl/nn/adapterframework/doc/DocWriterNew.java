@@ -36,15 +36,12 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.PROHI
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.REQUIRED;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeValueStatus.DEFAULT;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeValueStatus.FIXED;
-import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
-import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;

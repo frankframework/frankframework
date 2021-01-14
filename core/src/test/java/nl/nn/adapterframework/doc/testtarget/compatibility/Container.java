@@ -6,4 +6,11 @@ public class Container {
 
 	public void setChildMismatch(IChildMismatch child) {
 	}
+
+	public void setChild1(NonInterfaceChildForOwningRole child) {
+	}
+
+	@Deprecated
+	public void setChild2(NonInterfaceChildNoOwningRoleBecauseDeprecated child) {
+	}
 }

@@ -27,7 +27,9 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
@@ -39,6 +41,7 @@ public class FrankElement {
 	private final @Getter String simpleName;
 	private final @Getter boolean isAbstract;
 	private @Getter boolean isDeprecated = false;
+	private @Getter @Setter(AccessLevel.PACKAGE) ElementRole owningElementRole;
 
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;
@@ -177,7 +180,40 @@ public class FrankElement {
 		return result;
 	}
 
+	/**
+	 * Get the XSD element name, which depends on the {@link ElementRole}. For
+	 * example, a <code>nl.nn.adapterframework.senders.CommandSender</code>
+	 * has tag <code>CommandErrorSender</code> when used as an error sender
+	 * and tag <code>CommandSender</code> when used as a sender.
+	 * <p>
+	 * When the {@link ElementType} is not interface-based, we have to do with
+	 * elements like <code>&lt;Param&gt;</code> or <code>&lt;Forward&gt;</code>.
+	 * These names are derived from the syntax 1 name of the {@link ElementRole}.
+	 * <p>
+	 * The above rules are not sufficient however to produce the
+	 * <code>compatibility.xsd</code> of the XSD. In that case, there are
+	 * multiple {@link ElementRole} objects owning the same {@link FrankElement}.
+	 * We have to filter out {@link ElementRole} objects coming from deprecated
+	 * config children. This is achieved using the <code>owningElementRole</code>
+	 * field.
+	 * <p>
+	 * The {@link FrankDocModel} sets the <code>owningElementRole</code> when the following are satisfied:
+	 * <ul>
+	 * <li> The element type of the element role of this {@link FrankElement} is not interface-based.
+	 * <li> The element role comes from a non-deprecated config child.
+	 * </ul>
+	 * @param elementRole
+	 * @return
+	 */
 	public String getXsdElementName(ElementRole elementRole) {
+		if(owningElementRole == null) {
+			return getXsdElementNameImpl(elementRole);
+		} else {
+			return getXsdElementNameImpl(owningElementRole);
+		}
+	}
+
+	private String getXsdElementNameImpl(ElementRole elementRole) {
 		return getXsdElementName(elementRole.getElementType(), elementRole.getSyntax1Name());
 	}
 

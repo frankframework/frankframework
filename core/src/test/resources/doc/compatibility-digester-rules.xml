@@ -2,4 +2,6 @@
 <digester-rules>
   <rule pattern="*/syntax1NameChildOk" registerMethod="setChildOk"/>
   <rule pattern="*/syntax1NameChildMismatch" registerMethod="setChildMismatch"/>
+  <rule pattern="*/syntax1NameChild1" registerMethod="setChild1"/>
+  <rule pattern="*/syntax1NameChild2" registerMethod="setChild2"/>
 </digester-rules>
