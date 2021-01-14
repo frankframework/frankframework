@@ -7,9 +7,14 @@ public class Container extends ContainerParent {
 	public void setChild(Child child) {
 	}
 
+	@Deprecated
+	@IbisDoc("200")
+	public void setDeprecatedChild(Child child) {
+	}
+
 	@Override
-	public void registerInheritedChild(InheritedChild inheritedChild) {
-		super.registerInheritedChild(inheritedChild);
+	public void registerInheritedChilds(InheritedChild inheritedChild) {
+		super.registerInheritedChilds(inheritedChild);
 	}
 
 	@Override
@@ -26,5 +31,13 @@ public class Container extends ContainerParent {
 
 	@IbisDoc("10")
 	public void setInheritedChildDocWithOrderOverride(InheritedChildDocWithOrderOverride child) {
+	}
+
+	@Override
+	public void setInheritedChildNonSelected(InheritedChildNonSelected child) {
+	}
+
+	@Override
+	public void setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated child) {
 	}
 }

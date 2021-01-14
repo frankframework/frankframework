@@ -4,7 +4,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.doc.IbisDoc;
 
-public class FrankAttributeTarget {
+public class FrankAttributeTarget extends FrankAttributeTargetParent {
 	public void setAttributeSetterGetter(String value) {
 	}
 

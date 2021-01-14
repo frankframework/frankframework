@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,11 +28,12 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
-import nl.nn.adapterframework.core.IUsesInProcessState;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
@@ -91,6 +92,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	}
 
 	public void stop() {
+		// nothing special here
 	}
 
 	@Override
@@ -190,73 +192,74 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					M rawMessage = null;
 					TransactionStatus txStatus = null;
 					try { //  doesn't catch anything, rolls back transaction in finally clause when required
-						try { // try to fetch a message
-							boolean messageAvailable = true;
-							if (isIdle() && listener instanceof IPeekableListener) {
-								IPeekableListener<M> peekableListener = (IPeekableListener<M>) listener;
-								if (peekableListener.isPeekUntransacted()) {
-									messageAvailable = peekableListener.hasRawMessageAvailable();
+						try {
+							try {
+								boolean messageAvailable = true;
+								if (isIdle() && listener instanceof IPeekableListener) {
+									IPeekableListener<?> peekableListener = (IPeekableListener<?>) listener;
+									if (peekableListener.isPeekUntransacted()) {
+										messageAvailable = peekableListener.hasRawMessageAvailable();
+									}
+								}
+								if (messageAvailable) {
+									if (receiver.isTransacted()) {
+										txStatus = txManager.getTransaction(txNew);
+									}
+									rawMessage = listener.getRawMessage(threadContext);
+								}
+								resetRetryInterval();
+								setIdle(rawMessage==null);
+							} catch (Exception e) {
+								if (txStatus!=null) {
+									txManager.rollback(txStatus);
+								}
+								if (receiver.isOnErrorContinue()) {
+									increaseRetryIntervalAndWait(e);
+								} else {
+									receiver.exceptionThrown("exception occured while retrieving message", e); //actually use ON_ERROR and don't just stop the receiver
+									return;
 								}
 							}
-							if (messageAvailable) {
-								if (receiver.isTransacted()) {
-									txStatus = txManager.getTransaction(txNew);
-								}
-								rawMessage = listener.getRawMessage(threadContext);
-							}
-							resetRetryInterval();
-							setIdle(rawMessage==null);
-						} catch (Exception e) {
-							if (txStatus!=null) {
-								txManager.rollback(txStatus);
-							}
-							if (receiver.isOnErrorContinue()) {
-								increaseRetryIntervalAndWait(e);
-							} else {
-								receiver.exceptionThrown("exception occured while retrieving message", e); //actually use ON_ERROR
-								return; // ??
+
+							tasksStarted.increase(); 
+							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
+							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
+							// found a message, process it
+							// first check if it needs to be set to 'inProcess'
+							if (listener instanceof IHasProcessState &&
+									(useInProcessStatus=((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.INPROCESS, threadContext)) && txStatus!=null) {
+								txManager.commit(txStatus);
+								txStatus = txManager.getTransaction(txNew);
 							}
 						} finally {
+							// release pollToken after message has been moved to inProcess, so it is not seen as 'available' by the next thread
 							pollTokenReleased=true;
 							if (pollToken != null) {
 								pollToken.release();
 							}
 						}
-						if (rawMessage != null) {
-							tasksStarted.increase(); 
-							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
-							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
-							// found a message, process it
-							
-							// first check if it needs to be set to 'inProcess'
-							if (listener instanceof IUsesInProcessState &&
-									(useInProcessStatus=((IUsesInProcessState<M>)listener).setMessageStateToInProcess(rawMessage, threadContext)) && txStatus!=null) {
-								txManager.commit(txStatus);
-								txStatus = txManager.getTransaction(txNew);
-							}
-							try {
-								receiver.processRawMessage(listener, rawMessage, threadContext);
-								if (txStatus != null) {
-									if (txStatus.isRollbackOnly()) {
-										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-										rollBack(txStatus, listener, rawMessage, threadContext);
-									} else {
-										txManager.commit(txStatus);
-									}
+						try {
+							receiver.processRawMessage(listener, rawMessage, threadContext);
+							if (txStatus != null) {
+								if (txStatus.isRollbackOnly()) {
+									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
+									rollBack(txStatus, listener, rawMessage, threadContext);
+								} else {
+									txManager.commit(txStatus);
 								}
-							} catch (Exception e) {
-								try {
-									if (txStatus != null && !txStatus.isCompleted()) {
-										rollBack(txStatus, listener, rawMessage, threadContext);
-									}
-								} catch (Exception e2) {
-									receiver.error("caught Exception rolling back transaction after catching Exception", e2);
-								} finally {
-									if (receiver.isOnErrorContinue()) {
-										receiver.error("caught Exception processing message, will continue processing next message", e);
-									} else {
-										receiver.exceptionThrown("exception occured while processing message", e); //actually use ON_ERROR
-									}
+							}
+						} catch (Exception e) {
+							try {
+								if (txStatus != null && !txStatus.isCompleted()) {
+									rollBack(txStatus, listener, rawMessage, threadContext);
+								}
+							} catch (Exception e2) {
+								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
+							} finally {
+								if (receiver.isOnErrorContinue()) {
+									receiver.error("caught Exception processing message, will continue processing next message", e);
+								} else {
+									receiver.exceptionThrown("exception occured while processing message", e); //actually use ON_ERROR and don't just stop the receiver
 								}
 							}
 						}
@@ -291,7 +294,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			} finally {
 				if (useInProcessStatus) {
 					txStatus = txManager.getTransaction(txNew);
-					((IUsesInProcessState<M>)listener).revertInProcessStatusToAvailable(rawMessage, threadContext);
+					((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.AVAILABLE, threadContext);
 					txManager.commit(txStatus);
 				}
 			}

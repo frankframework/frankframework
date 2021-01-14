@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019, 2020 WeAreFrank!
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import org.xml.sax.SAXException;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
@@ -52,7 +52,12 @@ public final class BrowseJdbcTable extends Base {
 
 	private static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 	private static final String permissionRules = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
+	private static final String COLUMN_NAME = "COLUMN_NAME"; 
+	private static final String DATA_TYPE = "DATA_TYPE"; 
+	private static final String COLUMN_SIZE = "COLUMN_SIZE"; 
 	private Logger log = LogUtil.getLogger(this);
+	private String countColumnName = "ROWCOUNTER";
+	private String rnumColumnName = "RNUM";
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -61,7 +66,7 @@ public final class BrowseJdbcTable extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		String datasource = null, tableName = null, where = "", order = "";
-		Boolean rowNumbersOnly = false;
+		Boolean numberOfRowsOnly = false;
 		int minRow = 1, maxRow = 100;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
@@ -78,8 +83,8 @@ public final class BrowseJdbcTable extends Base {
 			if(key.equalsIgnoreCase("order")) {
 				order = entry.getValue().toString();
 			}
-			if(key.equalsIgnoreCase("rowNumbersOnly")) {
-				rowNumbersOnly = Boolean.parseBoolean(entry.getValue().toString());
+			if(key.equalsIgnoreCase("numberOfRowsOnly")) {
+				numberOfRowsOnly = Boolean.parseBoolean(entry.getValue().toString());
 			}
 			if(key.equalsIgnoreCase("minRow")) {
 				if(entry.getValue() != "") {
@@ -108,7 +113,7 @@ public final class BrowseJdbcTable extends Base {
 			throw new ApiException("Access to table ("+tableName+") not allowed", 400);
 
 		//We have all info we need, lets execute the query!
-		Map<String, Object> fieldDef = new HashMap<String, Object>();
+		Map<String, Object> fieldDef = new LinkedHashMap<>();
 		String result = "";
 		String query = null;
 
@@ -134,24 +139,50 @@ public final class BrowseJdbcTable extends Base {
 				ResultSet rs = null;
 				try {
 					rs = conn.getMetaData().getColumns(null, null, tableName, null);
+
 					if (!rs.isBeforeFirst()) {
 						rs.close();
 						rs = conn.getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
 					}
 	
-					String fielddefinition = "<fielddefinition>";
-					while(rs.next()) {
-						String field = "<field name=\"" + rs.getString(4) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(5)) + "\" size=\"" + rs.getInt(7) + "\"/>";
-						fielddefinition = fielddefinition + field;
-						fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
+					StringBuilder fielddefinition = new StringBuilder("<fielddefinition>");
+					String field = null;
+					if(!numberOfRowsOnly) {
+						field = "<field name=\""+rnumColumnName+"\" type=\"INTEGER\" />";
+						fielddefinition.append(field);
+						fieldDef.put(rnumColumnName, "INTEGER");
+						while(rs.next()) {
+							field = "<field name=\"" + rs.getString(COLUMN_NAME) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
+							fielddefinition.append(field);
+							fieldDef.put(rs.getString(COLUMN_NAME), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
+						}
+					} else {
+						field = "<field name=\""+countColumnName+"\" type=\"INTEGER\" />";
+						fielddefinition.append(field);
+						fieldDef.put(countColumnName, "INTEGER");
+						if(StringUtils.isNotEmpty(order)) {
+							rs = conn.getMetaData().getColumns(null, null, tableName, order);
+							while(rs.next()) {
+								field = "<field name=\"" + rs.getString(COLUMN_NAME) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
+								fielddefinition.append(field);
+								fieldDef.put(rs.getString(COLUMN_NAME), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
+							}
+						}
 					}
-					fielddefinition = fielddefinition + "</fielddefinition>";
+
+					fielddefinition.append("</fielddefinition>");
 	
 					String browseJdbcTableExecuteREQ =
 						"<browseJdbcTableExecuteREQ>"
 							+ "<dbmsName>"
 							+ qs.getDbmsSupport().getDbmsName()
 							+ "</dbmsName>"
+							+ "<countColumnName>"
+							+ countColumnName
+							+ "</countColumnName>"
+							+ "<rnumColumnName>"
+							+ rnumColumnName
+							+ "</rnumColumnName>"
 							+ "<tableName>"
 							+ tableName
 							+ "</tableName>"
@@ -159,7 +190,7 @@ public final class BrowseJdbcTable extends Base {
 							+ XmlUtils.encodeChars(where)
 							+ "</where>"
 							+ "<numberOfRowsOnly>"
-							+ rowNumbersOnly
+							+ numberOfRowsOnly
 							+ "</numberOfRowsOnly>"
 							+ "<order>"
 							+ order

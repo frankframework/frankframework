@@ -38,6 +38,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
@@ -393,7 +394,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	private int retrieveErrorStoragesMessageCount(Adapter adapter) {
 		int totalCounter = 0;
 		for (Receiver<?> receiver: adapter.getReceivers()) {
-			IMessageBrowser<?> errorStorage = receiver.getErrorStorageBrowser();
+			IMessageBrowser errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
 			if (errorStorage != null) {
 				int counter;
 				try {
@@ -563,7 +564,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				if (listener instanceof HasSender) {
 					sender = ((HasSender) listener).getSender();
 				}
-				IMessageBrowser<?> ts = receiver.getErrorStorageBrowser();
+				IMessageBrowser<?> ts = receiver.getMessageBrowser(ProcessState.ERROR);
 				receiverXML.addAttribute("hasErrorStorage", "" + (ts != null));
 				if (ts != null) {
 					try {
@@ -577,7 +578,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 						receiverXML.addAttribute("errorStorageCount", "error");
 					}
 				}
-				ts = receiver.getMessageLogBrowser();
+				ts = receiver.getMessageBrowser(ProcessState.DONE);
 				receiverXML.addAttribute("hasMessageLog", "" + (ts != null));
 				if (ts != null) {
 					try {

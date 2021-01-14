@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,16 +23,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPeekableListener;
-import nl.nn.adapterframework.core.IUsesInProcessState;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -45,14 +47,10 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class JdbcListener extends JdbcFacade implements IPeekableListener<Object>, IUsesInProcessState<Object> {
+public class JdbcListener extends JdbcFacade implements IPeekableListener<Object>, IHasProcessState<Object> {
 
 	private String selectQuery;
 	private String peekQuery;
-	private String updateStatusToInProcessQuery;
-	private String updateStatusToProcessedQuery;
-	private String updateStatusToErrorQuery;
-	private String revertInProcessStatusQuery;
 
 	private String keyField;
 	private String messageField;
@@ -64,6 +62,9 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	
 	private boolean trace=false;
 	private boolean peekUntransacted=true;
+
+	private Map<ProcessState, String> updateStatusQueries = new HashMap<>();
+	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
 
 	protected Connection connection=null;
 
@@ -85,6 +86,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		}
+		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates());
 	}
 
 	@Override
@@ -125,6 +127,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 
 	@Override
 	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+		// nothing special
 	}
 
 	@Override
@@ -200,7 +203,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 						}
 					}
 					// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
-					MessageWrapper mw = new MessageWrapper();
+					MessageWrapper<?> mw = new MessageWrapper<Object>();
 					mw.setId(key);
 					mw.setMessage(message);
 					result=mw;
@@ -249,10 +252,10 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	}
 
 	protected void afterMessageProcessed(Connection conn, PipeLineResult processResult, String key, Map<String,Object> context) throws ListenerException {
-		if (processResult.isSuccessful() || StringUtils.isEmpty(getUpdateStatusToErrorQuery())) {
-			execute(conn, getUpdateStatusToProcessedQuery(), key);
+		if (processResult.isSuccessful() || StringUtils.isEmpty(getUpdateStatusQuery(ProcessState.ERROR))) {
+			execute(conn, getUpdateStatusQuery(ProcessState.DONE), key);
 		} else {
-			execute(conn, getUpdateStatusToErrorQuery(), key);
+			execute(conn, getUpdateStatusQuery(ProcessState.ERROR), key);
 		}
 	}
 
@@ -273,58 +276,42 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	}
 
 	@Override
-	public boolean setMessageStateToInProcess(Object rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		if (StringUtils.isEmpty(getUpdateStatusToInProcessQuery())) {
-			return false;
-		} 
-		return doConnected(rawMessage, threadContext, setMessageStateToInProcess);
+	public Set<ProcessState> knownProcessStates() {
+		return updateStatusQueries.keySet();
 	}
-
-	public ConnectedOperation setMessageStateToInProcess = (Connection conn, Object rawMessage, Map<String, Object> threadContext) -> {
-		if (StringUtils.isEmpty(getUpdateStatusToInProcessQuery())) {
-			return false;
-		}
-		String key = getIdFromRawMessage(rawMessage, threadContext);
-		execute(conn,getUpdateStatusToInProcessQuery(), key);
-		return true;
-	};
-
 
 	@Override
-	public void revertInProcessStatusToAvailable(Object rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		if (StringUtils.isEmpty(getRevertInProcessStatusQuery())) {
-			return;
-		}
-		doConnected(rawMessage, threadContext, revertInProcessStatusToAvailable);	
+	public Map<ProcessState,Set<ProcessState>> targetProcessStates() {
+		return targetProcessStates;
 	}
 
-	protected ConnectedOperation revertInProcessStatusToAvailable = (Connection conn, Object rawMessage, Map<String, Object> threadContext) -> {
-		if (StringUtils.isEmpty(getRevertInProcessStatusQuery())) {
+	@Override
+	public boolean changeProcessState(Object rawMessage, ProcessState toState, Map<String,Object> context) throws ListenerException {
+		if (!knownProcessStates().contains(toState)) {
 			return false;
 		}
-		String key=getIdFromRawMessage(rawMessage,threadContext);
-		execute(conn,getRevertInProcessStatusQuery(), key);
-		return true;
-	};
-
-	protected interface ConnectedOperation {
-		boolean operate(Connection conn, Object rawMessage, Map<String, Object> threadContext) throws ListenerException;
-	}
-	
-	protected boolean doConnected(Object rawMessage, Map<String, Object> threadContext, ConnectedOperation operation) throws ListenerException {
 		if (isConnectionsArePooled()) {
-			try (Connection c = getConnection()) {
-				return operation.operate(c, rawMessage, threadContext);
+			try (Connection conn = getConnection()) {
+				return changeProcessState(conn, rawMessage, toState, context);
 			} catch (JdbcException|SQLException e) {
 				throw new ListenerException(e);
 			}
-		}
-		synchronized (connection) {
-			return operation.operate(connection, rawMessage, threadContext);
+		} else {
+			synchronized (connection) {
+				return changeProcessState(connection, rawMessage, toState, context);
+			}
 		}
 	}
-	
 
+	public boolean changeProcessState(Connection connection, Object rawMessage, ProcessState toState, Map<String,Object> context) throws ListenerException {
+		if (!knownProcessStates().contains(toState)) {
+			return false;
+		}
+		String query = getUpdateStatusQuery(toState);
+		String key=getIdFromRawMessage(rawMessage,context);
+		execute(connection, query, key);
+		return true;
+	}
 
 	protected void execute(Connection conn, String query) throws ListenerException {
 		execute(conn,query,null);
@@ -345,6 +332,17 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 				throw new ListenerException(getLogPrefix()+"exception executing statement ["+query+"]",e);
 			}
 		}
+	}
+
+	protected void setUpdateStatusQuery(ProcessState state, String query) {
+		if (StringUtils.isNotEmpty(query)) {
+			updateStatusQueries.put(state, query);
+		} else {
+			updateStatusQueries.remove(state);
+		}
+	}
+	public String getUpdateStatusQuery(ProcessState state) {
+		return updateStatusQueries.get(state);
 	}
 
 	protected void setSelectQuery(String string) {
@@ -371,33 +369,6 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return peekQuery;
 	}
 
-	protected void setUpdateStatusToErrorQuery(String string) {
-		updateStatusToErrorQuery = string;
-	}
-	public String getUpdateStatusToErrorQuery() {
-		return updateStatusToErrorQuery;
-	}
-
-	protected void setUpdateStatusToProcessedQuery(String string) {
-		updateStatusToProcessedQuery = string;
-	}
-	public String getUpdateStatusToProcessedQuery() {
-		return updateStatusToProcessedQuery;
-	}
-
-	protected void setUpdateStatusToInProcessQuery(String string) {
-		updateStatusToInProcessQuery = string;
-	}
-	public String getUpdateStatusToInProcessQuery() {
-		return updateStatusToInProcessQuery;
-	}
-
-	protected void setRevertInProcessStatusQuery(String string) {
-		revertInProcessStatusQuery = string;
-	}
-	public String getRevertInProcessStatusQuery() {
-		return revertInProcessStatusQuery;
-	}
 
 	@IbisDoc({"1", "Primary key field of the table, used to identify messages", ""})
 	public void setKeyField(String fieldname) {

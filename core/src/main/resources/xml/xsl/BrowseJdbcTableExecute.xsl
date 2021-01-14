@@ -2,6 +2,8 @@
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="text" indent="no"/>
 	<xsl:variable name="dbmsName" select="browseJdbcTableExecuteREQ/dbmsName"/>
+	<xsl:variable name="countColumnName" select="browseJdbcTableExecuteREQ/countColumnName"/>
+	<xsl:variable name="rnum" select="browseJdbcTableExecuteREQ/rnumColumnName"/>
 	<xsl:variable name="tableName" select="browseJdbcTableExecuteREQ/tableName"/>
 	<xsl:variable name="numberOfRowsOnly" select="browseJdbcTableExecuteREQ/numberOfRowsOnly"/>
 	<xsl:variable name="where" select="browseJdbcTableExecuteREQ/where"/>
@@ -16,7 +18,9 @@
 					<xsl:when test="string-length($order)&gt;0">
 						<xsl:text>SELECT </xsl:text>
 						<xsl:value-of select="$order"/>
-						<xsl:text>, COUNT(*) AS ROWCOUNTER FROM </xsl:text>
+						<xsl:text>, COUNT(*) AS </xsl:text>
+						<xsl:value-of select="countColumnName"/>
+						<xsl:text> FROM </xsl:text>
 						<xsl:value-of select="$tableName"/>
 						
 						<xsl:if test="string-length($where)&gt;0">
@@ -30,7 +34,9 @@
 						<xsl:value-of select="$order"/>
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:text>SELECT COUNT(*) AS ROWCOUNTER FROM </xsl:text>
+						<xsl:text>SELECT COUNT(*) AS </xsl:text>
+						<xsl:value-of select="countColumnName"/>
+						<xsl:text> FROM </xsl:text>
 						<xsl:value-of select="$tableName"/>
 						<xsl:if test="string-length($where)&gt;0">
 							<xsl:text> WHERE </xsl:text>			
@@ -39,7 +45,7 @@
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>
-			<xsl:when test="starts-with($dbmsName, 'MS SQL')">
+			<xsl:when test="not($dbmsName = 'Oracle')">
 				<xsl:text>SELECT * FROM (SELECT ROW_NUMBER() OVER (ORDER BY </xsl:text>
 				<xsl:choose>
 					<xsl:when test="string-length($order)&gt;0">
@@ -86,24 +92,26 @@
 		<xsl:choose>
 			<xsl:when test="$rownumMax!=$rownumMin and fielddefinition/field[number(@size)&gt;$maxColumnSize]">
 				<xsl:for-each select="fielddefinition/field">
-					<xsl:if test="number(@size)&gt;$maxColumnSize">
-						<xsl:choose>
-							<xsl:when test="starts-with($dbmsName, 'MS SQL')">
-								<xsl:text>LEN(</xsl:text>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:text>LENGTH(</xsl:text>
-							</xsl:otherwise>
-						</xsl:choose>
-					</xsl:if>
-					<xsl:value-of select="@name"/>
-					<xsl:if test="number(@size)&gt;$maxColumnSize">
-						<xsl:text>) AS &quot;LENGTH </xsl:text>
+					<xsl:if test="not(@name=$rnum)">
+						<xsl:if test="number(@size)&gt;$maxColumnSize">
+							<xsl:choose>
+								<xsl:when test="starts-with($dbmsName, 'MS_SQL')">
+									<xsl:text>LEN(</xsl:text>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:text>LENGTH(</xsl:text>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:if>
 						<xsl:value-of select="@name"/>
-						<xsl:text>&quot;</xsl:text>
-					</xsl:if>
-					<xsl:if test="position()!=last()">
-						<xsl:text>, </xsl:text>
+						<xsl:if test="number(@size)&gt;$maxColumnSize">
+							<xsl:text>) AS &quot;LENGTH </xsl:text>
+							<xsl:value-of select="@name"/>
+							<xsl:text>&quot;</xsl:text>
+						</xsl:if>
+						<xsl:if test="position()!=last()">
+							<xsl:text>, </xsl:text>
+						</xsl:if>
 					</xsl:if>
 				</xsl:for-each>
 			</xsl:when>

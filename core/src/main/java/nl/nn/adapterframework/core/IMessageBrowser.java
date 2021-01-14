@@ -33,7 +33,8 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 		ERRORSTORAGE("E"),
 		MESSAGELOG_PIPE("L"),
 		MESSAGELOG_RECEIVER("A"),
-		MESSAGESTORAGE("M");
+		MESSAGESTORAGE("M"),
+		HOLDSTORAGE("H");
 		
 		private String code;
 		
