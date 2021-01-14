@@ -138,7 +138,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 		@Override
 		public void run() {
-			ThreadContext.push(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"] ControllerTask");
+			ThreadContext.push(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"]");
 			log.debug("taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
 			receiver.setRunState(RunStateEnum.STARTED);
 			log.debug("started ControllerTask");
@@ -161,7 +161,11 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				Thread.currentThread().interrupt();
 			} finally {
 				log.debug("closing down ControllerTask");
-				receiver.stopRunning(); //Try to gracefully shutdown the receiver, stops and closes all resources.
+				if(!receiver.getRunState().equals(RunStateEnum.STOPPING) && !receiver.getRunState().equals(RunStateEnum.STOPPED)) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
+					receiver.stopRunning();
+				}
+				receiver.closeAllResources(); //We have to call closeAllResources as the receiver won't do this for IPullingListeners
+
 				ThreadContext.removeStack(); // potentially redundant, makes sure to remove the NDC/MDC
 			}
 		}
@@ -220,14 +224,16 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									return;
 								}
 							}
+							if (rawMessage == null) {
+								return;
+							}
 
 							tasksStarted.increase(); 
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
 							// found a message, process it
 							// first check if it needs to be set to 'inProcess'
-							if (listener instanceof IHasProcessState &&
-									(useInProcessStatus=((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.INPROCESS, threadContext)) && txStatus!=null) {
+							if (listener instanceof IHasProcessState && (useInProcessStatus=((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.INPROCESS, threadContext)) && txStatus!=null) {
 								txManager.commit(txStatus);
 								txStatus = txManager.getTransaction(txNew);
 							}

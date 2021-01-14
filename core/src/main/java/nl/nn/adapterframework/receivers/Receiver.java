@@ -440,10 +440,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
+	/**
+	 * must lead to a 'closeAllResources()' and runstate must be 'STOPPING'
+	 * if IPushingListener -> call closeAllResources()
+	 * if IPullingListener -> PullingListenerContainer has to call closeAllResources();
+	 */
 	protected void tellResourcesToStop() {
-		// must lead to a 'closeAllResources()'
-		// runstate is 'STOPPING'
-		// default just calls 'closeAllResources()'
 		if (getListener() instanceof IPushingListener) {
 			closeAllResources();
 		}
@@ -451,8 +453,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		// See PullingListenerContainer that calls receiver.isInRunState(RunStateEnum.STARTED)
 		// and receiver.closeAllResources()
 	}
+
+	/**
+	 * Should only close resources when in state stopping (or error)! this should be the only trigger to change the state to stopped
+	 * On exit resources must be 'closed' so the receiver RunState can be set to 'STOPPED'
+	 */
 	protected void closeAllResources() {
-		// on exit resouces must be in a state that runstate can be set to 'STOPPED'
 		log.debug(getLogPrefix()+"closing");
 		try {
 			getListener().close();
@@ -487,10 +493,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				error("error closing message log", t);
 			}
 		}
+
 		log.debug(getLogPrefix()+"closed");
-		runState.setRunState(RunStateEnum.STOPPED);
+		if (runState.isInState(RunStateEnum.STOPPING)) {
+			runState.setRunState(RunStateEnum.STOPPED);
+		}
 		throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
 		resetRetryInterval();
+
 		info("stopped");
 	}
 
@@ -788,6 +798,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
+	//after successfully closing all resources the state should be set to stopped
 	@Override
 	public void stopRunning() {
 		// See also Adapter.stopRunning() and PullingListenerContainer.ControllerTask
@@ -797,29 +808,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				log.warn("receiver currently in state [" + currentRunState + "], ignoring stop() command");
 				return;
 			} else if (currentRunState.equals(RunStateEnum.STOPPING) || currentRunState.equals(RunStateEnum.STOPPED)) {
-				log.info("receiver already in state [" + currentRunState + "]"); //Triggered by the PullingListenerContainer.ControllerTask when trying to stop the receiver. Prevent circular reference
+				log.info("receiver already in state [" + currentRunState + "]");
 				return;
 			}
 			if (!currentRunState.equals(RunStateEnum.ERROR)) {
 				runState.setRunState(RunStateEnum.STOPPING); //Don't change the runstate when in ERROR
 			}
 		}
-		try {
-			tellResourcesToStop();
-			ThreadContext.removeStack(); //Clean up receiver ThreadContext
-		} finally { //Mark as stopped when all resources are stopped
-			synchronized (runState) {
-				if (runState.isInState(RunStateEnum.STOPPING)) {
-					runState.setRunState(RunStateEnum.STOPPED);
 
-					String msg = getLogPrefix()+"stopped";
-					log.info(msg);
-					if (adapter != null) { 
-						adapter.getMessageKeeper().add(msg);
-					}
-				}
-			}
-		}
+		tellResourcesToStop();
+		ThreadContext.removeStack(); //Clean up receiver ThreadContext
 	}
 
 	@Override
