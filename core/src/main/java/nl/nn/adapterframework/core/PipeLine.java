@@ -141,6 +141,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
 	private ICacheAdapter<String,String> cache;
 
+	private boolean configurationSucceeded = false;
+
 
 	/**
 	 * Register an Pipe at this pipeline.
@@ -208,6 +210,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * registers the <code>PipeLineSession</code> object at the pipes.
 	 * @see IPipe
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		INamedObject owner = getOwner();
 		Adapter adapter = null;
@@ -323,6 +326,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		super.configure();
 		log.debug(getLogPrefix()+"successfully configured");
+		configurationSucceeded = true;
 	}
 
 	public void configure(IPipe pipe) throws ConfigurationException {
@@ -788,5 +792,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 	public String getAdapterToRunBeforeOnEmptyInput() {
 		return adapterToRunBeforeOnEmptyInput;
+	}
+
+	public boolean configurationSucceeded() {
+		return configurationSucceeded;
 	}
 }

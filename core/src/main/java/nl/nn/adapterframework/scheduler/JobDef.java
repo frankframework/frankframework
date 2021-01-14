@@ -1049,14 +1049,22 @@ public class JobDef extends TransactionAttributes {
 		for (Adapter adapter: ibisManager.getRegisteredAdapters()) {
 			countAdapter++;
 			RunStateEnum adapterRunState = adapter.getRunState();
-			if (adapter.configurationSucceeded() && adapterRunState.equals(RunStateEnum.ERROR)) { //if not previously configured, there is no point in trying to do this again.
+			boolean startAdapter = false;
+			if (adapterRunState.equals(RunStateEnum.ERROR)) { //if not previously configured, there is no point in trying to do this again.
 				log.debug("trying to recover adapter [" + adapter.getName() + "]");
 
-				if (adapter.isAutoStart()) {
-					adapter.startRunning();
+				if (!adapter.configurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
+					try {
+						adapter.configure();
+					} catch (ConfigurationException e) {
+						// log the warning and do nothing, it couldn't configure before, it still can't...
+						log.warn("error configuring adapter [" + adapter.getName() + "] while trying to recover", e);
+					} 
 				}
 
-				log.debug("finished recovering adapter [" + adapter.getName() + "]");
+				if (adapter.configurationSucceeded()) {
+					startAdapter = adapter.isAutoStart(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
+				}
 			}
 
 			String message = "adapter [" + adapter.getName() + "] has state [" + adapterRunState + "]";
@@ -1074,7 +1082,7 @@ public class JobDef extends TransactionAttributes {
 				countReceiver++;
 
 				RunStateEnum receiverRunState = receiver.getRunState();
-				if (adapterRunState.equals(RunStateEnum.STARTED) && receiverRunState.equals(RunStateEnum.ERROR) && receiver.configurationSucceeded()) { //Only try to (re-)start receivers in a running adapter
+				if (adapterRunState.equals(RunStateEnum.STARTED) && receiverRunState.equals(RunStateEnum.ERROR) && receiver.configurationSucceeded()) { //Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
 					log.debug("trying to recover receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
 
 					receiver.startRunning();
@@ -1093,6 +1101,12 @@ public class JobDef extends TransactionAttributes {
 					heartbeatLog.warn(message);
 				}
 			}
+
+			if (startAdapter) { // can only be true if adapter was in error before and AutoStart is enabled
+				adapter.startRunning();
+			}
+
+			log.debug("finished recovering adapter [" + adapter.getName() + "]");
 		}
 		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunStateEnum.STARTED + "]");
 	}

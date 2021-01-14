@@ -95,6 +95,12 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 			} catch (JdbcException e) {
 				throw new ListenerException(e);
 			}
+		} else {
+			try (Connection c = getConnection()) {
+				//do nothing, eat a connection from the pool to validate connectivity
+			} catch (JdbcException|SQLException e) {
+				throw new ListenerException(e);
+			}
 		}
 	}
 
