@@ -222,9 +222,7 @@ public class FrankElement {
 		} else if(roleOverruleCandidates.size() == 1) {
 			return getXsdElementNameImpl(roleOverruleCandidates.iterator().next());
 		} else {
-			String overruleString = roleOverruleCandidates.stream()
-					.map(role -> role.toString())
-					.collect(Collectors.joining(", "));
+			String overruleString = ElementRole.collection2String(roleOverruleCandidates);
 			log.info(String.format("Multiple candidate ElementRole for determing XSD element name of FrankElement [%s]: [%s]",
 					fullName, overruleString));
 			roleOverruleCandidates = roleOverruleCandidates.stream()
@@ -236,9 +234,7 @@ public class FrankElement {
 						fullName, overruleRole.toString()));
 				return getXsdElementNameImpl(overruleRole);
 			} else {
-				String overruleStringFiltered = roleOverruleCandidates.stream()
-						.map(role -> role.toString())
-						.collect(Collectors.joining(", "));
+				String overruleStringFiltered = ElementRole.collection2String(roleOverruleCandidates);
 				log.warn(String.format("Cannot choose ElementRole overrule candidate from [%s], taking role [%s]",
 						overruleStringFiltered, elementRole));
 				return getXsdElementNameImpl(elementRole);

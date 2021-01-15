@@ -16,6 +16,7 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,12 @@ public class ElementRole {
 	@Override
 	public String toString() {
 		return getKey().toString();
+	}
+
+	public static String collection2String(Collection<ElementRole> c) {
+		return c.stream()
+				.map(role -> role.toString())
+				.collect(Collectors.joining(", "));		
 	}
 
 	static class Factory {

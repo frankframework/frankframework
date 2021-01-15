@@ -62,9 +62,18 @@ class MemberChildrenCalculator {
 
 	private List<ElementRole> disambiguateElementRoles(Map<String, List<ElementRole>> bySyntax1Name) {
 		List<ElementRole> result = new ArrayList<>();
-		for(List<ElementRole> bucket: bySyntax1Name.values()) {
+		for(String syntax1Name: bySyntax1Name.keySet()) {
+			List<ElementRole> bucket = bySyntax1Name.get(syntax1Name);
 			if(bucket.size() >= 2) {
-				result.addAll(disambiguateElementRoles(bucket));
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Multiple element roles for syntax 1 name [%]: [%s]",
+							syntax1Name, ElementRole.collection2String(bucket)));
+				}
+				List<ElementRole> combination = disambiguateElementRoles(bucket);
+				result.addAll(combination);
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Combined into the following roles: [%s]", ElementRole.collection2String(combination)));
+				}
 			}
 			else {
 				result.add(bucket.get(0));					
