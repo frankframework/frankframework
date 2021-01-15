@@ -30,7 +30,7 @@ public class DateUtilsTest {
 	}
 
 	/**
-	 * Tests have been written in CET, adjust the TimeZone so Travis/Azure/GitHub CI don't fail when running in other TimeZones
+	 * Tests have been written in UTC, adjust the TimeZone so Travis/Azure/GitHub CI don't fail when running in other TimeZones
 	 */
 	private Date getCorrectedDate(Date date) {
 		if(TZ_DIFF != 0) {
@@ -45,7 +45,7 @@ public class DateUtilsTest {
 	}
 
 	/**
-	 * Tests have been written in CET, adjust the TimeZone so Travis/Azure/GitHub CI don't fail when running in other TimeZones
+	 * Tests have been written in UTC, adjust the TimeZone so Travis/Azure/GitHub CI don't fail when running in other TimeZones
 	 */
 	private long getCorrectedDate(long l) {
 		Date date = new Date(l);
