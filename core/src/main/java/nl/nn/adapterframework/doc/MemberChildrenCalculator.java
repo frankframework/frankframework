@@ -64,29 +64,32 @@ class MemberChildrenCalculator {
 		List<ElementRole> result = new ArrayList<>();
 		for(List<ElementRole> bucket: bySyntax1Name.values()) {
 			if(bucket.size() >= 2) {
-				List<ElementType> highestElementTypes = bucket.stream()
-						.map(er -> er.getElementType().getHighestCommonInterface())
-						.distinct()
-						.collect(Collectors.toList());
-				if(highestElementTypes.size() >= 2) {
-					String elementTypesAsSingleString = highestElementTypes.stream().map(ElementType::getFullName).collect(Collectors.joining(", "));
-					log.warn(String.format("No common ElementType for element types [%s], omitting them from %s [%s]",
-							elementTypesAsSingleString, DocWriterNew.MEMBER_CHILD_GROUP, subject.toString()));
-				} else {
-					ElementRole.Key key = new ElementRole.Key(highestElementTypes.get(0).getFullName(), bucket.get(0).getSyntax1Name());
-					ElementRole candidate = model.findElementRole(key);
-					if(candidate == null) {
-						log.warn(String.format("No element role available for ElementType [%s] and syntax 1 name [%s], omitting from %s [%s]",
-								key.getElementTypeName(), key.getSyntax1Name(), DocWriterNew.MEMBER_CHILD_GROUP, subject.toString()));
-					} else {
-						result.add(candidate);
-					}
-				}
+				result.addAll(disambiguateElementRoles(bucket));
 			}
 			else {
 				result.add(bucket.get(0));					
 			}
 		}
 		return result;
+	}
+
+	private List<ElementRole> disambiguateElementRoles(List<ElementRole> bucket) {
+		Map<ElementRole.Key, List<ElementRole>> byHighestCommonInterface = bucket.stream()
+				.collect(Collectors.groupingBy(this::getHighestCommonInterface));
+		List<ElementRole> result = new ArrayList<>();
+		for(ElementRole.Key key: byHighestCommonInterface.keySet()) {
+			ElementRole highestCommonInterface = model.findElementRole(key);
+			if(highestCommonInterface == null) {
+				result.addAll(byHighestCommonInterface.get(key));
+			} else {
+				result.add(highestCommonInterface);
+			}
+		}
+		return result;
+	}
+
+	private ElementRole.Key getHighestCommonInterface(ElementRole role) {
+		ElementType highestCommonInterface = role.getElementType().getHighestCommonInterface();
+		return new ElementRole.Key(highestCommonInterface.getFullName(), role.getSyntax1Name());
 	}
 }
