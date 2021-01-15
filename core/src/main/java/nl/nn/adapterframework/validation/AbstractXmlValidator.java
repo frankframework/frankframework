@@ -101,7 +101,7 @@ public abstract class AbstractXmlValidator {
 
 	public void start() throws ConfigurationException {
 		if(isStarted()) {
-			throw new ConfigurationException("cannot start an already started validator");
+			log.info("already started " + ClassUtils.nameOf(this));
 		}
 
 		started = true;

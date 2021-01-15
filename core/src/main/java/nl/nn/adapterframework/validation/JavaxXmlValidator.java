@@ -80,13 +80,11 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 
 	@Override
 	public void start() throws ConfigurationException {
-		if(!isStarted()) {
-			super.start();
-			String schemasId = null;
-			schemasId = schemasProvider.getSchemasId();
-			if (schemasId != null) {
-				getSchemaObject(schemasId, schemasProvider.getSchemas());
-			}
+		super.start();
+		String schemasId = null;
+		schemasId = schemasProvider.getSchemasId();
+		if (schemasId != null) {
+			getSchemaObject(schemasId, schemasProvider.getSchemas());
 		}
 	}
 

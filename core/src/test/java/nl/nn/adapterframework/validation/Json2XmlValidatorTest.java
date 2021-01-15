@@ -130,7 +130,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
     	        evaluateResult(validationResult, session, null, expectedFailureReasons);
     	        return result;
             } catch (Exception e) {
-            	fail("result XML must be valid");
+            	fail("result XML must be valid: "+ e.getMessage());
             }
 
     		return result;

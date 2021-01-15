@@ -41,7 +41,6 @@ public class IbisContextRunnable implements Runnable {
 			}
 		} catch (InterruptedException e) {
 			log.warn("Interrupted IbisContextRunnable");
-			Thread.currentThread().interrupt();
 		}
 	}
 

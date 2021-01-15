@@ -169,7 +169,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @see nl.nn.adapterframework.core.Pipeline#configurePipes
 	 */
 	@Override
-	public void configure() throws ConfigurationException { //TODO check if we should fail when configurationSucceeded==true
+	public void configure() throws ConfigurationException { //TODO check if we should fail when the adapter has already been configured?
 		msgLog = LogUtil.getMsgLogger(this);
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
 		configurationSucceeded = false;
