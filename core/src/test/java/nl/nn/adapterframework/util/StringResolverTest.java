@@ -54,7 +54,14 @@ public class StringResolverTest {
 
 	@Test
 	public void resolveComplexProperty() {
-		String result = StringResolver.substVars(properties.getProperty("testMultiResolve"), properties);
+		String result = StringResolver.substVars("${testMultiResolve}", properties);
 		assertEquals("one,two,three_value1value1,my_value2.value1,StageSpecifics_value1.value2.value1", result);
 	}
+
+	@Test
+	public void resolveCyclicProperty() {
+		String result = StringResolver.substVars("${cyclic}", properties);
+		assertEquals("prefix ${cyclic} suffix", result);
+	}
+
 }
