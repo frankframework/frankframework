@@ -44,7 +44,6 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
-import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -52,8 +51,6 @@ import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.http.RestListener;
-import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
@@ -1052,41 +1049,25 @@ public class JobDef extends TransactionAttributes {
 		for (Adapter adapter: ibisManager.getRegisteredAdapters()) {
 			countAdapter++;
 			RunStateEnum adapterRunState = adapter.getRunState();
-			if (adapterRunState.equals(RunStateEnum.ERROR)) {
-				log.debug("trying to recover adapter [" + adapter.getName()
-						+ "]");
-				try {
-					adapter.setRecover(true);
-					adapter.configure();
-				} catch (ConfigurationException e) {
-					// do nothing
-					log.warn("error during recovering adapter ["
-							+ adapter.getName() + "]: " + e.getMessage());
-				} finally {
-					adapter.setRecover(false);
+			boolean startAdapter = false;
+			if (adapterRunState.equals(RunStateEnum.ERROR)) { //if not previously configured, there is no point in trying to do this again.
+				log.debug("trying to recover adapter [" + adapter.getName() + "]");
+
+				if (!adapter.configurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
+					try {
+						adapter.configure();
+					} catch (ConfigurationException e) {
+						// log the warning and do nothing, it couldn't configure before, it still can't...
+						log.warn("error configuring adapter [" + adapter.getName() + "] while trying to recover", e);
+					} 
 				}
+
 				if (adapter.configurationSucceeded()) {
-					adapter.stopRunning();
-					int count = 10;
-					while (count-- >= 0
-							&& !adapter.getRunState().equals(
-									RunStateEnum.STOPPED)) {
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e) {
-							// do nothing
-						}
-					}
+					startAdapter = adapter.isAutoStart(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
 				}
-				// check for start is in method startRunning in Adapter self
-				if (adapter.isAutoStart()) {
-					adapter.startRunning();
-				}
-				log.debug("finished recovering adapter ["
-						+ adapter.getName() + "]");
 			}
-			String message = "adapter [" + adapter.getName()
-					+ "] has state [" + adapterRunState + "]";
+
+			String message = "adapter [" + adapter.getName() + "] has state [" + adapterRunState + "]";
 			adapterRunState = adapter.getRunState();
 			if (adapterRunState.equals(RunStateEnum.STARTED)) {
 				countAdapterStateStarted++;
@@ -1096,60 +1077,19 @@ public class JobDef extends TransactionAttributes {
 			} else {
 				heartbeatLog.warn(message);
 			}
+
 			for (Receiver<?> receiver: adapter.getReceivers()) {
 				countReceiver++;
 
 				RunStateEnum receiverRunState = receiver.getRunState();
-				if (!adapterRunState.equals(RunStateEnum.ERROR) && receiverRunState.equals(RunStateEnum.ERROR)) {
+				if (adapterRunState.equals(RunStateEnum.STARTED) && receiverRunState.equals(RunStateEnum.ERROR) && receiver.configurationSucceeded()) { //Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
 					log.debug("trying to recover receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
-					try {
-						receiver.setRecover(true);
-						adapter.configureReceiver(receiver);
-					} finally {
-						receiver.setRecover(false);
-					}
-					if (receiver.configurationSucceeded()) {
-						receiver.stopRunning();
-						int count = 10;
-						while (count-- >= 0
-								&& !receiver.getRunState().equals(RunStateEnum.STOPPED)) {
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-								log.debug("Interrupted waiting for receiver to stop", e);
-							}
-						}
-					}
-					// check for start is in method startRunning in Receiver itself
+
 					receiver.startRunning();
+
 					log.debug("finished recovering receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
-				} else if (receiverRunState
-						.equals(RunStateEnum.STARTED)) {
-					// workaround for started RestListeners of which
-					// uriPattern is not registered correctly
-					IListener<?> listener = receiver.getListener();
-					if (listener instanceof RestListener) {
-						RestListener restListener = (RestListener) listener;
-						String matchingPattern = RestServiceDispatcher.getInstance().findMatchingPattern("/" + restListener.getUriPattern());
-						if (matchingPattern == null) {
-							log.debug("trying to recover receiver [" + receiver.getName() + "] (restListener) of adapter [" + adapter.getName() + "]");
-							if (receiver.configurationSucceeded()) {
-								receiver.stopRunning();
-								int count = 10;
-								while (count-- >= 0 && !receiver.getRunState().equals(RunStateEnum.STOPPED)) {
-									try {
-										Thread.sleep(1000);
-									} catch (InterruptedException e) {
-										log.debug("Interrupted waiting for receiver to stop", e);
-									}
-								}
-							}
-							// check for start is in method startRunning in Receiver itself
-							receiver.startRunning();
-							log.debug("finished recovering receiver [" + receiver.getName() + "] (restListener) of adapter [" + adapter.getName() + "]");
-						}
-					}
 				}
+
 				receiverRunState = receiver.getRunState();
 				message = "receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "] has state [" + receiverRunState + "]";
 				if (receiverRunState.equals(RunStateEnum.STARTED)) {
@@ -1161,6 +1101,12 @@ public class JobDef extends TransactionAttributes {
 					heartbeatLog.warn(message);
 				}
 			}
+
+			if (startAdapter) { // can only be true if adapter was in error before and AutoStart is enabled
+				adapter.startRunning();
+			}
+
+			log.debug("finished recovering adapter [" + adapter.getName() + "]");
 		}
 		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunStateEnum.STARTED + "]");
 	}

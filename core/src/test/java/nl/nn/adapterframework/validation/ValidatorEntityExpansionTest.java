@@ -53,6 +53,7 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 		instance.setThrowException(true);
 		instance.setFullSchemaChecking(true);
 		instance.configure("init");
+		instance.start();
 
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		ValidationContext context = instance.createValidationContext(session, null, null);

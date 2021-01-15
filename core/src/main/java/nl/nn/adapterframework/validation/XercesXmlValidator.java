@@ -152,18 +152,16 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	protected void init() throws ConfigurationException {
-		if (needsInit) {
-			super.init();
-			if (schemasProvider == null) throw new IllegalStateException("No schema provider");
-			String schemasId = schemasProvider.getSchemasId();
-			if (schemasId != null) {
-				PreparseResult preparseResult = preparse(schemasId, schemasProvider.getSchemas());
-				if (cache == null || isIgnoreCaching()) {
-					this.preparseResult = preparseResult;
-				} else {
-					cache.put(preparseResultId, preparseResult);
-				}
+	public void start() throws ConfigurationException {
+		super.start();
+		if (schemasProvider == null) throw new IllegalStateException("No schema provider");
+		String schemasId = schemasProvider.getSchemasId();
+		if (schemasId != null) {
+			PreparseResult preparseResult = preparse(schemasId, schemasProvider.getSchemas());
+			if (cache == null || isIgnoreCaching()) {
+				this.preparseResult = preparseResult;
+			} else {
+				cache.put(preparseResultId, preparseResult);
 			}
 		}
 	}
@@ -253,7 +251,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			if (cache == null || isIgnoreCaching()) {
 				preparseResult = this.preparseResult;
 				if (preparseResult == null) {
-					init();
 					preparseResult = this.preparseResult;
 				}
 			} else {

@@ -64,7 +64,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void setReceiver(Receiver<MqttMessage> receiver) {
-		this.receiver = (Receiver<MqttMessage>)receiver;
+		this.receiver = receiver;
 	}
 
 	@Override
@@ -85,12 +85,12 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	@Override
 	public void configure() throws ConfigurationException {
 		// See connectionLost(Throwable)
-		receiver.setOnError(Receiver.ONERROR_RECOVER);
-		// Don't recreate client when trying to recover
-		if (!receiver.isRecover() && !receiver.isRecoverAdapter()) {
-			super.configure();
-			client.setCallback(this);
-		}
+		receiver.setOnErrorEnum(Receiver.OnError.RECOVER);
+		// Recover will be triggered when connectionLost was called or listener 
+		// could not start in which case client is already disconnected.
+
+		super.configure();
+		client.setCallback(this);
 	}
 
 	@Override
@@ -99,18 +99,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 			super.open();
 			client.subscribe(getTopic(), getQos());
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new ListenerException("Could not subscribe to topic", e);
-		}
-	}
-
-	@Override
-	public void close() {
-		// Prevent log.warn() when trying to recover. Recover will be triggered
-		// when connectionLost was called or listener could not start in which
-		// case client is already disconnected.
-		if (!receiver.isRecover() && !receiver.isRecoverAdapter()) {
-			super.close();
 		}
 	}
 

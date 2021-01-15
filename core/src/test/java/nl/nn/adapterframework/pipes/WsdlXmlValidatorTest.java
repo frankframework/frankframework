@@ -46,50 +46,54 @@ public class WsdlXmlValidatorTest extends Mockito {
     private IPipeLineSession session = mock(IPipeLineSession.class);
 
     @Test
-    public void wsdlValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlValidate() throws Exception {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(SIMPLE);
         val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
+        val.start();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
     }
 
     @Test
-    public void wsdlValidateWithInclude() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlValidateWithInclude() throws Exception {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(SIMPLE_WITH_INCLUDE);
         val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
+        val.start();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
     }
 
     @Test
-    public void wsdlValidateWithReference() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlValidateWithReference() throws Exception {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(SIMPLE_WITH_REFERENCE);
         val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
+        val.start();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
     }
 
     @Test(expected = XmlValidatorException.class)
-    public void wsdlValidateWithReferenceFail() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlValidateWithReferenceFail() throws Exception {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(SIMPLE_WITH_REFERENCE);
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
+        val.start();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbolERROR>foo</tickerSymbolERROR></TradePriceRequest></Body></Envelope>", session);
     }
 
     @Test
-    public void wsdlTibco() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlTibco() throws Exception {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
         val.setSoapHeader("MessageHeader");
@@ -97,6 +101,7 @@ public class WsdlXmlValidatorTest extends Mockito {
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
+        val.start();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
                 "  <Header>\n" +
                 "    <MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
@@ -127,12 +132,13 @@ public class WsdlXmlValidatorTest extends Mockito {
     }
 
     @Test(expected = XmlValidatorException.class)
-    public void wsdlTibcoFailEnvelop() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlTibcoFailEnvelop() throws Exception {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
+        val.start();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
                 "  <BodyERROR>\n" +
                 "    <MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
@@ -161,12 +167,13 @@ public class WsdlXmlValidatorTest extends Mockito {
     }
 
     @Test(expected = XmlValidatorException.class)
-    public void wsdlTibcoFailMessage() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlTibcoFailMessage() throws Exception {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(TIBCO);
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.configure();
+        val.start();
         val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
                 "  <Body>\n" +
                 "    <MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
@@ -196,14 +203,14 @@ public class WsdlXmlValidatorTest extends Mockito {
 
     @Ignore("Travis has problems with this")
     @Test
-	public void wsdlReasonSessionKey() throws ConfigurationException,
-			XmlValidatorException, PipeRunException {
+	public void wsdlReasonSessionKey() throws Exception {
 		WsdlXmlValidator val = new WsdlXmlValidator();
 		val.setWsdl(SIMPLE);
 		val.setSoapBody("TradePriceRequest");
 		val.setForwardFailureToSuccess(true);
 		val.registerForward(new PipeForward("success", null));
 		val.configure();
+		val.start();
 		IPipeLineSession pls = new PipeLineSessionBase();
 		val.validate("<xml/>", pls);
 		List<String> lines = Arrays.asList(
@@ -217,7 +224,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 	}
 
 	@Test(expected = ConfigurationException.class)
-	public void wSoapBodyExistsMultipleTimes() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+	public void wSoapBodyExistsMultipleTimes() throws Exception {
 		WsdlXmlValidator val = new WsdlXmlValidator();
 		val.setWsdl(DOUBLE_BODY);
 		val.setSoapHeader("MessageHeader");
@@ -230,7 +237,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 	}
 
 	@Test
-	public void warnSchemaLocationAlreadyDefaultValue() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+	public void warnSchemaLocationAlreadyDefaultValue() throws Exception {
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -74,6 +75,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		if (receiver.getNumThreadsPolling() > 0 && receiver.getNumThreadsPolling() < receiver.getNumThreads()) {
 			pollToken = new Semaphore(receiver.getNumThreadsPolling());
 		}
+
 		processToken = new Semaphore(receiver.getNumThreads());
 		maxThreadCount = receiver.getNumThreads();
 		if (receiver.isTransacted()) {
@@ -136,9 +138,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 		@Override
 		public void run() {
-			log.debug(receiver.getLogPrefix()+" taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
+			ThreadContext.push(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"]");
+			log.debug("taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
 			receiver.setRunState(RunStateEnum.STARTED);
-			log.debug(receiver.getLogPrefix()+"started ControllerTask");
+			log.debug("started ControllerTask");
 			try {
 				while (receiver.isInRunState(RunStateEnum.STARTED) && !Thread.currentThread().isInterrupted()) {
 					processToken.acquire();
@@ -146,7 +149,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						pollToken.acquire();
 					}
 					if (isIdle() && receiver.getPollInterval()>0) {
-						if (log.isDebugEnabled() && receiver.getPollInterval()>600)log.debug(receiver.getLogPrefix()+"is idle, sleeping for ["+receiver.getPollInterval()+"] seconds");
+						if (log.isDebugEnabled() && receiver.getPollInterval()>600)log.debug("is idle, sleeping for ["+receiver.getPollInterval()+"] seconds");
 						for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunStateEnum.STARTED); i++) {
 							Thread.sleep(1000);
 						}
@@ -155,13 +158,15 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				}
 			} catch (InterruptedException e) {
 				log.warn("polling interrupted", e);
+				Thread.currentThread().interrupt();
 			} finally {
-				log.debug(receiver.getLogPrefix()+"closing down ControllerTask");
-				if(!receiver.getRunState().equals(RunStateEnum.STOPPING) && !receiver.getRunState().equals(RunStateEnum.STOPPED)) {
+				log.debug("closing down ControllerTask");
+				if(!receiver.getRunState().equals(RunStateEnum.STOPPING) && !receiver.getRunState().equals(RunStateEnum.STOPPED)) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
 					receiver.stopRunning();
 				}
-				receiver.closeAllResources();
-				ThreadContext.removeStack();
+				receiver.closeAllResources(); //We have to call closeAllResources as the receiver won't do this for IPullingListeners
+
+				ThreadContext.removeStack(); // potentially redundant, makes sure to remove the NDC/MDC
 			}
 		}
 	}
@@ -190,7 +195,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					}
 					M rawMessage = null;
 					TransactionStatus txStatus = null;
-					try {
+					try { //  doesn't catch anything, rolls back transaction in finally clause when required
 						try {
 							try {
 								boolean messageAvailable = true;
@@ -215,22 +220,20 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (receiver.isOnErrorContinue()) {
 									increaseRetryIntervalAndWait(e);
 								} else {
-									receiver.error("stopping receiver after exception in retrieving message", e);
-									receiver.stopRunning();
+									receiver.exceptionThrown("exception occured while retrieving message", e); //actually use ON_ERROR and don't just stop the receiver
 									return;
 								}
 							}
 							if (rawMessage == null) {
 								return;
 							}
+
 							tasksStarted.increase(); 
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
 							// found a message, process it
-							
 							// first check if it needs to be set to 'inProcess'
-							if (listener instanceof IHasProcessState &&
-									(useInProcessStatus=((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.INPROCESS, threadContext)) && txStatus!=null) {
+							if (listener instanceof IHasProcessState && (useInProcessStatus=((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.INPROCESS, threadContext)) && txStatus!=null) {
 								txManager.commit(txStatus);
 								txStatus = txManager.getTransaction(txNew);
 							}
@@ -262,8 +265,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (receiver.isOnErrorContinue()) {
 									receiver.error("caught Exception processing message, will continue processing next message", e);
 								} else {
-									receiver.error("stopping receiver after Exception in processing message", e);
-									receiver.stopRunning();
+									receiver.exceptionThrown("exception occured while processing message", e); //actually use ON_ERROR and don't just stop the receiver
 								}
 							}
 						}
@@ -288,10 +290,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						receiver.error("Exception closing listener", e);
 					}
 				}
-				ThreadContext.removeStack();
+				ThreadContext.removeStack(); //Cleanup the MDC stack that was created durring message processing
 			}
 		}
-		
+
 		private void rollBack(TransactionStatus txStatus, IPullingListener<M> listener, M rawMessage, Map<String,Object> threadContext) throws ListenerException {
 			try {
 				txManager.rollback(txStatus);

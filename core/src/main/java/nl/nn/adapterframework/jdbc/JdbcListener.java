@@ -97,6 +97,12 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 			} catch (JdbcException e) {
 				throw new ListenerException(e);
 			}
+		} else {
+			try (Connection c = getConnection()) {
+				//do nothing, eat a connection from the pool to validate connectivity
+			} catch (JdbcException|SQLException e) {
+				throw new ListenerException(e);
+			}
 		}
 	}
 
@@ -320,8 +326,8 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 					log.debug("setting parameter 1 to ["+parameter+"]");
 					JdbcUtil.setParameter(stmt, 1, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}
+
 				stmt.execute();
-				
 			} catch (SQLException e) {
 				throw new ListenerException(getLogPrefix()+"exception executing statement ["+query+"]",e);
 			}

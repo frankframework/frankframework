@@ -240,7 +240,19 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-					Receiver receiver = adapter.getReceiverByName(receiverName);
+
+					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+					RunStateEnum currentRunState = receiver.getRunState();
+					if (!currentRunState.equals(RunStateEnum.STARTED)) {
+						if (currentRunState.equals(RunStateEnum.STOPPING) || currentRunState.equals(RunStateEnum.STOPPED)) {
+							adapter.getMessageKeeper().info(receiver, "already in state [" + currentRunState + "]");
+							return;
+						} else {
+							adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
+							return;
+						}
+					}
+
 					receiver.stopRunning();
 					log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
 				}
@@ -249,7 +261,19 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-					Receiver receiver = adapter.getReceiverByName(receiverName);
+
+					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+					RunStateEnum currentRunState = receiver.getRunState();
+					if (!currentRunState.equals(RunStateEnum.STOPPED)) {
+						if (currentRunState.equals(RunStateEnum.STARTING) || currentRunState.equals(RunStateEnum.STARTED)) {
+							adapter.getMessageKeeper().info(receiver, "already in state [" + currentRunState + "]");
+							return;
+						} else {
+							adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
+							return;
+						}
+					}
+
 					receiver.startRunning();
 					log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
 				}

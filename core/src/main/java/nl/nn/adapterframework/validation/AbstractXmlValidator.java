@@ -71,8 +71,6 @@ public abstract class AbstractXmlValidator {
 	private boolean validateFile = false;
 	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	protected boolean warn = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.warn", true);
-	protected boolean needsInit = true;
-	protected boolean lazyInit = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.lazyInit", false);
 
 	protected String logPrefix = "";
 	protected boolean addNamespaceToSchema = false;
@@ -84,6 +82,8 @@ public abstract class AbstractXmlValidator {
 	private String xmlSchemaVersion=null;
 	
 	protected SchemasProvider schemasProvider;
+
+	private boolean started = false;
 
 	/**
 	 * Configure the XmlValidator
@@ -97,20 +97,19 @@ public abstract class AbstractXmlValidator {
 	 */
 	public void configure(String logPrefix) throws ConfigurationException {
 		this.logPrefix = logPrefix;
-		if (!lazyInit) {
-			init();
-		}
 	}
 
-	protected void init() throws ConfigurationException {
-		if (needsInit) {
-			needsInit = false;
+	public void start() throws ConfigurationException {
+		if(isStarted()) {
+			log.info("already started " + ClassUtils.nameOf(this));
 		}
+
+		started = true;
 	}
 
-	public void reset() {
-		if (!needsInit) {
-			needsInit = true;
+	public void stop() {
+		if(started) {
+			started = false;
 		}
 	}
 
@@ -368,14 +367,6 @@ public abstract class AbstractXmlValidator {
 		return ignoreCaching;
 	}
 
-	@IbisDoc({"If set, the value in appconstants is overwritten (for this validator only)", "<code>application default (false)</code>"})
-	public void setLazyInit(boolean lazyInit) {
-		this.lazyInit = lazyInit;
-	}
-	public boolean isLazyInit() {
-		return lazyInit;
-	}
-
 	@IbisDoc({"If set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property. ", "<code>1.1</code>"})
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {
 		this.xmlSchemaVersion = xmlSchemaVersion;
@@ -393,4 +384,9 @@ public abstract class AbstractXmlValidator {
 	public ClassLoader getConfigurationClassLoader() {
 		return configurationClassLoader;
 	}
+
+	public boolean isStarted() {
+		return started;
+	}
+
 }

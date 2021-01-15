@@ -2,12 +2,9 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import javax.wsdl.WSDLException;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -77,7 +74,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		}
 	}
 	
-	public void wsdlValidate(String wsdl, String soapBody, String testSoap, String testXml, String testJsonStraight, String testJsonCompact, String targetContent1, String targetContent2) throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+	public void wsdlValidate(String wsdl, String soapBody, String testSoap, String testXml, String testJsonStraight, String testJsonCompact, String targetContent1, String targetContent2) throws Exception {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(wsdl);
 //        val.setSoapBody("TradePriceRequest");
@@ -86,6 +83,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         val.setSoapBody(soapBody);
         val.setValidateJsonToRootElementOnly(false);
         val.configure();
+        val.start();
 
         boolean compactJsonArrays=false;
         
@@ -111,7 +109,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	}
 	
     @Test
-    public void wsdlJsonValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlJsonValidate() throws Exception {
     	String wsdl=BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetailsTravel/GetPolicyDetailsTravel.wsdl";
     	String soapBody="GetPolicyDetailsTravel_Response";
     	String soapFile=BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetailsTravel/response1soap.xml";
@@ -136,11 +134,12 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         val.registerForward(new PipeForward("success", null));
         val.setSoapBody(soapBody);
         val.configure();
+        val.start();
         
         PipeRunResult result;
 		try {
 			result = val.doPipe(new Message(input), session);
-	        String resultStr=Message.asString(result.getResult());
+	        Message.asString(result.getResult());
 	        fail("expected error ["+expectedError+"]");
 		} catch (PipeRunException e) {
 			String msg=e.getMessage();
