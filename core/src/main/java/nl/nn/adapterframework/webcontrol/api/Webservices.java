@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019, 2020 WeAreFrank!
+Copyright 2016-2017, 2019-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ public final class Webservices extends Base {
 				IListener listener = receiver.getListener();
 				if (listener instanceof RestListener) {
 					RestListener rl = (RestListener) listener;
-					if (rl.isView()) {
+					if (rl.getView()) {
 						Map<String, Object> service = new HashMap<String, Object>(2);
 						service.put("name", receiver.getName());
 						service.put("uriPattern", rl.getUriPattern());

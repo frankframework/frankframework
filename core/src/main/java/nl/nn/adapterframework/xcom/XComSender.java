@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -295,7 +295,7 @@ public class XComSender extends SenderWithParametersBase {
 		return port;
 	}
 
-	public Boolean isQueue() {
+	public Boolean getQueue() {
 		return queue;
 	}
 
@@ -307,7 +307,7 @@ public class XComSender extends SenderWithParametersBase {
 		return tracelevel;
 	}
 
-	public Boolean isTruncation() {
+	public Boolean getTruncation() {
 		return truncation;
 	}
 

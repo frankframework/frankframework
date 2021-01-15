@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -597,7 +597,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 				if (isRestListener) {
 					RestListener rl = (RestListener) listener;
 					receiverXML.addAttribute("restUriPattern", rl.getRestUriPattern());
-					receiverXML.addAttribute("isView", (rl.isView() != null));
+					receiverXML.addAttribute("isView", (rl.getView() != null));
 				}
 				if (showConfigurationStatusManager.count) {
 					if (listener instanceof JmsListenerBase) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -566,8 +566,8 @@ public class HttpSender extends HttpSenderBase {
 			} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
 				session.put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
 				return Message.nullMessage();
-			} else if (BooleanUtils.isTrue(isMultipartResponse()) || responseHandler.isMultipart()) {
-				if(BooleanUtils.isFalse(isMultipartResponse())) {
+			} else if (BooleanUtils.isTrue(getMultipartResponse()) || responseHandler.isMultipart()) {
+				if(BooleanUtils.isFalse(getMultipartResponse())) {
 					log.warn("multipart response was set to false, but the response is multipart!");
 				}
 				return handleMultipartResponse(responseHandler, session);
@@ -768,7 +768,7 @@ public class HttpSender extends HttpSenderBase {
 	public void setMultipartResponse(Boolean b) {
 		multipartResponse = b;
 	}
-	public Boolean isMultipartResponse() {
+	public Boolean getMultipartResponse() {
 		return multipartResponse;
 	}
 
