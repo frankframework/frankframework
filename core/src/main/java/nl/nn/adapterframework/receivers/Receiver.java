@@ -1073,7 +1073,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		PlatformTransactionManager txManager = getTxManager(); 
 		//TransactionStatus txStatus = txManager.getTransaction(TXNEW);
 		IbisTransaction itx = new IbisTransaction(txManager, TXNEW_PROC, "receiver [" + getName() + "]");
-		TransactionStatus txStatus = itx.getStatus();
 		Serializable msg=null;
 		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 		try {
@@ -1081,17 +1080,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				msg = errorStorage.getMessage(storageKey);
 				processRawMessage(msg, threadContext, -1, true);
 			} catch (Throwable t) {
-				txStatus.setRollbackOnly();
+				itx.setRollbackOnly();
 				throw new ListenerException(t);
 			} finally {
-				if (txStatus.isRollbackOnly()) {
-					txManager.rollback(txStatus);
-				} else {
-					txManager.commit(txStatus);
-				}
+				itx.commit();
 			}
 		} catch (ListenerException e) {
-			txStatus = txManager.getTransaction(TXNEW_CTRL);
+			IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 			try {	
 				if (msg instanceof Serializable) {
 					String originalMessageId = (String)threadContext.get(IPipeLineSession.originalMessageIdKey);
@@ -1108,10 +1103,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");
 				}
 			} catch (SenderException e1) {
-				txStatus.setRollbackOnly();
+				itxErrorStorage.setRollbackOnly();
 				log.warn(getLogPrefix()+"could not update comments in errorStorage",e1);
 			} finally {
-				txManager.commit(txStatus);
+				itxErrorStorage.commit();
 			}
 			throw e;
 		}
@@ -1224,7 +1219,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 
 		IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
-		TransactionStatus txStatus = itx.getStatus();
 
 		// update processing statistics
 		// count in processing statistics includes messages that are rolled back to input
@@ -1284,7 +1278,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					}
 
 					if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
-					messageInError=txStatus.isRollbackOnly();
+					messageInError=itx.isRollbackOnly();
 				} finally {
 					log.debug(getLogPrefix()+"canceling TimeoutGuard, isInterrupted ["+Thread.currentThread().isInterrupted()+"]");
 					if (tg.cancel()) {
@@ -1304,7 +1298,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			} catch (Throwable t) {
 				if (TransactionSynchronizationManager.isActualTransactionActive()) {
-					log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " + (txStatus.isRollbackOnly()?"already":"not yet") + " marked for rollback-only");
+					log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " + (itx.isRollbackOnly()?"already":"not yet") + " marked for rollback-only");
 				}
 				error("Exception in message processing", t);
 				errorMessage = t.getMessage();
@@ -1357,7 +1351,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
-				if (!txStatus.isCompleted()) {
+				if (!itx.isCompleted()) {
 					// NB: Spring will take care of executing a commit or a rollback;
 					// Spring will also ONLY commit the transaction if it was newly created
 					// by the above call to txManager.getTransaction().

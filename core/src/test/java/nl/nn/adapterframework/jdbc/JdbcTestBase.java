@@ -38,7 +38,7 @@ public abstract class JdbcTestBase {
 	public static Iterable<Object[]> data() {
 		Object[][] datasources = {
 			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
-			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=10", null, null, false },
+			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=3000", null, null, false },
 			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false }, 
 			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false }, 
 			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver", "testiaf_user", "testiaf_user00", true }, 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.processors;
-
-import java.sql.SQLException;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
@@ -36,35 +34,26 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 		String objectId = null;
 		if (locker != null) {
 			try {
-				objectId = locker.lock();
+				objectId = locker.acquire();
 			} catch (Exception e) {
-				boolean isUniqueConstraintViolation = false;
-				if (e instanceof SQLException) {
-					SQLException sqle = (SQLException) e;
-					isUniqueConstraintViolation = locker.getDbmsSupport().isUniqueConstraintViolation(sqle);
-				}
-				if (isUniqueConstraintViolation) {
-					String msg = "error while setting lock: " + e.getMessage();
-					log.info(msg);
-				} else {
-					throw new PipeRunException(null, "error while setting lock", e);
-				}
+				throw new PipeRunException(null, "error while setting lock ["+locker+"]", e);
 			}
-			if (objectId != null) {
+			if (objectId == null) {
+				log.info("could not obtain lock ["+locker+"]");
+				pipeLineResult = new PipeLineResult();
+				pipeLineResult.setState("success");
+			} else {
 				try {
 					pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 				} finally {
 					try {
-						locker.unlock(objectId);
+						locker.release(objectId);
 					} catch (Exception e) {
 						//throw new PipeRunException(null, "error while removing lock", e);
-						String msg = "error while removing lock: " + e.getMessage();
+						String msg = "error while removing lock ["+locker+"]: " + e.getMessage();
 						log.warn(msg);
 					}
 				}
-			} else {
-				pipeLineResult = new PipeLineResult();
-				pipeLineResult.setState("success");
 			}
 		} else {
 			pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);

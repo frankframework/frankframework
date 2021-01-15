@@ -17,7 +17,6 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -181,16 +180,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT SCHEMA_NAME()");
-	}
-
-	@Override
-	public boolean isUniqueConstraintViolation(SQLException e) {
-		if (e.getErrorCode()==2627) {
-			// Violation of %ls constraint '%.*ls'. Cannot insert duplicate key in object '%.*ls'.
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	@Override

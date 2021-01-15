@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@ public interface IDbmsSupport {
 	boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns);
 	String getSchemaOwner(Connection conn) throws SQLException, JdbcException;
 
-	boolean isUniqueConstraintViolation(SQLException e);
+	boolean isConstraintViolation(SQLException e);
 
 	String getRowNumber(String order, String sort);
 	String getRowNumberShortName();
