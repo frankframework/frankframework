@@ -28,6 +28,14 @@
           <xs:anyAttribute />
         </xs:complexType>
       </xs:element>
+      <xs:group ref="Syntax1NameIChildElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="IChildMemberChildGroup">
+    <xs:choice />
+  </xs:group>
+  <xs:group name="Syntax1NameIChildElementGroupBase">
+    <xs:choice>
       <xs:element name="DescribedPossibleISyntax1NameIChild">
         <xs:complexType>
           <xs:complexContent>
@@ -49,9 +57,6 @@
         </xs:complexType>
       </xs:element>
     </xs:choice>
-  </xs:group>
-  <xs:group name="IChildMemberChildGroup">
-    <xs:choice />
   </xs:group>
   <xs:complexType name="DescribedPossibleIChildType">
     <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />

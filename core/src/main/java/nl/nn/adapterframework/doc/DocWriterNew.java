@@ -282,6 +282,7 @@ public class DocWriterNew {
 
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 	private static final String ELEMENT_GROUP = "ElementGroup";
+	private static final String ELEMENT_GROUP_BASE = "ElementGroupBase";
 	private static final String ELEMENT_ROLE = "elementRole";
 	static final String MEMBER_CHILD_GROUP = "MemberChildGroup";
 	
@@ -664,6 +665,15 @@ public class DocWriterNew {
 		xsdComplexItems.add(group);
 		XmlBuilder choice = addChoice(group);
 		addGenericElementOption(choice, role);
+		DocWriterNewXmlUtils.addGroupRef(choice, role.createXsdElementName(ELEMENT_GROUP_BASE));
+		defineElementTypeGroupBase(role);
+	}
+
+	private void defineElementTypeGroupBase(ElementRole role) {
+		String elementGroupName = role.createXsdElementName(ELEMENT_GROUP_BASE);
+		XmlBuilder group = createGroup(elementGroupName);
+		xsdComplexItems.add(group);
+		XmlBuilder choice = addChoice(group);
 		for(FrankElement frankElement: role.getOptions(version.frankElementFilter())) {
 			if(frankElement.isCausesNameConflict()) {
 				log.info(String.format("Omitting FrankElement [%s] from element group [%s] to avoid name conflict",
@@ -674,7 +684,7 @@ public class DocWriterNew {
 				}
 				addElementToElementGroup(choice, frankElement, role);
 			}
-		}		
+		}				
 	}
 
 	private void addGenericElementOption(XmlBuilder choice, ElementRole role) {
