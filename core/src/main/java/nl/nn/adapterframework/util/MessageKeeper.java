@@ -20,8 +20,6 @@ import java.util.Date;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.

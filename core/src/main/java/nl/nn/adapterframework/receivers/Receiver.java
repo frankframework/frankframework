@@ -209,12 +209,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * 
 	 * Currently, this feature is only implemented for `IPushingListeners`, like Tibco and SAP.
 	 */
-	public enum ON_ERROR { CONTINUE, RECOVER, CLOSE };
+	public enum OnError { CONTINUE, RECOVER, CLOSE };
 
 	private String name;
 	private boolean active=true;
 
-	private ON_ERROR onError = ON_ERROR.CONTINUE;
+	private OnError onError = OnError.CONTINUE;
 
 	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
 	private int numThreads = 1;
@@ -1701,7 +1701,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			String msg = "caught exception in message post processing";
 			error(msg, e);
 			errorMessage = msg + ": " + e.getMessage();
-			if (ON_ERROR.CLOSE == getOnErrorEnum()) {
+			if (OnError.CLOSE == getOnErrorEnum()) {
 				log.info("closing after exception in post processing");
 				stopRunning();
 			}
@@ -1827,7 +1827,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	public boolean isOnErrorContinue() {
-		return ON_ERROR.CONTINUE == getOnErrorEnum();
+		return OnError.CONTINUE == getOnErrorEnum();
 	}
 
 	@Override
@@ -2010,17 +2010,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public void setOnError(String value) throws ConfigurationException {
 		if(StringUtils.isNotEmpty(value)) {
 			try {
-				onError = ON_ERROR.valueOf(value.toUpperCase());
+				onError = OnError.valueOf(value.toUpperCase());
 			}
 			catch (IllegalArgumentException iae) {
-				throw new ConfigurationException("Unknown onError value ["+value+"]. Must be one of "+ Arrays.asList(ON_ERROR.values()));
+				throw new ConfigurationException("Unknown onError value ["+value+"]. Must be one of "+ Arrays.asList(OnError.values()));
 			}
 		}
 	}
-	public void setOnErrorEnum(ON_ERROR value) {
+	public void setOnErrorEnum(OnError value) {
 		this.onError = value;
 	}
-	public ON_ERROR getOnErrorEnum() {
+	public OnError getOnErrorEnum() {
 		return onError;
 	}
 
