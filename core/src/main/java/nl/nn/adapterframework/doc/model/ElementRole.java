@@ -17,7 +17,11 @@ limitations under the License.
 package nl.nn.adapterframework.doc.model;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -47,6 +51,29 @@ public class ElementRole {
 		} else {
 			return "_" + syntax1NameSeq;
 		}
+	}
+
+	// TODO: Cover with unit tests and document
+	public String getGenericOptionElementName() {
+		// Do not include sequence number that made the role name unique.
+		String result = Utils.toUpperCamelCase(syntax1Name);
+		Set<String> conflictCandidates = getOptions(f -> true).stream()
+				.map(f -> f.getXsdElementName(this))
+				.collect(Collectors.toSet());
+		if(conflictCandidates.contains(result)) {
+			result = "Generic" + result;
+		}
+		return result;
+	}
+
+	// TODO: Cover with unit tests and document
+	public List<FrankElement> getOptions(Predicate<FrankElement> frankElementFilter) {
+		List<FrankElement> frankElementOptions = elementType.getMembers().values().stream()
+				.filter(frankElementFilter)
+				.filter(f -> ! f.isAbstract())
+				.collect(Collectors.toList());
+		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
+		return frankElementOptions;
 	}
 
 	public Key getKey() {

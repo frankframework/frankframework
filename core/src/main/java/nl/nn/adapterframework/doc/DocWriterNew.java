@@ -663,9 +663,8 @@ public class DocWriterNew {
 		XmlBuilder group = createGroup(elementGroupName);
 		xsdComplexItems.add(group);
 		XmlBuilder choice = addChoice(group);
-		List<FrankElement> frankElementOptions = version.getOptionsOfRole(role);
-		addGenericElementOption(choice, role, version.genericOptionElementName(role));
-		for(FrankElement frankElement: frankElementOptions) {
+		addGenericElementOption(choice, role);
+		for(FrankElement frankElement: role.getOptions(version.frankElementFilter())) {
 			if(frankElement.isCausesNameConflict()) {
 				log.info(String.format("Omitting FrankElement [%s] from element group [%s] to avoid name conflict",
 						frankElement.getFullName(), elementGroupName));
@@ -678,11 +677,12 @@ public class DocWriterNew {
 		}		
 	}
 
-	private void addGenericElementOption(XmlBuilder choice, ElementRole role, String elementNameGenericOption) {
+	private void addGenericElementOption(XmlBuilder choice, ElementRole role) {
+		String elementName = role.getGenericOptionElementName();
 		if(log.isTraceEnabled()) {
-			log.trace(String.format("Adding generic element option, XSD element is [%s]", elementNameGenericOption));
+			log.trace(String.format("Adding generic element option, XSD element is [%s]", elementName));
 		}
-		XmlBuilder genericElementOption = addElementWithType(choice, elementNameGenericOption);
+		XmlBuilder genericElementOption = addElementWithType(choice, elementName);
 		XmlBuilder complexType = addComplexType(genericElementOption);
 		addElementTypeChildMembers(complexType, role);
 		addAttribute(complexType, ELEMENT_ROLE, FIXED, role.getSyntax1Name(), PROHIBITED);
@@ -690,7 +690,7 @@ public class DocWriterNew {
 		// The XSD is invalid if addAnyAttribute is added before attributes elementType and className.
 		addAnyAttribute(complexType);
 		if(log.isTraceEnabled()) {
-			log.trace(String.format("Done adding generic element option, XSD element [%s]", elementNameGenericOption));
+			log.trace(String.format("Done adding generic element option, XSD element [%s]", role.getGenericOptionElementName()));
 		}
 	}
 

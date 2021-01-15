@@ -460,16 +460,17 @@ public class FrankDocModel {
 			}
 			ElementRole result = allElementRoles.get(key);
 			if(allElementRoles.get(key).isDeprecated() != isDeprecated) {
-				log.info(String.format("Inconsistend deprecation state for ElementRole [%s], chosing deprecated=false", allElementRoles.get(key).toString()));
+				// ElementRole.toString() does not work here, because the ElementType has not been set
+				log.info(String.format("Inconsistend deprecation state for ElementRole [%s], chosing deprecated=false", key.toString()));
 				result.setDeprecated(false);
 			}
 			return result;
 		} else {
 			ElementRole result = elementRoleFactory.create(syntax1Name, isDeprecated);
+			allElementRoles.put(key, result);
 			ElementType elementType = findOrCreateElementType(elementTypeClass);
 			result.setElementType(elementType);
 			elementType.registerElementRole(result);
-			allElementRoles.put(key, result);
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("For ElementType [%s] and syntax1Name [%s], created ElementRole [%s]", elementType.getFullName(), syntax1Name, result.createXsdElementName("")));
 			}
