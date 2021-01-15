@@ -785,12 +785,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 			openAllResources();
 
-			String msg = getLogPrefix()+"starts listening"; // Don't log that it's ready before it's ready!?
-			log.info(msg);
-			if (adapter != null) { 
-				adapter.getMessageKeeper().add(msg);
-			}
-
+			info("starts listening"); // Don't log that it's ready before it's ready!?
 			runState.setRunState(RunStateEnum.STARTED);
 		} catch (Throwable t) {
 			error("error occured while starting", t);
@@ -1706,7 +1701,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			String msg = "caught exception in message post processing";
 			error(msg, e);
 			errorMessage = msg + ": " + e.getMessage();
-			if (ON_ERROR.CLOSE.equals(getOnErrorEnum())) {
+			if (ON_ERROR.CLOSE == getOnErrorEnum()) {
 				log.info("closing after exception in post processing");
 				stopRunning();
 			}
@@ -1832,7 +1827,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	public boolean isOnErrorContinue() {
-		return ON_ERROR.CONTINUE.equals(getOnErrorEnum());
+		return ON_ERROR.CONTINUE == getOnErrorEnum();
 	}
 
 	@Override
