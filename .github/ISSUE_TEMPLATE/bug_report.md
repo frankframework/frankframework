@@ -35,9 +35,10 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Environment:**
- - Application server (f.e. Tomcat/WebSphere/JBOSS/Jetty)
- - Browser [e.g. chrome, safari]
- - IAF Version [e.g. 7.5 RC3, 7.6]
+ - Application server: [e.g. Tomcat/WebSphere/JBOSS/Jetty]
+ - DBMS: [e.g. Oracle, MSSQL, MariaDB, MySql,PostgreSQL]
+ - Browser: [e.g. Chrome, Safari, Edge]
+ - IAF Version: [e.g. 7.5, 7.6]
 
 **Additional context**
 Add any other context about the problem here. (f.e. ladybug report / test adapter with larva test)
