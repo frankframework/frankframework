@@ -35,7 +35,7 @@ public class ElementRoleIntegrationTest {
 		assertNotNull(er);
 		assertEquals(PACKAGE + "Interface1", er.getElementType().getFullName());
 		assertEquals("role1", er.getSyntax1Name());
-		assertEquals("Role1Element", er.createXsdElementName("Element"));
+		assertEquals("Role1Element_2", er.createXsdElementName("Element"));
 		er = model.findElementRole(PACKAGE + "Interface2", "role2");
 		assertEquals(PACKAGE + "Interface2", er.getElementType().getFullName());
 		assertEquals("role2", er.getSyntax1Name());
@@ -47,7 +47,7 @@ public class ElementRoleIntegrationTest {
 		er = model.findElementRole(PACKAGE + "Interface2", "role1");
 		assertEquals(PACKAGE + "Interface2", er.getElementType().getFullName());
 		assertEquals("role1", er.getSyntax1Name());
-		assertEquals("Role1Element_2", er.createXsdElementName("Element"));		
+		assertEquals("Role1Element", er.createXsdElementName("Element"));		
 	}
 
 	@Test

@@ -466,10 +466,9 @@ public class FrankDocModel {
 			}
 			return result;
 		} else {
-			ElementRole result = elementRoleFactory.create(syntax1Name, isDeprecated);
-			allElementRoles.put(key, result);
 			ElementType elementType = findOrCreateElementType(elementTypeClass);
-			result.setElementType(elementType);
+			ElementRole result = elementRoleFactory.create(elementType, syntax1Name, isDeprecated);
+			allElementRoles.put(key, result);
 			elementType.registerElementRole(result);
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("For ElementType [%s] and syntax1Name [%s], created ElementRole [%s]", elementType.getFullName(), syntax1Name, result.createXsdElementName("")));

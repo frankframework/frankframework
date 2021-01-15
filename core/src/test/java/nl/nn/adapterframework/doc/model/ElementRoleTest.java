@@ -20,18 +20,18 @@ public class ElementRoleTest {
 
 	@Test
 	public void whenTwoElementRolesWithSameSyntax1NameCreatedThenDifferentSeqs() {
-		ElementRole first = factory.create("x", false);
+		ElementRole first = factory.create(null, "x", false);
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
-		ElementRole second = factory.create("x", false);
+		ElementRole second = factory.create(null, "x", false);
 		assertEquals("XElement_2", second.createXsdElementName(ELEMENT));
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
 	}
 
 	@Test
 	public void whenTwoElementRolesWithDifferentSyntax1NameCreatedThenNoSeqsInNames() {
-		ElementRole first = factory.create("x", false);
+		ElementRole first = factory.create(null, "x", false);
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
-		ElementRole second = factory.create("y", false);
+		ElementRole second = factory.create(null, "y", false);
 		assertEquals("YElement", second.createXsdElementName(ELEMENT));
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
 	}

@@ -30,12 +30,13 @@ import lombok.Setter;
 import nl.nn.adapterframework.doc.Utils;
 
 public class ElementRole {
-	private @Getter @Setter(AccessLevel.PACKAGE) ElementType elementType;
+	private @Getter ElementType elementType;
 	private final @Getter String syntax1Name;
 	private final int syntax1NameSeq;
 	private @Getter @Setter(AccessLevel.PACKAGE) boolean deprecated;
 
-	private ElementRole(String syntax1Name, int syntax1NameSeq, boolean isDeprecated) {
+	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq, boolean isDeprecated) {
+		this.elementType = elementType;
 		this.syntax1Name = syntax1Name;
 		this.syntax1NameSeq = syntax1NameSeq;
 		this.deprecated = isDeprecated;
@@ -88,8 +89,8 @@ public class ElementRole {
 	static class Factory {
 		private final Map<String, Integer> numUsagePerSyntax1Name = new HashMap<>();
 
-		ElementRole create(String syntax1Name, boolean isDeprecated) {
-			return new ElementRole(syntax1Name, newSyntax1NameSeq(syntax1Name), isDeprecated);
+		ElementRole create(ElementType elementType, String syntax1Name, boolean isDeprecated) {
+			return new ElementRole(elementType, syntax1Name, newSyntax1NameSeq(syntax1Name), isDeprecated);
 		}
 
 		private int newSyntax1NameSeq(String syntax1Name) {
