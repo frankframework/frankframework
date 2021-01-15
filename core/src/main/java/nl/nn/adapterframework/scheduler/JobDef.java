@@ -515,7 +515,7 @@ public class JobDef extends TransactionAttributes {
 							if (tg.cancel()) {
 								log.error(getLogPrefix()+"thread has been interrupted");
 								if(itx != null) {
-									itx.getStatus().setRollbackOnly();
+									itx.setRollbackOnly();
 								}
 							}
 						}

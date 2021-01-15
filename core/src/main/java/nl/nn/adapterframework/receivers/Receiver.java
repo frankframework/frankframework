@@ -1345,7 +1345,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
-				if (!itx.getStatus().isCompleted()) {
+				if (!itx.isCompleted()) {
 					// NB: Spring will take care of executing a commit or a rollback;
 					// Spring will also ONLY commit the transaction if it was newly created
 					// by the above call to txManager.getTransaction().

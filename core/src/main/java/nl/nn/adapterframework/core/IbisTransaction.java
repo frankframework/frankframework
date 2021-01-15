@@ -48,9 +48,9 @@ public class IbisTransaction {
 	private String txName;
 	private boolean txIsNew;
 
-	public IbisTransaction(PlatformTransactionManager txManager, TransactionDefinition txDef, String object) {
+	public IbisTransaction(PlatformTransactionManager txManager, TransactionDefinition txDef, String descriptionOfOwner) {
 		this.txManager = txManager;
-		this.object = object;
+		this.object = descriptionOfOwner;
 
 		txClientIsActive = TransactionSynchronizationManager.isActualTransactionActive();
 		txClientName = TransactionSynchronizationManager.getCurrentTransactionName();
@@ -64,20 +64,23 @@ public class IbisTransaction {
 			txName = Misc.createSimpleUUID();
 			TransactionSynchronizationManager.setCurrentTransactionName(txName);
 			int txTimeout = txDef.getTimeout();
-			log.debug("Transaction manager ["+getRealTransactionManager()+"] created a new transaction ["+txName+"] for " + object + " with timeout [" + (txTimeout<0?"system default(=120s)":""+txTimeout) + "]");
+			log.debug("Transaction manager ["+getRealTransactionManager()+"] created a new transaction ["+txName+"] for " + descriptionOfOwner + " with timeout [" + (txTimeout<0?"system default(=120s)":""+txTimeout) + "]");
 		} else {
 			txName = TransactionSynchronizationManager.getCurrentTransactionName();
 			if (txClientIsActive && !txIsActive) {
-				log.debug("Transaction manager ["+getRealTransactionManager()+"] suspended the transaction [" + txClientName + "] for " + object);
+				log.debug("Transaction manager ["+getRealTransactionManager()+"] suspended the transaction [" + txClientName + "] for " + descriptionOfOwner);
 			}
 		}
 	}
 
-	public static IbisTransaction getTransaction(PlatformTransactionManager txManager, TransactionDefinition txDef, String object) {
-		return txManager!=null ? new IbisTransaction(txManager, txDef, object) : null;
+	/**
+	 * Returns a transaction if a TransactionManager is supplied, otherwise returns null.
+	 */
+	public static IbisTransaction getTransaction(PlatformTransactionManager txManager, TransactionDefinition txDef, String descriptionOfOwner) {
+		return txManager!=null ? new IbisTransaction(txManager, txDef, descriptionOfOwner) : null;
 	}
 	
-	public TransactionStatus getStatus() {
+	protected TransactionStatus getStatus() {
 		return txStatus;
 	}
 
@@ -112,6 +115,10 @@ public class IbisTransaction {
 
 	public boolean isRollbackOnly() {
 		return txStatus.isRollbackOnly();
+	}
+	
+	public boolean isCompleted() {
+		return txStatus.isCompleted();
 	}
 	
 	public void commit() {

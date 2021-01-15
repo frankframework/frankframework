@@ -94,7 +94,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		txDef = TransactionAttributes.configure(log, getTransactionAttributeNum(), getTransactionTimeout());
+		txDef = TransactionAttributes.configureTransactionAttributes(log, getTransactionAttributeNum(), getTransactionTimeout());
 		if (StringUtils.isEmpty(getObjectId())) {
 			throw new ConfigurationException(getLogPrefix()+ "an objectId must be specified");
 		}
@@ -263,8 +263,14 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 
 	@Override
 	protected String getLogPrefix() {
-		return getName()+" "; 
+		return getName()+" ";
 	}
+	
+	@Override
+	public String toString() {
+		return getLogPrefix()+" type ["+getType()+"] objectId ["+getObjectId()+"] transactionAttribute ["+getTransactionAttribute()+"]";
+	}
+	
 
 	@IbisDoc({"Format for date which is added after <code>objectid</code> (e.g. yyyymmdd to be sure the job is executed only once a day)", ""})
 	public void setDateFormatSuffix(String dateFormatSuffix) {

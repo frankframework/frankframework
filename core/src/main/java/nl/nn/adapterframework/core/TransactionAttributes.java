@@ -36,10 +36,10 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	private @Getter TransactionDefinition txDef = null;
 
 	public void configure() throws ConfigurationException {
-		txDef = configure(log, getTransactionAttributeNum(), getTransactionTimeout());
+		txDef = configureTransactionAttributes(log, getTransactionAttributeNum(), getTransactionTimeout());
 	}
 	
-	public static TransactionDefinition configure(Logger log, int transactionAttribute, int transactionTimeout) throws ConfigurationException {
+	public static TransactionDefinition configureTransactionAttributes(Logger log, int transactionAttribute, int transactionTimeout) throws ConfigurationException {
 		if (isTransacted(transactionAttribute) && transactionTimeout>0) {
 			Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
 			if (maximumTransactionTimeout != null && transactionTimeout > maximumTransactionTimeout) {
