@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ public class Webservices extends TimeoutGuardPipe {
 				IListener listener = receiver.getListener();
 				if (listener instanceof RestListener) {
 					RestListener rl = (RestListener) listener;
-					if (rl.isView()) {
+					if (rl.getView()) {
 						XmlBuilder restXML = new XmlBuilder("rest");
 						restXML.addAttribute("name", receiver.getName());
 						restXML.addAttribute("uriPattern", rl.getUriPattern());

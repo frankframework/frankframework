@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 Integration Partners B.V.
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -676,7 +676,7 @@ public final class ShowConfigurationStatus extends Base {
 			if (isRestListener) {
 				RestListener rl = (RestListener) listener;
 				listenerInfo.put("restUriPattern", rl.getRestUriPattern());
-				listenerInfo.put("isView", (rl.isView()==null?false:rl.isView()));
+				listenerInfo.put("isView", (rl.getView()==null?false:rl.getView()));
 			}
 			if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
 				JmsListenerBase jlb = (JmsListenerBase) listener;

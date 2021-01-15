@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (isView()==null) {
+		if (getView()==null) {
 			if (StringUtils.isEmpty(getMethod()) || getMethod().equalsIgnoreCase("GET")) {
 				setView(true);
 			} else {
@@ -247,7 +247,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public void setView(boolean b) {
 		view = b;
 	}
-	public Boolean isView() {
+	public Boolean getView() {
 		return view;
 	}
 
