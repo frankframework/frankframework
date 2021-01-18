@@ -11,10 +11,18 @@
 				<div class="ibox-content">
 					<div class="col-md-12">
 						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>&nbsp;</th>
+									<th>Name</th>
+									<th>UriPattern</th>
+								</tr>
+							</thead>
 							<tbody>
 								<tr ng-repeat="service in services">
 									<td>{{::$index}}</td>
-									<td><a target="_blank" href="{{::rootURL}}rest/{{::service.uriPattern}}">{{::service.name}}</a></td>
+									<td>{{::service.name}}</a></td>
+									<td><a target="_blank" href="{{::rootURL}}rest/{{::service.uriPattern}}">{{::service.uriPattern}}</a></td>
 								</tr>
 							</tbody>
 						</table>
