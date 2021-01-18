@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -60,19 +61,18 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		Integer sessionKeyInteger = Integer.valueOf(sessionKeyString);
 
 		int incrementBy = increment;
-		ParameterValueList pvl = null;
-		if (getParameterList() != null) {
+		ParameterList pl = getParameterList();
+		if(pl != null && pl.size() > 0) {
 			try {
-				pvl = getParameterList().getValues(message, session);
+				ParameterValueList pvl = pl.getValues(message, session);
+				ParameterValue pv = pvl.getParameterValue(PARAMETER_INCREMENT);
+				if(pv != null) {
+					incrementBy = pv.asIntegerValue(increment);
+				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}
 		}
-		ParameterValue pv = pvl.getParameterValue(PARAMETER_INCREMENT);
-		if(pv != null) {
-			incrementBy = pv.asIntegerValue(increment);
-		}
-
 		session.put(sessionKey, sessionKeyInteger.intValue() + incrementBy + "");
 
 		if (log.isDebugEnabled()) {
