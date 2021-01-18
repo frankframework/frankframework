@@ -15,6 +15,7 @@
 
 
 	<modules>
+		<module>Tomcat</module>
 		<module>WebSphere</module>
 	</modules>
 
