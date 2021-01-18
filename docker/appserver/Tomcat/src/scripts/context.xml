@@ -22,9 +22,8 @@
 		url="jdbc:oracle:thin:@host.docker.internal:1521:xe"
 		username="testiaf_user"
 		password="testiaf_user"
-		maxActive="10"
-		maxIdle="2"
-		maxWait="5000"
+		maxTotal="10"
+		maxWaitMillis="5000"
 	/>
 
 	<Resource
@@ -115,7 +114,8 @@
 		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
 		username="testiaf_user"
 		password="testiaf_user00" 
-		maxActive="20" maxIdle="10" maxWait="5000" 
+		maxTotal="10"
+		maxWaitMillis="5000"
 	/>	
 		
 	<Resource
