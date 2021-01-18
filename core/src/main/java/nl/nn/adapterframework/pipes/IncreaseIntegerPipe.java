@@ -28,7 +28,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Pipe that increases the integer values of a session variable.
+ * Pipe that increases the integer value of a session variable.
  * Can be used in combination with {@link CompareIntegerPipe} to construct loops.
  * 
  * <p>
@@ -48,8 +48,9 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(sessionKey))
+		if (StringUtils.isEmpty(sessionKey)) {
 			throw new ConfigurationException("sessionKey must be filled");
+		}
 	}
 
 	@Override
@@ -58,6 +59,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		String sessionKeyString = (String) session.get(sessionKey);
 		Integer sessionKeyInteger = Integer.valueOf(sessionKeyString);
 
+		int incrementBy = increment;
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
 			try {
@@ -67,11 +69,11 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 			}
 		}
 		ParameterValue pv = pvl.getParameterValue(PARAMETER_INCREMENT);
-		if(pv != null && pv.getValue() != null) {
-			increment = pv.asIntegerValue(increment);
+		if(pv != null) {
+			incrementBy = pv.asIntegerValue(increment);
 		}
 
-		session.put(sessionKey, sessionKeyInteger.intValue() + increment + "");
+		session.put(sessionKey, sessionKeyInteger.intValue() + incrementBy + "");
 
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix(session)+"stored ["+session.get(sessionKey)+"] in pipeLineSession under key ["+getSessionKey()+"]");

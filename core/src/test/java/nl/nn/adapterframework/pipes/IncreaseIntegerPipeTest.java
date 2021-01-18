@@ -60,4 +60,18 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
 		assertEquals("9", session.get(numberSession));
     }
 
+    @Test
+    public void testNullIncrementParameter() throws Exception {
+    	String numberSession = "number";
+		session.put(numberSession, "4");
+		Parameter inc = new Parameter();
+		inc.setName("increment");
+		inc.setValue(null);
+		pipe.addParameter(inc);
+		pipe.setSessionKey(numberSession);
+		pipe.configure();
+		doPipe(pipe, null, session);
+		assertEquals("5", session.get(numberSession));
+    }
+
 }
