@@ -117,8 +117,8 @@
 	</build>
 	
 	<modules>
-		<module>iaf-example</module>
-		<module>iaf-test</module>
+		<module>example</module>
+		<module>test</module>
 	</modules>
 
 </project>
