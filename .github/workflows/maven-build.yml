@@ -37,6 +37,11 @@ jobs:
       with:
         java-version: 1.8
 
+    - name: Create Maven settings.xml file
+      uses: s4u/maven-settings-action@v2.3.0
+      with:
+        servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
+
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB

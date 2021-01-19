@@ -98,7 +98,13 @@ public class ServletManager {
 		String[] rolesCopy = new String[0];
 		if(roles != null && !stage.equalsIgnoreCase("LOC"))
 			rolesCopy = roles;
+
 		String roleNames = appConstants.getString(propertyPrefix+"securityroles", null);
+		if(StringUtils.isNotEmpty(roleNames)) {
+			log.warn("property ["+propertyPrefix+"securityroles] has been replaced with ["+propertyPrefix+"securityRoles"+"]");
+		}
+		roleNames = appConstants.getString(propertyPrefix+"securityRoles", roleNames);
+
 		if(StringUtils.isNotEmpty(roleNames))
 			rolesCopy = roleNames.split(",");
 		declareRoles(rolesCopy);
