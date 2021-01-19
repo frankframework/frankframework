@@ -72,7 +72,7 @@ public class TransformerPoolTest {
 	@Test
 	public void useCachingUrl() throws Exception {
 		TransformerPool.clearTransformerPools();
-		Resource resource = Resource.getResource("xml/xsl/active.xsl");
+		Resource resource = Resource.getResource("xml/xsl/RemoveNamespaces.xsl");
 		TransformerPool.getInstance(resource, 1, true);
 		assertEquals(1, TransformerPool.getTransformerPoolsKeys().size());
 		TransformerPool.getInstance(resource, 2, true);
