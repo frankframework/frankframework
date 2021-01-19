@@ -1319,7 +1319,16 @@ angular.module('iaf.beheerconsole')
 		stateLoadCallback: function(settings) {
 			return JSON.parse(sessionStorage.getItem('DataTable'+$scope.storageType));
 		},
-		
+		drawCallback: function( settings ) {
+			// reset visited rows with all draw actions e.g. pagination, filter, search
+			$scope.selectedMessages = [];
+			var table = $('#datatable').DataTable();
+			var data = table.rows( {page:'current'} ).data();
+			// visit rows in the current page once (draw event is fired after rowcallbacks)
+			for(var i=0;i<data.length;i++){
+				$scope.selectedMessages[data[i].id] = false;
+			}
+		},
 		rowCallback: function(row, data) {
 			var row = $(row);// .children("td:first").addClass("m-b-xxs");
 			row.children("td.date").each(function(_, element) {
@@ -1388,7 +1397,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.resendMessage = $scope.doResendMessage;
 	$scope.deleteMessage = $scope.doDeleteMessage;
-
+	
 	$scope.selectAll = function() {
 		for(i in $scope.selectedMessages) {
 			$scope.selectedMessages[i] = true;
