@@ -154,7 +154,7 @@ public class DateUtils {
 	 * @param 	value	String	date to reformat.
 	 */
 	public static String convertDate(String from, String to, String value) throws ParseException {
-		log.debug("convertDate from " + from + " to " + to + " value " + value);
+		log.debug("convertDate from [" + from + "] to [" + to + "] value [" + value + "]");
 		String result = "";
 
 		SimpleDateFormat formatterFrom = new SimpleDateFormat(from);
@@ -169,7 +169,7 @@ public class DateUtils {
 			throw new ParseException("Error on validating input (" + value + ") with reverse check [" + tempStr+"]",0);
 		}
 
-		log.debug("convertDate result" + result);
+		log.debug("convertDate result ["+result+"]");
 		return result;
 	}
 
@@ -202,7 +202,7 @@ public class DateUtils {
 	 * @param 	dateFormat	A String representing the date format of date.
 	 */
 	public static String changeDate(String date, int years, int months, int days, String dateFormat) throws ParseException {
-		if (log.isDebugEnabled()) log.debug("changeDate date " + date + " years " + years + " months " + months + " days " + days);
+		if (log.isDebugEnabled()) log.debug("changeDate date ["+date+"] years ["+years+"] months ["+months+"] days ["+days+"]");
 		String result = "";
 
 		SimpleDateFormat df = new SimpleDateFormat(dateFormat);
@@ -214,7 +214,7 @@ public class DateUtils {
 		cal.add(Calendar.DAY_OF_MONTH, days);
 		result = df.format(cal.getTime());
 
-		log.debug("changeDate result" + result);
+		log.debug("changeDate result ["+result+"]");
 		return result;
 	}
 

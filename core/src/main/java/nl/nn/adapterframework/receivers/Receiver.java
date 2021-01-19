@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.receivers;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -200,14 +201,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public static final int MAX_RETRY_INTERVAL=100;
 	public final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
 
-	public static final String ONERROR_CONTINUE = "continue";
-	public static final String ONERROR_RECOVER = "recover";
-	public static final String ONERROR_CLOSE = "close";
+	/**
+	 * CONTINUE: don't stop the receiver and an error occurs.
+	 * RECOVER: when an error occurs (eq. connection is lost) the receiver will be stopped and marked as ERROR
+	 * Once every `recover.adapters.interval` it will attempt to (re-) start the receiver.
+	 * CLOSE: stop the receiver when an error occurs.
+	 * 
+	 * Currently, this feature is only implemented for `IPushingListeners`, like Tibco and SAP.
+	 */
+	public enum OnError { CONTINUE, RECOVER, CLOSE };
 
 	private String name;
 	private boolean active=true;
 
-	private String onError = ONERROR_CONTINUE; 
+	private OnError onError = OnError.CONTINUE;
 
 	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
 	private int numThreads = 1;
@@ -240,9 +247,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private String hideRegex = null;
 	private String hideMethod = "all";
 	private String hiddenInputSessionKeys=null;
-
-	private boolean recover = false;
-
 
 
 	private int retryInterval=1;
@@ -410,7 +414,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 
-	protected void openAllResources() throws ListenerException {	
+	protected void openAllResources() throws ListenerException {
 		// on exit resouces must be in a state that runstate is or can be set to 'STARTED'
 		try {
 			if (getSender()!=null) {
@@ -436,10 +440,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
+	/**
+	 * must lead to a 'closeAllResources()' and runstate must be 'STOPPING'
+	 * if IPushingListener -> call closeAllResources()
+	 * if IPullingListener -> PullingListenerContainer has to call closeAllResources();
+	 */
 	protected void tellResourcesToStop() {
-		// must lead to a 'closeAllResources()'
-		// runstate is 'STOPPING'
-		// default just calls 'closeAllResources()'
 		if (getListener() instanceof IPushingListener) {
 			closeAllResources();
 		}
@@ -447,8 +453,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		// See PullingListenerContainer that calls receiver.isInRunState(RunStateEnum.STARTED)
 		// and receiver.closeAllResources()
 	}
+
+	/**
+	 * Should only close resources when in state stopping (or error)! this should be the only trigger to change the state to stopped
+	 * On exit resources must be 'closed' so the receiver RunState can be set to 'STOPPED'
+	 */
 	protected void closeAllResources() {
-		// on exit resouces must be in a state that runstate can be set to 'STOPPED'
 		log.debug(getLogPrefix()+"closing");
 		try {
 			getListener().close();
@@ -483,13 +493,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				error("error closing message log", t);
 			}
 		}
+
 		log.debug(getLogPrefix()+"closed");
-		runState.setRunState(RunStateEnum.STOPPED);
+		if (runState.isInState(RunStateEnum.STOPPING)) {
+			runState.setRunState(RunStateEnum.STOPPED);
+		}
 		throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
 		resetRetryInterval();
+
 		info("stopped");
 	}
-	 
+
 	protected void propagateName() {
 		IListener<M> listener=getListener();
 		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
@@ -528,6 +542,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					setName(ClassUtils.nameOf(this));
 				}
 			}
+
 			eventHandler = MonitorManager.getEventHandler();
 			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
 			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
@@ -624,9 +639,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				if (sender instanceof ConfigurationAware) {
 					((ConfigurationAware)sender).setConfiguration(getAdapter().getConfiguration());
 				}
-				
 			}
-			
+
 			ISender errorSender = getErrorSender();
 			if (errorSender!=null) {
 				if (errorSender instanceof HasPhysicalDestination) {
@@ -673,8 +687,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
 					IMessageBrowser messageLogBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(ProcessState.DONE);
-					if (messageLogBrowser!=null && messageLogBrowser instanceof IConfigurable) {
-						((IConfigurable)messageLogBrowser).configure();
+					if (messageLogBrowser instanceof IConfigurable) {
+						((IConfigurable) messageLogBrowser).configure();
 					}
 					messageBrowsers.put(ProcessState.DONE, messageLogBrowser);
 				}
@@ -706,12 +720,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				getMessageLog().setHideRegex(getHideRegex());
 				getMessageLog().setHideMethod(getHideMethod());
 			}
-
-			if (adapter != null) {
-				adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
-			}
-			throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
-			configurationSucceeded = true;
 		} catch (Throwable t) {
 			ConfigurationException e = null;
 			if (t instanceof ConfigurationException) {
@@ -724,6 +732,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			runState.setRunState(RunStateEnum.ERROR);
 			throw e;
 		}
+
+		if (adapter != null) {
+			adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
+		}
+		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
+		configurationSucceeded = true;
+
+		if(runState.isInState(RunStateEnum.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
+			runState.setRunState(RunStateEnum.STOPPED);
+		}
 	}
 
 
@@ -735,78 +753,66 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (adapter != null) {
 				RunStateEnum adapterRunState = adapter.getRunState();
 				if (!adapterRunState.equals(RunStateEnum.STARTED)) {
-					log.warn(getLogPrefix()+"on adapter ["
-							+ adapter.getName()
-							+ "] was tried to start, but the adapter is in state ["+adapterRunState+"]. Ignoring command.");
-					adapter.getMessageKeeper().add(
-						"ignored start command on [" + getName()  + "]; adapter is in state ["+adapterRunState+"]");
+					log.warn(getLogPrefix()+"on adapter [" + adapter.getName() + "] was tried to start, but the adapter is in state ["+adapterRunState+"]. Ignoring command.");
+					adapter.getMessageKeeper().add("ignored start command on [" + getName()  + "]; adapter is in state ["+adapterRunState+"]");
 					return;
 				}
 			}
 			// See also Adapter.startRunning()
 			if (!configurationSucceeded) {
-				log.error(
-					"configuration of receiver ["
-						+ getName()
-						+ "] did not succeed, therefore starting the receiver is not possible");
+				log.error("configuration of receiver [" + getName() + "] did not succeed, therefore starting the receiver is not possible");
 				warn("configuration did not succeed. Starting the receiver ["+getName()+"] is not possible");
 				runState.setRunState(RunStateEnum.ERROR);
 				return;
 			}
 			if (adapter.getConfiguration().isUnloadInProgressOrDone()) {
-				log.error(
-					"configuration of receiver ["
-						+ getName()
-						+ "] unload in progress or done, therefore starting the receiver is not possible");
+				log.error( "configuration of receiver [" + getName() + "] unload in progress or done, therefore starting the receiver is not possible");
 				warn("configuration unload in progress or done. Starting the receiver ["+getName()+"] is not possible");
 				return;
 			}
 			synchronized (runState) {
 				RunStateEnum currentRunState = getRunState();
-				if (!currentRunState.equals(RunStateEnum.STOPPED)) {
+				if (!currentRunState.equals(RunStateEnum.STOPPED) && !(runState.isInState(RunStateEnum.ERROR) && configurationSucceeded())) { // stopped OR in error after configuring the receiver
 					if (currentRunState.equals(RunStateEnum.STARTING) || currentRunState.equals(RunStateEnum.STARTED)) {
-						info("receiver already in state [" + currentRunState + "]");
+						log.info("already in state [" + currentRunState + "]");
 					} else {
-						warn(getLogPrefix()+"currently in state [" + currentRunState + "], ignoring start() command");
+						log.warn("currently in state [" + currentRunState + "], ignoring start() command");
 					}
 					return;
 				}
 				runState.setRunState(RunStateEnum.STARTING);
 			}
-			String msg=(getLogPrefix()+"starts listening");
-			log.info(msg);
-			if (adapter != null) { 
-				adapter.getMessageKeeper().add(msg);
-			}
+
 			openAllResources();
+
+			info("starts listening"); // Don't log that it's ready before it's ready!?
 			runState.setRunState(RunStateEnum.STARTED);
 		} catch (Throwable t) {
 			error("error occured while starting", t);
 			runState.setRunState(RunStateEnum.ERROR);
 		}
 	}
-	
+
+	//after successfully closing all resources the state should be set to stopped
 	@Override
 	public void stopRunning() {
-		// See also Adapter.stopRunning()
+		// See also Adapter.stopRunning() and PullingListenerContainer.ControllerTask
 		synchronized (runState) {
 			RunStateEnum currentRunState = getRunState();
 			if (currentRunState.equals(RunStateEnum.STARTING)) {
-				warn("receiver currently in state [" + currentRunState + "], ignoring stop() command");
+				log.warn("receiver currently in state [" + currentRunState + "], ignoring stop() command");
 				return;
 			} else if (currentRunState.equals(RunStateEnum.STOPPING) || currentRunState.equals(RunStateEnum.STOPPED)) {
-				info("receiver already in state [" + currentRunState + "]");
+				log.info("receiver already in state [" + currentRunState + "]");
 				return;
 			}
-			if (currentRunState.equals(RunStateEnum.ERROR)) {
-				warn("receiver currently in state [" + currentRunState + "], stopping immediately");
-				runState.setRunState(RunStateEnum.STOPPED);
-			} else {
-				runState.setRunState(RunStateEnum.STOPPING);
+			if (!currentRunState.equals(RunStateEnum.ERROR)) {
+				runState.setRunState(RunStateEnum.STOPPING); //Don't change the runstate when in ERROR
 			}
 		}
+
 		tellResourcesToStop();
-		ThreadContext.removeStack();
+		ThreadContext.removeStack(); //Clean up receiver ThreadContext
 	}
 
 	@Override
@@ -1037,7 +1043,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			technicalCorrelationId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, threadContext);
 		} catch (Exception e) {
 			if(rawMessageOrWrapper instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage 
-				MessageWrapper wrapper = (MessageWrapper)rawMessageOrWrapper;
+				MessageWrapper<M> wrapper = (MessageWrapper)rawMessageOrWrapper;
 				technicalCorrelationId = wrapper.getId();
 				threadContext.putAll(wrapper.getContext());
 			} else {
@@ -1067,7 +1073,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		PlatformTransactionManager txManager = getTxManager(); 
 		//TransactionStatus txStatus = txManager.getTransaction(TXNEW);
 		IbisTransaction itx = new IbisTransaction(txManager, TXNEW_PROC, "receiver [" + getName() + "]");
-		TransactionStatus txStatus = itx.getStatus();
 		Serializable msg=null;
 		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 		try {
@@ -1075,17 +1080,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				msg = errorStorage.getMessage(storageKey);
 				processRawMessage(msg, threadContext, -1, true);
 			} catch (Throwable t) {
-				txStatus.setRollbackOnly();
+				itx.setRollbackOnly();
 				throw new ListenerException(t);
 			} finally {
-				if (txStatus.isRollbackOnly()) {
-					txManager.rollback(txStatus);
-				} else {
-					txManager.commit(txStatus);
-				}
+				itx.commit();
 			}
 		} catch (ListenerException e) {
-			txStatus = txManager.getTransaction(TXNEW_CTRL);
+			IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 			try {	
 				if (msg instanceof Serializable) {
 					String originalMessageId = (String)threadContext.get(IPipeLineSession.originalMessageIdKey);
@@ -1102,10 +1103,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");
 				}
 			} catch (SenderException e1) {
-				txStatus.setRollbackOnly();
+				itxErrorStorage.setRollbackOnly();
 				log.warn(getLogPrefix()+"could not update comments in errorStorage",e1);
 			} finally {
-				txManager.commit(txStatus);
+				itxErrorStorage.commit();
 			}
 			throw e;
 		}
@@ -1216,9 +1217,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			error(msg, e);
 			throw wrapExceptionAsListenerException(e);
 		}
-		
+
 		IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
-		TransactionStatus txStatus = itx.getStatus();
 
 		// update processing statistics
 		// count in processing statistics includes messages that are rolled back to input
@@ -1233,7 +1233,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message pipelineMessage;
 			if (getListener() instanceof IBulkDataListener) {
 				try {
-					IBulkDataListener bdl = (IBulkDataListener)getListener(); 
+					IBulkDataListener<M> bdl = (IBulkDataListener<M>)getListener(); 
 					pipelineMessage=new Message(bdl.retrieveBulkData(rawMessageOrWrapper,message,threadContext));
 				} catch (Throwable t) {
 					errorMessage = t.getMessage();
@@ -1278,7 +1278,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					}
 
 					if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
-					messageInError=txStatus.isRollbackOnly();
+					messageInError=itx.isRollbackOnly();
 				} finally {
 					log.debug(getLogPrefix()+"canceling TimeoutGuard, isInterrupted ["+Thread.currentThread().isInterrupted()+"]");
 					if (tg.cancel()) {
@@ -1298,7 +1298,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			} catch (Throwable t) {
 				if (TransactionSynchronizationManager.isActualTransactionActive()) {
-					log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " + (txStatus.isRollbackOnly()?"already":"not yet") + " marked for rollback-only");
+					log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " + (itx.isRollbackOnly()?"already":"not yet") + " marked for rollback-only");
 				}
 				error("Exception in message processing", t);
 				errorMessage = t.getMessage();
@@ -1351,7 +1351,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
-				if (!txStatus.isCompleted()) {
+				if (!itx.isCompleted()) {
 					// NB: Spring will take care of executing a commit or a rollback;
 					// Spring will also ONLY commit the transaction if it was newly created
 					// by the above call to txManager.getTransaction().
@@ -1472,17 +1472,24 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@Override
 	public void exceptionThrown(INamedObject object, Throwable t) {
 		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"]";
-		if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
-//			warn(msg+", will continue processing messages when they arrive: "+ t.getMessage());
-			error(msg+", will continue processing messages when they arrive",t);
-		} else if (ONERROR_RECOVER.equalsIgnoreCase(getOnError())) {
+		exceptionThrown(msg, t);
+	}
+
+	public void exceptionThrown(String errorMessage, Throwable t) {
+		switch (getOnErrorEnum()) {
+		case CONTINUE:
+			error(errorMessage+", will continue processing messages when they arrive", t);
+			break;
+		case RECOVER:
 			// Make JobDef.recoverAdapters() try to recover
-			setRunState(RunStateEnum.ERROR);
-			error(msg+", will try to recover",t);
-		} else {
-			error(msg+", stopping receiver", t);
+			error(errorMessage+", will try to recover",t);
+			setRunState(RunStateEnum.ERROR); //Setting the state to ERROR automatically stops the receiver
+			break;
+		case CLOSE:
+			error(errorMessage+", stopping receiver", t);
 			stopRunning();
-		}
+			break;
+	}
 	}
 
 	@Override
@@ -1651,8 +1658,18 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
+	/**
+	 * Changes runstate. 
+	 * Always stops the receiver when state is `**ERROR**`
+	 */
 	public void setRunState(RunStateEnum state) {
-		runState.setRunState(state);
+		if(RunStateEnum.ERROR.equals(state)) {
+			stopRunning();
+		}
+
+		synchronized (runState) {
+			runState.setRunState(state);
+		}
 	}
 
 	
@@ -1678,7 +1695,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			String msg = "caught exception in message post processing";
 			error(msg, e);
 			errorMessage = msg + ": " + e.getMessage();
-			if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
+			if (OnError.CLOSE == getOnErrorEnum()) {
 				log.info("closing after exception in post processing");
 				stopRunning();
 			}
@@ -1802,10 +1819,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public void setAdapter(Adapter adapter) {
 		this.adapter = adapter;
 	}
-	
+
 	public boolean isOnErrorContinue() {
-		return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
+		return OnError.CONTINUE == getOnErrorEnum();
 	}
+
 	@Override
 	public Adapter getAdapter() {
 		return adapter;
@@ -1973,7 +1991,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public String getName() {
 		return name;
 	}
-	
+
 	@IbisDoc({"2", "If set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the receiver is not included in the configuration", "true"})
 	public void setActive(boolean b) {
 		active = b;
@@ -1982,12 +2000,21 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return active;
 	}
 
-
 	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
-	public void setOnError(String newOnError) {
-		onError = newOnError;
+	public void setOnError(String value) throws ConfigurationException {
+		if(StringUtils.isNotEmpty(value)) {
+			try {
+				onError = OnError.valueOf(value.toUpperCase());
+			}
+			catch (IllegalArgumentException iae) {
+				throw new ConfigurationException("Unknown onError value ["+value+"]. Must be one of "+ Arrays.asList(OnError.values()));
+			}
+		}
 	}
-	public String getOnError() {
+	public void setOnErrorEnum(OnError value) {
+		this.onError = value;
+	}
+	public OnError getOnErrorEnum() {
 		return onError;
 	}
 
@@ -2185,18 +2212,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 	public String getHiddenInputSessionKeys() {
 		return hiddenInputSessionKeys;
-	}
-
-	
-	public void setRecover(boolean b) {
-		recover = b;
-	}
-	public boolean isRecover() {
-		return recover;
-	}
-
-	public boolean isRecoverAdapter() {
-		return getAdapter().isRecover();
 	}
 
 }

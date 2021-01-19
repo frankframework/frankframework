@@ -78,6 +78,8 @@ public class IbisContext extends IbisApplicationContext {
 	private ClassLoaderManager classLoaderManager = null;
 	private static List<String> loadingConfigs = new ArrayList<>();
 
+	private Thread ibisContextReconnectThread = null;
+
 	/**
 	 * Creates the Spring context, and load the configuration. Optionally  with
 	 * a specific ClassLoader which might for example override the getResource
@@ -139,7 +141,7 @@ public class IbisContext extends IbisApplicationContext {
 				LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
 
 				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
-				ibisContextReconnectThread.setName("ibisContextReconnectThread");
+				ibisContextReconnectThread.setName("IbisContext-ReconnectThread"); //Give the thread a somewhat descriptive name
 				ibisContextReconnectThread.start();
 			}
 			else {
@@ -149,8 +151,6 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	Thread ibisContextReconnectThread = null;
-
 	/**
 	 * Shuts down the IbisContext, and therefore the Spring context
 	 * 
@@ -158,12 +158,16 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	public synchronized void destroy() {
 		long start = System.currentTimeMillis();
-		if(ibisManager != null)
+
+		if(ibisManager != null) {
 			ibisManager.shutdown();
-		if(ibisContextReconnectThread != null)
+		}
+		if(ibisContextReconnectThread != null) { //If the ibis failed to initialize, and is trying to shutdown
 			ibisContextReconnectThread.interrupt();
-		if(classLoaderManager != null)
+		}
+		if(classLoaderManager != null) {
 			classLoaderManager.shutdown();
+		}
 
 		destroyApplicationContext();
 		log("shutdown in " + (System.currentTimeMillis() - start) + " ms");
@@ -295,6 +299,8 @@ public class IbisContext extends IbisApplicationContext {
 				try {
 					loadingConfigs.add(currentConfigurationName);
 					digestClassLoaderConfiguration(classLoader, configurationDigester, currentConfigurationName, customClassLoaderConfigurationException);
+				} catch (Exception e) {
+					LOG.error("an unhandled exception occurred while digesting configuration ["+currentConfigurationName+"]", e);
 				} finally {
 					loadingConfigs.remove(currentConfigurationName);
 				}
@@ -310,10 +316,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	private void digestClassLoaderConfiguration(ClassLoader classLoader, 
-			ConfigurationDigester configurationDigester, 
-			String currentConfigurationName, 
-			ConfigurationException customClassLoaderConfigurationException) {
+	private void digestClassLoaderConfiguration(ClassLoader classLoader, ConfigurationDigester configurationDigester, String currentConfigurationName, ConfigurationException customClassLoaderConfigurationException) {
 
 		long start = System.currentTimeMillis();
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");

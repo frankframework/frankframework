@@ -141,6 +141,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
 	private ICacheAdapter<String,String> cache;
 
+	private boolean configurationSucceeded = false;
+
 
 	/**
 	 * Register an Pipe at this pipeline.
@@ -208,6 +210,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * registers the <code>PipeLineSession</code> object at the pipes.
 	 * @see IPipe
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		INamedObject owner = getOwner();
 		Adapter adapter = null;
@@ -300,15 +303,13 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			log.debug(getLogPrefix()+"configuring OutputWrapper");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
-			if (getOutputWrapper() instanceof AbstractPipe) {
-				((AbstractPipe) getOutputWrapper()).setRecoverAdapter(adapter.isRecover());
-			}
+
 			getOutputWrapper().registerForward(pf);
 			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
 			if (getOutputWrapper() instanceof EsbSoapWrapperPipe) {
 				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getOutputWrapper();
-				for (Receiver receiver: adapter.getReceivers()) {
-					IListener listener = receiver.getListener();
+				for (Receiver<?> receiver: adapter.getReceivers()) {
+					IListener<?> listener = receiver.getListener();
 					try {
 						if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
 							break;
@@ -325,6 +326,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		super.configure();
 		log.debug(getLogPrefix()+"successfully configured");
+		configurationSucceeded = true;
 	}
 
 	public void configure(IPipe pipe) throws ConfigurationException {
@@ -357,18 +359,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			}
 			if (pipe instanceof MessageSendingPipe) {
 				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
-				if (messageSendingPipe.getInputValidator() != null) {
-					configure(messageSendingPipe.getInputValidator());
-				}
-				if (messageSendingPipe.getOutputValidator() != null) {
-					configure(messageSendingPipe.getOutputValidator());
-				}
-				if (messageSendingPipe.getInputWrapper() != null) {
-					configure(messageSendingPipe.getInputWrapper());
-				}
-				if (messageSendingPipe.getOutputWrapper() != null) {
-					configure(messageSendingPipe.getOutputWrapper());
-				}
 				if (messageSendingPipe.getMessageLog() != null) {
 					pipeStatistics.put(messageSendingPipe.getMessageLog().getName(), new StatisticsKeeper(messageSendingPipe.getMessageLog().getName()));
 				}
@@ -559,6 +549,26 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			cache.open();
 		}
 
+		if (getInputWrapper()!=null) {
+			log.debug(getLogPrefix()+"starting InputWrapper ["+getInputWrapper().getName()+"]");
+			getInputWrapper().start();
+		}
+
+		if (getInputValidator()!=null) {
+			log.debug(getLogPrefix()+"starting InputValidator ["+getInputValidator().getName()+"]");
+			getInputValidator().start();
+		}
+
+		if (getOutputValidator()!=null) {
+			log.debug(getLogPrefix()+"starting OutputValidator ["+getOutputValidator().getName()+"]");
+			getOutputValidator().start();
+		}
+
+		if (getOutputWrapper()!=null) {
+			log.debug(getLogPrefix()+"starting OutputWrapper ["+getOutputWrapper().getName()+"]");
+			getOutputWrapper().start();
+		}
+
 		for (int i=0; i<pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 			String pipeName = pipe.getName();
@@ -567,8 +577,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			pipe.start();
 			log.debug(getLogPrefix()+"successfully started pipe [" + pipeName + "]");
 		}
-	log.info(getLogPrefix()+"is successfully started pipeline");
 
+		log.info(getLogPrefix()+"is successfully started pipeline");
 	}
 
 	/**
@@ -578,6 +588,27 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	public void stop() {
 		log.info(getLogPrefix()+"is closing pipeline");
+
+		if (getInputWrapper()!=null) {
+			log.debug(getLogPrefix()+"stopping InputWrapper ["+getInputWrapper().getName()+"]");
+			getInputWrapper().stop();
+		}
+
+		if (getInputValidator()!=null) {
+			log.debug(getLogPrefix()+"stopping InputValidator ["+getInputValidator().getName()+"]");
+			getInputValidator().stop();
+		}
+
+		if (getOutputValidator()!=null) {
+			log.debug(getLogPrefix()+"stopping OutputValidator ["+getOutputValidator().getName()+"]");
+			getOutputValidator().stop();
+		}
+
+		if (getOutputWrapper()!=null) {
+			log.debug(getLogPrefix()+"stopping OutputWrapper ["+getOutputWrapper().getName()+"]");
+			getOutputWrapper().stop();
+		}
+
 		for (int i=0; i<pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 			String pipeName = pipe.getName();
@@ -688,7 +719,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		log.debug("registered global PipeForward "+forward.toString());
 	}
 
-	@IbisDoc({"70", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads or servers"})
+	@IbisDoc({"70", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads or servers. " + 
+			"The Pipeline is NOT executed (and is considered to have ended successfully) when the lock cannot be obtained, " +
+			"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner."})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}
@@ -761,5 +794,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 	public String getAdapterToRunBeforeOnEmptyInput() {
 		return adapterToRunBeforeOnEmptyInput;
+	}
+
+	public boolean configurationSucceeded() {
+		return configurationSucceeded;
 	}
 }

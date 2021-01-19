@@ -169,9 +169,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			if (getSchemasId()!=null) {
 				getSchemas(true);
 			}
-			if (isRecoverAdapter()) {
-				validator.reset();
-			}
+
 			validator.configure(getLogPrefix(null));
 			registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
 			registerEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
@@ -183,6 +181,22 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (getRoot() == null) {
 			ConfigurationWarnings.add(this, log, "root not specified");
 		}
+	}
+
+	@Override
+	public void start() throws PipeStartException {
+		try {
+			validator.start();
+			super.start();
+		} catch (ConfigurationException e) {
+			throw new PipeStartException("unable to start validator", e);
+		}
+	}
+
+	@Override
+	public void stop() {
+		validator.stop();
+		super.stop();
 	}
 
 	protected void checkSchemaSpecified() throws ConfigurationException {
@@ -858,12 +872,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		validator.setIgnoreCaching(ignoreCaching);
 	}
-
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
-	public void setLazyInit(boolean lazyInit) {
-		validator.setLazyInit(lazyInit);
-	}
-
 
 	@IbisDocRef({ABSTRACTXMLVALIDATOR})
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {

@@ -103,7 +103,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	protected DefaultMessageListenerContainer createMessageListenerContainer() throws ConfigurationException {
 		try {
-			Class klass = Class.forName(messageListenerClassName);
+			Class<?> klass = Class.forName(messageListenerClassName);
 			return (DefaultMessageListenerContainer) klass.newInstance();
 		} catch (Exception e) {
 			throw new ConfigurationException(getLogPrefix()+"error creating instance of MessageListenerContainer ["+messageListenerClassName+"]", e);
@@ -442,6 +442,8 @@ class PollGuard extends TimerTask {
 			lastPollFinishedTimeToIgnore = lastPollFinishedTime;
 			error("last poll finished at " + simpleDateFormat.format(new Date(lastPollFinishedTime))
 					+ ", an attempt will be made to stop and start listener");
+
+			// Try to auto-recover the listener, when PollGuard detects `no activity` AND `threadsProcessing` == 0
 			try {
 				springJmsConnector.getListener().close();
 			} catch (ListenerException e) {

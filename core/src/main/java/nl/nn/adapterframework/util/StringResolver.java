@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2014 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@ public class StringResolver {
 						// the where the properties are
 						// x1=${x2}
 						// x2=p2
-						if (!replacement.equals(expression)) {
+						if (!replacement.equals(expression) && !replacement.contains(DELIM_START + key + DELIM_STOP)) {
 							String recursiveReplacement = substVars(replacement, props1, props2);
 							sbuf.append(recursiveReplacement);
 						} else {

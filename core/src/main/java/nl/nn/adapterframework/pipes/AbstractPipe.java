@@ -119,7 +119,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private String emptyInputReplacement=null;
 	private boolean writeToSecLog = false;
 	private String secLogSessionKeys = null;
-	private boolean recoverAdapter = false;
 	private String logIntermediaryResults = null;
 	private String hideRegex = null;
 
@@ -279,19 +278,12 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		if (current==null){
 			pipeForwards.put(forward.getName(), forward);
 		} else {
-			if (!isRecoverAdapter()) {
-				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-					ConfigurationWarnings.add(this, log, "has forward ["+forward.getName()+"] which is already registered");
-				} else {
-					log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
-				}
+			if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
+				ConfigurationWarnings.add(this, log, "has forward ["+forward.getName()+"] which is already registered");
+			} else {
+				log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
 			}
 		}
-	}
-
-	protected boolean isRecoverAdapter() {
-		Adapter adapter = getAdapter();
-		return adapter == null ? recoverAdapter : adapter.isRecover();
 	}
 
 	/**
@@ -593,10 +585,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	@Override
 	public String getSecLogSessionKeys() {
 		return secLogSessionKeys;
-	}
-
-	public void setRecoverAdapter(boolean b) {
-		recoverAdapter = b;
 	}
 
 	public void setLogIntermediaryResults(String string) {

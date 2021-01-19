@@ -173,16 +173,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean isUniqueConstraintViolation(SQLException e) {
-		if (e.getErrorCode()==1) {
-			// ORA-00001: unique constraint violated (<schema>.<constraint>)
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	@Override
 	public String getRowNumber(String order, String sort) {
 		return "row_number() over (order by "+order+(sort==null?"":" "+sort)+") "+getRowNumberShortName();
 	}
