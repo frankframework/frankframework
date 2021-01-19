@@ -46,7 +46,7 @@ jobs:
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
-      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -Pibissource,codecoverage
+      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -Pibissource,codecoverage,proprietary
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
