@@ -1191,7 +1191,7 @@ angular.module('iaf.beheerconsole')
 	}, 1000);
 }])
 
-.controller('ErrorStorageBaseCtrl', ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', function($scope, Api, $state, SweetAlert, Misc) {
+.controller('StorageBaseCtrl', ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', function($scope, Api, $state, SweetAlert, Misc) {
 	$scope.notes = [];
 	$scope.addNote = function(type, message, removeQueue) {
 		$scope.notes.push({type:type, message: message});
@@ -1209,8 +1209,14 @@ angular.module('iaf.beheerconsole')
 	$scope.receiverName = $state.params.receiver;
 	if(!$scope.receiverName)
 		return SweetAlert.Warning("Invalid URL", "No receiver name provided!");
+	$scope.storageType = $state.params.storageType;
+	if(!$scope.storageType)
+		return SweetAlert.Warning("Invalid URL", "No storage type provided!");
 
-	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/errorstorage";
+	$state.$current.data.pageTitle = $state.params.storageType;
+	$state.$current.data.breadcrumbs = "Adapter > "+$state.params.storageType;
+
+	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/"+$scope.storageType;
 
 	$scope.updateTable = function() {
 		var table = $('#datatable').DataTable();
@@ -1252,17 +1258,24 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterErrorStorageCtrl', ['$scope', 'Api', '$compile', 'Cookies', function($scope, Api, $compile, Cookies) {
+.controller('AdapterStorageCtrl', ['$scope', 'Api', '$compile', 'Cookies', function($scope, Api, $compile, Cookies) {
 	$scope.closeNotes();
 	$scope.selectedMessages = [];
-
-	var a =  '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>';
+	var a = '';
+	
+	if($scope.storageType == 'errorstorage'){
+		a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>';
 		a += '<div ng-show="!selectedMessages[message.id]">';
-		a += '<a ui-sref="pages.errorstorage.view({adapter:adapterName,receiver:receiverName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+		a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,storageType:storageType,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
 		a += '<button ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
 		a += '<button ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
 		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
 		a += '</div';
+	} else {
+		a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,storageType:storageType,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+
+	}
 
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
@@ -1276,8 +1289,7 @@ angular.module('iaf.beheerconsole')
 		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false },
 		{ "name": "label", "data": "label", bSortable: false },
 	];
-
-	var filterCookie = Cookies.get("errorstorageFilter");
+	var filterCookie = Cookies.get($scope.storageType+"Filter");
 	if(filterCookie) {
 		for(i in columns) {
 			var column = columns[i];
@@ -1298,9 +1310,16 @@ angular.module('iaf.beheerconsole')
 			label: true,
 		}
 	}
-
 	$scope.dtOptions = {
 		stateSave: true,
+		stateSaveCallback: function(settings, data) {
+			data.columns = columns;
+			sessionStorage.setItem('DataTable'+$scope.storageType, JSON.stringify(data));
+		},
+		stateLoadCallback: function(settings) {
+			return JSON.parse(sessionStorage.getItem('DataTable'+$scope.storageType));
+		},
+		
 		rowCallback: function(row, data) {
 			var row = $(row);// .children("td:first").addClass("m-b-xxs");
 			row.children("td.date").each(function(_, element) {
@@ -1355,8 +1374,8 @@ angular.module('iaf.beheerconsole')
 		label: "",
 	};
 
-	$scope.updateFilter = function(column) {
-		Cookies.set("errorstorageFilter", $scope.displayColumn);
+	$scope.updateFilter = function(column, storageType) {
+		Cookies.set(storageType+"Filter", $scope.displayColumn);
 
 		var table = $('#datatable').DataTable();
 		if(table) {
@@ -1438,143 +1457,24 @@ angular.module('iaf.beheerconsole')
 		} else {
 			SweetAlert.Warning("Message not found", "message id ["+$scope.message.id+"] error ["+statusText+"]");
 		}
-		$state.go("pages.errorstorage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
+		$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, storageType:$scope.storageType});
 	}, {responseType:'text', transformResponse: function(data) {
 		return data;
 	}});
 
 	$scope.resendMessage = function(message) {
 		$scope.doResendMessage(message, function(messageId) {
-			//Go back to the error storage list if successful
-			$state.go("pages.errorstorage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
+			//Go back to the storage list if successful
+			$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, storageType:$scope.storageType});
 		});
 	};
 
 	$scope.deleteMessage = function(message) {
 		$scope.doDeleteMessage(message, function(messageId) {
-			//Go back to the error storage list if successful
-			$state.go("pages.errorstorage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
+			//Go back to the storage list if successful
+			$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, storageType:$scope.storageType});
 		});
 	};
-}])
-
-.controller('MessageLogBaseCtrl', ['$scope', 'Misc', '$state', 'SweetAlert', function($scope, Misc, $state, SweetAlert) {
-	$scope.adapterName = $state.params.adapter;
-	if(!$scope.adapterName)
-		return SweetAlert.Warning("Invalid URL", "No adapter name provided!");
-	$scope.receiverName = $state.params.receiver;
-	if(!$scope.receiverName)
-		return SweetAlert.Warning("Invalid URL", "No receiver name provided!");
-
-	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog";
-	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
-	};
-
-	$scope.updateTable = function() {
-		var table = $('#datatable').DataTable();
-		if(table)
-			table.draw();
-	};
-}])
-
-.controller('AdapterMessageLogListCtrl', ['$scope', 'Api', '$compile', function($scope, Api, $compile) {
-	var base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog";
-
-	var a =  '<a ui-sref="pages.messagelog.view({adapter:adapterName,receiver:receiverName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
-		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
-
-	var columns = [
-		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
-		{ "data": "pos", bSortable: false },
-		{ "data": "id", bSortable: false },
-		{ "data": "insertDate", className: "date" },
-		{ "data": "type", bSortable: false },
-		{ "data": "host", bSortable: false },
-		{ "data": "originalId", bSortable: false },
-		{ "data": "correlationId", bSortable: false },
-		{ "data": "comment", bSortable: false },
-		{ "data": "expiryDate", className: "date", bSortable: false },
-		{ "data": "label", bSortable: false },
-	];
-
-	$scope.dtOptions = {
-		stateSave: true,
-		rowCallback: function(row, data) {
-			var row = $(row);// .children("td:first").addClass("m-b-xxs");
-			row.children("td.date").each(function(_, element) {
-				var time = $(this).text();
-				if(time)
-					$(element).attr({"to-date": "", "time": time });
-			});
-			var scope = $scope.$new();
-			scope.message = data;
-			$compile(row)(scope);
-		},
-		searching: false,
-		scrollX: true,
-		orderCellsTop: true,
-		serverSide: true,
-		processing: true,
-		paging: true,
-		order: [[ 2, 'desc' ]],
-		columns: columns,
-		sAjaxDataProp: 'messages',
-		ajax: function (data, callback, settings) {
-			var start = data.start;
-			var length = data.length;
-			var order = data.order[0];
-			var direction = order.dir; // asc or desc
-
-			var url = base_url+"?max="+length+"&skip="+start+"&sort="+direction;
-			var search = $scope.search;
-			for(column in search) {
-				var value = search[column];
-				if(value) {
-					url += "&"+column+"="+value;
-				}
-			}
-			Api.Get(url, function(response) {
-				response.draw = data.draw;
-				response.recordsTotal = response.totalMessages;
-				response.recordsFiltered = response.skipMessages + response.messageCount;
-				callback(response);
-			});
-		}
-	};
-
-	$scope.search = {
-		id: "",
-		startDate: "",
-		type: "",
-		host: "",
-		messageId: "",
-		correlationId: "",
-		comment: "",
-		label: "",
-	};
-}])
-
-.controller('AdapterMessageLogViewCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
-	$scope.message = {};
-
-	$scope.message.id = $state.params.messageId;
-	if(!$scope.message.id)
-		return SweetAlert.Warning("Invalid URL", "No message id provided!");
-
-	var url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/messagelog/"+encodeURIComponent(encodeURIComponent($scope.message.id));
-	Api.Get(url, function(data) {
-		$scope.message.data = data;
-	}, function(_, statusCode, statusText) {
-		if(statusCode == 500) {
-			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+statusText+"]");
-		} else {
-			SweetAlert.Warning("Message not found", "message id ["+$scope.message.id+"] error ["+statusText+"]");
-		}
-		$state.go("pages.messagelog.list", {adapter:$scope.adapterName, receiver:$scope.receiverName});
-	}, {responseType:'text', transformResponse: function(data) {
-		return data;
-	}});
 }])
 
 .controller('PipeMessageLogBaseCtrl', ['$scope', 'Misc', '$state', 'SweetAlert', function($scope, Misc, $state, SweetAlert) {

@@ -101,72 +101,41 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			},
 		},
 	})
-	.state('pages.errorstorage', {
+	.state('pages.storage', {
 		abstract: true,
 		url: "/adapter/:adapter/:receiver/",
 		template: "<div ui-view></div>",
-		controller: 'ErrorStorageBaseCtrl',
-		data: {
-			pageTitle: 'ErrorStorage',
-			breadcrumbs: 'Adapter > ErrorStorage'
-		},
+		controller: 'StorageBaseCtrl',
 		params: {
 			adapter: { value: '', squash: true},
 			receiver: { value: '', squash: true},
+			storageType: { value: '', squash: true},
+		},
+		data: {
+			pageTitle: '',
+			breadcrumbs: ''
 		},
 	})
-	.state('pages.errorstorage.list', {
-		url: "errorstorage",
-		templateUrl: "views/txstorage/adapter_errorstorage_list.html",
+	.state('pages.storage.list', {
+		url: ":storageType",
+		templateUrl: "views/txstorage/adapter_storage_list.html",
 		resolve: {
 			loadPlugin: function($ocLazyLoad) {
 				return $ocLazyLoad.load('datatables');
 			},
 		},
 	})
-	.state('pages.errorstorage.view', {
-		url: "errorstorage/:messageId",
-		templateUrl: "views/txstorage/adapter_errorstorage_view.html",
+	.state('pages.storage.view', {
+		url: ":storageType/:messageId",
+		templateUrl: "views/txstorage/adapter_storage_view.html",
 		params: {
 			messageId: { value: '', squash: true},
 		},
 		controller: function($state) {
-			$state.current.data.breadcrumbs = "Adapter > ErrorStorage > View Message "+$state.params.messageId;
-		}
-	})
-	.state('pages.messagelog', {
-		abstract: true,
-		url: "/adapter/:adapter/",
-		template: "<div ui-view></div>",
-		controller: 'MessageLogBaseCtrl',
-		data: {
-			pageTitle: 'Adapter',
-			breadcrumbs: 'Adapter > MessageLog'
-		},
-		params: {
-			adapter: { value: '', squash: true},
-			receiver: { value: '', squash: true},
+			$state.current.data.breadcrumbs = "Adapter > "+$state.params.storageType+" > View Message "+$state.params.messageId;
 		},
 	})
-	.state('pages.messagelog.list', {
-		url: "receiver/:receiver/messagelog",
-		templateUrl: "views/txstorage/adapter_messagelog_list.html",
-		resolve: {
-			loadPlugin: function($ocLazyLoad) {
-				return $ocLazyLoad.load('datatables');
-			},
-		},
-	})
-	.state('pages.messagelog.view', {
-		url: "receiver/:receiver/messagelog/:messageId",
-		templateUrl: "views/txstorage/adapter_messagelog_view.html",
-		params: {
-			messageId: { value: '', squash: true},
-		},
-		controller: function($state) {
-			$state.current.data.breadcrumbs = "Adapter > MessageLog > View Message "+$state.params.messageId;
-		}
-	})
+	
 	.state('pages.pipemessagelog', {
 		abstract: true,
 		url: "/adapter/:adapter/pipe/:pipe",
