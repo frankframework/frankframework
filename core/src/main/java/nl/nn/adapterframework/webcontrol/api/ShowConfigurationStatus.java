@@ -61,6 +61,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.ProcessState;
@@ -786,6 +787,35 @@ public final class ShowConfigurationStatus extends Base {
 		adapterInfo.put("messagesInProcess", adapter.getNumOfMessagesInProcess());
 		adapterInfo.put("messagesProcessed", adapter.getNumOfMessagesProcessed());
 		adapterInfo.put("messagesInError", adapter.getNumOfMessagesInError());
+
+		Iterator<Receiver<?>> it = adapter.getReceivers().iterator();
+		int errorStoreMessageCount = 0;
+		int messageLogMessageCount = 0;
+		while(it.hasNext()) {
+			Receiver rcv = it.next();
+			IMessageBrowser esmb = rcv.getMessageBrowser(ProcessState.ERROR);
+			if(esmb != null) {
+				try {
+					errorStoreMessageCount += esmb.getMessageCount();
+				} catch (ListenerException e) {
+					log.warn("Cannot determine number of messages in errorstore of ["+rcv.getName()+"]", e);
+				}
+			}
+			IMessageBrowser mlmb = rcv.getMessageBrowser(ProcessState.DONE);
+			if(mlmb != null) {
+				try {
+					messageLogMessageCount += mlmb.getMessageCount();
+				} catch (ListenerException e) {
+					log.warn("Cannot determine number of messages in messagelog of ["+rcv.getName()+"]", e);
+				}
+			}
+		}
+		if(errorStoreMessageCount != 0) {
+			adapterInfo.put("errorStoreMessageCount", errorStoreMessageCount);
+		}
+		if(messageLogMessageCount != 0) {
+			adapterInfo.put("messageLogMessageCount", messageLogMessageCount);
+		}
 
 		return adapterInfo;
 	}
