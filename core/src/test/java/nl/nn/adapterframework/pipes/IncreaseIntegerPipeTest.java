@@ -1,11 +1,14 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.parameters.Parameter;
 
 /**
  * IncreaseIntegerPipe Tester.
@@ -14,11 +17,11 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  */
 public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
 
+
     @Override
     public IncreaseIntegerPipe createPipe() {
         return new IncreaseIntegerPipe();
     }
-
 
     /**
      * Method: doPipe(Object input, IPipeLineSession session)
@@ -43,6 +46,53 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
         pipe.configure();
         doPipe(pipe, "doesnt matter", session);
         fail("this is expected to fail");
+    }
+
+    @Test
+    public void testIncrementParameter() throws Exception {
+    	String numberSession = "number";
+		session.put(numberSession, "4");
+		Parameter inc = new Parameter();
+		inc.setName("increment");
+		inc.setValue("5");
+		pipe.addParameter(inc);
+		pipe.setSessionKey(numberSession);
+		pipe.configure();
+		doPipe(pipe, "message", session);
+		assertEquals("9", session.get(numberSession));
+    }
+
+    @Test
+    public void testNullIncrementParameter() throws Exception {
+    	String numberSession = "number";
+		session.put(numberSession, "4");
+		Parameter inc = new Parameter();
+		inc.setName("increment");
+		inc.setValue(null);
+		pipe.addParameter(inc);
+		pipe.setSessionKey(numberSession);
+		pipe.configure();
+		doPipe(pipe, null, session);
+		assertEquals("5", session.get(numberSession));
+    }
+
+    @Test
+    public void testEmptyIncrementParameter() throws Exception {
+		Exception exception = assertThrows(NumberFormatException.class, () -> {
+			String numberSession = "number";
+			session.put(numberSession, "4");
+			Parameter inc = new Parameter();
+			inc.setName("increment");
+			inc.setValue("");
+			pipe.addParameter(inc);
+			pipe.setSessionKey(numberSession);
+			pipe.configure();
+			doPipe(pipe, "", session);
+		});
+		String expectedMessage = "For input string";
+		String actualMessage = exception.getMessage();
+
+		assertTrue(actualMessage.contains(expectedMessage));
     }
 
 }
