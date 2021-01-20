@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,25 +21,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Semaphore;
 
 /**
- * @author Jaco de Groot
+ * @author Gerrit van Brakel
  */
-public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
+public class CheckSemaphorePipeLineProcessor extends PipeLineProcessorBase {
 
-	private Map<IPipe,Semaphore> pipeThreadCounts=new ConcurrentHashMap<>();
+	private Map<PipeLine,Semaphore> pipeLineThreadCounts=new ConcurrentHashMap<>();
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
-		PipeRunResult pipeRunResult;
-		Semaphore s = getSemaphore(pipe);
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+		PipeLineResult pipeLineResult;
+		Semaphore s = getSemaphore(pipeLine);
 		if (s != null) {
 			long waitingDuration = 0;
+			IPipe pipe = pipeLine.getPipe(firstPipe);
 			try {
 				// keep waiting statistics for thread-limited pipes
 				long startWaiting = System.currentTimeMillis();
@@ -47,20 +48,20 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 				waitingDuration = System.currentTimeMillis() - startWaiting;
 				StatisticsKeeper sk = pipeLine.getPipeWaitingStatistics(pipe);
 				sk.addValue(waitingDuration);
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+				pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 			} catch(InterruptedException e) {
-				throw new PipeRunException(pipe, "Interrupted acquiring semaphore", e);
+				throw new PipeRunException(pipe, "Interrupted acquiring PipeLine semaphore", e);
 			} finally { 
 				s.release();
 			}
 		} else { //no restrictions on the maximum number of threads (s==null)
-			pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+			pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
-		return pipeRunResult;
+		return pipeLineResult;
 	}
 
-	private Semaphore getSemaphore(IPipe pipe) {
-		return pipeThreadCounts.computeIfAbsent(pipe, k -> k.getMaxThreads()>0 ? new Semaphore(k.getMaxThreads()) : null);
+	private Semaphore getSemaphore(PipeLine pipeLine) {
+		return pipeLineThreadCounts.computeIfAbsent(pipeLine, k -> k.getMaxThreads()>0 ? new Semaphore(k.getMaxThreads()) : null);
 	}
 
 }

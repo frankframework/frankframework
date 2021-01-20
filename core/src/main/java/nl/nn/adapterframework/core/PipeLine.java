@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -113,6 +113,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private Map<String, PipeForward> globalForwards = new Hashtable<String, PipeForward>();
 	private String firstPipe;
 
+	private int maxThreads = 0;
 	private Locker locker;
 
 	public final static String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
@@ -719,9 +720,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		log.debug("registered global PipeForward "+forward.toString());
 	}
 
-	@IbisDoc({"70", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads or servers. " + 
+	@IbisDoc({"70", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads on multiple servers. " + 
 			"The Pipeline is NOT executed (and is considered to have ended successfully) when the lock cannot be obtained, " +
-			"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner."})
+			"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner. " +
+			"If only the number of threads executing this PipeLine needs to be limited, the attribute maxThreads can be set instead, avoiding the database overhead."})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}
@@ -747,6 +749,13 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return firstPipe;
 	}
 
+	@IbisDoc({"2", "Maximum number of threads that may execute this Pipeline simultaneously", "0 (unlimited)"})
+	public void setMaxThreads(int newMaxThreads) {
+		maxThreads = newMaxThreads;
+	}
+	public int getMaxThreads() {
+		return maxThreads;
+	}
 
 	/**
 	 * the exit state of the pipeline on which the receiver will commit the transaction.

@@ -164,22 +164,30 @@
 				>
 				<property name="pipeLineProcessor">
 					<bean
-						class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
+						class="nl.nn.adapterframework.processors.CheckSemaphorePipeLineProcessor"
 						autowire="byName"
 						scope="prototype"
 						>
 						<property name="pipeLineProcessor">
 							<bean
-								class="nl.nn.adapterframework.processors.LockerPipeLineProcessor"
+								class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
 								autowire="byName"
 								scope="prototype"
 								>
 								<property name="pipeLineProcessor">
 									<bean
-										class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
+										class="nl.nn.adapterframework.processors.LockerPipeLineProcessor"
 										autowire="byName"
 										scope="prototype"
-									/>
+										>
+										<property name="pipeLineProcessor">
+											<bean
+												class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
+												autowire="byName"
+												scope="prototype"
+											/>
+										</property>
+									</bean>
 								</property>
 							</bean>
 						</property>
