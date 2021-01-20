@@ -30,42 +30,42 @@
 							<tbody>
 								<tr>
 									<th>Storage ID</th>
-									<td><input disabled icheck type="checkbox" ng-change="updateFilter('id', storageType)" ng-model="displayColumn.id"/></td>
+									<td><input disabled icheck type="checkbox" ng-change="updateFilter('id')" ng-model="displayColumn.id"/></td>
 									<td><input type="text" class="full-width" ng-model="search.id" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
 								</tr>
 								<tr>
 									<th>Timestamp</th>
-									<td><input icheck type="checkbox" ng-change="updateFilter('insertDate', storageType)" ng-model="displayColumn.insertDate"/></td>
+									<td><input icheck type="checkbox" ng-change="updateFilter('insertDate')" ng-model="displayColumn.insertDate"/></td>
 									<td><input type="text" class="full-width" ng-model="search.startDate" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
 								</tr>
 								<tr>
 									<th>Host</th>
-									<td><input icheck type="checkbox" ng-change="updateFilter('host', storageType)" ng-model="displayColumn.host"/></td>
+									<td><input icheck type="checkbox" ng-change="updateFilter('host')" ng-model="displayColumn.host"/></td>
 									<td><input type="text" class="full-width" ng-model="search.host" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
 								</tr>
 								<tr>
 									<th>Original ID</th>
-									<td><input icheck type="checkbox" ng-change="updateFilter('originalId', storageType)" ng-model="displayColumn.originalId"/></td>
+									<td><input icheck type="checkbox" ng-change="updateFilter('originalId')" ng-model="displayColumn.originalId"/></td>
 									<td><input type="text" class="full-width" ng-model="search.messageId" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
 								</tr>
 								<tr>
 									<th>Correlation ID</th>
-									<td><input icheck type="checkbox" ng-change="updateFilter('correlationId', storageType)" ng-model="displayColumn.correlationId"/></td>
+									<td><input icheck type="checkbox" ng-change="updateFilter('correlationId')" ng-model="displayColumn.correlationId"/></td>
 									<td><input type="text" class="full-width" ng-model="search.correlationId" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
 								</tr>
 								<tr>
 									<th>Comment</th>
-									<td><input icheck type="checkbox" ng-change="updateFilter('comment', storageType)" ng-model="displayColumn.comment"/></td>
+									<td><input icheck type="checkbox" ng-change="updateFilter('comment')" ng-model="displayColumn.comment"/></td>
 									<td><input type="text" class="full-width" ng-model="search.comment" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
 								</tr>
 								<tr>
 									<th>Expires</th>
-									<td><input icheck type="checkbox" class="full-width" ng-change="updateFilter('expiryDate', storageType)" ng-model="displayColumn.expiryDate"/></td>
+									<td><input icheck type="checkbox" class="full-width" ng-change="updateFilter('expiryDate')" ng-model="displayColumn.expiryDate"/></td>
 									<td>&nbsp;</td>
 								</tr>
 								<tr>
 									<th>Label</th>
-									<td><input icheck type="checkbox" ng-change="updateFilter('label', storageType)" ng-model="displayColumn.label"/></td>
+									<td><input icheck type="checkbox" ng-change="updateFilter('label')" ng-model="displayColumn.label"/></td>
 									<td><input type="text" class="full-width" ng-model="search.label" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
 								</tr>
 							</tbody>

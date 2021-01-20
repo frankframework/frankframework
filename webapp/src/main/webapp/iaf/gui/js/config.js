@@ -103,9 +103,12 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.storage', {
 		abstract: true,
-		url: "/adapter/:adapter/:receiver/",
-		template: "<div ui-view></div>",
-		controller: 'StorageBaseCtrl',
+		url: "/adapters/:adapter/receivers/:receiver/",
+		template: "<div ui-view ng-controller='StorageBaseCtrl'></div>",
+		controller: function($state) {
+			$state.current.data.pageTitle = $state.params.storageType;
+			$state.current.data.breadcrumbs = "Adapter > "+$state.params.storageType;
+		},
 		params: {
 			adapter: { value: '', squash: true},
 			receiver: { value: '', squash: true},
@@ -138,7 +141,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	
 	.state('pages.pipemessagelog', {
 		abstract: true,
-		url: "/adapter/:adapter/pipe/:pipe",
+		url: "/adapter/:adapter/pipes/:pipe",
 		template: "<div ui-view></div>",
 		controller: 'PipeMessageLogBaseCtrl',
 		data: {

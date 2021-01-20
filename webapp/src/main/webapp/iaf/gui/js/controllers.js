@@ -1213,9 +1213,6 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.storageType)
 		return SweetAlert.Warning("Invalid URL", "No storage type provided!");
 
-	$state.$current.data.pageTitle = $state.params.storageType;
-	$state.$current.data.breadcrumbs = "Adapter > "+$state.params.storageType;
-
 	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/"+$scope.storageType;
 
 	$scope.updateTable = function() {
@@ -1258,7 +1255,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('AdapterStorageCtrl', ['$scope', 'Api', '$compile', 'Cookies', function($scope, Api, $compile, Cookies) {
+.controller('AdapterStorageCtrl', ['$scope', 'Api', '$compile', 'Cookies','Session', function($scope, Api, $compile, Cookies, Session) {
 	$scope.closeNotes();
 	$scope.selectedMessages = [];
 	var a = '';
@@ -1314,10 +1311,10 @@ angular.module('iaf.beheerconsole')
 		stateSave: true,
 		stateSaveCallback: function(settings, data) {
 			data.columns = columns;
-			sessionStorage.setItem('DataTable'+$scope.storageType, JSON.stringify(data));
+			Session.set('DataTable'+$scope.storageType, data);
 		},
 		stateLoadCallback: function(settings) {
-			return JSON.parse(sessionStorage.getItem('DataTable'+$scope.storageType));
+			return Session.get('DataTable'+$scope.storageType);
 		},
 		drawCallback: function( settings ) {
 			// reset visited rows with all draw actions e.g. pagination, filter, search
@@ -1383,8 +1380,8 @@ angular.module('iaf.beheerconsole')
 		label: "",
 	};
 
-	$scope.updateFilter = function(column, storageType) {
-		Cookies.set(storageType+"Filter", $scope.displayColumn);
+	$scope.updateFilter = function(column) {
+		Cookies.set($scope.storageType+"Filter", $scope.displayColumn);
 
 		var table = $('#datatable').DataTable();
 		if(table) {
