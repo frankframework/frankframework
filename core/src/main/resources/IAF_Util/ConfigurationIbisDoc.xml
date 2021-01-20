@@ -2,14 +2,12 @@
 	<adapter name="IbisDoc" active="${ibisDoc.active}">
 		<receiver>
 			<listener
-				name="IbisDoc"
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibisdoc"
 			/>
 		</receiver>
 		<receiver>
 			<listener
-				name="IbisDoc"
 				className="nl.nn.adapterframework.http.RestListener"
 				uriPattern="ibisdoc"
 				method="GET"
