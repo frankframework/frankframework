@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -15,11 +17,11 @@ import nl.nn.adapterframework.parameters.Parameter;
  */
 public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
 
+
     @Override
     public IncreaseIntegerPipe createPipe() {
         return new IncreaseIntegerPipe();
     }
-
 
     /**
      * Method: doPipe(Object input, IPipeLineSession session)
@@ -72,6 +74,25 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
 		pipe.configure();
 		doPipe(pipe, null, session);
 		assertEquals("5", session.get(numberSession));
+    }
+
+    @Test
+    public void testEmptyIncrementParameter() throws Exception {
+		Exception exception = assertThrows(NumberFormatException.class, () -> {
+			String numberSession = "number";
+			session.put(numberSession, "4");
+			Parameter inc = new Parameter();
+			inc.setName("increment");
+			inc.setValue("");
+			pipe.addParameter(inc);
+			pipe.setSessionKey(numberSession);
+			pipe.configure();
+			doPipe(pipe, "", session);
+		});
+		String expectedMessage = "For input string";
+		String actualMessage = exception.getMessage();
+
+		assertTrue(actualMessage.contains(expectedMessage));
     }
 
 }
