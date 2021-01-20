@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -126,6 +126,14 @@ public class TestAssertions extends org.junit.Assert {
 
 	public static boolean isTestRunningOnTravis() {
 		return "TRAVIS".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "TRAVIS".equalsIgnoreCase(System.getenv("CI_SERVICE"));
+	}
+
+	public static boolean isTestRunningOnGitHub() {
+		return "GITHUB".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "GITHUB".equalsIgnoreCase(System.getenv("CI_SERVICE"));
+	}
+
+	public static boolean isTestRunningOnCI() {
+		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI")) || isTestRunningOnGitHub() || isTestRunningOnTravis();
 	}
 
 	public static boolean isTestRunningOnWindows() {

@@ -37,11 +37,16 @@ jobs:
       with:
         java-version: 1.8
 
+    - name: Create Maven settings.xml file
+      uses: s4u/maven-settings-action@v2.3.0
+      with:
+        servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
+
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
-      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -Pibissource,codecoverage
+      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -Pibissource,codecoverage,proprietary
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
