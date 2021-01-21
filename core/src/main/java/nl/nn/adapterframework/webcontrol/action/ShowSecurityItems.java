@@ -184,7 +184,7 @@ public final class ShowSecurityItems extends ActionBase {
 							certElem.addAttribute("name", certificate);
 							String certificateAuthAlias = s.getCertificateAuthAlias();
 							certElem.addAttribute("authAlias", certificateAuthAlias);
-							URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+							URL certificateUrl = ClassUtils.getResourceURL(certificate);
 							if (certificateUrl == null) {
 								certElem.addAttribute("url", "");
 								pipeElem.addSubElement(certElem);
@@ -210,7 +210,7 @@ public final class ShowSecurityItems extends ActionBase {
 								certElem.addAttribute("name", certificate);
 								String certificateAuthAlias = s.getCertificateAuthAlias();
 								certElem.addAttribute("authAlias", certificateAuthAlias);
-								URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+								URL certificateUrl = ClassUtils.getResourceURL(certificate);
 								if (certificateUrl == null) {
 									certElem.addAttribute("url", "");
 									pipeElem.addSubElement(certElem);
@@ -236,7 +236,7 @@ public final class ShowSecurityItems extends ActionBase {
 									certElem.addAttribute("name", certificate);
 									String certificateAuthAlias = s.getCertificateAuthAlias();
 									certElem.addAttribute("authAlias", certificateAuthAlias);
-									URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+									URL certificateUrl = ClassUtils.getResourceURL(certificate);
 									if (certificateUrl == null) {
 										certElem.addAttribute("url", "");
 										pipeElem.addSubElement(certElem);

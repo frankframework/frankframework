@@ -1996,7 +1996,7 @@ public class XmlUtils {
 	}
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
-		URL xsltSource = ClassUtils.getResourceURL(XmlUtils.class, ADAPTERSITE_XSLT);
+		URL xsltSource = ClassUtils.getResourceURL(ADAPTERSITE_XSLT);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters != null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);

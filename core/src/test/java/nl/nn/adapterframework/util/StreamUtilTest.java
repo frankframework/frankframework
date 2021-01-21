@@ -20,7 +20,7 @@ public class StreamUtilTest {
 	}
 
 	public void testReader(String inputFile, String expected, String defaultCharset) throws IOException {
-		URL input = ClassUtils.getResourceURL(this, inputFile);
+		URL input = ClassUtils.getResourceURL(inputFile);
 		
 		System.out.println(inputFile+":");
 		int i;
@@ -75,7 +75,7 @@ public class StreamUtilTest {
 	
 
 	public void testStreamToByteArray(String inputFile, boolean skipBOM, String expected, boolean expectBOM) throws IOException {
-		URL input = ClassUtils.getResourceURL(this, inputFile);
+		URL input = ClassUtils.getResourceURL(inputFile);
 		
 		byte[] byteArray = StreamUtil.streamToByteArray(input.openStream(), skipBOM);
 		

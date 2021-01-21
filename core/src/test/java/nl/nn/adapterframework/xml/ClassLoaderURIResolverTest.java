@@ -108,7 +108,7 @@ public class ClassLoaderURIResolverTest {
 		case OVERRIDABLE:
 			return "/ClassLoader/overridablefile.xml";
 		case FILE_SCHEME:
-			return ClassUtils.getResourceURL(this, "/ClassLoader/overridablefile.xml").toExternalForm();
+			return ClassUtils.getResourceURL("/ClassLoader/overridablefile.xml").toExternalForm();
 		default:
 			throw new ConfigurationException("getRef() appears to be missing case for refType ["+refType+"]");
 		}

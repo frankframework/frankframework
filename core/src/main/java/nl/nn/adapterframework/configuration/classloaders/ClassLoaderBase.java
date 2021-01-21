@@ -160,6 +160,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	 */
 	@Override
 	public final URL getResource(String name) {
+		if (name == null || name.startsWith("/")) { // Resources retrieved from ClassLoaders should never start with a leading slash
+			return null;
+		}
+
 		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent classloader
 		if(name.startsWith("META-INF/")) {
 			return getParent().getResource(name);

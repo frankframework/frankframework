@@ -80,7 +80,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 				qs.open();
 				result = qs.sendMessage(new Message(form_query), null).asString();
 				if ("csv".equalsIgnoreCase(form_resultType)) {
-					URL url= ClassUtils.getResourceURL(this,DB2XML_XSLT);
+					URL url= ClassUtils.getResourceURL(DB2XML_XSLT);
 					if (url!=null) {
 						Transformer t = XmlUtils.createTransformer(url);
 						result = XmlUtils.transformXml(t,result);
