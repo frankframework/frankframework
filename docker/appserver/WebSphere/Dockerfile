@@ -7,7 +7,7 @@ RUN cat /work/wasap.policy >> /opt/IBM/WebSphere/AppServer/profiles/AppSrv01/con
 COPY --chown=was:root target/ibis-adapterframework-docker-as-was-*-dependencies/*.py  /work/config/
 COPY --chown=was:root target/dependencies/*.jar /work/drivers/
 COPY --chown=was:root target/dependencies/ibis-adapterframework-ear.ear /work/app/adapterframework.ear
-COPY --chown=was:root target/dependencies/frank /work/frank
+COPY --chown=was:root target/dependencies/frank /opt/frank
 ENV ENABLE_BASIC_LOGGING=true
 ENV TZ=CET
 RUN /work/configure.sh

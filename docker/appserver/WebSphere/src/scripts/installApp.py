@@ -58,7 +58,7 @@ installApp('adapterframework.ear', 'IBIS AdapterFramework', 'adapterframework.wa
 setClassloaderMode('adapterframework.ear', 'PARENT_LAST')
 
 
-createSharedLibrary('frankConfig', '/work/frank/configuration/resources.jar /work/frank/configuration/configurations.jar')
+createSharedLibrary('frankConfig', '/opt/frank/configuration/resources.jar /opt/frank/configuration/configurations.jar')
 assignSharedLibrary('adapterframework.ear', 'frankConfig')
 
 AdminConfig.save()

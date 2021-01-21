@@ -21,12 +21,14 @@ def setSecurityProperty( name, value ):
 	return
 
 setJVMSystemProperty( 'log.dir', '${SERVER_LOG_ROOT}')
-setJVMSystemProperty( 'otap.stage', 'TST')
+setJVMSystemProperty( 'dtap.stage', 'TST')
 setJVMSystemProperty( 'web.protocol', 'http')
 setJVMSystemProperty( 'web.port', '9080')
 setJVMSystemProperty( 'strutsConsole.enabled', 'true')
-setJVMSystemProperty( 'scenariosroot1.directory', '/work/frank/testtool')
-setJVMSystemProperty( 'scenariosroot1.description', 'testtool directory /work/frank/testtool')
+setJVMSystemProperty( 'scenariosroot1.directory', '/opt/frank/testtool')
+setJVMSystemProperty( 'scenariosroot1.description', 'embedded testtool directory /opt/frank/testtool')
+setJVMSystemProperty( 'scenariosroot2.directory', '/opt/frank/testtool-ext')
+setJVMSystemProperty( 'scenariosroot2.description', 'external testtool directory')
 setJVMSystemProperty( 'jdbc.dbms.default', 'oracle-docker')
 setJVMSystemProperty( 'active.jms', 'false')
 setJVMSystemProperty( 'active.tibco', 'false')

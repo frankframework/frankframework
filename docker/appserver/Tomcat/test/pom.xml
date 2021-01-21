@@ -3,21 +3,21 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-as-was</artifactId>
-	<name>Frank!Framework Docker image for WebSphere</name>
+	<artifactId>ibis-adapterframework-docker-as-tomcat-iaf-test</artifactId>
+	<name>Frank!Framework Docker image Tomcat/iaf-test</name>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-docker-as</artifactId>
+		<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
 		<version>7.6-SNAPSHOT</version>
 	</parent>
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ear</artifactId>
+			<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
 			<version>${iaf.version}</version>
-			<type>ear</type>
+			<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -38,34 +38,9 @@
 			<classifier>scenarios</classifier>
 		</dependency>
 		<dependency>
-			<groupId>${oracle.driver.groupid}</groupId>
-			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
-			<version>${oracle.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>${h2.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.microsoft.sqlserver</groupId>
-			<artifactId>mssql-jdbc</artifactId>
-			<version>${mssql.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>${mysql.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mariadb.jdbc</groupId>
-			<artifactId>mariadb-java-client</artifactId>
-			<version>${mariadb.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>${postgresql.driver.version}</version>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-all</artifactId>
+			<version>5.6.0</version>
 		</dependency>
 	</dependencies>
 
@@ -104,13 +79,11 @@
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-test</artifactId>
 									<classifier>configurations</classifier>
-									<destFileName>configurations.jar</destFileName>
 								</artifactItem>
 								<artifactItem>
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-test</artifactId>
 									<classifier>resources</classifier>
-									<destFileName>resources.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
@@ -139,24 +112,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.3.0</version>
-				<configuration>
-					<descriptors>
-						<descriptor>src/assembly/dockerAssembly.xml</descriptor>
-					</descriptors>
-				</configuration>
-				<executions>
-					<execution>
-						<id>prepare-as-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.6</version>
@@ -170,7 +125,7 @@
 								<exec executable="docker">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-test-as-websphere:${project.version}"/>
+									<arg value="iaf-test-tomcat:${project.version}"/>
 									<arg value="."/>
 								</exec>
 							</target>

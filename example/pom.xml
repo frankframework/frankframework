@@ -86,6 +86,48 @@
 					</loginServices>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.0</version>
+				<!-- make separate artifacts of configurations, resources and testscenarios, to inject them into deployments -->
+				<executions>
+					<execution>
+						<id>zip-configurations</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>configurations</classifier>
+							<classesDirectory>src/main</classesDirectory>
+							<includes>configurations/</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>zip-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>resources</classifier>
+							<classesDirectory>src/main/resources</classesDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>zip-scenarios</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>scenarios</classifier>
+							<classesDirectory>src/test/testtool</classesDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
