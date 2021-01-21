@@ -25,7 +25,7 @@ In Tomcat's launch configuration (found in the Tomcat Overview window), go to th
 
 The module's test scenarios can be run manually with the Larva testtool. This will be done within an iaf-test instance running on your Tomcat server. To make this possible...
 
-1. In the Project Explorer, go to your Tomcat's _catalina.properties_ file. At the bottom, add the lines `log.dir=c:/temp` (lower case 'c' is mandatory) and `otap.stage=LOC`.
+1. In the Project Explorer, go to your Tomcat's _catalina.properties_ file. At the bottom, add the lines `log.dir=c:/temp` (lower case 'c' is mandatory) and `dtap.stage=LOC`.
 2. In the Tomcat Overview window, set the port number for HTTP/1.1 to 80, or another if 80 is already taken. Oracle will be using port 8080.
 3. In the same window, go to the Modules tab at the bottom and add "/iaf-test" as a web module.
 4. In the Project Explorer, right-click the iaf-test module and select Properties. Go to Deployment Assembly, press [ Add... ]. Select Folder, press [ Next ]. Select the src/main/configurations folder, and press Finish. In the text field right of your new src/main/configurations item, enter `WEB-INF/classes/configurations`.

@@ -139,7 +139,7 @@ eclipse.exe file.
 ### Set up a Tomcat server in Eclipse
 
 - Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download the latest version of [Tomcat](http://tomcat.apache.org/) (version 7.0.47+ is known to work)), OK, Finish.
-- Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Dotap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
+- Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
 - Right click Tomcat v7.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
 
@@ -201,7 +201,7 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 - Download Tomcat 8.5 from https://tomcat.apache.org/download-80.cgi and export it anywhere you like. (On windows make sure to extract it on a folder which can be edited by non-admin users.)
 - On top right click "Add Configurations..." then click + button. Click "More items" on the bottom of the list and select Tomcat Server -> Local from the new list.
 - Click Configure next to the Application Server and Select your Tomcat Home directory.
-- Add -Dotap.stage=LOC to the VM Options
+- Add -Ddtap.stage=LOC to the VM Options
 - On deployment tab click + -> artifacts... and then select ibis-adapterframework-example:war
 - Name your configuration and save it
 - Open Maven window by clicking Maven button on your right and open execution window by clicking "m" button. Then run command "mvn clean install -Dmaven.javadoc.skip=true verify"

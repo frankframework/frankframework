@@ -21,7 +21,7 @@ def setSecurityProperty( name, value ):
 	return
 
 setJVMSystemProperty( 'log.dir', '${SERVER_LOG_ROOT}')
-setJVMSystemProperty( 'otap.stage', 'TST')
+setJVMSystemProperty( 'dtap.stage', 'TST')
 setJVMSystemProperty( 'web.protocol', 'http')
 setJVMSystemProperty( 'web.port', '9080')
 setJVMSystemProperty( 'strutsConsole.enabled', 'true')
