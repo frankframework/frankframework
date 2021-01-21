@@ -51,7 +51,7 @@ public class CmisSenderTest {
 	@Before
 	public void setUp() throws Exception {
 		properties=new Properties();
-		properties.load(ClassUtils.getResourceURL(this, testProperties).openStream());
+		properties.load(ClassUtils.getResourceURL(testProperties).openStream());
 		url=properties.getProperty("url");
 		repo=properties.getProperty("repo");
 		titanUser=properties.getProperty("titanUser");
