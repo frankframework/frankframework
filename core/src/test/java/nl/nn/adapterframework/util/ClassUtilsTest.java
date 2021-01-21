@@ -16,8 +16,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 
 /**
@@ -31,52 +29,9 @@ public class ClassUtilsTest {
 	private ClassLoader classLoader = new ContextClassLoader();
 	private String fileContent = "<test />";
 
-	private static class ContextClassLoader extends ClassLoader implements IConfigurationClassLoader {
-
+	private static class ContextClassLoader extends ClassLoader {
 		public ContextClassLoader() {
 			super(Thread.currentThread().getContextClassLoader());
-		}
-
-		@Override
-		public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public IbisContext getIbisContext() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public String getConfigurationName() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void setReportLevel(String level) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public ReportLevel getReportLevel() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void reload() throws ConfigurationException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void destroy() {
-			// TODO Auto-generated method stub
-			
 		}
 	}
 
