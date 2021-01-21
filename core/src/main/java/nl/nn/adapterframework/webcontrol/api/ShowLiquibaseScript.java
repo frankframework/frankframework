@@ -49,10 +49,10 @@ public final class ShowLiquibaseScript extends Base {
 		String configuration = null;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("datasource")) {
+			if("datasource".equalsIgnoreCase(key)) {
 				datasource = entry.getValue().toString();
 			}
-			if(key.equalsIgnoreCase("configuration")) {
+			if("configuration".equalsIgnoreCase(key)) {
 				configuration = entry.getValue().toString();
 			}
 		}
