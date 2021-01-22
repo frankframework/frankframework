@@ -14,8 +14,8 @@
 				</div>
 				<div class="ibox-content">
 					<p>Message:
-						<button ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs m-r-xs pull-right" type="button"><i class="fa fa-repeat"></i> Resend</button>
-						<button ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs m-r-xs pull-right" type="button"><i class="fa fa-times"></i> Delete</button>
+						<button ng-if="storageType=='errorstorage'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs m-r-xs pull-right" type="button"><i class="fa fa-repeat"></i> Resend</button>
+						<button ng-if="storageType=='errorstorage'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs m-r-xs pull-right" type="button"><i class="fa fa-times"></i> Delete</button>
 						<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs m-r-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>
 					</p>
 					<pre>{{message.data}}</pre>

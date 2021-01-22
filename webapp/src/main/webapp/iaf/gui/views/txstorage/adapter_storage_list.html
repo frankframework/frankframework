@@ -1,7 +1,7 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight" ng-controller="AdapterErrorStorageCtrl">
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="AdapterStorageCtrl">
 	<uib-alert ng-repeat="alert in notes | orderBy:'type'" type="{{alert.type}}" close="closeNote($index)">{{alert.message}}</uib-alert>
 
 	<div class="row">
@@ -83,10 +83,10 @@
 					<div class="pull-right">
 						<button back-button class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
 					</div>
-					<h4>Browse ErrorStorage of receiver [{{receiverName}}] of adapter [{{adapterName}}]</h4>
+					<h4>Browse {{storageType}} of receiver [{{receiverName}}] of adapter [{{adapterName}}]</h4>
 				</div>
 				<div class="ibox-content">
-					<div class="pull-right">
+					<div class="pull-right" ng-if="storageType=='errorstorage'">
 						<button title="Select All Messages" ng-click="selectAll()" class="btn btn-default btn-sm" type="button">Select All</button>
 						<button title="Unselect All Messages" ng-click="unselectAll()" class="btn btn-default btn-sm" type="button">Unselect All</button>
 						<button ladda="messagesResending" data-style="slide-right" title="Resend Selected Messages" ng-click="resendMessages()" class="btn btn-warning btn-sm" type="button"><i class="fa fa-repeat"></i> Resend Selected</button>

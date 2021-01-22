@@ -347,7 +347,7 @@
                                                     <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
 
                                                     <span class="text-success" title="View Messages Processed">
-                                                        <button ng-show="{{::receiver.hasMessageLog}}" ui-lref="pages.messagelog.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                        <button ng-show="{{::receiver.hasMessageLog}}" ui-lref="pages.storage.list({adapter: adapter.name, receiver: receiver.name, storageType: 'messagelog'})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-envelope-o"></i> ({{::receiver.messageLogCount}})
                                                         </button>
                                                     </span>
@@ -357,7 +357,7 @@
                                                         </button>
                                                     </span>
                                                     <span class="text-danger" title="View Messages in Error">
-                                                        <button ng-show="{{::receiver.hasErrorStorage}}" ui-lref="pages.errorstorage.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                        <button ng-show="{{::receiver.hasErrorStorage}}" ui-lref="pages.storage.list({adapter: adapter.name, receiver: receiver.name, storageType: 'errorstorage'})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-times-circle"></i> ({{::receiver.errorStorageCount}})
                                                         </button>
                                                     </span>
