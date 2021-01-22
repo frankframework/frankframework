@@ -555,7 +555,7 @@ public class FrankDocModel {
 				.distinct()
 				.map(this::findElementRole)
 				.collect(Collectors.toList());
-		Collections.sort(allMemberChildRoles, Comparator.comparing(er -> ((ElementRole) er).createXsdElementName("")));
+		Collections.sort(allMemberChildRoles);
 		return allMemberChildRoles;
 	}
 

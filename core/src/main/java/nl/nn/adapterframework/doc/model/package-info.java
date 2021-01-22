@@ -72,6 +72,30 @@ limitations under the License.
  * {@link nl.nn.adapterframework.doc.model.FrankAttribute} and {@link nl.nn.adapterframework.doc.model.ConfigChild}
  * have a common superclass {@link nl.nn.adapterframework.doc.model.ElementChild}.
  * <p>
+ * For each config child, {@link nl.nn.adapterframework.doc.DocWriterNew} builds an XML Schema group that lists
+ * all the XML Schema elements that can appear as children. Such a group should not only support syntax 2 elements,
+ * but it should also add a generic element option that allows the Frank developer to use syntax 1. As an example,
+ * a &lt;Receiver&gt; can contain an <code>&lt;ApiListener&gt;</code>, but it can also hold
+ * <code>&lt;Listener className="nl.nn.adapterframework.http.rest.ApiListener" ...&gt;</code>.
+ * <p>
+ * There are {@link nl.nn.adapterframework.doc.model.FrankElement} for which multiple config
+ * children share the same syntax 1 name. The example is {@link nl.nn.adapterframework.batch.StreamTransformerPipe}.
+ * If every config child would add its own generic element option (e.g. <code>&lt;Child className = ...&gt;</code>),
+ * the XML schema would not work. If a Frank developer would put <code>&lt;StreamTransformerPipe&gt;&lt;Child ... &gt;</code>,
+ * then the schema validation cannot figure out which part of the XML Schema file applies to thie child.
+ * <p>
+ * When multiple config children share a syntax 1 name, then a common generic element option is needed for the
+ * involved config children. This implies that the sequence of the config children can not be specified in the
+ * XML Schema file. It also implies that the contents of a config child cannot always be based on a single
+ * {@link nl.nn.adapterframework.doc.model.ElementRole}. We introduce element {@link nl.nn.adapterframework.doc.model.GenericRole},
+ * which holds the combination of a syntax 1 name and a list of {@link nl.nn.adapterframework.doc.model.ElementRole}
+ * sharing that syntax 1 name.
+ * {@link nl.nn.adapterframework.doc.DocWriterNew} will use {@link nl.nn.adapterframework.doc.model.GenericRole} objects
+ * to define unordered groups of allowed XML elements. {@link nl.nn.adapterframework.doc.model.GenericRole} can always
+ * be used instead of {@link nl.nn.adapterframework.doc.model.ElementRole}, because we also create
+ * {@link nl.nn.adapterframework.doc.model.GenericRole} objects that hold only one
+ * {@link nl.nn.adapterframework.doc.model.ElementRole}.
+ * <p>
  * The model is not only used to generate the XML Schema file (<code>ibisdoc.xsd</code>). It is also
  * used to generate a website with reference documentation. That website documents all tags
  * ({@link nl.nn.adapterframework.doc.model.FrankElement} objects) that can be used. The {@link nl.nn.adapterframework.doc.model.FrankElement} objects are grouped
@@ -81,6 +105,17 @@ limitations under the License.
  * groups are modeled by model class {@link nl.nn.adapterframework.doc.model.FrankDocGroup}.
  * <p>
  * Finally, class {@link nl.nn.adapterframework.doc.model.FrankDocModel} holds the entire model (not shown in the diagram).
+ * It saves which {@link nl.nn.adapterframework.doc.model.ElementType},
+ * {@link nl.nn.adapterframework.doc.model.ElementRole} and
+ * {@link nl.nn.adapterframework.doc.model.FrankElement} exist and it ensures that
+ * these objects are created only once. Therefore, these classes can be compared using the
+ * standard {@link java.lang.Object#equals(java.lang.Object)} method. We want the same
+ * for {@link nl.nn.adapterframework.doc.model.GenericRole}, but creation of these
+ * objects is different depending on whether <code>strict.xsd</code> or <code>compatibility.xsd</code>
+ * is being developed. We solve this by introducing {@link nl.nn.adapterframework.doc.model.XsdVersion}.
+ * {@link nl.nn.adapterframework.doc.model.FrankDocModel} holds a different collection of
+ * {@link nl.nn.adapterframework.doc.model.GenericRole} for each
+ * {@link nl.nn.adapterframework.doc.model.XsdVersion}.
  */
 package nl.nn.adapterframework.doc.model;
 
