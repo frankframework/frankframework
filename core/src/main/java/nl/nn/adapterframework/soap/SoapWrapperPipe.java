@@ -228,9 +228,9 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
-			Object onlyIfAcutalValue = session.get(getOnlyIfSessionKey());
-			if (onlyIfAcutalValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfAcutalValue)) {
-				if (log.isDebugEnabled()) log.debug("onlyIfSessionKey ["+getOnlyIfSessionKey()+"] value ["+onlyIfAcutalValue+"]: not found or not equal to value ["+getOnlyIfValue()+"]");
+			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
+			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
+				if (log.isDebugEnabled()) log.debug("onlyIfSessionKey ["+getOnlyIfSessionKey()+"] value ["+onlyIfActualValue+"]: not found or not equal to value ["+getOnlyIfValue()+"]");
 				return new PipeRunResult(getForward(), message);
 			}
 		}
