@@ -1947,6 +1947,32 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
+.controller('LiquibaseScriptCtrl', ['$scope', 'Api', '$location', function($scope, Api, $location) {
+	$scope.datasources = {};
+
+	Api.Get("jdbc", function(data) {
+		$.extend($scope, data);
+		if($scope.configurations)
+			$scope.form = {datasource: data.datasources[0], configuration: $scope.configurations[0].name};
+		else
+			$scope.form = {datasource: data.datasources[0]};
+	});
+
+	$scope.submit = function(formData) {
+		if(!formData) formData = {};
+
+		Api.Post("jdbc/liquibase", JSON.stringify(formData), function(returnData) {
+			$scope.error = "";
+			$.extend($scope, returnData);
+		}, function(errorData, status, errorMsg) {
+			var error = (errorData) ? errorData.error : errorMsg;
+			$scope.error = error;
+			$scope.result = "";
+		}, false);
+	};
+
+}])
+
 .controller('SendJmsMessageCtrl', ['$scope', 'Api', function($scope, Api) {
 	$scope.destinationTypes = ["QUEUE", "TOPIC"]; 
 	Api.Get("jms", function(data) {

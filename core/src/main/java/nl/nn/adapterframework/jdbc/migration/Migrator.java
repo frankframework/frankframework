@@ -1,5 +1,5 @@
 /*
-Copyright 2017, 2020 Integration Partners B.V.
+Copyright 2017, 2020, 2021 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,11 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+
+import java.io.Writer;
+
+import org.apache.commons.lang3.StringUtils;
+
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
@@ -66,8 +71,10 @@ public class Migrator extends JdbcFacade {
 			log.debug(msg);
 		}
 		else {
-			String dataSource = appConstants.getString("jdbc.migrator.dataSource", appConstants.getResolvedProperty("jdbc.datasource.default"));
-			setDatasourceName(dataSource);
+			if(StringUtils.isEmpty(getDatasourceName())) {
+				String dataSource = appConstants.getString("jdbc.migrator.dataSource", appConstants.getResolvedProperty("jdbc.datasource.default"));
+				setDatasourceName(dataSource);
+			}
 
 			try {
 				JdbcConnection connection = new JdbcConnection(getConnection());
@@ -80,7 +87,7 @@ public class Migrator extends JdbcFacade {
 				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize", e);
 			}
 			catch (Throwable e) {
-				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize, error connecting to database ["+dataSource+"]", e);
+				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
 			}
 		}
 	}
@@ -92,5 +99,11 @@ public class Migrator extends JdbcFacade {
 	public void update() {
 		if(this.instance != null)
 			instance.update();
+	}
+
+	public Writer getUpdateSql(Writer writer) throws LiquibaseException {
+		if(this.instance != null)
+			return instance.getUpdateScript(writer);
+		return writer;
 	}
 }

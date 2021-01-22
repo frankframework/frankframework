@@ -355,6 +355,14 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			breadcrumbs: 'JDBC > Ibisstore Summary'
 		}
 	})
+	.state('pages.liquibase', {
+		url: "/liquibase",
+		templateUrl: "views/ShowLiquibaseScript.html",
+		data: {
+			pageTitle: 'Liquibase Script',
+			breadcrumbs: 'JDBC > Liquibase Script'
+		}
+	})
 	.state('pages.customView', {
 		url: "/customView/:name",
 		templateUrl: "views/iFrame.html",
