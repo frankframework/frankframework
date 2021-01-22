@@ -6,4 +6,15 @@ public class Container implements Interface1 {
 
 	public void setRole2(Interface1 item) {
 	}
+
+	@Deprecated
+	public void setRoleSuperseded(ElementWithSupersededRole child) {
+	}
+
+	public void setRoleNonInterface(ElementWithSupersededRole child) {
+	}
+
+	@Deprecated
+	public void setRoleNonInterface(SimpleElement child) {
+	}
 }

@@ -19,7 +19,6 @@ package nl.nn.adapterframework.doc.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -45,8 +44,6 @@ public class ElementType {
 	private @Getter Map<String, FrankElement> members;
 	private @Getter boolean fromJavaInterface;
 	
-	private @Getter LinkedHashSet<ElementRole> elementRoles = new LinkedHashSet<>();
-
 	private static class InterfaceHierarchyItem {
 		private @Getter String fullName;
 		private @Getter String simpleName;
@@ -102,11 +99,6 @@ public class ElementType {
 			throw new ReflectiveOperationException(String.format("Expected that ElementType [%s] contains exactly one element", getFullName()));
 		}
 		return members.values().iterator().next();
-	}
-
-	void registerElementRole(ElementRole elementRole) {
-		elementRoles.add(elementRole);
-		members.values().forEach(f -> f.addElementRole(elementRole));
 	}
 
 	void calculateHighestCommonInterface(FrankDocModel model) {

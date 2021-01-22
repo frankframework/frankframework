@@ -84,6 +84,7 @@ public class FrankDocModel {
 			}
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
+			result.registerElementRoles();
 			result.calculateHighestCommonInterfaces();
 			result.setOverriddenFrom();
 			result.setCausesNameConflict();
@@ -453,23 +454,21 @@ public class FrankDocModel {
 			log.trace(String.format("ElementRole requested for elementTypeClass [%s] and syntax1Name [%s]", elementTypeClass.getName(), syntax1Name));
 			log.trace("Going to get the ElementType");
 		}
+		// Should be done before testing whether the ElementRole is already present.
+		// Otherwise, config children with a null ElementType may result due to
+		// invalid recursion.
+		ElementType elementType = findOrCreateElementType(elementTypeClass);
 		ElementRole.Key key = new ElementRole.Key(elementTypeClass.getName(), syntax1Name);
 		if(allElementRoles.containsKey(key)) {
 			if(log.isTraceEnabled()) {
 				log.trace("ElementRole already present");
 			}
 			ElementRole result = allElementRoles.get(key);
-			if(allElementRoles.get(key).isDeprecated() != isDeprecated) {
-				// ElementRole.toString() does not work here, because the ElementType has not been set
-				log.info(String.format("Inconsistend deprecation state for ElementRole [%s], chosing deprecated=false", key.toString()));
-				result.setDeprecated(false);
-			}
+			result.updateDeprecated(isDeprecated);
 			return result;
 		} else {
-			ElementType elementType = findOrCreateElementType(elementTypeClass);
 			ElementRole result = elementRoleFactory.create(elementType, syntax1Name, isDeprecated);
 			allElementRoles.put(key, result);
-			elementType.registerElementRole(result);
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("For ElementType [%s] and syntax1Name [%s], created ElementRole [%s]", elementType.getFullName(), syntax1Name, result.createXsdElementName("")));
 			}
@@ -642,6 +641,14 @@ public class FrankDocModel {
 		}
 		if(log.isTraceEnabled()) {
 			log.trace("Done setting property overriddenFrom");
+		}
+	}
+
+	void registerElementRoles() {
+		for(ElementRole role: allElementRoles.values()) {
+			for(FrankElement frankElement: role.getElementType().getMembers().values()) {
+				frankElement.addElementRole(role);
+			}
 		}
 	}
 

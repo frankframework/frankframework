@@ -2,4 +2,6 @@
 <digester-rules>
   <rule pattern="*/role1" registerMethod="setRole1"/>
   <rule pattern="*/role2" registerMethod="setRole2"/>
+  <rule pattern="*/roleSuperseded" registerMethod="setRoleSuperseded"/>
+  <rule pattern="*/roleNonInterface" registerMethod="setRoleNonInterface"/>
 </digester-rules>

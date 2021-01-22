@@ -24,23 +24,37 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.Utils;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class ElementRole {
+	private static Logger log = LogUtil.getLogger(ElementRole.class);
+
 	private @Getter ElementType elementType;
 	private final @Getter String syntax1Name;
 	private final int syntax1NameSeq;
-	private @Getter @Setter(AccessLevel.PACKAGE) boolean deprecated;
+	private @Getter boolean deprecated;
+	private @Getter @Setter(AccessLevel.PACKAGE) boolean superseded;
 
 	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq, boolean isDeprecated) {
 		this.elementType = elementType;
 		this.syntax1Name = syntax1Name;
 		this.syntax1NameSeq = syntax1NameSeq;
 		this.deprecated = isDeprecated;
+		this.superseded = false;
+	}
+
+	void updateDeprecated(boolean newDeprecated) {
+		if(deprecated != newDeprecated) {
+			log.warn(String.format("Ambiguous deprecated status of ElementRole [%s], set to false", toString()));
+		}
+		deprecated = (deprecated && newDeprecated);
 	}
 
 	public String createXsdElementName(String kindDifferentiatingWord) {
