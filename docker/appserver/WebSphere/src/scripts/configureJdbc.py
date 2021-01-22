@@ -60,7 +60,7 @@ createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [
 
 authAliasName = 'jdbcTestIaf'
 
-createTemplatedDatasource('ibis4test-oracle-docker', 'Oracle JDBC Driver (XA)', 'Oracle JDBC Driver XA DataSource', authAliasName, [
+createTemplatedDatasource('ibis4test-oracle', 'Oracle JDBC Driver (XA)', 'Oracle JDBC Driver XA DataSource', authAliasName, [
 		[['name', 'URL'],['value', 'jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB']]
 	])
 

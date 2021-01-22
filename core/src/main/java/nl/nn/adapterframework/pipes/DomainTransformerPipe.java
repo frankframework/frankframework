@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.JndiDataSourceFactory;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.stream.Message;
@@ -68,7 +69,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private FixedQuerySender qs;
 	private String query;
-	private Map<String, DataSource> proxiedDataSources;
+	private JndiDataSourceFactory dataSourceFactory;
 	private String jmsRealm;
 
 	@Override
@@ -78,7 +79,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
 		qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 
-		qs.setProxiedDataSources(proxiedDataSources);
+		qs.setDataSourceFactory(dataSourceFactory);
 		qs.setJmsRealm(jmsRealm);
 
 		//dummy query required
@@ -233,10 +234,10 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		qs.close();
 	}
 
-	public void setProxiedDataSources(Map<String, DataSource> proxiedDataSources) {
-		this.proxiedDataSources = proxiedDataSources;
+	public void setDataSourceFactory(JndiDataSourceFactory dataSourceFactory) {
+		this.dataSourceFactory = dataSourceFactory;
 	}
-
+	
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}

@@ -13,6 +13,7 @@ import java.util.TimerTask;
 
 import javax.sql.DataSource;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -34,10 +35,20 @@ public class LockerTest extends JdbcTestBase {
 	private TransactionAwareDataSourceProxy datasource;
 	private DataSourceTransactionManager transactionManager;
 	
+	private boolean tableCreated = false;
+	
 	@Before
 	public void setup() throws JdbcException, SQLException {
-		if(!dbmsSupport.isTablePresent(connection, "IBISLOCK")) {
+		if (!dbmsSupport.isTablePresent(connection, "IBISLOCK")) {
 			createDbTable();
+			tableCreated = true;
+		}
+	}
+
+	@After
+	public void teardown() throws JdbcException, SQLException {
+		if (tableCreated) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE IBISLOCK"); // drop the table if it was created, to avoid interference with Liquibase
 		}
 	}
 

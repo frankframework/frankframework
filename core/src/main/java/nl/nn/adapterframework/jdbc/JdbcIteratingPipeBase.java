@@ -145,8 +145,8 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.addParameter(p);
 	}
 
-	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
-		querySender.setProxiedDataSources(proxiedDataSources);
+	public void setDataSourceFactory(JndiDataSourceFactory dataSourceFactory) {
+		querySender.setDataSourceFactory(dataSourceFactory);
 	}
 
 	@Override

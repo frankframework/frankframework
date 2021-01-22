@@ -32,40 +32,15 @@
 
 	<bean
 		id="defaultDataSource"
-		class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy"
+		factory-bean="dataSourceFactory"
+		factory-method="getDataSource"
 		>
-		<property name="targetDataSource">
-			<ref bean="jndiDataSource"/>
-		</property>
+		<constructor-arg value="${jdbc.datasource.default}" />
 	</bean>
 
-	<bean
-		name="jndiDataSource"
-		class="org.springframework.jndi.JndiObjectFactoryBean"
-		>
-		<property name="lookupOnStartup" value="${jdbc.required}"/>
-		<property name="ProxyInterface" value="javax.sql.DataSource"/>
-		<property name="jndiName" value="${jndiContextPrefix}${jdbc.datasource.default}"/>
+	<bean id="dataSourceFactory" 
+		class="nl.nn.adapterframework.jdbc.JndiDataSourceFactory" >
+		<property name="resourceRef" value="true"/>
 	</bean>
-
-	<!-- Make the proxied data source available to the JdbcFacade -->
-	<bean id="proxiedDataSources" class="java.util.HashMap">
-		<constructor-arg>
-			<map>
-				<entry key="${jdbc.datasource.default}">
-					<ref bean="defaultDataSource"/>
-				</entry>
-			</map>
-		</constructor-arg>
-	</bean>
-
-	<bean
-		name="jndiContextPrefixPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
-		autowire="byName"
-		>
-		<property name="propertyName" value="jndiContextPrefix"/>
-		<property name="propertyValue" value="java:comp/env/"/>
-	</bean>
-
+	
 </beans>
