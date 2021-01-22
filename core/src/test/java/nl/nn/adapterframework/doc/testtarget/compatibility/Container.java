@@ -4,9 +4,6 @@ public class Container {
 	public void setChildOk(IChildOk child) {
 	}
 
-	public void setChildMismatch(IChildMismatch child) {
-	}
-
 	public void setChild1(NonInterfaceChildForOwningRole child) {
 	}
 

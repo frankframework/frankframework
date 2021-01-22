@@ -21,7 +21,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -70,17 +69,9 @@ public class ElementRole implements Comparable<ElementRole> {
 		}
 	}
 
-	// TODO: Cover with unit tests and document
 	public String getGenericOptionElementName() {
 		// Do not include sequence number that made the role name unique.
-		String result = Utils.toUpperCamelCase(syntax1Name);
-		Set<String> conflictCandidates = getOptions(f -> true).stream()
-				.map(f -> f.getXsdElementName(this))
-				.collect(Collectors.toSet());
-		if(conflictCandidates.contains(result)) {
-			result = "Generic" + result;
-		}
-		return result;
+		return Utils.toUpperCamelCase(syntax1Name);
 	}
 
 	// TODO: Cover with unit tests and document
@@ -91,6 +82,20 @@ public class ElementRole implements Comparable<ElementRole> {
 				.collect(Collectors.toList());
 		frankElementOptions.sort((o1, o2) -> o1.getSimpleName().compareTo(o2.getSimpleName()));
 		return frankElementOptions;
+	}
+
+	public FrankElement getConflictingElement(Predicate<FrankElement> frankElementFilter) {
+		List<FrankElement> candidates = getOptions(frankElementFilter).stream()
+				.filter(f -> f.getXsdElementName(this).equals(getGenericOptionElementName()))
+				.collect(Collectors.toList());
+		if(candidates.isEmpty()) {
+			return null;
+		} else if(candidates.size() == 1) {
+			return candidates.get(0);
+		} else {
+			log.warn(String.format("Multiple conflicting elements [%s] for ElementRole [%s]", FrankElement.describe(candidates), toString()));
+			return null;
+		}
 	}
 
 	public Key getKey() {
