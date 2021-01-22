@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Selects an exitState, based on the content of a sessionkey.
+ * Selects an exitState, based on xpath evaluation
  * 
  *
  * @author  Peter Leeuwenburgh
@@ -76,8 +76,6 @@ public class XmlIf extends AbstractPipe {
 			log.debug(getLogPrefix(null)+"created stylesheet ["+result+"]");
 			return result;
 	}
-
-
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -154,7 +152,6 @@ public class XmlIf extends AbstractPipe {
 		log.debug(getLogPrefix(session)+ "resolved forward [" + forward + "] to path ["+pipeForward.getPath()+"]");
 		return new PipeRunResult(pipeForward, message);
 	}
-	
 
 	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code>", ""})
 	public void setSessionKey(String sessionKey){
@@ -188,7 +185,6 @@ public class XmlIf extends AbstractPipe {
 	public String getElseForwardName(){
 		return elseForwardName;
 	}
-	
 
 	@IbisDoc({"xpath expression to be applied to the input-message. if not set, no transformation is done", ""})
 	public void setXpathExpression(String string) {
@@ -213,7 +209,7 @@ public class XmlIf extends AbstractPipe {
 	public int getXsltVersion() {
 		return xsltVersion;
 	}
-	
+
 	@IbisDoc({"namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
