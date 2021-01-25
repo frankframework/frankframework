@@ -63,6 +63,15 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 			result = doc.getPages().size();
 		} catch (InvalidPasswordException ip) {
 			return new PipeRunResult(findForward("passwordProtected"), "File is password protected." );
+		} finally {
+			if (binaryInputStream != null){
+				try {
+					binaryInputStream.close();
+				} catch (IOException e) {
+					throw new PipeRunException(this,
+						getLogPrefix(session) + "an error occured whilst closing the stream.", e);
+				}
+			}
 		}
       
 		return new PipeRunResult(getForward(), Integer.toString(result) );
