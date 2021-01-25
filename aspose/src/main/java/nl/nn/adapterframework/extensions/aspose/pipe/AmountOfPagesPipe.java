@@ -25,7 +25,10 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.StreamUtil;
+
 import com.aspose.pdf.Document;
+import com.aspose.pdf.exceptions.InvalidPasswordException;
 
 /**
  * Returns the amount of pages of a PDF file.
@@ -36,7 +39,7 @@ import com.aspose.pdf.Document;
  *
  */
 public class AmountOfPagesPipe extends FixedForwardPipe {
-	private String charset = "ISO-8859-1";
+	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	@Override
 	public void configure() throws ConfigurationException {
