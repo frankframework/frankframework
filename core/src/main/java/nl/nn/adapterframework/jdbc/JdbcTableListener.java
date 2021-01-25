@@ -26,7 +26,7 @@ import org.apache.commons.lang.StringUtils;
  *
  * @since   4.7
  */
-public class JdbcTableListener extends JdbcListener implements IProvidesMessageBrowsers {
+public class JdbcTableListener extends JdbcListener implements IProvidesMessageBrowsers<Object> {
 	
 	private String tableName;
 	private String statusField;
@@ -41,22 +41,22 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getTableName())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy tableName");
+			throw new ConfigurationException(getLogPrefix()+"must specify tableName");
 		}
 		if (StringUtils.isEmpty(getKeyField())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy keyField");
+			throw new ConfigurationException(getLogPrefix()+"must specify keyField");
 		}
 		if (StringUtils.isEmpty(getStatusField())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy statusField");
+			throw new ConfigurationException(getLogPrefix()+"must specify statusField");
 		}
 		if (StringUtils.isEmpty(getMessageField())) {
 			log.info(getLogPrefix()+"has no messageField specified. Will use keyField as messageField, too");
 		}
 		if (StringUtils.isEmpty(getStatusValueError())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy statusValueError");
+			throw new ConfigurationException(getLogPrefix()+"must specify statusValueError");
 		}
 		if (StringUtils.isEmpty(getStatusValueProcessed())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy statusValueProcessed");
+			throw new ConfigurationException(getLogPrefix()+"must specify statusValueProcessed");
 		}
 		setSelectQuery("SELECT "+getKeyField()+
 						(StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
@@ -66,34 +66,34 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 						 "='"+getStatusValueAvailable()+"'":
 						 " NOT IN ('"+getStatusValueError()+"','"+getStatusValueProcessed()+"')")+
 						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND ("+getSelectCondition()+")": "") +
-						 (StringUtils.isNotEmpty(getOrderField())?
-						 " ORDER BY "+getOrderField():""));
-		setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed()));				 
-		setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError())); 
+						 (StringUtils.isNotEmpty(getOrderField())? " ORDER BY "+getOrderField():""));
+		setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed(),null));
+		setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError(),null)); 
 		super.configure();
 	}
 
-	protected String getUpdateStatusQuery(String fieldValue) {
+	protected String getUpdateStatusQuery(String fieldValue, String additionalSetClause) {
 		return "UPDATE "+getTableName()+ 
 				" SET "+getStatusField()+"='"+fieldValue+"'"+
 				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"="+getDbmsSupport().getSysDate():"")+
+				(StringUtils.isNotEmpty(additionalSetClause)?","+additionalSetClause:"")+
 				" WHERE "+getKeyField()+"=?";
 	}
 
 	@Override
-	public IMessageBrowser getMessageLogBrowser() {
+	public IMessageBrowser<Object> getMessageLogBrowser() {
 		if (StringUtils.isEmpty(getStatusValueProcessed())) {
 			return null;
 		}
-		return new JdbcTableMessageBrowser(this,getStatusValueProcessed(), IMessageBrowser.StorageType.MESSAGELOG_RECEIVER);
+		return new JdbcTableMessageBrowser<Object>(this,getStatusValueProcessed(), IMessageBrowser.StorageType.MESSAGELOG_RECEIVER);
 	}
 
 	@Override
-	public IMessageBrowser getErrorStoreBrowser() {
+	public IMessageBrowser<Object> getErrorStoreBrowser() {
 		if (StringUtils.isEmpty(getStatusValueError())) {
 			return null;
 		}
-		return new JdbcTableMessageBrowser(this,getStatusValueError(), IMessageBrowser.StorageType.ERRORSTORAGE);
+		return new JdbcTableMessageBrowser<Object>(this,getStatusValueError(), IMessageBrowser.StorageType.ERRORSTORAGE);
 	}
 
 

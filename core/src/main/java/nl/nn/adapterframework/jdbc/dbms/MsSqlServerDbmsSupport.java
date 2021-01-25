@@ -52,6 +52,11 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public String getDateAndOffset(String dateValue, int daysOffset) {
+		return "DATEADD(day, "+daysOffset+ "," + dateValue + ")";
+	}
+
+	@Override
 	public String getNumericKeyFieldType() {
 		return "INT";
 	}

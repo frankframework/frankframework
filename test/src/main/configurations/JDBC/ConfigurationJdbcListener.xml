@@ -36,7 +36,7 @@
 						statusValueError="7"
 						keyField="tkey"/>
 		</receiver>
-		<pipeline firstPipe="Insert" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>

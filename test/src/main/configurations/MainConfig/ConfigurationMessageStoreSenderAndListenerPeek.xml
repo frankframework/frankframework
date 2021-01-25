@@ -21,12 +21,12 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action"></pipe>
-			<pipe name="store" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="store" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"> <!-- this message will be picked up by MessageStoreListener, and then turned into an 'A' record -->
 				<sender className="nl.nn.adapterframework.jdbc.MessageStoreSender" jmsRealm="jdbc" slotId="${applicationId}/MessageStoreListener" />
 				<messageLog className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/MessageStoreListener" type="M" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="store2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="store2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"> <!-- this message will remain on this table -->
 				<sender className="nl.nn.adapterframework.jdbc.MessageStoreSender" jmsRealm="jdbc" slotId="${applicationId}/MessageStoreListener2" />
 				<messageLog className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/MessageStoreListener2" type="M" />
 				<forward name="success" path="okReply" />

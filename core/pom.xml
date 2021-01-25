@@ -87,6 +87,13 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<!-- to be able to extract Oracle error messages in IbisException.getExceptionSpecificDetails() -->
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc8</artifactId>
+			<version>12.2.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 		</dependency>
