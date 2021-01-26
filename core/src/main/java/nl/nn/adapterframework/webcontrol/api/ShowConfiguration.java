@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 WeAreFrank!
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -366,18 +366,21 @@ public final class ShowConfiguration extends Base {
 
 		fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
+		Map<String, Object> result = new HashMap<String, Object>();
 		try {
 			if(multiple_configs) {
 				try {
-					ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activate_config, automatic_reload, file, user);
+					result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activate_config, automatic_reload, file, user);
 				} catch (IOException e) {
 					throw new ApiException(e);
 				}
 			} else {
-				ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, fileName, file, user);
+				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, fileName, file, user);
+				if(configName != null) {
+					result.put(configName, "loaded");
+				}
 			}
-
-			return Response.status(Response.Status.CREATED).build();
+			return Response.status(Response.Status.CREATED).entity(result).build();
 		} catch (Exception e) {
 			throw new ApiException("Failed to upload Configuration", e);
 		}

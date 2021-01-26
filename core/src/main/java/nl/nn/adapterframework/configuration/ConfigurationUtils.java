@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -245,12 +245,15 @@ public class ConfigurationUtils {
 	}
 
 	/**
-	 * @return true if successful SQL update
+	 * @return name of the configuration if successful SQL update
 	 * @throws ConfigurationException when SQL error occurs or filename validation fails
 	 */
-	public static boolean addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
-		ConfigurationValidator configDefails = new ConfigurationValidator(file);
-		return addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, configDefails.getName(), configDefails.getVersion(), fileName, configDefails.getJar(), ruser);
+	public static String addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
+		ConfigurationValidator configDetails = new ConfigurationValidator(file);
+		if(addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
+			return configDetails.getName() +": "+ configDetails.getVersion();
+		}
+		return null;
 	}
 
 	/**
@@ -323,23 +326,19 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static String processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
-		String result = "";
+	public static Map<String, Object> processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
+		Map<String, Object> result = new HashMap<String, Object>();
 		if (file.available() > 0) {
 			try (ZipInputStream zipInputStream = new ZipInputStream(file)) {
 				ZipEntry zipEntry;
 				while ((zipEntry = zipInputStream.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
-
-					if (StringUtils.isNotEmpty(result)) {
-						result += "\n";
-					}
-
 					try {
-						result += entryName + ":" + ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
+						String configName = ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
+						result.put(configName, "loaded");
 					} catch (ConfigurationException e) {
 						log.error("an error occured while trying to store new configuration using datasource ["+datasource+"]", e);
-						result += entryName + ":false";
+						result.put(entryName, e.getMessage());
 					}
 				}
 			}
