@@ -340,7 +340,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void emptyNamespaceDefsTestFail() throws PipeRunException, ConfigurationException, PipeStartException {
+	public void emptyNamespaceDefsTest() throws PipeRunException, ConfigurationException, PipeStartException {
 		exception.expectMessage("Undeclared namespace prefix");
 		String input = "&lt;root&gt;\n" + 
 				"&lt;dummy&gt;true&lt;/dummy&gt;\n" + 
