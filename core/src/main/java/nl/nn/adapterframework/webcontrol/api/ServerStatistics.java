@@ -380,8 +380,13 @@ public class ServerStatistics extends Base {
 	@Path("/server/health")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getIbisHealth() {
-
 		Map<String, Object> response = new HashMap<>();
+
+		AppConstants appConstants = AppConstants.getInstance();
+		if(appConstants.getBoolean("iaf-api.healthCheck.authorisation.enabled", false) == true && super.request.getRemoteUser() == null){
+			response.put("status", Response.Status.UNAUTHORIZED);
+			return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
+		}
 
 		try {
 			getIbisManager();
