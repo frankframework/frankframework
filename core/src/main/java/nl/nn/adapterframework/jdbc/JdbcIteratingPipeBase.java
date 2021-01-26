@@ -21,8 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
@@ -145,7 +143,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.addParameter(p);
 	}
 
-	public void setDataSourceFactory(JndiDataSourceFactory dataSourceFactory) {
+	public void setDataSourceFactory(IDataSourceFactory dataSourceFactory) {
 		querySender.setDataSourceFactory(dataSourceFactory);
 	}
 

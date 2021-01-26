@@ -18,38 +18,18 @@ package nl.nn.adapterframework.jdbc;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import org.springframework.jndi.JndiLocatorSupport;
+import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 
-import lombok.SneakyThrows;
+public class SpringDataSourceFactory extends JndiDataSourceFactory {
 
-public class JndiDataSourceFactory extends JndiLocatorSupport implements IDataSourceFactory {
-	
 	protected Map<String,DataSource> dataSources = new ConcurrentHashMap<>();
-	
-	{
-		setResourceRef(true); //the prefix "java:comp/env/" will be added if the JNDI name doesn't already contain it. 
-	}
-	
+
 	@Override
-	public DataSource getDataSource(String dataSourceName) throws NamingException {
-		return dataSources.computeIfAbsent(dataSourceName, k -> compute(k));
-	}
-	
-	@SneakyThrows(NamingException.class)
-	private DataSource compute(String dataSourceName) {
-		return augmentDataSource(lookupDataSource(dataSourceName), dataSourceName);
-	}
-
-	protected CommonDataSource lookupDataSource(String jndiName) throws NamingException {
-		return super.lookup(jndiName, CommonDataSource.class);
-	}
-
 	protected DataSource augmentDataSource(CommonDataSource dataSource, String dataSourceName) {
-		return (DataSource)dataSource;
+		return new LazyConnectionDataSourceProxy((DataSource)dataSource);
 	}
 
 }

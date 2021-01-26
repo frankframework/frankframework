@@ -15,26 +15,11 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import javax.sql.CommonDataSource;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
-import javax.sql.XADataSource;
 
-import bitronix.tm.resource.jdbc.PoolingDataSource;
+public interface IDataSourceFactory {
+	
+	public DataSource getDataSource(String dataSourceName) throws NamingException;
 
-public class BtmDataSourceFactory extends JndiDataSourceFactory {
-
-	@Override
-	protected DataSource augmentDataSource(CommonDataSource dataSource, String dataSourceName) {
-		PoolingDataSource result = new PoolingDataSource();
-		result.setUniqueName(dataSourceName);
-		result.setMaxPoolSize(100);
-		result.setAllowLocalTransactions(true);
-		result.setXaDataSource((XADataSource)dataSource);
-		result.init();
-		return result;
-	}
-
-	public void shutdown() {
-		dataSources.values().forEach(ds -> ((PoolingDataSource)ds).close());
-	}
 }

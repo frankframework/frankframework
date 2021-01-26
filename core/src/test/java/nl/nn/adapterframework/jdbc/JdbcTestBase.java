@@ -8,11 +8,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
@@ -29,8 +32,9 @@ public abstract class JdbcTestBase {
 	protected String password;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked; // Avoid 'Peek should skip records already locked'-error. if it doesn't, it is not really a problem: Peeking is then only effective when the listener is idle
 	
-	
-	protected static Connection connection;
+
+	protected static Connection connection; // only to be used for setup and teardown like actions
+	protected DataSource targetDataSource;
 	protected IDbmsSupport dbmsSupport;
 
 	
@@ -70,6 +74,7 @@ public abstract class JdbcTestBase {
 		this.testPeekShouldSkipRecordsAlreadyLocked = testPeekDoesntFindRecordsAlreadyLocked;
 
 		connection = getConnection();
+		targetDataSource = new DriverManagerDataSource(url, userid, password);
 		DbmsSupportFactory factory = new DbmsSupportFactory();
 		dbmsSupport = factory.getDbmsSupport(connection);
 		try {
@@ -108,7 +113,7 @@ public abstract class JdbcTestBase {
 
 	@AfterClass
 	public static void stopDatabase() throws SQLException {
-		try  {
+		try {
 			connection.createStatement().execute("DROP TABLE TEMP");
 		} finally {
 			connection.close();

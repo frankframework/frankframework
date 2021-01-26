@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	private StatisticsKeeper connectionStatistics;
 	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 	
-	private @Setter @Getter JndiDataSourceFactory dataSourceFactory = null;
+	private @Setter @Getter IDataSourceFactory dataSourceFactory = null;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
