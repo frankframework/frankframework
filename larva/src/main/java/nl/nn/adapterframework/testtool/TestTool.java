@@ -109,6 +109,11 @@ public class TestTool {
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
 	
+	/*
+	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
+	 * Those results cannot be saved to the inline expected value, however.
+	 */
+	private static final boolean allowReadlineSteps = false; 
 	private static int globalTimeout=DEFAULT_TIMEOUT;
 
 	public static void setTimeout(int newTimeout) {
@@ -1165,7 +1170,7 @@ public class TestTool {
 			Enumeration<?> enumeration = properties.propertyNames();
 			while (enumeration.hasMoreElements()) {
 				String key = (String)enumeration.nextElement();
-				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write"))) {
+				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (allowReadlineSteps && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
 					if (!stepFound) {
 						steps.add(key);
 						stepFound = true;
@@ -1412,7 +1417,7 @@ public class TestTool {
 					if (preDelete != null) {
 						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						deleteQuerySender.setName("Test Tool pre delete query sender");
-						deleteQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
+						deleteQuerySender.setDatasourceName(datasourceName);
 						deleteQuerySender.setQueryType("delete");
 						deleteQuerySender.setQuery("delete from " + preDelete);
 						try {
@@ -1443,7 +1448,7 @@ public class TestTool {
 					if (prePostQuery != null) {
 						FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						prePostFixedQuerySender.setName("Test Tool query sender");
-						prePostFixedQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
+						prePostFixedQuerySender.setDatasourceName(datasourceName);
 						//prePostFixedQuerySender.setUsername(username);
 						//prePostFixedQuerySender.setPassword(password);
 						prePostFixedQuerySender.setQueryType("select");
@@ -1488,7 +1493,7 @@ public class TestTool {
 					if (readQuery != null) {
 						FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						readQueryFixedQuerySender.setName("Test Tool query sender");
-						readQueryFixedQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
+						readQueryFixedQuerySender.setDatasourceName(datasourceName);
 						//readQueryFixedQuerySender.setUsername(username);
 						//readQueryFixedQuerySender.setPassword(password);
 						
@@ -2857,14 +2862,22 @@ public class TestTool {
 		if ("".equals(fileName)) {
 			errorMessage("No file specified for step '" + step + "'", writers);
 		} else {
-			debugMessage("Read file " + fileName, writers);
-			fileContent = readFile(fileNameAbsolutePath, writers);
+			if (step.endsWith("readline") || step.endsWith("writeline")) {
+				fileContent = fileName;
+			} else {
+				if (fileName.endsWith("ignore")) {
+					debugMessage("creating dummy expected file for filename '"+fileName+"'", writers);
+					fileContent = "ignore";
+				} else {
+					debugMessage("Read file " + fileName, writers);
+					fileContent = readFile(fileNameAbsolutePath, writers);
+				}
+			}
 			if (fileContent == null) {
 				errorMessage("Could not read file '" + fileName + "'", writers);
 			} else {
-				if (step.endsWith(".read")) {
-					queueName = step.substring(i + 1, step.length() - 5);
-
+				queueName = step.substring(i + 1, step.lastIndexOf("."));
+				if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
 					if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);	
 					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
@@ -2891,8 +2904,6 @@ public class TestTool {
 						errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
 					}
 				} else {
-					queueName = step.substring(i + 1, step.length() - 6);
-
 					String resolveProperties = properties.getProperty("scenario.resolveProperties");
 
 					if( resolveProperties == null || !resolveProperties.equalsIgnoreCase("false") ){
@@ -3072,6 +3083,10 @@ public class TestTool {
 	}
 
 	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map<String, Object> writers, String queueName) {
+		if (fileName.endsWith("ignore")) {
+			debugMessage("ignoring compare for filename '"+fileName+"'", writers);
+			return RESULT_OK;
+		}
 		int ok = RESULT_ERROR;
 		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
@@ -3105,27 +3120,29 @@ public class TestTool {
 		/* identifier based decodeUnzipContentBetweenKeys */
 		HashMap<String, HashMap<String, String>> decodeUnzipContentBetweenKeys = ignoreMap.get("decodeUnzipContentBetweenKeys");
 		
-		Iterator decodeUnzipContentBetweenKeysIt = decodeUnzipContentBetweenKeys.entrySet().iterator();
-	    while (decodeUnzipContentBetweenKeysIt.hasNext()) {
-	        Map.Entry decodeUnzipContentBetweenKeysEntry = (Map.Entry) decodeUnzipContentBetweenKeysIt.next();
-	        HashMap<String, String> decodeUnzipContentBetweenKeysPair = (HashMap<String, String>) decodeUnzipContentBetweenKeysEntry.getValue();
-	        String key1 = decodeUnzipContentBetweenKeysPair.get("key1");
-	        String key2 = decodeUnzipContentBetweenKeysPair.get("key2");
-			boolean replaceNewlines = false;
-
-			if ("true".equals(decodeUnzipContentBetweenKeysPair.get("replaceNewlines"))) {
-				replaceNewlines = true;
+		if (decodeUnzipContentBetweenKeys!=null) {
+			Iterator decodeUnzipContentBetweenKeysIt = decodeUnzipContentBetweenKeys.entrySet().iterator();
+			while (decodeUnzipContentBetweenKeysIt.hasNext()) {
+				Map.Entry decodeUnzipContentBetweenKeysEntry = (Map.Entry) decodeUnzipContentBetweenKeysIt.next();
+				HashMap<String, String> decodeUnzipContentBetweenKeysPair = (HashMap<String, String>) decodeUnzipContentBetweenKeysEntry.getValue();
+				String key1 = decodeUnzipContentBetweenKeysPair.get("key1");
+				String key2 = decodeUnzipContentBetweenKeysPair.get("key2");
+				boolean replaceNewlines = false;
+	
+				if ("true".equals(decodeUnzipContentBetweenKeysPair.get("replaceNewlines"))) {
+					replaceNewlines = true;
+				}
+				if (key1 != null && key2 != null) {
+					debugMessage("Decode and unzip content between key1 '" + key1 + "' and key2 '" + key2 + "' (replaceNewlines is " + replaceNewlines + ")", writers);
+					preparedExpectedResult = decodeUnzipContentBetweenKeys(preparedExpectedResult, key1, key2, replaceNewlines, writers);
+					preparedActualResult = decodeUnzipContentBetweenKeys(preparedActualResult, key1, key2, replaceNewlines, writers);
+					i++;
+				} else {
+					decodeUnzipContentBetweenKeysProcessed = true;
+				}
+	
+				decodeUnzipContentBetweenKeysIt.remove(); 
 			}
-			if (key1 != null && key2 != null) {
-				debugMessage("Decode and unzip content between key1 '" + key1 + "' and key2 '" + key2 + "' (replaceNewlines is " + replaceNewlines + ")", writers);
-				preparedExpectedResult = decodeUnzipContentBetweenKeys(preparedExpectedResult, key1, key2, replaceNewlines, writers);
-				preparedActualResult = decodeUnzipContentBetweenKeys(preparedActualResult, key1, key2, replaceNewlines, writers);
-				i++;
-			} else {
-				decodeUnzipContentBetweenKeysProcessed = true;
-			}
-
-	        decodeUnzipContentBetweenKeysIt.remove(); 
 		}
 
 		/* numeric canonicaliseFilePathContentBetweenKeys */
@@ -3147,20 +3164,21 @@ public class TestTool {
 
 		/* identifier based canonicaliseFilePathContentBetweenKeys */
 		HashMap<String, HashMap<String, String>> canonicaliseFilePathContentBetweenKeys = ignoreMap.get("canonicaliseFilePathContentBetweenKeys"); 
-		
-		Iterator canonicaliseFilePathContentBetweenKeysIt = canonicaliseFilePathContentBetweenKeys.entrySet().iterator();
-	    while (canonicaliseFilePathContentBetweenKeysIt.hasNext()) {
-	        Map.Entry canonicaliseFilePathContentBetweenKeysEntry = (Map.Entry) canonicaliseFilePathContentBetweenKeysIt.next();
-			HashMap<String, String> canonicaliseFilePathContentBetweenKeysPair = (HashMap<String, String>) canonicaliseFilePathContentBetweenKeysEntry.getValue();
-			
-	        String key1 = canonicaliseFilePathContentBetweenKeysPair.get("key1");
-			String key2 = canonicaliseFilePathContentBetweenKeysPair.get("key2");
-			
-			debugMessage("Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-			preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
-			preparedActualResult = canonicaliseFilePathContentBetweenKeys(preparedActualResult, key1, key2, writers);
+		if (canonicaliseFilePathContentBetweenKeys!=null) {
+			Iterator canonicaliseFilePathContentBetweenKeysIt = canonicaliseFilePathContentBetweenKeys.entrySet().iterator();
+			while (canonicaliseFilePathContentBetweenKeysIt.hasNext()) {
+				Map.Entry canonicaliseFilePathContentBetweenKeysEntry = (Map.Entry) canonicaliseFilePathContentBetweenKeysIt.next();
+				HashMap<String, String> canonicaliseFilePathContentBetweenKeysPair = (HashMap<String, String>) canonicaliseFilePathContentBetweenKeysEntry.getValue();
+				
+				String key1 = canonicaliseFilePathContentBetweenKeysPair.get("key1");
+				String key2 = canonicaliseFilePathContentBetweenKeysPair.get("key2");
+				
+				debugMessage("Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
+				preparedActualResult = canonicaliseFilePathContentBetweenKeys(preparedActualResult, key1, key2, writers);
 
-	        canonicaliseFilePathContentBetweenKeysIt.remove(); 
+				canonicaliseFilePathContentBetweenKeysIt.remove(); 
+			}
 		}
 
 		/* numeric formatDecimalContentBetweenKeys */
@@ -3182,20 +3200,21 @@ public class TestTool {
 
 		/* identifier based formatDecimalContentBetweenKeys */
 		HashMap<String, HashMap<String, String>> formatDecimalContentBetweenKeys = ignoreMap.get("formatDecimalContentBetweenKeys"); 
-		
-		Iterator formatDecimalContentBetweenKeysIt = formatDecimalContentBetweenKeys.entrySet().iterator();
-	    while (formatDecimalContentBetweenKeysIt.hasNext()) {
-	        Map.Entry formatDecimalContentBetweenKeysEntry = (Map.Entry) formatDecimalContentBetweenKeysIt.next();
-			HashMap<String, String> formatDecimalContentBetweenKeysPair = (HashMap<String, String>) formatDecimalContentBetweenKeysEntry.getValue();
-			
-	        String key1 = formatDecimalContentBetweenKeysPair.get("key1");
-			String key2 = formatDecimalContentBetweenKeysPair.get("key2");
-			
-			debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
-				preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
+		if (formatDecimalContentBetweenKeys!=null) {
+			Iterator formatDecimalContentBetweenKeysIt = formatDecimalContentBetweenKeys.entrySet().iterator();
+			while (formatDecimalContentBetweenKeysIt.hasNext()) {
+				Map.Entry formatDecimalContentBetweenKeysEntry = (Map.Entry) formatDecimalContentBetweenKeysIt.next();
+				HashMap<String, String> formatDecimalContentBetweenKeysPair = (HashMap<String, String>) formatDecimalContentBetweenKeysEntry.getValue();
 
-			formatDecimalContentBetweenKeysIt.remove(); 
+				String key1 = formatDecimalContentBetweenKeysPair.get("key1");
+				String key2 = formatDecimalContentBetweenKeysPair.get("key2");
+				
+				debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+					preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
+					preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
+
+				formatDecimalContentBetweenKeysIt.remove(); 
+			}
 		}
 
 		/* numeric ignoreRegularExpressionKey */
@@ -3216,19 +3235,20 @@ public class TestTool {
 
 		/* identifier based ignoreRegularExpressionKey */
 		HashMap<String, HashMap<String, String>> ignoreRegularExpressionKey = ignoreMap.get("ignoreRegularExpressionKey");
-		
+		if (ignoreRegularExpressionKey!=null) {
 		Iterator ignoreRegularExpressionKeyIt = ignoreRegularExpressionKey.entrySet().iterator();
-	    while (ignoreRegularExpressionKeyIt.hasNext()) {
-	        Map.Entry ignoreRegularExpressionKeyEntry = (Map.Entry) ignoreRegularExpressionKeyIt.next();
-			HashMap<String, String> ignoreRegularExpressionKeyItPair = (HashMap<String, String>) ignoreRegularExpressionKeyEntry.getValue();
-			
-	        String key = ignoreRegularExpressionKeyItPair.get("key");
-			
-			debugMessage("Ignore regular expression key '" + key + "'", writers);
-			preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
-			preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
+			while (ignoreRegularExpressionKeyIt.hasNext()) {
+				Map.Entry ignoreRegularExpressionKeyEntry = (Map.Entry) ignoreRegularExpressionKeyIt.next();
+				HashMap<String, String> ignoreRegularExpressionKeyItPair = (HashMap<String, String>) ignoreRegularExpressionKeyEntry.getValue();
+				
+				String key = ignoreRegularExpressionKeyItPair.get("key");
+				
+				debugMessage("Ignore regular expression key '" + key + "'", writers);
+				preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
+				preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
 
-	        ignoreRegularExpressionKeyIt.remove(); 
+				ignoreRegularExpressionKeyIt.remove(); 
+			}
 		}
 		
 		/* numeric removeRegularExpressionKey */
@@ -3249,20 +3269,21 @@ public class TestTool {
 
 		/* identifier based removeRegularExpressionKey */
 		HashMap<String, HashMap<String, String>> removeRegularExpressionKey = ignoreMap.get("removeRegularExpressionKey");
-		
-		Iterator removeRegularExpressionKeyIt = removeRegularExpressionKey.entrySet().iterator();
-	    while (removeRegularExpressionKeyIt.hasNext()) {
-	        Map.Entry removeRegularExpressionKeyEntry = (Map.Entry) removeRegularExpressionKeyIt.next();
-	        HashMap<String, String> removeRegularExpressionKeyPair = (HashMap<String, String>) removeRegularExpressionKeyEntry.getValue();
-	        String key = removeRegularExpressionKeyPair.get("key");
+		if (removeRegularExpressionKey!=null) {
+			Iterator removeRegularExpressionKeyIt = removeRegularExpressionKey.entrySet().iterator();
+			while (removeRegularExpressionKeyIt.hasNext()) {
+				Map.Entry removeRegularExpressionKeyEntry = (Map.Entry) removeRegularExpressionKeyIt.next();
+				HashMap<String, String> removeRegularExpressionKeyPair = (HashMap<String, String>) removeRegularExpressionKeyEntry.getValue();
+				String key = removeRegularExpressionKeyPair.get("key");
 
-			debugMessage("Remove regular expression key '" + key + "'", writers);
-			preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
-			preparedActualResult = removeRegularExpression(preparedActualResult, key);
+				debugMessage("Remove regular expression key '" + key + "'", writers);
+				preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
+				preparedActualResult = removeRegularExpression(preparedActualResult, key);
 
-	        removeRegularExpressionKeyIt.remove(); 
+				removeRegularExpressionKeyIt.remove(); 
+			}
 		}
-
+		
 		/* numeric replaceRegularExpressionKeys */
 		debugMessage("Check replaceRegularExpressionKeys properties", writers);
 		boolean replaceRegularExpressionKeysProcessed = false;
@@ -3282,21 +3303,22 @@ public class TestTool {
 
 		/* identifier based replaceRegularExpressionKeys */
 		HashMap<String, HashMap<String, String>> replaceRegularExpressionKeys = ignoreMap.get("replaceRegularExpressionKeys");
-		
+		if (replaceRegularExpressionKeys!=null) {
 		Iterator replaceRegularExpressionKeysIt = replaceRegularExpressionKeys.entrySet().iterator();
-	    while (replaceRegularExpressionKeysIt.hasNext()) {
-	        Map.Entry replaceRegularExpressionKeysEntry = (Map.Entry) replaceRegularExpressionKeysIt.next();
-	        HashMap<String, String> replaceRegularExpressionKeysPair = (HashMap<String, String>) replaceRegularExpressionKeysEntry.getValue();
-	        String key1 = replaceRegularExpressionKeysPair.get("key1");
-	        String key2 = replaceRegularExpressionKeysPair.get("key2");
+			while (replaceRegularExpressionKeysIt.hasNext()) {
+				Map.Entry replaceRegularExpressionKeysEntry = (Map.Entry) replaceRegularExpressionKeysIt.next();
+				HashMap<String, String> replaceRegularExpressionKeysPair = (HashMap<String, String>) replaceRegularExpressionKeysEntry.getValue();
+				String key1 = replaceRegularExpressionKeysPair.get("key1");
+				String key2 = replaceRegularExpressionKeysPair.get("key2");
 
-	        debugMessage("Replace regular expression from '" + key1 + "' to '" + key2 + "'", writers);
-			preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
-			preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
+				debugMessage("Replace regular expression from '" + key1 + "' to '" + key2 + "'", writers);
+				preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
+				preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
 
-	        replaceRegularExpressionKeysIt.remove(); 
+				replaceRegularExpressionKeysIt.remove(); 
+			}
 		}
-
+		
 		/* numeric ignoreContentBetweenKeys */
 		debugMessage("Check ignoreContentBetweenKeys properties", writers);
 		boolean ignoreContentBetweenKeysProcessed = false;
@@ -3316,19 +3338,20 @@ public class TestTool {
 
 		/* identifier based ignoreContentBetweenKeys */
 		HashMap<String, HashMap<String, String>> ignoreContentBetweenKeys = ignoreMap.get("ignoreContentBetweenKeys");
-		
-		Iterator ignoreContentBetweenKeysIt = ignoreContentBetweenKeys.entrySet().iterator();
-	    while (ignoreContentBetweenKeysIt.hasNext()) {
-	        Map.Entry ignoreContentBetweenKeysEntry = (Map.Entry) ignoreContentBetweenKeysIt.next();
-	        HashMap<String, String> ignoreContentBetweenKeysPair = (HashMap<String, String>) ignoreContentBetweenKeysEntry.getValue();
-	        String key1 = ignoreContentBetweenKeysPair.get("key1");
-	        String key2 = ignoreContentBetweenKeysPair.get("key2");
+		if (ignoreContentBetweenKeys!=null) {
+			Iterator ignoreContentBetweenKeysIt = ignoreContentBetweenKeys.entrySet().iterator();
+			while (ignoreContentBetweenKeysIt.hasNext()) {
+				Map.Entry ignoreContentBetweenKeysEntry = (Map.Entry) ignoreContentBetweenKeysIt.next();
+				HashMap<String, String> ignoreContentBetweenKeysPair = (HashMap<String, String>) ignoreContentBetweenKeysEntry.getValue();
+				String key1 = ignoreContentBetweenKeysPair.get("key1");
+				String key2 = ignoreContentBetweenKeysPair.get("key2");
 
-			debugMessage("Ignore content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-			preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
-			preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
+				debugMessage("Ignore content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
+				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
 
-	        ignoreContentBetweenKeysIt.remove(); 
+				ignoreContentBetweenKeysIt.remove(); 
+			}
 		}
 		
 		/* numeric ignoreKeysAndContentBetweenKeys */
@@ -3350,21 +3373,22 @@ public class TestTool {
 
 		/* identifier based ignoreKeysAndContentBetweenKeys */
 		HashMap<String, HashMap<String, String>> ignoreKeysAndContentBetweenKeys = ignoreMap.get("ignoreKeysAndContentBetweenKeys");
-		
-		Iterator ignoreKeysAndContentBetweenKeysIt = ignoreKeysAndContentBetweenKeys.entrySet().iterator();
-	    while (ignoreKeysAndContentBetweenKeysIt.hasNext()) {
-	        Map.Entry ignoreKeysAndContentBetweenKeysEntry = (Map.Entry) ignoreKeysAndContentBetweenKeysIt.next();
-	        HashMap<String, String> ignoreKeysAndContentBetweenKeysPair = (HashMap<String, String>) ignoreKeysAndContentBetweenKeysEntry.getValue();
-	        String key1 = ignoreKeysAndContentBetweenKeysPair.get("key1");
-	        String key2 = ignoreKeysAndContentBetweenKeysPair.get("key2");
+		if (ignoreKeysAndContentBetweenKeys!=null) {
+			Iterator ignoreKeysAndContentBetweenKeysIt = ignoreKeysAndContentBetweenKeys.entrySet().iterator();
+			while (ignoreKeysAndContentBetweenKeysIt.hasNext()) {
+				Map.Entry ignoreKeysAndContentBetweenKeysEntry = (Map.Entry) ignoreKeysAndContentBetweenKeysIt.next();
+				HashMap<String, String> ignoreKeysAndContentBetweenKeysPair = (HashMap<String, String>) ignoreKeysAndContentBetweenKeysEntry.getValue();
+				String key1 = ignoreKeysAndContentBetweenKeysPair.get("key1");
+				String key2 = ignoreKeysAndContentBetweenKeysPair.get("key2");
 
-			debugMessage("Ignore keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-			preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
-			preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
+				debugMessage("Ignore keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
+				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
 
-	        ignoreKeysAndContentBetweenKeysIt.remove(); 
+				ignoreKeysAndContentBetweenKeysIt.remove(); 
+			}
 		}
-
+		
 		/* numeric removeKeysAndContentBetweenKeys */
 		debugMessage("Check removeKeysAndContentBetweenKeys properties", writers);
 		boolean removeKeysAndContentBetweenKeysProcessed = false;
@@ -3384,19 +3408,20 @@ public class TestTool {
 
 		/* identifier based removeKeysAndContentBetweenKeys */
 		HashMap<String, HashMap<String, String>> removeKeysAndContentBetweenKeys = ignoreMap.get("removeKeysAndContentBetweenKeys");
-		
-		Iterator removeKeysAndContentBetweenKeysIt = removeKeysAndContentBetweenKeys.entrySet().iterator();
-	    while (removeKeysAndContentBetweenKeysIt.hasNext()) {
-	        Map.Entry removeKeysAndContentBetweenKeysEntry = (Map.Entry) removeKeysAndContentBetweenKeysIt.next();
-	        HashMap<String, String> removeKeysAndContentBetweenKeysPair = (HashMap<String, String>) removeKeysAndContentBetweenKeysEntry.getValue();
-	        String key1 = removeKeysAndContentBetweenKeysPair.get("key1");
-	        String key2 = removeKeysAndContentBetweenKeysPair.get("key2");
+		if (removeKeysAndContentBetweenKeys!=null) {
+			Iterator removeKeysAndContentBetweenKeysIt = removeKeysAndContentBetweenKeys.entrySet().iterator();
+			while (removeKeysAndContentBetweenKeysIt.hasNext()) {
+				Map.Entry removeKeysAndContentBetweenKeysEntry = (Map.Entry) removeKeysAndContentBetweenKeysIt.next();
+				HashMap<String, String> removeKeysAndContentBetweenKeysPair = (HashMap<String, String>) removeKeysAndContentBetweenKeysEntry.getValue();
+				String key1 = removeKeysAndContentBetweenKeysPair.get("key1");
+				String key2 = removeKeysAndContentBetweenKeysPair.get("key2");
+	
+				debugMessage("Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
+				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
 
-			debugMessage("Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-			preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
-			preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
-
-			removeKeysAndContentBetweenKeysIt.remove(); 
+				removeKeysAndContentBetweenKeysIt.remove(); 
+			}
 		}
 
 		/* numeric ignoreKey */
@@ -3417,18 +3442,19 @@ public class TestTool {
 
 		/* identifier based ignoreKey */
 		HashMap<String, HashMap<String, String>> ignoreKey = ignoreMap.get("ignoreKey");
-		
-		Iterator ignoreKeyIt = ignoreKey.entrySet().iterator();
-	    while (ignoreKeyIt.hasNext()) {
-	        Map.Entry ignoreKeyEntry = (Map.Entry) ignoreKeyIt.next();
-	        HashMap<String, String> ignoreKeyPair = (HashMap<String, String>) ignoreKeyEntry.getValue();
-			String key = ignoreKeyPair.get("value");
-			
-			debugMessage("Ignore key '" + key + "'", writers);
-			preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
-			preparedActualResult = ignoreKey(preparedActualResult, key);
-
-			ignoreKeyIt.remove(); 
+		if (ignoreKey!=null) {
+			Iterator ignoreKeyIt = ignoreKey.entrySet().iterator();
+			while (ignoreKeyIt.hasNext()) {
+				Map.Entry ignoreKeyEntry = (Map.Entry) ignoreKeyIt.next();
+				HashMap<String, String> ignoreKeyPair = (HashMap<String, String>) ignoreKeyEntry.getValue();
+				String key = ignoreKeyPair.get("value");
+				
+				debugMessage("Ignore key '" + key + "'", writers);
+				preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
+				preparedActualResult = ignoreKey(preparedActualResult, key);
+	
+				ignoreKeyIt.remove(); 
+			}
 		}
 
 		/* numeric removeKey */
@@ -3449,18 +3475,19 @@ public class TestTool {
 
 		/* identifier based removeKey */
 		HashMap<String, HashMap<String, String>> removeKey = ignoreMap.get("removeKey");
+		if (removeKey!=null) {
+			Iterator removeKeyIt = removeKey.entrySet().iterator();
+			while (removeKeyIt.hasNext()) {
+				Map.Entry removeKeyEntry = (Map.Entry) removeKeyIt.next();
+				HashMap<String, String> removeKeyPair = (HashMap<String, String>) removeKeyEntry.getValue();
+				String key = removeKeyPair.get("value");
+				
+				debugMessage("Remove key '" + key + "'", writers);
+				preparedExpectedResult = removeKey(preparedExpectedResult, key);
+				preparedActualResult = removeKey(preparedActualResult, key);
 
-		Iterator removeKeyIt = removeKey.entrySet().iterator();
-		while (removeKeyIt.hasNext()) {
-			Map.Entry removeKeyEntry = (Map.Entry) removeKeyIt.next();
-			HashMap<String, String> removeKeyPair = (HashMap<String, String>) removeKeyEntry.getValue();
-			String key = removeKeyPair.get("value");
-			
-			debugMessage("Remove key '" + key + "'", writers);
-			preparedExpectedResult = removeKey(preparedExpectedResult, key);
-			preparedActualResult = removeKey(preparedActualResult, key);
-
-			removeKeyIt.remove(); 
+				removeKeyIt.remove(); 
+			}
 		}
 
 		/* numeric replaceKey */
@@ -3482,21 +3509,22 @@ public class TestTool {
 
 		/* identifier based replaceKey */
 		HashMap<String, HashMap<String, String>> replaceKey = ignoreMap.get("replaceKey");
-
-		Iterator replaceKeyIt = replaceKey.entrySet().iterator();
-		while (replaceKeyIt.hasNext()) {
-			Map.Entry replaceKeyEntry = (Map.Entry) replaceKeyIt.next();
-			HashMap<String, String> replaceKeyPair = (HashMap<String, String>) replaceKeyEntry.getValue();
-			String key1 = replaceKeyPair.get("key1");
-			String key2 = replaceKeyPair.get("key2");
-			
-			debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
-			preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
-			preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-
-			replaceKeyIt.remove(); 
+		if (replaceKey!=null) {
+			Iterator replaceKeyIt = replaceKey.entrySet().iterator();
+			while (replaceKeyIt.hasNext()) {
+				Map.Entry replaceKeyEntry = (Map.Entry) replaceKeyIt.next();
+				HashMap<String, String> replaceKeyPair = (HashMap<String, String>) replaceKeyEntry.getValue();
+				String key1 = replaceKeyPair.get("key1");
+				String key2 = replaceKeyPair.get("key2");
+				
+				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
+				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
+				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
+	
+				replaceKeyIt.remove(); 
+			}
 		}
-
+		
 		/* numeric replaceEverywhereKey */
 		debugMessage("Check replaceEverywhereKey properties", writers);
 		boolean replaceEverywhereKeyProcessed = false;
@@ -3516,19 +3544,20 @@ public class TestTool {
 
 		/* identifier based replaceEverywhereKey */
 		HashMap<String, HashMap<String, String>> replaceEverywhereKey = ignoreMap.get("replaceEverywhereKey");
+		if (replaceEverywhereKey!=null) {
+			Iterator replaceEverywhereKeyIt = replaceEverywhereKey.entrySet().iterator();
+			while (replaceEverywhereKeyIt.hasNext()) {
+				Map.Entry replaceEverywhereKeyEntry = (Map.Entry) replaceEverywhereKeyIt.next();
+				HashMap<String, String> replaceEverywhereKeyPair = (HashMap<String, String>) replaceEverywhereKeyEntry.getValue();
+				String key1 = replaceEverywhereKeyPair.get("key1");
+				String key2 = replaceEverywhereKeyPair.get("key2");
 
-		Iterator replaceEverywhereKeyIt = replaceEverywhereKey.entrySet().iterator();
-		while (replaceEverywhereKeyIt.hasNext()) {
-			Map.Entry replaceEverywhereKeyEntry = (Map.Entry) replaceEverywhereKeyIt.next();
-			HashMap<String, String> replaceEverywhereKeyPair = (HashMap<String, String>) replaceEverywhereKeyEntry.getValue();
-			String key1 = replaceEverywhereKeyPair.get("key1");
-			String key2 = replaceEverywhereKeyPair.get("key2");
+				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
+				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
+				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
 
-			debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
-			preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
-			preparedActualResult = replaceKey(preparedActualResult, key1, key2);
-
-			replaceEverywhereKeyIt.remove(); 
+				replaceEverywhereKeyIt.remove(); 
+			}
 		}
 
 		/* numeric ignoreCurrentTimeBetweenKeys */
@@ -3558,30 +3587,31 @@ public class TestTool {
 
 		/* identifier based ignoreCurrentTimeBetweenKeys */
 		HashMap<String, HashMap<String, String>> ignoreCurrentTimeBetweenKeys = ignoreMap.get("ignoreCurrentTimeBetweenKeys");
+		if (ignoreCurrentTimeBetweenKeys!=null) {
+			Iterator ignoreCurrentTimeBetweenKeysIt = ignoreCurrentTimeBetweenKeys.entrySet().iterator();
+			while (ignoreCurrentTimeBetweenKeysIt.hasNext()) {
+				Map.Entry ignoreCurrentTimeBetweenKeysEntry = (Map.Entry) ignoreCurrentTimeBetweenKeysIt.next();
+				HashMap<String, String> ignoreCurrentTimeBetweenKeysPair = (HashMap<String, String>) ignoreCurrentTimeBetweenKeysEntry.getValue();
+				String key1 = ignoreCurrentTimeBetweenKeysPair.get("key1");
+				String key2 = ignoreCurrentTimeBetweenKeysPair.get("key2");
+				String pattern = ignoreCurrentTimeBetweenKeysPair.get("pattern");
+				String margin = ignoreCurrentTimeBetweenKeysPair.get("margin");
+				boolean errorMessageOnRemainingString = true;
 
-		Iterator ignoreCurrentTimeBetweenKeysIt = ignoreCurrentTimeBetweenKeys.entrySet().iterator();
-		while (ignoreCurrentTimeBetweenKeysIt.hasNext()) {
-			Map.Entry ignoreCurrentTimeBetweenKeysEntry = (Map.Entry) ignoreCurrentTimeBetweenKeysIt.next();
-			HashMap<String, String> ignoreCurrentTimeBetweenKeysPair = (HashMap<String, String>) ignoreCurrentTimeBetweenKeysEntry.getValue();
-			String key1 = ignoreCurrentTimeBetweenKeysPair.get("key1");
-			String key2 = ignoreCurrentTimeBetweenKeysPair.get("key2");
-			String pattern = ignoreCurrentTimeBetweenKeysPair.get("pattern");
-			String margin = ignoreCurrentTimeBetweenKeysPair.get("margin");
-			boolean errorMessageOnRemainingString = true;
+				if ("false".equals(ignoreCurrentTimeBetweenKeysPair.get("errorMessageOnRemainingString"))) {
+					errorMessageOnRemainingString = false;
+				}
 
-			if ("false".equals(ignoreCurrentTimeBetweenKeysPair.get("errorMessageOnRemainingString"))) {
-				errorMessageOnRemainingString = false;
+				debugMessage("Ignore current time between key1 '" + key1 + "' and key2 '" + key2 + "' (errorMessageOnRemainingString is " + errorMessageOnRemainingString + ")", writers);
+				debugMessage("For result string", writers);
+				preparedActualResult = ignoreCurrentTimeBetweenKeys(preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
+				debugMessage("For expected string", writers);
+				preparedExpectedResult = ignoreCurrentTimeBetweenKeys(preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true, writers);
+				
+				ignoreCurrentTimeBetweenKeysIt.remove(); 
 			}
-
-			debugMessage("Ignore current time between key1 '" + key1 + "' and key2 '" + key2 + "' (errorMessageOnRemainingString is " + errorMessageOnRemainingString + ")", writers);
-			debugMessage("For result string", writers);
-			preparedActualResult = ignoreCurrentTimeBetweenKeys(preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
-			debugMessage("For expected string", writers);
-			preparedExpectedResult = ignoreCurrentTimeBetweenKeys(preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true, writers);
-			
-			ignoreCurrentTimeBetweenKeysIt.remove(); 
 		}
-
+		
 		/* numeric ignoreContentBeforeKey */
 		debugMessage("Check ignoreContentBeforeKey properties", writers);
 		boolean ignoreContentBeforeKeyProcessed = false;
@@ -3604,24 +3634,25 @@ public class TestTool {
 		/* identifier based ignoreContentBeforeKey */
 		HashMap<String, HashMap<String, String>> ignoreContentBeforeKey = ignoreMap.get("ignoreContentBeforeKey");
 
-		// merge all without .key attribute aswell
+		// merge all without .key attribute as well
 		// TODO: ignoreContentBeforeKey.putAll(mapPropertiesByIdentifier("ignoreContentBeforeKey", properties, new ArrayList()));
-
-		Iterator ignoreContentBeforeKeyIt = ignoreContentBeforeKey.entrySet().iterator();
-		while (ignoreContentBeforeKeyIt.hasNext()) {
-			Map.Entry ignoreContentBeforeKeyEntry = (Map.Entry) ignoreContentBeforeKeyIt.next();
-			HashMap<String, String> ignoreContentBeforeKeyPair = (HashMap<String, String>) ignoreContentBeforeKeyEntry.getValue();
-			String key = ignoreContentBeforeKeyPair.get("key");
-
-			if (key == null) {
-				key = ignoreContentBeforeKeyPair.get("value");
+		if (ignoreContentBeforeKey!=null) {
+			Iterator ignoreContentBeforeKeyIt = ignoreContentBeforeKey.entrySet().iterator();
+			while (ignoreContentBeforeKeyIt.hasNext()) {
+				Map.Entry ignoreContentBeforeKeyEntry = (Map.Entry) ignoreContentBeforeKeyIt.next();
+				HashMap<String, String> ignoreContentBeforeKeyPair = (HashMap<String, String>) ignoreContentBeforeKeyEntry.getValue();
+				String key = ignoreContentBeforeKeyPair.get("key");
+	
+				if (key == null) {
+					key = ignoreContentBeforeKeyPair.get("value");
+				}
+	
+				debugMessage("Ignore content before key '" + key + "'", writers);
+				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
+				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
+				
+				ignoreContentBeforeKeyIt.remove(); 
 			}
-
-			debugMessage("Ignore content before key '" + key + "'", writers);
-			preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
-			preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-			
-			ignoreContentBeforeKeyIt.remove(); 
 		}
 
 		/* numeric ignoreContentAfterKey */
@@ -3648,24 +3679,25 @@ public class TestTool {
 
 		// merge all without .key attribute aswell
 		// TODO: ignoreContentAfterKey.putAll(mapPropertiesByIdentifier("ignoreContentAfterKey", properties, new ArrayList()));
+		if (ignoreContentAfterKey!=null) {
+			Iterator ignoreContentAfterKeyIt = ignoreContentAfterKey.entrySet().iterator();
+			while (ignoreContentAfterKeyIt.hasNext()) {
+				Map.Entry ignoreContentAfterKeyEntry = (Map.Entry) ignoreContentAfterKeyIt.next();
+				HashMap<String, String> ignoreContentAfterKeyPair = (HashMap<String, String>) ignoreContentAfterKeyEntry.getValue();
+				String key = ignoreContentAfterKeyPair.get("key");
 
-		Iterator ignoreContentAfterKeyIt = ignoreContentAfterKey.entrySet().iterator();
-		while (ignoreContentAfterKeyIt.hasNext()) {
-			Map.Entry ignoreContentAfterKeyEntry = (Map.Entry) ignoreContentAfterKeyIt.next();
-			HashMap<String, String> ignoreContentAfterKeyPair = (HashMap<String, String>) ignoreContentAfterKeyEntry.getValue();
-			String key = ignoreContentAfterKeyPair.get("key");
+				if (key == null) {
+					key = ignoreContentAfterKeyPair.get("value");
+				}
 
-			if (key == null) {
-				key = ignoreContentAfterKeyPair.get("value");
+				debugMessage("Ignore content before key '" + key + "'", writers);
+				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
+				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
+				
+				ignoreContentAfterKeyIt.remove(); 
 			}
-
-			debugMessage("Ignore content before key '" + key + "'", writers);
-			preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
-			preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
-			
-			ignoreContentAfterKeyIt.remove(); 
 		}
-
+		
 		debugMessage("Check ignoreContentAfterKey properties", writers);
 		String diffType = properties.getProperty(step + ".diffType");
 		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))

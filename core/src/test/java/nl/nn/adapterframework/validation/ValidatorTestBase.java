@@ -75,13 +75,13 @@ public abstract class ValidatorTestBase extends TestCase {
     	validate(rootNamespace, schemaLocation, false, false, inputFile, expectedFailureReasons);
     }
 
-    protected void validation(String rootElement, String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+    protected void validation(String rootElement, String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws Exception {
     	String expected[]={ expectedFailureReason };
     	if (expectedFailureReason==null) expected=null;
     	validate(rootElement, rootNamespace,schemaLocation,addNamespaceToSchema,false,inputfile, expected);
     }
 
-    protected void validation(String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+    protected void validation(String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws Exception {
     	validation(null,rootNamespace,schemaLocation,inputfile,addNamespaceToSchema, expectedFailureReason);
     }
 
@@ -101,8 +101,8 @@ public abstract class ValidatorTestBase extends TestCase {
     	validate(rootNamespace, schemaLocation, false, false, inputFile, expected );
     }
 
-    public abstract String validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException;
-    public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
+    public abstract String validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception;
+    public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception {
     	return validate(null, rootNamespace, schemaLocation, addNamespaceToSchema, ignoreUnknownNamespaces, inputFile, expectedFailureReasons);
     }
 

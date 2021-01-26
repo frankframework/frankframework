@@ -1,20 +1,15 @@
 package nl.nn.adapterframework.pipes;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mock;
-
 public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
-
-	@Mock
-	private IPipeLineSession session;
 
 	String pipeForwardThen = "then";
 	String pipeForwardElse = "else";

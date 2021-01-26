@@ -104,8 +104,8 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public String extractMessageBody(String rawMessageText, Map<String,Object> context, SoapWrapper soapWrapper) throws TransformerException, IOException {
-		return rawMessageText;
+	public Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws TransformerException, IOException {
+		return message;
 	}
 
 	@Override

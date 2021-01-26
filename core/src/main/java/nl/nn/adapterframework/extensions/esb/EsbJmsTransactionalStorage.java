@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.transform.TransformerConfigurationException;
@@ -33,6 +32,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JmsTransactionalStorage;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -66,11 +66,12 @@ import nl.nn.adapterframework.util.TransformerPool;
  * 
  * @author Peter Leeuwenburgh
  */
-public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
+public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTransactionalStorage<S> {
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	private TransformerPool exceptionLogTp = null;
 	private TransformerPool auditLogTp = null;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		String exceptionLogString = "/xml/xsl/esb/exceptionLog.xsl";
@@ -82,12 +83,9 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 			}
 			exceptionLogTp = TransformerPool.getInstance(exceptionLogResource, 2);
 		} catch (IOException e) {
-			throw new ConfigurationException(getLogPrefix()
-					+ "cannot retrieve [" + exceptionLogString + "]", e);
+			throw new ConfigurationException(getLogPrefix() + "cannot retrieve [" + exceptionLogString + "]", e);
 		} catch (TransformerConfigurationException te) {
-			throw new ConfigurationException(getLogPrefix()
-					+ "got error creating transformer from file ["
-					+ exceptionLogString + "]", te);
+			throw new ConfigurationException(getLogPrefix() + "got error creating transformer from file [" + exceptionLogString + "]", te);
 		}
 		try {
 			Resource auditLogResource =Resource.getResource(classLoader, auditLogString);
@@ -96,15 +94,13 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 			}
 			auditLogTp = TransformerPool.getInstance(auditLogResource, 2);
 		} catch (IOException e) {
-			throw new ConfigurationException(getLogPrefix()
-					+ "cannot retrieve [" + auditLogString + "]", e);
+			throw new ConfigurationException(getLogPrefix() + "cannot retrieve [" + auditLogString + "]", e);
 		} catch (TransformerConfigurationException te) {
-			throw new ConfigurationException(getLogPrefix()
-					+ "got error creating transformer from file ["
-					+ auditLogString + "]", te);
+			throw new ConfigurationException(getLogPrefix() + "got error creating transformer from file [" + auditLogString + "]", te);
 		}
 	}
 
+	@Override
 	public void open() throws ListenerException {
 		try {
 			super.open();
@@ -115,20 +111,19 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 			try {
 				exceptionLogTp.open();
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()
-						+ "cannot start TransformerPool for exceptionLog", e);
+				throw new ListenerException(getLogPrefix() + "cannot start TransformerPool for exceptionLog", e);
 			}
 		}
 		if (auditLogTp != null) {
 			try {
 				auditLogTp.open();
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()
-						+ "cannot start TransformerPool for auditLog", e);
+				throw new ListenerException(getLogPrefix() + "cannot start TransformerPool for auditLog", e);
 			}
 		}
 	}
 
+	@Override
 	public void close() {
 		super.close();
 		if (exceptionLogTp != null) {
@@ -139,30 +134,23 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 		}
 	}
 
-	public String storeMessage(String messageId, String correlationId,
-			Date receivedDate, String comments, String label,
-			Serializable message) throws SenderException {
+	@Override
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		Session session = null;
 		try {
-			Map parameterValues = createParameterValues(messageId,
-					correlationId, receivedDate, comments, label, message);
+			Map<String,Object> parameterValues = createParameterValues(messageId, correlationId, receivedDate, comments, message);
 			String logRequest;
 			if (getType().equalsIgnoreCase("E")) {
 				log.debug(getLogPrefix() + "creating exceptionLog request");
-				logRequest = exceptionLogTp.transform("<dummy/>",
-						parameterValues, true);
+				logRequest = exceptionLogTp.transform("<dummy/>", parameterValues, true);
 			} else {
 				log.debug(getLogPrefix() + "creating auditLog request");
-				logRequest = auditLogTp.transform("<dummy/>", parameterValues,
-						true);
+				logRequest = auditLogTp.transform("<dummy/>", parameterValues, true);
 			}
 			session = createSession();
-			Message msg = createMessage(session, null, logRequest);
+			javax.jms.Message msg = createMessage(session, null, new Message(logRequest));
 			String returnMessage = send(session, getDestination(), msg);
-			log.debug(getLogPrefix() + "sent message [" + logRequest + "] "
-					+ "to [" + getDestination() + "] " + "msgID ["
-					+ msg.getJMSMessageID() + "] " + "correlationID ["
-					+ msg.getJMSCorrelationID() + "]");
+			log.debug(getLogPrefix() + "sent message [" + logRequest + "] " + "to [" + getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "]");
 			return returnMessage;
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -171,24 +159,16 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 		}
 	}
 
-	private Map createParameterValues(String messageId, String correlationId,
-			Date receivedDate, String comments, String label,
-			Serializable message) throws JMSException, DomBuilderException,
-			TransformerException, IOException {
-		Map parameterValues = new HashMap();
-		parameterValues.put("fromId",
-				AppConstants.getInstance().getProperty("instance.name", ""));
-		parameterValues.put("conversationId",
-				Misc.getHostname() + "_" + Misc.createSimpleUUID());
-		parameterValues.put("messageId",
-				Misc.getHostname() + "_" + Misc.createSimpleUUID());
-		parameterValues.put("timestamp",
-				DateUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"));
-		parameterValues.put("msgMessageId", messageId);
+	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, S message) throws JMSException, DomBuilderException, TransformerException, IOException {
+		Map<String,Object> parameterValues = new HashMap<>();
+		parameterValues.put("fromId", AppConstants.getInstance().getProperty("instance.name", ""));
+		parameterValues.put("conversationId", 	Misc.getHostname() + "_" + Misc.createSimpleUUID());
+		parameterValues.put("messageId", 		Misc.getHostname() + "_" + Misc.createSimpleUUID());
+		parameterValues.put("timestamp", 		DateUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"));
+		parameterValues.put("msgMessageId", 	messageId);
 		parameterValues.put("msgCorrelationId", correlationId);
-		parameterValues.put("msgTimestamp", DateUtils.format(
-				receivedDate.getTime(), "yyyy-MM-dd'T'HH:mm:ss"));
-		parameterValues.put("slotId", getSlotId());
+		parameterValues.put("msgTimestamp", 	DateUtils.format( receivedDate.getTime(), "yyyy-MM-dd'T'HH:mm:ss"));
+		parameterValues.put("slotId", 			getSlotId());
 		if (getType().equalsIgnoreCase("E")) {
 			parameterValues.put("errorText", comments);
 		} else {
@@ -207,8 +187,7 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 				textMessage = (TextMessage) message;
 				rawMessageText = textMessage.getText();
 			} catch (ClassCastException e) {
-				log.error("message was not of type TextMessage, but ["
-						+ message.getClass().getName() + "]", e);
+				log.error("message was not of type TextMessage, but [" + message.getClass().getName() + "]", e);
 				rawMessageText = message.toString();
 			}
 		}
@@ -216,6 +195,7 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 		return parameterValues;
 	}
 
+	@Override
 	public int getMessageCount() throws ListenerException {
 		return -1;
 	}

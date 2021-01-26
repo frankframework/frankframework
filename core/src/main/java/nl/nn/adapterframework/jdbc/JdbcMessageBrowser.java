@@ -25,7 +25,7 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -63,16 +63,16 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	protected String slotId=null;
 	protected String typeField=null;
 	private String type = "";
-	protected String hostField=null;
+	private String hostField=null;
 
 	private String prefix="";
 
 	private String hideRegex = null;
 	private String hideMethod = "all";
-	
-	private String order;
-	private String messagesOrder=AppConstants.getInstance().getString("browse.messages.order","DESC");
-	private String errorsOrder=AppConstants.getInstance().getString("browse.errors.order","ASC");
+
+	private SortOrder sortOrder = null;
+	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
+	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
 
 	protected PlatformTransactionManager txManager;
@@ -178,7 +178,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 	protected int applyStandardParameters(PreparedStatement stmt, String paramValue, boolean primaryKeyIsPartOfClause) throws SQLException {
 		int position=applyStandardParameters(stmt,true,primaryKeyIsPartOfClause);
-		stmt.setString(position++,paramValue);
+		JdbcUtil.setParameter(stmt, position++, paramValue, getDbmsSupport().isParameterTypeMatchRequired());
 		return position;
 	}
 
@@ -289,10 +289,10 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	
 
 	@Override
-	public void deleteMessage(String messageId) throws ListenerException {
+	public void deleteMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
-				applyStandardParameters(stmt, messageId, true);
+				applyStandardParameters(stmt, storageKey, true);
 				stmt.execute();
 			}
 		} catch (Exception e) {
@@ -301,7 +301,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	protected M retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
-		return (M)rs.getString(columnIndex);
+		return (M)rs.getString(columnIndex); //TODO shouldn't this be getObject(columnIndex, M)?
 	}
 
 	@Override
@@ -353,14 +353,14 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	@Override
-	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
+	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectContextQuery)) {
-				applyStandardParameters(stmt, messageId, true);
+				applyStandardParameters(stmt, storageKey, true);
 				try (ResultSet rs =  stmt.executeQuery()) {
 	
 					if (!rs.next()) {
-						throw new ListenerException("could not retrieve context for messageid ["+ messageId+"]");
+						throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
 					}
 					return new JdbcMessageBrowserIteratorItem(conn, rs,true);
 				}
@@ -371,14 +371,14 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	@Override
-	public M browseMessage(String messageId) throws ListenerException {
+	public M browseMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
-				applyStandardParameters(stmt, messageId, true);
+				applyStandardParameters(stmt, storageKey, true);
 				try (ResultSet rs =  stmt.executeQuery()) {
 	
 					if (!rs.next()) {
-						throw new ListenerException("could not retrieve message for messageid ["+ messageId+"]");
+						throw new ListenerException("could not retrieve message for storageKey ["+ storageKey+"]");
 					}
 					return retrieveObject(rs,1);
 				}
@@ -459,7 +459,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		}
 
 		@Override
-		public void release() {
+		public void close() {
 			if (closeOnRelease) {
 				JdbcUtil.fullClose(conn, rs);
 			}
@@ -565,24 +565,33 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	public String getTypeField() {
 		return typeField;
 	}
+
+	protected void setHostField(String hostField) {
+		this.hostField = hostField;
+	}
 	protected String getHostField() {
 		return hostField;
 	}
 
 
 	public void setOrder(String string) {
-		order = string;
+		if(StringUtils.isNotEmpty(string)) {
+			sortOrder = SortOrder.valueOf(string.trim());
+		}
 	}
 	public String getOrder() {
-		if (StringUtils.isNotEmpty(order)) {
-			return order;
-		} else {
+		return getOrderEnum().name();
+	}
+
+	public SortOrder getOrderEnum() {
+		if(sortOrder == null) {
 			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
-				return errorsOrder; //Defaults to ASC
+				setOrder(errorsOrder); //Defaults to ASC
 			} else {
-				return messagesOrder; //Defaults to DESC
+				setOrder(messagesOrder); //Defaults to DESC
 			}
 		}
+		return sortOrder;
 	}
 
 

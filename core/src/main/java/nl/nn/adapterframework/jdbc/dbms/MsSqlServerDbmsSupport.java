@@ -17,7 +17,6 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +43,11 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public Dbms getDbms() {
 		return Dbms.MSSQL;
+	}
+
+	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
 	}
 
 	@Override
@@ -97,6 +101,16 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getBlobFieldType() {
 		return "VARBINARY(MAX)";
 	}
+	@Override
+	public String emptyBlobValue() {
+		return "0x";
+	}
+
+	@Override
+	public String getClobFieldType() {
+		return "VARCHAR(MAX)";
+	}
+	
 
 	@Override
 	public String getTextFieldType() {
@@ -144,7 +158,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	} 
 
 	@Override
-	public String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException {
+	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
@@ -165,17 +179,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getSchema(Connection conn) throws JdbcException {
-		return JdbcUtil.executeStringQuery(conn, "SELECT DB_NAME()");
-	}
-
-	@Override
-	public boolean isUniqueConstraintViolation(SQLException e) {
-		if (e.getErrorCode()==2627) {
-			// Violation of %ls constraint '%.*ls'. Cannot insert duplicate key in object '%.*ls'.
-			return true;
-		} else {
-			return false;
-		}
+		return JdbcUtil.executeStringQuery(conn, "SELECT SCHEMA_NAME()");
 	}
 
 	@Override
@@ -246,4 +250,15 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 			return false;
 		}
 	}
+	
+	@Override
+	public String getBooleanFieldType() {
+		return "BIT";
+	}
+	
+	@Override
+	public String getBooleanValue(boolean value) {
+		return value? "1":"0";
+	}
+
 }

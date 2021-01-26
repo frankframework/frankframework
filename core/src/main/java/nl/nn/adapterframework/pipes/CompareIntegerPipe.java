@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,28 +16,32 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Pipe that compares the integer values of two session variables.
- * Used to in combination with {@link IncreaseIntegerPipe} to contstruct loops.
+ * Pipe that compares the two integer values read from {@link Parameter the parameters} <code>operand1</code> and <code>operand2</code>.
+ * If one of the parameters is missing then the input message will be used as the missing operand.
+ * This pipe can be used in combination with {@link IncreaseIntegerPipe} to construct loops.
  *
- * <tr><td>{@link #setSessionKey2(String) sessionKey2}</td><td>reference to the other session variables to be compared</td><td></td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>
  * <tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>
- * <tr><td>equals</td><td>when v1 = v1</td></tr>
+ * <tr><td>equals</td><td>when v1 = v2</td></tr>
  * </table>
  * </p>
  * @author     Richard Punt / Gerrit van Brakel
@@ -48,6 +52,9 @@ public class CompareIntegerPipe extends AbstractPipe {
 	private final static String GREATERTHANFORWARD = "greaterthan";
 	private final static String EQUALSFORWARD = "equals";
 
+	private final static String OPERAND1 = "operand1";
+	private final static String OPERAND2 = "operand2";
+
 	private String sessionKey1 = null;
 	private String sessionKey2 = null;
 
@@ -55,44 +62,37 @@ public class CompareIntegerPipe extends AbstractPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (StringUtils.isEmpty(sessionKey1))
-			throw new ConfigurationException(getLogPrefix(null) + "sessionKey1 must be filled");
-
-		if (StringUtils.isEmpty(sessionKey2))
-			throw new ConfigurationException(getLogPrefix(null) + "sessionKey2 must be filled");
-
 		if (null == findForward(LESSTHANFORWARD))
-			throw new ConfigurationException(getLogPrefix(null)	+ "forward ["+ LESSTHANFORWARD+ "] is not defined");
+			throw new ConfigurationException("forward ["+ LESSTHANFORWARD+ "] is not defined");
 
 		if (null == findForward(GREATERTHANFORWARD))
-			throw new ConfigurationException(getLogPrefix(null)	+ "forward ["+ GREATERTHANFORWARD+ "] is not defined");
+			throw new ConfigurationException("forward ["+ GREATERTHANFORWARD+ "] is not defined");
 
 		if (null == findForward(EQUALSFORWARD))
-			throw new ConfigurationException(getLogPrefix(null)	+ "forward ["+ EQUALSFORWARD+ "] is not defined");
+			throw new ConfigurationException("forward ["+ EQUALSFORWARD+ "] is not defined");
+
+		if (StringUtils.isEmpty(getSessionKey1()) && StringUtils.isEmpty(getSessionKey2())) {
+			ParameterList parameterList = getParameterList();
+			if (parameterList.findParameter(OPERAND1) == null && parameterList.findParameter(OPERAND2) == null) {
+				throw new ConfigurationException("has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
+			}
+		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
-
-		String sessionKey1StringValue = (String) session.get(sessionKey1);
-		String sessionKey2StringValue = (String) session.get(sessionKey2);
-
-		if (log.isDebugEnabled()) {
-			log.debug("sessionKey1StringValue [" + sessionKey1StringValue + "]");
-			log.debug("sessionKey2StringValue [" + sessionKey2StringValue + "]");
+		ParameterValueList pvl = null;
+		if (getParameterList() != null) {
+			try {
+				pvl = getParameterList().getValues(message, session);
+			} catch (ParameterException e) {
+				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+			}
 		}
+		Integer operand1 = getOperandValue(pvl, OPERAND1, getSessionKey1(), message, session);
+		Integer operand2 = getOperandValue(pvl, OPERAND2, getSessionKey2(), message, session);
 
-		Integer sessionKey1IntegerValue;
-		Integer sessionKey2IntegerValue;
-		try {
-			sessionKey1IntegerValue = new Integer(sessionKey1StringValue);
-			sessionKey2IntegerValue = new Integer(sessionKey2StringValue);
-		} catch (Exception e) {
-			PipeRunException prei = new PipeRunException(this, "Exception while comparing integers", e);
-			throw prei;
-		}
-
-		int comparison=sessionKey1IntegerValue.compareTo(sessionKey2IntegerValue);
+		int comparison=operand1.compareTo(operand2);
 		if (comparison == 0)
 			return new PipeRunResult(findForward(EQUALSFORWARD), message);
 		else if (comparison < 0)
@@ -102,7 +102,44 @@ public class CompareIntegerPipe extends AbstractPipe {
 
 	}
 
+	/**
+	 * @param pvl
+	 * @param operandName
+	 * @param sessionkey
+	 * @param message
+	 * @param session
+	 * @return
+	 * @throws PipeRunException 
+	 */
+	private Integer getOperandValue(ParameterValueList pvl, String operandName, String sessionkey, Message message, IPipeLineSession session) throws PipeRunException {
+		ParameterValue pv = pvl.getParameterValue(operandName);
+		Integer operand = null;
+		if(pv != null && pv.getValue() != null) {
+			operand = pv.asIntegerValue(0);
+		}
+
+		if (operand == null) {
+			if (StringUtils.isNotEmpty(sessionkey)) {
+				try {
+					operand = Integer.parseInt(session.get(sessionkey)+"");
+				} catch (Exception e) {
+					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting [" + operandName + "] from session key ["+sessionkey+"]", e);
+				}
+			}
+			if (operand == null) {
+				try {
+					operand = new Integer(message.asString());
+				} catch (Exception e) {
+					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting [" + operandName + "] from input message", e);
+				}
+			}
+		}
+		return operand;
+	}
+
+	@Deprecated
 	@IbisDoc({"reference to one of the session variables to be compared", ""})
+	@ConfigurationWarning("Please use the parameter operand1")
 	public void setSessionKey1(String string) {
 		sessionKey1 = string;
 	}
@@ -110,7 +147,9 @@ public class CompareIntegerPipe extends AbstractPipe {
 		return sessionKey1;
 	}
 
+	@Deprecated
 	@IbisDoc({"reference to the other session variables to be compared", ""})
+	@ConfigurationWarning("Please use the parameter operand2")
 	public void setSessionKey2(String string) {
 		sessionKey2 = string;
 	}

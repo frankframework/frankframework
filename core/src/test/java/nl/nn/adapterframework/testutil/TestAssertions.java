@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -121,5 +122,21 @@ public class TestAssertions extends org.junit.Assert {
 		String str2 = str1.replace("\r", "");
 
 		assertEqualsIgnoreWhitespaces(str1, str2);
+	}
+
+	public static boolean isTestRunningOnTravis() {
+		return "TRAVIS".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "TRAVIS".equalsIgnoreCase(System.getenv("CI_SERVICE"));
+	}
+
+	public static boolean isTestRunningOnGitHub() {
+		return "GITHUB".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "GITHUB".equalsIgnoreCase(System.getenv("CI_SERVICE"));
+	}
+
+	public static boolean isTestRunningOnCI() {
+		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI")) || isTestRunningOnGitHub() || isTestRunningOnTravis();
+	}
+
+	public static boolean isTestRunningOnWindows() {
+		return System.getProperty("os.name").startsWith("Windows");
 	}
 }

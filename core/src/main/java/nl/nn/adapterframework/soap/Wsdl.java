@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
@@ -226,7 +227,7 @@ public class Wsdl {
                     warn("Could not determine operation version");
                 } else {
                     String wsdlType = "abstract";
-                    for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                    for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                         if (listener instanceof WebServiceListener
                                 || listener instanceof JmsListener) {
                             wsdlType = "concrete";
@@ -273,7 +274,7 @@ public class Wsdl {
                 }
             }
             if (tns == null) {
-                for(IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                for(IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                     if (listener instanceof WebServiceListener) {
                         webServiceListenerNamespace = ((WebServiceListener)listener).getServiceNamespaceURI();
                         tns = webServiceListenerNamespace;
@@ -308,7 +309,7 @@ public class Wsdl {
             wsdlSoapPrefix = WSDL_SOAP12_NAMESPACE_PREFIX;
         }
         if (StringUtils.isEmpty(getDocumentation())) {
-    		documentation = "Generated" + (generationInfo != null ? " " + generationInfo : "") + " as " + getFilename() + WSDL_EXTENSION + " on " + DateUtils.getIsoTimeStamp() + ".";
+    		documentation = "Generated" + (generationInfo != null ? " " + generationInfo : "") + " as " + getFilename() + WSDL_EXTENSION + " on " + DateUtils.getTimeStamp() + ".";
         }
 		if (inputValidator.getDocumentation() != null) {
 			documentation = documentation + inputValidator.getDocumentation();
@@ -413,7 +414,7 @@ public class Wsdl {
         	outputHeaderIsOptional = isHeaderOptional(outputValidator);
             outputBodyElement = getBodyElement(outputValidator, outputXsds, "outputValidator");
         }
-        for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+        for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
             if (listener instanceof WebServiceListener) {
                 httpActive = true;
             } else if (listener instanceof JmsListener) {
@@ -470,35 +471,37 @@ public class Wsdl {
         return xsds;
     }
 
-    /**
-     * Generates a zip file (and writes it to the given outputstream), containing the WSDL and all referenced XSD's.
-     * @see #wsdl(java.io.OutputStream, String)
-     */
-    public void zip(OutputStream stream, String servletName) throws IOException, ConfigurationException, XMLStreamException, NamingException {
-        ZipOutputStream out = new ZipOutputStream(stream);
+	/**
+	 * Generates a zip file (and writes it to the given outputstream), containing
+	 * the WSDL and all referenced XSD's.
+	 * 
+	 * @see #wsdl(java.io.OutputStream, String)
+	 */
+	public void zip(OutputStream stream, String servletName) throws IOException, ConfigurationException, XMLStreamException, NamingException {
+		try (ZipOutputStream out = new ZipOutputStream(stream)) {
 
-        // First an entry for the WSDL itself:
-        ZipEntry wsdlEntry = new ZipEntry(getFilename() + ".wsdl");
-        out.putNextEntry(wsdlEntry);
-        wsdl(out, servletName);
-        out.closeEntry();
+			// First an entry for the WSDL itself:
+			ZipEntry wsdlEntry = new ZipEntry(getFilename() + ".wsdl");
+			out.putNextEntry(wsdlEntry);
+			wsdl(out, servletName);
+			out.closeEntry();
 
-        //And then all XSD's
-        Set<String> entries = new HashSet<String>();
-        for (XSD xsd : xsds) {
-            String zipName = xsd.getResourceTarget();
-            if (entries.add(zipName)) {
-                ZipEntry xsdEntry = new ZipEntry(zipName);
-                out.putNextEntry(xsdEntry);
-                XMLStreamWriter writer = WsdlUtils.getWriter(out, false);
-                SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
-                out.closeEntry();
-            } else {
-                warn("Duplicate xsds in " + this + " " + xsd + " " + xsds);
-            }
-        }
-        out.close();
-    }
+			// And then all XSD's
+			Set<String> entries = new HashSet<String>();
+			for (XSD xsd : xsds) {
+				String zipName = xsd.getResourceTarget();
+				if (entries.add(zipName)) {
+					ZipEntry xsdEntry = new ZipEntry(zipName);
+					out.putNextEntry(xsdEntry);
+					XMLStreamWriter writer = WsdlUtils.getWriter(out, false);
+					SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
+					out.closeEntry();
+				} else {
+					warn("Duplicate xsds in " + this + " " + xsd + " " + xsds);
+				}
+			}
+		}
+	}
 
     /**
      * Writes the WSDL to an output stream
@@ -642,7 +645,7 @@ public class Wsdl {
     protected void portType(XMLStreamWriter w) throws XMLStreamException, IOException {
         w.writeStartElement(WSDL_NAMESPACE, "portType");
         w.writeAttribute("name", "PortType_" + getName()); {
-        	for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+        	for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                 if (listener instanceof WebServiceListener || listener instanceof JmsListener) {
 		        	w.writeStartElement(WSDL_NAMESPACE, "operation");
 		            w.writeAttribute("name", "Operation_" + WsdlUtils.getNCName(getSoapAction(listener))); {
@@ -662,7 +665,7 @@ public class Wsdl {
         w.writeEndElement();
     }
 
-    protected String getSoapAction(IListener listener) {
+    protected String getSoapAction(IListener<?> listener) {
         AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
         String sa = appConstants.getResolvedProperty("wsdl." + getName() + "." + listener.getName() + ".soapAction");
         if (sa != null) {
@@ -717,7 +720,7 @@ public class Wsdl {
             w.writeEmptyElement(wsdlSoapNamespace, "binding");
             w.writeAttribute("transport", SOAP_HTTP_NAMESPACE);
             w.writeAttribute("style", "document");
-            for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+            for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                 if (listener instanceof WebServiceListener) {
                     writeSoapOperation(w, listener);
                 }
@@ -726,7 +729,7 @@ public class Wsdl {
         w.writeEndElement();
     }
 
-    protected void writeSoapOperation(XMLStreamWriter w, IListener listener) throws XMLStreamException, IOException, ConfigurationException {
+    protected void writeSoapOperation(XMLStreamWriter w, IListener<?> listener) throws XMLStreamException, IOException, ConfigurationException {
         w.writeStartElement(WSDL_NAMESPACE, "operation");
         w.writeAttribute("name", "Operation_" + WsdlUtils.getNCName(getSoapAction(listener))); {
             w.writeEmptyElement(wsdlSoapNamespace, "operation");
@@ -775,7 +778,7 @@ public class Wsdl {
                 w.writeAttribute("transport", ESB_SOAP_JMS_NAMESPACE);
                 w.writeEmptyElement(ESB_SOAP_JMS_NAMESPACE, "binding");
                 w.writeAttribute("messageFormat", "Text");
-                for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                     if (listener instanceof JmsListener) {
                         writeSoapOperation(w, listener);
                     }
@@ -798,7 +801,7 @@ public class Wsdl {
             httpService(w, servlet, httpPrefix);
         }
         if (jmsActive) {
-            for (IListener listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+            for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
                 if (listener instanceof JmsListener) {
                     jmsService(w, (JmsListener)listener, jmsPrefix);
                 }
@@ -880,7 +883,7 @@ public class Wsdl {
                     warn("Attribute queueConnectionFactoryName empty for listener '" + listener.getName() + "'");
                 } else {
                     try {
-                        qcf = URLEncoder.encode(qcf, "UTF-8");
+                        qcf = URLEncoder.encode(qcf, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
                     } catch (UnsupportedEncodingException e) {
                         warn("Could not encode queueConnectionFactoryName for listener '" + listener.getName() + "'");
                     }
@@ -890,7 +893,7 @@ public class Wsdl {
                     warn("Property dtap.stage empty");
                 } else {
                     try {
-                        stage = URLEncoder.encode(stage, "UTF-8");
+                        stage = URLEncoder.encode(stage, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
                     } catch (UnsupportedEncodingException e) {
                         warn("Could not encode property dtap.stage");
                     }

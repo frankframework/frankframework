@@ -39,6 +39,9 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.statistics.StatisticsUtil;
 import nl.nn.adapterframework.statistics.parser.StatisticsParser;
 import nl.nn.adapterframework.util.AppConstants;
@@ -48,10 +51,8 @@ import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Shows a textfile either as HTML or as Text.
@@ -290,12 +291,12 @@ public class FileViewerServlet extends HttpServlet  {
 					}
 					//log.debug(extract);
 					if ("xml".equals(request.getParameter("output"))) {
-						response.setContentType("text/xml;charset=UTF-8");
+						response.setContentType("text/xml;charset="+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 						PrintWriter pw = response.getWriter();
 						pw.write(extract);
 						pw.close();
 					} else {
-						response.setContentType("text/html");
+						response.setContentType("text/html;charset="+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 						Source s= XmlUtils.stringToSourceForSingleUse(extract);
 						String stylesheetUrl=stats_html_xslt;
 						transformSource(s,fileName,parameters,response,stylesheetUrl,fileName);

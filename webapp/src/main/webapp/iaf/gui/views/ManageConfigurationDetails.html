@@ -27,7 +27,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr ng-repeat="config in versions | orderBy:'-version'">
+							<tr ng-repeat="config in versions">
 								<td>{{::config.version}}</td>
 								<td>{{::config.filename}}</td>
 								<td>{{::config.created}}</td>

@@ -46,6 +46,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 		this.guard=guard;
 		this.semaphore=semaphore;
 		this.sk=sk;
+		correlationID = session.getMessageId();
 	}
 
 	@Override

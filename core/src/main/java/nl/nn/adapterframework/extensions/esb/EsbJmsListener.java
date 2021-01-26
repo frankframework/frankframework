@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,11 +28,11 @@ import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JmsListener;
-import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -62,6 +62,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	private String messageProtocol = null;
 	private boolean copyAEProperties = false;
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == null) {
 			throw new ConfigurationException(getLogPrefix() + "messageProtocol must be set");
@@ -72,14 +73,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
 			setForceMessageIdAsCorrelationId(true);
 			if (CACHE_CONSUMER.equals(getCacheMode())) {
-				boolean recovered = false;
-				ReceiverBase receiverBase = getReceiverBase();
-				if (receiverBase != null) {
-					recovered = (receiverBase.isRecover() || receiverBase.isRecoverAdapter());
-				}
-				if (!recovered) {
-					ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]");
-				}
+				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
 			}
 			setCacheMode("CACHE_CONSUMER");
 		} else {
@@ -131,6 +125,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			    threadContext.put("xPathLogKeys", xPathLogKeys);
 			}
 		} catch (JMSException e) {
+			log.debug("ignoring JMSException", e);
 		}
 		return id;
 	}
@@ -198,6 +193,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		return getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY);
 	}
 
+	@Override
 	public boolean transactionalRequired() {
 		if (getMessageProtocol().equals(FIRE_AND_FORGET)) {
 			return true;
@@ -206,6 +202,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 	}
 
+	@Override
 	public boolean transactionalAllowed() {
 		if (getMessageProtocol().equals(FIRE_AND_FORGET)) {
 			return true;

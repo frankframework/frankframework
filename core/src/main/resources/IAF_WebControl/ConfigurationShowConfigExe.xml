@@ -1,6 +1,6 @@
 <module>
 	<adapter name="WebControlShowConfigExe" active="${active.config.database}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="WebControlShowConfigExe">
+		<receiver name="WebControlShowConfigExe">
 			<listener className="nl.nn.adapterframework.http.RestListener" name="WebControlShowConfigExe" uriPattern="showConfigExe" authRoles="IbisDataAdmin,IbisAdmin,IbisTester" />
 		</receiver>
 		<pipeline firstPipe="doShowConfigExe">

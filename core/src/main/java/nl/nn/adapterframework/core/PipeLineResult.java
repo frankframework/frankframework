@@ -48,6 +48,10 @@ public class PipeLineResult {
 		return result;
 	}
 
+	public boolean isSuccessful() {
+		return PipeLineExit.EXIT_STATE_SUCCESS.equalsIgnoreCase(getState());
+	}
+	
 	/**
 	 * The exit-state of the pipeline
 	 */

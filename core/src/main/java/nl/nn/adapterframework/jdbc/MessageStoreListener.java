@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2015-2017 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,10 @@ import org.apache.commons.lang.text.StrTokenizer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -98,13 +99,13 @@ public class MessageStoreListener extends JdbcTableListener {
 			}
 		}
 		if (isMoveToMessageLog()) {
-			String setClause = "COMMENTS = '" + ReceiverBase.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
-			setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed(),setClause));
-			setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError(),null)); 
+			String setClause = "COMMENTS = '" + Receiver.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
+			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE),setClause));
+			setUpdateStatusQuery(ProcessState.ERROR, createUpdateStatusQuery(getStatusValue(ProcessState.ERROR),null)); 
 		} else {
 			String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
-			setUpdateStatusToProcessedQuery(query);
-			setUpdateStatusToErrorQuery(query);
+			setUpdateStatusQuery(ProcessState.DONE, query);
+			setUpdateStatusQuery(ProcessState.ERROR, query);
 		}
 	}
 
@@ -128,28 +129,23 @@ public class MessageStoreListener extends JdbcTableListener {
 		return rawMessage;
 	}
 
-	@Override
-	public IMessageBrowser<Object> getMessageLogBrowser() {
-		IMessageBrowser<Object> result = super.getMessageLogBrowser();
-		if (result!=null && result instanceof JdbcTableMessageBrowser) {
-			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)result;
+	protected IMessageBrowser<Object> augmentMessageBrowser(IMessageBrowser<Object> browser) {
+		if (browser!=null && browser instanceof JdbcTableMessageBrowser) {
+			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)browser;
 			jtmb.setCommentField("COMMENTS");
 			jtmb.setExpiryDateField("EXPIRYDATE");
-			jtmb.hostField="HOST";
+			jtmb.setHostField("HOST");
 		}
-		return result;
+		return browser;
 	}
-
+	
 	@Override
-	public IMessageBrowser<Object> getErrorStoreBrowser() {
-		IMessageBrowser<Object> result = super.getErrorStoreBrowser();
-		if (result!=null && result instanceof JdbcTableMessageBrowser) {
-			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)result;
-			jtmb.setCommentField("COMMENTS");
-			jtmb.setExpiryDateField("EXPIRYDATE");
-			jtmb.hostField="HOST";
+	public IMessageBrowser<Object> getMessageBrowser(ProcessState state) {
+		IMessageBrowser<Object> browser = super.getMessageBrowser(state);
+		if (browser!=null) {
+			return augmentMessageBrowser(browser);
 		}
-		return result;
+		return null;
 	}
 
 

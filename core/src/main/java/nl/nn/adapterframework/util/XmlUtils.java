@@ -67,7 +67,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -90,6 +89,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
+
+import com.ctc.wstx.api.ReaderConfig;
+import com.ctc.wstx.stax.WstxInputFactory;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -152,7 +154,7 @@ public class XmlUtils {
 	public static final XMLInputFactory INPUT_FACTORY;
 	public static final XMLOutputFactory OUTPUT_FACTORY;
 	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY;
-	public static final String STREAM_FACTORY_ENCODING  = "UTF-8";
+	public static final String STREAM_FACTORY_ENCODING  = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	static {
 		// Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation
@@ -1136,24 +1138,33 @@ public class XmlUtils {
 		return factory;
 	}
 
+	
+	public static String encodeChars(String string) {
+		return encodeChars(string, false);
+	}
+
 	/**
 	 * Translates special characters to xml equivalents
 	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
 	 * are not changed, hence you might want to use
 	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
 	 */
-	public static String encodeChars(String string) {
+	public static String encodeChars(String string, boolean escapeNewLines) {
 		if (string==null) {
 			return null;
 		}
 		int length = string.length();
 		char[] characters = new char[length];
 		string.getChars(0, length, characters, 0);
-		return encodeChars(characters,0,length);
+		return encodeChars(characters, 0, length, escapeNewLines);
 	}
 
 	public static String encodeCharsAndReplaceNonValidXmlCharacters(String string) {
 		return encodeChars(replaceNonValidXmlCharacters(string));
+	}
+
+	public static String encodeChars(char[] chars, int offset, int length) {
+		return encodeChars(chars, offset, length, false);
 	}
 
 	/**
@@ -1162,7 +1173,7 @@ public class XmlUtils {
 	 * are not changed, hence you might want to use
 	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
 	 */
-	public static String encodeChars(char[] chars, int offset, int length) {
+	public static String encodeChars(char[] chars, int offset, int length, boolean escapeNewLines) {
 
 		if (length<=0) {
 			return "";
@@ -1171,7 +1182,7 @@ public class XmlUtils {
 		String escape;
 		for (int i = 0; i < length; i++) {
 			char c=chars[offset+i];
-			escape = escapeChar(c);
+			escape = escapeChar(c, escapeNewLines);
 			if (escape == null)
 				encoded.append(c);
 			else
@@ -1223,7 +1234,7 @@ public class XmlUtils {
 	   * are not changed, hence you might want to use
 	   * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
 	   **/
-	private static String escapeChar(char c) {
+	private static String escapeChar(char c, boolean escapeNewLines) {
 		switch (c) {
 			case ('<') :
 				return "&lt;";
@@ -1236,6 +1247,9 @@ public class XmlUtils {
 			case ('\'') :
 				// return "&apos;"; // apos does not work in Internet Explorer
 				return "&#39;";
+			case ('\n')  :
+				if(escapeNewLines)
+					return "&#10;";
 		}
 		return null;
 	}
@@ -1537,8 +1551,7 @@ public class XmlUtils {
 	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark).
 	 */
 	public static String encodeCdataString(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false,
-				false);
+		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false, true);
 	}
 
 	/**
@@ -1546,13 +1559,10 @@ public class XmlUtils {
 	 * appended with #, the character number and ;.
 	 */
 	public static String replaceNonValidXmlCharacters(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true,
-				false);
+		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true, true);
 	}
 
-	public static String replaceNonValidXmlCharacters(String string, char to,
-			boolean appendCharNum,
-			boolean allowUnicodeSupplementaryCharacters) {
+	public static String replaceNonValidXmlCharacters(String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
 		if (string==null) {
 			return null;
 		} else {
@@ -1562,8 +1572,7 @@ public class XmlUtils {
 			int counter = 0;
 			for (int i = 0; i < length; i += Character.charCount(c)) {
 				c=string.codePointAt(i);
-				if (isPrintableUnicodeChar(c,
-						allowUnicodeSupplementaryCharacters)) {
+				if (isPrintableUnicodeChar(c, allowUnicodeSupplementaryCharacters)) {
 					encoded.appendCodePoint(c);
 				} else {
 					if (appendCharNum) {
@@ -1581,8 +1590,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String stripNonValidXmlCharacters(String string,
-			boolean allowUnicodeSupplementaryCharacters) {
+	public static String stripNonValidXmlCharacters(String string, boolean allowUnicodeSupplementaryCharacters) {
 		int length = string.length();
 		StringBuilder encoded = new StringBuilder(length);
 		int c;
@@ -1606,15 +1614,13 @@ public class XmlUtils {
 		return isPrintableUnicodeChar(c, false);
 	}
 
-	public static boolean isPrintableUnicodeChar(int c,
-			boolean allowUnicodeSupplementaryCharacters) {
+	public static boolean isPrintableUnicodeChar(int c, boolean allowUnicodeSupplementaryCharacters) {
 		return (c == 0x0009)
 			|| (c == 0x000A)
 			|| (c == 0x000D)
 			|| (c >= 0x0020 && c <= 0xD7FF)
 			|| (c >= 0xE000 && c <= 0xFFFD)
-			|| (allowUnicodeSupplementaryCharacters
-					&& (c >= 0x00010000 && c <= 0x0010FFFF));
+			|| (allowUnicodeSupplementaryCharacters && (c >= 0x00010000 && c <= 0x0010FFFF));
 	}
 
 	/**
@@ -1635,10 +1641,6 @@ public class XmlUtils {
 				log.info("omitting setting of parameter ["+paramName+"] on transformer, as it has a null-value");
 			}
 		}
-	}
-
-	public static String transformXml(Transformer t, Document d) throws TransformerException, IOException {
-		return transformXml(t, new DOMSource(d));
 	}
 
 	public static String transformXml(Transformer t, String s) throws TransformerException, IOException, SAXException {
@@ -1710,46 +1712,67 @@ public class XmlUtils {
 		return writer.toString();
 	}
 
-	public static String getVersionInfo() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(AppConstants.getInstance().getProperty("application.name") + " "
-				+ AppConstants.getInstance().getProperty("application.version")).append(SystemUtils.LINE_SEPARATOR);
-		sb.append("XML tool version info:").append(SystemUtils.LINE_SEPARATOR);
+
+	public static Set<Entry<String,String>> getVersionInfo() {
+		Map<String,String> map = new LinkedHashMap<>();
+		
+		map.put("XML tools:",null);
 
 		SAXParserFactory spFactory = getSAXParserFactory();
-		sb.append("SAXParserFactory-class =").append(spFactory.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
+		map.put("SAXParserFactory-class", spFactory.getClass().getName());
 		DocumentBuilderFactory domFactory1 = getDocumentBuilderFactory(false);
-		sb.append("DocumentBuilderFactory1-class =").append(domFactory1.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
+		map.put("DocumentBuilderFactory1-class", domFactory1.getClass().getName());
 		DocumentBuilderFactory domFactory2 = getDocumentBuilderFactory(true);
-		sb.append("DocumentBuilderFactory2-class =").append(domFactory2.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
+		map.put("DocumentBuilderFactory2-class", domFactory2.getClass().getName());
 
 		TransformerFactory tFactory1 = getTransformerFactory(1);
-		sb.append("TransformerFactory1-class =").append(tFactory1.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
+		map.put("TransformerFactory1-class", tFactory1.getClass().getName());
 		TransformerFactory tFactory2 = getTransformerFactory(2);
-		sb.append("TransformerFactory2-class =").append(tFactory2.getClass().getName()).append(SystemUtils.LINE_SEPARATOR);
+		map.put("TransformerFactory2-class", tFactory2.getClass().getName());
 
-		sb.append("Apache-XML tool version info:").append(SystemUtils.LINE_SEPARATOR);
-
+		XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+		map.put("XMLInputFactory-class", xmlInputFactory.getClass().getName());
+		
+		map.put("XML tool version info:", null);
 		try {
-			sb.append("Xerces-Version=").append(org.apache.xerces.impl.Version.getVersion()).append(SystemUtils.LINE_SEPARATOR);
-		}  catch (Throwable t) {
-			sb.append("Xerces-Version not found (").append(t.getClass().getName()).append(": ").append(t.getMessage()).append(")").append(SystemUtils.LINE_SEPARATOR);
+			map.put("Xerces-Version", org.apache.xerces.impl.Version.getVersion());
+		} catch (Throwable t) {
+			log.warn("Could not get Xerces version", t);
+			map.put("Xerces-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
 		try {
 			String xalanVersion = org.apache.xalan.Version.getVersion();
- 			sb.append("Xalan-Version=" + xalanVersion + SystemUtils.LINE_SEPARATOR);
-		}  catch (Throwable t) {
-			sb.append("Xalan-Version not found (").append(t.getClass().getName()).append(": ").append(t.getMessage()).append(")").append(SystemUtils.LINE_SEPARATOR);
+			map.put("Xalan-Version", xalanVersion);
+		} catch (Throwable t) {
+			log.warn("Could not get Xalan version", t);
+			map.put("Xalan-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
-
 		try {
-//			sb.append("XmlCommons-Version="+org.apache.xmlcommons.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
-		}  catch (Throwable t) {
-			sb.append("XmlCommons-Version not found (").append(t.getClass().getName()).append(": ").append(t.getMessage()).append(")").append(SystemUtils.LINE_SEPARATOR);
+			String saxonVersion = net.sf.saxon.Version.getProductTitle();
+			map.put("Saxon-Version", saxonVersion);
+		} catch (Throwable t) {
+			log.warn("Could not get Saxon version", t);
+			map.put("Saxon-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+		}
+		try {
+			if (xmlInputFactory instanceof WstxInputFactory) {
+				ReaderConfig woodstoxConfig = ((WstxInputFactory)xmlInputFactory).createPrivateConfig();
+				String woodstoxVersion = ReaderConfig.getImplName()+" "+ReaderConfig.getImplVersion()+"; xml1.1 "+(woodstoxConfig.isXml11()?"":"not ")+"enabled";
+				map.put("Woodstox-Version", woodstoxVersion);
+			}
+		} catch (Throwable t) {
+			log.warn("Could not get Woodstox version", t);
+			map.put("Woodstox-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
-		return sb.toString();
+//		try {
+//			map.put("XmlCommons-Version", org.apache.xmlcommons.Version.getVersion());
+//		} catch (Throwable t) {
+//			map.put("XmlCommons-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+//		}
+
+		return map.entrySet();
 	}
 
 	public static String source2String(Source source, boolean removeNamespaces) throws TransformerException {

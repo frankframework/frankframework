@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2018 Integration Partners
+   Copyright 2017-2018, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.http.Header;
@@ -35,15 +36,15 @@ import org.apache.http.util.EntityUtils;
 public class HttpResponseHandler {
 	private HttpResponse httpResponse;
 	private HttpEntity httpEntity;
-	private InputStream content;
-	private String contentAsString = null;
-	private int statusCode = -1;
+	private Message responseMessage = null;
 
-	public HttpResponseHandler(HttpResponse resp) throws IllegalStateException, IOException {
+	public HttpResponseHandler(HttpResponse resp) throws IOException {
 		httpResponse = resp;
 		if(httpResponse.getEntity() != null) {
 			httpEntity = httpResponse.getEntity();
-			content = httpEntity.getContent();
+
+			InputStream entityStream = new ReleaseConnectionAfterReadInputStream(this, httpEntity.getContent()); //Wrap the contentStream in a ReleaseConnectionAfterReadInputStream
+			responseMessage = new Message(entityStream, getCharset());
 		}
 	}
 
@@ -57,26 +58,18 @@ public class HttpResponseHandler {
 
 	/**
 	 * Returns an {@link ReleaseConnectionAfterReadInputStream InputStream} that will automatically close the HttpRequest when fully read
-	 * @return an {@link ReleaseConnectionAfterReadInputStream InputStream} retrieved from {@link HttpEntity#getContent()}
+	 * @return an {@link ReleaseConnectionAfterReadInputStream InputStream} retrieved from {@link HttpEntity#getContent()} or NULL when no {@link HttpEntity} is present
 	 */
 	public InputStream getResponse() throws IOException {
-		statusCode = getStatusLine().getStatusCode();
+		if(responseMessage == null) {
+			return null;
+		}
 
-		//TODO content may be optional
-		return new ReleaseConnectionAfterReadInputStream(this, content);
+		return responseMessage.asInputStream();// IOException cannot occur as the input and output are both InputStreams
 	}
 
-	public String getResponseAsString() throws IOException {
-		return getResponseAsString(false);
-	}
-
-	public String getResponseAsString(boolean returnNullonFault) throws IOException {
-		if(statusCode < 0)
-			contentAsString = Misc.streamToString(getResponse(), "\n", getCharset(), false);
-		else if(returnNullonFault && statusCode == 500)
-			return "";
-
-		return contentAsString;
+	public Message getResponseMessage() {
+		return responseMessage;
 	}
 
 	public String getHeader(String header) {
@@ -119,7 +112,7 @@ public class HttpResponseHandler {
 	}
 
 	public Map<String, List<String>> getHeaderFields() {
-		Map<String, List<String>> headerMap = new HashMap<String, List<String>>();
+		Map<String, List<String>> headerMap = new HashMap<>();
 		Header[] headers = httpResponse.getAllHeaders();
 		for (int i = 0; i < headers.length; i++) {
 			Header header = headers[i];
@@ -129,11 +122,15 @@ public class HttpResponseHandler {
 				value = headerMap.get(name);
 			}
 			else {
-				value = new ArrayList<String>();
+				value = new ArrayList<>();
 			}
 			value.add(header.getValue());
 			headerMap.put(name, value);
 		}
 		return headerMap;
+	}
+
+	public boolean isMultipart() {
+		return getContentType().getMimeType().contains("multipart");
 	}
 }

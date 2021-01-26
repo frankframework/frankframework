@@ -42,4 +42,8 @@
 		</constructor-arg>
 	</bean>
 
+	<!-- used by WebServiceListeners to register on a local bus -->
+	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
+		<property name="id" value="ff-soap-bus"/>
+	</bean>
 </beans>

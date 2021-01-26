@@ -63,11 +63,11 @@ public class Result2Filewriter extends ResultWriter {
 
 	@Override
 	public void closeDocument(IPipeLineSession session, String streamId) {
-		File outputFile = openFiles.remove(streamId);
+		openFiles.remove(streamId);
 	}
 
 	@Override
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		log.debug("finalizeResult ["+streamId+"]");
 		super.finalizeResult(session,streamId, error);
 		super.closeDocument(session,streamId);

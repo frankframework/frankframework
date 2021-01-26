@@ -15,18 +15,20 @@
  */
 package nl.nn.adapterframework.extensions.graphviz;
 
-import static nl.nn.adapterframework.testutil.TestAssertions.*;
+import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.net.URL;
 
-import nl.nn.adapterframework.extensions.graphviz.Format;
-import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
-import nl.nn.adapterframework.extensions.graphviz.Options;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
+
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
-
-import org.junit.Test;
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GraphvizEngineTest {
 
 	private String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
@@ -106,9 +108,9 @@ public class GraphvizEngineTest {
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
-
+	// This should be the last test case to run since it changes the graphviz version(prepend 'z' to method name)
 	@Test(expected = IOException.class)
-	public void getUnknownVizJsVersion() throws IOException, GraphvizException {
+	public void zgetUnknownVizJsVersion() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine("1.2.3");
 		assertNotNull(engine);
 		engine.execute(dot);

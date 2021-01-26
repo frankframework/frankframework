@@ -73,6 +73,10 @@ Start reading our code and you'll get the hang of it. We optimize for readabilit
     - For each configurable attribute, IbisDoc must not be larger then 2 lines
     - Any examples and more detailed information, that has to be incorperated in to the IbisManual, should be provided as a separate file(s) attached to the pull request
 
+WeAreFrank! has introduced [Project Lombok](https://projectlombok.org/) in this source code. Please keep the following in mind when using it:
+
+  * With Lombok, you do not have to code getters and setters anymore. You can generate them by by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on the class. This makes less lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
+  * For the sake of readability, please put the `@Getter` or `@Setter` annotations inside the variable declaration: "`private @Getter @Setter MyType myField`".
 
 ## Testing
 
@@ -80,13 +84,47 @@ Before creating a pull request with your changes, please run the iaf-test module
 
 We have yet to test the compatibility of the iaf-test module with Jetty. Until then, the only verified way to run the module is on a Tomcat server in Eclipse. However, feel free to try and run it on Jetty yourself! If it works for you, we'd love to hear about it. :)
 
+### Checking differences within Larva
+
+The iaf-test module runs Larva tests, see https://frank-manual.readthedocs.io/en/latest/gettingStarted/helloLarva.html. Larva tests
+execute some system-under-test, for example a Frank configuration. The
+output of the system-under-test is often compared to some expected value.
+The Graphical User Interface of Larva shows these differences, but sometimes
+it works better to use a third-party tool like WinMerge.
+
+If you are developing under Windows, you can do the following to set this up:
+
+- Follow the instructions of section "Developing with Eclipse", see below.
+- Download the WinMerge installer from https://winmerge.org/. After accepting cookies, you may have to refresh your browser before the download starts.
+- Run the installer you downloaded. Make sure that WinMerge is added to the system path.
+- Lookup the path to the WinMerge executable. You may do this by viewing the system path.
+- In the Eclipse Project Explorer, you have a folder "Servers". Your Tomcat installation appears as a subfolder. Under that subfolder, open file `catalina.properties`.
+- In `catalina.properties`, add: `larva.windiff.command=c:/Program Files (x86)/WinMerge/winmergeu`, but replace the value after the `=` by the path to WinMerge on your laptop.
+- Start module iaf-test.
+- If you see a "Differences:" panel, you have a button "windiff" above it. Please press it to see the differences in WinMerge. NOTE: You only see a "Differences:" panel if you select a low log level. Mind the pull-down menu labeled "Log level".
+- If all your tests succeed, you do not have "Differences:" panels and you have no "windiff" buttons. To test your WinMerge integration, you may have to temporarily edit a test scenario to make it fail. 
 
 ## Developing with Eclipse
 
+### Install Eclipse with Lombok
+
 - Download Eclipse from [Eclipse 2019-03](https://www.eclipse.org/downloads/packages/release/2019-03/r), choosing "Eclipse IDE for Enterprise Java Developers". Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). There is no installer. To install Eclipse, just unzip your download to a directory of your choice.
+- Download the Lombok library. This is easier than letting Maven do the download and then finding the .jar file in Eclipse. Browse to https://projectlombok.org/. On the top menu, choose "Download".
+- Download version 1.18.12. You may need the link "older versions".
+- Run the .jar you downloaded. Under Windows you can double-click it.
+- You see a GUI. If you used Eclipse 2020-06, the GUI will automatically find your Eclipse installation. If this does not work, use the button "Specify location". You should point to the 
+eclipse.exe file.
+- Press Install / Update.
+- If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
+
+### Configure Eclipse
+
 - Start Eclipse with Java 8. You might want to [use -vm in eclipse.ini](http://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM).
 - Close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
+
+### Import the source code
+
 - Make sure Maven is able to access the internet. E.g. when behind a proxy: Window, Preferences, Maven, User Settings, settings.xml should exist and contain proxy configuration.
 - Window, Open Perspective, Other..., Git, OK, Clone a Git repository, URI: https://github.com/ibissource/iaf.git, Next, Next, Finish.
 - Optionally (when you have access to the proprietary jars some modules depend on) add your Nexus credentials and enable the proprietary profile in your maven settings.xml
@@ -97,8 +135,11 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 - **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco and iaf-idin (unless you have access to the proprietary repository), Finish.
 - Window, Open Perspective, Other..., Java EE.
 - Rightclick iaf, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
+
+### Set up a Tomcat server in Eclipse
+
 - Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download the latest version of [Tomcat](http://tomcat.apache.org/) (version 7.0.47+ is known to work)), OK, Finish.
-- Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Dotap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
+- Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
 - Right click Tomcat v7.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
 
@@ -138,7 +179,19 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
         <JarScanFilter defaultPluggabilityScan="false" />
     </JarScanner>
 
+### Let Eclipse check Javadoc comments
 
+Please ensure that your Javadoc comments are correct. Eclipse can check this for you. Please do the following:
+
+- In the main menu, open Windows | Preferences.
+- Go to Java | Compiler | Javadoc.
+- Check checkbox "Process Javadoc comments".
+- In pull-down menu "Malformed Javadoc comments", select "Error".
+- In pull-down menu "Only consider members as visible as", choose "Private".
+- Check checkbox "Validate tag arguments".
+- Uncheck "Report non visible references" and "Report deprecated references".
+- In pull-down menu "Missing tag descriptions", select "Ignore".
+- In pull-down menu "Missing Javadoc tags", select "Ignore".
 
 ## Developing with IntelliJ
 
@@ -148,7 +201,7 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 - Download Tomcat 8.5 from https://tomcat.apache.org/download-80.cgi and export it anywhere you like. (On windows make sure to extract it on a folder which can be edited by non-admin users.)
 - On top right click "Add Configurations..." then click + button. Click "More items" on the bottom of the list and select Tomcat Server -> Local from the new list.
 - Click Configure next to the Application Server and Select your Tomcat Home directory.
-- Add -Dotap.stage=LOC to the VM Options
+- Add -Ddtap.stage=LOC to the VM Options
 - On deployment tab click + -> artifacts... and then select ibis-adapterframework-example:war
 - Name your configuration and save it
 - Open Maven window by clicking Maven button on your right and open execution window by clicking "m" button. Then run command "mvn clean install -Dmaven.javadoc.skip=true verify"

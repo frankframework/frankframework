@@ -8,7 +8,7 @@
 				serviceName="ibis4test-unzip"
 			/>
 		</receiver>
-		<pipeline firstPipe="selectSenderBasedOnRootElement">
+		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
@@ -22,7 +22,7 @@
 				name="UnZip"
 				className="nl.nn.adapterframework.pipes.UnzipPipe" 
 				directory="${testdata.dir}/zip"
-				checkDirectory="true"
+				assumeDirectoryExists="true"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
@@ -135,19 +135,6 @@
 				<forward name="success" path="READY"/>
 			</pipe>
 
-			<pipe name="CreateZipDirectory"
-				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
-				  preserveInput="true"
-				  getInputFromFixedValue="zip">
-				  <sender name="localfilesender"
-						  className="nl.nn.adapterframework.senders.LocalFileSystemSender"
-						  action="mkdir"
-						  root="${testdata.dir}">
-				  </sender>
-				  <forward name="success" path="READY"/>
-				  <forward name="exception" path="READY"/>  <!-- don't fail when folder already exists -->
-			</pipe>
-			
 			<pipe name="RemoveRecreatedZipFile"
 				  className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				  preserveInput="true"
@@ -191,14 +178,14 @@
 
 		<receiver
 			name="Java UnZipNested"
-            maxRetries="0">
+			maxRetries="0">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="ibis4test-unzipNested"
 			/>
 		</receiver>
 
-		<pipeline firstPipe="ReadOuterZipEntry">
+		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
@@ -210,7 +197,6 @@
 				streamingContents="false"
 				contentsSessionKey="nestedZipData"
 				charset="ISO-8859-1"
-				closeInputstreamOnExit="false" 
 				>
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender" 
 					fileName="zip/NameAndContents.txt"
@@ -228,7 +214,7 @@
 	<adapter name="Zip-Recreate 1" >
 		<receiver 
 			name="Zip-Recreate 1" 
-            maxRetries="0">
+			maxRetries="0">
 			<listener 
 				className="nl.nn.adapterframework.receivers.JavaListener" 
 				name="ibis4test-RecreateZip"
@@ -263,7 +249,6 @@
 				streamingContents="false"
 				charset="ISO-8859-1"
 				contentsSessionKey="nestedZipData"
-				closeInputstreamOnExit="false" 
 				>
 				<sender className="nl.nn.adapterframework.compression.ZipWriterSender" 
 					zipWriterHandle="zipwriter2"

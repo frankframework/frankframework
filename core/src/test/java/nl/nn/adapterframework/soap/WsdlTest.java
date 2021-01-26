@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 
 import javax.naming.NamingException;
 import javax.xml.parsers.DocumentBuilder;
@@ -35,11 +34,12 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidatorTest;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
@@ -81,7 +81,7 @@ public class WsdlTest {
 	@Test
 	public void basicMixed() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, ConfigurationException, URISyntaxException, NamingException {
 		XmlValidator inputValidator=getXmlValidatorInstance("a", "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
-		IPipe outputValidator=inputValidator.getResponseValidator();
+		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "Test1");
 		Wsdl wsdl = new Wsdl(simple);
 		wsdl.init();
@@ -104,7 +104,7 @@ public class WsdlTest {
 	@Test
 	public void includeXsdInWsdlMixed() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, ConfigurationException, URISyntaxException, NamingException {
 		XmlValidator inputValidator=getXmlValidatorInstance("a", "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
-		IPipe outputValidator=inputValidator.getResponseValidator();
+		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "IncludeXsds");
 
 		Wsdl wsdl = new Wsdl(simple);
@@ -139,7 +139,7 @@ public class WsdlTest {
     @Test
     public void noroottagMixed() throws XMLStreamException, IOException, SAXException, ParserConfigurationException, URISyntaxException, ConfigurationException, NamingException {
 		XmlValidator inputValidator=getXmlValidatorInstance(null, "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
-		IPipe outputValidator=inputValidator.getResponseValidator();
+		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "TestRootTag");
         Wsdl wsdl = new Wsdl(simple);
         wsdl.init();
@@ -170,7 +170,7 @@ public class WsdlTest {
     	XmlValidator inputValidator=getXmlValidatorInstance("CalculationRequest", "CalculationResponse", null,
     			"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd "+
     			"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response  WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd");
-    	IPipe outputValidator = inputValidator.getResponseValidator();
+    	IValidator outputValidator = inputValidator.getResponseValidator();
     	PipeLine pipe = mockPipeLine(inputValidator, outputValidator, 
             "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
         Wsdl wsdl = new Wsdl(pipe);
@@ -200,7 +200,7 @@ public class WsdlTest {
     public void wubFindIntermediaryMixed() throws XMLStreamException, IOException, SAXException, ParserConfigurationException, URISyntaxException, ConfigurationException, NamingException {
     	XmlValidator inputValidator=getXmlValidatorInstance("FindIntermediaryREQ", "FindIntermediaryRLY", null,
                 		"http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd");
-    	IPipe outputValidator = inputValidator.getResponseValidator();
+    	IValidator outputValidator = inputValidator.getResponseValidator();
         PipeLine pipe = mockPipeLine(inputValidator, outputValidator, "http://wub2nn.nn.nl/FindIntermediary", "WsdlTest/FindIntermediary");
         Wsdl wsdl = new Wsdl(pipe);
         wsdl.setUseIncludes(true);
@@ -249,7 +249,7 @@ public class WsdlTest {
         return validator;
     }
 
-    protected PipeLine mockPipeLine(IPipe inputValidator, IPipe outputValidator, String targetNamespace, String adapterName) {
+    protected PipeLine mockPipeLine(IValidator inputValidator, IValidator outputValidator, String targetNamespace, String adapterName) {
         PipeLine simple = mock(PipeLine.class);
         when(simple.getInputValidator()).thenReturn(inputValidator);
         when(simple.getOutputValidator()).thenReturn(outputValidator);
@@ -257,13 +257,13 @@ public class WsdlTest {
         when(simple.getAdapter()).thenReturn(adp);
         Configuration cfg = mock(Configuration.class);
         when(simple.getAdapter().getConfiguration()).thenReturn(cfg);
-        final ReceiverBase receiverBase = mock(ReceiverBase.class);
+        final Receiver receiverBase = mock(Receiver.class);
         WebServiceListener listener = new WebServiceListener();
         listener.setServiceNamespaceURI(targetNamespace);
         when(receiverBase.getListener()).thenReturn(listener);
-        when(adp.getReceiverIterator()).thenAnswer(new Answer<Iterator>() {
-            public Iterator answer(InvocationOnMock invocation) throws Throwable {
-                return Arrays.asList(receiverBase).iterator();
+        when(adp.getReceivers()).thenAnswer(new Answer<Iterable<Receiver>>() {
+            public Iterable<Receiver> answer(InvocationOnMock invocation) throws Throwable {
+                return Arrays.asList(receiverBase);
             }
         });
         when(adp.getName()).thenReturn(adapterName);

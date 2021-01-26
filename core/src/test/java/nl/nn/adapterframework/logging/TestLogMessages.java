@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
-import nl.nn.adapterframework.logging.IbisLoggerConfigurationFactory;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -107,13 +106,11 @@ public class TestLogMessages {
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(6, logEvents.size());
 
-			String expectedWarn = "<event logger=\"org.apache.logging.log4j.spi.AbstractLogger\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" + 
+			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" + 
 			"  <message>my beautiful warning &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
-			"  <throwable />\n" + 
 			"</event>";
-			String expectedError = "<event logger=\"org.apache.logging.log4j.spi.AbstractLogger\" timestamp=\"xxx\" level=\"ERROR\" thread=\"HIDE-HERE\">\n" + 
+			String expectedError = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"ERROR\" thread=\"HIDE-HERE\">\n" + 
 			"  <message>my beautiful error &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
-			"  <throwable />\n" + 
 			"</event>";
 
 			//Remove the timestamp
@@ -176,13 +173,11 @@ public class TestLogMessages {
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(2, logEvents.size());
 
-			String expectedWarn = "<event logger=\"org.apache.logging.log4j.spi.AbstractLogger\" timestamp=\"xxx\" level=\"DEBUG\" thread=\"main\">\n" + 
+			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"DEBUG\" thread=\"main\">\n" + 
 			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  debug &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
-			"  <throwable />\n" + 
 			"</event>";
-			String expectedError = "<event logger=\"org.apache.logging.log4j.spi.AbstractLogger\" timestamp=\"xxx\" level=\"INFO\" thread=\"main\">\n" + 
+			String expectedError = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"INFO\" thread=\"main\">\n" + 
 			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  info &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
-			"  <throwable />\n" + 
 			"</event>";
 
 			//Remove the timestamp

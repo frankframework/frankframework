@@ -6,15 +6,11 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 
 public class EchoPipeTest extends PipeTestBase<EchoPipe> {
-
-	private IPipeLineSession session = new PipeLineSessionBase();
 
 	@Override
 	public EchoPipe createPipe() {

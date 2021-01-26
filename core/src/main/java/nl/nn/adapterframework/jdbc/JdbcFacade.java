@@ -28,10 +28,7 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -46,6 +43,7 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.task.TimeoutGuard;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
@@ -64,9 +62,8 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject, HasPhysicalDestination, IXAEnabled, HasStatistics {
-	
-	private String name;
+public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
+
 	private String authAlias = null;
 	private String username = null;
 	private String password = null;
@@ -84,6 +81,7 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 	private boolean credentialsConfigured=false;
 	private CredentialFactory cf=null;
 	private StatisticsKeeper connectionStatistics;
+	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -91,6 +89,7 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 
 	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
 		configureCredentials();
 		connectionStatistics = new StatisticsKeeper("getConnection for "+getName());
 	}
@@ -121,6 +120,10 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 				log.debug(getLogPrefix()+"looking up proxied Datasource ["+dsName+"]");
 				datasource = (DataSource)proxiedDataSources.get(dsName);
 			} else {
+				if (proxiedDataSources != null) {
+					ConfigurationWarnings.add(this, log, "data source '" + dsName
+							+ "' isn't part of proxiedDataSources and is therefore probably not known to the transaction manager");
+				}
 				String prefixedDsName=getJndiContextPrefix()+dsName;
 				log.debug(getLogPrefix()+"looking up Datasource ["+prefixedDsName+"]");
 				if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
@@ -154,24 +157,22 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			if (getDatabaseType() == Dbms.DB2 && "WAS".equals(IbisContext.getApplicationServerType()) && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
+			if (getDatabaseType() == Dbms.DB2 && "WAS".equals(applicationServerType) && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
 				// For (some?) combinations of WebShere and DB2 this seems to be
 				// the default and result in the following exception when (for
 				// example?) a ResultSetIteratingPipe is calling next() on the
 				// ResultSet after it's sender has called a pipeline which
-				// contains a GenericMessageSendingPipe using
-				// transactionAttribute="NotSupported":
+				// contains a SenderPipe using transactionAttribute="NotSupported":
 				//   com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
 				ConfigurationWarnings.add(this, log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
 			}
-			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] version ["+productVersion+"] driver ["+driver+"] version ["+driverVersion+"]";
+			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]";
 		} catch (SQLException e) {
 			log.warn("Exception determining databaseinfo",e);
 		}
 		return dsinfo;
 	}
 
-	
 	public Dbms getDatabaseType() {
 		IDbmsSupport dbms=getDbmsSupport();
 		return dbms != null ? dbms.getDbms() : Dbms.NONE; 
@@ -241,7 +242,7 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 			if (!credentialsConfigured) { // 2020-01-15 have to use this hack here, as configure() method is introduced just now in JdbcFacade, and not all code is aware of it.
 				configureCredentials(); 
 			}
-			DataSource ds=getDatasource();
+			DataSource ds = getDatasource();
 			try {
 				if (cf!=null) {
 					return ds.getConnection(cf.getUsername(), cf.getPassword());
@@ -273,7 +274,6 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 		}
 	}
 
-
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		hski.handleStatisticsKeeper(data, connectionStatistics);
@@ -300,17 +300,6 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 		return result;
 	}
 
-
-	@IbisDoc({"1", "Name of the sender", ""})
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-	@Override
-	public String getName() {
-		return name;
-	}
-
 	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", ""})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
@@ -318,7 +307,6 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 	public String getDatasourceName() {
 		return datasourceName;
 	}
-
 
 	@IbisDoc({ "3", "Authentication alias used to authenticate when connecting to database", "" })
 	public void setAuthAlias(String authAlias) {
@@ -361,5 +349,5 @@ public class JdbcFacade extends JNDIBase implements IConfigurable, INamedObject,
 	public void setConnectionsArePooled(boolean b) {
 		connectionsArePooled = b;
 	}
-	
+
 }

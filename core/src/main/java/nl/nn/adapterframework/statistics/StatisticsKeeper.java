@@ -240,9 +240,6 @@ public class StatisticsKeeper implements ItemList {
 		    case 6: if (getCount() == 0) return null; else return new Long(getFirst());
 		    case 7: if (getCount() == 0) return null; else return new Long(getLast());
 		    default : if ((getCount() == 0)) return null;
-		    	if (index<0) {
-					throw new ArrayIndexOutOfBoundsException("StatisticsKeeper.getItemValue() item index negative: "+index);
-		    	}
 				if ((index-NUM_STATIC_ITEMS) < classBoundaries.length) { 
 					return new Double(new Double(classCounts[index-NUM_STATIC_ITEMS]).doubleValue()/getCount());
 				}

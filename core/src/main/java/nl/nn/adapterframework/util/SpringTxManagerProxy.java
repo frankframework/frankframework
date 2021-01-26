@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -57,6 +56,7 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 	/* (non-Javadoc)
 	 * @see org.springframework.transaction.PlatformTransactionManager#getTransaction(org.springframework.transaction.TransactionDefinition)
 	 */
+	@Override
 	public TransactionStatus getTransaction(TransactionDefinition txDef) throws TransactionException {
 		if (trace && log.isDebugEnabled()) log.debug("getting transaction definition ["+txDef+"]");
 		return getRealTxManager().getTransaction(txDef);
@@ -65,6 +65,7 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 	/* (non-Javadoc)
 	 * @see org.springframework.transaction.PlatformTransactionManager#commit(org.springframework.transaction.TransactionStatus)
 	 */
+	@Override
 	public void commit(TransactionStatus txStatus) throws TransactionException {
 		if (trace && log.isDebugEnabled()) log.debug("commiting transaction ["+txStatus+"]");
 		getRealTxManager().commit(txStatus);
@@ -73,6 +74,7 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 	/* (non-Javadoc)
 	 * @see org.springframework.transaction.PlatformTransactionManager#rollback(org.springframework.transaction.TransactionStatus)
 	 */
+	@Override
 	public void rollback(TransactionStatus txStatus) throws TransactionException {
 		if (trace && log.isDebugEnabled()) log.debug("rolling back transaction ["+txStatus+"]");
 		getRealTxManager().rollback(txStatus);
@@ -101,6 +103,7 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		realTxManagerBeanName = string;
 	}
 
+	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 	}

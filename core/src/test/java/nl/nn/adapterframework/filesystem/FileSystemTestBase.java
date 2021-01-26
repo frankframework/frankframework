@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -119,8 +118,9 @@ public abstract class FileSystemTestBase {
 	}
 	
 	protected void assertFileExistsWithContents(String folder, String filename, String contents) throws Exception {
+		assertTrue("file ["+filename+"] does not exist in folder ["+folder+"]",_fileExists(folder, filename));
 		String actualContents = readFile(folder, filename);
-		assertEquals(filename, contents, actualContents.trim());
+		assertEquals(filename, contents, actualContents==null?null:actualContents.trim());
 	}
 
 	protected void assertFileDoesNotExist(String folder, String filename) throws Exception {

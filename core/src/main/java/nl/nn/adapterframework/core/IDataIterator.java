@@ -22,10 +22,11 @@ package nl.nn.adapterframework.core;
  * @author  Gerrit van Brakel
  * @since   6.4.1
  */
-public interface IDataIterator<T> {
+public interface IDataIterator<T> extends AutoCloseable {
 	
 	public boolean hasNext() throws SenderException; 
 	public T next() throws SenderException;
 
+	@Override
 	public void close() throws SenderException;
 }

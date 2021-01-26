@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.assertEquals;
+import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 
 import java.io.ByteArrayInputStream;
 
@@ -48,7 +48,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedWss.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWss.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
@@ -68,7 +68,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();;
-			assertEquals(getFile("simpleMockedWssSoapAction.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWssSoapAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
@@ -98,7 +98,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();;
-			assertEquals(getFile("simpleMockedWssMultipart.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipart.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
@@ -130,7 +130,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();;
-			assertEquals(getFile("simpleMockedWssMultipart2.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipart2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
@@ -161,7 +161,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedWssMtom.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
@@ -191,7 +191,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 	
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedWssMultipartMtom.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipartMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}

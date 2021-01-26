@@ -38,11 +38,13 @@
 						<table class="table">
 							<tbody>
 								<tr>
-									<td>Total transaction lifetime timeout (in seconds)</td>
+									<td title="The default maximum time allowed for a transaction that is started on this server before the transaction service initiates timeout completion. Any transaction that does not begin completion processing before this timeout occurs is rolled back. This timeout is used only if the application component does not set its own transaction timeout. The upper-limit of this timeout is constrained by the maximum transaction timeout. For example, if you set a value of 500 for the total transaction lifetime timeout, and a value of 300 for the maximum transaction timeout, transactions will time out after 300 seconds."
+										>Total transaction lifetime timeout (in seconds)</td>
 									<td>{{serverProps.totalTransactionLifetimeTimeout}}</td>
 								</tr>
 								<tr>
-									<td>Maximum transaction timeout (in seconds)</td>
+									<td title="Specifies the upper limit of the transaction timeout for transactions that run in this server. This value should be greater than or equal to the total transaction lifetime timeout and greater than or equal to the application component timeout. If the maximum transaction timeout is set to a value less than either the total transaction lifetime timeout or the application component timeout, application component transactions that may require more time will timeout when the maximum transaction timeout is reached."
+										>Maximum transaction timeout (in seconds)</td>
 									<td>{{serverProps.maximumTransactionTimeout}}</td>
 								</tr>
 							</tbody>
@@ -67,6 +69,27 @@
 									<td>{{alias.alias}}</td>
 									<td>{{alias.username}}</td>
 									<td>{{alias.password}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-md-4 m-t-md table-responsive" ng-if="xmlComponents.length > 0">
+					<div class="ibox-title">
+						<h4>XML Components</h4>
+					</div>
+					<div class="ibox-content">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Component</th>
+									<th>Version</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="entry in xmlComponents">
+									<td>{{entry.key}}</td>
+									<td>{{entry.value}}</td>
 								</tr>
 							</tbody>
 						</table>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,16 +18,22 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.function.Function;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang.StringUtils;
@@ -38,9 +44,8 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  */
 public class StreamUtil {
-	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
-
-	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
+	public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
+	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
 	
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
@@ -56,7 +61,7 @@ public class StreamUtil {
 			} catch (FileNotFoundException e) {
 				FileNotFoundException fnfe = new FileNotFoundException("cannot create file ["+filename+"]");
 				fnfe.initCause(e);
-				throw fnfe;					
+				throw fnfe;
 			}
 		}
 		return null;
@@ -72,65 +77,70 @@ public class StreamUtil {
 		return null;
 	}
 	
+	public static InputStream dontClose(InputStream stream) {
+		class NonClosingInputStreamFilter extends FilterInputStream {
+			public NonClosingInputStreamFilter(InputStream in) {
+				super(in);
+			}
+			@Override
+			public void close() throws IOException {
+				// do not close
+			}
+		};
+		
+		return new NonClosingInputStreamFilter(stream);
+	}
+
+	public static Reader dontClose(Reader reader) {
+		class NonClosingReaderFilter extends FilterReader {
+			public NonClosingReaderFilter(Reader in) {
+				super(in);
+			}
+			@Override
+			public void close() throws IOException {
+				// do not close
+			}
+		};
+		
+		return new NonClosingReaderFilter(reader);
+	}
+	
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
-		StringBuffer sb = new StringBuffer();
-		int curChar = -1;
-		int prevChar = -1;
-		while ((curChar = reader.read()) != -1 || prevChar == '\r') {
-			if (prevChar == '\r' || curChar == '\n') {
-				if (endOfLineString == null) {
-					if (prevChar == '\r')
-						sb.append((char) prevChar);
-					if (curChar == '\n')
-						sb.append((char) curChar);
+		try {
+			StringBuffer sb = new StringBuffer();
+			int curChar = -1;
+			int prevChar = -1;
+			while ((curChar = reader.read()) != -1 || prevChar == '\r') {
+				if (prevChar == '\r' || curChar == '\n') {
+					if (endOfLineString == null) {
+						if (prevChar == '\r')
+							sb.append((char) prevChar);
+						if (curChar == '\n')
+							sb.append((char) curChar);
+					}
+					else {
+						sb.append(endOfLineString);
+					}
 				}
-				else {
-					sb.append(endOfLineString);
+				if (curChar != '\r' && curChar != '\n' && curChar != -1) {
+					String appendStr =""+(char) curChar;
+					sb.append(appendStr);
 				}
+				prevChar = curChar;
 			}
-			if (curChar != '\r' && curChar != '\n' && curChar != -1) {
-				String appendStr =""+(char) curChar;
-				sb.append(appendStr);
-			}
-			prevChar = curChar;
+			return sb.toString();
+		} finally {
+			reader.close();
 		}
-		return sb.toString();
 	}
 
 	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding) throws IOException {
 		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream,streamEncoding), endOfLineString);
 	}
 
-	public static byte[] streamToByteArray(InputStream servletinputstream, int contentLength) throws IOException {
-		byte[] result=null;
-		if(contentLength > 0) {
-			result = new byte[contentLength];
-			int position = 0;
-			do {
-				int bytesRead = servletinputstream.read(result, position, contentLength - position);
-				if(bytesRead <= 0) {
-					throw new IOException("post body contains less bytes ["+position+"] than specified by content-length ["+contentLength+"]");
-				}
-				position += bytesRead;
-			} while(contentLength - position > 0);
-		}
-		return result;
-	}
-
 	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM) throws IOException {
-		byte[] result = Misc.streamToBytes(inputStream);
-		if (skipBOM) {
-			//log.debug("checking BOM");
-			if ((result[0] == BOM_UTF_8[0]) && (result[1] == BOM_UTF_8[1]) && (result[2] == BOM_UTF_8[2])) {
-			    byte[] resultWithoutBOM = new byte[result.length-3];
-			    for(int i = 3; i < result.length; ++i)
-			    	resultWithoutBOM[i-3]=result[i];
-			    //log.debug("removed UTF-8 BOM");
-			    return resultWithoutBOM;
-			}
-		}
-		//log.debug("no UTF-8 BOM found");
-		return result;
+		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, !skipBOM, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
+		return Misc.streamToBytes(bOMInputStream);
 	}
 	
 	/**
@@ -147,6 +157,11 @@ public class StreamUtil {
 		BOMInputStream bOMInputStream = new BOMInputStream(inputStream,ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
 		ByteOrderMark bom = bOMInputStream.getBOM();
 		String charsetName = bom == null ? defaultCharset : bom.getCharsetName();
+
+		if(StringUtils.isEmpty(charsetName)) {
+			charsetName = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		}
+
 		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
 	
@@ -203,6 +218,152 @@ public class StreamUtil {
 		response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\"");
 		ZipOutputStream zipOutputStream = new ZipOutputStream(out);
 		return zipOutputStream;
+	}
+
+	public static InputStream closeOnClose(InputStream stream, AutoCloseable resource) {
+		class ResourceClosingInputStreamFilter extends FilterInputStream {
+			public ResourceClosingInputStreamFilter(InputStream in) {
+				super(in);
+			}
+			@Override
+			public void close() throws IOException {
+				try (AutoCloseable closeable = resource) {
+					super.close();
+				} catch (Exception e) {
+					throw new IOException(e);
+				}
+			}
+		};
+
+		return new ResourceClosingInputStreamFilter(stream);
+	}
+
+	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {
+		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; }); 
+	}
+	
+	public static InputStream watch(InputStream stream, Runnable onClose, Function<IOException,IOException> onException) {
+		class WatchedInputStream extends FilterInputStream {
+			public WatchedInputStream(InputStream in) {
+				super(in);
+			}
+			
+			private IOException handleException(IOException e) {
+				if (onException!=null) {
+					IOException r = onException.apply(e);
+					if (r!=null) {
+						return r;
+					}
+				}
+				return e;
+			}
+			
+			@Override
+			public void close() throws IOException {
+				try {
+					super.close();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+				if (onClose!=null) {
+					onClose.run();
+				}
+			}
+
+			@Override
+			public int read() throws IOException {
+				try {
+					return super.read();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public int read(byte[] b) throws IOException {
+				try {
+					return super.read(b);
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public int read(byte[] b, int off, int len) throws IOException {
+				try {
+					return super.read(b, off, len);
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public long skip(long n) throws IOException {
+				try {
+					return super.skip(n);
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public int available() throws IOException {
+				try {
+					return super.available();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public synchronized void reset() throws IOException {
+				try {
+					super.reset();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+		};
+
+		return new WatchedInputStream(stream);
+	}
+
+
+	public static Reader closeOnClose(Reader reader, AutoCloseable resource) {
+		class ResourceClosingReaderFilter extends FilterReader {
+			public ResourceClosingReaderFilter(Reader in) {
+				super(in);
+			}
+			@Override
+			public void close() throws IOException {
+				try (AutoCloseable closeable = resource) {
+					super.close();
+				} catch (Exception e) {
+					throw new IOException(e);
+				}
+			}
+		};
+
+		return new ResourceClosingReaderFilter(reader);
+	}
+	
+	public static OutputStream closeOnClose(OutputStream stream, AutoCloseable resource) {
+		class ResourceClosingOutputStreamFilter extends FilterOutputStream {
+			public ResourceClosingOutputStreamFilter(OutputStream out) {
+				super(out);
+			}
+			@Override
+			public void close() throws IOException {
+				try (AutoCloseable closeable = resource) {
+					super.close();
+				} catch (Exception e) {
+					throw new IOException(e);
+				}
+			}
+		};
+
+		return new ResourceClosingOutputStreamFilter(stream);
 	}
 
 }

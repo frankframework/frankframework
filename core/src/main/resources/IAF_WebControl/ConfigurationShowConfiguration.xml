@@ -1,6 +1,6 @@
 <module>
 	<adapter name="WebControlShowConfiguration" active="${strutsConsole.enabled}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="WebControlShowConfiguration">
+		<receiver name="WebControlShowConfiguration">
 			<listener className="nl.nn.adapterframework.http.RestListener" name="WebControlShowConfiguration" uriPattern="showConfiguration" view="false" />
 		</receiver>
 		<pipeline firstPipe="doShowConfiguration">

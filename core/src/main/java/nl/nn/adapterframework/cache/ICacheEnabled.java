@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package nl.nn.adapterframework.cache;
 
 /**
  * Interface to be implemented by classes that could use a cache. 
- * Implementers will be notified of a cache that is configured via registerCache().
+ * Implementers will be notified of a cache that is configured via setCache().
  * They must call cache.configure() once in their own configure() method
  * They must call cache.open() and cache.close() from their own open() resp. close().
  * 
@@ -26,6 +26,6 @@ package nl.nn.adapterframework.cache;
  */
 public interface ICacheEnabled<K,V> {
 
-	void registerCache(ICacheAdapter<K,V> cache);
+	void setCache(ICacheAdapter<K,V> cache);
 	ICacheAdapter<K,V> getCache();
 }

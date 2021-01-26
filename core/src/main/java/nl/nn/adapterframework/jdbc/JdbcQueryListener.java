@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,13 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
 
@@ -27,6 +30,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  *
  * @since   4.7
  */
+@Deprecated
+@ConfigurationWarning("Please replace with JdbcTableListener for ease of configuration and improved manageability")
 public class JdbcQueryListener extends JdbcListener {
 
 	@Override
@@ -34,49 +39,47 @@ public class JdbcQueryListener extends JdbcListener {
 		if (StringUtils.isEmpty(getSelectQuery())) {
 			throw new ConfigurationException("selectQuery must be specified");
 		}
-		if (StringUtils.isEmpty(getUpdateStatusToProcessedQuery())) {
+		if (!knownProcessStates().contains(ProcessState.DONE)) {
 			throw new ConfigurationException("updateStatusToProcessedQuery must be specified");
 		}
 		if (StringUtils.isEmpty(getKeyField())) {
 			throw new ConfigurationException("keyField must be specified");
 		}
-		if (StringUtils.isEmpty(getUpdateStatusToErrorQuery())) {
+		if (!knownProcessStates().contains(ProcessState.ERROR)) {
 			log.info(getLogPrefix()+"has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead");
-			setUpdateStatusToErrorQuery(getUpdateStatusToProcessedQuery());
+			setUpdateStatusQuery(ProcessState.ERROR,getUpdateStatusQuery(ProcessState.DONE));
 		}
 		super.configure();
+		if (!knownProcessStates().contains(ProcessState.INPROCESS) && !getDbmsSupport().hasSkipLockedFunctionality()) {
+			ConfigurationWarnings.add(this, log, "Database ["+getDbmsSupport().getDbmsName()+"] needs updateStatusToInProcessQuery to run in multiple threads");
+		}
 	}
 	
 
 	@Override
-	@IbisDoc({"primary key field of the table, used to identify messages", ""})
-	public void setKeyField(String fieldname) {
-		super.setKeyField(fieldname);
-	}
-
-	@Override
-	@IbisDoc({"(optional) field containing the message data", "<i>same as keyfield</i>"})
-	public void setMessageField(String fieldname) {
-		super.setMessageField(fieldname);
-	}
-
-	@Override
-	@IbisDoc({"query that returns a row to be processed. must contain a key field and optionally a message field", ""})
+	@IbisDoc({"1", "Query that returns a row to be processed. Must contain a key field and optionally a message field", ""})
 	public void setSelectQuery(String string) {
 		super.setSelectQuery(string);
 	}
 
-	@Override
-	@IbisDoc({"sql statement to the status of a row to 'error'. must contain one parameter, that is set to the value of the key", "same as <code>updatestatustoprocessedquery</code>"})
-	public void setUpdateStatusToErrorQuery(String string) {
-		super.setUpdateStatusToErrorQuery(string);
+	@IbisDoc({"2", "SQL statement to set the status of a row to 'processed'. Must contain one parameter, that is set to the value of the key", ""})
+	public void setUpdateStatusToProcessedQuery(String query) {
+		setUpdateStatusQuery(ProcessState.DONE, query);
 	}
 
-	@Override
-	@IbisDoc({"sql statement to the status of a row to 'processed'. must contain one parameter, that is set to the value of the key", ""})
-	public void setUpdateStatusToProcessedQuery(String string) {
-		super.setUpdateStatusToProcessedQuery(string);
+	@IbisDoc({"3", "SQL statement to set the status of a row to 'error'. Must contain one parameter, that is set to the value of the key", "same as <code>updateStatusToProcessedQuery</code>"})
+	public void setUpdateStatusToErrorQuery(String query) {
+		setUpdateStatusQuery(ProcessState.ERROR, query);
 	}
 
+	@IbisDoc({"4", "SQL statement to set the status of a row to 'in process'. Must contain one parameter, that is set to the value of the key. Can be left emtpy if database has SKIP LOCKED functionality", ""})
+	public void setUpdateStatusToInProcessQuery(String query) {
+		setUpdateStatusQuery(ProcessState.INPROCESS, query);
+	}
+
+	@IbisDoc({"5", "SQL statement to set the status of a row to 'available'. Must contain one parameter, that is set to the value of the key. Only use in rollbacks, when updateStatusToInProcessQuery is specified", ""})
+	public void setRevertInProcessStatusQuery(String query) {
+		setUpdateStatusQuery(ProcessState.AVAILABLE, query);
+	}
 
 }

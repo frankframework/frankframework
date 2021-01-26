@@ -15,142 +15,120 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.WildCardFilter;
 
-public class LocalFileSystem implements IWritableFileSystem<File> {
+/**
+ * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
+ *  
+ * @author Gerrit van Brakel
+ *
+ */
+public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFileSystem<Path> {
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String root;
 	private String wildcard;
 	private String excludeWildcard;
-
-	private class FilePathIterator implements Iterator<File> {
-
-		private File files[];
-		int i = 0;
-
-		FilePathIterator(File files[]) {
-			this.files = files;
-		}
-
-		@Override
-		public boolean hasNext() {
-			return files != null && i < files.length;
-		}
-
-		@Override
-		public File next() {
-			return files[i++];
-		}
-
-		@Override
-		public void remove() {
-			deleteFile(files[i++]);
-		}
-
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		// No Action is required
 	}
 
-	@Override
-	public void open() {
-		// No Action is required
-	}
 
 	@Override
-	public void close() {
-		// No Action is required
-	}
-
-	@Override
-	public File toFile(String filename) {
+	public Path toFile(String filename) {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public File toFile(String folder, String filename) {
-		if (StringUtils.isEmpty(folder)) {
-			return new File(getRoot(), filename);
+	public Path toFile(String folder, String filename) {
+		if (filename==null) {
+			filename="";
 		}
-		if (StringUtils.isEmpty(getRoot())) {
-			return new File(folder, filename);
+		if (StringUtils.isNotEmpty(folder) && !(filename.contains("/") || filename.contains("\\"))) {
+			filename = folder +"/" + filename;
 		}
-		return new File(getRoot()+"/"+folder, filename);
+		if (StringUtils.isNotEmpty(getRoot())) {
+			Path result = Paths.get(filename);
+			if (result.isAbsolute()) {
+				return result;
+			}
+			filename = getRoot()+"/"+ filename;
+		}
+		return Paths.get(filename);
 	}
 
 	@Override
-	public Iterator<File> listFiles(String folder) {
-		String path=getRoot();
-		if (StringUtils.isEmpty(path)) {
-			path=folder;
-		} else {
-			if (StringUtils.isNotEmpty(folder)) {
-				path+="/"+folder;
-			}
-		}
-		final File dir = StringUtils.isNotEmpty(path)?new File(path):new File("/");
+	public DirectoryStream<Path> listFiles(String folder) throws FileSystemException {
+		final Path dir = toFile(folder);
+
 		final WildCardFilter wildcardfilter =  StringUtils.isEmpty(getWildcard()) ? null : new WildCardFilter(getWildcard());
 		final WildCardFilter excludeFilter =  StringUtils.isEmpty(getExcludeWildcard()) ? null : new WildCardFilter(getExcludeWildcard());
 
-		FileFilter filter = new FileFilter() {
-
-			@Override
-			public boolean accept(File file) {
-				return file.isFile() 
-						&& (wildcardfilter==null || wildcardfilter.accept(dir, file.getName()))
-						&& (excludeFilter==null || !excludeFilter.accept(dir, file.getName()));
+		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+			public boolean accept(Path file) throws IOException {
+				return !Files.isDirectory(file) 
+						&& (wildcardfilter==null || wildcardfilter.accept(dir.toFile(), file.getFileName().toString()))
+						&& (excludeFilter==null || !excludeFilter.accept(dir.toFile(), file.getFileName().toString()));
 			}
-			
 		};
-		return new FilePathIterator(dir.listFiles(filter));
+		try {
+			return Files.newDirectoryStream(dir, filter);
+		} catch (IOException e) {
+			throw new FileSystemException("Cannot list files in ["+folder+"]", e);
+		}
 	}
 
 	@Override
-	public boolean exists(File f) {
-		return f.exists();
+	public boolean exists(Path f) {
+		return Files.exists(f);
 	}
 
 	@Override
-	public OutputStream createFile(File f) throws IOException {
-		return new FileOutputStream(f, false);
+	public OutputStream createFile(Path f) throws IOException {
+		return Files.newOutputStream(f);
 	}
 
 	@Override
-	public OutputStream appendFile(File f) throws FileNotFoundException {
-		return new FileOutputStream(f, true);
+	public OutputStream appendFile(Path f) throws IOException {
+		return Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 	}
 
 	@Override
-	public InputStream readFile(File f) throws FileNotFoundException {
-		return new FileInputStream(f);
+	public Message readFile(Path f) throws IOException {
+		return new Message(f);
 	}
 
 	@Override
-	public void deleteFile(File f) {
-		f.delete();
+	public void deleteFile(Path f) throws FileSystemException {
+		try {
+			Files.delete(f);
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
 	}
 
-	public boolean isFolder(File f) {
-		return f.isDirectory();
+	public boolean isFolder(Path f) {
+		return Files.isDirectory(f);
 	}
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
@@ -160,8 +138,12 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		if (!folderExists(folder)) {
-			toFile(folder).mkdir();
-		}else {
+			try {
+				Files.createDirectories(toFile(folder));
+			} catch (IOException e) {
+				throw new FileSystemException("Cannot create folder ["+ folder +"]", e);
+			}
+		} else {
 			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 	}
@@ -169,91 +151,78 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	@Override
 	public void removeFolder(String folder) throws FileSystemException {
 		if (folderExists(folder)) {
-			toFile(folder).delete();
+			try {
+				Files.delete(toFile(folder));
+			} catch (IOException e) {
+				throw new FileSystemException("Cannot remove folder ["+ folder +"]",e);
+			}
 		}else {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 	}
 
 	@Override
-	public File renameFile(File f, String newName, boolean force) throws FileSystemException {
-		File dest;
-
-		dest = new File(newName);
-		if (dest.exists()) {
-			if (force)
-				dest.delete();
-			else {
-				throw new FileSystemException("Cannot rename file. Destination file already exists.");
-			}
-		}
-		f.renameTo(dest);
-		return dest;
-	}
-	
-	protected File getDestinationFile(File f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
-		File toFolder = toFile(destinationFolder);
-		if (toFolder.exists()) {
-			if (!toFolder.isDirectory()) {
-				throw new FileSystemException("Cannot "+action+" file. Destination ["+toFolder.getName()+"] is not a folder.");
-			}
-		} else {
-			if (createFolder)
-				createFolder(destinationFolder);
-			else {
-				throw new FileSystemException("Cannot "+action+" file. Destination folder ["+toFolder.getName()+"] does not exist.");
-			}
-		}
-		File target=new File(toFolder,f.getName());
-		return target;
-	}
-	
-	@Override
-	public File moveFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		File target = getDestinationFile(f, destinationFolder, createFolder, "move");
-		if (!f.renameTo(target)) {
-			return f;
-		}
-		return target;
-	}
-	@Override
-	public File copyFile(File f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		File target = getDestinationFile(f, destinationFolder, createFolder, "copy");
+	public Path renameFile(Path source, Path destination) throws FileSystemException {
 		try {
-			FileUtils.copyFile(f, target);
+			return Files.move(source, destination);
 		} catch (IOException e) {
-			throw new FileSystemException("cannot copy file ["+f.getName()+"] to folder ["+destinationFolder+"]",e);
+			throw new FileSystemException("Cannot rename file ["+ source.toString() +"] to ["+ destination.toString() +"]", e);
+		}
+	}
+	
+	@Override
+	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		try {
+			return Files.move(f, toFile(destinationFolder, f.getFileName().toString()));
+		} catch (IOException e) {
+			throw new FileSystemException("Cannot move file ["+ f.toString() +"] to ["+ destinationFolder+"]", e);
+		}
+	}
+	@Override
+	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		Path target = toFile(destinationFolder, f.getFileName().toString());
+		try {
+			Files.copy(f, target);
+		} catch (IOException e) {
+			throw new FileSystemException("Cannot copy file ["+ f.toString()+"] to ["+ destinationFolder+"]", e);
 		}
 		return target;
 	}
 
-
 	@Override
-	public long getFileSize(File f) throws FileSystemException {
-		return f.length();
-	}
-
-	@Override
-	public String getName(File f) {
-		return f.getName();
-	}
-
-	@Override
-	public String getCanonicalName(File f) throws FileSystemException {
+	public long getFileSize(Path f) throws FileSystemException {
 		try {
-			return f.getCanonicalPath();
+			return Files.size(f);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
 	@Override
-	public Date getModificationTime(File f) throws FileSystemException {
-		return new Date(f.lastModified());
+	public String getName(Path f) {
+		return f.getFileName().toString();
 	}
 
 	@Override
-	public Map<String, Object> getAdditionalFileProperties(File f) {
+	public String getCanonicalName(Path f) throws FileSystemException {
+		try {
+			return f.toFile().getCanonicalPath();
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public Date getModificationTime(Path f) throws FileSystemException {
+		try {
+			return new Date(Files.readAttributes(f, BasicFileAttributes.class).lastModifiedTime().toMillis());
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public Map<String, Object> getAdditionalFileProperties(Path f) {
 		return null;
 	}
 
@@ -263,7 +232,8 @@ public class LocalFileSystem implements IWritableFileSystem<File> {
 	}
 
 
-	@IbisDoc({"1", "the folder that serves as the root of this virtual filesystem", "" })
+	@IbisDoc({"1", "Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root. "+
+			"When the root is left unspecified, absolute paths to files and folders can be used", "" })
 	public void setRoot(String root) {
 		this.root = root;
 	}

@@ -144,41 +144,35 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		return sendMessage(message, session, null);
 	}
 
-	public Message sendMessage(Message input, IPipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, IPipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
 		Session s = null;
 		MessageProducer mp = null;
 		String correlationID = session==null ? null : session.getMessageId();
 
-		String message;
-		try {
-			message = input.asString();
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(),e);
-		}
 		ParameterValueList pvl=null;
 		if (paramList != null) {
 			try {
-				pvl=paramList.getValues(input, session);
+				pvl=paramList.getValues(message, session);
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
 			}
 		}
 
-		if (isSoap()) {
-			if (soapHeader==null) {
-				if (pvl!=null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
-					ParameterValue soapHeaderParamValue=pvl.getParameterValue(getSoapHeaderParam());
-					if (soapHeaderParamValue==null) {
-						log.warn("no SoapHeader found using parameter ["+getSoapHeaderParam()+"]");
-					} else {
-						soapHeader=soapHeaderParamValue.asStringValue("");
+		try {
+			if (isSoap()) {
+				if (soapHeader==null) {
+					if (pvl!=null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
+						ParameterValue soapHeaderParamValue=pvl.getParameterValue(getSoapHeaderParam());
+						if (soapHeaderParamValue==null) {
+							log.warn("no SoapHeader found using parameter ["+getSoapHeaderParam()+"]");
+						} else {
+							soapHeader=soapHeaderParamValue.asStringValue("");
+						}
 					}
 				}
+				message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI(),soapHeader);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"correlationId ["+correlationID+"] soap message ["+message+"]");
 			}
-			message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI(),soapHeader);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"correlationId ["+correlationID+"] soap message ["+message+"]");
-		}
-		try {
 			s = createSession();
 			mp = getMessageProducer(s, getDestination(session));
 			Destination replyQueue = null;

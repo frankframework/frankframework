@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
-public class LocalFileSystemSender extends FileSystemSender<File, LocalFileSystem>{
+public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSystem>{
 
 	public LocalFileSystemSender() {
 		setFileSystem(new LocalFileSystem());

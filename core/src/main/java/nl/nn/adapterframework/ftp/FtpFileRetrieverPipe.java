@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import nl.nn.adapterframework.stream.Message;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when a file has been retrieved</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * <tr><td>"exception"</td><td>an exception was thrown retrieving the file. The result passed to the next pipe is the input of the pipe</td></tr>
  * </table>
  * </p>
@@ -311,11 +310,6 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	@IbisDoc({"(ftps) ", " "})
 	public void setTruststorePassword(String truststorePassword) {
 		ftpSession.setTruststorePassword(truststorePassword);
-	}
-
-	@IbisDoc({"(ftps) enables the use of certificates on jdk 1.3.x. the sun reference implementation jsse 1.0.3 is included for convenience", "false"})
-	public void setJdk13Compatibility(boolean jdk13Compatibility) {
-		ftpSession.setJdk13Compatibility(jdk13Compatibility);
 	}
 
 	@IbisDoc({"(ftps) when true, the hostname in the certificate will be checked against the actual hostname", "true"})

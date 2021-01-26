@@ -26,6 +26,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
@@ -81,22 +82,22 @@ public class DB2XMLWriter {
 	/**
 	 * Retrieve the Resultset as a well-formed XML string
 	 */
-	public String getXML(ResultSet rs) {
-		return getXML(rs, Integer.MAX_VALUE);
+	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs) {
+		return getXML(dbmsSupport, rs, Integer.MAX_VALUE);
 	}
 
 	/**
 	 * Retrieve the Resultset as a well-formed XML string
 	 */
-	public String getXML(ResultSet rs, int maxlength) {
-		return getXML(rs, maxlength, true);
+	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength) {
+		return getXML(dbmsSupport, rs, maxlength, true);
 	}
 
-	public String getXML(ResultSet rs, int maxlength, boolean includeFieldDefinition) {
+	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition) {
 		try {
 			XmlWriter xmlWriter = new XmlWriter();
 			PrettyPrintFilter ppf = new PrettyPrintFilter(xmlWriter);
-			getXML(rs, maxlength, includeFieldDefinition, ppf);
+			getXML(dbmsSupport, rs, maxlength, includeFieldDefinition, ppf);
 			return xmlWriter.toString();
 		} catch (SAXException e) {
 			log.warn("cannot convert ResultSet to XML", e);
@@ -105,7 +106,7 @@ public class DB2XMLWriter {
 	}
 
 
-	public void getXML(ResultSet rs, int maxlength, boolean includeFieldDefinition, ContentHandler handler) throws SAXException {
+	public void getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, ContentHandler handler) throws SAXException {
 	
 		try (SaxDocumentBuilder root = new SaxDocumentBuilder(docname, handler)) {
 			if (null == rs) {
@@ -191,7 +192,7 @@ public class DB2XMLWriter {
 
 				try (SaxElementBuilder queryresult = root.startElement(recordname)) {
 					while (rs.next() && rowCounter < maxlength) {
-						getRowXml(queryresult, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
+						getRowXml(queryresult, dbmsSupport, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces, getBlobSmart);
 						rowCounter++;
 					}
 				}
@@ -201,13 +202,13 @@ public class DB2XMLWriter {
 		}
  	}
 
-	public static String getRowXml(ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
+	public static String getRowXml(IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
 		SaxElementBuilder parent = new SaxElementBuilder();
-		getRowXml(parent, rs, rowNumber, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart);
+		getRowXml(parent, dbmsSupport, rs, rowNumber, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart);
 		return parent.toString();
 	}
 
-	public static void getRowXml(SaxElementBuilder rows, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
+	public static void getRowXml(SaxElementBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
 		try (SaxElementBuilder row = rows.startElement("row")) {
 			row.addAttribute("number", "" + rowNumber);
 			for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
@@ -219,10 +220,10 @@ public class DB2XMLWriter {
 					resultField.addAttribute("name", columnName);
 
 					try {
-						String value = JdbcUtil.getValue(rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
+						String value = JdbcUtil.getValue(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
 						if (rs.wasNull()) {
 							resultField.addAttribute("null","true");
-						}
+						} 
 						resultField.addValue(value);
 					} catch (Exception e) {
 						throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);

@@ -74,7 +74,7 @@ public class MatchUtils {
 			XmlUtils.parseXml(xml, contentHandler);
 			return xmlWriter.toString();
 		} catch (IOException | SAXException e) {
-			return "ERROR: could not prettyfy: ("+e.getClass().getName()+") "+e.getMessage();
+			throw new RuntimeException("ERROR: could not prettify ["+xml+"]",e);
 		}
 	}
 

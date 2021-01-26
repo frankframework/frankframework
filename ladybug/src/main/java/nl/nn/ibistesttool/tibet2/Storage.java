@@ -27,7 +27,10 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.JMSException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
@@ -36,6 +39,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -45,20 +49,12 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.util.LogUtil;
 import nl.nn.testtool.util.SearchUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
 /**
  * @author Jaco de Groot
  */
 public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudStorage {
-	private static final Logger log = LogUtil.getLogger(Storage.class); // Overwrites log of JdbcFacade (using nl.nn.testtool.util.LogUtil instead of nl.nn.adapterframework.util.LogUtil)
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	private static final String DELETE_ADAPTER = "DeleteFromExceptionLog";
 	private String name;
@@ -71,6 +67,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	private Map<String, String> fixedStringTables;
 	private TestTool testTool;
 	private JdbcTemplate jdbcTemplate;
+	private IDbmsSupport dbmsSupport = new GenericDbmsSupport(); // N.B. should use DbmsSupportFactory.getDbmsSupport(), but cannot get connection from JdbcTemplate. Blobs will not work for PostgreSQL...
 	private IbisManager ibisManager;
 	private SecurityContext securityContext;
 
@@ -491,15 +488,11 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 
 	private String getValue(ResultSet rs, int columnIndex) throws SQLException {
 		try {
-			return JdbcUtil.getValue(rs, columnIndex, rs.getMetaData(),
-					Misc.DEFAULT_INPUT_STREAM_ENCODING, false,
-					"", false, true, false);
+			return JdbcUtil.getValue(dbmsSupport, rs, columnIndex, rs.getMetaData(), Misc.DEFAULT_INPUT_STREAM_ENCODING, false, "", false, true, false);
 		} catch (JdbcException e) {
 			throw new SQLException("JdbcException reading value");
 		} catch (IOException e) {
 			throw new SQLException("IOException reading value");
-		} catch (JMSException e) {
-			throw new SQLException("JMSException reading value");
 		}
 	}
 

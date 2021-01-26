@@ -22,7 +22,7 @@ import java.io.InputStream;
 public class ReleaseConnectionAfterReadInputStream extends FilterInputStream {
 	HttpResponseHandler responseHandler;
 
-	public ReleaseConnectionAfterReadInputStream(HttpResponseHandler responseHandler, InputStream inputStream) throws IOException {
+	public ReleaseConnectionAfterReadInputStream(HttpResponseHandler responseHandler, InputStream inputStream) {
 		super(inputStream);
 		this.responseHandler = responseHandler;
 	}

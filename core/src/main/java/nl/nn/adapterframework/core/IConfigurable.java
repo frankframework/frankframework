@@ -15,9 +15,15 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
-public interface IConfigurable {
+public interface IConfigurable extends INamedObject{
 
 	public void configure() throws ConfigurationException;
+	/**
+	 * This ClassLoader is set upon creation of the object, used to retrieve resources configured by the Ibis application.
+	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
+	 */
+	public ClassLoader getConfigurationClassLoader();
 }

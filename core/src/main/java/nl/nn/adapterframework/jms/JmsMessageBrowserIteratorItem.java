@@ -134,7 +134,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 	}
 
 	@Override
-	public void release() {
+	public void close() {
 		// close never required, as message is serializable
 	}
 

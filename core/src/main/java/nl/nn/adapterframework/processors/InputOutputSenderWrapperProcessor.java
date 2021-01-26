@@ -60,7 +60,7 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				}
 			}
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
-			session.put(senderWrapperBase.getStoreResultInSessionKey(),result);
+			session.put(senderWrapperBase.getStoreResultInSessionKey(), result.asObject());
 		}
 		return senderWrapperBase.isPreserveInput()?message:result;
 	}

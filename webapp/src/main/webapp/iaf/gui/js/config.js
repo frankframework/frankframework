@@ -101,75 +101,47 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			},
 		},
 	})
-	.state('pages.errorstorage', {
+	.state('pages.storage', {
 		abstract: true,
-		url: "/adapter/:adapter/:receiver/",
-		template: "<div ui-view></div>",
-		controller: 'ErrorStorageBaseCtrl',
-		data: {
-			pageTitle: 'ErrorStorage',
-			breadcrumbs: 'Adapter > ErrorStorage'
+		url: "/adapters/:adapter/receivers/:receiver/",
+		template: "<div ui-view ng-controller='StorageBaseCtrl'></div>",
+		controller: function($state) {
+			$state.current.data.pageTitle = $state.params.storageType;
+			$state.current.data.breadcrumbs = "Adapter > "+$state.params.storageType;
 		},
 		params: {
 			adapter: { value: '', squash: true},
 			receiver: { value: '', squash: true},
+			storageType: { value: '', squash: true},
+		},
+		data: {
+			pageTitle: '',
+			breadcrumbs: ''
 		},
 	})
-	.state('pages.errorstorage.list', {
-		url: "errorstorage",
-		templateUrl: "views/txstorage/adapter_errorstorage_list.html",
+	.state('pages.storage.list', {
+		url: ":storageType",
+		templateUrl: "views/txstorage/adapter_storage_list.html",
 		resolve: {
 			loadPlugin: function($ocLazyLoad) {
 				return $ocLazyLoad.load('datatables');
 			},
 		},
 	})
-	.state('pages.errorstorage.view', {
-		url: "errorstorage/:messageId",
-		templateUrl: "views/txstorage/adapter_errorstorage_view.html",
+	.state('pages.storage.view', {
+		url: ":storageType/:messageId",
+		templateUrl: "views/txstorage/adapter_storage_view.html",
 		params: {
 			messageId: { value: '', squash: true},
 		},
 		controller: function($state) {
-			$state.current.data.breadcrumbs = "Adapter > ErrorStorage > View Message "+$state.params.messageId;
-		}
-	})
-	.state('pages.messagelog', {
-		abstract: true,
-		url: "/adapter/:adapter/",
-		template: "<div ui-view></div>",
-		controller: 'MessageLogBaseCtrl',
-		data: {
-			pageTitle: 'Adapter',
-			breadcrumbs: 'Adapter > MessageLog'
-		},
-		params: {
-			adapter: { value: '', squash: true},
-			receiver: { value: '', squash: true},
+			$state.current.data.breadcrumbs = "Adapter > "+$state.params.storageType+" > View Message "+$state.params.messageId;
 		},
 	})
-	.state('pages.messagelog.list', {
-		url: "receiver/:receiver/messagelog",
-		templateUrl: "views/txstorage/adapter_messagelog_list.html",
-		resolve: {
-			loadPlugin: function($ocLazyLoad) {
-				return $ocLazyLoad.load('datatables');
-			},
-		},
-	})
-	.state('pages.messagelog.view', {
-		url: "receiver/:receiver/messagelog/:messageId",
-		templateUrl: "views/txstorage/adapter_messagelog_view.html",
-		params: {
-			messageId: { value: '', squash: true},
-		},
-		controller: function($state) {
-			$state.current.data.breadcrumbs = "Adapter > MessageLog > View Message "+$state.params.messageId;
-		}
-	})
+	
 	.state('pages.pipemessagelog', {
 		abstract: true,
-		url: "/adapter/:adapter/pipe/:pipe",
+		url: "/adapter/:adapter/pipes/:pipe",
 		template: "<div ui-view></div>",
 		controller: 'PipeMessageLogBaseCtrl',
 		data: {
@@ -383,6 +355,14 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			breadcrumbs: 'JDBC > Ibisstore Summary'
 		}
 	})
+	.state('pages.liquibase', {
+		url: "/liquibase",
+		templateUrl: "views/ShowLiquibaseScript.html",
+		data: {
+			pageTitle: 'Liquibase Script',
+			breadcrumbs: 'JDBC > Liquibase Script'
+		}
+	})
 	.state('pages.customView', {
 		url: "/customView/:name",
 		templateUrl: "views/iFrame.html",
@@ -457,7 +437,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 
 	$locationProvider.html5Mode(false);
 
-}]).run(['$rootScope', '$state', 'Debug', 'gTag', function($rootScope, $state, Debug, gTag) {
+}]).run(['$rootScope', '$state', 'Debug', function($rootScope, $state, Debug) {
 	// Set this asap on localhost to capture all debug data
 	if(location.hostname == "localhost")
 		Debug.setLevel(3);
@@ -480,6 +460,4 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	$rootScope.setLogLevel = function(level) {
 		Debug.setLevel(level);
 	};
-
-	gTag.setTrackingId("UA-111373008-1");
 }]);
