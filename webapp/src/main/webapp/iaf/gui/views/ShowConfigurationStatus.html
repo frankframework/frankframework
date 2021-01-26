@@ -230,7 +230,7 @@
                                     <span ng-if="adapter.messagesInProcess > 0">({{adapter.messagesInProcess}} <i class="fa fa-cog fa-spin" aria-hidden="true"></i>)</span>
                                     <span ng-if="adapter.messagesInError > 0">| {{adapter.messagesInError}} <i class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
                                 </div>
-                                <div class="col-sm-2" title="Adapter Store">
+                                <div class="col-sm-2" title="Adapter Store" ng-if="!showContent">
                                 	<span ng-if="adapter.messageLogMessageCount > 0" class="text-success" title="Total # of processed messages">
                                          <i class="fa fa-envelope-o"></i> ({{adapter.messageLogMessageCount}})
                                    	</span>
@@ -349,11 +349,6 @@
                                             <td ng-if="!receiver.threadCount && receiver.state !='started'">-</td>
                                             <td>
                                                 <span class="pull-right">
-                                                    <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
-                                                    <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
-                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
-                                                    <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
-
                                                     <span class="text-success" title="View Messages Processed">
                                                         <button ng-show="{{::receiver.hasMessageLog}}" ui-lref="pages.messagelog.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-envelope-o"></i> ({{::receiver.messageLogCount}})
@@ -369,6 +364,10 @@
                                                             <i class="fa fa-times-circle"></i> ({{::receiver.errorStorageCount}})
                                                         </button>
                                                     </span>
+                                                    <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
+                                                    <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
+                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+                                                    <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
                                                 </span>
                                             </td>
                                         </tr>
