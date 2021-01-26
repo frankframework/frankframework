@@ -62,9 +62,10 @@ public class FrankDocModel {
 	// We want to iterate FrankElement in the order they are created, to be able
 	// to create the ElementRole objects in the right order. 
 	private @Getter Map<String, FrankElement> allElements = new LinkedHashMap<>();
-	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
-	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
+	private @Getter Map<String, ElementType> allTypes = new LinkedHashMap<>();
+	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new LinkedHashMap<>();
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
+	private final GenericRole.Factory genericRoleFactory = new GenericRole.Factory();
 
 	/**
 	 * Get the FrankDocModel needed in production. This is just a first draft. The
@@ -672,5 +673,17 @@ public class FrankDocModel {
 			}
 			partitions.get(true).forEach(f -> f.setCausesNameConflict(true));
 		}
+	}
+
+	public GenericRole findOrCreate(XsdVersion version, ElementRole role) {
+		return genericRoleFactory.findOrCreate(version, Arrays.asList(role));
+	}
+
+	public List<GenericRole> findOrCreateCumulativeChildren(XsdVersion version, FrankElement parent) {
+		return genericRoleFactory.findOrCreateCumulativeChildren(version, parent, this);
+	}
+
+	public List<GenericRole> findOrCreateChildren(XsdVersion version, GenericRole parent) {
+		return genericRoleFactory.findOrCreateChildren(version, parent, this);
 	}
 }

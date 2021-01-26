@@ -96,4 +96,9 @@ public class FrankAttribute extends ElementChild implements Comparable<FrankAttr
 	private static final Comparator<FrankAttribute> FRANK_ATTRIBUTE_COMPARATOR =
 			Comparator.comparing(FrankAttribute::getOrder)
 			.thenComparing(FrankAttribute::getName);
+
+	@Override
+	boolean isSuperseded() {
+		return false;
+	}
 }

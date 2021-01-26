@@ -273,4 +273,8 @@ public class FrankElement {
 		result.addAll(s2);
 		return result;
 	}
+
+	public String toString() {
+		return fullName;
+	}
 }

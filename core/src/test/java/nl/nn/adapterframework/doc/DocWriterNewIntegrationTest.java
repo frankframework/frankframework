@@ -12,21 +12,22 @@ import org.junit.Test;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.model.FrankElementStatistics;
+import nl.nn.adapterframework.doc.model.XsdVersion;
 
-// @Ignore("Test takes a long time to run, and gives little information")
+@Ignore("Test takes a long time to run, and gives little information")
 public class DocWriterNewIntegrationTest {
 
 	@Test
 	public void testStrict() throws IOException {
-		generateXsd(XmlSchemaVersion.STRICT);
+		generateXsd(XsdVersion.STRICT);
 	}
 
 	@Test
 	public void testCompatibility() throws IOException {
-		generateXsd(XmlSchemaVersion.COMPATIBILITY);
+		generateXsd(XsdVersion.COMPATIBILITY);
 	}
 
-	private void generateXsd(XmlSchemaVersion version) throws IOException {
+	private void generateXsd(XsdVersion version) throws IOException {
 		FrankDocModel model = FrankDocModel.populate();
 		DocWriterNew docWriter = new DocWriterNew(model);
 		docWriter.init(version);

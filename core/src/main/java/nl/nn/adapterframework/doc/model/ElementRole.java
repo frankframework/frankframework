@@ -19,8 +19,10 @@ package nl.nn.adapterframework.doc.model;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -119,6 +121,13 @@ public class ElementRole implements Comparable<ElementRole> {
 		return c.stream()
 				.map(role -> role.toString())
 				.collect(Collectors.joining(", "));		
+	}
+
+	static Set<ElementRole> join(Set<ElementRole> s1, Set<ElementRole> s2) {
+		Set<ElementRole> result = new HashSet<>();
+		result.addAll(s1);
+		result.addAll(s2);
+		return result;
 	}
 
 	static class Factory {

@@ -126,4 +126,9 @@ public class ConfigChild extends ElementChild {
 	public ElementType getElementType() {
 		return elementRole.getElementType();
 	}
+
+	@Override
+	boolean isSuperseded() {
+		return elementRole.isSuperseded();
+	}
 }

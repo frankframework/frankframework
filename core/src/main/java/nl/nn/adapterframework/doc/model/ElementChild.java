@@ -117,4 +117,9 @@ public abstract class ElementChild {
 	 * This function has the same purpose for config children.
 	 */
 	abstract AbstractKey getKey();
+
+	/**
+	 * Only applies to {@link ConfigChild}, and then points to {@link ElementRole#isSuperseded()}
+	 */
+	abstract boolean isSuperseded();
 }
