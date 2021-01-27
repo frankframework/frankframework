@@ -36,9 +36,6 @@
 			<property name="logPart2Filename" value="${log.dir}/${instance.name.lc}-btm2.tlog" />
 	</bean>
 
-	<bean id="dataSourceFactory"
-		class="nl.nn.adapterframework.jdbc.BtmDataSourceFactory"
-		destroy-method="shutdown" 
-	/>
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.BtmDataSourceFactory" destroy-method="shutdown" />
 
 </beans>

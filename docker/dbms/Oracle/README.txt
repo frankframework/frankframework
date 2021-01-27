@@ -25,7 +25,7 @@ If you want to remove the container you can use "docker-compose down", if you ju
 You will need to add the following to your context.xml file, which can be found at iaf\test\src\main\webapp\META-INF\, to connect to the database in the container.
 
 	<Resource
-		name="jdbc/ibis4test-oracle-docker"
+		name="jdbc/ibis4test-oracle"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
 		URL="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
