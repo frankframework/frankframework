@@ -35,16 +35,22 @@
 								</select>
 							</div>
 						</div>
-						<div class="form-group">
+						<div class="form-group" title="Name of the queue the reply is expected on.">
 							<label class="col-sm-3 control-label">Reply To</label>
 							<div class="col-sm-9">
-								<input class="form-control m-b" name="destination" type="text" ng-model="form.replyTo"/>
+								<input class="form-control m-b" name="replyTo" type="text" ng-model="form.replyTo"/>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Persistent</label>
 							<div class="col-sm-9">
-								<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.persistent" /></span>
+								<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" name="persistent" ng-model="form.persistent" /></span>
+							</div>
+						</div>
+						<div class="form-group" title="In case it is checked, it will operate in rr mode. Expected reply will be created either on the queue specified in 'Reply To', or on a dynamically generated temporary queue">
+							<label class="col-sm-3 control-label">Synchronous</label>
+							<div class="col-sm-9">
+								<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" name="synchronous" ng-model="form.synchronous" /></span>
 							</div>
 						</div>
 						<div class="form-group">

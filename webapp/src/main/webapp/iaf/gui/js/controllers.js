@@ -1998,6 +1998,8 @@ angular.module('iaf.beheerconsole')
 			fd.append("replyTo", formData.replyTo);
 		if(formData.persistent && formData.persistent != "")
 			fd.append("persistent", formData.persistent);
+		if(formData.synchronous && formData.synchronous != "")
+			fd.append("synchronous", formData.synchronous);
 
 		if(!formData.message && !formData.file) {
 			$scope.error = "Please specify a file or message!";
