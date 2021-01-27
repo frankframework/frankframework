@@ -139,8 +139,8 @@ public class PipeLineSessionBaseTest {
 	
 	@ToString
 	private class StateObservableInputStream extends InputStream {
-		int closes = 0;
-		String name;
+		protected int closes = 0;
+		protected String name;
 		
 		StateObservableInputStream(String name) {
 			this.name=name;
@@ -167,13 +167,13 @@ public class PipeLineSessionBaseTest {
 		
 		InputStream p = session.scheduleCloseOnSessionExit(a);
 		InputStream q = session.scheduleCloseOnSessionExit(a);
-		assertTrue(p==q);
+		assertTrue("scheduling a resource twice must yield the same object", p==q); 
 		
 		InputStream r = session.scheduleCloseOnSessionExit(b);
 		InputStream s = session.scheduleCloseOnSessionExit(c);
 		InputStream t = session.scheduleCloseOnSessionExit(d);
 		InputStream u = session.scheduleCloseOnSessionExit(t);
-		assertTrue(u==t);
+		assertTrue("rescheduling the wrapper of a scheduled object must yield the same wrapped object", u==t);
 
 		log.debug("test calling close on wrapped(b)");
 		r.close();
