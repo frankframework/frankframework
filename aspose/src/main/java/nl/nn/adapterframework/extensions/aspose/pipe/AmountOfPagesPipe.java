@@ -50,28 +50,15 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		int result = 0;
 
-		InputStream binaryInputStream;
-		try {
-			binaryInputStream = input.asInputStream(getCharset());
+		try (InputStream binaryInputStream = input.asInputStream(getCharset())){
+			Document doc = new Document(binaryInputStream);
+			result = doc.getPages().size();
+			binaryInputStream.close();
 		} catch (IOException e1) {
 			throw new PipeRunException(this,
 						getLogPrefix(session) + "cannot encode message using charset [" + getCharset() + "]", e1);
-		}
-
-		try {
-			Document doc = new Document(binaryInputStream);
-			result = doc.getPages().size();
 		} catch (InvalidPasswordException ip) {
 			return new PipeRunResult(findForward("passwordProtected"), "File is password protected." );
-		} finally {
-			if (binaryInputStream != null){
-				try {
-					binaryInputStream.close();
-				} catch (IOException e) {
-					throw new PipeRunException(this,
-						getLogPrefix(session) + "an error occured whilst closing the stream.", e);
-				}
-			}
 		}
       
 		return new PipeRunResult(getForward(), Integer.toString(result) );
