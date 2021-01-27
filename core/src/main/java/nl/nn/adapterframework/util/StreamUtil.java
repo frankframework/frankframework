@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.FilterReader;
+import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,6 +38,8 @@ import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang.StringUtils;
+
+import lombok.SneakyThrows;
 
 /**
  * Functions to read and write from one stream to another.
@@ -220,24 +223,81 @@ public class StreamUtil {
 		return zipOutputStream;
 	}
 
-	public static InputStream closeOnClose(InputStream stream, AutoCloseable resource) {
-		class ResourceClosingInputStreamFilter extends FilterInputStream {
-			public ResourceClosingInputStreamFilter(InputStream in) {
-				super(in);
-			}
+	public static InputStream onClose(InputStream stream, Runnable onClose) {
+		return new FilterInputStream(stream) {
 			@Override
 			public void close() throws IOException {
-				try (AutoCloseable closeable = resource) {
+				try {
 					super.close();
-				} catch (Exception e) {
-					throw new IOException(e);
+				} finally {
+					onClose.run();
 				}
 			}
 		};
-
-		return new ResourceClosingInputStreamFilter(stream);
 	}
 
+	public static OutputStream onClose(OutputStream stream, Runnable onClose) {
+		return new FilterOutputStream(stream) {
+			@Override
+			public void close() throws IOException {
+				try {
+					super.close();
+				} finally {
+					onClose.run();
+				}
+			}
+		};
+	}
+	
+	public static Reader onClose(Reader reader, Runnable onClose) {
+		return new FilterReader(reader) {
+			@Override
+			public void close() throws IOException {
+				try {
+					super.close();
+				} finally {
+					onClose.run();
+				}
+			}
+		};
+	}
+
+	public static Writer onClose(Writer writer, Runnable onClose) {
+		return new FilterWriter(writer) {
+			@Override
+			public void close() throws IOException {
+				try {
+					super.close();
+				} finally {
+					onClose.run();
+				}
+			}
+		};
+	}
+
+	@SneakyThrows
+	private static void closeResource(AutoCloseable resource) {
+		resource.close();
+	}
+
+	public static InputStream closeOnClose(InputStream stream, AutoCloseable resource) {
+		return onClose(stream, () -> closeResource(resource));
+	}
+
+	public static OutputStream closeOnClose(OutputStream stream, AutoCloseable resource) {
+		return onClose(stream, () -> closeResource(resource));
+	}
+
+	public static Reader closeOnClose(Reader reader, AutoCloseable resource) {
+		return onClose(reader, () -> closeResource(resource));
+	}
+	
+	public static Writer closeOnClose(Writer writer, AutoCloseable resource) {
+		return onClose(writer, () -> closeResource(resource));
+	}
+
+	
+	
 	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {
 		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; }); 
 	}
@@ -329,41 +389,5 @@ public class StreamUtil {
 		return new WatchedInputStream(stream);
 	}
 
-
-	public static Reader closeOnClose(Reader reader, AutoCloseable resource) {
-		class ResourceClosingReaderFilter extends FilterReader {
-			public ResourceClosingReaderFilter(Reader in) {
-				super(in);
-			}
-			@Override
-			public void close() throws IOException {
-				try (AutoCloseable closeable = resource) {
-					super.close();
-				} catch (Exception e) {
-					throw new IOException(e);
-				}
-			}
-		};
-
-		return new ResourceClosingReaderFilter(reader);
-	}
-	
-	public static OutputStream closeOnClose(OutputStream stream, AutoCloseable resource) {
-		class ResourceClosingOutputStreamFilter extends FilterOutputStream {
-			public ResourceClosingOutputStreamFilter(OutputStream out) {
-				super(out);
-			}
-			@Override
-			public void close() throws IOException {
-				try (AutoCloseable closeable = resource) {
-					super.close();
-				} catch (Exception e) {
-					throw new IOException(e);
-				}
-			}
-		};
-
-		return new ResourceClosingOutputStreamFilter(stream);
-	}
 
 }

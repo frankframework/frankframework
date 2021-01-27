@@ -1,12 +1,21 @@
 package nl.nn.adapterframework.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import lombok.ToString;
+import nl.nn.adapterframework.util.LogUtil;
+
 public class PipeLineSessionBaseTest {
+	protected Logger log = LogUtil.getLogger(this);
 
 	@Mock
 	private PipeLineSessionBase session = new PipeLineSessionBase();
@@ -125,5 +134,58 @@ public class PipeLineSessionBaseTest {
 	public void testObject() {
 		assertEquals(TEST_OBJECT, session.get("object1"));
 		assertEquals(TEST_OBJECT.toString(), session.get("object1", "dummy"));
+	}
+	
+	
+	@ToString
+	private class StateObservableInputStream extends InputStream {
+		int closes = 0;
+		String name;
+		
+		StateObservableInputStream(String name) {
+			this.name=name;
+		}
+		
+		@Override
+		public void close() {
+			log.debug("closing inputstream ["+name+"]");
+			closes++;
+		}
+
+		@Override
+		public int read() throws IOException {
+			return 0;
+		}
+	}
+	
+	@Test
+	public void testCloseables() throws IOException {
+		StateObservableInputStream a = new StateObservableInputStream("a");
+		StateObservableInputStream b = new StateObservableInputStream("b");
+		StateObservableInputStream c = new StateObservableInputStream("c");
+		StateObservableInputStream d = new StateObservableInputStream("d");
+		
+		InputStream p = session.scheduleCloseOnSessionExit(a);
+		InputStream q = session.scheduleCloseOnSessionExit(a);
+		assertTrue(p==q);
+		
+		InputStream r = session.scheduleCloseOnSessionExit(b);
+		InputStream s = session.scheduleCloseOnSessionExit(c);
+		InputStream t = session.scheduleCloseOnSessionExit(d);
+		InputStream u = session.scheduleCloseOnSessionExit(t);
+		assertTrue(u==t);
+
+		log.debug("test calling close on wrapped(b)");
+		r.close();
+
+		log.debug("test unschedule wrapped(c)");
+		session.unscheduleCloseOnSessionExit(s);
+		
+		session.close();
+		
+		assertEquals(1, a.closes);
+		assertEquals(1, b.closes);
+		assertEquals(0, c.closes);
+		assertEquals(1, d.closes);
 	}
 }

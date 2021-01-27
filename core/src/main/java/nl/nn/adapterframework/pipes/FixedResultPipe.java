@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.net.URL;
 
 import javax.xml.transform.Transformer;
@@ -170,12 +169,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 
-		try (Reader dummy = message.asReader()) {
-			// get the inputstream and close it, to avoid connection leaking when the message itself is not consumed.
-			// Also see javadoc of IPipe.doPipe()
-		} catch (IOException e) {
-			log.warn("Exception reading ignored inputstream", e);
-		}
+		message.closeOnCloseOf(session); // avoid connection leaking when the message itself is not consumed.
 		if (getSubstituteVars()){
 			result=StringResolver.substVars(returnString, session, appConstants);
 		}
