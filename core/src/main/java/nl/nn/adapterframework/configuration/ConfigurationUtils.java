@@ -326,8 +326,8 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static Map<String, Object> processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
-		Map<String, Object> result = new HashMap<String, Object>();
+	public static Map<String, String> processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
+		Map<String, String> result = new LinkedHashMap<String, String>();
 		if (file.available() > 0) {
 			try (ZipInputStream zipInputStream = new ZipInputStream(file)) {
 				ZipEntry zipEntry;

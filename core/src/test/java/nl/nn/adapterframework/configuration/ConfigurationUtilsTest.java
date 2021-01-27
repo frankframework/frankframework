@@ -211,12 +211,9 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("multiConfig.zip not found", zip);
 
 		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
-		Map<String, Object> result = ConfigurationUtils.processMultiConfigZipFile(ibisContext, "fakeDataSource", false, false, zip.openStream(), "user");
+		Map<String, String> result = ConfigurationUtils.processMultiConfigZipFile(ibisContext, "fakeDataSource", false, false, zip.openStream(), "user");
 		assertNotEquals("file uploaded to mock database", 0, result.size());
-		String resultString = result.toString();
-		assertTrue(resultString.contains("noBuildInfoZip.jar=no [BuildInfo.properties] present in configuration"));
-		assertTrue(resultString.contains("ConfigurationName: 002_20191002-1400=loaded"));
-		assertTrue(resultString.contains("ConfigurationName: 001_20191002-1300=loaded"));
+		assertEquals("{ConfigurationName: 001_20191002-1300=loaded, ConfigurationName: 002_20191002-1400=loaded, noBuildInfoZip.jar=no [BuildInfo.properties] present in configuration}",result.toString());
 
 		Map<String, Object> parameters = stmt.getNamedParameters(); //Test the 2nd file, because the 3rd result fails
 		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));

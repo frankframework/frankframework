@@ -366,7 +366,7 @@ public final class ShowConfiguration extends Base {
 
 		fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, String> result = new LinkedHashMap<String, String>();
 		try {
 			if(multiple_configs) {
 				try {
