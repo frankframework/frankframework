@@ -22,7 +22,9 @@
     <xs:choice>
       <xs:element name="Syntax1NameIChild">
         <xs:complexType>
-          <xs:group ref="IChildMemberChildGroup" minOccurs="0" maxOccurs="unbounded" />
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded" />
+          </xs:sequence>
           <xs:attribute name="elementRole" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute />
@@ -30,9 +32,6 @@
       </xs:element>
       <xs:group ref="Syntax1NameIChildElementGroupBase" />
     </xs:choice>
-  </xs:group>
-  <xs:group name="IChildMemberChildGroup">
-    <xs:choice />
   </xs:group>
   <xs:group name="Syntax1NameIChildElementGroupBase">
     <xs:choice>

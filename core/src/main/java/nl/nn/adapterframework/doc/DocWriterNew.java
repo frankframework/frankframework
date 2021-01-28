@@ -22,7 +22,6 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexContent;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementWithType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addExtension;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
@@ -382,7 +381,7 @@ public class DocWriterNew {
 				log.trace(String.format("Adding unordered cumulative config children with shared generic element options for FrankElement [%s], XSD element [%s]",
 						frankElement.getFullName(), xsdElementName));
 			}
-			childRoles.forEach(gr -> addGenericRole(choice, gr));
+			childRoles.forEach(gr -> addGenericRole(choice, gr, new Multiplicity.Once()));
 		} else {
 			XmlBuilder sequence = addSequence(complexType);
 			if(log.isTraceEnabled()) {
@@ -464,7 +463,7 @@ public class DocWriterNew {
 	 * outside the scope of this class.
 	 */
 	private abstract class ElementBuildingStrategy {
-		abstract void addGroupRef(String referencedGroupName);
+		abstract void addGroupRef(String referencedGroupName, Multiplicity multiplicity);
 		abstract void addAttributeGroupRef(String referencedGroupName);
 	}
 
@@ -494,11 +493,11 @@ public class DocWriterNew {
 		}
 
 		@Override
-		void addGroupRef(String referencedGroupName) {
+		void addGroupRef(String referencedGroupName, Multiplicity multiplicity) {
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("Appending XSD type def of [%s] with reference to XSD group [%s]", addingTo.getFullName(), referencedGroupName));
 			}
-			DocWriterNewXmlUtils.addGroupRef(complexType, referencedGroupName);
+			multiplicity.addGroupRef(complexType, referencedGroupName);
 		}
 
 		@Override
@@ -512,7 +511,7 @@ public class DocWriterNew {
 
 	private class ElementOmitter extends ElementBuildingStrategy {
 		@Override
-		void addGroupRef(String referencedGroupName) {
+		void addGroupRef(String referencedGroupName, Multiplicity multiplicity) {
 		}
 		@Override
 		void addAttributeGroupRef(String referencedGroupName) {
@@ -538,12 +537,12 @@ public class DocWriterNew {
 			
 			@Override
 			public void addDeclaredGroupRef(FrankElement referee) {
-				elementBuildingStrategy.addGroupRef(xsdDeclaredGroupNameForChildren(referee));
+				elementBuildingStrategy.addGroupRef(xsdDeclaredGroupNameForChildren(referee), new Multiplicity.Once());
 			}
 			
 			@Override
 			public void addCumulativeGroupRef(FrankElement referee) {
-				elementBuildingStrategy.addGroupRef(xsdCumulativeGroupNameForChildren(referee));				
+				elementBuildingStrategy.addGroupRef(xsdCumulativeGroupNameForChildren(referee), new Multiplicity.Once());
 			}
 
 			@Override
@@ -638,7 +637,7 @@ public class DocWriterNew {
 			log.trace(String.format("Config child appears as element reference to FrankElement [%s], XSD element [%s]",
 					elementInType.getFullName(), referredXsdElementName));
 		}
-		addElementRef(context, referredXsdElementName, getMinOccurs(child), getMaxOccurs(child));
+		new Multiplicity.ForConfigChild(child).addElementRef(context, referredXsdElementName);
 		recursivelyDefineXsdElement(elementInType, role);
 	}
 
@@ -678,24 +677,24 @@ public class DocWriterNew {
 			log.trace("Config child appears as element group reference");
 		}
 		GenericRole gr = model.findOrCreate(version, model.findElementRole(child));
-		addGenericRole(context, gr);
+		addGenericRole(context, gr, new Multiplicity.ForConfigChild(child));
 	}
 
-	private void addGenericRole(XmlBuilder context, GenericRole gr) {
+	private void addGenericRole(XmlBuilder context, GenericRole gr, Multiplicity multiplicity) {
 		if((gr.getNumRoles() == 1) && isNoElementTypeNeeded(gr.getRoles().get(0))) {
-			addOption(context, gr.getRoles().get(0));
+			addOption(context, gr.getRoles().get(0), multiplicity);
 		} else {
-			addGenericRoleAsGroup(context, gr);
+			addGenericRoleAsGroup(context, gr, multiplicity);
 		}
 	}
 
-	private void addGenericRoleAsGroup(XmlBuilder context, GenericRole gr) {
+	private void addGenericRoleAsGroup(XmlBuilder context, GenericRole gr, Multiplicity multiplicity) {
 		String groupName = gr.getXsdGroupName(ELEMENT_GROUP, MULTI_GROUP);
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Generic role group [%s] requested", groupName));
 			log.trace(String.format("Key is [%s]", gr.getKey().toString()));
 		}
-		DocWriterNewXmlUtils.addGroupRef(context, groupName);
+		multiplicity.addGroupRef(context, groupName);
 		if(! idsGenericRolesAdded.contains(gr.getKey())) {
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("Defining group for generic role with key [%s]", gr.getKey().toString()));
@@ -706,19 +705,22 @@ public class DocWriterNew {
 			}
 			XmlBuilder genericRoleGroup = createGroup(gr.getXsdGroupName(ELEMENT_GROUP, MULTI_GROUP));
 			xsdComplexItems.add(genericRoleGroup);
-			XmlBuilder sequence = addSequence(genericRoleGroup);
-			XmlBuilder choice = addChoice(sequence, "0", "unbounded");
+			XmlBuilder choice = addChoice(genericRoleGroup);
 			addGenericElementOption(choice, gr);
 			List<ElementRole> syntax2Roles = gr.getRoles().stream()
 					.filter(role -> ! role.isSuperseded())
+					.collect(Collectors.toList());
+			if(syntax2Roles.size() >= 2) {
+				syntax2Roles = syntax2Roles.stream()
 					.map(role -> GenericRole.promoteToHighestCommonInterface(role, model))
 					.distinct()
 					.collect(Collectors.toList());
+			}
 			for(ElementRole role: syntax2Roles) {
 				if(log.isTraceEnabled()) {
 					log.trace(String.format("Adding role [%s] to group [%s]", role.toString(), groupName));
 				}
-				addOption(choice, role);
+				addOption(choice, role, new Multiplicity.Once());
 				if(log.isTraceEnabled()) {
 					log.trace(String.format("Done adding role [%s] to group [%s]", role.toString(), groupName));
 				}
@@ -731,7 +733,7 @@ public class DocWriterNew {
 		}
 	}
 
-	private void addOption(XmlBuilder context, ElementRole role) {
+	private void addOption(XmlBuilder context, ElementRole role, Multiplicity multiplicity) {
 		if(isNoElementTypeNeeded(role)) {
 			FrankElement elementInType = singleElementOf(role.getElementType());
 			String referredXsdElementName = elementInType.getXsdElementName(role);
@@ -739,13 +741,13 @@ public class DocWriterNew {
 				log.trace(String.format("Adding role as a reference to FrankElement [%s], XSD element [%s]",
 						elementInType.getFullName(), referredXsdElementName));
 			}
-			addElementRef(context, referredXsdElementName);
+			multiplicity.addElementRef(context, referredXsdElementName);
 			recursivelyDefineXsdElement(elementInType, role);			
 		} else {
 			if(log.isTraceEnabled()) {
 				log.trace("Adding the role as a group reference");
 			}
-			DocWriterNewXmlUtils.addGroupRef(context, role.createXsdElementName(ELEMENT_GROUP_BASE));
+			multiplicity.addGroupRef(context, role.createXsdElementName(ELEMENT_GROUP_BASE));
 			defineElementTypeGroup(role);
 		}
 	}
@@ -794,7 +796,7 @@ public class DocWriterNew {
 		}
 		XmlBuilder genericElementOption = addElementWithType(choice, elementName);
 		XmlBuilder complexType = addComplexType(genericElementOption);
-		addElementTypeChildMembers(complexType, gr);
+		fillGenericElementOption(complexType, gr);
 		addAttribute(complexType, ELEMENT_ROLE, FIXED, gr.getSyntax1Name(), PROHIBITED);
 		if(gr.getConflictingFrankElement() == null) {
 			addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
@@ -808,14 +810,15 @@ public class DocWriterNew {
 		}
 	}
 
-	private void addElementTypeChildMembers(XmlBuilder context, GenericRole gr) {
+	private void fillGenericElementOption(XmlBuilder context, GenericRole gr) {
 		String groupName = xsdGenericElementOptionGroup(gr);
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Adding options to generic option group [%s]", groupName));
 		}
-		XmlBuilder choice = addChoice(context);
+		XmlBuilder sequence = addSequence(context);
+		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
 		List<GenericRole> children = model.findOrCreateChildren(version, gr);
-		children.forEach(child -> addGenericRole(choice, child));
+		children.forEach(child -> addGenericRole(choice, child, new Multiplicity.Once()));
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Done adding options to generic option group [%s]", groupName));
 		}
@@ -840,13 +843,13 @@ public class DocWriterNew {
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("Reusing unordered children of [%s]", parent.getFullName()));
 			}
-			elementBuildingStrategy.addGroupRef(xsdUnorderedGroupNameForChildren(parent));
+			elementBuildingStrategy.addGroupRef(xsdUnorderedGroupNameForChildren(parent), new Multiplicity.Multiple());
 		} else {
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("Have new unordered children for FrankElement [%s]", frankElement.getFullName()));
 			}
 			String groupName = xsdUnorderedGroupNameForChildren(frankElement);
-			elementBuildingStrategy.addGroupRef(groupName);
+			elementBuildingStrategy.addGroupRef(groupName, new Multiplicity.Multiple());
 			defineUnorderedGroup(groupName, genericRoleChildren);
 		}
 	}
@@ -854,9 +857,8 @@ public class DocWriterNew {
 	private void defineUnorderedGroup(String groupName, List<GenericRole> groupMembers) {
 		XmlBuilder group = createGroup(groupName);
 		xsdComplexItems.add(group);
-		XmlBuilder sequence = addSequence(group);
-		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
-		groupMembers.forEach(gr -> addGenericRole(choice, gr));
+		XmlBuilder choice = addChoice(group);
+		groupMembers.forEach(gr -> addGenericRole(choice, gr, new Multiplicity.Once()));
 	}
 
 	private void addAttributes(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
@@ -1002,21 +1004,5 @@ public class DocWriterNew {
 
 	private static String xsdCumulativeGroupNameForAttributes(FrankElement element) {
 		return element.getSimpleName() + "CumulativeAttributeGroup";
-	}
-
-	private static String getMinOccurs(ConfigChild child) {
-		if(child.isMandatory()) {
-			return "1";
-		} else {
-			return "0";
-		}
-	}
-
-	private static String getMaxOccurs(ConfigChild child) {
-		if(child.isAllowMultiple()) {
-			return "unbounded";
-		} else {
-			return "1";
-		}
 	}
 }
