@@ -22,7 +22,7 @@ public class DocWriterNewIntegrationTest {
 		generateXsd(XsdVersion.STRICT);
 	}
 
-	@Ignore("Test takes a long time to run, and gives little information")
+	// @Ignore("Test takes a long time to run, and gives little information")
 	@Test
 	public void testCompatibility() throws IOException {
 		generateXsd(XsdVersion.COMPATIBILITY);

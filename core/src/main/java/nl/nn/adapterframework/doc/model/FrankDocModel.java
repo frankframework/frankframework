@@ -426,7 +426,7 @@ public class FrankDocModel {
 			} else if(! configChild.parseIbisDocAnnotation(sortNode.getIbisDoc())) {
 				log.warn(String.format("@IbisDoc annotation for config child [%s] of FrankElement [%s] does not specify a sort order", configChild.getKey().toString(), parent.getFullName()));
 			}
-			if(! StringUtils.isBlank(configChild.getDefaultValue())) {
+			if(! StringUtils.isEmpty(configChild.getDefaultValue())) {
 				log.warn(String.format("Default value [%s] of config child [%s] of FrankElement [%s] is not used", configChild.getDefaultValue(), configChild.getKey().toString(), parent.getFullName()));
 			}
 			result.add(configChild);

@@ -151,7 +151,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * to prevail.
 	 * @see AbstractPipe
 	 **/
-	@IbisDoc("90")
+	@IbisDoc({"90", "Add a pipe to the pipeline"})
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");

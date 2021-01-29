@@ -959,8 +959,8 @@ public class DocWriterNew {
 		}		
 	}
 
-	private boolean needsDocumentation(FrankAttribute frankAttribute) {
-		return (! StringUtils.isEmpty(frankAttribute.getDescription())) || (! StringUtils.isEmpty(frankAttribute.getDefaultValue()));
+	private boolean needsDocumentation(ElementChild elementChild) {
+		return (! StringUtils.isEmpty(elementChild.getDescription())) || (! StringUtils.isEmpty(elementChild.getDefaultValue()));
 	}
 
 	private String getDocumentationText(FrankAttribute frankAttribute) {

@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.doc;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -16,12 +18,18 @@ abstract class Multiplicity {
 
 		@Override
 		void addElementRef(XmlBuilder context, String name) {
-			DocWriterNewXmlUtils.addElementRef(context, name, getMinOccurs(configChild), getMaxOccurs(configChild));
+			XmlBuilder builder = DocWriterNewXmlUtils.addElementRef(context, name, getMinOccurs(configChild), getMaxOccurs(configChild));
+			if(! StringUtils.isEmpty(configChild.getDescription())) {
+				DocWriterNewXmlUtils.addDocumentation(builder, configChild.getDescription());
+			}
 		}
 
 		@Override
 		void addGroupRef(XmlBuilder context, String name) {
-			DocWriterNewXmlUtils.addGroupRef(context, name, getMinOccurs(configChild), getMaxOccurs(configChild));
+			XmlBuilder builder = DocWriterNewXmlUtils.addGroupRef(context, name, getMinOccurs(configChild), getMaxOccurs(configChild));
+			if(! StringUtils.isEmpty(configChild.getDescription())) {
+				DocWriterNewXmlUtils.addDocumentation(builder, configChild.getDescription());
+			}			
 		}
 
 		private static String getMinOccurs(ConfigChild child) {
