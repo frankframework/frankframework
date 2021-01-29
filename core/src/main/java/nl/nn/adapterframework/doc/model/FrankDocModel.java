@@ -296,12 +296,16 @@ public class FrankDocModel {
 						log.trace(String.format("Describing element of attribute [%s].[%s] is [%s]",
 								attributeOwner.getFullName(), attribute.getName(), attribute.getDescribingElement().getFullName()));
 					}
-					attribute.parseIbisDocAnnotation(ibisDoc);
+					if(! attribute.parseIbisDocAnnotation(ibisDoc)) {
+						log.warn(String.format("FrankAttribute [%s] of FrankElement [%s] does not have a configured order", attribute.getName(), attributeOwner.getFullName()));
+					}
 					if(parsed.hasOrder) {
 						attribute.setOrder(parsed.getOrder());
 						if(log.isTraceEnabled()) {
 							log.trace(String.format("Attribute [%s] has order from @IbisDocRef: [%d]", attribute.getName(), attribute.getOrder()));
 						}
+					} else {
+						
 					}
 					if(log.isTraceEnabled()) {
 						log.trace(String.format("Done documenting attribute [%s]", attribute.getName()));

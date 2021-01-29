@@ -18,17 +18,12 @@ package nl.nn.adapterframework.doc.model;
 
 import java.util.Comparator;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankAttribute extends ElementChild implements Comparable<FrankAttribute> {
-	private static Logger log = LogUtil.getLogger(FrankAttribute.class);
-
 	@EqualsAndHashCode(callSuper = false)
 	static class Key extends AbstractKey {
 		private String name;
@@ -65,7 +60,7 @@ public class FrankAttribute extends ElementChild implements Comparable<FrankAttr
 		return new Key(name);
 	}
 
-	void parseIbisDocAnnotation(IbisDoc ibisDoc) {
+	boolean parseIbisDocAnnotation(IbisDoc ibisDoc) {
 		String[] ibisDocValues = ibisDoc.value();
 		boolean isIbisDocHasOrder = false;
 		order = Integer.MAX_VALUE;
@@ -73,7 +68,7 @@ public class FrankAttribute extends ElementChild implements Comparable<FrankAttr
 			order = Integer.parseInt(ibisDocValues[0]);
 			isIbisDocHasOrder = true;
 		} catch (NumberFormatException e) {
-			log.warn(String.format("Could not parse order in @IbisDoc annotation: [%s]", ibisDocValues[0]));
+			isIbisDocHasOrder = false;
 		}
 		if (isIbisDocHasOrder) {
 			description = ibisDocValues[1];
@@ -86,6 +81,7 @@ public class FrankAttribute extends ElementChild implements Comparable<FrankAttr
 				defaultValue = ibisDocValues[1];
 			}
 		}
+		return isIbisDocHasOrder;
 	}
 
 	@Override
