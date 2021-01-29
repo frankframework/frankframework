@@ -712,7 +712,7 @@ public class DocWriterNew {
 					.collect(Collectors.toList());
 			if(syntax2Roles.size() >= 2) {
 				syntax2Roles = syntax2Roles.stream()
-					.map(role -> GenericRole.promoteToHighestCommonInterface(role, model))
+					.map(role -> role.promoteToHighestCommonInterface(model))
 					.distinct()
 					.collect(Collectors.toList());
 			}

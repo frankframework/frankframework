@@ -14,16 +14,15 @@ import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.model.FrankElementStatistics;
 import nl.nn.adapterframework.doc.model.XsdVersion;
 
-@Ignore("Test takes a long time to run, and gives little information")
 public class DocWriterNewIntegrationTest {
 
-	@Ignore
+	@Ignore("Test takes a long time to run, and gives little information")
 	@Test
 	public void testStrict() throws IOException {
 		generateXsd(XsdVersion.STRICT);
 	}
 
-	@Ignore
+	@Ignore("Test takes a long time to run, and gives little information")
 	@Test
 	public void testCompatibility() throws IOException {
 		generateXsd(XsdVersion.COMPATIBILITY);

@@ -43,6 +43,7 @@ public class ElementRole implements Comparable<ElementRole> {
 	private final int syntax1NameSeq;
 	private @Getter boolean deprecated;
 	private @Getter @Setter(AccessLevel.PACKAGE) boolean superseded;
+	private ElementRole cachedHighestCommonInterface = null;
 
 	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq, boolean isDeprecated) {
 		this.elementType = elementType;
@@ -98,6 +99,22 @@ public class ElementRole implements Comparable<ElementRole> {
 			log.warn(String.format("Multiple conflicting elements [%s] for ElementRole [%s]", FrankElement.describe(candidates), toString()));
 			return null;
 		}
+	}
+
+	public ElementRole promoteToHighestCommonInterface(FrankDocModel model) {
+		if(cachedHighestCommonInterface != null) {
+			return cachedHighestCommonInterface;
+		}
+		ElementType et = elementType.getHighestCommonInterface();
+		ElementRole result = model.findElementRole(new ElementRole.Key(et.getFullName(), syntax1Name));
+		if(result == null) {
+			log.warn(String.format("Promoting ElementRole [%s] results in ElementType [%s] and syntax 1 name [%s], but there is no corresponding ElementRole",
+					toString(), et.getFullName(), syntax1Name));
+			cachedHighestCommonInterface = this;
+			return this;
+		}
+		cachedHighestCommonInterface = result;
+		return result;
 	}
 
 	public Key getKey() {

@@ -137,7 +137,7 @@ public class GenericRole {
 			for(String syntax1Name: sortedNames) {
 				List<ElementRole> bucket = roleGroups.get(syntax1Name);
 				final Map<ElementRole, List<ElementRole>> byHighestCommonInterface = bucket.stream()
-						.collect(Collectors.groupingBy(role -> promoteToHighestCommonInterface(role, model)));
+						.collect(Collectors.groupingBy(role -> role.promoteToHighestCommonInterface(model)));
 				Set<ElementRole> conflicts = byHighestCommonInterface.keySet().stream()
 						.filter(key -> byHighestCommonInterface.get(key).size() >= 2)
 						.collect(Collectors.toSet());
@@ -177,17 +177,5 @@ public class GenericRole {
 			}
 			return result;
 		}
-	}
-
-	public static ElementRole promoteToHighestCommonInterface(ElementRole role, FrankDocModel model) {
-		String syntax1Name = role.getSyntax1Name();
-		ElementType et = role.getElementType().getHighestCommonInterface();
-		ElementRole result = model.findElementRole(new ElementRole.Key(et.getFullName(), syntax1Name));
-		if(result == null) {
-			log.warn(String.format("Promoting ElementRole [%s] results in ElementType [%s] and syntax 1 name [%s], but there is no corresponding ElementRole",
-					role.toString(), et.getFullName(), syntax1Name));
-			return role;
-		}
-		return result;
 	}
 }
