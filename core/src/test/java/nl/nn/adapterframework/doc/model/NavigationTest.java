@@ -3,16 +3,19 @@ package nl.nn.adapterframework.doc.model;
 import static java.util.Arrays.asList;
 import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
 import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
-import static nl.nn.adapterframework.doc.model.ElementChild.NONE;
 import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
+import static nl.nn.adapterframework.doc.model.ElementChild.NONE;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -84,18 +87,26 @@ public class NavigationTest {
 	@Parameter(3)
 	public List<Ref> expectedRefs;
 
-	private List<Ref> actual;
+	private static List<Ref> actual;
 
-	@Before
-	public void setUp() {
-		actual = new ArrayList<>();
+	private static Map<String, FrankDocModel> classNameToModel;
+
+	@BeforeClass
+	public static void setUp() {
+		classNameToModel = new HashMap<>();
+		List<String> classNames = data().stream().map(row -> (String) row[0]).collect(Collectors.toList());
+		for(String className: classNames) {
+			String rootClassName = PACKAGE + "." + className;
+			FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName);
+			classNameToModel.put(className, model);
+		}
 	}
 
 	@Test
 	public void test() throws Exception {
-		String rootClassName = PACKAGE + "." + simpleClassName;
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName);
-		FrankElement walkFrom = model.findOrCreateFrankElement(Utils.getClass(rootClassName));
+		actual = new ArrayList<>();
+		FrankDocModel model = classNameToModel.get(simpleClassName);
+		FrankElement walkFrom = model.findOrCreateFrankElement(Utils.getClass(PACKAGE + "." + simpleClassName));
 		walkFrom.walkCumulativeAttributes(new CumulativeChildHandler<FrankAttribute>() {
 			@Override
 			public void handleSelectedChildren(List<FrankAttribute> children, FrankElement owner) {

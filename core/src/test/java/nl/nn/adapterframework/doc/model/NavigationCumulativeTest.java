@@ -2,17 +2,19 @@ package nl.nn.adapterframework.doc.model;
 
 import static java.util.Arrays.asList;
 import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
+import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
 import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
 import static nl.nn.adapterframework.doc.model.ElementChild.NONE;
-import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
-
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -50,10 +52,23 @@ public class NavigationCumulativeTest {
 	@Parameter(4)
 	public List<String> childNames;
 
+	private static Map<String, FrankDocModel> classNameToModel;
+
+	@BeforeClass
+	public static void setUp() {
+		classNameToModel = new HashMap<>();
+		List<String> classNames = data().stream().map(row -> (String) row[1]).collect(Collectors.toList());
+		for(String className: classNames) {
+			String rootClassName = PACKAGE + "." + className;
+			FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName);
+			classNameToModel.put(className, model);
+		}
+	}
+
 	@Test
 	public void test() {
 		String rootClassName = PACKAGE + "." + simpleClassName;
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName);
+		FrankDocModel model = classNameToModel.get(simpleClassName);
 		FrankElement subject = model.findFrankElement(rootClassName);
 		List<String> actual = subject.getCumulativeAttributes(childSelector, childRejector).stream()
 				.map(a -> a.getName()).collect(Collectors.toList());
