@@ -403,7 +403,7 @@ public class FrankDocModel {
 		List<ConfigChild> result = new ArrayList<>();
 		for(ConfigChild.SortNode sortNode: createSortNodes(methods, parent)) {
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("Have config child SortNode [%s], sequenceInConfig = [%d]", sortNode.getName(), sortNode.getSequenceInConfig()));
+				log.trace(String.format("Have config child SortNode [%s]", sortNode.getName()));
 			}
 			ConfigChild configChild = new ConfigChild(parent, sortNode);
 			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(sortNode.getName());
@@ -413,20 +413,28 @@ public class FrankDocModel {
 			}
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
-			Class<?> elementTypeClass = sortNode.getMethod().getParameterTypes()[0];
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("For FrankElement [%s] method [%s], going to search element role", parent.getFullName(), sortNode.getName()));
 			}
 			configChild.setElementRole(findOrCreateElementRole(
-					elementTypeClass, configChildDescriptor.getSyntax1Name(), sortNode.isDeprecated()));
+					sortNode.getElementTypeClass(), configChildDescriptor.getSyntax1Name(), sortNode.isDeprecated()));
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("For FrankElement [%s] method [%s], have the element role", parent.getFullName(), sortNode.getName()));
 			}
+			if(sortNode.getIbisDoc() == null) {
+				log.warn(String.format("No @IbisDoc annotation for config child [%s] of FrankElement [%s]", configChild.getKey().toString(), parent.getFullName()));
+			} else if(! configChild.parseIbisDocAnnotation(sortNode.getIbisDoc())) {
+				log.warn(String.format("@IbisDoc annotation for config child [%s] of FrankElement [%s] does not specify a sort order", configChild.getKey().toString(), parent.getFullName()));
+			}
+			if(! StringUtils.isBlank(configChild.getDefaultValue())) {
+				log.warn(String.format("Default value [%s] of config child [%s] of FrankElement [%s] is not used", configChild.getDefaultValue(), configChild.getKey().toString(), parent.getFullName()));
+			}
 			result.add(configChild);
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("Done creating ConfigChild for SortNode [%s], sequenceInConfig = [%d]", sortNode.getName(), sortNode.getSequenceInConfig()));
+				log.trace(String.format("Done creating ConfigChild for SortNode [%s], order = [%d]", sortNode.getName(), configChild.getOrder()));
 			}
 		}
+		Collections.sort(result);
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Done creating config children of FrankElement [%s]", parent.getFullName()));
 		}
@@ -442,11 +450,6 @@ public class FrankDocModel {
 		List<ConfigChild.SortNode> sortNodes = new ArrayList<>();
 		for(Method setter: configChildSetters) {
 			ConfigChild.SortNode sortNode = new ConfigChild.SortNode(setter);
-			try {
-				sortNode.parseIbisDocAnnotation();
-			} catch(IbisDocAnnotationException e) {
-				log.warn(String.format("For FrankElement [%s]: %s", parent.getSimpleName(), e.getMessage()));
-			}
 			sortNodes.add(sortNode);
 		}
 		Collections.sort(sortNodes);

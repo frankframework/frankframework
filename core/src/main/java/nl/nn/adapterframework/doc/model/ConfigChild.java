@@ -26,48 +26,28 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 
-public class ConfigChild extends ElementChild {
-	private static final Comparator<SortNode> SORT_NODE_COMPARATOR =
-			Comparator.comparing(SortNode::getSequenceInConfig)
-			.thenComparing(SortNode::getName);
+public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
+	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
+			Comparator.comparingInt(ConfigChild::getOrder)
+			.thenComparing(c -> c.getElementRole().getSyntax1Name())
+			.thenComparing(c -> c.getElementRole().getElementType().getFullName());
 
 	static final class SortNode implements Comparable<SortNode> {
-		private @Getter int sequenceInConfig = Integer.MAX_VALUE;
+		private static final Comparator<SortNode> SORT_NODE_COMPARATOR =
+				Comparator.comparing(SortNode::getName).thenComparing(sn -> sn.getElementTypeClass().getName());
+
 		private @Getter String name;
 		private @Getter boolean documented;
 		private @Getter boolean deprecated;
-		private @Getter Method method;
+		private @Getter Class<?> elementTypeClass;
+		private @Getter IbisDoc ibisDoc;
 
 		SortNode(Method method) {
 			this.name = method.getName();
-			this.method = method;
 			this.documented = (method.getAnnotation(IbisDoc.class) != null);
 			this.deprecated = isDeprecated(method);
-		}
-
-		void parseIbisDocAnnotation() throws IbisDocAnnotationException {
-			IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
-			if(ibisDoc == null) {
-				throw new IbisDocAnnotationException(String.format(
-						"No @IbisDoc annotation on method [%s]", name));
-			}
-			Integer optionalOrder = parseIbisDocAnnotation(ibisDoc);
-			if(optionalOrder != null) {
-				sequenceInConfig = optionalOrder;
-			}
-		}
-
-		private Integer parseIbisDocAnnotation(IbisDoc ibisDoc) throws IbisDocAnnotationException {
-			Integer result = null;
-			if(ibisDoc.value().length >= 1) {
-				try {
-					result = Integer.valueOf(ibisDoc.value()[0]);
-				} catch(Exception e) {
-					throw new IbisDocAnnotationException(String.format(
-							"@IbisDoc annotation on method [%s] has no valid order", name));
-				}
-			}
-			return result;
+			this.elementTypeClass = method.getParameterTypes()[0];
+			this.ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
 		}
 
 		private static boolean isDeprecated(Method m) {
@@ -102,7 +82,6 @@ public class ConfigChild extends ElementChild {
 		}
 }
 
-	private @Getter @Setter int sequenceInConfig;
 	private @Getter @Setter boolean mandatory;
 	private @Getter @Setter boolean allowMultiple;
 	private @Getter @Setter ElementRole elementRole;
@@ -110,7 +89,6 @@ public class ConfigChild extends ElementChild {
 	ConfigChild(FrankElement owningElement, SortNode sortNode) {
 		super(owningElement);
 		setDocumented(sortNode.isDocumented());
-		setSequenceInConfig(sortNode.getSequenceInConfig());
 		setDeprecated(sortNode.isDeprecated());
 	}
 
@@ -130,5 +108,10 @@ public class ConfigChild extends ElementChild {
 	@Override
 	boolean isSuperseded() {
 		return elementRole.isSuperseded();
+	}
+
+	@Override
+	public int compareTo(ConfigChild other) {
+		return CONFIG_CHILD_COMPARATOR.compare(this, other);
 	}
 }
