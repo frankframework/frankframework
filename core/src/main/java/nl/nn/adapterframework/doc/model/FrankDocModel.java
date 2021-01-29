@@ -304,8 +304,6 @@ public class FrankDocModel {
 						if(log.isTraceEnabled()) {
 							log.trace(String.format("Attribute [%s] has order from @IbisDocRef: [%d]", attribute.getName(), attribute.getOrder()));
 						}
-					} else {
-						
 					}
 					if(log.isTraceEnabled()) {
 						log.trace(String.format("Done documenting attribute [%s]", attribute.getName()));
