@@ -1365,11 +1365,23 @@ angular.module('iaf.beheerconsole')
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
 				response.recordsFiltered = response.skipMessages + response.messageCount;
+				console.log(response.targetStates);
+				$scope.targetStates = response.targetStates;
 				callback(response);
 			});
 		}
 	};
-
+	$scope.targetStates = [];
+	$scope.hasProcessState = function(processState){
+		if($scope.targetStates){
+			var indexOfPS = $scope.targetStates.indexOf(processState);
+			if(indexOfPS != -1){
+				return true;
+			}
+		} else {
+			return false;
+		}
+	}
 	$scope.search = {
 		id: "",
 		startDate: "",
@@ -1442,6 +1454,19 @@ angular.module('iaf.beheerconsole')
 		}, function(data) {
 			$scope.messagesDeleting = false;
 			$scope.addNote("danger", "Something went wrong, unable to delete all messages!");
+			$scope.updateTable();
+		});
+	}
+	$scope.movingMessages = false;
+	$scope.moveToAvailable = function() {
+		$scope.movingMessages = true;
+		Api.Post($scope.base_url+"/move", getFormData(), function() {
+			$scope.movingMessages = false;
+			$scope.addNote("success", "Successfully moved messages to Available");
+			$scope.updateTable();
+		}, function(data) {
+			$scope.movingMessages = false;
+			$scope.addNote("danger", "Something went wrong, unable to move selected messages!");
 			$scope.updateTable();
 		});
 	}

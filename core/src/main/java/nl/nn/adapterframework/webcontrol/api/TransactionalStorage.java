@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -44,10 +45,13 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import com.amazonaws.services.s3.model.StorageClass;
+
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
+import nl.nn.adapterframework.core.IMessageBrowser.StorageType;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
@@ -171,14 +175,19 @@ public class TransactionalStorage extends Base {
 
 		//StorageType
 		IMessageBrowser storage;
-		if(storageType.equals("messagelog"))
+		Set<ProcessState> processStateSet = null;
+		if(storageType.equals("messagelog")) {
 			storage = receiver.getMessageBrowser(ProcessState.DONE);
-		else
+		}
+		else {
 			storage = receiver.getMessageBrowser(ProcessState.ERROR);
+			processStateSet = (Set<ProcessState>) receiver.targetProcessStates().get(ProcessState.ERROR);
+		}
 
 		if(storage == null) {
 			throw new ApiException("no IMessageBrowser found");
 		}
+
 
 		//Apply filters
 		MessageBrowsingFilter filter = new MessageBrowsingFilter(maxMessages, skipMessages);
@@ -197,8 +206,9 @@ public class TransactionalStorage extends Base {
 			filter.setSortOrder(SortOrder.DESC);
 		if("asc".equalsIgnoreCase(sort))
 			filter.setSortOrder(SortOrder.ASC);
-
-		return Response.status(Response.Status.OK).entity(getMessages(storage, filter)).build();
+		Map<String, Object> resultObj = getMessages(storage, filter);
+		resultObj.put("targetStates", processStateSet);
+		return Response.status(Response.Status.OK).entity(resultObj).build();
 	}
 
 	@PUT
@@ -268,6 +278,47 @@ public class TransactionalStorage extends Base {
 				}
 				else
 					errorMessages.add(e.getMessage());
+			}
+		}
+
+		if(errorMessages.size() == 0)
+			return Response.status(Response.Status.OK).build();
+
+		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
+	}
+
+	@POST
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage/move")
+	@Relation("pipeline")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response moveReceiverMessages(
+			@PathParam("adapterName") String adapterName,
+			@PathParam("receiverName") String receiverName,
+			MultipartBody input
+		) throws ApiException {
+
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		Receiver receiver = adapter.getReceiverByName(receiverName);
+		if(receiver == null) {
+			throw new ApiException("Receiver ["+receiverName+"] not found!");
+		}
+		
+		
+		String[] messageIds = getMessages(input);
+		IMessageBrowser errorStorageBrowser = receiver.getMessageBrowser(ProcessState.ERROR);
+		List<String> errorMessages = new ArrayList<String>();
+		for(int i=0; i < messageIds.length; i++) {
+			try {
+				receiver.changeProcessState(errorStorageBrowser.browseMessage(messageIds[i]), ProcessState.AVAILABLE, null);
+			} catch (ListenerException e) {
+				errorMessages.add(e.getMessage());
 			}
 		}
 

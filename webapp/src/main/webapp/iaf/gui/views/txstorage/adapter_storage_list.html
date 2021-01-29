@@ -89,6 +89,7 @@
 					<div class="pull-right" ng-if="storageType=='errorstorage'">
 						<button title="Select All Messages" ng-click="selectAll()" class="btn btn-default btn-sm" type="button">Select All</button>
 						<button title="Unselect All Messages" ng-click="unselectAll()" class="btn btn-default btn-sm" type="button">Unselect All</button>
+						<button ng-show="hasProcessState('AVAILABLE')" ladda="movingMessages" title="Make messages available again" ng-click="moveToAvailable()" class="btn btn-default btn-sm" type="button">Move to Available</button>
 						<button ladda="messagesResending" data-style="slide-right" title="Resend Selected Messages" ng-click="resendMessages()" class="btn btn-warning btn-sm" type="button"><i class="fa fa-repeat"></i> Resend Selected</button>
 						<button ladda="messagesDeleting" data-style="slide-right" title="Delete Selected Messages" ng-click="deleteMessages()" class="btn btn-danger btn-sm" type="button"><i class="fa fa-times"></i> Delete Selected</button>
 					</div>

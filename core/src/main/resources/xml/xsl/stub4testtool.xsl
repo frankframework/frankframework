@@ -44,6 +44,7 @@
 	
 	<!-- All receivers are disabled except those with listeners in the list below -->
 	<xsl:template match="receiver[listener[@className='nl.nn.adapterframework.jdbc.JdbcQueryListener'
+										or @className='nl.nn.adapterframework.jdbc.JdbcTableListener'
 										or @className='nl.nn.adapterframework.receivers.DirectoryListener'
 										or @className='nl.nn.adapterframework.receivers.JavaListener'
 										or @className='nl.nn.adapterframework.http.WebServiceListener'
