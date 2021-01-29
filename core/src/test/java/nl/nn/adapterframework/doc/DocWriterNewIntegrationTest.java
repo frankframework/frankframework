@@ -22,7 +22,7 @@ public class DocWriterNewIntegrationTest {
 		generateXsd(XsdVersion.STRICT);
 	}
 
-	// @Ignore("Test takes a long time to run, and gives little information")
+	@Ignore("Test takes a long time to run, and gives little information")
 	@Test
 	public void testCompatibility() throws IOException {
 		generateXsd(XsdVersion.COMPATIBILITY);
@@ -33,7 +33,7 @@ public class DocWriterNewIntegrationTest {
 		DocWriterNew docWriter = new DocWriterNew(model);
 		docWriter.init(version);
 		String xsdString = docWriter.getSchema();
-		File output = new File("test" + docWriter.getOutputFileName());
+		File output = new File("FrankConfig-" + docWriter.getOutputFileName());
 		System.out.println("Output file of test xsd: " + output.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(output));
 		try {
