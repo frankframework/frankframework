@@ -17,11 +17,13 @@ import nl.nn.adapterframework.doc.model.XsdVersion;
 @Ignore("Test takes a long time to run, and gives little information")
 public class DocWriterNewIntegrationTest {
 
+	@Ignore
 	@Test
 	public void testStrict() throws IOException {
 		generateXsd(XsdVersion.STRICT);
 	}
 
+	@Ignore
 	@Test
 	public void testCompatibility() throws IOException {
 		generateXsd(XsdVersion.COMPATIBILITY);
@@ -43,6 +45,7 @@ public class DocWriterNewIntegrationTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testStatistics() throws IOException {
 		FrankDocModel model = FrankDocModel.populate();

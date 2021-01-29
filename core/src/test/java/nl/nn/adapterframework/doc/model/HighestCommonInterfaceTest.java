@@ -4,19 +4,19 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class HighestCommonInterfaceTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.role.inherit.";
-	private FrankDocModel model;
-	private ElementType founder;
-	private ElementType interfaceParent;
-	private ElementType interfaceElementType;
-	private ElementType interface2ElementType;
+	private static FrankDocModel model;
+	private static ElementType founder;
+	private static ElementType interfaceParent;
+	private static ElementType interfaceElementType;
+	private static ElementType interface2ElementType;
 
-	@Before
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		model = FrankDocModel.populate("doc/role-inherit-digester-rules.xml", PACKAGE + "Master");
 		founder = model.findElementType(PACKAGE + "IFounder");
 		interfaceParent = model.findElementType(PACKAGE + "IInterfaceParent");

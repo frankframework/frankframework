@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -19,10 +19,10 @@ import org.junit.Test;
 public class AncestorKindsTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.sparse.";
 
-	private FrankDocModel model;
+	private static FrankDocModel model;
 
-	@Before
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild");
 	}
 

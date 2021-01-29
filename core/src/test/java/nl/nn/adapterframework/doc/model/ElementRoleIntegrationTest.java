@@ -11,16 +11,16 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ElementRoleIntegrationTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.role.";
 
-	private FrankDocModel model;
+	private static FrankDocModel model;
 
-	@Before
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		model = FrankDocModel.populate("doc/role-digester-rules.xml", PACKAGE + "Master");
 	}
 

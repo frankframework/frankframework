@@ -4,15 +4,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ConflictTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.conflict.";
-	private FrankDocModel model;
+	private static FrankDocModel model;
 
-	@Before
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		model = FrankDocModel.populate("doc/conflict-digester-rules.xml", PACKAGE + "Container");
 	}
 
