@@ -202,6 +202,7 @@ class DocWriterNewXmlUtils {
 	static XmlBuilder addAnyAttribute(XmlBuilder context) {
 		XmlBuilder attribute = new XmlBuilder("anyAttribute", "xs", XML_SCHEMA_URI);
 		context.addSubElement(attribute);
+		attribute.addAttribute("processContents", "skip");
 		return attribute;
 	}
 
