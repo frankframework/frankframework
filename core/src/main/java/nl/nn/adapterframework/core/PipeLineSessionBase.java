@@ -45,8 +45,9 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	private Logger log = LogUtil.getLogger(this);
 
 	private ISecurityHandler securityHandler = null;
-	private Map<AutoCloseable,AutoCloseable> closeables = new HashMap<>();
-
+	
+	// Map that maps resources to wrapped versions of them. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
+	private Map<AutoCloseable,AutoCloseable> closeables = new HashMap<>(); 
 	public PipeLineSessionBase() {
 		super();
 	}
@@ -229,24 +230,27 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		return scheduleCloseOnSessionExit(writer, StreamUtil::onClose );
 	}
 
+	/**
+	 * Ensure that the resource will be closed when the PipeLineSession is closed.
+	 * @param resource 	the resource to be closed on exit
+	 * @param onClose	a method that will make sure that a task is executed when the resource is closed. 
+	 * 					This is used to unschedule the resource when it is closed.
+	 */
 	@SuppressWarnings("unchecked")
-	private <R extends AutoCloseable> R scheduleCloseOnSessionExit(R resource, BiFunction<R, Runnable, R> onCloseWrapFunction) {
+	private <R extends AutoCloseable> R scheduleCloseOnSessionExit(R resource, BiFunction<R, Runnable, R> onClose) {
 		if (closeables.values().contains(resource)) {
-			return resource;
+			return resource; // resource is already a wrapped resource scheduled for closing at pipeline exit
 		}
-		return (R)closeables.computeIfAbsent(resource, k -> computeCloseable(resource, onCloseWrapFunction));
+		return (R)closeables.computeIfAbsent(resource, k -> {
+				if (log.isDebugEnabled()) log.debug("registering resource ["+resource+"] for close on exit");
+				return onClose.apply(resource, () -> {
+					if (log.isDebugEnabled()) log.debug("closed and unregistering resource ["+resource+"] from close on exit");
+					closeables.remove(resource);
+				});
+			});
 	}
 
-	private <R extends AutoCloseable> R computeCloseable(R resource, BiFunction<R, Runnable, R> onCloseWrapFunction) {
-		if (log.isDebugEnabled()) log.debug("registering resource ["+resource+"] for close on exit");
-		return onCloseWrapFunction.apply(resource, () -> unscheduleCloseableByKey(resource));
-	}
-	
-	private void unscheduleCloseableByKey(AutoCloseable resource) {
-		if (log.isDebugEnabled()) log.debug("closed and unregistering resource ["+resource+"] from close on exit");
-		closeables.remove(resource);
-	}
-	
+
 	@Override
 	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
 		Optional<Entry<AutoCloseable, AutoCloseable>> entry = closeables.entrySet().stream().filter(e -> resource == e.getValue()).findFirst();
