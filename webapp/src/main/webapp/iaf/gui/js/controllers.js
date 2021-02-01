@@ -944,7 +944,15 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("configurations", fd, function(data) {
 			$scope.error = "";
-			$scope.result = "Successfully uploaded configuration!";
+			$scope.result = "";
+			for(pair in data){
+				if(data[pair] == "loaded"){
+					$scope.result += "Successfully uploaded configuration ["+pair+"]<br/>";
+				} else {
+					$scope.result += "Could not upload configuration from the file ["+pair+"]: "+data[pair]+"<br/>";
+				}
+			}
+
 			$scope.form = {
 					datasource: $scope.datasources[0],
 					encoding:"",
