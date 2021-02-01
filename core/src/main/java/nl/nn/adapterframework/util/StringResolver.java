@@ -30,8 +30,8 @@ public class StringResolver {
 	// Not allowed to use a static reference to the logger in this class.
 	// Log4j2 uses StringResolver during instantiation.
 
-	private static final String DELIM_START = "${";
-	private static final char DELIM_STOP = '}';
+	public static final String DELIM_START = "${";
+	public static final char DELIM_STOP = '}';
 	private static final int DELIM_START_LEN = 2;
 	private static final int DELIM_STOP_LEN = 1;
 

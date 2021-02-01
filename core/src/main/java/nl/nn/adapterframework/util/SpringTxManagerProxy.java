@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,35 +53,29 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		return result; 
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.springframework.transaction.PlatformTransactionManager#getTransaction(org.springframework.transaction.TransactionDefinition)
-	 */
+
 	@Override
 	public TransactionStatus getTransaction(TransactionDefinition txDef) throws TransactionException {
 		if (trace && log.isDebugEnabled()) log.debug("getting transaction definition ["+txDef+"]");
 		return getRealTxManager().getTransaction(txDef);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.transaction.PlatformTransactionManager#commit(org.springframework.transaction.TransactionStatus)
-	 */
 	@Override
 	public void commit(TransactionStatus txStatus) throws TransactionException {
-		if (trace && log.isDebugEnabled()) log.debug("commiting transaction ["+txStatus+"]");
-		getRealTxManager().commit(txStatus);
+		if (txStatus.isRollbackOnly()) {
+			rollback(txStatus);
+		} else {
+			if (trace && log.isDebugEnabled()) log.debug("commiting transaction ["+txStatus+"]");
+			getRealTxManager().commit(txStatus);
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.transaction.PlatformTransactionManager#rollback(org.springframework.transaction.TransactionStatus)
-	 */
 	@Override
 	public void rollback(TransactionStatus txStatus) throws TransactionException {
 		if (trace && log.isDebugEnabled()) log.debug("rolling back transaction ["+txStatus+"]");
 		getRealTxManager().rollback(txStatus);
 	}
 
-	/**
-	 */
 	public PlatformTransactionManager getRealTxManager() {
 		// This can be called from multiple threads, however
 		// not synchronized for performance-reasons.
