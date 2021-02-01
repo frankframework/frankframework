@@ -25,11 +25,13 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  */
 public interface ISender extends IConfigurable {
+
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this sender. 
 	 * Purpose of this method is to check whether the static configuration of the sender is correct.
 	 * As much as possible class-instantiating should take place in the <code>configure()</code> or <code>open()</code> method, to improve performance.
 	 */ 
+	@Override
 	public void configure() throws ConfigurationException;
 	
 	/**

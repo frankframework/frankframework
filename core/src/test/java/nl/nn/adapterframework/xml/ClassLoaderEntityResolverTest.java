@@ -15,16 +15,18 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 import nl.nn.adapterframework.util.Misc;
 
 public class ClassLoaderEntityResolverTest {
 
 	private String publicId="fakePublicId";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-	
+	private IHasConfigurationClassLoader localClassLoader = new ClassLoaderProvider();
+
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localClassLoader);
 
 		String systemId="AppConstants.properties"; // this file is known to be in the root of the classpath
@@ -35,7 +37,6 @@ public class ClassLoaderEntityResolverTest {
 
 	@Test
 	public void localClassPathFileOnRootOfClasspathAbsolute() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localClassLoader);
 
 		String systemId="/AppConstants.properties"; // this file is known to be in the root of the classpath
@@ -46,7 +47,6 @@ public class ClassLoaderEntityResolverTest {
 
 	@Test
 	public void localClassPathAbsolute() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localClassLoader);
 
 		String systemId="/Xslt/importDocument/lookup.xml";
@@ -69,7 +69,7 @@ public class ClassLoaderEntityResolverTest {
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 
-		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(cl);
+		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(ClassLoaderProvider.wrap(cl));
 
 		String systemId="/ClassLoader/Xslt/names.xsl";
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
@@ -90,7 +90,7 @@ public class ClassLoaderEntityResolverTest {
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 
-		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(cl);
+		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(ClassLoaderProvider.wrap(cl));
 
 		String systemId="ClassLoader/Xslt/names.xsl";
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
@@ -136,7 +136,7 @@ public class ClassLoaderEntityResolverTest {
 			}
 		};
 
-		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(dummyClassLoader);
+		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(ClassLoaderProvider.wrap(dummyClassLoader));
 
 		try{
 			file.openStream();

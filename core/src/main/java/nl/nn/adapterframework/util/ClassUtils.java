@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2017 Nationale-Nederlanden
+   Copyright 2013, 2016-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
 
 /**
  * A collection of class management utility methods.
@@ -94,8 +95,8 @@ public class ClassUtils {
 	 * 
 	 * @see IbisContext#init()
 	 */
-	public static URL getResourceURL(ClassLoader classLoader, String resource) {
-		return getResourceURL(classLoader, resource, null);
+	public static URL getResourceURL(IHasConfigurationClassLoader object, String resource) {
+		return getResourceURL(object, resource, null);
 	}
 
 	/**
@@ -104,9 +105,12 @@ public class ClassUtils {
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
-	public static URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
-		if(classLoader == null) { // Used by ClassPath resources
+	public static URL getResourceURL(IHasConfigurationClassLoader object, String resource, String allowedProtocols) {
+		ClassLoader classLoader = null;
+		if(object == null) { // Used by ClassPath resources
 			classLoader = Thread.currentThread().getContextClassLoader();
+		} else {
+			classLoader = object.getConfigurationClassLoader();
 		}
 
 		String resourceToUse = resource; //Don't change the original resource name for logging purposes

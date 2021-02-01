@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -261,7 +261,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		 	}
 	 	
 			try {
-				URL url = ClassUtils.getResourceURL(getConfigurationClassLoader(), getAdiosDefinities()); 
+				URL url = ClassUtils.getResourceURL(this, getAdiosDefinities()); 
 				if (url==null) {
 					throw new ConfigurationException("cannot find adios definitions from resource ["+getAdiosDefinities()+"]");
 				}

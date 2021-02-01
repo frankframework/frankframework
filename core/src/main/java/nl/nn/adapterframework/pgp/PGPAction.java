@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 Integration Partners
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,11 +23,13 @@ import java.net.URL;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.openpgp.PGPException;
 
+import lombok.Getter;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.callbacks.KeyringConfigCallback;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.callbacks.KeyringConfigCallbacks;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.InMemoryKeyring;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.KeyringConfigs;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -37,7 +39,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  *
  * @author Murat Kaan Meral
  */
-public abstract class PGPAction {
+public abstract class PGPAction implements IHasConfigurationClassLoader {
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	protected InMemoryKeyring keyringConfig;
 	private String[] publicKeys;
@@ -76,14 +79,14 @@ public abstract class PGPAction {
 			// Add public keys
 			if (publicKeys != null) {
 				for (String s : publicKeys) {
-					URL url = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), s);
+					URL url = ClassUtils.getResourceURL(this, s);
 					keyringConfig.addPublicKey(IOUtils.toByteArray(url.openStream()));
 				}
 			}
 
 			// Add private key
 			if (secretKey != null) {
-				URL url = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), secretKey);
+				URL url = ClassUtils.getResourceURL(this, secretKey);
 				keyringConfig.addSecretKey(IOUtils.toByteArray(url.openStream()));
 			}
 		} catch (IOException | PGPException e) {

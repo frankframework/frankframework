@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -98,7 +99,8 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author  Johan Verrips
  */
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics {
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IHasConfigurationClassLoader {
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private PipeLineProcessor pipeLineProcessor;
 

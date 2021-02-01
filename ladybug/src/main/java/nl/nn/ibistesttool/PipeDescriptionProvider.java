@@ -208,8 +208,7 @@ public class PipeDescriptionProvider {
 	public String getResource(PipeLine pipeLine, String resourceName) {
 		String resource;
 		try {
-			ClassLoader classLoader = pipeLine.getAdapter().getConfiguration().getClassLoader();
-			URL resourceUrl = ClassUtils.getResourceURL(classLoader, resourceName);
+			URL resourceUrl = ClassUtils.getResourceURL(pipeLine, resourceName);
 			if(resourceUrl != null)
 				resource = Misc.resourceToString(resourceUrl, "\n", false);
 			else

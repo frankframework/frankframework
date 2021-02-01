@@ -21,6 +21,8 @@ import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -49,7 +51,7 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	
-	private void testUri(String baseType, String refType, ClassLoader cl, String base, String ref, String expected) throws TransformerException {
+	private void testUri(String baseType, String refType, IHasConfigurationClassLoader cl, String base, String ref, String expected) throws TransformerException {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(cl);
 
 		Source source = resolver.resolve(ref, base);
@@ -63,24 +65,24 @@ public class ClassLoaderURIResolverTest {
 
 	private enum BaseType { LOCAL, BYTES, FILE_SCHEME, NULL }
 	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, FILE_SCHEME }
-	
-	private ClassLoader getClassLoader(BaseType baseType) throws ConfigurationException, IOException {
+
+	private IHasConfigurationClassLoader getClassLoaderProvider(BaseType baseType) throws ConfigurationException, IOException {
 		if (baseType==BaseType.BYTES) {
 			return getBytesClassLoader();
 		}
-		return Thread.currentThread().getContextClassLoader();
+		return new ClassLoaderProvider();
 	}
-	
-	private String getBase(ClassLoader classLoader, BaseType baseType) throws ConfigurationException, IOException {
+
+	private String getBase(IHasConfigurationClassLoader classLoaderProvider, BaseType baseType) throws ConfigurationException, IOException {
 		URL result=null;
 		switch (baseType) {
 		case LOCAL:
 			return "/ClassLoader/Xslt/root.xsl";
 		case BYTES:
-			result = ClassUtils.getResourceURL(classLoader, "/ClassLoader/Xslt/root.xsl");
+			result = ClassUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
 			return result.toExternalForm();
 		case FILE_SCHEME:
-			result = ClassUtils.getResourceURL(classLoader, "/ClassLoader/Xslt/root.xsl");
+			result = ClassUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
 			return result.toExternalForm();
 		case NULL:
 			return null;
@@ -138,20 +140,20 @@ public class ClassLoaderURIResolverTest {
 
 	@Test
 	public void test() throws ConfigurationException, IOException, TransformerException {
-		ClassLoader classLoader = getClassLoader(baseType);
-		String baseUrl = getBase(classLoader, baseType);
-		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoader+"] BaseUrl ["+baseUrl+"]");
+		IHasConfigurationClassLoader classLoaderProvider = getClassLoaderProvider(baseType);
+		String baseUrl = getBase(classLoaderProvider, baseType);
+		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoaderProvider+"] BaseUrl ["+baseUrl+"]");
 		
 		String ref = getRef(baseType,refType);
 		String expected = getExpected(baseType,refType);
 		System.out.println("BaseType ["+baseType+"] refType ["+refType+"] ref ["+ref+"] expected ["+expected+"]");
 		if (ref!=null) {
-			testUri(baseType.name(), refType.name(), classLoader, baseUrl, ref, expected);
+			testUri(baseType.name(), refType.name(), classLoaderProvider, baseUrl, ref, expected);
 		}
 	}
 
-	
-	private ClassLoader getBytesClassLoader() throws IOException, ConfigurationException {
+
+	private IHasConfigurationClassLoader getBytesClassLoader() throws IOException, ConfigurationException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
@@ -163,6 +165,6 @@ public class ClassLoaderURIResolverTest {
 		cl.setJar(file.getFile());
 		cl.setBasePath(".");
 		cl.configure(null, "");
-		return cl;
+		return ClassLoaderProvider.wrap(cl);
 	}
 }

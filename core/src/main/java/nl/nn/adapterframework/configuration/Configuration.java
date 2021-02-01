@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import lombok.Getter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.scheduler.JobDef;
@@ -48,9 +50,9 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.Adapter
  */
-public class Configuration implements INamedObject{
+public class Configuration implements INamedObject, IHasConfigurationClassLoader {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader configurationClassLoader = null;
+	private @Getter ClassLoader configurationClassLoader = null;
 
 	private Boolean autoStart = null;
 

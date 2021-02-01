@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ public class ConfigurationDigester {
 		try {
 			digester = getDigester(configuration);
 
-			Resource configurationResource = Resource.getResource(classLoader, configurationFile);
+			Resource configurationResource = Resource.getResource(configuration, configurationFile);
 			if (configurationResource == null) {
 				throw new ConfigurationException("Configuration file not found: " + configurationFile);
 			}

@@ -21,8 +21,10 @@ import java.util.Collections;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -30,7 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 5.0
  */
 public class SchemasProviderImpl implements SchemasProvider {
-    private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    private IHasConfigurationClassLoader classLoader = new ClassLoaderProvider();
     private final String id;
     private final String xsd;
 

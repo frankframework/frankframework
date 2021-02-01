@@ -117,7 +117,7 @@ public class TestAssertions extends org.junit.Assert {
 
 	@Test
 	public void testAssertEqualsIgnoreWhitespacesFile() throws IOException {
-		URL svg = ClassUtils.getResourceURL(this.getClass().getClassLoader(), "test1.xml");
+		URL svg = ClassUtils.getResourceURL("test1.xml");
 		String str1 = Misc.streamToString(svg.openStream());
 		String str2 = str1.replace("\r", "");
 

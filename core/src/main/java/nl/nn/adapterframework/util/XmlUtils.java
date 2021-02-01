@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -95,6 +95,7 @@ import com.ctc.wstx.stax.WstxInputFactory;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -543,9 +544,9 @@ public class XmlUtils {
 	public static XMLReader getXMLReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
 		return getXMLReader(null, handler);
 	}
-	
+
 	public static XMLReader getXMLReader(Configuration classLoaderProvider) throws ParserConfigurationException, SAXException {
-		return getXMLReader(true, classLoaderProvider.getClassLoader());
+		return getXMLReader(true, classLoaderProvider);
 	}
 
 	
@@ -561,16 +562,16 @@ public class XmlUtils {
 		return xmlReader;
 	}
 	
-	private static XMLReader getXMLReader(boolean namespaceAware, Resource classLoaderProvider) throws ParserConfigurationException, SAXException {
-		return getXMLReader(namespaceAware, classLoaderProvider==null?null:classLoaderProvider.getClassLoader());
+	private static XMLReader getXMLReader(boolean namespaceAware, Resource resource) throws ParserConfigurationException, SAXException {
+		return getXMLReader(namespaceAware, resource==null?null:resource.getClassLoaderProvider());
 	}
 	
-	private static XMLReader getXMLReader(boolean namespaceAware, ClassLoader classLoader) throws ParserConfigurationException, SAXException {
+	private static XMLReader getXMLReader(boolean namespaceAware, IHasConfigurationClassLoader classLoaderProvider) throws ParserConfigurationException, SAXException {
 		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-		if (classLoader!=null) {
-			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(classLoader));
+		if (classLoaderProvider!=null) {
+			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(classLoaderProvider));
 		} else {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
 		}
@@ -771,7 +772,7 @@ public class XmlUtils {
 
 		charset=defaultEncoding;
 		if (StringUtils.isEmpty(charset)) {
-			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 
 		String firstPart = new String(source,offset,length<100?length:100,charset);

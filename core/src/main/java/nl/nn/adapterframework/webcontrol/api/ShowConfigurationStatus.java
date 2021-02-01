@@ -421,7 +421,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", null);
 			certElem.put("info", "*** ERROR ***");
@@ -444,7 +444,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
@@ -467,7 +467,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");

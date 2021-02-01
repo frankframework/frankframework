@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public class ConfigurationUtils {
 	}
 
 	public static String transformConfiguration(Configuration configuration, String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
-		URL xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), xslt);
+		URL xsltSource = ClassUtils.getResourceURL(configuration, xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + xslt + "]");
 		}

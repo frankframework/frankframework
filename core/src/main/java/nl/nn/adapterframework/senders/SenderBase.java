@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 
 	@Override
@@ -73,13 +73,5 @@ public abstract class SenderBase implements ISender {
 	@Override
 	public String getName() {
 		return name;
-	}
-
-	/**
-	 * This ClassLoader is set upon creation of the sender, used to retrieve resources configured by the Ibis application.
-	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
-	 */
-	public ClassLoader getConfigurationClassLoader() {
-		return configurationClassLoader;
 	}
 }

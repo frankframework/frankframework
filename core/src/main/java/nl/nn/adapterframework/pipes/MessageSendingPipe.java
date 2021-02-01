@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -259,7 +259,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (StringUtils.isNotEmpty(getStubFileName())) {
 			URL stubUrl;
 			try {
-				stubUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), getStubFileName());
+				stubUrl = ClassUtils.getResourceURL(this, getStubFileName());
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception finding resource for stubfile ["+getStubFileName()+"]", e);
 			}
@@ -392,17 +392,17 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					getAdapter().getMessageKeeper().add(msg);
 			}
 			if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
-				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,"text",false,null);
+				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,"text",false,null);
 			}
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
+				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
 			}
 			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-				labelTp=TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
+				labelTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
 			}
 		}
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
-			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
+			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
 		}
 
 		IValidator inputValidator = getInputValidator();
@@ -591,7 +591,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				if (sfn != null) {
 					try {
-						result = new Message(Misc.resourceToString(ClassUtils.getResourceURL(getConfigurationClassLoader(), sfn), SystemUtils.LINE_SEPARATOR));
+						result = new Message(Misc.resourceToString(ClassUtils.getResourceURL(this, sfn), SystemUtils.LINE_SEPARATOR));
 						log.info(getLogPrefix(session)+"returning result from dynamic stub ["+sfn+"]");
 					} catch (Throwable e) {
 						throw new PipeRunException(this,getLogPrefix(session)+"got exception loading result from stub [" + sfn + "]",e);

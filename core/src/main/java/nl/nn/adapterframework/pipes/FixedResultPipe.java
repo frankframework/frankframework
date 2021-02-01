@@ -99,7 +99,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
+				resource = ClassUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception searching for ["+getFileName()+"]", e);
 			}
@@ -133,7 +133,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(fileName)) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), fileName);
+				resource = ClassUtils.getResourceURL(this, fileName);
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+fileName+"]", e);
 			}
@@ -181,7 +181,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(getConfigurationClassLoader(), styleSheetName);
+			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
 			if (xsltSource!=null) {
 				try{
 					String xsltResult = null;

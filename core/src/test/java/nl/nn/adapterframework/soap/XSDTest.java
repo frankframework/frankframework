@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.soap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
 
@@ -29,7 +31,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class XSDTest {
 
-	private ClassLoader testClassLoader = this.getClass().getClassLoader();
+	private IHasConfigurationClassLoader testClassLoader = new ClassLoaderProvider();
 
 	@Test
 	public void xsdName() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {

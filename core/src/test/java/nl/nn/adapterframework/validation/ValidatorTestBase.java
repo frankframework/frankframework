@@ -10,8 +10,10 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
@@ -62,8 +64,8 @@ public abstract class ValidatorTestBase extends TestCase {
 	public String SCHEMA_LOCATION_ARRAYS                            	="urn:arrays /Arrays/arrays.xsd";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
-	
-	private ClassLoader testClassLoader = this.getClass().getClassLoader();
+
+	private IHasConfigurationClassLoader testClassLoader = new ClassLoaderProvider();
 
     public void validate(String rootNamespace, String schemaLocation, String inputFile) throws Exception {
     	validate(rootNamespace,schemaLocation, false, inputFile, null);
@@ -207,7 +209,7 @@ public abstract class ValidatorTestBase extends TestCase {
 					Map<String, Set<XSD>> xsdsGroupedByNamespace =
 							SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
 					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
-							this.getClass().getClassLoader(), xsdsGroupedByNamespace, null);
+							testClassLoader, xsdsGroupedByNamespace, null);
 				} catch(Exception e) {
 					throw new ConfigurationException("could not merge schema's", e);
 				}

@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -84,7 +85,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author Jaco de Groot (***@dynasol.nl)
  *
  */
-public class FileHandler {
+public class FileHandler implements IHasConfigurationClassLoader {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -285,7 +286,7 @@ public class FileHandler {
 			throws IOException {
 		String name = getEffectiveFileName(in, session);
 		if (fileSource.equals("classpath")) {
-			return ClassUtils.getResourceURL(getConfigurationClassLoader(), name);
+			return ClassUtils.getResourceURL(this, name);
 		} else {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				return new File(getDirectory(), name);

@@ -26,13 +26,15 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GraphvizEngineTest {
 
 	private String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
-	private ClassLoader classLoader = this.getClass().getClassLoader();
+	private IHasConfigurationClassLoader classLoader = new ClassLoaderProvider();
 
 	@Test
 	public void canInitDefaultWithoutErrors() throws IOException {
