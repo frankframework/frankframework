@@ -297,6 +297,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	
 	public Object doAction(Message input, ParameterValueList pvl, IPipeLineSession session) throws FileSystemException, TimeOutException {
 		try {
+			input.closeOnCloseOf(session); // don't know if the input will be used
 			String action;
 			if (pvl != null && pvl.containsKey(PARAMETER_ACTION)) {
 				action = pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getAction());

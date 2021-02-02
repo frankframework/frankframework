@@ -15,6 +15,10 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Map;
@@ -129,9 +133,40 @@ public class PipeLineSessionDebugger implements IPipeLineSession {
 		return pipeLineSession.values();
 	}
 
+	@Override
+	public InputStream scheduleCloseOnSessionExit(InputStream stream) {
+		return pipeLineSession.scheduleCloseOnSessionExit(stream);
+	}
+
+	@Override
+	public OutputStream scheduleCloseOnSessionExit(OutputStream stream) {
+		return pipeLineSession.scheduleCloseOnSessionExit(stream);
+	}
+
+	@Override
+	public Reader scheduleCloseOnSessionExit(Reader reader) {
+		return pipeLineSession.scheduleCloseOnSessionExit(reader);
+	}
+
+	@Override
+	public Writer scheduleCloseOnSessionExit(Writer writer) {
+		return pipeLineSession.scheduleCloseOnSessionExit(writer);
+	}
+
+	@Override
+	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
+		pipeLineSession.unscheduleCloseOnSessionExit(resource);
+	}
+
+	@Override
+	public void close() {
+		pipeLineSession.close();
+	}
+
 	// Remaining methods
 
 	public String toString() {
 		return pipeLineSession.toString();
 	}
+
 }

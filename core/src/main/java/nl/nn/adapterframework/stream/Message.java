@@ -43,6 +43,7 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -162,7 +163,22 @@ public class Message implements Serializable {
 		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof Reader;
 	}
 	
-	
+	public void closeOnCloseOf(IPipeLineSession session) {
+		if (request instanceof InputStream) {
+			request = session.scheduleCloseOnSessionExit((InputStream)request);
+			return;
+		}
+		if (request instanceof Reader) {
+			request = session.scheduleCloseOnSessionExit((Reader)request);
+			return;
+		}
+	}
+
+	public void unregisterCloseable(IPipeLineSession session) {
+		if (request instanceof InputStream || request instanceof Reader) {
+			session.unscheduleCloseOnSessionExit((AutoCloseable)request);
+		}
+	}
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
