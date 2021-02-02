@@ -22,7 +22,7 @@ import org.junit.runners.Parameterized.Parameters;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.testutil.ClassLoaderProvider;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -70,7 +70,7 @@ public class ClassLoaderURIResolverTest {
 		if (baseType==BaseType.BYTES) {
 			return getBytesClassLoader();
 		}
-		return new ClassLoaderProvider();
+		return new TestScopeProvider();
 	}
 
 	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException, IOException {
@@ -165,6 +165,6 @@ public class ClassLoaderURIResolverTest {
 		cl.setJar(file.getFile());
 		cl.setBasePath(".");
 		cl.configure(null, "");
-		return ClassLoaderProvider.wrap(cl);
+		return TestScopeProvider.wrap(cl);
 	}
 }

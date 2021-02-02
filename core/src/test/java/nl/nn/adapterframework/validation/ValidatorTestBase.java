@@ -13,7 +13,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.testutil.ClassLoaderProvider;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
@@ -65,7 +65,7 @@ public abstract class ValidatorTestBase extends TestCase {
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
 
-	private IScopeProvider testClassLoader = new ClassLoaderProvider();
+	private IScopeProvider testScopeProvider = new TestScopeProvider();
 
     public void validate(String rootNamespace, String schemaLocation, String inputFile) throws Exception {
     	validate(rootNamespace,schemaLocation, false, inputFile, null);
@@ -193,7 +193,7 @@ public abstract class ValidatorTestBase extends TestCase {
 //						xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 //						xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 //						xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-						xsd.initNamespace(split[i], testClassLoader, split[i + 1]);
+						xsd.initNamespace(split[i], testScopeProvider, split[i + 1]);
 						xsds.add(xsd);
 					}
 //				}
@@ -209,7 +209,7 @@ public abstract class ValidatorTestBase extends TestCase {
 					Map<String, Set<XSD>> xsdsGroupedByNamespace =
 							SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
 					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
-							testClassLoader, xsdsGroupedByNamespace, null);
+							testScopeProvider, xsdsGroupedByNamespace, null);
 				} catch(Exception e) {
 					throw new ConfigurationException("could not merge schema's", e);
 				}

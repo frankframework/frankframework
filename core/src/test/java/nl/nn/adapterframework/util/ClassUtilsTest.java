@@ -18,7 +18,7 @@ import org.junit.runners.MethodSorters;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.testutil.ClassLoaderProvider;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 
 /**
  * @author Niels Meijer
@@ -29,7 +29,7 @@ public class ClassUtilsTest {
 
 	private String fileName = "Configuration.xml";
 	private ClassLoader contextClassLoader = new ContextClassLoader();
-	private IScopeProvider classLoader = ClassLoaderProvider.wrap(contextClassLoader);
+	private IScopeProvider scopeProvider = TestScopeProvider.wrap(contextClassLoader);
 	private String fileContent = "<test />";
 
 	private static class ContextClassLoader extends ClassLoader {
@@ -39,7 +39,7 @@ public class ClassUtilsTest {
 	}
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-	private IScopeProvider nullClassLoader = null;
+	private IScopeProvider nullScopeProvider = null;
 
 	@Test
 	public void getResourceURL() throws URISyntaxException, IOException {
@@ -56,13 +56,13 @@ public class ClassUtilsTest {
 
 	@Test
 	public void getResourceURLAndValidateContentsC1() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, fileName);
+		URL url = ClassUtils.getResourceURL(scopeProvider, fileName);
 		assertEquals(fileContent, Misc.streamToString(url.openStream()).trim());
 	}
 
 	@Test
 	public void getResourceURLAndValidateContentsC2() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, fileName);
+		URL url = ClassUtils.getResourceURL(scopeProvider, fileName);
 		assertEquals(fileContent, Misc.streamToString(url.openStream()).trim());
 	}
 
@@ -71,7 +71,7 @@ public class ClassUtilsTest {
 		URL url = ClassUtils.getResourceURL(fileName);
 		String fullPath = url.toURI().toString();
 
-		URL url2 = ClassUtils.getResourceURL(classLoader, fullPath, "file");
+		URL url2 = ClassUtils.getResourceURL(scopeProvider, fullPath, "file");
 		assertEquals(url.getFile(), url2.getFile());
 	}
 
@@ -80,88 +80,88 @@ public class ClassUtilsTest {
 		URL url = ClassUtils.getResourceURL(fileName);
 		String fullPath = url.toURI().toString();
 
-		assertNull(ClassUtils.getResourceURL(classLoader, fullPath, ""));
+		assertNull(ClassUtils.getResourceURL(scopeProvider, fullPath, ""));
 	}
 
 	@Test
 	public void getResourceURLnoFileError() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, "apple.pie.with.raisins");
+		URL url = ClassUtils.getResourceURL(scopeProvider, "apple.pie.with.raisins");
 
 		assertNull(url);
 	}
 
 	@Test
 	public void getResourceURLnoExternalFileErrorC1() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, "apple.pie.with.raisins", "file");
+		URL url = ClassUtils.getResourceURL(scopeProvider, "apple.pie.with.raisins", "file");
 
 		assertNull(url);
 	}
 
 	@Test
 	public void getResourceURLnoExternalFileErrorC2() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, "file://potato.ext", "file");
+		URL url = ClassUtils.getResourceURL(scopeProvider, "file://potato.ext", "file");
 
 		assertEquals("", url.getFile()); //returns an empty string if one does not exist
 	}
 
 	@Test
 	public void getResourceURLfromHttpProtocolNotAllowed1() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, "http://potato.ext", "");
+		URL url = ClassUtils.getResourceURL(scopeProvider, "http://potato.ext", "");
 
 		assertNull(url);
 	}
 
 	@Test
 	public void getResourceURLfromHttpProtocolNotAllowed2() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, "http://potato.ext", "file");
+		URL url = ClassUtils.getResourceURL(scopeProvider, "http://potato.ext", "file");
 
 		assertNull(url);
 	}
 
 	@Test
 	public void getResourceURLfromHttpProtocolNotAllowed3() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, "http://potato.ext", "file,thing");
+		URL url = ClassUtils.getResourceURL(scopeProvider, "http://potato.ext", "file,thing");
 
 		assertNull(url);
 	}
 
 	@Test
 	public void getResourceURLfromHttpProtocolNotAllowed4() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, "http://localhost/potato.ext", "file,thing");
+		URL url = ClassUtils.getResourceURL(scopeProvider, "http://localhost/potato.ext", "file,thing");
 
 		assertNull(url);
 	}
 
 	@Test
 	public void getResourceURLfromHttpProtocolNotAllowed5() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, "http://localhost/potato.ext", "https");
+		URL url = ClassUtils.getResourceURL(scopeProvider, "http://localhost/potato.ext", "https");
 
 		assertNull(url);
 	}
 
 	@Test
 	public void getResourceURLfromHttpProtocolAllowed1() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(classLoader, "http://localhost/potato.ext", "http");
+		URL url = ClassUtils.getResourceURL(scopeProvider, "http://localhost/potato.ext", "http");
 
 		assertNotNull(url);
 	}
 
 	@Test
 	public void getResourceURLnullClassLoader1() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(nullClassLoader, fileName);
+		URL url = ClassUtils.getResourceURL(nullScopeProvider, fileName);
 		assertEquals(fileContent, Misc.streamToString(url.openStream()).trim());
 	}
 
 	@Test
 	public void getResourceURLnullClassLoaderNonExistingFile() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(nullClassLoader, "apple.pie.with.raisins");
+		URL url = ClassUtils.getResourceURL(nullScopeProvider, "apple.pie.with.raisins");
 
 		assertNull(url);
 	}
 
 	@Test
 	public void getResourceURLnullClassLoaderWithExternalFile() throws URISyntaxException, IOException {
-		URL url = ClassUtils.getResourceURL(nullClassLoader, "file://potato.ext", "file");
+		URL url = ClassUtils.getResourceURL(nullScopeProvider, "file://potato.ext", "file");
 
 		assertNotNull(url);
 		assertEquals("", url.getFile()); //returns an empty string if one does not exist
@@ -189,115 +189,115 @@ public class ClassUtilsTest {
 
 	@Test
 	public void localClassLoader1FromRoot() throws IOException {
-		testUri(classLoader, "/ClassLoaderTestFile","-- /ClassLoaderTestFile --");
+		testUri(scopeProvider, "/ClassLoaderTestFile","-- /ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void localClassLoader2FromRootNoSlash() throws IOException {
-		testUri(classLoader, "ClassLoaderTestFile","-- /ClassLoaderTestFile --");
+		testUri(scopeProvider, "ClassLoaderTestFile","-- /ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void localClassLoader3FromFolder() throws IOException {
-		testUri(classLoader, "/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(scopeProvider, "/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void localClassLoader4FromFolderNoSlash() throws IOException {
-		testUri(classLoader,"ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(scopeProvider,"ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void localClassLoader5UrlWithFileScheme() throws IOException, ConfigurationException {
 		String resource="/ClassLoader/ClassLoaderTestFile";
-		URL url = ClassUtils.getResourceURL(classLoader, resource);
+		URL url = ClassUtils.getResourceURL(scopeProvider, resource);
 		String resourceAsFileUrl=url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
-		testUri(classLoader, resourceAsFileUrl,"-- /ClassLoader/ClassLoaderTestFile --","file");
+		testUri(scopeProvider, resourceAsFileUrl,"-- /ClassLoader/ClassLoaderTestFile --","file");
 	}
 
 	@Test
 	public void localClassLoader6Overrideable() throws IOException {
-		testUri(classLoader, "/ClassLoader/overridablefile","local:/overrideablefile");
+		testUri(scopeProvider, "/ClassLoader/overridablefile","local:/overrideablefile");
 	}
 
 	@Test
 	public void localClassLoader6UrlWithFileSchemeButNotAllowed() throws IOException, ConfigurationException {
 		String resource="/ClassLoader/ClassLoaderTestFile";
-		URL url = ClassUtils.getResourceURL(classLoader, resource);
+		URL url = ClassUtils.getResourceURL(scopeProvider, resource);
 		String resourceAsFileUrl=url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
-		URL actual = ClassUtils.getResourceURL(classLoader, resourceAsFileUrl);
+		URL actual = ClassUtils.getResourceURL(scopeProvider, resourceAsFileUrl);
 		assertNull("file protocol was allowed but should not", actual);
 	}
 
 	@Test
 	public void bytesClassLoader01Root() throws IOException, ConfigurationException {
-		testUri(getBytesClassLoader(), "/ClassLoaderTestFile","-- /ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "/ClassLoaderTestFile","-- /ClassLoaderTestFile --");
 	}
 	@Test
 	public void bytesClassLoader02RootNoSlash() throws IOException, ConfigurationException {
-		testUri(getBytesClassLoader(), "ClassLoaderTestFile","-- /ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "ClassLoaderTestFile","-- /ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void bytesClassLoader03Folder() throws IOException, ConfigurationException {
-		testUri(getBytesClassLoader(), "/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 	@Test
 	public void bytesClassLoader04FolderNoSlash() throws IOException, ConfigurationException {
-		testUri(getBytesClassLoader(), "ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void bytesClassLoader05ResourceFromLocalClasspath() throws IOException, ConfigurationException {
-		testUri(getBytesClassLoader(), "/ClassLoader/fileOnlyOnLocalClassPath.txt","-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
+		testUri(getBytesClassLoaderProvider(), "/ClassLoader/fileOnlyOnLocalClassPath.txt","-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
 	}
 
 	@Test
 	public void bytesClassLoader06ResourceFromLocalClasspathNoSlash() throws IOException, ConfigurationException {
-		testUri(getBytesClassLoader(), "ClassLoader/fileOnlyOnLocalClassPath.txt","-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
+		testUri(getBytesClassLoaderProvider(), "ClassLoader/fileOnlyOnLocalClassPath.txt","-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
 	}
 
 	@Test
 	public void bytesClassLoader07Overridable() throws IOException, ConfigurationException {
-		testUri(getBytesClassLoader(), "/ClassLoader/overridablefile","zip:/overrideablefile");
+		testUri(getBytesClassLoaderProvider(), "/ClassLoader/overridablefile","zip:/overrideablefile");
 	}
 
 
 	@Test
 	public void bytesClassLoader07WithScheme() throws IOException, ConfigurationException {
-		testUri(getBytesClassLoader(), "classpath:/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "classpath:/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 	@Test
 	public void bytesClassLoader08WithSchemeNoSlash() throws IOException, ConfigurationException {
-		testUri(getBytesClassLoader(), "classpath:ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "classpath:ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void bytesClassLoader09UrlWithFileScheme() throws IOException, ConfigurationException {
 		String resource="/ClassLoader/fileOnlyOnLocalClassPath.txt";
-		URL url = ClassUtils.getResourceURL(classLoader, resource);
+		URL url = ClassUtils.getResourceURL(scopeProvider, resource);
 		String resourceAsFileUrl=url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
-		testUri(getBytesClassLoader(), resourceAsFileUrl,"-- /ClassLoader/fileOnlyOnLocalClassPath.txt --","file");
+		testUri(getBytesClassLoaderProvider(), resourceAsFileUrl,"-- /ClassLoader/fileOnlyOnLocalClassPath.txt --","file");
 	}
 
 	@Test
 	public void bytesClassLoader10UrlWithFileSchemeButNotAllowed() throws IOException, ConfigurationException {
 		String resource="/ClassLoader/fileOnlyOnLocalClassPath.xml";
-		URL url = ClassUtils.getResourceURL(classLoader, resource);
+		URL url = ClassUtils.getResourceURL(scopeProvider, resource);
 		String resourceAsFileUrl=url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
-		URL actual = ClassUtils.getResourceURL(getBytesClassLoader(), resourceAsFileUrl);
+		URL actual = ClassUtils.getResourceURL(getBytesClassLoaderProvider(), resourceAsFileUrl);
 		assertNull("file protocol was allowed but should not", actual);
 	}
 
-	private IScopeProvider getBytesClassLoader() throws IOException, ConfigurationException {
+	private IScopeProvider getBytesClassLoaderProvider() throws IOException, ConfigurationException {
 
 		URL file = this.getClass().getResource(JAR_FILE);
 		assertNotNull("jar url ["+JAR_FILE+"] not found", file);
@@ -308,7 +308,7 @@ public class ClassUtilsTest {
 		cl.setJar(file.getFile());
 		cl.setBasePath(".");
 		cl.configure(null, "");
-		return ClassLoaderProvider.wrap(cl);
+		return TestScopeProvider.wrap(cl);
 	}
 
 }
