@@ -25,13 +25,17 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -50,9 +54,10 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.Adapter
  */
-public class Configuration implements INamedObject, IScopeProvider {
+public class Configuration implements INamedObject, IScopeProvider, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = null;
+	private @Setter ApplicationContext applicationContext;
 
 	private Boolean autoStart = null;
 
@@ -374,5 +379,12 @@ public class Configuration implements INamedObject, IScopeProvider {
 
 	public BaseConfigurationWarnings getConfigurationWarnings() {
 		return configurationWarnings;
+	}
+
+	public void close() {
+		if(applicationContext instanceof ConfigurableApplicationContext) {
+			System.out.println("CLOSING " + applicationContext.getDisplayName());
+			((ConfigurableApplicationContext) applicationContext).close();
+		}
 	}
 }

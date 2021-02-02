@@ -1,3 +1,18 @@
+/*
+   Copyright 2020-2021 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.configuration.digester;
 
 import org.apache.commons.digester3.Digester;
@@ -7,7 +22,10 @@ import org.apache.commons.digester3.Rule;
 import org.apache.commons.digester3.binder.LinkedRuleBuilder;
 import org.apache.commons.digester3.binder.RulesBinder;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.AttributeCheckingRule;
 import nl.nn.adapterframework.configuration.GenericFactory;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -15,6 +33,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 public class DigesterRulesParser extends DigesterRulesHandler {
 	private Digester digester;
 	private RulesBinder rulesBinder;
+	private @Setter ApplicationContext applicationContext;
 	private Rule attributeChecker = new AttributeCheckingRule();
 
 	public DigesterRulesParser(Digester digester, RulesBinder rulesBinder) {
@@ -59,7 +78,8 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			Object object;
 			try {
 				if(log.isTraceEnabled()) log.trace("attempting to create new factory of class ["+factory+"]");
-				object = ClassUtils.newInstance(factory);
+				Class<?> clazz = ClassUtils.loadClass(factory);
+				object = autoWireAndInitializeBean(clazz); //Wire the factory through Spring
 			} catch (Exception e) {
 				throw new IllegalArgumentException("factory ["+factory+"] not found", e);
 			}
@@ -70,6 +90,18 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			}
 		}
 		if(log.isTraceEnabled()) log.trace("no factory specified, returing default ["+GenericFactory.class.getCanonicalName()+"]");
-		return new GenericFactory();
+		return autoWireAndInitializeBean(GenericFactory.class); //Wire the factory through Spring
+	}
+
+	@SuppressWarnings("unchecked")
+	protected <T> T autoWireAndInitializeBean(Class<T> clazz) {
+		if(applicationContext != null) {
+			AutowireCapableBeanFactory beanFactory = applicationContext.getAutowireCapableBeanFactory();
+//			T bean = (T) beanFactory.autowire(clazz, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false); //Wire the factory through Spring
+//			return (T) beanFactory.initializeBean(bean, bean.getClass().getSimpleName()); //Initialize the Bean through Spring (aka apply 'magic')
+			return (T) beanFactory.createBean(clazz, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false); //Wire the factory through Spring
+		} else {
+			throw new IllegalStateException("ApplicationContext not set");
+		}
 	}
 }

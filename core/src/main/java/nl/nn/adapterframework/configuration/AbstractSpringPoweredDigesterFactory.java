@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,22 +15,27 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.digester3.AbstractObjectCreationFactory;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.ClassUtils;
-import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.digester3.AbstractObjectCreationFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.ClassUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
+
+import lombok.Setter;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * This is a factory for objects to be used with the 'factory-create-rule'
@@ -57,87 +62,83 @@ import java.util.Map;
  * @since   4.8
  *
  */
-public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> {
+public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Setter ApplicationContext applicationContext;
 
-    private static IbisContext ibisContext;
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
-    public AbstractSpringPoweredDigesterFactory() {
-        super();
-    }
+	public AbstractSpringPoweredDigesterFactory() {
+		super();
+	}
 
-    public static void setIbisContext(IbisContext ibisContext) {
-		AbstractSpringPoweredDigesterFactory.ibisContext = ibisContext;
-    }
+	/**
+	 * Suggest the name of the bean which should be retrieved from
+	 * the Spring BeanFactory.
+	 *
+	 * If a className attribute has also been specified in the XML,
+	 * then that takes precedence over finding a bean with given
+	 * suggestedBeanName.
+	 *
+	 * If for the className multiple bean-definitions are found in
+	 * the factory, then a bean is selected from those with this
+	 * given suggestedBeanName. If no such bean exists, an error is thrown
+	 * because the factory can not select between multiple beans.
+	 */
+	abstract public String getSuggestedBeanName();
 
-    /**
-     * Suggest the name of the bean which should be retrieved from
-     * the Spring BeanFactory.
-     *
-     * If a className attribute has also been specified in the XML,
-     * then that takes precedence over finding a bean with given
-     * suggestedBeanName.
-     *
-     * If for the className multiple bean-definitions are found in
-     * the factory, then a bean is selected from those with this
-     * given suggestedBeanName. If no such bean exists, an error is thrown
-     * because the factory can not select between multiple beans.
-     */
-    abstract public String getSuggestedBeanName();
+	/**
+	 * Return <code>true</code> is only prototype beans from the
+	 * Spring Context will be returned, <code>false</code> is
+	 * a Spring singleton bean might be returned.
+	 *
+	 * This is hard-coded to return <code>true</code> only in this
+	 * class. If a subclass wishes to allow using singleton-beans,
+	 * then this method should be overridden.
+	 *
+	 * @return <code>true</code>
+	 */
+	public boolean isPrototypesOnly() {
+		return true;
+	}
 
-    /**
-     * Return <code>true</code> is only prototype beans from the
-     * Spring Context will be returned, <code>false</code> is
-     * a Spring singleton bean might be returned.
-     *
-     * This is hard-coded to return <code>true</code> only in this
-     * class. If a subclass wishes to allow using singleton-beans,
-     * then this method should be overridden.
-     *
-     * @return <code>true</code>
-     */
-    public boolean isPrototypesOnly() {
-        return true;
-    }
-
-    /**
-     * Create object using, if possible, the Spring BeanFactory.
-     *
-     * An object is created according to the following rules:
-     * <ol>
-     * <li>If <em>no</em> attribute 'className' is given in the configuration file,
-     * then the bean named with method getSuggestedBeanName() is created from the
-     * Spring context.</li>
-     * <li>If exactly 1 bean of type given by 'className' attribute can be
-     * found in the Spring context, an instance of that bean is created
-     * from the Spring factory.<br/>
-     * The value returned by method getSuggestedBeanName() is, in this case,
-     * not relevant.</li>
-     * <li>If multiple beans of type given by 'className' attribute are
-     * defined in the Spring context, then an instance is created whose
-     * bean-name is the same as that returned by the method getSuggestedBeanName().</li>
-     * <li>If the Spring context contains no beans of type 'className', then
-     * a new instance of this class is created without accessing the
-     * Spring factory.<br/>
-     * The Spring BeanFactory will then be invoked to attempt auto-wiring
-     * beans by name and initialization via any BeanFactory - callback methods.
-     * If the created class implements interface
-     * {@link org.springframework.beans.factory.BeanFactoryAware},
-     * the Spring factory will be made available as a property so that it can
-     * be accessed directly from the bean.<br/>
-     * (NB:Objects created by the Spring Factory will also have a pointer to
-     * the creating BeanFactory when they implement this interface.)</li>
-     * <li></li>
-     * </ol>
-     *
-     * @see org.apache.commons.digester.ObjectCreationFactory#createObject(org.xml.sax.Attributes)
-     */
-    @Override
-    public Object createObject(Attributes attrs) throws Exception {
-        Map<String, String> attrMap = copyAttrsToMap(attrs);
-        return createObject(attrMap);
-    }
+	/**
+	 * Create object using, if possible, the Spring BeanFactory.
+	 *
+	 * An object is created according to the following rules:
+	 * <ol>
+	 * <li>If <em>no</em> attribute 'className' is given in the configuration file,
+	 * then the bean named with method getSuggestedBeanName() is created from the
+	 * Spring context.</li>
+	 * <li>If exactly 1 bean of type given by 'className' attribute can be
+	 * found in the Spring context, an instance of that bean is created
+	 * from the Spring factory.<br/>
+	 * The value returned by method getSuggestedBeanName() is, in this case,
+	 * not relevant.</li>
+	 * <li>If multiple beans of type given by 'className' attribute are
+	 * defined in the Spring context, then an instance is created whose
+	 * bean-name is the same as that returned by the method getSuggestedBeanName().</li>
+	 * <li>If the Spring context contains no beans of type 'className', then
+	 * a new instance of this class is created without accessing the
+	 * Spring factory.<br/>
+	 * The Spring BeanFactory will then be invoked to attempt auto-wiring
+	 * beans by name and initialization via any BeanFactory - callback methods.
+	 * If the created class implements interface
+	 * {@link org.springframework.beans.factory.BeanFactoryAware},
+	 * the Spring factory will be made available as a property so that it can
+	 * be accessed directly from the bean.<br/>
+	 * (NB:Objects created by the Spring Factory will also have a pointer to
+	 * the creating BeanFactory when they implement this interface.)</li>
+	 * <li></li>
+	 * </ol>
+	 *
+	 * @see org.apache.commons.digester.ObjectCreationFactory#createObject(org.xml.sax.Attributes)
+	 */
+	@Override
+	public Object createObject(Attributes attrs) throws Exception {
+		Map<String, String> attrMap = copyAttrsToMap(attrs);
+		return createObject(attrMap);
+	}
 
 	/**
 	 * Create Object from Spring factory, but using the attributes
@@ -192,8 +193,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		}
 	}
 
-	protected void checkAttribute(Object currObj, String beanName,
-			String attributeName, String value, Map<String, String> attrs) throws Exception {
+	protected void checkAttribute(Object currObj, String beanName, String attributeName, String value, Map<String, String> attrs) throws Exception {
 		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(currObj, attributeName);
 		if (pd!=null) {
 			Method rm = PropertyUtils.getReadMethod(pd);
@@ -286,17 +286,16 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		}
 	}
 
-    /**
-     * Given a class-name, create a bean. The classname-parameter can be
-     * <code>null</code>, in which case the bean is created using the
-     * bean-name returned by <code>getSuggestedBeanName()</code>, that is often
-     * implemented by prefixing the element name with 'proto-'
-     */
-    protected Object createBeanFromClassName(String className)
-    	throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {
+	/**
+	 * Given a class-name, create a bean. The classname-parameter can be
+	 * <code>null</code>, in which case the bean is created using the
+	 * bean-name returned by <code>getSuggestedBeanName()</code>, that is often
+	 * implemented by prefixing the element name with 'proto-'
+	 */
+	protected Object createBeanFromClassName(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {
 
-        if (ibisContext == null) {
-            throw new IllegalStateException("No ibisContext set. Call setIbisContext first.");
+        if (applicationContext == null) {
+            throw new IllegalStateException("No ApplicationContext set. Where's the Spring magic gone?");
         }
         String beanName;
         Class<?> beanClass;
@@ -313,7 +312,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             beanClass = Class.forName(className, true, classLoader);
 
-            String[] matchingBeans = ibisContext.getBeanNamesForType(beanClass);
+            String[] matchingBeans = applicationContext.getBeanNamesForType(beanClass);
             if (matchingBeans.length == 1) {
                 // Only 1 bean of this type, so create it
                 beanName = matchingBeans[0];
@@ -351,21 +350,27 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
         }
 
         // Only accept prototype-beans!
-        if (isPrototypesOnly() && !ibisContext.isPrototype(beanName)) {
+        if (isPrototypesOnly() && !applicationContext.isPrototype(beanName)) {
             throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean ["
                 + beanName + "] of class [" + className + "] is not.");
         }
         if (log.isDebugEnabled()) {
             log.debug("Creating bean with actual bean-name [" + beanName + "], bean-class [" + (beanClass != null ? beanClass.getName() : "null") + "] from Spring Bean Factory.");
         }
-        return ibisContext.getBean(beanName, beanClass);
+        return applicationContext.getBean(beanName, beanClass);
     }
 
+	@SuppressWarnings("unchecked")
 	protected <T> T createBeanAndAutoWire(Class<T> beanClass) throws InstantiationException, IllegalAccessException {
 		if (log.isDebugEnabled()) {
-			log.debug("Bean class [" + beanClass.getName() + "], autowire bean name [" + getSuggestedBeanName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
+			log.debug("Bean class [" + beanClass.getName() + "], autowire bean name [" + getSuggestedBeanName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory ["+applicationContext.getDisplayName()+"] for auto-wiring support.");
 		}
-		return ibisContext.createBeanAutowireByName(beanClass);
+//		T bean = (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+
+		T bean = (T) applicationContext.getAutowireCapableBeanFactory().autowire(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false); //Wire the factory through Spring
+//		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
+		bean = (T) applicationContext.getAutowireCapableBeanFactory().initializeBean(bean, bean.getClass().getSimpleName()); //Initialise the Bean through Spring (aka apply 'magic')
+		return bean;
 	}
 
 	protected Map<String, String> copyAttrsToMap(Attributes attrs) {

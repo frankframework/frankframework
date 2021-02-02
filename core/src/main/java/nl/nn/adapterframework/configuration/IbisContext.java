@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
@@ -122,8 +123,6 @@ public class IbisContext extends IbisApplicationContext {
 			messageKeepers.put(ALL_CONFIGS_KEY, messageKeeper);
 
 			classLoaderManager = new ClassLoaderManager(this);
-
-			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
 			try {
 				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialize.
@@ -270,8 +269,6 @@ public class IbisContext extends IbisApplicationContext {
 		boolean configFound = false;
 
 		//We have an ordered list with all configurations, lets loop through!
-		ConfigurationDigester configurationDigester = new ConfigurationDigester();
-
 		Map<String, String> allConfigNamesItems = ConfigurationUtils.retrieveAllConfigNames(this);
 		for (Entry<String, String> currentConfigNameItem : allConfigNamesItems.entrySet()) {
 			String currentConfigurationName = currentConfigNameItem.getKey();
@@ -299,7 +296,7 @@ public class IbisContext extends IbisApplicationContext {
 				if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found classloader ["+ClassUtils.nameOf(classLoader)+"]");
 				try {
 					loadingConfigs.add(currentConfigurationName);
-					digestClassLoaderConfiguration(classLoader, configurationDigester, currentConfigurationName, customClassLoaderConfigurationException);
+					digestClassLoaderConfiguration(classLoader, currentConfigurationName, customClassLoaderConfigurationException);
 				} catch (Exception e) {
 					LOG.error("an unhandled exception occurred while digesting configuration ["+currentConfigurationName+"]", e);
 				} finally {
@@ -317,7 +314,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	private void digestClassLoaderConfiguration(ClassLoader classLoader, ConfigurationDigester configurationDigester, String currentConfigurationName, ConfigurationException customClassLoaderConfigurationException) {
+	private void digestClassLoaderConfiguration(ClassLoader classLoader, String currentConfigurationName, ConfigurationException customClassLoaderConfigurationException) {
 
 		long start = System.currentTimeMillis();
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
@@ -335,8 +332,14 @@ public class IbisContext extends IbisApplicationContext {
 
 		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion ["+currentConfigurationVersion+"]");
 
-		//TODO autowire the entire configuration in it's own context.
-		Configuration configuration = createBeanAutowireByName(Configuration.class);
+		ClassPathXmlApplicationContext cxap = new ClassPathXmlApplicationContext(); // closed in Configuration.close(), triggered by DefaultIbisManager
+		cxap.setClassLoader(classLoader);
+		cxap.setDisplayName(currentConfigurationName);
+		cxap.setParent(getApplicationContext());
+		cxap.setConfigLocation("FrankFrameworkConfigurationContext.xml");
+		cxap.refresh();
+
+		Configuration configuration = cxap.getBean(Configuration.class);
 		try {
 			configuration.setName(currentConfigurationName);
 			configuration.setVersion(currentConfigurationVersion);
@@ -358,7 +361,8 @@ public class IbisContext extends IbisApplicationContext {
 					}
 				}
 
-				configurationDigester.digestConfiguration(classLoader, configuration);
+				ConfigurationDigester configurationDigester = cxap.getBean(ConfigurationDigester.class);
+				configurationDigester.digestConfiguration(configuration); //TODO: Auto-magic this
 				if (currentConfigurationVersion == null) {
 					currentConfigurationVersion = configuration.getVersion();
 				} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {

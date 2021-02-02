@@ -24,7 +24,6 @@ import java.util.Map;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -76,8 +75,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		ibisContext.autowireBeanProperties(querySender, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		getApplicationContext().getAutowireCapableBeanFactory().autowireBeanProperties(querySender, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
