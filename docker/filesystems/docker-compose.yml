@@ -4,6 +4,7 @@ services:
     samba:
       #image: stanback/alpine-samba
       build: ./samba
+      restart: unless-stopped
       container_name: samba
       volumes:
         - samba-v:/srv/samba/shared
@@ -17,7 +18,7 @@ services:
   
     kdc:
       build: ./kerberos
-      restart: always
+      restart: unless-stopped
       container_name: kerberos
       ports:
       - "88:88"
@@ -34,6 +35,7 @@ services:
 
     ftp-server:
       build: ./ftp
+      restart: unless-stopped
       container_name: ftp
       ports:
         - "21:21"

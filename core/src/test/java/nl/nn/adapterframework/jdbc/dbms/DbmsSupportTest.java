@@ -74,9 +74,10 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 	@Test
 	public void testIsColumnPresentInSchema() throws JdbcException {
-		assertTrue("Should have found existing column", dbmsSupport.isColumnPresent(connection, dbmsSupport.getSchema(connection), "TEMP", "TINT"));
-		assertFalse(dbmsSupport.isColumnPresent(connection, dbmsSupport.getSchema(connection), "TEMP", "XXXX"));
-		assertFalse(dbmsSupport.isColumnPresent(connection, dbmsSupport.getSchema(connection), "XXXX", "XXXX"));
+		String schema = dbmsSupport.getSchema(connection);
+		assertTrue("Should have found existing column in schema ["+schema+"]", dbmsSupport.isColumnPresent(connection, schema, "TEMP", "TINT"));
+		assertFalse(dbmsSupport.isColumnPresent(connection, schema, "TEMP", "XXXX"));
+		assertFalse(dbmsSupport.isColumnPresent(connection, schema, "XXXX", "XXXX"));
 	}
 
 	@Test

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,13 +13,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
+package nl.nn.adapterframework.jdbc;
 
-import java.sql.SQLException;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
-public abstract class JdbcSession implements AutoCloseable {
-
-	@Override
-	public abstract void close() throws SQLException;
+public interface IDataSourceFactory {
+	
+	public DataSource getDataSource(String dataSourceName) throws NamingException;
 
 }

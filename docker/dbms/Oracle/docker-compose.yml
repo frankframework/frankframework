@@ -1,6 +1,6 @@
 version: "3"
 services:
-  database:
+  oracleserver:
     image: iaf-test-db-oracle
     restart: unless-stopped
     ports:

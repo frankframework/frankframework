@@ -16,7 +16,7 @@
 	/>
 
 	<Resource
-		name="jdbc/ibis4test-oracle"
+		name="jdbc/ibis4test-oracle-xe"
 		type="javax.sql.DataSource"
 		driverClassName="oracle.jdbc.driver.OracleDriver"
 		url="jdbc:oracle:thin:@localhost:1521:xe"
@@ -28,7 +28,7 @@
 	/>
 
 	<Resource
-		name="jdbc/ibis4test-oracle-docker"
+		name="jdbc/ibis4test-oracle"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
 		URL="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
