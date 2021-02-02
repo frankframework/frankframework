@@ -13,12 +13,12 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 
 public class ClassLoaderXmlEntityResolverTest {
 
-	private static final IHasConfigurationClassLoader localClassLoader = new ClassLoaderProvider();
+	private static final IScopeProvider localClassLoader = new ClassLoaderProvider();
 	private String publicId="fakePublicId";
 	//private String base="/ClassLoader/zip/Xslt/names.xslt";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";

@@ -39,7 +39,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -85,7 +85,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author Jaco de Groot (***@dynasol.nl)
  *
  */
-public class FileHandler implements IHasConfigurationClassLoader {
+public class FileHandler implements IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 

@@ -39,7 +39,7 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactory;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -51,7 +51,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * 
  * @author John Dekker
  */
-public class FTPsClient extends FTPClient implements IHasConfigurationClassLoader {
+public class FTPsClient extends FTPClient implements IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 

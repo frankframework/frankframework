@@ -21,7 +21,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -51,7 +51,7 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	
-	private void testUri(String baseType, String refType, IHasConfigurationClassLoader cl, String base, String ref, String expected) throws TransformerException {
+	private void testUri(String baseType, String refType, IScopeProvider cl, String base, String ref, String expected) throws TransformerException {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(cl);
 
 		Source source = resolver.resolve(ref, base);
@@ -66,14 +66,14 @@ public class ClassLoaderURIResolverTest {
 	private enum BaseType { LOCAL, BYTES, FILE_SCHEME, NULL }
 	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, FILE_SCHEME }
 
-	private IHasConfigurationClassLoader getClassLoaderProvider(BaseType baseType) throws ConfigurationException, IOException {
+	private IScopeProvider getClassLoaderProvider(BaseType baseType) throws ConfigurationException, IOException {
 		if (baseType==BaseType.BYTES) {
 			return getBytesClassLoader();
 		}
 		return new ClassLoaderProvider();
 	}
 
-	private String getBase(IHasConfigurationClassLoader classLoaderProvider, BaseType baseType) throws ConfigurationException, IOException {
+	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException, IOException {
 		URL result=null;
 		switch (baseType) {
 		case LOCAL:
@@ -140,7 +140,7 @@ public class ClassLoaderURIResolverTest {
 
 	@Test
 	public void test() throws ConfigurationException, IOException, TransformerException {
-		IHasConfigurationClassLoader classLoaderProvider = getClassLoaderProvider(baseType);
+		IScopeProvider classLoaderProvider = getClassLoaderProvider(baseType);
 		String baseUrl = getBase(classLoaderProvider, baseType);
 		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoaderProvider+"] BaseUrl ["+baseUrl+"]");
 		
@@ -153,7 +153,7 @@ public class ClassLoaderURIResolverTest {
 	}
 
 
-	private IHasConfigurationClassLoader getBytesClassLoader() throws IOException, ConfigurationException {
+	private IScopeProvider getBytesClassLoader() throws IOException, ConfigurationException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);

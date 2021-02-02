@@ -22,7 +22,7 @@ public class PropertyUtil {
 		if (properties == null) {
 			properties = new Properties();
 			try {
-				properties.load(ClassUtils.getResourceURL(PropertyUtil.class.getClassLoader(), propertyFile).openStream());
+				properties.load(ClassUtils.getResourceURL(propertyFile).openStream());
 			} catch (IOException e) {
 				log.warn("Could not load property file ["+propertyFile+"]",e);
 			}

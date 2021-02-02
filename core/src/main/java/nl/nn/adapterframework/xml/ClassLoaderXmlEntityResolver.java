@@ -25,7 +25,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 
 /**
@@ -36,7 +36,7 @@ import nl.nn.adapterframework.core.Resource;
  */
 public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver implements XMLEntityResolver {
 
-	public ClassLoaderXmlEntityResolver(IHasConfigurationClassLoader classLoaderProvider) {
+	public ClassLoaderXmlEntityResolver(IScopeProvider classLoaderProvider) {
 		super(classLoaderProvider);
 	}
 

@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.testutil;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 
-public class ClassLoaderProvider implements IHasConfigurationClassLoader {
+public class ClassLoaderProvider implements IScopeProvider {
 
 	private @Getter ClassLoader configurationClassLoader = null;
 
@@ -15,7 +15,7 @@ public class ClassLoaderProvider implements IHasConfigurationClassLoader {
 		configurationClassLoader = classLoader;
 	}
 
-	public static IHasConfigurationClassLoader wrap(ClassLoader classLoader) {
+	public static IScopeProvider wrap(ClassLoader classLoader) {
 		return new ClassLoaderProvider(classLoader);
 	}
 }

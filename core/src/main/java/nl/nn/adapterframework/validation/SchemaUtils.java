@@ -51,7 +51,7 @@ import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -140,7 +140,7 @@ public class SchemaUtils {
 	 * @return XSD's when xmlStreamWriter is null, otherwise write to
 	 *		 xmlStreamWriter
 	 */
-	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IHasConfigurationClassLoader classLoaderProvider, Map<String, Set<XSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
+	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<XSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
 		Set<XSD> resultXsds = new HashSet<XSD>();
 		for (String namespace: xsdsGroupedByNamespace.keySet()) {
 			Set<XSD> xsds = xsdsGroupedByNamespace.get(namespace);
@@ -189,7 +189,7 @@ public class SchemaUtils {
 				resultXsd.setImportedSchemaLocationsToIgnore(firstXsd.getImportedSchemaLocationsToIgnore());
 				resultXsd.setUseBaseImportedSchemaLocationsToIgnore(firstXsd.isUseBaseImportedSchemaLocationsToIgnore());
 				resultXsd.setImportedNamespacesToIgnore(firstXsd.getImportedNamespacesToIgnore());
-				resultXsd.initFromXsds(namespace, classLoaderProvider, xsds);
+				resultXsd.initFromXsds(namespace, scopeProvider, xsds);
 				resultXsds.add(resultXsd);
 			}
 		}

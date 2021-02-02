@@ -29,7 +29,7 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.callbacks.Keyrin
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.InMemoryKeyring;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.KeyringConfigs;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  *
  * @author Murat Kaan Meral
  */
-public abstract class PGPAction implements IHasConfigurationClassLoader {
+public abstract class PGPAction implements IScopeProvider {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	protected InMemoryKeyring keyringConfig;

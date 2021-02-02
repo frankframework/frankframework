@@ -17,7 +17,7 @@ import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 
 /**
@@ -29,7 +29,7 @@ public class ClassUtilsTest {
 
 	private String fileName = "Configuration.xml";
 	private ClassLoader contextClassLoader = new ContextClassLoader();
-	private IHasConfigurationClassLoader classLoader = ClassLoaderProvider.wrap(contextClassLoader);
+	private IScopeProvider classLoader = ClassLoaderProvider.wrap(contextClassLoader);
 	private String fileContent = "<test />";
 
 	private static class ContextClassLoader extends ClassLoader {
@@ -39,7 +39,7 @@ public class ClassUtilsTest {
 	}
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-	private IHasConfigurationClassLoader nullClassLoader = null;
+	private IScopeProvider nullClassLoader = null;
 
 	@Test
 	public void getResourceURL() throws URISyntaxException, IOException {
@@ -168,12 +168,12 @@ public class ClassUtilsTest {
 	}
 
 
-	public void testUri(IHasConfigurationClassLoader cl, String uri, String expected, String allowedProtocol) throws IOException  {
+	public void testUri(IScopeProvider cl, String uri, String expected, String allowedProtocol) throws IOException  {
 		URL url = ClassUtils.getResourceURL(cl, uri, allowedProtocol);
 		verifyUrl(url, uri, expected);
 	}
 
-	public void testUri(IHasConfigurationClassLoader cl, String uri, String expected) throws IOException  {
+	public void testUri(IScopeProvider cl, String uri, String expected) throws IOException  {
 		URL url = ClassUtils.getResourceURL(cl, uri);
 		verifyUrl(url, uri, expected);
 	}
@@ -297,7 +297,7 @@ public class ClassUtilsTest {
 		assertNull("file protocol was allowed but should not", actual);
 	}
 
-	private IHasConfigurationClassLoader getBytesClassLoader() throws IOException, ConfigurationException {
+	private IScopeProvider getBytesClassLoader() throws IOException, ConfigurationException {
 
 		URL file = this.getClass().getResource(JAR_FILE);
 		assertNotNull("jar url ["+JAR_FILE+"] not found", file);

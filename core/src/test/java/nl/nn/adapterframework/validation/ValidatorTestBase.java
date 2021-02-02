@@ -10,7 +10,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.testutil.ClassLoaderProvider;
@@ -65,7 +65,7 @@ public abstract class ValidatorTestBase extends TestCase {
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
 
-	private IHasConfigurationClassLoader testClassLoader = new ClassLoaderProvider();
+	private IScopeProvider testClassLoader = new ClassLoaderProvider();
 
     public void validate(String rootNamespace, String schemaLocation, String inputFile) throws Exception {
     	validate(rootNamespace,schemaLocation, false, inputFile, null);

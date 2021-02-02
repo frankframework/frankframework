@@ -95,7 +95,7 @@ import com.ctc.wstx.stax.WstxInputFactory;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -545,13 +545,13 @@ public class XmlUtils {
 		return getXMLReader(null, handler);
 	}
 
-	public static XMLReader getXMLReader(Configuration classLoaderProvider) throws ParserConfigurationException, SAXException {
-		return getXMLReader(true, classLoaderProvider);
+	public static XMLReader getXMLReader(Configuration scopeProvider) throws ParserConfigurationException, SAXException {
+		return getXMLReader(true, scopeProvider);
 	}
 
 	
-	private static XMLReader getXMLReader(Resource classloaderProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
-		XMLReader xmlReader = getXMLReader(true, classloaderProvider);
+	private static XMLReader getXMLReader(Resource scopeProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
+		XMLReader xmlReader = getXMLReader(true, scopeProvider);
 		xmlReader.setContentHandler(handler);
 		if (handler instanceof LexicalHandler) {
 			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
@@ -563,15 +563,15 @@ public class XmlUtils {
 	}
 	
 	private static XMLReader getXMLReader(boolean namespaceAware, Resource resource) throws ParserConfigurationException, SAXException {
-		return getXMLReader(namespaceAware, resource==null?null:resource.getClassLoaderProvider());
+		return getXMLReader(namespaceAware, resource==null?null:resource.getScopeProvider());
 	}
 	
-	private static XMLReader getXMLReader(boolean namespaceAware, IHasConfigurationClassLoader classLoaderProvider) throws ParserConfigurationException, SAXException {
+	private static XMLReader getXMLReader(boolean namespaceAware, IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
 		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-		if (classLoaderProvider!=null) {
-			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(classLoaderProvider));
+		if (scopeProvider!=null) {
+			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(scopeProvider));
 		} else {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
 		}
@@ -1003,9 +1003,9 @@ public class XmlUtils {
 		return inputSourceToSAXSource(is, true, null);
 	}
 	
-	private static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource classloaderProvider) throws SAXException {
+	private static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource scopeProvider) throws SAXException {
 		try {
-			return new SAXSource(getXMLReader(namespaceAware, classloaderProvider), is);
+			return new SAXSource(getXMLReader(namespaceAware, scopeProvider), is);
 		} catch (ParserConfigurationException e) {
 			throw new SaxException(e);
 		}

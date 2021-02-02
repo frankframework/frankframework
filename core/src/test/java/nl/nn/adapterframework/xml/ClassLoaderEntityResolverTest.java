@@ -15,7 +15,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 import nl.nn.adapterframework.util.Misc;
 
@@ -23,7 +23,7 @@ public class ClassLoaderEntityResolverTest {
 
 	private String publicId="fakePublicId";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-	private IHasConfigurationClassLoader localClassLoader = new ClassLoaderProvider();
+	private IScopeProvider localClassLoader = new ClassLoaderProvider();
 
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws SAXException, IOException {

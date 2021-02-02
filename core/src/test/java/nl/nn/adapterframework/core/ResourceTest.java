@@ -22,13 +22,13 @@ public class ResourceTest {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
-	private IHasConfigurationClassLoader testClassLoader = new ClassLoaderProvider();
+	private IScopeProvider testClassLoader = new ClassLoaderProvider();
 
-	private void testUri(IHasConfigurationClassLoader cl, String ref, String expectedContents, String expectedSystemId) throws TransformerException, SAXException, IOException {
+	private void testUri(IScopeProvider cl, String ref, String expectedContents, String expectedSystemId) throws TransformerException, SAXException, IOException {
 		testUri(cl, ref, null, expectedContents, expectedSystemId);
 	}
 
-	private void testUri(IHasConfigurationClassLoader cl, String ref, String allowedProtocol, String expectedContents, String expectedSystemId) throws TransformerException, SAXException, IOException {
+	private void testUri(IScopeProvider cl, String ref, String allowedProtocol, String expectedContents, String expectedSystemId) throws TransformerException, SAXException, IOException {
 		Resource resource = Resource.getResource(cl, ref, allowedProtocol);
 		assertNotNull(ref,resource);
 		if (expectedContents!=null) {
@@ -164,7 +164,7 @@ public class ResourceTest {
 //	}
 
 	
-	private IHasConfigurationClassLoader getBytesClassLoader() throws IOException, ConfigurationException {
+	private IScopeProvider getBytesClassLoader() throws IOException, ConfigurationException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);

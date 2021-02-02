@@ -48,7 +48,7 @@ import org.xml.sax.InputSource;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
@@ -344,7 +344,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	}
 }
 
-class ClassLoaderWSDLLocator implements WSDLLocator, IHasConfigurationClassLoader {
+class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 	private @Getter ClassLoader configurationClassLoader = null;
 	private String wsdl;
 	private URL url;

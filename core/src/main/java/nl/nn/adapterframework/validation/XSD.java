@@ -43,7 +43,7 @@ import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -58,7 +58,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class XSD implements Schema, Comparable<XSD> {
 	private static final Logger LOG = LogUtil.getLogger(XSD.class);
 
-	private IHasConfigurationClassLoader classLoaderProvider;
+	private IScopeProvider scopeProvider;
 	private javax.wsdl.Definition wsdlDefinition;
 	private javax.wsdl.extensions.schema.Schema wsdlSchema;
 	private String resource;
@@ -155,11 +155,11 @@ public class XSD implements Schema, Comparable<XSD> {
 		return targetNamespace;
 	}
 
-	public void initNoNamespace(IHasConfigurationClassLoader classLoaderProvider, String noNamespaceSchemaLocation) throws ConfigurationException {
+	public void initNoNamespace(IScopeProvider scopeProvider, String noNamespaceSchemaLocation) throws ConfigurationException {
 		this.noNamespaceSchemaLocation=noNamespaceSchemaLocation;
-		this.classLoaderProvider=classLoaderProvider;
+		this.scopeProvider=scopeProvider;
 		this.resource=noNamespaceSchemaLocation;
-		url = ClassUtils.getResourceURL(classLoaderProvider, noNamespaceSchemaLocation);
+		url = ClassUtils.getResourceURL(scopeProvider, noNamespaceSchemaLocation);
 		if (url == null) {
 			throw new ConfigurationException("Cannot find [" + noNamespaceSchemaLocation + "]");
 		}
@@ -168,12 +168,12 @@ public class XSD implements Schema, Comparable<XSD> {
 		init();
 	}
 
-	public void initNamespace(String namespace, IHasConfigurationClassLoader classLoaderProvider, String resourceRef) throws ConfigurationException {
+	public void initNamespace(String namespace, IScopeProvider scopeProvider, String resourceRef) throws ConfigurationException {
 		this.namespace=namespace;
-		this.classLoaderProvider=classLoaderProvider;
+		this.scopeProvider=scopeProvider;
 		resource=resourceRef;
 		resource = Misc.replace(resource, "%20", " ");
-		url = ClassUtils.getResourceURL(classLoaderProvider, resource);
+		url = ClassUtils.getResourceURL(scopeProvider, resource);
 		if (url == null) {
 			throw new ConfigurationException("Cannot find [" + resource + "]");
 		}
@@ -189,9 +189,9 @@ public class XSD implements Schema, Comparable<XSD> {
 		init();
 	}
  
-	public void initFromXsds(String namespace, IHasConfigurationClassLoader classLoaderProvider, Set<XSD> sourceXsds) throws ConfigurationException {
+	public void initFromXsds(String namespace, IScopeProvider scopeProvider, Set<XSD> sourceXsds) throws ConfigurationException {
 		this.namespace=namespace;
-		this.classLoaderProvider=classLoaderProvider;
+		this.scopeProvider=scopeProvider;
 		resourceTarget = "[";
 		toString = "[";
 		boolean first = true;
@@ -442,7 +442,7 @@ public class XSD implements Schema, Comparable<XSD> {
 								x.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
 								x.setParentLocation(getResourceBase());
 								x.setRootXsd(false);
-								x.initNamespace(namespace, classLoaderProvider, getResourceBase() + schemaLocationAttribute.getValue());
+								x.initNamespace(namespace, scopeProvider, getResourceBase() + schemaLocationAttribute.getValue());
 								if (xsds.add(x)) {
 									x.getXsdsRecursive(xsds, ignoreRedefine);
 								}

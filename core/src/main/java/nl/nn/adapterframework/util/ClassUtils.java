@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 
 /**
  * A collection of class management utility methods.
@@ -95,22 +95,22 @@ public class ClassUtils {
 	 * 
 	 * @see IbisContext#init()
 	 */
-	public static URL getResourceURL(IHasConfigurationClassLoader object, String resource) {
-		return getResourceURL(object, resource, null);
+	public static URL getResourceURL(IScopeProvider scopeProvider, String resource) {
+		return getResourceURL(scopeProvider, resource, null);
 	}
 
 	/**
 	 * Get a resource-URL from a ClassLoader, therefore the resource should not start with a leading slash
-	 * @param classLoader to retrieve the file from, or NULL when you want to retrieve the resource directly from the ClassPath (using an absolute path)
+	 * @param scopeProvider to retrieve the file from, or NULL when you want to retrieve the resource directly from the ClassPath (using an absolute path)
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
-	public static URL getResourceURL(IHasConfigurationClassLoader object, String resource, String allowedProtocols) {
+	public static URL getResourceURL(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
 		ClassLoader classLoader = null;
-		if(object == null) { // Used by ClassPath resources
+		if(scopeProvider == null) { // Used by ClassPath resources
 			classLoader = Thread.currentThread().getContextClassLoader();
 		} else {
-			classLoader = object.getConfigurationClassLoader();
+			classLoader = scopeProvider.getConfigurationClassLoader();
 		}
 
 		String resourceToUse = resource; //Don't change the original resource name for logging purposes

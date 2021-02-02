@@ -99,7 +99,7 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author  Johan Verrips
  */
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IHasConfigurationClassLoader {
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IScopeProvider {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private PipeLineProcessor pipeLineProcessor;

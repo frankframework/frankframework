@@ -22,7 +22,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -34,14 +34,14 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class ClassLoaderEntityResolver implements EntityResolver {
 	protected Logger log = LogUtil.getLogger(this);
-	private IHasConfigurationClassLoader classLoaderProvider;
+	private IScopeProvider scopeProvider;
 
-	public ClassLoaderEntityResolver(IHasConfigurationClassLoader classLoaderProvider) {
-		this.classLoaderProvider = classLoaderProvider;
+	public ClassLoaderEntityResolver(IScopeProvider scopeProvider) {
+		this.scopeProvider = scopeProvider;
 	}
 
 	public ClassLoaderEntityResolver(Resource resource) {
-		this(resource.getClassLoaderProvider());
+		this(resource.getScopeProvider());
 	}
 
 	/**
@@ -50,8 +50,8 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 	@Override
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 
-		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"] classLoaderProvider ["+classLoaderProvider+"]");
-		Resource resource = Resource.getResource(classLoaderProvider, systemId);
+		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"] in scope ["+scopeProvider+"]");
+		Resource resource = Resource.getResource(scopeProvider, systemId);
 		if(resource != null) {
 			return resource.asInputSource();
 		}

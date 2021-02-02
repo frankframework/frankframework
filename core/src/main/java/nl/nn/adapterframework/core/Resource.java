@@ -36,12 +36,12 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class Resource {
 
-	private IHasConfigurationClassLoader classLoaderProvider;
+	private IScopeProvider scopeProvider;
 	private URL url;
 	private String systemId;
 
-	private Resource(IHasConfigurationClassLoader classLoaderProvider, URL url, String systemId) {
-		this.classLoaderProvider=classLoaderProvider;
+	private Resource(IScopeProvider scopeProvider, URL url, String systemId) {
+		this.scopeProvider=scopeProvider;
 		this.url=url;
 		this.systemId=systemId;
 	}
@@ -50,13 +50,13 @@ public class Resource {
 		return getResource(null, resource);
 	}
 
-	public static Resource getResource(IHasConfigurationClassLoader classLoaderProvider, String resource) {
-		return getResource(classLoaderProvider, resource, null);
+	public static Resource getResource(IScopeProvider scopeProvider, String resource) {
+		return getResource(scopeProvider, resource, null);
 	}
 
-	public static Resource getResource(IHasConfigurationClassLoader classLoaderProvider, String resource, String allowedProtocols) {
+	public static Resource getResource(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
 		String ref=resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)?resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length()):resource;
-		URL url = ClassUtils.getResourceURL(classLoaderProvider, ref, allowedProtocols);
+		URL url = ClassUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
 		if (url==null) {
 			return null;
 		}
@@ -67,7 +67,7 @@ public class Resource {
 		} else {
 			systemId=url.toExternalForm();
 		}
-		return new Resource(classLoaderProvider, url, systemId);
+		return new Resource(scopeProvider, url, systemId);
 	}
 
 	public String getCacheKey() {
@@ -88,16 +88,15 @@ public class Resource {
 		return XmlUtils.inputSourceToSAXSource(this);
 	}
 
-	public IHasConfigurationClassLoader getClassLoaderProvider() {
-		return classLoaderProvider;
+	public IScopeProvider getScopeProvider() {
+		return scopeProvider;
 	}
 
 	public String getSystemId() {
 		return systemId;
 	}
-	
+
 	public URL getURL() {
 		return url;
 	}
-
 }

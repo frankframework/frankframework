@@ -66,7 +66,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 			if (properties == null) {
 				properties = new Properties();
 			}
-			properties.load(ClassUtils.getResourceURL(getClass().getClassLoader(), AMAZONS3_PROPERTIES).openStream());	 
+			properties.load(ClassUtils.getResourceURL(AMAZONS3_PROPERTIES).openStream());	 
 			accessKey = properties.getProperty("accessKey");
 			secretKey = properties.getProperty("secretKey");
 			proxyHost = properties.getProperty("proxyHost");

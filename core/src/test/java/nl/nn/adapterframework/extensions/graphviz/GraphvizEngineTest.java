@@ -26,7 +26,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.ClassLoaderProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.Misc;
 public class GraphvizEngineTest {
 
 	private String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
-	private IHasConfigurationClassLoader classLoader = new ClassLoaderProvider();
+	private IScopeProvider classLoader = new ClassLoaderProvider();
 
 	@Test
 	public void canInitDefaultWithoutErrors() throws IOException {

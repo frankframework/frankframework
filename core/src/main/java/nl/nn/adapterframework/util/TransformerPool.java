@@ -50,7 +50,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IHasConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -148,7 +148,7 @@ public class TransformerPool {
 
 
 
-	private TransformerPool(Source source, String sysId, int xsltVersion, Source configSource, IHasConfigurationClassLoader classLoaderProvider) throws TransformerConfigurationException {
+	private TransformerPool(Source source, String sysId, int xsltVersion, Source configSource, IScopeProvider scopeProvider) throws TransformerConfigurationException {
 		super();
 		this.configSource=configSource;
 		try {
@@ -165,9 +165,9 @@ public class TransformerPool {
 		}
 		this.xsltVersion=xsltVersion;
 		tFactory = XmlUtils.getTransformerFactory(xsltVersion);
-		if(classLoaderProvider != null) {
-			classLoaderURIResolver = new ClassLoaderURIResolver(classLoaderProvider);
-			if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] classLoaderProvider ["+ClassUtils.nameOf(classLoaderProvider)+"]");
+		if(scopeProvider != null) {
+			classLoaderURIResolver = new ClassLoaderURIResolver(scopeProvider);
+			if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] scopeProvider ["+ClassUtils.nameOf(scopeProvider)+"]");
 			tFactory.setURIResolver(classLoaderURIResolver);
 		} else {
 			classLoaderURIResolver = new NonResolvingURIResolver();
@@ -184,12 +184,12 @@ public class TransformerPool {
 
 
 	private TransformerPool(Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException, SAXException {
-		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource(), resource.getClassLoaderProvider());
+		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource(), resource.getScopeProvider());
 	}
 
 	//TODO Fix this, Thread.currentThread().getContextClassLoader() should not be used and causes memory leaks upon reloading configurations!!!
 	private TransformerPool(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
-		this(xsltString, sysId, xsltVersion, new IHasConfigurationClassLoader() {
+		this(xsltString, sysId, xsltVersion, new IScopeProvider() {
 			@Override
 			public ClassLoader getConfigurationClassLoader() {
 				return Thread.currentThread().getContextClassLoader();
@@ -197,8 +197,8 @@ public class TransformerPool {
 		});
 	}
 
-	private TransformerPool(String xsltString, String sysId, int xsltVersion, IHasConfigurationClassLoader classLoaderProvider) throws TransformerConfigurationException {
-		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion,new StreamSource(new StringReader(xsltString)), classLoaderProvider);
+	private TransformerPool(String xsltString, String sysId, int xsltVersion, IScopeProvider scopeProvider) throws TransformerConfigurationException {
+		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion,new StreamSource(new StringReader(xsltString)), scopeProvider);
 	}
 
 	public static TransformerPool getInstance(String xsltString) throws TransformerConfigurationException {
@@ -311,18 +311,18 @@ public class TransformerPool {
 		}
 	}
 
-	public static TransformerPool configureTransformer(String logPrefix, IHasConfigurationClassLoader classLoaderProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
+	public static TransformerPool configureTransformer(String logPrefix, IScopeProvider scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
 		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
-			return configureTransformer(logPrefix,classLoaderProvider,namespaceDefs,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
+			return configureTransformer(logPrefix,scopeProvider,namespaceDefs,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
 		} 
 		return null;
 	}
 
-	public static TransformerPool configureTransformer(String logPrefix, IHasConfigurationClassLoader classLoaderProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
-		return configureTransformer0(logPrefix,classLoaderProvider,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,0);
+	public static TransformerPool configureTransformer(String logPrefix, IScopeProvider scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+		return configureTransformer0(logPrefix,scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,0);
 	}
 
-	public static TransformerPool configureTransformer0(String logPrefix, IHasConfigurationClassLoader classLoaderProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool configureTransformer0(String logPrefix, IScopeProvider scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
 		if (logPrefix==null) {
 			logPrefix="";
 		}
@@ -336,12 +336,12 @@ public class TransformerPool {
 			if (StringUtils.isNotEmpty(namespaceDefs)) {
 				throw new ConfigurationException(logPrefix+" cannot have namespaceDefs specified for a styleSheetName");
 			}
-			return configureStyleSheetTransformer(logPrefix, classLoaderProvider, styleSheetName, xsltVersion);
+			return configureStyleSheetTransformer(logPrefix, scopeProvider, styleSheetName, xsltVersion);
 		}
 		throw new ConfigurationException(logPrefix+" either xpathExpression or styleSheetName must be specified");
 	}
 
-	public static TransformerPool configureStyleSheetTransformer(String logPrefix, IHasConfigurationClassLoader classLoaderProvider, String styleSheetName, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool configureStyleSheetTransformer(String logPrefix, IScopeProvider scopeProvider, String styleSheetName, int xsltVersion) throws ConfigurationException {
 		TransformerPool result;
 		if (logPrefix==null) {
 			logPrefix="";
@@ -349,11 +349,11 @@ public class TransformerPool {
 		if (!StringUtils.isEmpty(styleSheetName)) {
 			Resource styleSheet=null;
 			try {
-				styleSheet = Resource.getResource(classLoaderProvider, styleSheetName);
+				styleSheet = Resource.getResource(scopeProvider, styleSheetName);
 				if (styleSheet==null) {
-					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] via classLoaderProvider ["+classLoaderProvider+"]"); 
+					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]"); 
 				}
-				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] url ["+styleSheet.getURL()+"] classloader ["+ClassUtils.nameOf(classLoaderProvider)+"]");
+				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] url ["+styleSheet.getURL()+"] in scope ["+ClassUtils.nameOf(scopeProvider)+"]");
 				result = TransformerPool.getInstance(styleSheet, xsltVersion);
 
 				if (xsltVersion!=0) {
