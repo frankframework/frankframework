@@ -16,7 +16,6 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -56,7 +55,7 @@ public class XmlParserTest {
 
 	@Test
 	public void testParseXmlResourceWithRelativeEntityInjection() throws IOException, SAXException, ParserConfigurationException {
-		Resource input  = Resource.getResource(new TestScopeProvider(), "/XmlUtils/EntityResolution/in-relative-entity.xml");
+		Resource input  = Resource.getResource("/XmlUtils/EntityResolution/in-relative-entity.xml");
 		String expected = TestFileUtils.getTestFile("/XmlUtils/EntityResolution/out-resolved.xml");
 
 		XmlWriter writer = new XmlWriter();

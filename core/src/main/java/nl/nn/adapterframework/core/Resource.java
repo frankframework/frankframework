@@ -55,6 +55,9 @@ public class Resource {
 	}
 
 	public static Resource getResource(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
+		if(scopeProvider == null) {
+			scopeProvider = new GlobalScopeProvider(); // if no scope has been provided, assume to use the default 'global' scope.
+		}
 		String ref=resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)?resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length()):resource;
 		URL url = ClassUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
 		if (url==null) {
@@ -68,6 +71,13 @@ public class Resource {
 			systemId=url.toExternalForm();
 		}
 		return new Resource(scopeProvider, url, systemId);
+	}
+
+	private static class GlobalScopeProvider implements IScopeProvider {
+		@Override
+		public ClassLoader getConfigurationClassLoader() {
+			return this.getClass().getClassLoader();
+		}
 	}
 
 	public String getCacheKey() {
