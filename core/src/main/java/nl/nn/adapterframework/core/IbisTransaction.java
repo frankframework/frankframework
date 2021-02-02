@@ -80,10 +80,6 @@ public class IbisTransaction {
 		return txManager!=null ? new IbisTransaction(txManager, txDef, descriptionOfOwner) : null;
 	}
 	
-	protected TransactionStatus getStatus() {
-		return txStatus;
-	}
-
 	private String getRealTransactionManager() {
 		if (txManager == null) {
 			return null;
