@@ -1377,6 +1377,8 @@ angular.module('iaf.beheerconsole')
 			var indexOfPS = $scope.targetStates.indexOf(processState);
 			if(indexOfPS != -1){
 				return true;
+			} else {
+				return false;
 			}
 		} else {
 			return false;

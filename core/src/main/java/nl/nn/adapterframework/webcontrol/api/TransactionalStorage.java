@@ -309,14 +309,15 @@ public class TransactionalStorage extends Base {
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
-		
-		
+
 		String[] messageIds = getMessages(input);
 		IMessageBrowser errorStorageBrowser = receiver.getMessageBrowser(ProcessState.ERROR);
 		List<String> errorMessages = new ArrayList<String>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
-				receiver.changeProcessState(errorStorageBrowser.browseMessage(messageIds[i]), ProcessState.AVAILABLE, null);
+				if(receiver.changeProcessState(errorStorageBrowser.browseMessage(messageIds[i]), ProcessState.AVAILABLE, null)) {
+					errorStorageBrowser.deleteMessage(messageIds[i]);
+				}
 			} catch (ListenerException e) {
 				errorMessages.add(e.getMessage());
 			}

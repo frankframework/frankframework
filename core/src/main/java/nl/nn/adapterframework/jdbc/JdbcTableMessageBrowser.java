@@ -127,9 +127,9 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		if(order.equals(SortOrder.NONE)) { //If no order has been set, use the default (DESC for messages and ASC for errors)
 			order = getOrderEnum();
 		}
-
+		String dateField = getDateField() == null ? "" : getDateField() ;
 		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause()+ getWhereClause(whereClause,false)+
-		  " ORDER BY "+getDateField()+(" "+order.name()+" ")+provideTrailingFirstRowsHint(dbmsSupport);
+		  " ORDER BY "+dateField+(" "+order.name()+" ")+provideTrailingFirstRowsHint(dbmsSupport);
 	}
 
 	@Override
