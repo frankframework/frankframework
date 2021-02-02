@@ -275,8 +275,8 @@ public class LockerTest extends TransactionManagerTestBase {
 								log.debug("lock inserted");
 								fail("should not be possible to do a second insert");
 							} catch (SQLException e) {
-								if (locker.getDbmsSupport().isConstraintViolation(e)) {
-									log.debug("Caught expected UniqueConstraintViolation ("+e.getClass().getName()+"): "+e.getMessage());
+								if (locker.getDbmsSupport().isConstraintViolation(e) || e.getMessage().toLowerCase().contains("timeout")) {
+									log.debug("Caught expected UniqueConstraintViolation or Timeout ("+e.getClass().getName()+"): "+e.getMessage());
 								} else {
 									fail("Expected UniqueConstraintViolation, but was: ("+e.getClass().getName()+"): "+e.getMessage());
 								}
