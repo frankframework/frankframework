@@ -40,12 +40,18 @@ import java.util.zip.ZipInputStream;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.configuration.filters.ElementRoleFilter;
+import nl.nn.adapterframework.configuration.filters.InitialCapsFilter;
+import nl.nn.adapterframework.configuration.filters.SkipContainersFilter;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -59,6 +65,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Functions to manipulate the configuration. 
@@ -74,6 +81,7 @@ public class ConfigurationUtils {
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
 	private static final String CANONICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
+	private static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-strict.xsd";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
@@ -102,6 +110,32 @@ public class ConfigurationUtils {
 
 	public static String getCanonicalizedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
 		return transformConfiguration(configuration, originalConfig, CANONICALIZE_XSLT, null);
+	}
+
+	public static String getCanonicalizedConfiguration2(Configuration configuration, String originalConfig, ErrorHandler errorHandler) throws ConfigurationException {
+		XmlWriter writer = new XmlWriter();
+		ContentHandler handler;
+		try {
+			ElementRoleFilter elementRoleFilter = new ElementRoleFilter(writer);
+			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassUtils.getResourceURL(ConfigurationUtils.class, FRANK_CONFIG_XSD));
+			validatorHandler.setContentHandler(elementRoleFilter);
+			if (errorHandler!=null) {
+				validatorHandler.setErrorHandler(errorHandler);
+			}
+			handler = validatorHandler;
+			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(validatorHandler);
+			handler = new InitialCapsFilter(skipContainersFilter);
+		} catch (SAXException e) {
+			throw new ConfigurationException("Cannot get canonicalizer using ["+FRANK_CONFIG_XSD+"]", e);
+		}
+			
+		try {
+			XmlUtils.parseXml(originalConfig, handler);
+			log.debug("Canonicalized configuration ["+writer.toString()+"]");
+			return writer.toString();
+		} catch (SAXException | IOException e) {
+			throw new ConfigurationException(e);
+		}
 	}
 
 	public static String transformConfiguration(Configuration configuration, String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {

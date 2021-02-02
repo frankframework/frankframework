@@ -49,6 +49,7 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxException;
 
 /**
@@ -388,9 +389,7 @@ public class XmlAligner extends XMLFilterImpl {
 
 
 	protected static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {
-		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = sf.newSchema(schemaURL); 
-		return schema.newValidatorHandler();
+		return XmlUtils.getValidatorHandler(schemaURL);
 	}
 
 	protected static List<XSModel> getSchemaInformation(URL schemaURL) {

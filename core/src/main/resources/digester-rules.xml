@@ -38,7 +38,7 @@
 	<rule pattern="*/child" registerMethod="registerChild"/>
 	<rule pattern="*/outputFields" registerMethod="registerOutputFields"/>
 	<rule pattern="*/inputFields" registerMethod="registerInputFields"/>
-	<rule pattern="*/pipeline/exits/exit" registerMethod="registerPipeLineExit"/>
+	<rule pattern="*/exit" registerMethod="registerPipeLineExit"/>
 
 	<rule pattern="*/scheduler/job" registerMethod="registerScheduledJob"/>
 	<rule pattern="*/locker" registerMethod="setLocker"/>

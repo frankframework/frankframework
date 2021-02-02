@@ -31,6 +31,8 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -372,5 +374,9 @@ public class Configuration implements INamedObject{
 
 	public BaseConfigurationWarnings getConfigurationWarnings() {
 		return configurationWarnings;
+	}
+	
+	public void registerJmsRealm(JmsRealm realm) {
+		JmsRealmFactory.getInstance().registerJmsRealm(realm);
 	}
 }

@@ -148,10 +148,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	protected Object createObject(Map<String, String> attrs) throws Exception {
 		String className = attrs.get("className");
 		if (log.isDebugEnabled()) {
-			log.debug("CreateObject: Element=[" + getDigester().getCurrentElementName()
-					+ "], name=[" + attrs.get("name")
-					+ "], Configured ClassName=[" + className
-					+ "], Suggested Spring Bean Name=[" + getSuggestedBeanName() + "]");
+			log.debug("CreateObject: Element=[" + getDigester().getCurrentElementName() + "], name=[" + attrs.get("name") + "], Configured ClassName=[" + className + "], Suggested Spring Bean Name=[" + getSuggestedBeanName() + "]");
 		}
 
 		Object currObj = createBeanFromClassName(className);
@@ -292,8 +289,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * bean-name returned by <code>getSuggestedBeanName()</code>, that is often
      * implemented by prefixing the element name with 'proto-'
      */
-    protected Object createBeanFromClassName(String className)
-    	throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {
+    protected Object createBeanFromClassName(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {
 
         if (ibisContext == null) {
             throw new IllegalStateException("No ibisContext set. Call setIbisContext first.");
@@ -303,8 +299,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
         // No explicit className given; get bean from Spring Factory
         if (className == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("createBeanFromClassName(): className is null");
+            if (log.isTraceEnabled()) {
+                log.trace("createBeanFromClassName(): className is null");
             }
             beanName = getSuggestedBeanName();
             beanClass = null;
@@ -352,8 +348,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
         // Only accept prototype-beans!
         if (isPrototypesOnly() && !ibisContext.isPrototype(beanName)) {
-            throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean ["
-                + beanName + "] of class [" + className + "] is not.");
+            throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean [" + beanName + "] of class [" + className + "] is not.");
         }
         if (log.isDebugEnabled()) {
             log.debug("Creating bean with actual bean-name [" + beanName + "], bean-class [" + (beanClass != null ? beanClass.getName() : "null") + "] from Spring Bean Factory.");

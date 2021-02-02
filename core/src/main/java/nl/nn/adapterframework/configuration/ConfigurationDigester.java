@@ -93,6 +93,8 @@ public class ConfigurationDigester {
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	String lastResolvedEntity = null;
+	
+	private boolean canonicalizeByXsd=AppConstants.getInstance().getBoolean("configuration.canonicalize.byxsd", false);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private Configuration configuration;
@@ -179,13 +181,24 @@ public class ConfigurationDigester {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 			}
 			String loaded = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()));
-			String loadedHide = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
-			loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
-			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
+			if (canonicalizeByXsd) {
+				loaded = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, loaded, new XmlErrorHandler(configuration));
+			} else {
+				loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
+			}
 			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
-			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
 			if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
 				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
+			}
+			
+			String loadedHide = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
+			if (canonicalizeByXsd) {
+				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, loadedHide, new XmlErrorHandler(configuration));
+			} else {
+				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
+			}
+			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
+			if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
 				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}
 			configuration.setLoadedConfiguration(loadedHide);
