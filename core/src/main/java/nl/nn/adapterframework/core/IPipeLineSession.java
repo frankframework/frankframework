@@ -86,6 +86,6 @@ public interface IPipeLineSession extends Map<String,Object>, AutoCloseable {
 	public Writer scheduleCloseOnSessionExit(Writer writer);
 	public void unscheduleCloseOnSessionExit(AutoCloseable resource);
 	
-	@Override
+	@Override // to remove throws clause
 	public void close();
 }

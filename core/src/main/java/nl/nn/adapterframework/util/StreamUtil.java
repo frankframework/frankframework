@@ -275,7 +275,7 @@ public class StreamUtil {
 		};
 	}
 
-	@SneakyThrows
+	@SneakyThrows // throw the IOException thrown by resource.close(), without declaring it as a checked Exception (that would be incompatible with the use in lambda's below) 
 	private static void closeResource(AutoCloseable resource) {
 		resource.close();
 	}
