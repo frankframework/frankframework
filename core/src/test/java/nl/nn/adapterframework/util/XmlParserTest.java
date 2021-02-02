@@ -16,12 +16,12 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class XmlParserTest {
 
-	
 	protected String getInputAsString(String file) throws IOException {
 		String input    = TestFileUtils.getTestFile(file);
 		URL entity      = TestFileUtils.getTestFileURL("/XmlUtils/EntityResolution/in-plain.xml");
@@ -30,7 +30,6 @@ public class XmlParserTest {
 		return input;
 	}
 
-	
 	@Test
 	public void testParseXmlNoExternalEntityInjection() throws IOException, SAXException {
 		String input    = getInputAsString("/XmlUtils/EntityResolution/in-file-entity.xml");
@@ -55,18 +54,17 @@ public class XmlParserTest {
 		MatchUtils.assertXmlEquals(expected,writer.toString());
 	}
 
-
 	@Test
 	public void testParseXmlResourceWithRelativeEntityInjection() throws IOException, SAXException, ParserConfigurationException {
-		Resource input  = Resource.getResource("/XmlUtils/EntityResolution/in-relative-entity.xml");
+		Resource input  = Resource.getResource(new TestScopeProvider(), "/XmlUtils/EntityResolution/in-relative-entity.xml");
 		String expected = TestFileUtils.getTestFile("/XmlUtils/EntityResolution/out-resolved.xml");
-		
+
 		XmlWriter writer = new XmlWriter();
 		XmlUtils.parseXml(input, writer);
-		
-		MatchUtils.assertXmlEquals(expected,writer.toString());		
+
+		MatchUtils.assertXmlEquals(expected,writer.toString());
 	}
-	
+
 	@Test
 	@Ignore("requires proper setup on the classpath filesystem. In order for this test to pass properly, the file referenced by the external entity in the input file must exist on the file system. "+
 			"I currently consider it too much of a hassle to automate this setup in a way that works for both Windows and Linux")
@@ -77,9 +75,6 @@ public class XmlParserTest {
 		XmlWriter writer = new XmlWriter();
 		XmlUtils.parseXml(input, writer);
 		
-		MatchUtils.assertXmlEquals(expected,writer.toString());		
+		MatchUtils.assertXmlEquals(expected,writer.toString());
 	}
-	
-	
-
 }
