@@ -683,7 +683,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					info("has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), configurationClassLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
+					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
 				}
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
@@ -710,7 +710,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), configurationClassLoader, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,0);
+				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,0);
 			}
 			
 			if (StringUtils.isNotEmpty(getHideRegex()) && getErrorStorage()!=null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {

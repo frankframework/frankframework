@@ -105,7 +105,7 @@ public class ConfigurationUtils {
 	}
 
 	public static String transformConfiguration(Configuration configuration, String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
-		URL xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), xslt);
+		URL xsltSource = ClassUtils.getResourceURL(configuration, xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + xslt + "]");
 		}

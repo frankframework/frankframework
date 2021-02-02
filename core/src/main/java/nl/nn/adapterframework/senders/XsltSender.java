@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			if (omitXmlDeclaration==null) {
 				omitXmlDeclaration=true;
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
 			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
@@ -189,7 +189,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				String styleSheetNameToUse = session.get(styleSheetNameSessionKey).toString();
 			
 				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
-					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getConfigurationClassLoader(), null, null, styleSheetNameToUse, null, true, getParameterList()));
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameToUse, null, true, getParameterList()));
 					poolToUse.open();
 				} else {
 					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 
 	private String hideRegex = null;
 	private String hideMethod = "all";
-	
+
 	public JmsMessageBrowser() {
 		super();
 		setTransacted(true);
@@ -61,7 +61,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 		this();
 		this.selector=selector;
 	}
-	
+
 	@Override
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		try {

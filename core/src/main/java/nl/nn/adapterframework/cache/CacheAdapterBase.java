@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ package nl.nn.adapterframework.cache;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -33,9 +35,9 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
+public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 
@@ -68,10 +70,10 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 			throw new ConfigurationException(getLogPrefix()+"valueXPathOutputType ["+getValueXPathOutputType()+"] must be either 'xml' or 'text'");
 		}
 		if (StringUtils.isNotEmpty(getKeyXPath()) || StringUtils.isNotEmpty(getKeyStyleSheet())) {
-			keyTp=TransformerPool.configureTransformer(getLogPrefix(), classLoader, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(),getKeyXPathOutputType(),false,null);
+			keyTp=TransformerPool.configureTransformer(getLogPrefix(), this, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(),getKeyXPathOutputType(),false,null);
 		}
 		if (StringUtils.isNotEmpty(getValueXPath()) || StringUtils.isNotEmpty(getValueStyleSheet())) {
-			valueTp=TransformerPool.configureTransformer(getLogPrefix(), classLoader, getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(),getValueXPathOutputType(),false,null);
+			valueTp=TransformerPool.configureTransformer(getLogPrefix(), this, getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(),getValueXPathOutputType(),false,null);
 		}
 	}
 	

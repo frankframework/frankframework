@@ -123,7 +123,7 @@ public class SqlTranslator implements ISqlTranslator {
 		String sourceMatch=".source."+sourceDialect.replaceAll(" ", "_");
 		String targetMatch=".target."+targetDialect.replaceAll(" ", "_");
 
-		URL resourceUrl = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), PATTERN_FILE);
+		URL resourceUrl = ClassUtils.getResourceURL(PATTERN_FILE);
 
 		try (BufferedReader reader = new BufferedReader(ClassUtils.urlToReader(resourceUrl))) {
 			String line= reader.readLine();

@@ -360,7 +360,7 @@ class InfoBuilderSource {
 	static List<ChildIbisBeanMapping> getChildIbisBeanMappings() throws IOException, SAXException {
 		IbisBeanMappingParser digesterRulesParser = new IbisBeanMappingParser();
 		try {
-			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterRulesParser);
+			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL("digester-rules.xml")), digesterRulesParser);
 		} catch (Exception e) {
 			log.error("Could nog parse digester-rules.xml: " + e.getStackTrace());
 			throw e;

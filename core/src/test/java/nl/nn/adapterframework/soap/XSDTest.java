@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.soap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
 
@@ -29,19 +31,19 @@ import static org.junit.Assert.assertEquals;
  */
 public class XSDTest {
 
-	private ClassLoader testClassLoader = this.getClass().getClassLoader();
+	private IScopeProvider scopeProvider = new TestScopeProvider();
 
 	@Test
 	public void xsdName() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {
 		XSD xsd = new XSD();
-		xsd.initNamespace("http://test", testClassLoader, "XSDTest/v1 test.xsd");
+		xsd.initNamespace("http://test", scopeProvider, "XSDTest/v1 test.xsd");
 		assertEquals("XSDTest/v1 test.xsd", xsd.getResourceTarget());
 	}
 
 	@Test
 	public void xsdNamespace() throws URISyntaxException, XMLStreamException, IOException, ConfigurationException {
         XSD xsd = new XSD();
-        xsd.initNamespace("http://test", testClassLoader, "XSDTest/v1 test.xsd");
+        xsd.initNamespace("http://test", scopeProvider, "XSDTest/v1 test.xsd");
         assertEquals("http://test", xsd.getNamespace());
         assertEquals("http://www.ing.com/pim", xsd.getTargetNamespace());
 	}
@@ -50,7 +52,7 @@ public class XSDTest {
     @Ignore("Fails!!")
 	public void writeXSD() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, URISyntaxException, ConfigurationException {
 		XSD xsd = new XSD();
-		xsd.initNamespace("http://test", testClassLoader, "XSDTest/test.xsd");
+		xsd.initNamespace("http://test", scopeProvider, "XSDTest/test.xsd");
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		XMLStreamWriter writer = WsdlUtils.getWriter(out, false);

@@ -326,7 +326,7 @@ public class RestServiceDispatcher  {
 
 	private void noImageAvailable(HttpServletResponse httpServletResponse)
 			throws ListenerException {
-		URL svgSource = ClassUtils.getResourceURL(this, SVG_FILE_NO_IMAGE_AVAILABLE);
+		URL svgSource = ClassUtils.getResourceURL(SVG_FILE_NO_IMAGE_AVAILABLE);
 		if (svgSource == null) {
 			throw new ListenerException("cannot find resource ["
 					+ SVG_FILE_NO_IMAGE_AVAILABLE + "]");

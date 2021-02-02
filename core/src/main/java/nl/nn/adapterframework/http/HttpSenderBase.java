@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2020 WeAreFrank!
+   Copyright 2017-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -168,7 +168,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private String url;
 	private String urlParam = "url";
 	private String methodType = "GET";
-	private String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private ContentType fullContentType = null;
 	private String contentType = null;
 
@@ -333,14 +333,14 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			URL truststoreUrl = null;
 	
 			if (!StringUtils.isEmpty(getCertificate())) {
-				certificateUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), getCertificate());
+				certificateUrl = ClassUtils.getResourceURL(this, getCertificate());
 				if (certificateUrl == null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
 				}
 				log.debug(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
 			}
 			if (!StringUtils.isEmpty(getTruststore())) {
-				truststoreUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), getTruststore());
+				truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
 				if (truststoreUrl == null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
 				}
@@ -436,7 +436,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
-				Resource stylesheet = Resource.getResource(getConfigurationClassLoader(), getStyleSheetName());
+				Resource stylesheet = Resource.getResource(this, getStyleSheetName());
 				if (stylesheet == null) {
 					throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet ["+getStyleSheetName()+"]");
 				}

@@ -52,7 +52,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	@Override
 	public void setUp() throws Exception {
 		Properties properties=new Properties();
-		properties.load(ClassUtils.getResourceURL(this, testProperties).openStream());
+		properties.load(ClassUtils.getResourceURL(testProperties).openStream());
 		mailaddress = properties.getProperty("mailaddress");
 		accessToken = properties.getProperty("accessToken");
 		username = properties.getProperty("username");

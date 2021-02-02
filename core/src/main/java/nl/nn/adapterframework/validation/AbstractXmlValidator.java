@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -54,14 +56,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-public abstract class AbstractXmlValidator {
+public abstract class AbstractXmlValidator implements IScopeProvider {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private boolean throwException = false;
 	private boolean fullSchemaChecking = false;
@@ -378,15 +380,7 @@ public abstract class AbstractXmlValidator {
 		return getXmlSchemaVersion()==null || "1.0".equals(getXmlSchemaVersion());
 	}
 
-	/**
-	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
-	 */
-	public ClassLoader getConfigurationClassLoader() {
-		return configurationClassLoader;
-	}
-
 	public boolean isStarted() {
 		return started;
 	}
-
 }

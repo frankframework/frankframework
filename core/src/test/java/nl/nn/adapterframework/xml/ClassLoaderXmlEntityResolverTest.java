@@ -13,9 +13,12 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 
 public class ClassLoaderXmlEntityResolverTest {
 
+	private static final IScopeProvider scopeProvider = new TestScopeProvider();
 	private String publicId="fakePublicId";
 	//private String base="/ClassLoader/zip/Xslt/names.xslt";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
@@ -32,8 +35,7 @@ public class ClassLoaderXmlEntityResolverTest {
 	
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(localClassLoader);
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
 		
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("AppConstants.properties");
 		
@@ -43,8 +45,7 @@ public class ClassLoaderXmlEntityResolverTest {
 
 	@Test
 	public void localClassPathFileOnRootOfClasspathAbsolute() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(localClassLoader);
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/AppConstants.properties");
 
@@ -54,8 +55,7 @@ public class ClassLoaderXmlEntityResolverTest {
 
 	@Test
 	public void localClassPathAbsolute() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(localClassLoader);
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/Xslt/importDocument/lookup.xml");
 		
@@ -77,7 +77,7 @@ public class ClassLoaderXmlEntityResolverTest {
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 
-		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(cl);
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(TestScopeProvider.wrap(cl));
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("ClassLoader/Xslt/names.xsl");
 
@@ -98,7 +98,7 @@ public class ClassLoaderXmlEntityResolverTest {
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 
-		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(cl);
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(TestScopeProvider.wrap(cl));
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/ClassLoader/Xslt/names.xsl");
 
