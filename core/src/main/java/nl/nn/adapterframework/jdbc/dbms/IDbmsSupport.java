@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -77,6 +78,9 @@ public interface IDbmsSupport {
 	Writer getClobWriter(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException;
 	void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException;
 	void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException;
+	Object getClobInsertHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException;
+	Writer getClobWriter(PreparedStatement stmt, int column, Object clobInsertHandle) throws SQLException, JdbcException;
+	void applyClobParameter(PreparedStatement stmt, int column, Object clobInsertHandle) throws SQLException, JdbcException;
 	Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException;
 	Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException;
 
@@ -90,6 +94,9 @@ public interface IDbmsSupport {
 	OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
 	void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException;
 	void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
+	Object getBlobInsertHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException;
+	OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException;
+	void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException;
 	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException;
 	InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException;
 

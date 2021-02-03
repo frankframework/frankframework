@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -165,27 +166,35 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
 		return rs.getClob(column);
 	}
-	
 	@Override
 	public Writer getClobWriter(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		Writer out = ((Clob)clobUpdateHandle).setCharacterStream(1L);
-		return out;
+		return ((Clob)clobUpdateHandle).setCharacterStream(1L);
 	}
 	@Override
 	public Writer getClobWriter(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		Writer out = ((Clob)clobUpdateHandle).setCharacterStream(1L);
-		return out;
+		return ((Clob)clobUpdateHandle).setCharacterStream(1L);
 	}
-	
 	@Override
 	public void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		// updateClob is not implemented by the WebSphere implementation of ResultSet
 		rs.updateClob(column, (Clob)clobUpdateHandle);
 	}
 	@Override
 	public void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		// updateClob is not implemented by the WebSphere implementation of ResultSet
 		rs.updateClob(column, (Clob)clobUpdateHandle);
+	}
+
+	
+	@Override
+	public Object getClobInsertHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
+		return stmt.getConnection().createClob();
+	}
+	@Override
+	public Writer getClobWriter(PreparedStatement stmt, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
+		return ((Clob)clobUpdateHandle).setCharacterStream(1L);
+	}
+	@Override
+	public void applyClobParameter(PreparedStatement stmt, int column, Object clobInsertHandle) throws SQLException, JdbcException {
+		stmt.setClob(column, (Clob)clobInsertHandle);
 	}
 
 	@Override
@@ -225,26 +234,16 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
-		Blob blob = rs.getBlob(column);
-		if (blob==null) {
-			return null;
-		}
-		return blob;
+		return rs.getBlob(column);
 	}
 	@Override
 	public Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
-		Blob blob = rs.getBlob(column);
-		if (blob==null) {
-			return null;
-		}
-		return blob;
+		return rs.getBlob(column);
 	}
 	
 	protected  OutputStream getBlobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException, JdbcException {
-		OutputStream out = ((Blob)blobUpdateHandle).setBinaryStream(1L);
-		return out;
+		return ((Blob)blobUpdateHandle).setBinaryStream(1L);
 	}
-	
 	@Override
 	public OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException {
 		return getBlobOutputStream(rs,blobUpdateHandle);
@@ -253,17 +252,28 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException {
 		return getBlobOutputStream(rs,blobUpdateHandle);
 	}
-	
 	@Override
 	public void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException {
-		// updateBlob is not implemented by the WebSphere implementation of ResultSet
 		rs.updateBlob(column, (Blob)blobUpdateHandle);
 	}
 	@Override
 	public void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException {
-		// updateBlob is not implemented by the WebSphere implementation of ResultSet
 		rs.updateBlob(column, (Blob)blobUpdateHandle);
 	}
+
+	@Override
+	public Object getBlobInsertHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
+		return stmt.getConnection().createBlob();
+	}
+	@Override
+	public OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException {
+		return ((Blob)blobInsertHandle).setBinaryStream(1L);
+	}
+	@Override
+	public void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException {
+		stmt.setBlob(column, (Blob)blobInsertHandle);
+	}
+
 
 	@Override
 	public InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException {
@@ -578,5 +588,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 		return splittedQueries;
 	}
+
 
 }
