@@ -56,6 +56,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.JndiDataSourceFactory;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -426,18 +427,18 @@ public final class ShowConfiguration extends Base {
 	}
 
 
-	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String jmsRealm) {
+	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String dataSourceName) {
 		List<Map<String, Object>> returnMap = new ArrayList<Map<String, Object>>();
 
-		if (StringUtils.isEmpty(jmsRealm)) {
-			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(jmsRealm)) {
+		if (StringUtils.isEmpty(dataSourceName)) {
+			dataSourceName = JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME;
+			if (StringUtils.isEmpty(dataSourceName)) {
 				return null;
 			}
 		}
 
 		FixedQuerySender qs = getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(jmsRealm);
+		qs.setDatasourceName(dataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {
 			qs.configure();

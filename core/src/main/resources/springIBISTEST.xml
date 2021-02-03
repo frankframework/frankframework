@@ -32,14 +32,13 @@
 		<property name="url" value="jdbc:h2:mem:ibisTestDataSource;DB_CLOSE_DELAY=-1"/>
 	</bean>
 
-	<bean id="proxiedDataSources" class="java.util.HashMap">
-		<constructor-arg>
-			<map>
-				<entry key="${jdbc.datasource.default}">
-					<ref bean="ibisTestDataSource"/>
-				</entry>
-			</map>
-		</constructor-arg>
+	<bean
+		id="registerTestDataSource"
+		factory-bean="dataSourceFactory"
+		factory-method="addDataSource"
+		>
+		<constructor-arg ref="ibisTestDataSource" />
+		<constructor-arg value="${jdbc.datasource.default}" />
 	</bean>
 
 	<!-- used by WebServiceListeners to register on a local bus -->

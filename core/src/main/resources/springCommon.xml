@@ -40,6 +40,8 @@
 		autowire="byName"
 	/>
 
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.SpringDataSourceFactory" />
+
 	<bean
 		name="jmsRealmsFactory"
 		class="nl.nn.adapterframework.jms.JmsRealmFactory"

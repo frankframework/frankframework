@@ -15,11 +15,22 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.util.Properties;
+
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.springframework.jndi.JndiLocatorSupport;
+
 public interface IDataSourceFactory {
-	
+
 	public DataSource getDataSource(String dataSourceName) throws NamingException;
+
+	/**
+	 * Set the JNDI environment to use for JNDI lookups.
+	 * <p>Uses a Spring JndiTemplate with the given environment settings.
+	 * @see JndiLocatorSupport#setJndiTemplate
+	 */
+	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws NamingException;
 
 }

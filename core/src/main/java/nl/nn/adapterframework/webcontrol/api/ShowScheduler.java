@@ -64,6 +64,7 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.JndiDataSourceFactory;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
@@ -556,12 +557,11 @@ public final class ShowScheduler extends Base {
 		jobdef.setDescription(description);
 		jobdef.setInterval(interval);
 
-		String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 		if(hasLocker) {
 			Locker locker = (Locker) getIbisContext().createBeanAutowireByName(Locker.class);
 			locker.setName(lockKey);
 			locker.setObjectId(lockKey);
-			locker.setJmsRealm(jmsRealm);
+			locker.setDatasourceName(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
 			jobdef.setLocker(locker);
 		}
 
@@ -574,13 +574,9 @@ public final class ShowScheduler extends Base {
 
 		//Save the job in the database
 		if(persistent && AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
-			if (StringUtils.isEmpty(jmsRealm)) {
-				throw new ApiException("no JmsRealm found!");
-			}
-
 			boolean success = false;
 			FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-			qs.setJmsRealm(jmsRealm);
+			qs.setDatasourceName(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
 			qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 			try {
 				qs.configure();
@@ -655,14 +651,9 @@ public final class ShowScheduler extends Base {
 			IbisJobDetail jobDetail = (IbisJobDetail) scheduler.getJobDetail(jobKey);
 			if(jobDetail.getJobType() == JobType.DATABASE) {
 				boolean success = false;
-				String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-				if (StringUtils.isEmpty(jmsRealm)) {
-					throw new ApiException("no JmsRealm found!");
-				}
-
 				// remove from database
 				FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-				qs.setJmsRealm(jmsRealm);
+				qs.setDatasourceName(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
 				qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 				try {
 					qs.configure();
