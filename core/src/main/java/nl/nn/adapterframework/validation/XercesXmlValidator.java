@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -186,7 +186,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
 		Set<String> namespaceSet = new HashSet<String>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
-		preparser.setEntityResolver(new ClassLoaderXmlEntityResolver(getConfigurationClassLoader()));
+		preparser.setEntityResolver(new ClassLoaderXmlEntityResolver(this));
 		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
 		preparser.setProperty(GRAMMAR_POOL, grammarPool);
 		preparser.setFeature(NAMESPACES_FEATURE_ID, true);

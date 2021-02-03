@@ -147,32 +147,35 @@ public final class TestPipeline extends Base {
 	@SuppressWarnings("rawtypes")
 	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
-		IPipeLineSession pls = new PipeLineSessionBase();
-		Map ibisContexts = XmlUtils.getIbisContext(message);
-		String technicalCorrelationId = null;
-		if (ibisContexts != null) {
-			String contextDump = "ibisContext:";
-			for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
-				String key = (String) it.next();
-				String value = (String) ibisContexts.get(key);
+		try (IPipeLineSession pls = new PipeLineSessionBase()) {
+			Map ibisContexts = XmlUtils.getIbisContext(message);
+			String technicalCorrelationId = null;
+			if (ibisContexts != null) {
+				String contextDump = "ibisContext:";
+				for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
+					String key = (String) it.next();
+					String value = (String) ibisContexts.get(key);
+					if (log.isDebugEnabled()) {
+						contextDump = contextDump + "\n " + key + "=[" + value + "]";
+					}
+					if (key.equals(IPipeLineSession.technicalCorrelationIdKey)) {
+						technicalCorrelationId = value;
+					} else {
+						pls.put(key, value);
+					}
+				}
 				if (log.isDebugEnabled()) {
-					contextDump = contextDump + "\n " + key + "=[" + value + "]";
-				}
-				if (key.equals(IPipeLineSession.technicalCorrelationIdKey)) {
-					technicalCorrelationId = value;
-				} else {
-					pls.put(key, value);
+					log.debug(contextDump);
 				}
 			}
-			if (log.isDebugEnabled()) {
-				log.debug(contextDump);
-			}
+			Date now = new Date();
+			PipeLineSessionBase.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
+	
+			secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
+	
+			PipeLineResult plr = adapter.processMessage(messageId, new Message(message), pls);
+			plr.getResult().unregisterCloseable(pls);
+			return plr;
 		}
-		Date now = new Date();
-		PipeLineSessionBase.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
-
-		secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
-
-		return adapter.processMessage(messageId, new Message(message), pls);
 	}
 }

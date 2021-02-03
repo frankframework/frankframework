@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -184,6 +184,10 @@ public final class AppConstants extends Properties implements Serializable {
 		}
 		if (value != null) {
 			try {
+				if (value.contains(StringResolver.DELIM_START+key+StringResolver.DELIM_STOP)) {
+					log.warn("cyclic property definition key [{}] value [{}]", key, value);
+					return value;
+				}
 				String result=StringResolver.substVars(value, this);
 				if (log.isTraceEnabled()) {
 					if (!value.equals(result)){

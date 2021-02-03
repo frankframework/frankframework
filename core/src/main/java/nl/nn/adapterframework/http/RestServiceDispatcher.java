@@ -170,9 +170,6 @@ public class RestServiceDispatcher  {
 		if (methodConfig==null) {
 			throw new ListenerException("No REST listener specified for uri ["+uri+"] method ["+method+"]");
 		}
-		if (context==null) {
-			context=new PipeLineSessionBase();
-		}
 		context.put("restPath", restPath);
 		context.put("uri", uri);
 		context.put("method", method);
@@ -329,7 +326,7 @@ public class RestServiceDispatcher  {
 
 	private void noImageAvailable(HttpServletResponse httpServletResponse)
 			throws ListenerException {
-		URL svgSource = ClassUtils.getResourceURL(this, SVG_FILE_NO_IMAGE_AVAILABLE);
+		URL svgSource = ClassUtils.getResourceURL(SVG_FILE_NO_IMAGE_AVAILABLE);
 		if (svgSource == null) {
 			throw new ListenerException("cannot find resource ["
 					+ SVG_FILE_NO_IMAGE_AVAILABLE + "]");
@@ -351,8 +348,7 @@ public class RestServiceDispatcher  {
 		}
 	}
 
-	public String retrieveNoIbisContext(HttpServletRequest httpServletRequest,
-			ServletContext servletContext) throws ListenerException {
+	public String retrieveNoIbisContext(HttpServletRequest httpServletRequest, ServletContext servletContext) throws ListenerException {
 		try {
 			CreateRestViewPipe pipe = new CreateRestViewPipe();
 			pipe.setStyleSheetName("xml/xsl/web/noIbisContext.xsl");

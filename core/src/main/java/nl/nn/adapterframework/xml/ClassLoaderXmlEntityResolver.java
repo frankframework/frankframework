@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Nationale-Nederlanden
+   Copyright 2017-2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 
 /**
@@ -35,8 +36,8 @@ import nl.nn.adapterframework.core.Resource;
  */
 public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver implements XMLEntityResolver {
 
-	public ClassLoaderXmlEntityResolver(ClassLoader classLoader) {
-		super(classLoader);
+	public ClassLoaderXmlEntityResolver(IScopeProvider classLoaderProvider) {
+		super(classLoaderProvider);
 	}
 
 	@Override

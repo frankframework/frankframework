@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,14 +58,15 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		if (pe!=null) {
 			if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
+				message.closeOnCloseOf(pipeLineSession);
 				message=Message.asMessage(pipeLineSession.get(pe.getGetInputFromSessionKey()));
 			}
 			if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
+				message.closeOnCloseOf(pipeLineSession);
 				message=new Message(pe.getGetInputFromFixedValue());
 			}
-			if ((message == null || StringUtils.isEmpty(message.toString()))
-					&& StringUtils.isNotEmpty(pe.getEmptyInputReplacement())) {
+			if (Message.isEmpty(message) && StringUtils.isNotEmpty(pe.getEmptyInputReplacement())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing empty input for pipe ["+pe.getName()+"] with fixed value ["+pe.getEmptyInputReplacement()+"]");
 				message = new Message(pe.getEmptyInputReplacement());
 			}
@@ -134,30 +135,27 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				pipeLineSession.put(pe.getStoreResultInSessionKey(),result.asObject());
 			}
 			if (pe.isPreserveInput()) {
+				pipeRunResult.getResult().closeOnCloseOf(pipeLineSession);
 				pipeRunResult.setResult(preservedObject);
 			}
 		}
 
-		if (pe != null) {
-			if (pe.isWriteToSecLog()) {
-				String secLogMsg = "adapter [" + owner.getName() + "] pipe ["
-						+ pe.getName() + "]";
-				if (pe.getSecLogSessionKeys() != null) {
-					String sk = "";
-					StringTokenizer st = new StringTokenizer(
-							pe.getSecLogSessionKeys(), " ,;");
-					while (st.hasMoreTokens()) {
-						if (sk.length() > 0) {
-							sk = sk + ",";
-						}
-						String key = st.nextToken();
-						Object value = pipeLineSession.get(key);
-						sk = sk + key + "=" + value;
+		if (pe != null && pe.isWriteToSecLog()) {
+			String secLogMsg = "adapter [" + owner.getName() + "] pipe [" + pe.getName() + "]";
+			if (pe.getSecLogSessionKeys() != null) {
+				String sk = "";
+				StringTokenizer st = new StringTokenizer(pe.getSecLogSessionKeys(), " ,;");
+				while (st.hasMoreTokens()) {
+					if (sk.length() > 0) {
+						sk = sk + ",";
 					}
-					secLogMsg = secLogMsg + " sessionKeys [" + sk + "]";
+					String key = st.nextToken();
+					Object value = pipeLineSession.get(key);
+					sk = sk + key + "=" + value;
 				}
-				secLog.info(secLogMsg);
+				secLogMsg = secLogMsg + " sessionKeys [" + sk + "]";
 			}
+			secLog.info(secLogMsg);
 		}
 		
 		return pipeRunResult;
@@ -166,24 +164,20 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	private String restoreMovedElements(String invoerString, IPipeLineSession pipeLineSession) {
 		StringBuffer buffer = new StringBuffer();
 		int startPos = invoerString.indexOf(ME_START);
-		if (startPos == -1)
+		if (startPos == -1) {
 			return invoerString;
+		}
 		char[] invoerChars = invoerString.toCharArray();
 		int copyFrom = 0;
 		while (startPos != -1) {
 			buffer.append(invoerChars, copyFrom, startPos - copyFrom);
-			int nextStartPos =
-				invoerString.indexOf(
-					ME_START,
-					startPos + ME_START.length());
+			int nextStartPos = invoerString.indexOf(ME_START, startPos + ME_START.length());
 			if (nextStartPos == -1) {
 				nextStartPos = invoerString.length();
 			}
-			int endPos =
-				invoerString.indexOf(ME_END, startPos + ME_START.length());
+			int endPos = invoerString.indexOf(ME_END, startPos + ME_START.length());
 			if (endPos == -1 || endPos > nextStartPos) {
-				log.warn("Found a start delimiter without an end delimiter while restoring from compacted result at position ["
-						+ startPos + "] in ["+ invoerString+ "]");
+				log.warn("Found a start delimiter without an end delimiter while restoring from compacted result at position [" + startPos + "] in ["+ invoerString+ "]");
 				buffer.append(invoerChars, startPos, nextStartPos - startPos);
 				copyFrom = nextStartPos;
 			} else {

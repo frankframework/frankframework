@@ -15,10 +15,20 @@
 */
 package nl.nn.adapterframework.util;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
-import org.apache.logging.log4j.Logger;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -41,6 +51,13 @@ import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -775,12 +792,13 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map<String,Object> from, Map<String,Object> to) {
+	public static void copyContext(String keys, Map<String,Object> from, IPipeLineSession to) {
 		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
 			StringTokenizer st = new StringTokenizer(keys,",;");
 			while (st.hasMoreTokens()) {
 				String key=st.nextToken();
 				Object value=from.get(key);
+				Message.asMessage(value).closeOnCloseOf(to);
 				to.put(key,value);
 			}
 		}

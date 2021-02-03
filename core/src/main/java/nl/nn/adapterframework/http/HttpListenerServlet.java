@@ -57,27 +57,28 @@ public class HttpListenerServlet extends HttpServlet {
 
 	public void invoke(String message, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-		IPipeLineSession messageContext= new PipeLineSessionBase();
-		messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
-		messageContext.put("httpListenerServletRequest", request);
-		messageContext.put("httpListenerServletResponse", response);
-		String service=request.getParameter(SERVICE_ID_PARAM);
-		Enumeration<String> paramnames=request.getParameterNames();
-		while (paramnames.hasMoreElements()) {
-			String paramname = paramnames.nextElement();
-			String paramvalue = request.getParameter(paramname);
-			if (log.isDebugEnabled()) {
-				log.debug("HttpListenerServlet setting parameter ["+paramname+"] to ["+paramvalue+"]");
+		try (IPipeLineSession messageContext= new PipeLineSessionBase()) {
+			messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
+			messageContext.put("httpListenerServletRequest", request);
+			messageContext.put("httpListenerServletResponse", response);
+			String service=request.getParameter(SERVICE_ID_PARAM);
+			Enumeration<String> paramnames=request.getParameterNames();
+			while (paramnames.hasMoreElements()) {
+				String paramname = paramnames.nextElement();
+				String paramvalue = request.getParameter(paramname);
+				if (log.isDebugEnabled()) {
+					log.debug("HttpListenerServlet setting parameter ["+paramname+"] to ["+paramvalue+"]");
+				}
+				messageContext.put(paramname, paramvalue);
 			}
-			messageContext.put(paramname, paramvalue);
-		}
-		try {
-			log.debug("HttpListenerServlet calling service ["+service+"]");
-			String result=sd.dispatchRequest(service, null, message, messageContext);
-			response.getWriter().print(result);
-		} catch (ListenerException e) {
-			log.warn("HttpListenerServlet caught exception, will rethrow as ServletException",e);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
+			try {
+				log.debug("HttpListenerServlet calling service ["+service+"]");
+				String result=sd.dispatchRequest(service, null, message, messageContext);
+				response.getWriter().print(result);
+			} catch (ListenerException e) {
+				log.warn("HttpListenerServlet caught exception, will rethrow as ServletException",e);
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
+			}
 		}
 	}
 	

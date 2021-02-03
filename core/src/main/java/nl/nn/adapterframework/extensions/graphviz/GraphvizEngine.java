@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.Misc;
 public class GraphvizEngine {
 	protected Logger log = LogUtil.getLogger(this);
 	private Engine engine;
-	private static String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
+	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
 	// Available JS Engines. Lower index has priority.
 	private static String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8,nl.nn.adapterframework.extensions.javascript.Nashorn").split(",");
 
@@ -109,10 +109,10 @@ public class GraphvizEngine {
 	}
 
 	private String getVizJsSource(String version) throws IOException {
-		URL api = ClassUtils.getResourceURL(this.getClass().getClassLoader(), "js/viz-" + version + ".js");
-		URL engine = ClassUtils.getResourceURL(this.getClass().getClassLoader(), "js/viz-full.render-" + version + ".js");
+		URL api = ClassUtils.getResourceURL("/js/viz-" + version + ".js");
+		URL engine = ClassUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
 		if(api == null || engine == null)
-			throw new IOException("failed to open vizjs file for version["+version+"]");
+			throw new IOException("failed to open vizjs file for version ["+version+"]");
 		return Misc.streamToString(api.openStream()) + Misc.streamToString(engine.openStream());
 	}
 

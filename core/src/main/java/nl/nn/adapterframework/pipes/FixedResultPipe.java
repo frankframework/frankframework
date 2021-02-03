@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.net.URL;
 
 import javax.xml.transform.Transformer;
@@ -99,7 +98,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
+				resource = ClassUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception searching for ["+getFileName()+"]", e);
 			}
@@ -133,7 +132,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(fileName)) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), fileName);
+				resource = ClassUtils.getResourceURL(this, fileName);
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+fileName+"]", e);
 			}
@@ -170,18 +169,13 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 
-		try (Reader dummy = message.asReader()) {
-			// get the inputstream and close it, to avoid connection leaking when the message itself is not consumed.
-			// Also see javadoc of IPipe.doPipe()
-		} catch (IOException e) {
-			log.warn("Exception reading ignored inputstream", e);
-		}
+		message.closeOnCloseOf(session); // avoid connection leaking when the message itself is not consumed.
 		if (getSubstituteVars()){
 			result=StringResolver.substVars(returnString, session, appConstants);
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(getConfigurationClassLoader(), styleSheetName);
+			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
 			if (xsltSource!=null) {
 				try{
 					String xsltResult = null;

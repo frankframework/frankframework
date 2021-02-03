@@ -29,6 +29,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
@@ -86,7 +87,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * method to load configuration and related resources from a different
 	 * location from the standard classpath. 
 	 * 
-	 * @see ClassUtils#getResourceURL(ClassLoader, String)
+	 * @see ClassUtils#getResourceURL(IScopeProvider, String)
 	 * @see AppConstants#getInstance(ClassLoader)
 	 */
 	public void init() {
@@ -99,7 +100,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * method to load configuration and related resources from a different
 	 * location from the standard classpath. 
 	 * 
-	 * @see ClassUtils#getResourceURL(ClassLoader, String)
+	 * @see ClassUtils#getResourceURL(IScopeProvider, String)
 	 * @see AppConstants#getInstance(ClassLoader)
 	 *
 	 * @param reconnect retry startup when failures occur

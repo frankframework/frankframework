@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactory;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -49,16 +51,16 @@ import nl.nn.adapterframework.util.StreamUtil;
  * 
  * @author John Dekker
  */
-public class FTPsClient extends FTPClient {
+public class FTPsClient extends FTPClient implements IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-	
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+
 	public final String FTP_CLIENT_CHARSET="ISO-8859-1";
 
 	private FtpSession session;
 	private AuthSSLProtocolSocketFactory socketFactory;
 	private Socket orgSocket = null;
-	
+
 	FTPsClient(FtpSession session) throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
 		this.session = session;
 		
@@ -209,14 +211,14 @@ public class FTPsClient extends FTPClient {
 		URL truststoreUrl = null;
 
 		if (!StringUtils.isEmpty(session.getCertificate())) {
-			certificateUrl = ClassUtils.getResourceURL(classLoader, session.getCertificate());
+			certificateUrl = ClassUtils.getResourceURL(this, session.getCertificate());
 			if (certificateUrl == null) {
 				throw new IOException("Cannot find URL for certificate resource [" + session.getCertificate() + "]");
 			}
 			log.debug("resolved certificate-URL to [" + certificateUrl.toString() + "]");
 		}
 		if (!StringUtils.isEmpty(session.getTruststore())) {
-			truststoreUrl = ClassUtils.getResourceURL(classLoader, session.getTruststore());
+			truststoreUrl = ClassUtils.getResourceURL(this, session.getTruststore());
 			if (truststoreUrl == null) {
 				throw new IOException("cannot find URL for truststore resource [" + session.getTruststore() + "]");
 			}

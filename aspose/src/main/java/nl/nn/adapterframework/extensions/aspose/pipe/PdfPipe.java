@@ -86,7 +86,7 @@ public class PdfPipe extends FixedForwardPipe {
 		if (StringUtils.isEmpty(license)) {
 			ConfigurationWarnings.add(this, log, "Aspose License is not configured. There will be evaluation watermarks on the converted documents. There are also some restrictions in the API use. License field should be set with a valid information to avoid this. ");
 		} else {
-			URL licenseUrl = ClassUtils.getResourceURL(PdfPipe.class.getClassLoader(), license);
+			URL licenseUrl = ClassUtils.getResourceURL(license);
 			if(licenseUrl == null) {
 				throw new ConfigurationException("specified file for aspose license is not found");
 			}

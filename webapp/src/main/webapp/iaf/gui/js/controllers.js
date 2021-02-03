@@ -944,7 +944,15 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("configurations", fd, function(data) {
 			$scope.error = "";
-			$scope.result = "Successfully uploaded configuration!";
+			$scope.result = "";
+			for(pair in data){
+				if(data[pair] == "loaded"){
+					$scope.result += "Successfully uploaded configuration ["+pair+"]<br/>";
+				} else {
+					$scope.result += "Could not upload configuration from the file ["+pair+"]: "+data[pair]+"<br/>";
+				}
+			}
+
 			$scope.form = {
 					datasource: $scope.datasources[0],
 					encoding:"",
@@ -2025,6 +2033,8 @@ angular.module('iaf.beheerconsole')
 			fd.append("replyTo", formData.replyTo);
 		if(formData.persistent && formData.persistent != "")
 			fd.append("persistent", formData.persistent);
+		if(formData.synchronous && formData.synchronous != "")
+			fd.append("synchronous", formData.synchronous);
 
 		if(!formData.message && !formData.file) {
 			$scope.error = "Please specify a file or message!";

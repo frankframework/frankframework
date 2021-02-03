@@ -372,6 +372,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
 				Object value = pipelineSession.get(key);
+				Message.asMessage(value).unregisterCloseable(pipelineSession);
 				if (log.isDebugEnabled()) {
 					log.debug(getLogPrefix()+"returning session key [" + key + "] value [" + value + "]");
 				}
@@ -682,7 +683,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					info("has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), configurationClassLoader, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
+					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
 				}
 			} else {
 				if (getListener() instanceof IProvidesMessageBrowsers) {
@@ -709,7 +710,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), configurationClassLoader, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,0);
+				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,0);
 			}
 			
 			if (StringUtils.isNotEmpty(getHideRegex()) && getErrorStorage()!=null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {
@@ -1265,7 +1266,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					result=pipeLineResult.getResult();
 
 					errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
-					if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN) { //Since we can determine the size, assume the message is preservable
+					if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN) { //Since we can determine the size, assume the message is preserved
 						errorMessage += result.asString().substring(0, ITransactionalStorage.MAXCOMMENTLEN);
 					} else {
 						errorMessage += result;
@@ -1325,42 +1326,48 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			}
 		} finally {
-			cacheProcessResult(messageId, errorMessage, new Date(startProcessingTimestamp));
-			if (!isTransacted() && messageInError && !manualRetry) {
-				moveInProcessToError(messageId, businessCorrelationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
-			}
 			try {
-				Map<String,Object> afterMessageProcessedMap=threadContext;
-				if (pipelineSession!=null) {
-					threadContext.putAll(pipelineSession);
+				cacheProcessResult(messageId, errorMessage, new Date(startProcessingTimestamp));
+				if (!isTransacted() && messageInError && !manualRetry) {
+					moveInProcessToError(messageId, businessCorrelationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
 				}
 				try {
-					getListener().afterMessageProcessed(pipeLineResult, rawMessageOrWrapper, afterMessageProcessedMap);
-				} catch (Exception e) {
-					if (manualRetry) {
-						// Somehow messages wrapped in MessageWrapper are in the ITransactionalStorage. 
-						// This might cause class cast exceptions.
-						// There are, however, also Listeners that might use MessageWrapper as their raw message type,
-						// like JdbcListener
-						error("Exception post processing after retry of message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e); 
-					} else {
-						error("Exception post processing message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e);
+					Map<String,Object> afterMessageProcessedMap=threadContext;
+					if (pipelineSession!=null) {
+						threadContext.putAll(pipelineSession);
 					}
-					throw wrapExceptionAsListenerException(e);
+					try {
+						getListener().afterMessageProcessed(pipeLineResult, rawMessageOrWrapper, afterMessageProcessedMap);
+					} catch (Exception e) {
+						if (manualRetry) {
+							// Somehow messages wrapped in MessageWrapper are in the ITransactionalStorage. 
+							// This might cause class cast exceptions.
+							// There are, however, also Listeners that might use MessageWrapper as their raw message type,
+							// like JdbcListener
+							error("Exception post processing after retry of message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e); 
+						} else {
+							error("Exception post processing message messageId ["+messageId+"] cid ["+technicalCorrelationId+"]", e);
+						}
+						throw wrapExceptionAsListenerException(e);
+					}
+				} finally {
+					long finishProcessingTimestamp = System.currentTimeMillis();
+					finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
+					if (!itx.isCompleted()) {
+						// NB: Spring will take care of executing a commit or a rollback;
+						// Spring will also ONLY commit the transaction if it was newly created
+						// by the above call to txManager.getTransaction().
+						//txManager.commit(txStatus);
+						itx.commit();
+					} else {
+						String msg="Transaction already completed; we didn't expect this";
+						warn(msg);
+						throw new ListenerException(getLogPrefix()+msg);
+					}
 				}
 			} finally {
-				long finishProcessingTimestamp = System.currentTimeMillis();
-				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
-				if (!itx.isCompleted()) {
-					// NB: Spring will take care of executing a commit or a rollback;
-					// Spring will also ONLY commit the transaction if it was newly created
-					// by the above call to txManager.getTransaction().
-					//txManager.commit(txStatus);
-					itx.commit();
-				} else {
-					String msg="Transaction already completed; we didn't expect this";
-					warn(msg);
-					throw new ListenerException(getLogPrefix()+msg);
+				if (pipelineSession != null ) {
+					pipelineSession.close();
 				}
 			}
 		}

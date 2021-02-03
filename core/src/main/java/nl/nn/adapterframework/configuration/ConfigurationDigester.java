@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public class ConfigurationDigester {
 	private static final String CONFIGURATION_VALIDATION_KEY = "configurations.validate";
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
-	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
+	private static final String ATTRIBUTEGETTER_XSLT = "xml/xsl/AttributesGetter.xsl";
 
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
@@ -130,8 +130,7 @@ public class ConfigurationDigester {
 		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
 
-		ClassLoader configurationClassLoader = configuration.getClassLoader();
-		Resource digesterRulesResource = Resource.getResource(configurationClassLoader, getDigesterRules());
+		Resource digesterRulesResource = Resource.getResource(getDigesterRules());
 
 		FrankDigesterRules digesterRules = new FrankDigesterRules(digester, digesterRulesResource);
 		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
@@ -146,7 +145,7 @@ public class ConfigurationDigester {
 			digester.setValidating(true);
 			digester.setNamespaceAware(true);
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-			URL xsdUrl = ClassUtils.getResourceURL(configurationClassLoader, CONFIGURATION_VALIDATION_SCHEMA);
+			URL xsdUrl = ClassUtils.getResourceURL(CONFIGURATION_VALIDATION_SCHEMA);
 			if (xsdUrl==null) {
 				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
 			}
@@ -164,7 +163,7 @@ public class ConfigurationDigester {
 		try {
 			digester = getDigester(configuration);
 
-			Resource configurationResource = Resource.getResource(classLoader, configurationFile);
+			Resource configurationResource = Resource.getResource(configuration, configurationFile);
 			if (configurationResource == null) {
 				throw new ConfigurationException("Configuration file not found: " + configurationFile);
 			}
@@ -206,10 +205,10 @@ public class ConfigurationDigester {
 		}
 	}
 
-	private  void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
-		URL xsltSource = ClassUtils.getResourceURL(this.getClass().getClassLoader(), attributesGetter_xslt);
+	private void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
+		URL xsltSource = ClassUtils.getResourceURL(ATTRIBUTEGETTER_XSLT);
 		if (xsltSource == null) {
-			throw new ConfigurationException("cannot find resource ["+attributesGetter_xslt+"]");
+			throw new ConfigurationException("cannot find resource ["+ATTRIBUTEGETTER_XSLT+"]");
 		}
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		String attributes = XmlUtils.transformXml(transformer, configurationSource);

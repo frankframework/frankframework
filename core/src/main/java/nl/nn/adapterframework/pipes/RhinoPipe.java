@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
+				resource = ClassUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception searching for [" + getFileName() + "]", e);
 			}
@@ -129,7 +129,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
+				resource = ClassUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+getFileName()+"]", e);
 			}

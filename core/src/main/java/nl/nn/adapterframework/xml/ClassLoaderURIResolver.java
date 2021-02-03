@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import javax.xml.transform.URIResolver;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -37,15 +38,15 @@ import nl.nn.adapterframework.util.LogUtil;
 public class ClassLoaderURIResolver implements URIResolver {
 	protected Logger log = LogUtil.getLogger(this);
 	
-	private ClassLoader classLoader;
+	private IScopeProvider scopeProvider;
 
-	public ClassLoaderURIResolver(ClassLoader classLoader) {
-		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with classloader ["+classLoader+"]");
-		this.classLoader = classLoader;
+	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
+		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider ["+scopeProvider+"]");
+		this.scopeProvider = scopeProvider;
 	}
 
 	public ClassLoaderURIResolver(Resource resource) {
-		this(resource.getClassLoader());
+		this(resource.getScopeProvider());
 	}
 
 	public Resource resolveToResource(String href, String base) throws TransformerException {
@@ -74,14 +75,14 @@ public class ClassLoaderURIResolver implements URIResolver {
 		}
 
 		String ref=ref1;
-		Resource resource = Resource.getResource(classLoader, ref, protocol);
+		Resource resource = Resource.getResource(scopeProvider, ref, protocol);
 		if (resource==null && ref2!=null) {
 			if (log.isDebugEnabled()) log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
 			ref=ref2;
-			resource = Resource.getResource(classLoader, ref, protocol);
+			resource = Resource.getResource(scopeProvider, ref, protocol);
 		}
 		if (resource==null) {
-			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] classloader ["+classLoader+"]";
+			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] in scope ["+scopeProvider+"]";
 			//log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.
 			throw new TransformerException(message);
 		}

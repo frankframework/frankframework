@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -33,14 +34,14 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class ClassLoaderEntityResolver implements EntityResolver {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader;
+	private IScopeProvider scopeProvider;
 
-	public ClassLoaderEntityResolver(ClassLoader classLoader) {
-		this.classLoader = classLoader;
+	public ClassLoaderEntityResolver(IScopeProvider scopeProvider) {
+		this.scopeProvider = scopeProvider;
 	}
 
 	public ClassLoaderEntityResolver(Resource resource) {
-		this(resource.getClassLoader());
+		this(resource.getScopeProvider());
 	}
 
 	/**
@@ -49,8 +50,8 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 	@Override
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 
-		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"] classloader ["+classLoader+"]");
-		Resource resource = Resource.getResource(classLoader, systemId);
+		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"] in scope ["+scopeProvider+"]");
+		Resource resource = Resource.getResource(scopeProvider, systemId);
 		if(resource != null) {
 			return resource.asInputSource();
 		}

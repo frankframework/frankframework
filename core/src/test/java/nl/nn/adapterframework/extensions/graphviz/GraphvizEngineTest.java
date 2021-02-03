@@ -26,13 +26,15 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GraphvizEngineTest {
 
 	private String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
-	private ClassLoader classLoader = this.getClass().getClassLoader();
+	private IScopeProvider scopeProvider = new TestScopeProvider();
 
 	@Test
 	public void canInitDefaultWithoutErrors() throws IOException {
@@ -52,7 +54,7 @@ public class GraphvizEngineTest {
 		assertNotNull(engine);
 
 		String result = engine.execute(dot);
-		URL svg = ClassUtils.getResourceURL(classLoader, "flow.svg");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
@@ -64,7 +66,7 @@ public class GraphvizEngineTest {
 
 		String render = "render('" + dot + "'," + Options.create().toJson(false) + ");";
 		String result = engine.execute(render);
-		URL svg = ClassUtils.getResourceURL(classLoader, "flow.svg");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
@@ -75,7 +77,7 @@ public class GraphvizEngineTest {
 		assertNotNull(engine);
 
 		String result = engine.execute(dot, Options.create().format(Format.SVG_STANDALONE));
-		URL svg = ClassUtils.getResourceURL(classLoader, "flow.svg_standalone");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg_standalone");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
@@ -91,7 +93,7 @@ public class GraphvizEngineTest {
 
 		String render = "render('" + dot + "'," + options.toJson(false) + ");";
 		String result = engine.execute(render, options); //We also have to give options here to make sure SVG_STANDALONE is used
-		URL svg = ClassUtils.getResourceURL(classLoader, "flow.svg_standalone");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg_standalone");
 
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
@@ -104,7 +106,7 @@ public class GraphvizEngineTest {
 		String result = engine.execute(dot, Options.create().format(Format.SVG));
 		assertNotNull(result);
 
-		URL svg = ClassUtils.getResourceURL(classLoader, "flow.svg");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
@@ -133,7 +135,7 @@ public class GraphvizEngineTest {
 		String result = engine.execute(dot, options);
 		assertNotNull(result);
 
-		URL svg = ClassUtils.getResourceURL(classLoader, "flow.0.5.svg");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.0.5.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}
@@ -148,7 +150,7 @@ public class GraphvizEngineTest {
 		String result = engine.execute(dot, options);
 		assertNotNull(result);
 
-		URL svg = ClassUtils.getResourceURL(classLoader, "flow.1.5.svg");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.1.5.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 	}

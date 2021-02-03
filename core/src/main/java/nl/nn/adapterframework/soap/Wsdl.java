@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -456,7 +456,7 @@ public class Wsdl {
             XSD xsd = new XSD();
             //xsd.setNamespace(webServiceListenerNamespace);
             xsd.setAddNamespaceToSchema(true);
-            xsd.initNamespace(webServiceListenerNamespace, pipeLine.getAdapter().getConfiguration().getClassLoader(), inputSchema);
+            xsd.initNamespace(webServiceListenerNamespace, pipeLine, inputSchema);
             xsds.add(xsd);
         } else {
             xsds = xmlValidator.getXsds();
@@ -577,9 +577,7 @@ public class Wsdl {
             SchemaUtils.mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(
                     SchemaUtils.getXsdsGroupedByNamespace(rootXsds, true), w);
         }  else {
-            SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
-                    pipeLine.getAdapter().getConfiguration().getClassLoader(),
-                    xsdsGroupedByNamespace, w);
+            SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(pipeLine, xsdsGroupedByNamespace, w);
         }
         w.writeEndElement();
     }
