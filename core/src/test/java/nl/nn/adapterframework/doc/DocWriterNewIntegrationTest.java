@@ -24,6 +24,7 @@ import nl.nn.adapterframework.doc.model.FrankElementStatistics;
 import nl.nn.adapterframework.doc.model.XsdVersion;
 import nl.nn.adapterframework.util.LogUtil;
 
+@Ignore("This test takes too long.")
 public class DocWriterNewIntegrationTest {
 	private static Logger log = LogUtil.getLogger(DocWriterNewIntegrationTest.class);
 
