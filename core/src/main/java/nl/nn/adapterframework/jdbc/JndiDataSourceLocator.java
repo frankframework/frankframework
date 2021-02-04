@@ -34,7 +34,6 @@ public class JndiDataSourceLocator extends JndiObjectLocator {
 
 	public JndiDataSourceLocator(Properties jndiEnvironment) {
 		setExpectedType(CommonDataSource.class);
-		setResourceRef(true);
 
 		if(jndiEnvironment != null) {
 			setJndiEnvironment(jndiEnvironment);

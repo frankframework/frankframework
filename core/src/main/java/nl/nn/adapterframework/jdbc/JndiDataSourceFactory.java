@@ -23,6 +23,9 @@ import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -34,6 +37,7 @@ public class JndiDataSourceFactory implements IDataSourceFactory {
 
 	public static final String DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.default.datasource");
 	protected Map<String,DataSource> dataSources = new ConcurrentHashMap<>();
+	private @Setter String jndiContextPrefix = null;
 
 	@Override
 	public DataSource getDataSource(String dataSourceName) throws NamingException {
@@ -54,6 +58,11 @@ public class JndiDataSourceFactory implements IDataSourceFactory {
 	 * Performs the actual JNDI lookup
 	 */
 	private CommonDataSource lookupDataSource(String jndiName, Properties jndiEnvironment) throws NamingException {
+		if(StringUtils.isNotEmpty(jndiContextPrefix)) {
+			return JndiDataSourceLocator.lookup(jndiContextPrefix+jndiName, jndiEnvironment);
+		}
+
+		//Fallback without prefix
 		return JndiDataSourceLocator.lookup(jndiName, jndiEnvironment);
 	}
 

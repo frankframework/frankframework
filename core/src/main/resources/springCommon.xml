@@ -20,12 +20,15 @@
 	/>
 
 	<bean
-		name="jndiContextPrefixPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
-		autowire="byName"
-		>
-		<property name="propertyName" value="jndiContextPrefix"/>
-		<property name="propertyValue" value=""/>
+		id="jndiContextPrefix"
+		factory-bean="jndiContextPrefixFactory"
+		factory-method="getContextPrefix"
+	/>
+
+	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
+
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.SpringDataSourceFactory">
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
 	<bean
@@ -40,8 +43,6 @@
 		autowire="byName"
 	/>
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.SpringDataSourceFactory" />
-
 	<bean
 		name="jmsRealmsFactory"
 		class="nl.nn.adapterframework.jms.JmsRealmFactory"
@@ -55,7 +56,7 @@
 		autowire="byName"
 		scope="prototype"
 		>
-		<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
 	<bean
@@ -64,7 +65,7 @@
 		autowire="byName"
 		scope="prototype"
 		>
-		<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
 	<bean
@@ -73,7 +74,7 @@
 		autowire="byName"
 		scope="prototype"
 		>
-		<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
 	<bean
