@@ -185,7 +185,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	@Override
 	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
 		if ("view".equals(attributeName)) {
-			if (attributes.get("method").equalsIgnoreCase("GET")) {
+			if ("GET".equalsIgnoreCase(attributes.get("method"))) {
 				return true;
 			} else {
 				return false;
