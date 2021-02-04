@@ -500,7 +500,7 @@ public class JobDef extends TransactionAttributes {
 					try {
 						objectId = getLocker().acquire(getMessageKeeper());
 					} catch (Exception e) {
-						messageKeeper.add(e.getMessage(), MessageKeeperLevel.ERROR);
+						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
 						log.error(getLogPrefix()+e.getMessage());
 					}
 					if (objectId!=null) {
@@ -523,6 +523,8 @@ public class JobDef extends TransactionAttributes {
 							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
 							log.warn(getLogPrefix()+msg);
 						}
+					} else {
+						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
 					}
 				} else {
 					runJob(ibisManager);
@@ -553,6 +555,7 @@ public class JobDef extends TransactionAttributes {
 
 	protected void runJob(IbisManager ibisManager) {
 		long startTime = System.currentTimeMillis();
+		getMessageKeeper().add("starting to run the job");
 
 		switch(function) {
 		case DUMPSTATS:
@@ -589,7 +592,9 @@ public class JobDef extends TransactionAttributes {
 		}
 
 		long endTime = System.currentTimeMillis();
-		statsKeeper.addValue(endTime - startTime);
+		long duration = endTime - startTime;
+		statsKeeper.addValue(duration);
+		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
 	}
 
 	/**
