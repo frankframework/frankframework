@@ -54,7 +54,7 @@ public class JndiContextPrefixFactory implements InitializingBean {
 		try {
 			prefix = ContextPrefix.valueOf(applicationServerType);
 		} catch (IllegalArgumentException e) {
-			log.warn("unable to determine JndiContextPrefix, reverting to default ["+jndiContextPrefix+"]");
+			log.warn("unable to determine JndiContextPrefix, reverting to default ["+ContextPrefix.DEFAULT.name()+"]");
 		}
 
 		jndiContextPrefix = prefix.getPrefix();
