@@ -74,10 +74,10 @@ public class JndiDataSourceFactory implements IDataSourceFactory {
 	}
 
 	/**
-	 * Add a DataSource to this factory so it can be used without the need of a JNDI lookup.
-	 * Only to be used when registering a DataSource through Spring and never through a JNDI lookup
+	 * Add and augment a DataSource to this factory so it can be used without the need of a JNDI lookup.
+	 * Should only be called during jUnit Tests or when registering a DataSource through Spring. Never through a JNDI lookup
 	 */
-	public void addDataSource(CommonDataSource dataSource, String dataSourceName) {
-		dataSources.putIfAbsent(dataSourceName, augmentDataSource(dataSource, dataSourceName));
+	public DataSource addDataSource(CommonDataSource dataSource, String dataSourceName) {
+		return dataSources.computeIfAbsent(dataSourceName, k -> augmentDataSource(dataSource, dataSourceName));
 	}
 }

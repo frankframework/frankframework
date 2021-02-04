@@ -12,11 +12,20 @@
 
 	<bean id="txManagerReal" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource">
-			<ref bean="dataSourceTxProxy"/>
+			<ref bean="defaultDataSource"/>
 		</property>
 		<property name="transactionSynchronization">
 			<util:constant static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"/>
 		</property>
+	</bean>
+
+	<bean
+		id="defaultDataSource"
+		factory-bean="dataSourceFactory"
+		factory-method="addDataSource"
+		>
+		<constructor-arg ref="dataSourceTxProxy" />
+		<constructor-arg value="${jdbc.datasource.default}" />
 	</bean>
 
 	<bean id="dataSourceTxProxy" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
@@ -28,15 +37,6 @@
 	<bean id="h2DataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="org.h2.Driver"/>
 		<property name="url" value="jdbc:h2:mem:"/>
-	</bean>
-
-	<bean
-		id="registerH2DataSource"
-		factory-bean="dataSourceFactory"
-		factory-method="addDataSource"
-		>
-		<constructor-arg ref="dataSourceTxProxy" />
-		<constructor-arg value="${jdbc.datasource.default}" />
 	</bean>
 
 </beans>
