@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -68,9 +67,7 @@ public class FrankDocModel {
 	private final GenericRole.Factory genericRoleFactory = new GenericRole.Factory();
 
 	/**
-	 * Get the FrankDocModel needed in production. This is just a first draft. The
-	 * present version does not have groups yet. It will be improved in future
-	 * pull requests. 
+	 * Get the FrankDocModel needed in production.
 	 */
 	public static FrankDocModel populate() {
 		return FrankDocModel.populate(DIGESTER_RULES, "nl.nn.adapterframework.configuration.Configuration");
@@ -154,7 +151,7 @@ public class FrankDocModel {
 		}
 	}
 
-	public boolean hasType(String typeName) {
+	boolean hasType(String typeName) {
 		return allTypes.containsKey(typeName);
 	}
 
@@ -542,28 +539,6 @@ public class FrankDocModel {
 		}		
 	}
 
-	/**
-	 * For an {@link ElementType} assemble all config children of members and calculate
-	 * a list of {@link ElementRole} from that. Assume that the {@link ElementRole}
-	 * objects exist and that the members of the element type are set.
-	 */
-	public List<ElementRole> getElementTypeMemberChildRoles(
-			ElementType elementType, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Predicate<FrankElement> frankElementFilter) {
-		List<ElementRole> allMemberChildRoles = elementType.getMembers().values().stream()
-				// TODO: Filtering FrankElements, typically no filter or deprecated omitted, is
-				// not covered by unit tests.
-				.filter(frankElementFilter)
-				.map(frankElement -> frankElement.getCumulativeConfigChildren(selector, rejector))
-				.flatMap(l -> l.stream())
-				.map(ElementRole.Key::new)
-				// TODO: Not covered with unit tests that keys should be de-doubled
-				.distinct()
-				.map(this::findElementRole)
-				.collect(Collectors.toList());
-		Collections.sort(allMemberChildRoles);
-		return allMemberChildRoles;
-	}
-
 	void buildGroups() {
 		if(log.isTraceEnabled()) {
 			log.trace("Building groups");
@@ -676,18 +651,35 @@ public class FrankDocModel {
 				log.warn(String.format("Conflict for XSD element name [%s] cannot be resolved, because there are [%d] competing non-deprecated FrankElement",
 						name, partitions.get(false).size()));
 			}
-			partitions.get(true).forEach(f -> f.setCausesNameConflict(true));
+			for(FrankElement causingNameConflict: partitions.get(true)) {
+				log.info(String.format("FrankElement [%s] causes a name conflict, setting that flag", causingNameConflict.getFullName()));
+				causingNameConflict.setCausesNameConflict(true);
+			}
 		}
 	}
 
+	/**
+	 * Wrap a single {@link ElementRole} in a {@link GenericRole}, allowing code reuse.
+	 */
 	public GenericRole findOrCreate(XsdVersion version, ElementRole role) {
 		return genericRoleFactory.findOrCreate(version, Arrays.asList(role));
 	}
 
+	/**
+	 * Get the cumulative config children of a {@link FrankElement} and group the {@link ElementRole} by syntax 1 name.
+	 * @param version The {@link XsdVersion} that determines the set of cumulative config children.
+	 * @param parent The {@link FrankElement} for which the config children are requested.
+	 */
 	public List<GenericRole> findOrCreateCumulativeChildren(XsdVersion version, FrankElement parent) {
 		return genericRoleFactory.findOrCreateCumulativeChildren(version, parent, this);
 	}
 
+	/**
+	 * From all {@link ElementRole} sharing a syntax 1 name, take all config children of
+	 * all members and group their {@link ElementRole} by syntax 1 name.
+	 * @param version The {@link XsdVersion} that determines which are the config children of a {@link FrankElement}.
+	 * @param parent The {@link GenericRole} holding the {@link ElementRole}-s to start with.
+	 */
 	public List<GenericRole> findOrCreateChildren(XsdVersion version, GenericRole parent) {
 		return genericRoleFactory.findOrCreateChildren(version, parent, this);
 	}

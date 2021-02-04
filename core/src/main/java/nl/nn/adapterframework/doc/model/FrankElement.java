@@ -44,12 +44,40 @@ public class FrankElement {
 	private final @Getter String simpleName;
 	private final @Getter boolean isAbstract;
 	private @Getter boolean isDeprecated = false;
+
+	// The ElementRole objects that have this FrankElement as member. This field
+	// is maintained for three reasons:
+	// - FrankElement calculates the ElementRole.isSuperseded property. See
+	//   the comments in ElementRole.
+	// - The XML tag used by Frank developers to access this FrankElement depends on
+	//   the ElementRole. For example, FrankElement DirectQuerySender can be accessed
+	//   with <DirectQuerySender> or <DirectQueryErrorSender>. A FrankElement has
+	//   to know which tag names it can produce, allowing FrankDocModel to resolve
+	//   name conflicts. When two FrankElement objects can produce the same tag name,
+	//   then one of the involved FrankElement is expected to be deprecated. That
+	//   deprecated FrankElement then has its causesNameConflict property set.
+	// - FrankElement that are not part of an interface-based ElementType should
+	//   have their Java class referenced by a fixed XML tag. An example is
+	//   Java class PipeForward that is referenced in Frank configs like
+	//   <Forward>. The XML tag is derived from the syntax 1 name of the ElementRole
+	//   that has PipeForward as its member. In a few corner cases, that containing
+	//   ElementRole is ambiguous. An example is FrankElement InputfieldsPart, which
+	//   appears in the following ElementRole:
+    //
+	//   * (elementType=InputfieldsPart, syntax1Name=inputFields)
+	//   * (elementType=InputfieldsPart, syntax1Name=child).
+    //
+	//   The elementRoles property is used to resolve this ambiguity.
+	//
 	private Set<ElementRole> elementRoles = new HashSet<>();
 	private @Getter @Setter(AccessLevel.PACKAGE) boolean causesNameConflict;
 
 	void addElementRole(ElementRole newRole) {
 		elementRoles.add(newRole);
-		Map<Boolean, List<ElementRole>> byIsDeprecated = elementRoles.stream().collect(Collectors.partitioningBy(ElementRole::isDeprecated));
+		List<ElementRole> nonInterfaceRoles = elementRoles.stream()
+				.filter(role -> ! role.getElementType().isFromJavaInterface())
+				.collect(Collectors.toList());
+		Map<Boolean, List<ElementRole>> byIsDeprecated = nonInterfaceRoles.stream().collect(Collectors.partitioningBy(ElementRole::isDeprecated));
 		if(filled(byIsDeprecated.get(false)) && filled(byIsDeprecated.get(true))) {
 			byIsDeprecated.get(true).forEach(r -> r.setSuperseded(true));
 		}

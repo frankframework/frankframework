@@ -41,8 +41,37 @@ public class ElementRole implements Comparable<ElementRole> {
 	private @Getter ElementType elementType;
 	private final @Getter String syntax1Name;
 	private final int syntax1NameSeq;
+	
+	// This property is used by FrankElement to calculate the ElementRole.isSuperseded
+	// property.
+	//
+	// It is calculated from the ConfigChild.isDeprecated property. This property is
+	// ambiguous by default, because the same ElementRole is reused by multiple
+	// ConfigChild objects. If multiple FrankElement have the same syntax 1 name and
+	// ElementType combination to determine children, then each time there is a different
+	// ConfigChild object but the ElementRole object is the same.
+	//
+	// The ambiguity is resolved by taking the value false when some
+	// related config children are deprecated while others aren't.
 	private @Getter boolean deprecated;
+
+	// This property is needed to avoid duplicate config children.
+	// As an example, consider Java class AbstractRecordHandler. It 
+	// has methods registerInputFields and registerChild, both taking
+	// an InputfieldsPart argument. By default, two of the config children of
+	// AbstractRecordHandler have the ElementRole-s: 
+	// * (elementType=InputfieldsPart, syntax1Name=inputFields) and
+	// * (elementType=InputfieldsPart, syntax1Name=child).
+	//
+	// Using both of these ElementRole to add config children would produce a
+	// conflict. Both would allow the same XML element, the XML tag
+	// that references Java class InputfieldsPart which is <InputFields>.
+	// When this conflict appears, one of the involved ElementRole is expected
+	// to be deprecated. That ElementRole then gets its superseded flag set.
+	//
 	private @Getter @Setter(AccessLevel.PACKAGE) boolean superseded;
+
+	// Value chached by method promoteToHighestCommonInterface.
 	private ElementRole cachedHighestCommonInterface = null;
 
 	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq, boolean isDeprecated) {
@@ -87,6 +116,24 @@ public class ElementRole implements Comparable<ElementRole> {
 		return frankElementOptions;
 	}
 
+	/**
+	 * Get the {@link FrankElement} that has the same XML element name as the generic element option, or null.
+	 * <p>
+	 * As an example, consider the following ElementRole:
+	 * <p>
+	 * (elementType=IErrorMessageFormatter, syntax1Name=errorMessageFormatter)
+	 * <p>
+	 * This role produces a generic element option like <code>&lt;ErrorMessageFormatter className="..." &gt;</code>.
+	 * There is also a Java class ErrorMessageFormatter that should be accessible from
+	 * Frank config. {@link nl.nn.adapterframework.doc.DocWriterNew} should add a
+	 * default value for the <code>&lt;ErrorMessageFormatter&gt;</code>'s <code>className</code>
+	 * attribute. If the FrankDeveloper adds a <code>&lt;ErrorMessageFormatter&gt;</code> without
+	 * setting the <code>className</code>, then the Java class ErrorMessageFormatter
+	 * is referenced.
+	 * <p>
+	 * It is this method's responsibility to find the conflicting {@link FrankElement}
+	 * ErrorMessageFormatter.
+	 */
 	public FrankElement getConflictingElement(Predicate<FrankElement> frankElementFilter) {
 		List<FrankElement> candidates = getOptions(frankElementFilter).stream()
 				.filter(f -> f.getXsdElementName(this).equals(getGenericOptionElementName()))
@@ -101,6 +148,32 @@ public class ElementRole implements Comparable<ElementRole> {
 		}
 	}
 
+	// This method is needed to resolve conflicts in the generic element option.
+	// Consider the generic element <Pipe className=... >. The allowed children
+	// of this element are found by combining all config children of all pipes.
+	//
+	// Two pipes are relevant here: PostboxRetrieverPipe and SenderPipe. Both
+	// have a setListener method, the former's setListener() method taking a
+	// IPostboxListener and the latter's taking a ICorrelatedPullingListener.
+	// By default, the allowed contents would be created using two ElementRole
+	// objects:
+	//
+	// * (elementType=IPostboxListener, syntax1Name=listener)
+	// * (elementType=ICorrelatedPullingListener, syntax1Name=listener)
+	//
+	// Both of these roles would allow the <Pipe className="..."> element
+	// to have a <Listener className="..."> element. When both ElementRole
+	// are used, however, the definition allowing <Listener> would appear twice.
+	// That would make the XML Schema document invalid, because parsing the
+	// Frank config <Pipe className="..."><Listener className="...">... would be
+	// impossible. The XML parser would not know which definition for <Listener>
+	// to apply.
+	//
+	// When this method is applied to any of the said ElementRole-s, the
+	// result is (elementType=IListener, syntax1Name=listener). When only
+	// this resulting ElementRole is used to define the <Listener> child of
+	// <Pipe>, a correct XSD is produced.
+	// 
 	public ElementRole promoteToHighestCommonInterface(FrankDocModel model) {
 		if(cachedHighestCommonInterface != null) {
 			return cachedHighestCommonInterface;

@@ -18,12 +18,56 @@ import lombok.Getter;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.util.LogUtil;
 
+/**
+ * A list of {@link ElementRole} sharing a syntax 1 name and thus a generic
+ * element option in the XML schema file. As an example, consider Java class
+ * {@link nl.nn.adapterframework.batch.StreamTransformerPipe}. It has four
+ * config child setters related to config children with syntax 1 name "child".
+ * These are:
+ * <ul>
+ * <li> public void registerChild(IRecordHandlerManager manager)
+ * <li> public void registerChild(RecordHandlingFlow flowEl)
+ * <li> public void registerChild(IRecordHandler handler)
+ * <li> public void registerChild(IResultHandler handler)
+ * </ul>
+ * These four config child setters introduce four {@link ElementRole} that have
+ * syntax 1 name "child" in common. If each of these config children would produce
+ * their own generic element option (e.g. <code>&lt;Child className="..." &gt;</code>,
+ * then the XML schema would become invalid. If such an XSD would parse the text
+ * <code>&lt;StreamTransformerPipe&gt;&lt;Child ... &gt; ... </code>, then the parser
+ * would not know which of the <code>&lt;Child&gt;</code> tags is meant.
+ * <p>
+ * The XSD element definition for {@link nl.nn.adapterframework.batch.StreamTransformerPipe}
+ * should have only one definition for child <code>&lt;Child&gt;</code>. The model
+ * supports this by grouping the four involved {@link ElementRole} in a single
+ * GenericRole.
+ * <p>
+ * This class has a static inner class Factory that is responsible for creating GenericRole
+ * objects. This factory class is not public, so it cannot be used from outside the model.
+ * {@link nl.nn.adapterframework.doc.DocWriterNew} creates GenericRole objects by accessing
+ * {@link FrankDocModel}. GenericRole objects are not created by the {@link FrankDocModel#populate()}
+ * method, because GenericRole objects can only be properly created when it is known
+ * whether <code>strict.xsd</code> or <code>compatibility.xsd</code> is being created. This
+ * information is stored in an instance of {@link XsdVersion}, which is selected by
+ * {@link nl.nn.adapterframework.doc.DocWriterNew} before it browses the {@link FrankDocModel}.
+ * 
+ * @author martijn
+ *
+ */
 public class GenericRole {
 	private static Logger log = LogUtil.getLogger(GenericRole.class);
 	private final @Getter XsdVersion xsdVersion;
 	private final List<ElementRole> roles;
 	private final @Getter String syntax1Name;
+
+	/**
+	 * The {@link FrankElement} that has an XML tag name that conflicts with the
+	 * generic option element name, or null when there is no such conflict or when
+	 * there are multiple conflicting {@link FrankElement}-s.
+	 */
 	private final @Getter FrankElement conflictingFrankElement;
+
+	// Used to give groups in the XML schema file a unique name.
 	private final int seq;
 
 	private GenericRole(final XsdVersion xsdVersion, List<ElementRole> roles, int seq) {
@@ -74,6 +118,11 @@ public class GenericRole {
 		return new Key(xsdVersion, getRoles());
 	}
 
+	/**
+	 * This class ensures that each GenericRole is created only once.
+	 * @author martijn
+	 *
+	 */
 	@EqualsAndHashCode
 	public static class Key {
 		private XsdVersion xsdVersion;
@@ -106,10 +155,24 @@ public class GenericRole {
 		}
 	}
 
+	// Factory class that ensures that each GenericRole is created only once.
+	// In theory, generic element options can be nested infinitely. If there
+	// is an interface I implemented by class A, and if A has methods
+	// setChild(I i) and setChild(B b), then there are two element roles
+	// (I, child), (B, child). These two roles are grouped into a GenericRole
+	// which is used recursively to add the generic element option in the XML
+	// schema. This class avoids infinite recursion when
+	// creating GenericRole objects.
+	//
+	// DocWriterNew also uses the unicity of GenericRole to maintain whether a
+	// GenericRole has been processed. This way, no duplicate element groups are
+	// added to the XML schema file.
+	//
 	static class Factory {
 		private final Map<XsdVersion, Map<String, Integer>> sequenceNumbers = new HashMap<>();
 		private final Map<Key, GenericRole> available = new LinkedHashMap<>();
 
+		// See JavaDoc of FrankDocModel for a description.
 		GenericRole findOrCreate(XsdVersion xsdVersion, List<ElementRole> roles) {
 			Key key = new Key(xsdVersion, roles);
 			if(! available.containsKey(key)) {
@@ -128,6 +191,7 @@ public class GenericRole {
 			return result;
 		}
 
+		// See JavaDoc of FrankDocModel for a description.
 		List<GenericRole> findOrCreateCumulativeChildren(XsdVersion xsdVersion, FrankElement parent, FrankDocModel model) {
 			Map<String, List<ElementRole>> roleGroups = parent.getCumulativeConfigChildren(xsdVersion.getChildSelector(), xsdVersion.getChildRejector())
 					.stream().map(ConfigChild::getElementRole).distinct().collect(Collectors.groupingBy(ElementRole::getSyntax1Name));
@@ -150,6 +214,7 @@ public class GenericRole {
 			return result;
 		}
 
+		// See JavaDoc of FrankDocModel for a description.
 		List<GenericRole> findOrCreateChildren(XsdVersion version, GenericRole parent, FrankDocModel model) {
 			final Map<FrankElement, Set<ElementRole>> rolesByFrankElement = new HashMap<>();
 			for(ElementRole role: parent.getRoles()) {

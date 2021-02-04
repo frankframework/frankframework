@@ -29,10 +29,13 @@ limitations under the License.
  * <p>
  * A tag in a Frank config can contain other tags. A <code>&lt;Receiver&gt;</code> can
  * for example contain <code>&lt;DirectQuerySender&gt;</code> or
- * <code>DirectQueryErrorSender</code>. These two tags reference the same Java class, namely
+ * <code>&lt;DirectQueryErrorSender&gt;</code>. These two tags reference the same Java class, namely
  * {@code nl.nn.adapterframework.jdbc.DirectQuerySender}, but the first tag uses
- * it as a Sender while the second tag uses it as an ErrorSender. The model expresses a set
- * of allowed child tags by relating a containing {@link nl.nn.adapterframework.doc.model.FrankElement} to an {@link nl.nn.adapterframework.doc.model.ElementRole}.
+ * it as a Sender while the second tag uses it as an ErrorSender. The model expresses the
+ * allowed child tags by relating the containing {@link nl.nn.adapterframework.doc.model.FrankElement} to some {@link nl.nn.adapterframework.doc.model.ElementRole}.
+ * Each combination of a {@link nl.nn.adapterframework.doc.model.FrankElement} and a {@link nl.nn.adapterframework.doc.model.ElementRole}
+ * corresponds to a config child setter (Java method) in the modelled Java class. When a Java class has multiple config child setters,
+ * its {@link nl.nn.adapterframework.doc.model.FrankElement} is related to multiple {@link nl.nn.adapterframework.doc.model.ElementRole}.
  * An {@link nl.nn.adapterframework.doc.model.ElementRole} has a property <code>syntax1Name</code> to express the role and references
  * an {@link nl.nn.adapterframework.doc.model.ElementType} to define what child {@link nl.nn.adapterframework.doc.model.FrankElement} objects can appear. Each
  * {@link nl.nn.adapterframework.doc.model.ElementType} has one or more {@link nl.nn.adapterframework.doc.model.FrankElement} objects as members.
