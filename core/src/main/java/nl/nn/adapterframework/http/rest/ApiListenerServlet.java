@@ -43,6 +43,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
+import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
@@ -106,16 +107,19 @@ public class ApiListenerServlet extends HttpServletBase {
 
 		String uri = request.getPathInfo();
 		String method = request.getMethod().toUpperCase();
-		log.trace("ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]");
+		String remoteUser = request.getRemoteUser();
+
+		String infoMessage = "ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]" + (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : "");
+		log.info(infoMessage);
 
 		if (uri==null) {
 			response.setStatus(400);
-			log.warn("Aborting request with status [400], empty uri");
+			log.warn(createAbortingMessage(remoteUser,400) + "empty uri");
 			return;
 		}
 		if(uri.endsWith("/"))
 			uri = uri.substring(0, uri.length()-1);
-
+		
 		/**
 		 * Generate an OpenApi json file
 		 */
@@ -149,7 +153,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 				if(config == null) {
 					response.setStatus(404);
-					if(log.isTraceEnabled()) log.trace("Aborting request with status [404], no ApiListener configured for ["+uri+"]");
+					log.warn(createAbortingMessage(remoteUser,404) + "no ApiListener configured for ["+uri+"]");
 					return;
 				}
 	
@@ -186,7 +190,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				ApiListener listener = config.getApiListener(method);
 				if(listener == null) {
 					response.setStatus(405);
-					if(log.isTraceEnabled()) log.trace("Aborting request with status [405], method ["+method+"] not allowed");
+					log.warn(createAbortingMessage(remoteUser,405) + "method ["+method+"] not allowed");
 					return;
 				}
 	
@@ -243,7 +247,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 	
 						response.setStatus(401);
-						if(log.isTraceEnabled()) log.trace("Aborting request with status [401], no (valid) credentials supplied");
+						log.warn(createAbortingMessage(remoteUser,401) + "no (valid) credentials supplied");
 						return;
 					}
 	
@@ -273,14 +277,14 @@ public class ApiListenerServlet extends HttpServletBase {
 					if(!listener.accepts(acceptHeader)) {
 						response.setStatus(406);
 						response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-						if(log.isTraceEnabled()) log.trace("Aborting request with status [406], client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
+						log.warn(createAbortingMessage(remoteUser,406) + "client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
 						return;
 					}
 				}
 	
 				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
-					if(log.isTraceEnabled()) log.trace("Aborting request with status [415], did not match consumes ["+listener.getConsumesEnum()+"] got ["+request.getContentType()+"] instead");
+					log.warn(createAbortingMessage(remoteUser,415) + "did not match consumes ["+listener.getConsumesEnum()+"] got ["+request.getContentType()+"] instead");
 					return;
 				}
 	
@@ -294,7 +298,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						String ifNoneMatch = request.getHeader("If-None-Match");
 						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 							response.setStatus(304);
-							if(log.isTraceEnabled()) log.trace("Aborting request with status [304], matched if-none-match ["+ifNoneMatch+"]");
+							if(log.isTraceEnabled()) log.trace(createAbortingMessage(remoteUser,304) + "matched if-none-match ["+ifNoneMatch+"]");
 							return;
 						}
 					}
@@ -302,7 +306,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						String ifMatch = request.getHeader("If-Match");
 						if(ifMatch != null && !ifMatch.equals(cachedEtag)) {
 							response.setStatus(412);
-							if(log.isTraceEnabled()) log.trace("Aborting request with status [412], matched if-match ["+ifMatch+"] method ["+method+"]");
+							log.warn(createAbortingMessage(remoteUser,412) + "matched if-match ["+ifMatch+"] method ["+method+"]");
 							return;
 						}
 					}
@@ -536,5 +540,15 @@ public class ApiListenerServlet extends HttpServletBase {
 	@Override
 	public String getUrlMapping() {
 		return "/api/*";
+	}
+
+	private String createAbortingMessage(String remoteUser, int statusCode) {
+		StringBuilder message = new StringBuilder("");
+		message.append("Aborting request ");
+		if(StringUtils.isNotEmpty(remoteUser)) {
+			message.append("issued by ["+remoteUser+"] ");
+		}
+		message.append("with status code ["+statusCode+"], ");
+		return message.toString();
 	}
 }
