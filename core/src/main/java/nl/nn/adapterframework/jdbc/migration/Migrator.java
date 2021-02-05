@@ -33,7 +33,8 @@ import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
 
 /**
- * LiquiBase implementation for IAF
+ * LiquiBase implementation for IAF. 
+ * Please call close method explicitly to release the connection used by liquibase or instantiate this with try-with-resources.
  * 
  * @author	Niels Meijer
  * @since	7.0-B4
@@ -107,7 +108,7 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 			return instance.getUpdateScript(writer);
 		return writer;
 	}
-	
+
 	@Override
 	public void close() {
 		try {
