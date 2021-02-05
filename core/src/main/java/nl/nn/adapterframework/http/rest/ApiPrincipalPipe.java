@@ -102,7 +102,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			userPrincipal.setData(input);
 			userPrincipal.setToken(token);
 			if(getAuthenticationMethod().equals("cookie")) {
-				Cookie cookie = new Cookie("authenticationToken", token);
+				Cookie cookie = new Cookie(ApiListenerServlet.AUTHENTICATION_COOKIE, token);
 				cookie.setPath("/");
 				cookie.setMaxAge(authTTL);
 				cookie.setHttpOnly(true);
