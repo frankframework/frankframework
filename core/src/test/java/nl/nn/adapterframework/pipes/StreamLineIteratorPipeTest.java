@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.pipes;
 
+import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIteratorPipe> {
@@ -198,8 +198,8 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
-
-		MatchUtils.assertXmlEquals(expected, actual);
+		
+		assertXmlEquals(expected, actual);
 	}
 
 	@Test
@@ -215,6 +215,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
-		MatchUtils.assertXmlEquals(expected, actual);
+		assertXmlEquals(expected, actual);
+		
 	}
 }
