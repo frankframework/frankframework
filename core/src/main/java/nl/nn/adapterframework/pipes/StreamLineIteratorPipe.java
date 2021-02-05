@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,12 @@ package nl.nn.adapterframework.pipes;
 import java.io.Reader;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PeekableDataIterator;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -33,7 +37,8 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  */
 public class StreamLineIteratorPipe extends StringIteratorPipe {
 
-	private String endOfLineString;
+	private @Getter String endOfLineString;
+	private @Getter String startOfLineString;
 	
 	protected Reader getReader(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
@@ -48,34 +53,36 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 
 	@Override
 	protected IDataIterator<String> getIterator(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
-		return new ReaderLineIterator(getReader(input,session, threadContext));
+		return new PeekableDataIterator<>(new ReaderLineIterator(getReader(input,session, threadContext)));
 	}
 
 	@Override
 	protected String getItem(IDataIterator<String> it) throws SenderException {
-		String item = (String)it.next();
-		if (getEndOfLineString()!=null) {
-			while (!item.endsWith(getEndOfLineString()) && it.hasNext()) {
-				item = item + System.getProperty("line.separator") + (String)it.next();
+		StringBuffer item = new StringBuffer(it.next());
+		if (StringUtils.isNotEmpty(getEndOfLineString()) || StringUtils.isNotEmpty(getStartOfLineString())) {
+			String peeked = ((PeekableDataIterator<String>)it).peek();
+			while (peeked!=null && 
+					(StringUtils.isEmpty(getStartOfLineString()) || !peeked.startsWith(getStartOfLineString())) && 
+					(StringUtils.isEmpty(getEndOfLineString())   || !item.toString().endsWith(getEndOfLineString()))) {
+				item.append(System.getProperty("line.separator")).append(it.next());
+				peeked = ((PeekableDataIterator<String>)it).peek();
 			}
 		}
-		return item;
+		return item.toString();
 	}
 
-	@IbisDoc({"1", "when set, each line has to end with this string. if the line doesn't end with this string next lines are added (including line separators) until the total line ends with the given string", ""})
+	@IbisDoc({"1", "If set, each record has to end with this string. If a line read doesn't end with this string more lines are added (including line separators) until the total record ends with the given string", ""})
 	public void setEndOfLineString(String string) {
 		endOfLineString = string;
 	}
-	public String getEndOfLineString() {
-		return endOfLineString;
+	@IbisDoc({"2", "Marks the start of a new record. If set, a new record is started when this line is read.", ""})
+	public void setStartOfLineString(String string) {
+		startOfLineString = string;
 	}
 
-	@IbisDoc({"2", "when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	@IbisDoc({"3", "If set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		setCloseIteratorOnExit(b);
-	}
-	public boolean isCloseInputstreamOnExit() {
-		return isCloseIteratorOnExit();
 	}
 
 }

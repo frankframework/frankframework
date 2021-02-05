@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIteratorPipe> {
@@ -185,4 +186,35 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		assertEquals(expected, actual);
 	}
 
+	@Test
+	public void testEndOfLineString() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setEndOfLineString("EOL");
+		configurePipe();
+		pipe.start();
+
+		Message input = TestFileUtils.getTestFileMessage("/StreamLineIteratorPipe/EndMarked.txt");
+		String expected = TestFileUtils.getTestFile("/StreamLineIteratorPipe/EndMarkedResult.xml");
+		
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		MatchUtils.assertXmlEquals(expected, actual);
+	}
+
+	@Test
+	public void testStartOfLineString() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setStartOfLineString("BOL");
+		configurePipe();
+		pipe.start();
+
+		Message input = TestFileUtils.getTestFileMessage("/StreamLineIteratorPipe/BeginMarked.txt");
+		String expected = TestFileUtils.getTestFile("/StreamLineIteratorPipe/BeginMarkedResult.xml");
+		
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		MatchUtils.assertXmlEquals(expected, actual);
+	}
 }
