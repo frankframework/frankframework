@@ -1965,14 +1965,16 @@ angular.module('iaf.beheerconsole')
 		else
 			$scope.form = {datasource: data.datasources[0]};
 	});
-
+	$scope.generateSql=false;
 	$scope.submit = function(formData) {
 		if(!formData) formData = {};
-
+		$scope.generateSql=true;
 		Api.Post("jdbc/liquibase", JSON.stringify(formData), function(returnData) {
 			$scope.error = "";
+			$scope.generateSql=false;
 			$.extend($scope, returnData);
 		}, function(errorData, status, errorMsg) {
+			$scope.generateSql=false;
 			var error = (errorData) ? errorData.error : errorMsg;
 			$scope.error = error;
 			$scope.result = "";
