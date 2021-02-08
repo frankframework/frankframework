@@ -295,7 +295,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						String ifNoneMatch = request.getHeader("If-None-Match");
 						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 							response.setStatus(304);
-							log.debug(createAbortingMessage(remoteUser,304) + "matched if-none-match ["+ifNoneMatch+"]");
+							if (log.isDebugEnabled()) log.debug(createAbortingMessage(remoteUser,304) + "matched if-none-match ["+ifNoneMatch+"]");
 							return;
 						}
 					}
