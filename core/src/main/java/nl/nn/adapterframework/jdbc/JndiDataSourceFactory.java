@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,8 +37,8 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class JndiDataSourceFactory implements IDataSourceFactory {
 
-	public static final String DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.default.datasource");
-	protected Map<String,DataSource> dataSources = new ConcurrentHashMap<>();
+	public static final String DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.datasource.default");
+	protected Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
 	private @Setter String jndiContextPrefix = null;
 
 	@Override
@@ -79,5 +81,10 @@ public class JndiDataSourceFactory implements IDataSourceFactory {
 	 */
 	public DataSource addDataSource(CommonDataSource dataSource, String dataSourceName) {
 		return dataSources.computeIfAbsent(dataSourceName, k -> augmentDataSource(dataSource, dataSourceName));
+	}
+
+	@Override
+	public List<String> getDataSourceNames() {
+		return new ArrayList<String>(dataSources.keySet());
 	}
 }

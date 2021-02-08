@@ -31,6 +31,8 @@
 		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
+	<bean id="jdbcPropertySourceFactory" class="nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory" />
+
 	<bean
 		name="hostnamePropertyPlaceholderConfigurer"
 		class="nl.nn.adapterframework.configuration.HostnamePropertyPlaceholderConfigurer"

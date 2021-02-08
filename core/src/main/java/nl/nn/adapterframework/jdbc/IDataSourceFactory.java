@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.util.List;
 import java.util.Properties;
 
 import javax.naming.NamingException;
@@ -24,6 +25,9 @@ import org.springframework.jndi.JndiLocatorSupport;
 
 public interface IDataSourceFactory {
 
+	/**
+	 * Look up a DataSource from the JNDI
+	 */
 	public DataSource getDataSource(String dataSourceName) throws NamingException;
 
 	/**
@@ -33,4 +37,8 @@ public interface IDataSourceFactory {
 	 */
 	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws NamingException;
 
+	/**
+	 * Return all known/registered DataSources
+	 */
+	public List<String> getDataSourceNames();
 }
