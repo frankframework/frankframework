@@ -9,7 +9,6 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.13.1</log4j2.version>
-		<lombok.version>1.18.12</lombok.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -238,7 +237,7 @@
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
 				<!-- If you update this version number, please update it in CONTRIBUTING.md  as well! -->
-				<version>${lombok.version}</version>
+				<version>1.18.12</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
