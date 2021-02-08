@@ -430,7 +430,7 @@ public final class ShowConfiguration extends Base {
 		List<Map<String, Object>> returnMap = new ArrayList<Map<String, Object>>();
 
 		if (StringUtils.isEmpty(dataSourceName)) {
-			dataSourceName = JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME;
+			dataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 			if (StringUtils.isEmpty(dataSourceName)) {
 				return null;
 			}

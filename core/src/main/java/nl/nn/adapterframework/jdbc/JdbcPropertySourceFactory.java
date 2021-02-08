@@ -23,7 +23,7 @@ public class JdbcPropertySourceFactory implements ApplicationContextAware {
 	private Logger log = LogUtil.getLogger(this);
 
 	public Properties createPropertySource(String name) {
-		return createPropertySource(name, JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
+		return createPropertySource(name, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 	}
 
 	public Properties createPropertySource(String name, String datasourceName) {

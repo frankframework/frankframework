@@ -65,7 +65,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JndiDataSourceFactory;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.DatabaseJobDef;
@@ -518,7 +517,7 @@ public final class ShowScheduler extends Base {
 
 		//Make sure the receiver exists!
 		String receiverName = resolveStringFromMap(inputDataMap, "receiver");
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found");
 		}
@@ -561,7 +560,7 @@ public final class ShowScheduler extends Base {
 			Locker locker = (Locker) getIbisContext().createBeanAutowireByName(Locker.class);
 			locker.setName(lockKey);
 			locker.setObjectId(lockKey);
-			locker.setDatasourceName(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
+			locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			jobdef.setLocker(locker);
 		}
 
@@ -576,7 +575,7 @@ public final class ShowScheduler extends Base {
 		if(persistent && AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
 			boolean success = false;
 			FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-			qs.setDatasourceName(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
+			qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 			try {
 				qs.configure();
@@ -653,7 +652,7 @@ public final class ShowScheduler extends Base {
 				boolean success = false;
 				// remove from database
 				FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-				qs.setDatasourceName(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
+				qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 				qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 				try {
 					qs.configure();

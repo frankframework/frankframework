@@ -183,7 +183,7 @@ public class ConfigurationUtils {
 	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String dataSourceName, String version) throws ConfigurationException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
-			workdataSourceName = JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME;
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 		if (StringUtils.isEmpty(version)) {
 			version = null; //Make sure this is null when empty!
@@ -344,7 +344,7 @@ public class ConfigurationUtils {
 	public static boolean addConfigToDatabase(IbisContext ibisContext, String dataSourceName, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
-			workdataSourceName = JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME;
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
@@ -403,7 +403,7 @@ public class ConfigurationUtils {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setDatasourceName(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
+		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -434,7 +434,7 @@ public class ConfigurationUtils {
 	public static boolean activateConfig(IbisContext ibisContext, String name, String version, boolean value, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
-			workdataSourceName = JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME;
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
@@ -484,7 +484,7 @@ public class ConfigurationUtils {
 	public static boolean autoReloadConfig(IbisContext ibisContext, String name, String version, boolean booleanValue, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
-			workdataSourceName = JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME;
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
@@ -586,7 +586,7 @@ public class ConfigurationUtils {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setDatasourceName(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
+		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {

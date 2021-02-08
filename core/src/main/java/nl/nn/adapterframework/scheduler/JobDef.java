@@ -764,7 +764,7 @@ public class JobDef extends TransactionAttributes {
 			return;
 		}
 
-		String dataSource = JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME;
+		String dataSource = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		List<String> configNames = new ArrayList<String>();
 		List<String> configsToReload = new ArrayList<String>();
 
@@ -870,7 +870,7 @@ public class JobDef extends TransactionAttributes {
 
 		// Get all IbisSchedules that have been stored in the database
 		FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-		qs.setDatasourceName(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
+		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 
 		try {
@@ -907,7 +907,7 @@ public class JobDef extends TransactionAttributes {
 			
 								locker.setName(lockKey);
 								locker.setObjectId(lockKey);
-								locker.setDatasourceName(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME);
+								locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 								jobdef.setLocker(locker);
 							}
 			

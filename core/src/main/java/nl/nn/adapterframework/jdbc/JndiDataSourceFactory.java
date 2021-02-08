@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class JndiDataSourceFactory implements IDataSourceFactory {
 
-	public static final String DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.datasource.default");
+	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.datasource.default");
 	protected Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
 	private @Setter String jndiContextPrefix = null;
 
