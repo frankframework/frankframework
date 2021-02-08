@@ -300,6 +300,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.2.0</version>
 				<configuration>
+					<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 					<doclint>none</doclint>
 					<tags>
 						<tag>
@@ -325,6 +326,23 @@
 						</goals>
 						<configuration>
 							<failOnError>false</failOnError>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok-maven-plugin</artifactId>
+				<version>1.18.16.0</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>delombok</goal>
+						</goals>
+						<configuration>
+							<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+							<addOutputDirectory>false</addOutputDirectory>
 						</configuration>
 					</execution>
 				</executions>
