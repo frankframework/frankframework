@@ -15,8 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
