@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -70,28 +71,43 @@ public interface IDbmsSupport {
 	String getClobFieldType();
 	boolean mustInsertEmptyClobBeforeData();
 	String emptyClobValue();
-	String getUpdateClobQuery(String table, String clobField, String keyField);
-	Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException;
-	Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException;
-	Writer getClobWriter(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException;
-	Writer getClobWriter(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException;
-	void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException;
-	void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException;
 	Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException;
 	Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException;
+	
+	// CLOB update methods, to support updating ResultSets using SELECT ... FOR UPDATE statements
+	String getUpdateClobQuery(String table, String clobField, String keyField);
+	Object getClobHandle(ResultSet rs, int column) throws SQLException, JdbcException;
+	Object getClobHandle(ResultSet rs, String column) throws SQLException, JdbcException;
+	Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException;
+	Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException;
+	void updateClob(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException;
+	void updateClob(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException;
+	
+	// CLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements 
+	Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException;
+	Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException;
+	void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException;
+	
 
 	String getBlobFieldType();
 	boolean mustInsertEmptyBlobBeforeData();
 	String emptyBlobValue();
-	String getUpdateBlobQuery(String table, String clobField, String keyField);
-	Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException;
-	Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException;
-	OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException;
-	OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
-	void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException;
-	void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
 	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException;
 	InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException;
+
+	// BLOB update methods, to support updating ResultSets using SELECT ... FOR UPDATE statements
+	String getUpdateBlobQuery(String table, String clobField, String keyField);
+	Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException;
+	Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException;
+	OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobHandle) throws SQLException, JdbcException;
+	OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobHandle) throws SQLException, JdbcException;
+	void updateBlob(ResultSet rs, int column, Object blobHandle) throws SQLException, JdbcException;
+	void updateBlob(ResultSet rs, String column, Object blobHandle) throws SQLException, JdbcException;
+
+	// BLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements 
+	Object getBlobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException;
+	OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException;
+	void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException;
 
 	String getTextFieldType();
 

@@ -427,7 +427,7 @@ public class JdbcUtil {
 
 	public static void putStringAsBlob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String content, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {
 		if (content!=null) {
-			Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, columnIndex);
+			Object blobHandle=dbmsSupport.getBlobHandle(rs, columnIndex);
 			try (OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobHandle)) {
 				if (charset==null) {
 					charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
@@ -448,7 +448,7 @@ public class JdbcUtil {
 
 	public static void putByteArrayAsBlob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, byte content[], boolean compressBlob) throws IOException, JdbcException, SQLException {
 		if (content!=null) {
-			Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, columnIndex);
+			Object blobHandle=dbmsSupport.getBlobHandle(rs, columnIndex);
 			try (OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobHandle)) {
 				if (compressBlob) {
 					try (DeflaterOutputStream dos = new DeflaterOutputStream(out)) {
@@ -482,7 +482,7 @@ public class JdbcUtil {
 
 	public static void putStringAsClob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String content) throws IOException, JdbcException, SQLException {
 		if (content!=null) {
-			Object clobHandle=dbmsSupport.getClobUpdateHandle(rs, columnIndex);
+			Object clobHandle=dbmsSupport.getClobHandle(rs, columnIndex);
 			try (Writer writer = dbmsSupport.getClobWriter(rs, columnIndex, clobHandle)) {
 				writer.write(content);
 			}
