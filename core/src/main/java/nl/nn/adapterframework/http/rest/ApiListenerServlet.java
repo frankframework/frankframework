@@ -63,7 +63,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final long serialVersionUID = 1L;
 
-	public static final String AUTHENTICATION_COOKIE = "authenticationToken";
+	public static final String AUTHENTICATION_COOKIE_NAME = "authenticationToken";
 
 	private List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
 
@@ -111,8 +111,10 @@ public class ApiListenerServlet extends HttpServletBase {
 		String method = request.getMethod().toUpperCase();
 		String remoteUser = request.getRemoteUser();
 
-		String infoMessage = "ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]" + (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : "");
-		log.info(infoMessage);
+		if(log.isInfoEnabled()) {
+			String infoMessage = "ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]" + (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : "");
+			log.info(infoMessage);
+		}
 
 		if (uri==null) {
 			response.setStatus(400);
@@ -209,7 +211,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	
 					switch (listener.getAuthenticationMethodEnum()) {
 					case COOKIE:
-						authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE);
+						authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
 						if(authorizationCookie != null) {
 							authorizationToken = authorizationCookie.getValue();
 							authorizationCookie.setPath("/");
