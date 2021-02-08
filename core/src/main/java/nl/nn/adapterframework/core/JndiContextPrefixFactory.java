@@ -31,6 +31,7 @@ public class JndiContextPrefixFactory implements InitializingBean {
 		JBOSS("java:/"),
 		TIBCOAMX("java:"), // no slash?
 		TOMCAT(JndiLocatorSupport.CONTAINER_PREFIX),
+		WAS(JndiLocatorSupport.CONTAINER_PREFIX),
 		DEFAULT(JndiLocatorSupport.CONTAINER_PREFIX);
 
 		private String prefix = "";

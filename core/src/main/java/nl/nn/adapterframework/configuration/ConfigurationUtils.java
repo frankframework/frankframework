@@ -490,7 +490,7 @@ public class ConfigurationUtils {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setDatasourceName(dataSourceName);
+		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 

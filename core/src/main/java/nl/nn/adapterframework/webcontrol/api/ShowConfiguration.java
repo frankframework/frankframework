@@ -57,7 +57,6 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JndiDataSourceFactory;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
