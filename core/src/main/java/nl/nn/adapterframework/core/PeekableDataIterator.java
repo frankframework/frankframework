@@ -14,7 +14,11 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.core;
-
+/**
+ * Wrapper for IDataIterator, that allows to peek the object that will be returned by next().
+ * 
+ * @author Gerrit van Brakel
+ */
 public class PeekableDataIterator<I> implements IDataIterator<I> {
 
 	private IDataIterator<I> target;
@@ -41,6 +45,9 @@ public class PeekableDataIterator<I> implements IDataIterator<I> {
 		return target.next();
 	}
 
+	/**
+	 * Returns object that will be returned by {@link #next()} if present, or null if not. Can be called multiple times.
+	 */
 	public I peek() throws SenderException {
 		if (peeked==null && hasNext()) {
 			peeked=target.next();
