@@ -9,6 +9,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.13.1</log4j2.version>
+		<lombok.version>1.18.12</lombok.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -237,7 +238,7 @@
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
 				<!-- If you update this version number, please update it in CONTRIBUTING.md  as well! -->
-				<version>1.18.12</version>
+				<version>${lombok.version}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -300,6 +301,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.2.0</version>
 				<configuration>
+					<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 					<doclint>none</doclint>
 					<tags>
 						<tag>
@@ -325,6 +327,23 @@
 						</goals>
 						<configuration>
 							<failOnError>false</failOnError>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok-maven-plugin</artifactId>
+				<version>1.18.16.0</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>delombok</goal>
+						</goals>
+						<configuration>
+							<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+							<addOutputDirectory>false</addOutputDirectory>
 						</configuration>
 					</execution>
 				</executions>
