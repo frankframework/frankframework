@@ -169,7 +169,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=10 FOR UPDATE", "select for update")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				Object clobHandle = dbmsSupport.getClobUpdateHandle(resultSet, 1);
+				Object clobHandle = dbmsSupport.getClobHandle(resultSet, 1);
 				try (Writer writer = dbmsSupport.getClobWriter(resultSet, 1, clobHandle)) {
 					writer.append(clobContents);
 				}
@@ -259,7 +259,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20 FOR UPDATE", "select for update")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				Object blobHandle = dbmsSupport.getBlobUpdateHandle(resultSet, 1);
+				Object blobHandle = dbmsSupport.getBlobHandle(resultSet, 1);
 				try (OutputStream out = dbmsSupport.getBlobOutputStream(resultSet, 1, blobHandle)) {
 					out.write(blobContents.getBytes("UTF-8"));
 				}
@@ -286,7 +286,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=21 FOR UPDATE", "select for update")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				Object blobHandle = dbmsSupport.getBlobUpdateHandle(resultSet, 1);
+				Object blobHandle = dbmsSupport.getBlobHandle(resultSet, 1);
 
 				try (OutputStream blobOutputStream = JdbcUtil.getBlobOutputStream(dbmsSupport, blobHandle, resultSet, 1, true)) {
 					blobOutputStream.write(blobContents.getBytes("UTF-8"));
