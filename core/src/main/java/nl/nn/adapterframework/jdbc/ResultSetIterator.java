@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-
-import org.apache.logging.log4j.Logger;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Iterator over ResultSet.
@@ -76,7 +76,7 @@ class ResultSetIterator implements IDataIterator<String> {
 	public String next() throws SenderException {
 		try {
 			lineChecked=false;
-			return DB2XMLWriter.getRowXml(dbmsSupport, rs, rowNumber++, rsmeta, Misc.DEFAULT_INPUT_STREAM_ENCODING, false, "", true, false).toString();
+			return DB2XMLWriter.getRowXml(dbmsSupport, rs, rowNumber++, rsmeta, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, false, "", true, false).toString();
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
