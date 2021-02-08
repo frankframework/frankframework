@@ -61,15 +61,11 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	@Override
-	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName,
-			String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
+	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Context context = getContext();
-		ConnectionFactory connectionFactory =
-				getConnectionFactory(context, jmsConnectionFactoryName, createDestination, useJms102); 
-		return new JmsMessagingSource(jmsConnectionFactoryName,
-				jmsFacade.getJndiContextPrefix(), context, connectionFactory,
-				getMessagingSourceMap(), authAlias, createDestination,
-				jmsFacade.getProxiedDestinationNames(), useJms102);
+		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName, createDestination, useJms102); 
+		return new JmsMessagingSource(jmsConnectionFactoryName, jmsFacade.getJndiContextPrefix(), context, connectionFactory, getMessagingSourceMap(), 
+				authAlias, createDestination, jmsFacade.getDestinationFactory(), useJms102);
 	}
 
 	@Override
@@ -78,17 +74,12 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	@Override
-	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination, boolean useJms102) throws IbisException {
+	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination, boolean useJms102) throws IbisException, NamingException {
 		ConnectionFactory connectionFactory;
-		if (jmsFacade.getProxiedConnectionFactories() != null
-				&& jmsFacade.getProxiedConnectionFactories().containsKey(cfName)) {
+		if (jmsFacade.getConnectionFactoryFactory() != null) {
 			log.debug(jmsFacade.getLogPrefix()+"looking up proxied connection factory ["+cfName+"]");
-			connectionFactory = jmsFacade.getProxiedConnectionFactories().get(cfName);
+			connectionFactory = jmsFacade.getConnectionFactoryFactory().getConnectionFactory(cfName);
 		} else {
-			if (jmsFacade.getProxiedConnectionFactories() != null ) {
-				ConfigurationWarnings.add(jmsFacade, log, "connection factory '" + cfName
-						+ "' isn't part of proxiedConnectionFactories and is therefore probably not known to the transaction manager");
-			}
 			String prefixedCfName=jmsFacade.getJndiContextPrefix()+cfName;
 			log.debug(jmsFacade.getLogPrefix()+"looking up connection factory ["+prefixedCfName+"]");
 			if (StringUtils.isNotEmpty(jmsFacade.getJndiContextPrefix())) {

@@ -13,23 +13,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc;
+package nl.nn.adapterframework.jms;
 
+import javax.jms.Destination;
 import javax.naming.NamingException;
-import javax.sql.CommonDataSource;
-import javax.sql.DataSource;
 
-import nl.nn.adapterframework.jms.JndiObjectFactory;
+public class JndiDestinationFactory extends JndiObjectFactory<Destination,Destination> implements IDestinationFactory {
 
-public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDataSource> implements IDataSourceFactory {
-
-	public JndiDataSourceFactory() {
-		super(CommonDataSource.class);
+	public JndiDestinationFactory() {
+		super(Destination.class);
 	}
 
 	@Override
-	public DataSource getDataSource(String dataSourceName) throws NamingException {
-		return get(dataSourceName);
+	public Destination getDestination(String destinationName) throws NamingException {
+		return get(destinationName);
 	}
 	
 

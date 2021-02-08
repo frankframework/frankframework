@@ -13,28 +13,28 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc;
+package nl.nn.adapterframework.jms;
 
-import javax.sql.CommonDataSource;
-import javax.sql.DataSource;
-import javax.sql.XADataSource;
 
-import bitronix.tm.resource.jdbc.PoolingDataSource;
+import javax.jms.ConnectionFactory;
+import javax.jms.XAConnectionFactory;
 
-public class BtmDataSourceFactory extends JndiDataSourceFactory {
+import bitronix.tm.resource.jms.PoolingConnectionFactory;
+
+public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory {
 
 	@Override
-	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
-		PoolingDataSource result = new PoolingDataSource();
-		result.setUniqueName(dataSourceName);
+	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
+		PoolingConnectionFactory result = new PoolingConnectionFactory();
+		result.setUniqueName(connectionFactoryName);
 		result.setMaxPoolSize(100);
 		result.setAllowLocalTransactions(true);
-		result.setXaDataSource((XADataSource)dataSource);
+		result.setXaConnectionFactory((XAConnectionFactory)connectionFactory);
 		result.init();
 		return result;
 	}
 
 	public void shutdown() {
-		objects.values().forEach(ds -> ((PoolingDataSource)ds).close());
+		objects.values().forEach(cf -> ((PoolingConnectionFactory)cf).close());
 	}
 }

@@ -28,7 +28,7 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		// setup a DataSourceFactory like in springTOMCAT.xml
 		dataSourceFactory = new SpringDataSourceFactory() { 
 				@Override
-				protected CommonDataSource lookupDataSource(String jndiName) throws NamingException {
+				protected CommonDataSource lookup(String jndiName) throws NamingException {
 					return targetDataSource;
 				}
 			};
