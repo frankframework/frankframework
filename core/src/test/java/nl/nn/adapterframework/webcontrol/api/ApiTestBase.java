@@ -94,6 +94,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			Context context = AnnotationUtils.findAnnotation(field, Context.class); //Injected JAX-WS Resources
 
 			if(context != null) {
+				field.setAccessible(true);
 				if(field.getType().isAssignableFrom(Request.class)) {
 					Request request = new MockHttpRequest();
 					try {
@@ -205,7 +206,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		 * @param httpMethod GET PUT POST DELETE
 		 * @param url the relative path of the FF! API
 		 * @param jsonOrFormdata when using PUT/POST requests, a json string of formdata object
-		 * @param role IbisRole if you want to test authorisation as well
+		 * @param role IbisRole if you want to test authorization as well
 		 */
 		public Response dispatchRequest(String httpMethod, String url, Object jsonOrFormdata, IbisRole role) {
 

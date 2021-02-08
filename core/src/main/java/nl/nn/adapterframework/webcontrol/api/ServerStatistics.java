@@ -39,6 +39,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -74,7 +75,8 @@ import nl.nn.adapterframework.util.RunStateEnum;
 @Path("/")
 public class ServerStatistics extends Base {
 
-	@Context Request rsRequest;
+	@Context private SecurityContext securityContext;
+	@Context private Request rsRequest;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
 	@GET
@@ -139,7 +141,7 @@ public class ServerStatistics extends Base {
 		String dtapSide = appConstants.getProperty("dtap.side");
 		returnMap.put("dtap.side", dtapSide);
 
-		Principal userPrincipal = request.getUserPrincipal();
+		Principal userPrincipal = securityContext.getUserPrincipal();
 		if(userPrincipal != null) {
 			returnMap.put("userName", userPrincipal.getName());
 		}
