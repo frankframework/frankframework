@@ -131,7 +131,7 @@ public class TestBlobs extends JdbcTestBase {
 		QueryExecutionContext context = new QueryExecutionContext(query, "other", null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			Object blobInsertHandle = dbmsSupport.getBlobInsertHandle(stmt, 1);
+			Object blobInsertHandle = dbmsSupport.getBlobHandle(stmt, 1);
 			try (OutputStream blobStream = dbmsSupport.getBlobOutputStream(stmt, 1, blobInsertHandle)) {
 				for (int i=0; i<numOfBlocks; i++) {
 					blobStream.write(block.getBytes("UTF-8"));
@@ -158,7 +158,7 @@ public class TestBlobs extends JdbcTestBase {
 		String insertQuery = "INSERT INTO TEMP (TKEY,TCLOB) VALUES (20,?)";
 		String selectQuery = "SELECT TCLOB FROM TEMP WHERE TKEY=20";
 		try (PreparedStatement stmt = connection.prepareStatement(insertQuery)) {
-			Object clobInsertHandle = dbmsSupport.getClobInsertHandle(stmt, 1);
+			Object clobInsertHandle = dbmsSupport.getClobHandle(stmt, 1);
 			try (Writer clobWriter = dbmsSupport.getClobWriter(stmt, 1, clobInsertHandle)) {
 				for (int i=0; i<numOfBlocks; i++) {
 					clobWriter.append(block);

@@ -159,42 +159,42 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+	public Object getClobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		return rs.getClob(column);
 	}
 	@Override
-	public Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+	public Object getClobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
 		return rs.getClob(column);
 	}
 	@Override
-	public Writer getClobWriter(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		return ((Clob)clobUpdateHandle).setCharacterStream(1L);
+	public Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException {
+		return ((Clob)clobHandle).setCharacterStream(1L);
 	}
 	@Override
-	public Writer getClobWriter(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		return ((Clob)clobUpdateHandle).setCharacterStream(1L);
+	public Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException {
+		return ((Clob)clobHandle).setCharacterStream(1L);
 	}
 	@Override
-	public void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		rs.updateClob(column, (Clob)clobUpdateHandle);
+	public void updateClob(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException {
+		rs.updateClob(column, (Clob)clobHandle);
 	}
 	@Override
-	public void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		rs.updateClob(column, (Clob)clobUpdateHandle);
+	public void updateClob(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException {
+		rs.updateClob(column, (Clob)clobHandle);
 	}
 
 	
 	@Override
-	public Object getClobInsertHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
+	public Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
 		return stmt.getConnection().createClob();
 	}
 	@Override
-	public Writer getClobWriter(PreparedStatement stmt, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		return ((Clob)clobUpdateHandle).setCharacterStream(1L);
+	public Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException {
+		return ((Clob)clobHandle).setCharacterStream(1L);
 	}
 	@Override
-	public void applyClobParameter(PreparedStatement stmt, int column, Object clobInsertHandle) throws SQLException, JdbcException {
-		stmt.setClob(column, (Clob)clobInsertHandle);
+	public void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException {
+		stmt.setClob(column, (Clob)clobHandle);
 	}
 
 	@Override
@@ -233,11 +233,11 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		return rs.getBlob(column);
 	}
 	@Override
-	public Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
 		return rs.getBlob(column);
 	}
 	
@@ -262,7 +262,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public Object getBlobInsertHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
+	public Object getBlobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
 		return stmt.getConnection().createBlob();
 	}
 	@Override

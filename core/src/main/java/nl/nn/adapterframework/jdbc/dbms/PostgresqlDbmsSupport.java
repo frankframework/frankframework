@@ -83,19 +83,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		return "DATE ("+dateValue+ ") + " + daysOffset ;
 	}
 
-	@Override
-	public Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException {
-		return rs.getCharacterStream(column);
-	}
-	@Override
-	public Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException {
-		return rs.getCharacterStream(column);
-	}
 
-	@Override
-	public String getClobFieldType() {
-		return "TEXT";
-	}
 	
 //	private LargeObjectManager getLargeObjectManager(Statement stmt) throws SQLException {
 //		return stmt.getConnection().unwrap(org.postgresql.PGConnection.class).getLargeObjectAPI();
@@ -155,69 +143,68 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 			stmt.setString(column, new String(((ByteArrayOutputStream)blobUpdateHandle).toByteArray(),Charsets.UTF_8));
 		}
 	}
-	
+
+
 	@Override
-	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+	public String getClobFieldType() {
+		return "TEXT";
+	}
+	@Override
+	public Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException {
+		return rs.getCharacterStream(column);
+	}
+	@Override
+	public Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException {
+		return rs.getCharacterStream(column);
+	}
+
+	@Override
+	public Object getClobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		return createLob(rs.getStatement());
 	}
 	@Override
-	public Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+	public Object getClobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
 		return createLob(rs.getStatement());
 	}
 	@Override
-	public Object getClobInsertHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
+	public Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
 		return createLob(stmt);
 	}
+
+	@Override
+	@SneakyThrows(UnsupportedEncodingException.class)
+	public Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException {
+		return new OutputStreamWriter(openLobOutputStream(rs.getStatement(), clobHandle), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	@Override
+	@SneakyThrows(UnsupportedEncodingException.class)
+	public Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException {
+		return new OutputStreamWriter(openLobOutputStream(rs.getStatement(), clobHandle), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+	@Override
+	@SneakyThrows(UnsupportedEncodingException.class)
+	public Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException {
+		return new OutputStreamWriter(openLobOutputStream(stmt, clobHandle), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+
+	@Override
+	public void updateClob(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException {
+		updateLob(rs, column, clobHandle, false);
+	}
+	@Override
+	public void updateClob(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException {
+		updateLob(rs, column, clobHandle, false);
+	}
+	@Override
+	public void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException {
+		updateLob(stmt, column, clobHandle, false);
+	}
+
 
 	@Override
 	public String getBlobFieldType() {
 		return "BYTEA";
 	}
-	
-	@Override
-	public Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
-		return createLob(rs.getStatement());
-	}
-	@Override
-	public Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
-		return createLob(rs.getStatement());
-	}
-	@Override
-	public Object getBlobInsertHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
-		return createLob(stmt);
-	}
-
-
-	@Override
-	public OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException {
-		return openLobOutputStream(rs.getStatement(), blobUpdateHandle);
-	}
-	@Override
-	public OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException {
-		return openLobOutputStream(rs.getStatement(), blobUpdateHandle);
-	}
-	@Override
-	public OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException {
-		return openLobOutputStream(stmt, blobInsertHandle);
-	}
-
-	@Override
-	@SneakyThrows(UnsupportedEncodingException.class)
-	public Writer getClobWriter(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		return new OutputStreamWriter(openLobOutputStream(rs.getStatement(), clobUpdateHandle), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-	}
-	@Override
-	@SneakyThrows(UnsupportedEncodingException.class)
-	public Writer getClobWriter(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		return new OutputStreamWriter(openLobOutputStream(rs.getStatement(), clobUpdateHandle), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-	}
-	@Override
-	@SneakyThrows(UnsupportedEncodingException.class)
-	public Writer getClobWriter(PreparedStatement stmt, int column, Object clobInsertHandle) throws SQLException, JdbcException {
-		return new OutputStreamWriter(openLobOutputStream(stmt, clobInsertHandle), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-	}
-	
-	
 	@Override
 	public InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException {
 		return rs.getBinaryStream(column);
@@ -226,32 +213,47 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException{
 		return rs.getBinaryStream(column);
 	}
+	
 	@Override
-	public void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException {
-		updateLob(rs, column, blobUpdateHandle, true);
+	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		return createLob(rs.getStatement());
 	}
 	@Override
-	public void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException {
-		updateLob(rs, column, blobUpdateHandle, true);
+	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		return createLob(rs.getStatement());
 	}
 	@Override
-	public void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException {
-		updateLob(stmt, column, blobInsertHandle, true);
+	public Object getBlobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
+		return createLob(stmt);
+	}
+
+	@Override
+	public OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobHandle) throws SQLException, JdbcException {
+		return openLobOutputStream(rs.getStatement(), blobHandle);
+	}
+	@Override
+	public OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobHandle) throws SQLException, JdbcException {
+		return openLobOutputStream(rs.getStatement(), blobHandle);
+	}
+	@Override
+	public OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobHandle) throws SQLException, JdbcException {
+		return openLobOutputStream(stmt, blobHandle);
 	}
 
 	@Override
-	public void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		updateLob(rs, column, clobUpdateHandle, false);
+	public void updateBlob(ResultSet rs, int column, Object blobHandle) throws SQLException, JdbcException {
+		updateLob(rs, column, blobHandle, true);
 	}
 	@Override
-	public void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		updateLob(rs, column, clobUpdateHandle, false);
+	public void updateBlob(ResultSet rs, String column, Object blobHandle) throws SQLException, JdbcException {
+		updateLob(rs, column, blobHandle, true);
 	}
 	@Override
-	public void applyClobParameter(PreparedStatement stmt, int column, Object clobInsertHandle) throws SQLException, JdbcException {
-		updateLob(stmt, column, clobInsertHandle, false);
+	public void applyBlobParameter(PreparedStatement stmt, int column, Object blobHandle) throws SQLException, JdbcException {
+		updateLob(stmt, column, blobHandle, true);
 	}
 
+	
 	@Override
 	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
 		return doIsTablePresent(conn, "pg_catalog.pg_tables", "schemaname", "tablename", "public", tableName);
