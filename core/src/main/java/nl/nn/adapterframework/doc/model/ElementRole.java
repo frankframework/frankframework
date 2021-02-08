@@ -17,21 +17,90 @@ limitations under the License.
 package nl.nn.adapterframework.doc.model;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.Logger;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import nl.nn.adapterframework.doc.Utils;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class ElementRole {
+	private static Logger log = LogUtil.getLogger(ElementRole.class);
+
 	private final @Getter ElementType elementType;
 	private final @Getter String syntax1Name;
 	private final int syntax1NameSeq;
+	private @Getter FrankElement defaultElementOptionConflict;
+	private Set<FrankElement> nameConflicts;
+	private Set<ElementRoleSet> participatesInRoleSets = new HashSet<>();
 
 	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq) {
 		this.elementType = elementType;
 		this.syntax1Name = syntax1Name;
 		this.syntax1NameSeq = syntax1NameSeq;
+		defaultElementOptionConflict = null;
+	}
+
+	void addParticipatingRoleSet(ElementRoleSet roleSet) {
+		participatesInRoleSets.add(roleSet);
+	}
+
+	/**
+	 * Can only be called after all {@link ConfigChild},
+	 * {@link ElementRole}, {@link ElementType}
+	 *  and {@link FrankElement} have been created.
+	 */
+	void initConflicts() {
+		nameConflicts = new HashSet<>();
+		Map<String, List<FrankElement>> membersByXsdName = elementType.getMembers().values().stream()
+				.collect(Collectors.groupingBy(el -> el.getXsdElementName(this)));
+		Set<String> conflictNames = membersByXsdName.keySet().stream()
+				.filter(name -> membersByXsdName.get(name).size() >= 2)
+				.collect(Collectors.toSet());
+		for(String name: conflictNames) {
+			Map<Boolean, List<FrankElement>> conflictingElementsByDeprecated = membersByXsdName.get(name).stream()
+					.collect(Collectors.groupingBy(FrankElement::isDeprecated));
+			if(conflictingElementsByDeprecated.get(false).size() != 1) {
+				log.warn(String.format("Cannot resolve XML name conflict for non-deprecated FrankElement-s [%s]",
+						FrankElement.describe(conflictingElementsByDeprecated.get(false))));
+				nameConflicts.addAll(membersByXsdName.get(name));
+			} else {
+				nameConflicts.addAll(conflictingElementsByDeprecated.get(true));
+			}
+		}
+		List<FrankElement> defaultOptionConflictCandidates = membersByXsdName.get(Utils.toUpperCamelCase(syntax1Name));
+		if(defaultOptionConflictCandidates != null) {
+			Set<FrankElement> asSet = new HashSet<>(defaultOptionConflictCandidates);
+			asSet.removeAll(nameConflicts);
+			if(asSet.size() == 1) {
+				defaultElementOptionConflict = asSet.iterator().next();
+			} else if(asSet.size() >= 2) {
+				throw new IllegalArgumentException("Programming error. Something went wrong resolving name conflicts, please debug");
+			}
+		}
+	}
+
+	List<FrankElement> getRawMembers() {
+		return elementType.getMembers().values().stream()
+				.filter(el -> ! nameConflicts.contains(el))
+				.collect(Collectors.toList());
+	}
+
+	public List<FrankElement> getMembers() {
+		return getRawMembers().stream()
+				.filter(frankElement -> noConflictingRoleSet(frankElement))
+				.filter(frankElement -> ! frankElement.equals(defaultElementOptionConflict))
+				.collect(Collectors.toList());
+	}
+
+	private boolean noConflictingRoleSet(FrankElement frankElement) {
+		return participatesInRoleSets.stream().noneMatch(roleSet -> roleSet.isConflict(frankElement));
 	}
 
 	public String createXsdElementName(String kindDifferentiatingWord) {

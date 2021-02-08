@@ -18,10 +18,13 @@ package nl.nn.adapterframework.doc.model;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -194,6 +197,17 @@ public class FrankElement {
 			result = result.substring(0, result.lastIndexOf(postfixToRemove));
 		}
 		result = result + Utils.toUpperCamelCase(syntax1Name);
+		return result;
+	}
+
+	static String describe(Collection<FrankElement> collection) {
+		return collection.stream().map(FrankElement::getFullName).collect(Collectors.joining(", "));
+	}
+
+	static Set<FrankElement> join(Set<FrankElement> s1, Set<FrankElement> s2) {
+		Set<FrankElement> result = new HashSet<>();
+		result.addAll(s1);
+		result.addAll(s2);
 		return result;
 	}
 }
