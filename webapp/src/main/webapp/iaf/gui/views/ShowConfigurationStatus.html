@@ -335,7 +335,7 @@
                                     <tbody>
                                         <tr ng-repeat="receiver in adapter.receivers" ng-class="::{'text-danger' : (receiver.state == 'error')}">
                                             <td>{{::receiver.name}}</td>
-                                            <td>{{::receiver.listener.class}} ({{::receiver.listener.destination}})</td>
+                                            <td title="{{::receiver.listener.destination}}">{{::receiver.listener.class}} ({{::receiver.listener.destination|truncate:150}})</td>
                                             <td>{{::receiver.messages.retried}}</td>
                                             <td>{{::receiver.messages.received}}</td>
                                             <td>{{::receiver.messages.rejected}}</td>

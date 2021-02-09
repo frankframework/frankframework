@@ -357,7 +357,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	public Boolean getIgnoreUnknownNamespaces() {
 		return ignoreUnknownNamespaces;
 	}
-	public void setIgnoreUnknownNamespaces(boolean b) {
+	public void setIgnoreUnknownNamespaces(Boolean b) {
 		this.ignoreUnknownNamespaces = b;
 	}
 
