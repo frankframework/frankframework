@@ -845,6 +845,11 @@
     <ClassName>nl.nn.adapterframework.pipes.GenericMessageSendingPipe</ClassName>
   </Element>
   <Element>
+    <Name>SignaturePipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.pipes.SignaturePipe</ClassName>
+  </Element>
+  <Element>
     <Name>SizePipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.SizePipe</ClassName>
