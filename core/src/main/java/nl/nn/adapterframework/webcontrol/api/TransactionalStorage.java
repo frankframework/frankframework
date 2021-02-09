@@ -1,5 +1,5 @@
 /*
-Copyright 2018-2020 WeAreFrank!
+Copyright 2018-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,13 +45,10 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import com.amazonaws.services.s3.model.StorageClass;
-
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
-import nl.nn.adapterframework.core.IMessageBrowser.StorageType;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
@@ -86,13 +83,13 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
 		//StorageType
-		IMessageBrowser storage;
+		IMessageBrowser<?> storage;
 		if(storageType.equals("messagelog"))
 			storage = receiver.getMessageBrowser(ProcessState.DONE);
 		else
@@ -121,13 +118,13 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
 		//StorageType
-		IMessageBrowser storage;
+		IMessageBrowser<?> storage;
 		if(storageType.equals("messagelog"))
 			storage = receiver.getMessageBrowser(ProcessState.DONE);
 		else
@@ -168,13 +165,13 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
 		//StorageType
-		IMessageBrowser storage;
+		IMessageBrowser<?> storage;
 		Set<ProcessState> processStateSet = null;
 		if(storageType.equals("messagelog")) {
 			storage = receiver.getMessageBrowser(ProcessState.DONE);
@@ -228,7 +225,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -259,7 +256,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -305,18 +302,18 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
 		String[] messageIds = getMessages(input);
-		IMessageBrowser errorStorageBrowser = receiver.getMessageBrowser(ProcessState.ERROR);
+		IMessageBrowser<?> errorStorageBrowser = receiver.getMessageBrowser(ProcessState.ERROR);
 		List<String> errorMessages = new ArrayList<String>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
-				if(receiver.changeProcessState(errorStorageBrowser.browseMessage(messageIds[i]), ProcessState.AVAILABLE, null)) {
-					errorStorageBrowser.deleteMessage(messageIds[i]);
+				if(!receiver.changeProcessState(errorStorageBrowser.browseMessage(messageIds[i]), ProcessState.AVAILABLE, null)) {
+					errorMessages.add("could not move message ["+messageIds[i]+"]");
 				}
 			} catch (ListenerException e) {
 				errorMessages.add(e.getMessage());
@@ -346,7 +343,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -377,7 +374,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Adapter not found!");
 		}
 
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -492,7 +489,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Pipe ["+pipeName+"] not found!");
 		}
 
-		IMessageBrowser storage = pipe.getMessageLog();
+		IMessageBrowser<?> storage = pipe.getMessageLog();
 
 		//Apply filters
 		MessageBrowsingFilter filter = new MessageBrowsingFilter(maxMessages, skipMessages);
@@ -520,21 +517,23 @@ public class TransactionalStorage extends Base {
 		return messageIds.split(",");
 	}
 
-	private void deleteMessage(IMessageBrowser storage, String messageId) {
+	private void deleteMessage(IMessageBrowser<?> storage, String messageId) {
 		PlatformTransactionManager transactionManager = getIbisManager().getTransactionManager();
 		TransactionStatus txStatus = null;
 		try {
 			txStatus = transactionManager.getTransaction(TXNEW);
 			storage.deleteMessage(messageId);
 		} catch (Exception e) {
-			txStatus.setRollbackOnly();
+			if (txStatus!=null) {
+				txStatus.setRollbackOnly();
+			}
 			throw new ApiException(e);
 		} finally { 
 			transactionManager.commit(txStatus);
 		}
 	}
 
-	private void resendMessage(Receiver receiver, String messageId) {
+	private void resendMessage(Receiver<?> receiver, String messageId) {
 		try {
 			receiver.retryMessage(messageId);
 		} catch (ListenerException e) {
@@ -542,15 +541,15 @@ public class TransactionalStorage extends Base {
 		}
 	}
 
-	private Response getMessage(IMessageBrowser messageBrowser, String messageId) {
+	private Response getMessage(IMessageBrowser<?> messageBrowser, String messageId) {
 		return getMessage(messageBrowser, null, messageId);
 	}
 
-	private Response getMessage(IMessageBrowser messageBrowser, IListener listener, String messageId) {
+	private Response getMessage(IMessageBrowser<?> messageBrowser, IListener <?> listener, String messageId) {
 		return buildResponse(getRawMessage(messageBrowser, listener, messageId), messageId);
 	}
 
-	private String getRawMessage(IMessageBrowser messageBrowser, IListener listener, String messageId) {
+	private String getRawMessage(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) {
 		Object rawmsg = null;
 		try {
 			rawmsg = messageBrowser.browseMessage(messageId);
@@ -563,7 +562,7 @@ public class TransactionalStorage extends Base {
 		if (rawmsg != null) {
 			if(rawmsg instanceof MessageWrapper) {
 				try {
-					MessageWrapper msgsgs = (MessageWrapper) rawmsg;
+					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
 					msg = msgsgs.getMessage().asString();
 				} catch (IOException e) {
 					throw new ApiException(e, 500);
@@ -617,7 +616,7 @@ public class TransactionalStorage extends Base {
 				.build();
 	}
 
-	private Map<String, Object> getMessages(IMessageBrowser transactionalStorage, MessageBrowsingFilter filter) {
+	private Map<String, Object> getMessages(IMessageBrowser<?> transactionalStorage, MessageBrowsingFilter filter) {
 		int messageCount = 0;
 		try {
 			messageCount = transactionalStorage.getMessageCount();
@@ -689,7 +688,7 @@ public class TransactionalStorage extends Base {
 		private int skipMessages = 0;
 
 		private SortOrder sortOrder = SortOrder.NONE;
-		private IMessageBrowser storage = null;
+		private IMessageBrowser<?> storage = null;
 		private IListener listener = null;
 
 		public MessageBrowsingFilter() {
@@ -806,11 +805,11 @@ public class TransactionalStorage extends Base {
 			return true;
 		}
 
-		public void setMessageMask(String messageMask, IMessageBrowser storage) {
+		public void setMessageMask(String messageMask, IMessageBrowser<?> storage) {
 			setMessageMask(messageMask, storage, null);
 		}
 
-		public void setMessageMask(String messageMask, IMessageBrowser storage, IListener listener) {
+		public void setMessageMask(String messageMask, IMessageBrowser<?> storage, IListener <?> listener) {
 			if(StringUtils.isNotEmpty(messageMask)) {
 				this.message = messageMask;
 				this.storage = storage;
@@ -857,6 +856,7 @@ public class TransactionalStorage extends Base {
 			return maxMessages;
 		}
 
+		@Override
 		public String toString() {
 			return ToStringBuilder.reflectionToString(this);
 //			return (new ReflectionToStringBuilder(this) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -127,11 +127,13 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		if(order.equals(SortOrder.NONE)) { //If no order has been set, use the default (DESC for messages and ASC for errors)
 			order = getOrderEnum();
 		}
-		String dateField = getDateField() == null ? "" : getDateField() ;
 		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause()+ getWhereClause(whereClause,false)+
-		  " ORDER BY "+dateField+(" "+order.name()+" ")+provideTrailingFirstRowsHint(dbmsSupport);
+				(StringUtils.isNotEmpty(getDateField())? " ORDER BY "+getDateField()+ " "+order.name():"")+provideTrailingFirstRowsHint(dbmsSupport);
 	}
 
+	
+	
+	
 	@Override
 	protected String createSelector() {
 		return Misc.concatStrings(super.createSelector()," AND ",selectCondition);
