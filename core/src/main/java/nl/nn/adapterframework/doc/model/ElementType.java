@@ -18,7 +18,7 @@ package nl.nn.adapterframework.doc.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -42,7 +43,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class ElementType {
 	private static Logger log = LogUtil.getLogger(ElementType.class);
-	private @Getter Map<String, FrankElement> members;
+	private @Getter(AccessLevel.PACKAGE) List<FrankElement> members;
 	private @Getter boolean fromJavaInterface;
 	
 	private @Getter LinkedHashSet<ElementRole> elementRoles = new LinkedHashSet<>();
@@ -81,7 +82,7 @@ public class ElementType {
 
 	ElementType(Class<?> clazz) {
 		interfaceHierarchy = new InterfaceHierarchyItem(clazz);
-		members = new HashMap<>();
+		members = new ArrayList<>();
 		this.fromJavaInterface = clazz.isInterface();
 	}
 
@@ -94,14 +95,15 @@ public class ElementType {
 	}
 
 	void addMember(FrankElement member) {
-		members.put(member.getFullName(), member);
+		members.add(member);
+		Collections.sort(members);
 	}
 
 	FrankElement getSingletonElement() throws ReflectiveOperationException {
 		if(members.size() != 1) {
 			throw new ReflectiveOperationException(String.format("Expected that ElementType [%s] contains exactly one element", getFullName()));
 		}
-		return members.values().iterator().next();
+		return members.iterator().next();
 	}
 
 	void registerElementRole(ElementRole elementRole) {

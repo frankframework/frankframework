@@ -13,6 +13,7 @@ class ElementRoleSet {
 
 	ElementRoleSet(Set<ElementRole> roles) {
 		this.roles = roles;
+		roles.forEach(role -> role.addParticipatingRoleSet(this));
 	}
 
 	void initConflicts() {

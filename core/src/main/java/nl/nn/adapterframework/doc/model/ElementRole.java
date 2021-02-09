@@ -16,6 +16,7 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,8 +26,10 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -39,6 +42,7 @@ public class ElementRole {
 	private @Getter FrankElement defaultElementOptionConflict;
 	private Set<FrankElement> nameConflicts;
 	private Set<ElementRoleSet> participatesInRoleSets = new HashSet<>();
+	private @Getter @Setter(AccessLevel.PACKAGE) ElementRole highestCommonInterface;
 
 	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq) {
 		this.elementType = elementType;
@@ -58,7 +62,7 @@ public class ElementRole {
 	 */
 	void initConflicts() {
 		nameConflicts = new HashSet<>();
-		Map<String, List<FrankElement>> membersByXsdName = elementType.getMembers().values().stream()
+		Map<String, List<FrankElement>> membersByXsdName = elementType.getMembers().stream()
 				.collect(Collectors.groupingBy(el -> el.getXsdElementName(this)));
 		Set<String> conflictNames = membersByXsdName.keySet().stream()
 				.filter(name -> membersByXsdName.get(name).size() >= 2)
@@ -74,7 +78,7 @@ public class ElementRole {
 				nameConflicts.addAll(conflictingElementsByDeprecated.get(true));
 			}
 		}
-		List<FrankElement> defaultOptionConflictCandidates = membersByXsdName.get(Utils.toUpperCamelCase(syntax1Name));
+		List<FrankElement> defaultOptionConflictCandidates = membersByXsdName.get(getGenericOptionElementName());
 		if(defaultOptionConflictCandidates != null) {
 			Set<FrankElement> asSet = new HashSet<>(defaultOptionConflictCandidates);
 			asSet.removeAll(nameConflicts);
@@ -86,8 +90,12 @@ public class ElementRole {
 		}
 	}
 
+	public String getGenericOptionElementName() {
+		return Utils.toUpperCamelCase(syntax1Name);
+	}
+
 	List<FrankElement> getRawMembers() {
-		return elementType.getMembers().values().stream()
+		return elementType.getMembers().stream()
 				.filter(el -> ! nameConflicts.contains(el))
 				.collect(Collectors.toList());
 	}
@@ -95,7 +103,6 @@ public class ElementRole {
 	public List<FrankElement> getMembers() {
 		return getRawMembers().stream()
 				.filter(frankElement -> noConflictingRoleSet(frankElement))
-				.filter(frankElement -> ! frankElement.equals(defaultElementOptionConflict))
 				.collect(Collectors.toList());
 	}
 
@@ -104,7 +111,7 @@ public class ElementRole {
 	}
 
 	public String createXsdElementName(String kindDifferentiatingWord) {
-		return Utils.toUpperCamelCase(syntax1Name) + kindDifferentiatingWord + disambiguation();
+		return getGenericOptionElementName() + kindDifferentiatingWord + disambiguation();
 	}
 
 	private String disambiguation() {
@@ -122,6 +129,10 @@ public class ElementRole {
 	@Override
 	public String toString() {
 		return getKey().toString();
+	}
+
+	public static String describeCollection(Collection<ElementRole> roles) {
+		return roles.stream().map(ElementRole::toString).collect(Collectors.joining(", "));
 	}
 
 	static class Factory {
@@ -156,6 +167,10 @@ public class ElementRole {
 		@Override
 		public String toString() {
 			return "(" + elementTypeName + ", " + syntax1Name + ")"; 
+		}
+
+		public static String describeCollection(Collection<ElementRole.Key> keys) {
+			return keys.stream().map(key -> key.toString()).collect(Collectors.joining(", "));
 		}
 	}
 }

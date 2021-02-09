@@ -19,6 +19,7 @@ package nl.nn.adapterframework.doc.model;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -35,8 +36,11 @@ import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class FrankElement {
+public class FrankElement implements Comparable<FrankElement> {
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
+
+	private static final Comparator<FrankElement> COMPARATOR =
+			Comparator.comparing(FrankElement::getSimpleName).thenComparing(FrankElement::getFullName);
 
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
@@ -48,10 +52,12 @@ public class FrankElement {
 
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
 	private @Getter FrankElementStatistics statistics;
+	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 
 	FrankElement(Class<?> clazz) {
 		this(clazz.getName(), clazz.getSimpleName(), Modifier.isAbstract(clazz.getModifiers()));
 		isDeprecated = clazz.getAnnotation(Deprecated.class) != null;
+		configChildSets = new LinkedHashMap<>();
 	}
 
 	/**
@@ -198,6 +204,19 @@ public class FrankElement {
 		}
 		result = result + Utils.toUpperCamelCase(syntax1Name);
 		return result;
+	}
+
+	void addConfigChildSet(ConfigChildSet configChildSet) {
+		configChildSets.put(configChildSet.getSyntax1Name(), configChildSet);
+	}
+
+	public ConfigChildSet getConfigChildSet(String syntax1Name) {
+		return configChildSets.get(syntax1Name);
+	}
+
+	@Override
+	public int compareTo(FrankElement other) {
+		return COMPARATOR.compare(this, other);
 	}
 
 	static String describe(Collection<FrankElement> collection) {

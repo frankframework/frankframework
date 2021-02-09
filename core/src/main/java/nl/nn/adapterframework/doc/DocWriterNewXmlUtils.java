@@ -117,6 +117,14 @@ class DocWriterNewXmlUtils {
 		return choice;
 	}
 
+	static XmlBuilder addChoice(XmlBuilder context, String minOccurs, String maxOccurs) {
+		XmlBuilder choice = new XmlBuilder("choice", "xs", XML_SCHEMA_URI);
+		context.addSubElement(choice);
+		choice.addAttribute("minOccurs", minOccurs);
+		choice.addAttribute("maxOccurs", maxOccurs);
+		return choice;
+	}
+
 	static XmlBuilder addSequence(XmlBuilder context) {
 		XmlBuilder sequence = new XmlBuilder("sequence", "xs", XML_SCHEMA_URI);
 		context.addSubElement(sequence);

@@ -64,22 +64,35 @@ public class FrankDocModelTest {
 		assertTrue(instance.hasType(actualChild.getFullName()));
 		assertSame(instance.getAllTypes().get(LISTENER), actualListener);
 		assertSame(instance.getAllTypes().get(SIMPLE_CHILD), actualChild);
-		Assert.assertSame(instance.getAllElements().get(SIMPLE_CHILD), actualChild.getMembers().get(SIMPLE_CHILD));
+		assertSame(instance.getAllElements().get(SIMPLE_CHILD), getMember(actualChild.getMembers(), SIMPLE_CHILD));
 		Assert.assertTrue(instance.getAllElements().containsKey(SIMPLE_PARENT));
 		Assert.assertTrue(instance.getAllElements().containsKey(FOR_XSD_ELEMENT_NAME_TEST));
-		Map<String, FrankElement> listenerMembers = actualListener.getMembers();
+		List<FrankElement> listenerMembers = actualListener.getMembers();
 		// Tests that AbstractGrandParent is omitted.
 		assertEquals(4, listenerMembers.size());
-		assertTrue(listenerMembers.containsKey(SIMPLE_PARENT));
-		assertTrue(listenerMembers.containsKey(SIMPLE_CHILD));
-		assertTrue(listenerMembers.containsKey(SIMPLE_GRNAD_CHILD));
-		Map<String, FrankElement> childMembers = actualChild.getMembers();
+		assertTrue(membersContain(listenerMembers, SIMPLE_PARENT));
+		assertTrue(membersContain(listenerMembers, SIMPLE_CHILD));
+		assertTrue(membersContain(listenerMembers, SIMPLE_GRNAD_CHILD));
+		List<FrankElement> childMembers = actualChild.getMembers();
 		assertEquals(1, childMembers.size());
-		assertTrue(childMembers.containsKey(SIMPLE_CHILD));
+		assertTrue(membersContain(childMembers, SIMPLE_CHILD));
 		assertEquals(LISTENER, actualListener.getFullName());
 		assertEquals("IListener", actualListener.getSimpleName());
 		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
 		assertEquals("ListenerChild", actualChild.getSimpleName());
+	}
+
+	private boolean membersContain(List<FrankElement> elements, String fullName) {
+		return elements.stream().anyMatch(elem -> elem.getFullName().equals(fullName));
+	}
+
+	private FrankElement getMember(List<FrankElement> elements, String fullName) {
+		for(FrankElement element: elements) {
+			if(element.getFullName().equals(fullName)) {
+				return element;
+			}
+		}
+		return null;
 	}
 
 	@Test

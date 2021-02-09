@@ -65,6 +65,7 @@ public class FrankDocModel {
 	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
 	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
+	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
 
 	/**
 	 * Get the FrankDocModel needed in production. This is just a first draft. The
@@ -85,6 +86,8 @@ public class FrankDocModel {
 			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
 			result.calculateHighestCommonInterfaces();
 			result.setOverriddenFrom();
+			result.setHighestCommonInterface();
+			result.createConfigChildSets();
 			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -537,7 +540,7 @@ public class FrankDocModel {
 	 */
 	public List<ElementRole> getElementTypeMemberChildRoles(
 			ElementType elementType, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Predicate<FrankElement> frankElementFilter) {
-		List<ElementRole> allMemberChildRoles = elementType.getMembers().values().stream()
+		List<ElementRole> allMemberChildRoles = elementType.getMembers().stream()
 				// TODO: Filtering FrankElements, typically no filter or deprecated omitted, is
 				// not covered by unit tests.
 				.filter(frankElementFilter)
@@ -577,7 +580,7 @@ public class FrankDocModel {
 						log.trace(String.format("Appended the others group with FrankElement [%s]", elementType.getSingletonElement().getFullName()));
 					}
 				} catch(ReflectiveOperationException e) {
-					String frankElementsString = elementType.getMembers().values().stream()
+					String frankElementsString = elementType.getMembers().stream()
 							.map(FrankElement::getSimpleName).collect(Collectors.joining(", "));
 					log.warn(String.format("Error adding ElementType [%s] to group other because it has multiple FrankElement objects: [%s]",
 								elementType.getFullName(), frankElementsString), e);
@@ -635,5 +638,52 @@ public class FrankDocModel {
 		if(log.isTraceEnabled()) {
 			log.trace("Done setting property overriddenFrom");
 		}
+	}
+
+	void setHighestCommonInterface() {
+		for(ElementRole role: allElementRoles.values()) {
+			String syntax1Name = role.getSyntax1Name();
+			ElementType et = role.getElementType().getHighestCommonInterface();
+			ElementRole result = findElementRole(new ElementRole.Key(et.getFullName(), syntax1Name));
+			if(result == null) {
+				log.warn(String.format("Promoting ElementRole [%s] results in ElementType [%s] and syntax 1 name [%s], but there is no corresponding ElementRole",
+						toString(), et.getFullName(), syntax1Name));
+				role.setHighestCommonInterface(role);
+			} else {
+				role.setHighestCommonInterface(result);
+			}
+		}
+	}
+
+	void createConfigChildSets() {
+		List<FrankElement> sortedFrankElements = new ArrayList<>(allElements.values());
+		Collections.sort(sortedFrankElements);
+		sortedFrankElements.forEach(this::createConfigChildSets);
+	}
+
+	private void createConfigChildSets(FrankElement frankElement) {
+		Map<String, List<ConfigChild>> cumChildrenBySyntax1Name = frankElement.getCumulativeConfigChildren(ElementChild.ALL, ElementChild.NONE).stream()
+				.collect(Collectors.groupingBy(c -> c.getElementRole().getSyntax1Name()));
+		for(String syntax1Name: cumChildrenBySyntax1Name.keySet()) {
+			List<ConfigChild> configChildren = cumChildrenBySyntax1Name.get(syntax1Name);
+			if(configChildren.stream().map(ConfigChild::getOwningElement).anyMatch(childOwner -> (childOwner == frankElement))) {
+				ConfigChildSet configChildSet = new ConfigChildSet(configChildren);
+				frankElement.addConfigChildSet(configChildSet);
+				findOrCreateElementRoleSet(configChildSet);
+			}
+		}
+	}
+
+	private ElementRoleSet findOrCreateElementRoleSet(ConfigChildSet configChildSet) {
+		Set<ElementRole> roles = configChildSet.getConfigChildren().stream()
+				.map(ConfigChild::getElementRole)
+				.collect(Collectors.toSet());
+		Set<ElementRole.Key> key = roles.stream()
+				.map(ElementRole::getKey)
+				.collect(Collectors.toSet());
+		if(! allElementRoleSets.containsKey(key)) {
+			allElementRoleSets.put(key, new ElementRoleSet(roles));
+		}
+		return allElementRoleSets.get(key);
 	}
 }

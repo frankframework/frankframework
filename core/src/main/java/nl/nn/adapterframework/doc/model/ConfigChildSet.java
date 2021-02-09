@@ -1,10 +1,16 @@
 package nl.nn.adapterframework.doc.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import edu.emory.mathcs.backport.java.util.Collections;
+import lombok.Getter;
 
 /**
  * Holds the list of all cumulative config children sharing some role name, say R, but
@@ -22,16 +28,20 @@ import java.util.stream.Collectors;
  *
  */
 public class ConfigChildSet {
-	private final List<ConfigChild> configChildren;
+	private final @Getter List<ConfigChild> configChildren;
 
 	/**
-	 * @throws IllegalArgumentException if input children are not in the right sort order
+	 * @throws IllegalArgumentException if input children is empty or when the elements
+	 * are not in the right sort order
 	 * or do not share a role name. The children should be sorted from derived to ancestor
 	 * owning element and then by order. This precondition should be enforced
 	 * by {@link AncestorChildNavigation}.
 	 */
 	ConfigChildSet(List<ConfigChild> configChildren) {
 		this.configChildren = configChildren;
+		if(configChildren.isEmpty()) {
+			throw new IllegalArgumentException("A config child cannot have an empty list of config childs");
+		}
 		if(configChildren.size() >= 2) {
 			FrankElement parent = configChildren.get(0).getOwningElement();
 			int order = configChildren.get(0).getSequenceInConfig();
@@ -54,10 +64,33 @@ public class ConfigChildSet {
 		}
 	}
 
+	public String getSyntax1Name() {
+		return configChildren.get(0).getSyntax1Name();
+	}
+
 	public List<ElementRole> getMemberChildren(
 			Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Predicate<FrankElement> elementFilter, List<String> nestedRoleNames) {
-		List<ElementRole> parents = filter(selector, rejector).stream().map(ConfigChild::getElementRole).distinct().collect(Collectors.toList());
+		LinkedHashSet<ElementRole> parents = getFilteredElementRoles(selector, rejector);
 		return getMemberChildren(selector, rejector, elementFilter, nestedRoleNames, parents);
+	}
+
+	public Set<ElementRole.Key> getKey(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		return getKey(selector, rejector, f -> true, Arrays.asList());
+	}
+
+	public Set<ElementRole.Key> getKey(Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Predicate<FrankElement> elementFilter, List<String> nestedSyntax1Names) {
+		if(nestedSyntax1Names.isEmpty()) {
+			return getFilteredElementRoles(selector, rejector).stream().map(ElementRole::getKey).collect(Collectors.toSet());
+		}
+		List<String> oneLevelUp = new ArrayList<>(nestedSyntax1Names);
+		String toSelect = nestedSyntax1Names.get(nestedSyntax1Names.size() - 1);
+		oneLevelUp.remove(nestedSyntax1Names.size() - 1);
+		List<ElementRole> membersToSelect = getMemberChildren(selector, rejector, elementFilter, oneLevelUp);
+		return membersToSelect.stream().filter(role -> role.getSyntax1Name().equals(toSelect)).map(ElementRole::getKey).collect(Collectors.toSet());
+	}
+
+	public LinkedHashSet<ElementRole> getFilteredElementRoles(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		return new LinkedHashSet<>(filter(selector, rejector).stream().map(ConfigChild::getElementRole).distinct().collect(Collectors.toList()));
 	}
 
 	List<ConfigChild> filter(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
@@ -75,30 +108,48 @@ public class ConfigChildSet {
 	}
 
 	private List<ElementRole> getMemberChildren(Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Predicate<FrankElement> elementFilter, List<String> nestedRoleNames,
-			List<ElementRole> parents) {
+			LinkedHashSet<ElementRole> parents) {
 		List<FrankElement> members = parents.stream()
 				.flatMap(role -> role.getMembers().stream())
 				.filter(elementFilter)
 				.distinct()
 				.collect(Collectors.toList());
-		List<ConfigChild> configChildren = members.stream().flatMap(element -> element.getCumulativeConfigChildren(selector, rejector).stream())
+		List<ConfigChild> memberChildren = members.stream().flatMap(element -> element.getCumulativeConfigChildren(selector, rejector).stream())
 				.distinct()
 				.collect(Collectors.toList());
 		if(nestedRoleNames.isEmpty()) {
-				return configChildren.stream()
+				return promoteIfConflict(memberChildren.stream()
 						.map(ConfigChild::getElementRole)
 						.distinct()
-						.collect(Collectors.toList());
+						.collect(Collectors.toList()));
 		} else {
-			final String roleName = nestedRoleNames.get(0);
+			final String toSelect = nestedRoleNames.get(0);
 			List<String> remainingRoleNames = new ArrayList<>(nestedRoleNames);
 			remainingRoleNames.remove(0);
-			List<ElementRole> newParents = configChildren.stream()
-					.filter(c -> c.getSyntax1Name().equals(roleName))
+			LinkedHashSet<ElementRole> newParents = new LinkedHashSet<>(memberChildren.stream()
+					.filter(c -> c.getSyntax1Name().equals(toSelect))
 					.map(ConfigChild::getElementRole)
 					.distinct()
-					.collect(Collectors.toList());
+					.collect(Collectors.toList()));
 			return getMemberChildren(selector, rejector, elementFilter, remainingRoleNames, newParents);
 		}
+	}
+
+	private List<ElementRole> promoteIfConflict(List<ElementRole> original) {
+		Map<String, List<ElementRole>> bySyntax1Name = original.stream()
+				.collect(Collectors.groupingBy(ElementRole::getSyntax1Name));
+		List<String> sortedSyntax1Names = new ArrayList<>(bySyntax1Name.keySet());
+		Collections.sort(sortedSyntax1Names);
+		List<ElementRole> result = new ArrayList<>();
+		for(String syntax1Name: sortedSyntax1Names) {
+			List<ElementRole> group = bySyntax1Name.get(syntax1Name);
+			if(group.size() == 1) {
+				result.addAll(group);
+			} else {
+				result.addAll(
+						group.stream().map(ElementRole::getHighestCommonInterface).distinct().collect(Collectors.toList()));
+			}
+		}
+		return result;
 	}
 }
