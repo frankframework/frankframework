@@ -19,11 +19,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Interface that can be implemented by Listeners that provide their own
- * management of messages processed and in error. If the status 'inProcess' is
- * specified, it will be used when messages are processed. In case of a rollback
- * of the executing transaction, the status of the message will be reverted to
- * 'available', so that it can be retried.
+ * Interface that can be implemented by Listeners that provide their own management of messages processed and in error. 
+ * If the status 'inProcess' is specified, it will be used when messages are processed. In case of a rollback
+ * of the executing transaction, the status of the message will be reverted to 'available', so that it can be retried.
  */
 public interface IHasProcessState<M> {
 
@@ -33,8 +31,7 @@ public interface IHasProcessState<M> {
 	public Set<ProcessState> knownProcessStates();
 
 	/**
-	 * Provides the set of ProcessStates that a message in the specified state can
-	 * be moved to, e.g. from a MessageBrowser for that state.
+	 * Provides the set of ProcessStates that a message in the specified state can be moved to, e.g. from a MessageBrowser for that state.
 	 */
 	public Map<ProcessState, Set<ProcessState>> targetProcessStates();
 
