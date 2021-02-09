@@ -42,9 +42,10 @@
                     </li> -->
                 </ul>
             </li>
-            <li ng-if="::userName">{{::userName}}
+            <li ng-if="::userName">{{::userName}}</li>
+            <li ng-if="::loggedin">
                 <a ui-sref="logout">
-                    <i title="Logout" class="fa fa-sign-out"></i>
+                    <i title="Logout" class="fa fa-sign-out"/>
                 </a>
             </li>
         </ul>
