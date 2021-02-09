@@ -15,6 +15,18 @@
  */
 package nl.nn.adapterframework.webcontrol.pipes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -24,21 +36,10 @@ import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import org.apache.logging.log4j.Level;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Shows the environment variables.
@@ -144,8 +145,6 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		} catch (Throwable t) {
 			log.warn("caught Throwable while getting EnvironmentVariables", t);
 		}
-
-		addPropertiesToXmlBuilder(environmentVariablesXml, JdbcUtil.retrieveJdbcPropertiesFromDatabase(), "Jdbc Properties", propsToHide);
 
 		storeConfiguration(session, configAll, configuration);
 

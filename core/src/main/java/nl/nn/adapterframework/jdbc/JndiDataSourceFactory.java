@@ -15,41 +15,76 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import org.springframework.jndi.JndiLocatorSupport;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Setter;
 import lombok.SneakyThrows;
+import nl.nn.adapterframework.util.AppConstants;
 
-public class JndiDataSourceFactory extends JndiLocatorSupport implements IDataSourceFactory {
-	
-	protected Map<String,DataSource> dataSources = new ConcurrentHashMap<>();
-	
-	{
-		setResourceRef(true); //the prefix "java:comp/env/" will be added if the JNDI name doesn't already contain it. 
-	}
-	
+/**
+ * would be nice if we could have used JndiObjectFactoryBean but it has too much overhead
+ *
+ */
+public class JndiDataSourceFactory implements IDataSourceFactory {
+
+	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.datasource.default");
+	protected Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
+	private @Setter String jndiContextPrefix = null;
+
 	@Override
 	public DataSource getDataSource(String dataSourceName) throws NamingException {
-		return dataSources.computeIfAbsent(dataSourceName, k -> compute(k));
+		return dataSources.computeIfAbsent(dataSourceName, k -> compute(k, null));
 	}
-	
+
+	@Override
+	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws NamingException {
+		return dataSources.computeIfAbsent(dataSourceName, k -> compute(k, jndiEnvironment));
+	}
+
 	@SneakyThrows(NamingException.class)
-	private DataSource compute(String dataSourceName) {
-		return augmentDataSource(lookupDataSource(dataSourceName), dataSourceName);
+	private DataSource compute(String dataSourceName, Properties jndiEnvironment) {
+		return augmentDataSource(lookupDataSource(dataSourceName, jndiEnvironment), dataSourceName);
 	}
 
-	protected CommonDataSource lookupDataSource(String jndiName) throws NamingException {
-		return super.lookup(jndiName, CommonDataSource.class);
+	/**
+	 * Performs the actual JNDI lookup
+	 */
+	private CommonDataSource lookupDataSource(String jndiName, Properties jndiEnvironment) throws NamingException {
+		if(StringUtils.isNotEmpty(jndiContextPrefix)) {
+			return JndiDataSourceLocator.lookup(jndiContextPrefix+jndiName, jndiEnvironment);
+		}
+
+		//Fallback without prefix
+		return JndiDataSourceLocator.lookup(jndiName, jndiEnvironment);
 	}
 
+	/**
+	 * Add a wrapper around a DataSource such as LazyLoading / Pooling etc
+	 */
 	protected DataSource augmentDataSource(CommonDataSource dataSource, String dataSourceName) {
 		return (DataSource)dataSource;
 	}
 
+	/**
+	 * Add and augment a DataSource to this factory so it can be used without the need of a JNDI lookup.
+	 * Should only be called during jUnit Tests or when registering a DataSource through Spring. Never through a JNDI lookup
+	 */
+	public DataSource addDataSource(CommonDataSource dataSource, String dataSourceName) {
+		return dataSources.computeIfAbsent(dataSourceName, k -> augmentDataSource(dataSource, dataSourceName));
+	}
+
+	@Override
+	public List<String> getDataSourceNames() {
+		return new ArrayList<String>(dataSources.keySet());
+	}
 }

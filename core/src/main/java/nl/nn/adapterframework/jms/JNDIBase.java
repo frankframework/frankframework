@@ -88,7 +88,7 @@ public class JNDIBase implements IConfigurable{
 		}
 	}
 
-	protected Hashtable getJndiEnv() throws NamingException {
+	protected Properties getJndiEnv() throws NamingException {
 		Properties jndiEnv = new Properties();
 
 		if (StringUtils.isNotEmpty(getJndiProperties())) {

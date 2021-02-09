@@ -25,7 +25,7 @@
 		autowire="byName"
 		scope="prototype"
 		>
-		<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
   <bean  name="ibisManager" class="org.mockito.Mockito" factory-method="mock">

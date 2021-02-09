@@ -83,8 +83,8 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	private CredentialFactory cf=null;
 	private StatisticsKeeper connectionStatistics;
 	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-	
-	private @Setter @Getter IDataSourceFactory dataSourceFactory = null;
+
+	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -104,8 +104,6 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 		credentialsConfigured=true;
 	}
 
-	
-	
 	public String getDataSourceNameToUse() throws JdbcException {
 		String result = getDatasourceName();
 		if (StringUtils.isEmpty(result)) {
@@ -117,23 +115,10 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
 			String dsName = getDataSourceNameToUse();
-			if (getDataSourceFactory() != null) {
-				try {
-					datasource = getDataSourceFactory().getDataSource(dsName);
-				} catch (NamingException e) {
-					throw new JdbcException("Could not find Datasource ["+dsName+"]", e);
-				}
-			} else {
-				String prefixedDsName=getJndiContextPrefix()+dsName;
-				log.debug(getLogPrefix()+"looking up Datasource ["+prefixedDsName+"]");
-				if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
-					log.debug(getLogPrefix()+"using JNDI context prefix ["+getJndiContextPrefix()+"]");
-				}
-				try {
-					datasource = (DataSource) getContext().lookup( prefixedDsName );
-				} catch (NamingException e) {
-					throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]", e);
-				}
+			try {
+				datasource = getDataSourceFactory().getDataSource(dsName, getJndiEnv());
+			} catch (NamingException e) {
+				throw new JdbcException("Could not find Datasource ["+dsName+"]", e);
 			}
 			if (datasource==null) {
 				throw new JdbcException("Could not find Datasource ["+dsName+"]");

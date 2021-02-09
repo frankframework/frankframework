@@ -109,6 +109,7 @@ public class JmsRealmFactory {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
+	@Deprecated //remove with struts console
 	public String getFirstDatasourceJmsRealm() {
 		Iterator<String> it = getRegisteredRealmNames();
 		while (it.hasNext()) {
@@ -120,6 +121,7 @@ public class JmsRealmFactory {
 		return null;
 	}
 
+	@Deprecated //remove with struts console
 	public List<String> getRegisteredDatasourceRealmNamesAsList() {
 		Iterator<String> it = getRegisteredRealmNames();
 		List<String> result = new ArrayList<String>();

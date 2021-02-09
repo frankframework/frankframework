@@ -40,7 +40,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
@@ -57,9 +56,7 @@ import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -78,7 +75,6 @@ public class JdbcUtil {
 
 	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
 	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
-	private static Properties jdbcProperties = null;
 
 	@Deprecated
 	public static String warningsToString(SQLWarning warnings) {
@@ -638,21 +634,6 @@ public class JdbcUtil {
 		}
 	}
 
-	public static Properties executePropertiesQuery(Connection connection, String query) throws JdbcException {
-		Properties props = new Properties();
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			try (ResultSet rs = stmt.executeQuery()) {
-				while (rs.next()) {
-					props.put(rs.getString(1), rs.getString(2));
-				}
-				return props;
-			}
-		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query ["+query+"]",e);
-		}
-	}
-	
 	public static int executeIntQuery(Connection connection, String query) throws JdbcException {
 		return executeIntQuery(connection,query,null,null);
 	}
@@ -786,42 +767,6 @@ public class JdbcUtil {
 		} catch (Exception e) {
 			throw new JdbcException("could not execute query ["+query+"]"+displayParameters(param1,param2,param3,param4,param5),e);
 		}
-	}
-
-	/**
-	 * Use with caution, this assumes you've defined a JMS realm and uses the first datasource found, if any.
-	 */
-	public static synchronized Properties retrieveJdbcPropertiesFromDatabase() {
-		if (jdbcProperties == null) {
-			String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (jmsRealm != null) {
-				jdbcProperties = new Properties();
-				JdbcFacade ibisProp = new JdbcFacade();
-				ibisProp.setJmsRealm(jmsRealm); //Use a realm here so it copies over proxied datasources
-				ibisProp.setName("retrieveJdbcPropertiesFromDatabase");
-
-				try (Connection conn = ibisProp.getConnection()) {
-					if (ibisProp.getDbmsSupport().isTablePresent(conn, "ibisprop")) {
-						String query = "select name, value from ibisprop";
-						jdbcProperties.putAll(executePropertiesQuery(conn, query));
-					}
-				} catch (Exception e) {
-					log.error("error reading jdbc properties", e);
-				}
-			}
-		}
-		return jdbcProperties;
-	}
-
-	/**
-	 * Use with caution, this assumes you've defined a JMS realm and uses the first datasource found, if any.
-	 */
-	public static synchronized void resetJdbcProperties() {
-		if(jdbcProperties != null) {
-			jdbcProperties.clear();
-			jdbcProperties = null;
-		}
-		retrieveJdbcPropertiesFromDatabase();
 	}
 
 	public static String selectAllFromTable(IDbmsSupport dbmsSupport, Connection conn, String tableName) throws SQLException {
