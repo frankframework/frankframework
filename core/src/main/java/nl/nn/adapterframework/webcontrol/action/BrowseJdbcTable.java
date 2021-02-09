@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
@@ -59,47 +60,22 @@ public class BrowseJdbcTable extends ActionBase {
 		}
 
 		IniDynaActionForm browseJdbcTableForm = (IniDynaActionForm) form;
-		Cookie[] cookies = request.getCookies();
 
-		if (null != cookies) {
-			for (int i = 0; i < cookies.length; i++) {
-				Cookie aCookie = cookies[i];
+		Cookie cookie = CookieUtil.getCookie(request, AppConstants.getInstance().getProperty("WEB_JDBCBROWSECOOKIE_NAME"));
+		if (null != cookie) {
+			StringTagger cs = new StringTagger(cookie.getValue());
 
-				if (aCookie
-					.getName()
-					.equals(
-						AppConstants.getInstance().getProperty(
-							"WEB_JDBCBROWSECOOKIE_NAME"))) {
-					StringTagger cs = new StringTagger(aCookie.getValue());
-
-					log.debug("restoring values from cookie: " + cs.toString());
-					try {
-						browseJdbcTableForm.set(
-							"jmsRealm",
-							cs.Value("jmsRealm"));
-						browseJdbcTableForm.set(
-							"tableName",
-							cs.Value("tableName"));
-						browseJdbcTableForm.set(
-							"where",
-							cs.Value("where"));
-						browseJdbcTableForm.set(
-							"order",
-						cs.Value("order"));
-						browseJdbcTableForm.set(
-							"numberOfRowsOnly",
-							new Boolean(cs.Value("numberOfRowsOnly")));
-						browseJdbcTableForm.set(
-							"rownumMin",
-							new Integer(cs.Value("rownumMin")));
-						browseJdbcTableForm.set(
-							"rownumMax",
-							new Integer(cs.Value("rownumMax")));
-					} catch (Exception e) {
-						log.warn("could not restore Cookie value's", e);
-					}
-				}
-
+			log.debug("restoring values from cookie: " + cs.toString());
+			try {
+				browseJdbcTableForm.set("jmsRealm", cs.Value("jmsRealm"));
+				browseJdbcTableForm.set("tableName", cs.Value("tableName"));
+				browseJdbcTableForm.set("where", cs.Value("where"));
+				browseJdbcTableForm.set("order", cs.Value("order"));
+				browseJdbcTableForm.set("numberOfRowsOnly", new Boolean(cs.Value("numberOfRowsOnly")));
+				browseJdbcTableForm.set("rownumMin", new Integer(cs.Value("rownumMin")));
+				browseJdbcTableForm.set("rownumMax", new Integer(cs.Value("rownumMax")));
+			} catch (Exception e) {
+				log.warn("could not restore Cookie value's", e);
 			}
 		}
 
@@ -111,7 +87,5 @@ public class BrowseJdbcTable extends ActionBase {
 		// Forward control to the specified success URI
 		log.debug("forward to success");
 		return (mapping.findForward("success"));
-
 	}
-
 }
