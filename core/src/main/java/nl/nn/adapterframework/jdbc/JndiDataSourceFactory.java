@@ -25,11 +25,12 @@ import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * would be nice if we could have used JndiObjectFactoryBean but it has too much overhead
@@ -40,6 +41,7 @@ public class JndiDataSourceFactory implements IDataSourceFactory {
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.datasource.default");
 	protected Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
 	private @Setter String jndiContextPrefix = null;
+	protected Logger log = LogUtil.getLogger(this);
 
 	@Override
 	public DataSource getDataSource(String dataSourceName) throws NamingException {
@@ -60,12 +62,22 @@ public class JndiDataSourceFactory implements IDataSourceFactory {
 	 * Performs the actual JNDI lookup
 	 */
 	private CommonDataSource lookupDataSource(String jndiName, Properties jndiEnvironment) throws NamingException {
-		if(StringUtils.isNotEmpty(jndiContextPrefix)) {
-			return JndiDataSourceLocator.lookup(jndiContextPrefix+jndiName, jndiEnvironment);
+		CommonDataSource dataSource = null;
+		String prefixedJndiName = jndiContextPrefix+jndiName;
+		try {
+			dataSource = JndiDataSourceLocator.lookup(prefixedJndiName, jndiEnvironment);
+		} catch (NamingException ex) { //Fallback and search again but this time without prefix
+			if (!jndiName.equals(prefixedJndiName)) { //Only if a prefix is set!
+				log.debug("prefixed JNDI name [" + prefixedJndiName + "] not found - trying original name [" + jndiName + "]");
+
+				dataSource = JndiDataSourceLocator.lookup(jndiName, jndiEnvironment);
+			} else { //Either the fallback lookup should throw the NamingException or this one if no DataSource is found!
+				throw ex;
+			}
 		}
 
-		//Fallback without prefix
-		return JndiDataSourceLocator.lookup(jndiName, jndiEnvironment);
+		log.debug("located DataSource with JNDI name [" + prefixedJndiName + "]"); //No exceptions during lookup means we found something!
+		return dataSource;
 	}
 
 	/**
