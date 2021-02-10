@@ -1,5 +1,8 @@
 package nl.nn.adapterframework.util;
 
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
@@ -8,6 +11,8 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 
 public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
@@ -50,10 +55,9 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root><a>a</a><b/><c/></root>",true,false);
 		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"   <b/>"+lineSeparator+"   <c/>"+lineSeparator+"</root>",true,true);
 	}
-	
+
 	@Test
 	public void testGetRootNamespace() throws SAXException, TransformerException, IOException, ConfigurationException {
-		String lineSeparator=System.getProperty("line.separator");
 		testGetRootNamespace("<root><a>a</a><b></b><c/></root>","");
 		testGetRootNamespace("<root xmlns=\"xyz\"><a>a</a><b></b><c/></root>","xyz");
 		testGetRootNamespace("<root xmlns:xx=\"xyz\"><a xmlns=\"xyz\">a</a><b></b><c/></root>","");
@@ -103,6 +107,14 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 	}
 
-	
-	
+	@Test
+	public void testIdentityTransform() throws Exception {
+		Resource resource = Resource.getResource(new TestScopeProvider(), "XmlUtils/Configuration.xml");
+		SAXException thrown = assertThrows(SAXException.class, () -> {
+			XmlUtils.identityTransform(resource);
+		});
+
+		String errorMessage = "Cannot get resource for href [file:/G:/1GB.bin] with base [classpath:XmlUtils/Configuration.xml] as ref [file:/G:/1GB.bin] protocol [file] in scope [nl.nn.adapterframework.testutil.TestScopeProvider";
+		assertTrue("SaxParseException should contain [Cannot get resource ...]", thrown.getMessage().startsWith(errorMessage));
+	}
 }

@@ -75,12 +75,13 @@ public class ClassLoaderURIResolver implements URIResolver {
 		}
 
 		String ref=ref1;
-		Resource resource = Resource.getResource(scopeProvider, ref, protocol);
+		Resource resource = Resource.getResource(scopeProvider, ref);
 		if (resource==null && ref2!=null) {
 			if (log.isDebugEnabled()) log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
 			ref=ref2;
-			resource = Resource.getResource(scopeProvider, ref, protocol);
+			resource = Resource.getResource(scopeProvider, ref);
 		}
+
 		if (resource==null) {
 			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] in scope ["+scopeProvider+"]";
 			//log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.

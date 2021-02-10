@@ -68,6 +68,8 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.xerces.impl.Constants;
+import org.apache.xerces.jaxp.SAXParserFactoryImpl;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
@@ -103,6 +105,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
+import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.SaxException;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -571,7 +574,11 @@ public class XmlUtils {
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
 		if (scopeProvider!=null) {
-			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(scopeProvider));
+			if(factory instanceof SAXParserFactoryImpl) { //When using Xerces, use the Xerces XmlEntityResolver
+				xmlReader.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY, new ClassLoaderXmlEntityResolver(scopeProvider));
+			} else {
+				xmlReader.setEntityResolver(new ClassLoaderEntityResolver(scopeProvider));
+			}
 		} else {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
 		}

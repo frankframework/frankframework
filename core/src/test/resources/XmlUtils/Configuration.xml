@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration [
+<!-- 	<!ENTITY xxe SYSTEM "file:///dev/random" > -->
+	<!ENTITY xxe SYSTEM "file:/G:/1GB.bin" >
+<!-- 	<!ENTITY xxe SYSTEM "G:/xml.xml" > -->
+]>
+<configuration name="XXE-Config">
+	&xxe;
+</configuration>
