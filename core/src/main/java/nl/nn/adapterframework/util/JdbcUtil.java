@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -164,8 +164,12 @@ public class JdbcUtil {
 
 	public static boolean isClobType(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta) throws SQLException {
 		switch (rsmeta.getColumnType(colNum)) {
+			case Types.LONGVARCHAR:
+			case Types.LONGNVARCHAR:
 			case Types.CLOB:
 				return true;
+			case Types.VARCHAR:
+				return "text".equals(rsmeta.getColumnTypeName(colNum));
 			default:
 				return false;
 		}
@@ -183,6 +187,8 @@ public class JdbcUtil {
 					log.debug("Caught JdbcException, assuming no blob found",e);
 					return nullValue;
 				}
+			case Types.LONGVARCHAR:
+			case Types.LONGNVARCHAR:
 			case Types.CLOB :
 				try {
 					return JdbcUtil.getClobAsString(dbmsSupport, rs,colNum,false);
