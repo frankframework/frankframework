@@ -263,7 +263,7 @@ public class JdbcUtil {
 			return null;
 		}
 		if (charset==null) {
-			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		return StreamUtil.getCharsetDetectingInputStreamReader(blobIntputStream, charset);
 	}
@@ -417,7 +417,7 @@ public class JdbcUtil {
 		Writer result;
 		OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobUpdateHandle);
 		if (charset==null) {
-			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		if (compressBlob) {
 			result = new BufferedWriter(new OutputStreamWriter(new DeflaterOutputStream(out),charset));
@@ -432,7 +432,7 @@ public class JdbcUtil {
 			Object blobHandle=dbmsSupport.getBlobHandle(rs, columnIndex);
 			try (OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobHandle)) {
 				if (charset==null) {
-					charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+					charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 				}
 				if (compressBlob) {
 					try (DeflaterOutputStream dos = new DeflaterOutputStream(out)) {
@@ -633,7 +633,7 @@ public class JdbcUtil {
 				if (!rs.next()) {
 					return null;
 				}
-				return getBlobAsString(dbmsSupport, rs, 1, Misc.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
+				return getBlobAsString(dbmsSupport, rs, 1, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
 			}
 		} catch (Exception e) {
 			throw new JdbcException("could not obtain value using query ["+query+"]",e);
