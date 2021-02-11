@@ -1,16 +1,11 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
-import java.util.Iterator;
 
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
