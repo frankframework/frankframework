@@ -110,7 +110,7 @@ public class ClassLoaderXmlEntityResolverTest {
 
 	@Ignore
 	@Test(expected = XNIException.class)
-	public void ClassLoaderXmlEntityResolverCanLoadLocalEntities() throws Exception {
+	public void classLoaderXmlEntityResolverCanLoadLocalEntities() throws Exception {
 		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("UDTSchema.xsd");
@@ -123,7 +123,7 @@ public class ClassLoaderXmlEntityResolverTest {
 	}
 
 	@Test(expected = XNIException.class)
-	public void ClassLoaderXmlEntityResolverCannotLoadExternalEntities() throws Exception {
+	public void classLoaderXmlEntityResolverCannotLoadExternalEntities() throws Exception {
 		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("ftp://share.host.org/UDTSchema.xsd");
