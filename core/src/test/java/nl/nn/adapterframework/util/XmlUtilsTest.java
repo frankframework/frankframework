@@ -114,7 +114,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 			XmlUtils.identityTransform(resource);
 		});
 
-		String errorMessage = "Cannot get resource for href [file:/G:/1GB.bin] with base [classpath:XmlUtils/Configuration.xml] as ref [file:/G:/1GB.bin] protocol [file] in scope [nl.nn.adapterframework.testutil.TestScopeProvider";
-		assertTrue("SaxParseException should contain [Cannot get resource ...]", thrown.getMessage().startsWith(errorMessage));
+		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:/G:/1GB.bin] in scope [nl.nn.adapterframework.testutil.TestScopeProvider";
+		assertTrue("SaxParseException should start with [Cannot get resource ...] but is ["+thrown.getMessage()+"]", thrown.getMessage().startsWith(errorMessage));
 	}
 }

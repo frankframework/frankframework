@@ -574,11 +574,11 @@ public class XmlUtils {
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
 		if (scopeProvider!=null) {
-			if(factory instanceof SAXParserFactoryImpl) { //When using Xerces, use the Xerces XmlEntityResolver
-				xmlReader.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY, new ClassLoaderXmlEntityResolver(scopeProvider));
-			} else {
+//			if(factory instanceof SAXParserFactoryImpl) { //When using Xerces it might benefit to use the Xerces XmlEntityResolver
+//				xmlReader.setProperty(Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY, new ClassLoaderXmlEntityResolver(scopeProvider));
+//			} else {
 				xmlReader.setEntityResolver(new ClassLoaderEntityResolver(scopeProvider));
-			}
+//			}
 		} else {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
 		}

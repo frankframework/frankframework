@@ -30,6 +30,10 @@ import nl.nn.adapterframework.core.Resource;
 
 /**
  * Xerces native EntityResolver. Appears to be only used in XercesXmlValidator currently.
+ * 
+ * It's important that the XMLEntityResolver never returns null if it cannot find the resource.
+ * Otherwise the parser will try to resolve the entity using a default/fallback mechanism
+ * 
  * @author Jaco de Groot
  * @author Gerrit van Brakel
  * @see ClassLoaderURIResolver

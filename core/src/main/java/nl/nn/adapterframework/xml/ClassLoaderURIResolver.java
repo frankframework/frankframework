@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class ClassLoaderURIResolver implements URIResolver {
 	protected Logger log = LogUtil.getLogger(this);
-	
+	private String allowedProtocols = "file"; //It's possible that the base is an absolute path starting with file. Since we don't know the relative base, allow the FILE protocol
 	private IScopeProvider scopeProvider;
 
 	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
@@ -75,11 +75,11 @@ public class ClassLoaderURIResolver implements URIResolver {
 		}
 
 		String ref=ref1;
-		Resource resource = Resource.getResource(scopeProvider, ref);
+		Resource resource = Resource.getResource(scopeProvider, ref, allowedProtocols);
 		if (resource==null && ref2!=null) {
 			if (log.isDebugEnabled()) log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
 			ref=ref2;
-			resource = Resource.getResource(scopeProvider, ref);
+			resource = Resource.getResource(scopeProvider, ref, allowedProtocols);
 		}
 
 		if (resource==null) {
