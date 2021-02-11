@@ -7,7 +7,9 @@ import java.net.URL;
 import java.util.jar.JarFile;
 
 import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -104,6 +106,32 @@ public class ClassLoaderXmlEntityResolverTest {
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);
+	}
+
+	@Ignore
+	@Test(expected = XNIException.class)
+	public void ClassLoaderXmlEntityResolverCanLoadLocalEntities() throws Exception {
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
+
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("UDTSchema.xsd");
+		URL url = this.getClass().getResource("/ClassLoader/request.xsd");
+		assertNotNull(url);
+		resourceIdentifier.setBaseSystemId(url.toExternalForm());
+
+		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
+		assertNotNull(inputSource);
+	}
+
+	@Test(expected = XNIException.class)
+	public void ClassLoaderXmlEntityResolverCannotLoadExternalEntities() throws Exception {
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
+
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("ftp://share.host.org/UDTSchema.xsd");
+		URL url = this.getClass().getResource("/ClassLoader/request-ftp.xsd");
+		assertNotNull(url);
+		resourceIdentifier.setBaseSystemId(url.toExternalForm());
+
+		resolver.resolveEntity(resourceIdentifier);
 	}
 
 	private class ResourceIdentifier implements XMLResourceIdentifier {

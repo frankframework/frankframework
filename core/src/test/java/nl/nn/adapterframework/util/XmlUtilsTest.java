@@ -108,13 +108,13 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void testIdentityTransform() throws Exception {
-		Resource resource = Resource.getResource(new TestScopeProvider(), "XmlUtils/Configuration.xml");
+	public void testIdentityTransformWithDefaultEntityResolver() throws Exception { //External EntityResolving is still possible with the XMLEntityResolver
+		Resource resource = Resource.getResource(new TestScopeProvider(), "XmlUtils/EntityResolution/in-file-entity-c-temp.xml");
 		SAXException thrown = assertThrows(SAXException.class, () -> {
 			XmlUtils.identityTransform(resource);
 		});
 
-		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:/G:/1GB.bin] in scope [nl.nn.adapterframework.testutil.TestScopeProvider";
+		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:///c:/temp/test.xml] in scope [nl.nn.adapterframework.testutil.TestScopeProvider";
 		assertTrue("SaxParseException should start with [Cannot get resource ...] but is ["+thrown.getMessage()+"]", thrown.getMessage().startsWith(errorMessage));
 	}
 }

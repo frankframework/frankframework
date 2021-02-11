@@ -31,8 +31,11 @@ import nl.nn.adapterframework.core.Resource;
 /**
  * Xerces native EntityResolver. Appears to be only used in XercesXmlValidator currently.
  * 
- * It's important that the XMLEntityResolver never returns null if it cannot find the resource.
- * Otherwise the parser will try to resolve the entity using a default/fallback mechanism
+ * It's important that the XMLEntityResolver does not return NULL, when it cannot find a resource.
+ * Returning NULL will cause the XmlReader to fall back to it's built in EntityResolver.
+ * 
+ * This EntityResolver can be set by using the following property on the XmlReader:
+ * Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY
  * 
  * @author Jaco de Groot
  * @author Gerrit van Brakel
@@ -59,7 +62,7 @@ public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver impleme
 			// return null.
 			return null;
 		}
-		
+
 		String base = resourceIdentifier.getBaseSystemId();
 		String href = resourceIdentifier.getLiteralSystemId();
 		if (href == null) {
