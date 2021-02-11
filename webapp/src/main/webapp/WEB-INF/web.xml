@@ -24,7 +24,7 @@
 		</init-param>
 		<init-param>
 			<param-name>allowedObserverPaths</param-name>
-			<param-value>/index.jsp /rest/showConfigurationStatus /rest/showConfiguration /configHandler.do /showAdapterStatistics.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /rest/showEnvironmentVariables /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download /testtool /jsp/view.jsp /rest/webservices</param-value>
+			<param-value>/index.jsp /rest/showConfigurationStatus /rest/showConfiguration /configHandler.do /showAdapterStatistics.do /showLogging.do /browseQueue.do /browseQueueExecute.do /browseJdbcTable.do /showSchedulerStatus.do /FileViewerServlet /DumpIbisConsole /rest/showEnvironmentVariables /browser.do /showSecurityItems.do /showMonitors.do /showEvents.do /editMonitor.do /editTrigger.do /showIbisstoreSummary.do /Download /testtool /jsp/view.jsp /rest/webservices /ladybug</param-value>
 		</init-param>
 		<init-param>
 			<param-name>allowedDataAdminPaths</param-name>
@@ -32,7 +32,7 @@
 		</init-param>
 		<init-param>
 			<param-name>allowedTesterPaths</param-name>
-			<param-value>/sendJmsMessage.do /sendJmsMessageExecute.do /rest/testPipeLine /rest/testIfsaService /testService.do /testServiceExecute.do /executeJdbcQuery.do /executeJdbcQueryExecute.do /testtool</param-value>
+			<param-value>/sendJmsMessage.do /sendJmsMessageExecute.do /rest/testPipeLine /rest/testIfsaService /testService.do /testServiceExecute.do /executeJdbcQuery.do /executeJdbcQueryExecute.do /testtool /ladybug</param-value>
 		</init-param>
 	</filter>
 
@@ -289,6 +289,7 @@
 			<url-pattern>/showIbisstoreSummary.do</url-pattern>
 			<url-pattern>/Download</url-pattern>
 			<url-pattern>/testtool</url-pattern>
+			<url-pattern>/ladybug</url-pattern>
 			<url-pattern>/rest/*</url-pattern>
 		</web-resource-collection>
 		<auth-constraint>
