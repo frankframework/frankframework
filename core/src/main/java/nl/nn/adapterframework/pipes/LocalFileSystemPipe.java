@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,19 +26,10 @@ public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{
 	public LocalFileSystemPipe() {
 		setFileSystem(new LocalFileSystem());
 	}
-	
+
 	@IbisDoc({"1", "the folder that serves as the root of this virtual filesystem", "" })
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}
 
-	@IbisDoc({"2", "Filter of files to look for in inputdirectory, e.g. '*.inp'", ""})
-	public void setWildcard(String wildcard) {
-		getFileSystem().setWildcard(wildcard);
-	}
-
-	@IbisDoc({"3", "Filter of files to be excluded when looking in inputdirectory", ""})
-	public void setExcludeWildcard(String excludeWildcard) {
-		getFileSystem().setExcludeWildcard(excludeWildcard);
-	}
 }

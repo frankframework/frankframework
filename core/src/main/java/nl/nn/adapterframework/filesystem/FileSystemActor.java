@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.DirectoryStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -28,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
@@ -132,7 +132,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private int rotateSize=0;
 	private boolean overwrite=false;
 	private int numberOfBackups=0;
-	
+	private String wildCard=null;
+	private String excludeWildCard=null;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
@@ -297,7 +298,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	
 	public Object doAction(Message input, ParameterValueList pvl, IPipeLineSession session) throws FileSystemException, TimeOutException {
 		try {
-			input.closeOnCloseOf(session); // don't know if the input will be used
+			if(input != null) {
+				input.closeOnCloseOf(session); // don't know if the input will be used
+			}
+
 			String action;
 			if (pvl != null && pvl.containsKey(PARAMETER_ACTION)) {
 				action = pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getAction());
@@ -310,9 +314,27 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 
 			if (action.equalsIgnoreCase(ACTION_DELETE)) {
-				F file=getFile(input, pvl);
-				fileSystem.deleteFile(file);
-				return fileSystem.getName(file);
+				if(StringUtils.isNotEmpty(getWildCard()) || StringUtils.isNotEmpty(getExcludeWildCard())) { 
+					String folder = determineInputFoldername(input, pvl);
+					XmlBuilder dirXml = new XmlBuilder("DeletedFilesList");
+					try(Stream<F> stream = FileSystemUtils.getFilteredList(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
+						int count = 0;
+						Iterator<F> it = stream.iterator();
+						if(it.hasNext()) {
+							F file = it.next();
+							XmlBuilder item = getFileAsXmlBuilder(file, "file");
+							fileSystem.deleteFile(file);
+							dirXml.addSubElement(item);
+							count++;
+						}
+						dirXml.addAttribute("count", count);
+					}
+					return dirXml.toXML();
+				} else {
+					F file=getFile(input, pvl);
+					fileSystem.deleteFile(file);
+					return fileSystem.getName(file);
+				}
 			} else if (action.equalsIgnoreCase(ACTION_INFO)) {
 				F file=getFile(input, pvl);
 				FileSystemUtils.checkSource(fileSystem, file, "inspect");
@@ -354,32 +376,20 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				}
 				return in;
 			} else if (action.equalsIgnoreCase(ACTION_LIST)) {
-				String folder = determineInputFoldername(input, pvl);
-				if (folder!=null && !folder.equals(getInputFolder()) && !fileSystem.folderExists(folder)) {
-					if (isCreateFolder()) {
-						fileSystem.createFolder(folder);
-					} else {
-						F file = fileSystem.toFile(folder);
-						if (file!=null && fileSystem.exists(file)) {
-							throw new FileNotFoundException("folder ["+folder+"], does not exist as a folder, but is a file");
-						} else {
-							throw new FileNotFoundException("folder ["+folder+"], does not exist");
-						}
-					}
-				}
-				try(DirectoryStream<F> ds = fileSystem.listFiles(folder)){
-					Iterator<F> fileList = ds.iterator();
+				String folder = arrangeFolder(determineInputFoldername(input, pvl));
+				XmlBuilder dirXml = new XmlBuilder("directory");
+				try(Stream<F> stream = FileSystemUtils.getFilteredList(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
 					int count = 0;
-					XmlBuilder dirXml = new XmlBuilder("directory");
-					while (fileList.hasNext()) {
-						F fileObject = fileList.next();
-						dirXml.addSubElement(getFileAsXmlBuilder(fileObject, "file"));
+					Iterator<F> it = stream.iterator();
+					while(it.hasNext()) {
+						F file = it.next();
+						dirXml.addSubElement(getFileAsXmlBuilder(file, "file"));
 						count++;
 					}
 					dirXml.addAttribute("count", count);
-
-					return dirXml.toXML();
 				}
+				return dirXml.toXML();
+
 			} else if (action.equalsIgnoreCase(ACTION_WRITE1)) {
 				F file=getFile(input, pvl);
 				if (fileSystem.exists(file)) {
@@ -427,15 +437,54 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
 				return fileSystem.getName(renamed);
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
-				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
-				F moved = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
-				return fileSystem.getName(moved);
+				if(StringUtils.isNotEmpty(getWildCard()) || StringUtils.isNotEmpty(getExcludeWildCard())) { 
+					String folder = arrangeFolder(determineInputFoldername(input, pvl));
+					XmlBuilder dirXml = new XmlBuilder("MovedFilesList");
+					try(Stream<F> stream = FileSystemUtils.getFilteredList(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
+						int count = 0;
+						Iterator<F> it = stream.iterator();
+						while(it.hasNext()) {
+							F file = it.next();
+							F movedFile = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
+							if(movedFile != null) {
+								dirXml.addSubElement(getFileAsXmlBuilder(movedFile, "file"));
+								count++;
+							}
+						}
+						dirXml.addAttribute("count", count);
+					}
+					return dirXml.toXML();
+				} else {
+					F file=getFile(input, pvl);
+					F moved = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
+					return fileSystem.getName(moved);
+				}
+				
 			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
-				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
-				F copied = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
-				return fileSystem.getName(copied);
+				if(StringUtils.isNotEmpty(getWildCard()) || StringUtils.isNotEmpty(getExcludeWildCard())) { 
+					String folder = arrangeFolder(determineInputFoldername(input, pvl));
+					XmlBuilder dirXml = new XmlBuilder("CopiedFilesList");
+					try(Stream<F> stream = FileSystemUtils.getFilteredList(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
+						int count = 0;
+						Iterator<F> it = stream.iterator();
+						while(it.hasNext()) {
+							F file = it.next();
+							F copiedFile = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
+							if(copiedFile != null) {
+								dirXml.addSubElement(getFileAsXmlBuilder(copiedFile, "file"));
+								count++;
+							}
+						}
+						dirXml.addAttribute("count", count);
+					}
+					return dirXml.toXML();
+				} else {
+					F file=getFile(input, pvl);
+					F copied = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
+					return fileSystem.getName(copied);
+				}
 			} else if (action.equalsIgnoreCase(ACTION_FORWARD)) {
 				F file=getFile(input, pvl);
 				FileSystemUtils.checkSource(fileSystem, file, "forward");
@@ -449,7 +498,22 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 		return input;
 	}
-	
+
+	private String arrangeFolder(String determinedFolderName) throws FileSystemException {
+		if (determinedFolderName!=null && !determinedFolderName.equals(getInputFolder()) && !fileSystem.folderExists(determinedFolderName)) {
+			if (isCreateFolder()) {
+				fileSystem.createFolder(determinedFolderName);
+			} else {
+				F file = fileSystem.toFile(determinedFolderName);
+				if (file!=null && fileSystem.exists(file)) {
+					throw new FileNotFoundException("folder ["+determinedFolderName+"], does not exist as a folder, but is a file");
+				} else {
+					throw new FileNotFoundException("folder ["+determinedFolderName+"], does not exist");
+				}
+			}
+		}
+		return determinedFolderName;
+	}
 
 	private void writeContentsToFile(OutputStream out, Message input, ParameterValueList pvl) throws IOException, FileSystemException {
 		Object contents;
@@ -641,5 +705,21 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 	public String getBase64() {
 		return base64;
+	}
+
+	@IbisDoc({"10", "Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, ""})
+	public void setWildCard(String wildCard) {
+		this.wildCard = wildCard;
+	}
+	public String getWildCard() {
+		return wildCard;
+	}
+
+	@IbisDoc({"11", "Filter of files to be excluded when looking in inputFolder. Works with actions "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, ""})
+	public void setExcludeWildCard(String excludeWildCard) {
+		this.excludeWildCard = excludeWildCard;
+	}
+	public String getExcludeWildCard() {
+		return excludeWildCard;
 	}
 }
