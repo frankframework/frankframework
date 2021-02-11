@@ -656,9 +656,11 @@ public class FrankDocModel {
 	}
 
 	void createConfigChildSets() {
+		allElementRoles.values().forEach(ElementRole::initConflicts);
 		List<FrankElement> sortedFrankElements = new ArrayList<>(allElements.values());
 		Collections.sort(sortedFrankElements);
 		sortedFrankElements.forEach(this::createConfigChildSets);
+		allElementRoleSets.values().forEach(ElementRoleSet::initConflicts);
 	}
 
 	private void createConfigChildSets(FrankElement frankElement) {

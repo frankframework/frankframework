@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.doc;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +10,7 @@ import java.util.stream.Collectors;
 import nl.nn.adapterframework.doc.model.ConfigChildSet;
 import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.ElementRole;
+import nl.nn.adapterframework.doc.model.ElementRole.Key;
 
 class ElementGroupNames {
 	private static final String ELEMENT_GROUP = "ElementGroup";
@@ -28,22 +28,17 @@ class ElementGroupNames {
 		return genericGroupKeyToSeq.containsKey(key);
 	}
 
-	private static Set<ElementRole.Key> keyOf(Set<ElementRole> roles) {
-		Set<ElementRole.Key> key = roles.stream().map(ElementRole::getKey).collect(Collectors.toSet());
-		return key;
+	String addGroup(ConfigChildSet configChildSet) {
+		Set<ElementRole.Key> key = keyOf(configChildSet);
+		return addGroup(key);
 	}
 
-	String addGroup(ConfigChildSet configChildSet) {
-		Set<ElementRole.Key> key = configChildSet.getKey(childSelector, childRejector);
-		return addGroup(key);
+	private Set<Key> keyOf(ConfigChildSet configChildSet) {
+		return ConfigChildSet.getKey(configChildSet.getFilteredElementRoles(childSelector, childRejector));
 	}
 
 	String addGroup(Set<ElementRole.Key> key) {
 		String syntax1Name = getSyntax1Name(key);
-		return addGroup(key, syntax1Name);
-	}
-
-	private String addGroup(Set<ElementRole.Key> key, String syntax1Name) {
 		List<Set<ElementRole.Key>> shared = genericGroupKeyToSeq.keySet().stream()
 				.filter(rs -> getSyntax1Name(rs).equals(syntax1Name))
 				.collect(Collectors.toList());
@@ -52,13 +47,12 @@ class ElementGroupNames {
 		return getGroupName(key, syntax1Name);
 	}
 
-	private String getSyntax1Name(Set<ElementRole.Key> key) {
-		return key.iterator().next().getSyntax1Name();
+	static String getSyntax1Name(List<ElementRole> roles) {
+		return roles.get(0).getSyntax1Name();
 	}
 
-	String getGroupName(ConfigChildSet configChildSet) {
-		Set<ElementRole.Key> key = configChildSet.getKey(childSelector, childRejector);
-		return getGroupName(key);
+	private String getSyntax1Name(Set<ElementRole.Key> key) {
+		return key.iterator().next().getSyntax1Name();
 	}
 
 	String getGroupName(Set<ElementRole.Key> key) {
@@ -67,7 +61,7 @@ class ElementGroupNames {
 	}
 
 	String getGroupName(List<ElementRole> roles) {
-		Set<ElementRole.Key> key = keyOf(new HashSet<>(roles));
+		Set<ElementRole.Key> key = ConfigChildSet.getKey(roles);
 		String syntax1Name = roles.iterator().next().getSyntax1Name();
 		return getGroupName(key, syntax1Name);
 	}

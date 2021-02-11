@@ -95,9 +95,13 @@ public class ElementRole {
 	}
 
 	List<FrankElement> getRawMembers() {
+		try {
 		return elementType.getMembers().stream()
 				.filter(el -> ! nameConflicts.contains(el))
 				.collect(Collectors.toList());
+		} catch(Exception e) {
+			throw(e);
+		}
 	}
 
 	public List<FrankElement> getMembers() {

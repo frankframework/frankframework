@@ -35,7 +35,7 @@ public class DocWriterNewExamplesTest {
 	public void testXsd() throws Exception {
 		FrankDocModel model = createModel();
 		DocWriterNew docWriter = new DocWriterNew(model);
-		docWriter.init(startClassName);
+		docWriter.init(startClassName, XsdVersion.STRICT);
 		String actualXsd = docWriter.getSchema();
 		System.out.println(actualXsd);
 		String expectedXsd = TestFileUtils.getTestFile("/doc/examplesExpected/" + expectedXsdFileName);
