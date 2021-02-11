@@ -306,6 +306,8 @@
 
 	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
 
+	<bean name="apiConfigurationProvider" class="nl.nn.testtool.web.ApiConfigurationProvider" />
+
 	<import resource="springIbisDebuggerAdvice.xml"/>
 
 </beans>
