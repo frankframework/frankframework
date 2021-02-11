@@ -19,6 +19,7 @@ package nl.nn.adapterframework.doc.model;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -212,6 +213,59 @@ public class FrankElement implements Comparable<FrankElement> {
 
 	public ConfigChildSet getConfigChildSet(String syntax1Name) {
 		return configChildSets.get(syntax1Name);
+	}
+
+	public List<ConfigChildSet> getCumulativeConfigChildSets() {
+		Map<String, ConfigChildSet> resultAsMap = new HashMap<>();
+		for(String syntax1Name: configChildSets.keySet()) {
+			resultAsMap.put(syntax1Name, configChildSets.get(syntax1Name));
+		}
+		if(parent != null) {
+			List<ConfigChildSet> inheritedConfigChildSets = getParent().getCumulativeConfigChildSets();
+			for(ConfigChildSet inherited: inheritedConfigChildSets) {
+				resultAsMap.putIfAbsent(inherited.getSyntax1Name(), inherited);
+			}
+		}
+		List<ConfigChildSet> result = new ArrayList<>();
+		List<String> keys = new ArrayList<>(resultAsMap.keySet());
+		Collections.sort(keys);
+		for(String key: keys) {
+			result.add(resultAsMap.get(key));
+		}
+		return result;
+	}
+
+	public boolean hasFilledConfigChildSets(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		if(configChildSets.isEmpty()) {
+			return false;
+		}
+		return configChildSets.values().stream()
+				.anyMatch(cs -> cs.getConfigChildren().stream().filter(selector.or(rejector)).collect(Collectors.counting()) >= 1);
+	}
+
+	public FrankElement getNextPluralConfigChildrenAncestor(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		FrankElement ancestor = parent;
+		while(ancestor != null) {
+			if(! ancestor.getParent().isHasOrInheritsPluralConfigChildren(selector, rejector)) {
+				return ancestor;
+			}
+			if(ancestor.hasFilledConfigChildSets(selector, rejector)) {
+				return ancestor;
+			}
+			ancestor = ancestor.getParent();
+		}
+		return null;
+	}
+
+	public boolean isHasOrInheritsPluralConfigChildren(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		boolean hasPluralConfigChildren = configChildSets.values().stream()
+				.anyMatch(c -> c.getFilteredElementRoles(selector, rejector).size() >= 2);
+		boolean inheritsPluralConfigChildren = false;
+		FrankElement ancestor = getNextAncestorThatHasConfigChildren(selector);
+		if(ancestor != null) {
+			inheritsPluralConfigChildren = ancestor.isHasOrInheritsPluralConfigChildren(selector, rejector);
+		}
+		return hasPluralConfigChildren || inheritsPluralConfigChildren;
 	}
 
 	@Override

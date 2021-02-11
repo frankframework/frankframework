@@ -495,6 +495,14 @@ public class DocWriterNew {
 	}
 
 	private void addConfigChildren(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
+		if(frankElement.isHasOrInheritsPluralConfigChildren(version.getChildSelector(), version.getChildRejector())) {
+			addConfigChildrenWithPluralConfigChildSets(elementBuildingStrategy, frankElement);
+		} else {
+			addConfigChildrenNoPluralConfigChildSets(elementBuildingStrategy, frankElement);
+		}
+	}
+
+	private void addConfigChildrenNoPluralConfigChildSets(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
 		Consumer<GroupCreator.Callback<ConfigChild>> cumulativeGroupTrigger =
 				ca -> frankElement.walkCumulativeConfigChildren(ca, version.getChildSelector(), version.getChildRejector());
 		new GroupCreator<ConfigChild>(frankElement, cumulativeGroupTrigger, new GroupCreator.Callback<ConfigChild>() {
@@ -604,6 +612,12 @@ public class DocWriterNew {
 	private void addConfigChildSingleReferredElement(XmlBuilder context, ConfigChild child) {
 		ElementRole role = model.findElementRole(child);
 		FrankElement elementInType = singleElementOf(role);
+		if(elementInType == null) {
+			if(log.isTraceEnabled()) {
+				log.trace("Omitting config child [%s] because of name conflict", child.toString());
+			}
+			return;
+		}
 		String referredXsdElementName = elementInType.getXsdElementName(role);
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Config child appears as element reference to FrankElement [%s], XSD element [%s]",
@@ -614,7 +628,11 @@ public class DocWriterNew {
 	}
 
 	private FrankElement singleElementOf(ElementRole elementRole) {
-		return elementRole.getMembers().iterator().next();
+		List<FrankElement> members = elementRole.getMembers();
+		if(members.isEmpty()) {
+			return null;
+		}
+		return members.iterator().next();
 	}
 
 	private void recursivelyDefineXsdElement(FrankElement frankElement, ElementRole role) {
@@ -779,17 +797,70 @@ public class DocWriterNew {
 		for(String name: names) {
 			List<ElementRole> childRoles = memberChildrenBySyntax1Name.get(name);
 			if((childRoles.size() == 1) && isNoElementTypeNeeded(childRoles.get(0))) {
-				FrankElement elementInType = singleElementOf(childRoles.get(0));
-				String referredXsdElementName = elementInType.getXsdElementName(childRoles.get(0));
 				if(logContext.isTraceEnabled()) {
-					logContext.trace(String.format("Generic option appears as FrankElement [%s], XSD element [%s]",
-							elementInType.getFullName(), referredXsdElementName));
+					logContext.trace(String.format("A single ElementRole [%s] that appears as element reference", childRoles.get(0).toString()));
 				}
-				addElementRef(context, referredXsdElementName);
-				recursivelyDefineXsdElement(elementInType, childRoles.get(0));				
+				addElementRoleAsElement(context, childRoles.get(0));				
 			} else {
-				DocWriterNewXmlUtils.addGroupRef(context, elementGroupNames.getGroupName(childRoles));
 				requestElementGroup(childRoles, logContext.addNestedSyntax1Name(name));
+				DocWriterNewXmlUtils.addGroupRef(context, elementGroupNames.getGroupName(childRoles));
+			}
+		}
+	}
+
+	private void addElementRoleAsElement(XmlBuilder context, ElementRole elementRole) {
+		FrankElement elementInType = singleElementOf(elementRole);
+		if(elementInType == null) {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Omitting ElementRole [%s] from group because of conflict", elementRole.toString()));
+			}
+			return;
+		}
+		String referredXsdElementName = elementInType.getXsdElementName(elementRole);
+		addElementRef(context, referredXsdElementName);
+		recursivelyDefineXsdElement(elementInType, elementRole);
+	}
+
+	void addConfigChildrenWithPluralConfigChildSets(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Applying algorithm for plural config children for FrankElement [%s]", frankElement.getFullName()));
+		}
+		if(! frankElement.hasFilledConfigChildSets(version.getChildSelector(), version.getChildRejector())) {
+			FrankElement ancestor = frankElement.getNextPluralConfigChildrenAncestor(version.getChildSelector(), version.getChildRejector());
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("No config children, inheriting from [%s]", ancestor.getFullName()));
+			}
+			elementBuildingStrategy.addGroupRef(xsdPluralGroupNameForChildren(ancestor));
+		} else {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("Adding new group for plural config children for FrankElement [%s]", frankElement.getFullName()));
+			}
+			addConfigChildrenWithPluralConfigChildSetsUnchecked(elementBuildingStrategy, frankElement);
+		}		
+	}
+
+	private void addConfigChildrenWithPluralConfigChildSetsUnchecked(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
+		String groupName = xsdPluralGroupNameForChildren(frankElement);
+		elementBuildingStrategy.addGroupRef(groupName);
+		XmlBuilder builder = createGroup(groupName);
+		xsdComplexItems.add(builder);
+		XmlBuilder sequence = addSequence(builder);
+		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
+		List<ConfigChildSet> configChildSets = frankElement.getCumulativeConfigChildSets();
+		for(ConfigChildSet configChildSet: configChildSets) {
+			ConfigChildSetLogContext logContext = ConfigChildSetLogContext.getInstance(log, frankElement, configChildSet);
+			List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
+			if((roles.size() == 1) && isNoElementTypeNeeded(roles.get(0))) {
+				if(logContext.isTraceEnabled()) {
+					logContext.trace("Config child set appears as element reference");
+				}
+				addElementRoleAsElement(choice, roles.get(0));
+			} else {
+				if(log.isTraceEnabled()) {
+					logContext.trace("Config child set appears as group reference");
+				}
+				requestElementGroup(roles, logContext);
+				DocWriterNewXmlUtils.addGroupRef(choice, elementGroupNames.getGroupName(roles));
 			}
 		}
 	}
@@ -923,6 +994,10 @@ public class DocWriterNew {
 		return element.getSimpleName() + "CumulativeChildGroup";
 	}
 
+	private static String xsdPluralGroupNameForChildren(FrankElement element) {
+		return element.getSimpleName() + "PluralConfigChildGroup";
+	}
+	
 	private static String xsdDeclaredGroupNameForAttributes(FrankElement element) {
 		return element.getSimpleName() + "DeclaredAttributeGroup";
 	}
