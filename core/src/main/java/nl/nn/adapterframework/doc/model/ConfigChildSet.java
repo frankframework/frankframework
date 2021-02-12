@@ -45,7 +45,7 @@ public class ConfigChildSet {
 		}
 		if(configChildren.size() >= 2) {
 			FrankElement parent = configChildren.get(0).getOwningElement();
-			int order = configChildren.get(0).getSequenceInConfig();
+			int order = configChildren.get(0).getOrder();
 			for(ConfigChild c: configChildren.subList(1, configChildren.size())) {
 				if(c.getOwningElement() != parent) {
 					if(c.getOwningElement() != parent.getNextAncestorThatHasConfigChildren(ElementChild.ALL)) {
@@ -55,11 +55,11 @@ public class ConfigChildSet {
 					parent = c.getOwningElement();
 				}
 				else {
-					if(! (order <= c.getSequenceInConfig())) {
+					if(! (order <= c.getOrder())) {
 						throw new IllegalArgumentException(String.format("Cumulative config children are not sorted by order. Offending config child [%s]",
 								c.getKey().toString()));
 					}
-					order = c.getSequenceInConfig();
+					order = c.getOrder();
 				}
 			}
 		}

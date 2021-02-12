@@ -379,6 +379,7 @@ public class DocWriterNew {
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Adding cumulative config chidren of FrankElement [%s] to XSD element [%s]", frankElement.getFullName(), xsdElementName));
 		}
+		// TODO: Capture case of plural config children.
 		frankElement.getCumulativeConfigChildren(version.getChildSelector(), version.getChildRejector()).forEach(c -> addConfigChild(sequence, c));
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Adding cumulative attributes of FrankElement [%s] to XSD element [%s]", frankElement.getFullName(), xsdElementName));
@@ -591,10 +592,17 @@ public class DocWriterNew {
 			log.trace(String.format("Adding config child [%s]", child.toString()));
 		}
 		ElementRole theRole = model.findElementRole(child);
+		XmlBuilder refBuilder = null;
 		if(isNoElementTypeNeeded(theRole)) {
-			addConfigChildSingleReferredElement(context, child);
+			refBuilder = addConfigChildSingleReferredElement(context, child);
 		} else {
-			addConfigChildWithElementGroup(context, child);
+			refBuilder = addConfigChildWithElementGroup(context, child);
+		}
+		if((refBuilder != null) && needsDocumentation(child)) {
+			if(log.isTraceEnabled()) {
+				log.trace("Config child is documented, adding documentation text");
+			}
+			addDocumentation(refBuilder, getDocumentationText(child));
 		}
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Done adding config child [%s]", child.toString()));
@@ -611,22 +619,23 @@ public class DocWriterNew {
 		}
 	}
 
-	private void addConfigChildSingleReferredElement(XmlBuilder context, ConfigChild child) {
+	private XmlBuilder addConfigChildSingleReferredElement(XmlBuilder context, ConfigChild child) {
 		ElementRole role = model.findElementRole(child);
 		FrankElement elementInType = singleElementOf(role);
 		if(elementInType == null) {
 			if(log.isTraceEnabled()) {
 				log.trace("Omitting config child [%s] because of name conflict", child.toString());
 			}
-			return;
+			return null;
 		}
 		String referredXsdElementName = elementInType.getXsdElementName(role);
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Config child appears as element reference to FrankElement [%s], XSD element [%s]",
 					elementInType.getFullName(), referredXsdElementName));
 		}
-		addElementRef(context, referredXsdElementName, getMinOccurs(child), getMaxOccurs(child));
+		XmlBuilder elementRefBuilder = addElementRef(context, referredXsdElementName, getMinOccurs(child), getMaxOccurs(child));
 		recursivelyDefineXsdElement(elementInType, role);
+		return elementRefBuilder;
 	}
 
 	private FrankElement singleElementOf(ElementRole elementRole) {
@@ -664,7 +673,7 @@ public class DocWriterNew {
 		addClassNameAttribute(context, frankElement);
 	}
 
-	private void addConfigChildWithElementGroup(XmlBuilder context, ConfigChild child) {
+	private XmlBuilder addConfigChildWithElementGroup(XmlBuilder context, ConfigChild child) {
 		if(log.isTraceEnabled()) {
 			log.trace("Config child appears as element group reference");
 		}
@@ -672,7 +681,7 @@ public class DocWriterNew {
 		ConfigChildSetLogContext logContext = ConfigChildSetLogContext.getInstance(log, child.getOwningElement(), configChildSet);
 		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
 		requestElementGroupForConfigChildSet(configChildSet, roles, logContext);
-		DocWriterNewXmlUtils.addGroupRef(context, elementGroupManager.getGroupName(roles), getMinOccurs(child), getMaxOccurs(child));
+		return DocWriterNewXmlUtils.addGroupRef(context, elementGroupManager.getGroupName(roles), getMinOccurs(child), getMaxOccurs(child));
 	}
 
 	private void requestElementGroupForConfigChildSet(ConfigChildSet configChildSet, List<ElementRole> roles, ConfigChildSetLogContext logContext) {
@@ -1015,21 +1024,21 @@ public class DocWriterNew {
 		}		
 	}
 
-	private boolean needsDocumentation(FrankAttribute frankAttribute) {
-		return (! StringUtils.isEmpty(frankAttribute.getDescription())) || (! StringUtils.isEmpty(frankAttribute.getDefaultValue()));
+	private boolean needsDocumentation(ElementChild elementChild) {
+		return (! StringUtils.isEmpty(elementChild.getDescription())) || (! StringUtils.isEmpty(elementChild.getDefaultValue()));
 	}
 
-	private String getDocumentationText(FrankAttribute frankAttribute) {
+	private String getDocumentationText(ElementChild elementChild) {
 		StringBuilder result = new StringBuilder();
-		if(! StringUtils.isEmpty(frankAttribute.getDescription())) {
-			result.append(frankAttribute.getDescription());
+		if(! StringUtils.isEmpty(elementChild.getDescription())) {
+			result.append(elementChild.getDescription());
 		}
-		if(! StringUtils.isEmpty(frankAttribute.getDefaultValue())) {
+		if(! StringUtils.isEmpty(elementChild.getDefaultValue())) {
 			if(result.length() >= 1) {
 				result.append(" ");
 			}
 			result.append("Default: ");
-			result.append(frankAttribute.getDefaultValue());
+			result.append(elementChild.getDefaultValue());
 		}
 		return result.toString();
 	}

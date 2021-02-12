@@ -46,7 +46,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
-		assertEquals(100, actual.getSequenceInConfig());
+		assertEquals(100, actual.getOrder());
 		assertFalse(actual.isAllowMultiple());
 		assertFalse(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
@@ -69,7 +69,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
-		assertEquals(200, actual.getSequenceInConfig());
+		assertEquals(200, actual.getOrder());
 		assertFalse(actual.isAllowMultiple());
 		assertTrue(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
@@ -84,7 +84,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChild", actual.getElementType().getSimpleName());
 		assertFalse(actual.isDocumented());
-		assertEquals(50, actual.getSequenceInConfig());
+		assertEquals(50, actual.getOrder());
 		assertTrue(actual.isAllowMultiple());
 		assertFalse(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
@@ -100,7 +100,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChildDocOnDerived", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
-		assertEquals(70, actual.getSequenceInConfig());
+		assertEquals(70, actual.getOrder());
 		assertFalse(actual.isAllowMultiple());
 		assertFalse(actual.isMandatory());
 		assertFalse(actual.isDeprecated());
@@ -115,7 +115,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChildDocWithOrderOverride", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
-		assertEquals(10, actual.getSequenceInConfig());
+		assertEquals(10, actual.getOrder());
 		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
 		assertTrue(IN_XSD.test(actual));
@@ -162,7 +162,7 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void whenConfigChildOverriddenNotDocumentedThenChildCreatedButNotSelected() {
 		ConfigChild actual = selectChild("syntax1NameInheritedChildNonSelected");
-		assertEquals(120, actual.getSequenceInConfig());
+		assertEquals(120, actual.getOrder());
 		assertFalse(actual.isDocumented());
 		assertFalse(actual.isDeprecated());
 		assertNotNull(actual.getOverriddenFrom());
@@ -176,7 +176,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("ChildOverriddenOnlyParentAnnotated", actual.getElementType().getSimpleName());
 		assertFalse(actual.isDocumented());
-		assertEquals(110, actual.getSequenceInConfig());
+		assertEquals(110, actual.getOrder());
 		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
 		// Not selected because deprecated
@@ -186,7 +186,7 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void whenInheritedConfigChildNotDeprecatedInheritedFromDeprecatedThenNotDeprecated() throws Exception {
 		ConfigChild theConfigChild = instance.findOrCreateFrankElement(Utils.getClass(CONTAINER_OTHER))
-				.getConfigChildren(c -> ((ConfigChild)c).getSequenceInConfig() == 110).get(0);
+				.getConfigChildren(c -> ((ConfigChild)c).getOrder() == 110).get(0);
 		assertFalse(theConfigChild.isDeprecated());
 	}
 }

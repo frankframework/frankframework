@@ -24,7 +24,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,7 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -296,7 +294,9 @@ public class FrankDocModel {
 						log.trace(String.format("Describing element of attribute [%s].[%s] is [%s]",
 								attributeOwner.getFullName(), attribute.getName(), attribute.getDescribingElement().getFullName()));
 					}
-					attribute.parseIbisDocAnnotation(ibisDoc);
+					if(! attribute.parseIbisDocAnnotation(ibisDoc)) {
+						log.warn(String.format("FrankAttribute [%s] of FrankElement [%s] does not have a configured order", attribute.getName(), attributeOwner.getFullName()));
+					}
 					if(parsed.hasOrder) {
 						attribute.setOrder(parsed.getOrder());
 						if(log.isTraceEnabled()) {
@@ -399,7 +399,7 @@ public class FrankDocModel {
 		List<ConfigChild> result = new ArrayList<>();
 		for(ConfigChild.SortNode sortNode: createSortNodes(methods, parent)) {
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("Have config child SortNode [%s], sequenceInConfig = [%d]", sortNode.getName(), sortNode.getSequenceInConfig()));
+				log.trace(String.format("Have config child SortNode [%s]", sortNode.getName()));
 			}
 			ConfigChild configChild = new ConfigChild(parent, sortNode);
 			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(sortNode.getName());
@@ -409,20 +409,28 @@ public class FrankDocModel {
 			}
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
-			Class<?> elementTypeClass = sortNode.getMethod().getParameterTypes()[0];
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("For FrankElement [%s] method [%s], going to search element role", parent.getFullName(), sortNode.getName()));
 			}
 			configChild.setElementRole(findOrCreateElementRole(
-					elementTypeClass, configChildDescriptor.getSyntax1Name()));
+					sortNode.getElementTypeClass(), configChildDescriptor.getSyntax1Name()));
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("For FrankElement [%s] method [%s], have the element role", parent.getFullName(), sortNode.getName()));
 			}
+			if(sortNode.getIbisDoc() == null) {
+				log.warn(String.format("No @IbisDoc annotation for config child [%s] of FrankElement [%s]", configChild.getKey().toString(), parent.getFullName()));
+			} else if(! configChild.parseIbisDocAnnotation(sortNode.getIbisDoc())) {
+				log.warn(String.format("@IbisDoc annotation for config child [%s] of FrankElement [%s] does not specify a sort order", configChild.getKey().toString(), parent.getFullName()));
+			}
+			if(! StringUtils.isEmpty(configChild.getDefaultValue())) {
+				log.warn(String.format("Default value [%s] of config child [%s] of FrankElement [%s] is not used", configChild.getDefaultValue(), configChild.getKey().toString(), parent.getFullName()));
+			}
 			result.add(configChild);
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("Done creating ConfigChild for SortNode [%s], sequenceInConfig = [%d]", sortNode.getName(), sortNode.getSequenceInConfig()));
+				log.trace(String.format("Done creating ConfigChild for SortNode [%s], order = [%d]", sortNode.getName(), configChild.getOrder()));
 			}
 		}
+		Collections.sort(result);
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Done creating config children of FrankElement [%s]", parent.getFullName()));
 		}
@@ -438,11 +446,6 @@ public class FrankDocModel {
 		List<ConfigChild.SortNode> sortNodes = new ArrayList<>();
 		for(Method setter: configChildSetters) {
 			ConfigChild.SortNode sortNode = new ConfigChild.SortNode(setter);
-			try {
-				sortNode.parseIbisDocAnnotation();
-			} catch(IbisDocAnnotationException e) {
-				log.warn(String.format("For FrankElement [%s]: %s", parent.getSimpleName(), e.getMessage()));
-			}
 			sortNodes.add(sortNode);
 		}
 		Collections.sort(sortNodes);
@@ -454,13 +457,17 @@ public class FrankDocModel {
 			log.trace(String.format("ElementRole requested for elementTypeClass [%s] and syntax1Name [%s]", elementTypeClass.getName(), syntax1Name));
 			log.trace("Going to get the ElementType");
 		}
+		// Should be done before testing whether the ElementRole is already present.
+		// Otherwise, config children with a null ElementType may result due to
+		// invalid recursion.
 		ElementType elementType = findOrCreateElementType(elementTypeClass);
-		ElementRole.Key key = new ElementRole.Key(elementType.getFullName(), syntax1Name);
+		ElementRole.Key key = new ElementRole.Key(elementTypeClass.getName(), syntax1Name);
 		if(allElementRoles.containsKey(key)) {
 			if(log.isTraceEnabled()) {
 				log.trace("ElementRole already present");
 			}
-			return allElementRoles.get(key);
+			ElementRole result = allElementRoles.get(key);
+			return result;
 		} else {
 			ElementRole result = elementRoleFactory.create(elementType, syntax1Name);
 			elementType.registerElementRole(result);
@@ -531,28 +538,6 @@ public class FrankDocModel {
 		if(log.isTraceEnabled()) {
 			log.trace("Done calculating highest common interface for every ElementType");
 		}		
-	}
-
-	/**
-	 * For an {@link ElementType} assemble all config children of members and calculate
-	 * a list of {@link ElementRole} from that. Assume that the {@link ElementRole}
-	 * objects exist and that the members of the element type are set.
-	 */
-	public List<ElementRole> getElementTypeMemberChildRoles(
-			ElementType elementType, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Predicate<FrankElement> frankElementFilter) {
-		List<ElementRole> allMemberChildRoles = elementType.getMembers().stream()
-				// TODO: Filtering FrankElements, typically no filter or deprecated omitted, is
-				// not covered by unit tests.
-				.filter(frankElementFilter)
-				.map(frankElement -> frankElement.getCumulativeConfigChildren(selector, rejector))
-				.flatMap(l -> l.stream())
-				.map(ElementRole.Key::new)
-				// TODO: Not covered with unit tests that keys should be de-doubled
-				.distinct()
-				.map(this::findElementRole)
-				.collect(Collectors.toList());
-		Collections.sort(allMemberChildRoles, Comparator.comparing(er -> ((ElementRole) er).createXsdElementName("")));
-		return allMemberChildRoles;
 	}
 
 	void buildGroups() {
