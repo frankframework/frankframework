@@ -42,7 +42,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	protected static final String GET_DATE = "GETDATE()";
 	protected static final String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
 
-	private final int CLOB_SIZE_TRESHOLD=10000000;
+	private final int CLOB_SIZE_TRESHOLD=10000000; // larger than this is considered a CLOB, smaller a string
 
 	@Override
 	public Dbms getDbms() {
