@@ -671,7 +671,8 @@ public class FrankDocModel {
 			if(configChildren.stream().map(ConfigChild::getOwningElement).anyMatch(childOwner -> (childOwner == frankElement))) {
 				ConfigChildSet configChildSet = new ConfigChildSet(configChildren);
 				frankElement.addConfigChildSet(configChildSet);
-				findOrCreateElementRoleSet(configChildSet);
+				ElementRoleSet elementRoleSet = findOrCreateElementRoleSet(configChildSet);
+				configChildSet.setElementRoleSet(elementRoleSet);
 			}
 		}
 	}

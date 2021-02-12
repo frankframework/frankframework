@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Holds the list of all cumulative config children sharing some role name, say R, but
@@ -27,6 +29,7 @@ import lombok.Getter;
  */
 public class ConfigChildSet {
 	private final @Getter List<ConfigChild> configChildren;
+	private @Getter @Setter ElementRoleSet elementRoleSet;
 
 	/**
 	 * @throws IllegalArgumentException if input children is empty or when the elements
@@ -115,5 +118,9 @@ public class ConfigChildSet {
 
 	public static Set<ElementRole.Key> getKey(List<ElementRole> roles) {
 		return roles.stream().map(ElementRole::getKey).collect(Collectors.toSet());
+	}
+
+	public Optional<FrankElement> getGenericElementOptionDefault(Predicate<FrankElement> elementFilter) {
+		return elementRoleSet.getGenericElementDefaultCandidates().filter(elementFilter);
 	}
 }

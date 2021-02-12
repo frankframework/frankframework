@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.doc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,26 +13,23 @@ import nl.nn.adapterframework.doc.model.ConfigChildSet;
 import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.ElementRole;
 import nl.nn.adapterframework.doc.model.ElementRole.Key;
+import nl.nn.adapterframework.util.XmlBuilder;
 
-class ElementGroupNames {
+class ElementGroupManager {
 	private static final String ELEMENT_GROUP = "ElementGroup";
 
 	private final Map<Set<ElementRole.Key>, Integer> genericGroupKeyToSeq = new HashMap<>();
+	private final Map<Set<ElementRole.Key>, GenericOptionAttributeTask> genericOptionAttributeTasks = new LinkedHashMap<>();
 	private final Predicate<ElementChild> childSelector;
 	private final Predicate<ElementChild> childRejector;
 
-	ElementGroupNames(Predicate<ElementChild> childSelector, Predicate<ElementChild> childRejector) {
+	ElementGroupManager(Predicate<ElementChild> childSelector, Predicate<ElementChild> childRejector) {
 		this.childSelector = childSelector;
 		this.childRejector = childRejector;
 	}
 
 	boolean isGroupExists(Set<ElementRole.Key> key) {
 		return genericGroupKeyToSeq.containsKey(key);
-	}
-
-	String addGroup(ConfigChildSet configChildSet) {
-		Set<ElementRole.Key> key = keyOf(configChildSet);
-		return addGroup(key);
 	}
 
 	private Set<Key> keyOf(ConfigChildSet configChildSet) {
@@ -75,6 +74,25 @@ class ElementGroupNames {
 		if(seq != 1) {
 			result = String.format("_%d", seq);
 		}
+		return result;
+	}
+
+	void addGenericOptionAttributeTask(List<ElementRole> roles, XmlBuilder builder) {
+		Set<ElementRole.Key> key = ConfigChildSet.getKey(roles);
+		genericOptionAttributeTasks.put(key, new GenericOptionAttributeTask(key, builder));
+	}
+
+	boolean hasGenericOptionAttributeTask(ConfigChildSet configChildSet) {
+		return genericOptionAttributeTasks.containsKey(keyOf(configChildSet));
+	}
+
+	XmlBuilder doGenericOptionAttributeTask(ConfigChildSet configChildSet) {
+		return genericOptionAttributeTasks.remove(keyOf(configChildSet)).getBuilder();
+	}
+
+	List<GenericOptionAttributeTask> doLeftoverGenericOptionAttributeTasks() {
+		List<GenericOptionAttributeTask> result = new ArrayList<>(genericOptionAttributeTasks.values());
+		genericOptionAttributeTasks.clear();
 		return result;
 	}
 }
