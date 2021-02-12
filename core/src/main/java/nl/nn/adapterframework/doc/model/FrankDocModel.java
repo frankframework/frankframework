@@ -457,9 +457,6 @@ public class FrankDocModel {
 			log.trace(String.format("ElementRole requested for elementTypeClass [%s] and syntax1Name [%s]", elementTypeClass.getName(), syntax1Name));
 			log.trace("Going to get the ElementType");
 		}
-		// Should be done before testing whether the ElementRole is already present.
-		// Otherwise, config children with a null ElementType may result due to
-		// invalid recursion.
 		ElementType elementType = findOrCreateElementType(elementTypeClass);
 		ElementRole.Key key = new ElementRole.Key(elementTypeClass.getName(), syntax1Name);
 		if(allElementRoles.containsKey(key)) {
@@ -470,7 +467,6 @@ public class FrankDocModel {
 			return result;
 		} else {
 			ElementRole result = elementRoleFactory.create(elementType, syntax1Name);
-			elementType.registerElementRole(result);
 			allElementRoles.put(key, result);
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("For ElementType [%s] and syntax1Name [%s], created ElementRole [%s]", elementType.getFullName(), syntax1Name, result.createXsdElementName("")));

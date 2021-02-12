@@ -46,8 +46,6 @@ public class ElementType {
 	private @Getter(AccessLevel.PACKAGE) List<FrankElement> members;
 	private @Getter boolean fromJavaInterface;
 	
-	private @Getter LinkedHashSet<ElementRole> elementRoles = new LinkedHashSet<>();
-
 	private static class InterfaceHierarchyItem {
 		private @Getter String fullName;
 		private @Getter String simpleName;
@@ -104,10 +102,6 @@ public class ElementType {
 			throw new ReflectiveOperationException(String.format("Expected that ElementType [%s] contains exactly one element", getFullName()));
 		}
 		return members.iterator().next();
-	}
-
-	void registerElementRole(ElementRole elementRole) {
-		elementRoles.add(elementRole);
 	}
 
 	void calculateHighestCommonInterface(FrankDocModel model) {
