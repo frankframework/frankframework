@@ -135,7 +135,7 @@ public class ClassUtils {
 				if (StringUtils.isNotEmpty(allowedProtocols)) {
 					//log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] now trying via protocol ["+protocol+"]");
 
-					List<String> protocols = new ArrayList<String>(Arrays.asList(allowedProtocols.split(",")));
+					List<String> protocols = Arrays.asList(allowedProtocols.split(","));
 					if(protocols.contains(protocol)) {
 						try {
 							url = new URL(Misc.replace(resourceToUse, " ", "%20"));
@@ -152,6 +152,13 @@ public class ClassUtils {
 		}
 
 		return url;
+	}
+
+	public static List<String> getAllowedProtocols() {
+		if(StringUtils.isEmpty(defaultAllowedProtocols)) {
+			return new ArrayList<String>(); //Arrays.asList(..) won't return an empty List when empty.
+		}
+		return Arrays.asList(defaultAllowedProtocols.split(","));
 	}
 
 	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {

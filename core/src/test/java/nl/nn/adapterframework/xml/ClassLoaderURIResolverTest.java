@@ -2,6 +2,7 @@ package nl.nn.adapterframework.xml;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.net.URL;
@@ -28,6 +29,20 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @RunWith(Parameterized.class)
 public class ClassLoaderURIResolverTest {
+
+	private enum BaseType { LOCAL, BYTES, FILE_SCHEME, NULL }
+	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, FILE_SCHEME(TransformerException.class);
+		private Class<? extends Exception> exception;
+		RefType() {
+			this(null);
+		}
+		RefType(Class<? extends Exception> exception) {
+			this.exception = exception;
+		}
+		Class<? extends Exception> expectsException() {
+			return exception;
+		}
+	}
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
@@ -62,9 +77,6 @@ public class ClassLoaderURIResolverTest {
 			assertNotNull("BaseType ["+baseType+"] refType ["+refType+"]", XmlUtils.source2String(source, false));
 		}
 	}
-
-	private enum BaseType { LOCAL, BYTES, FILE_SCHEME, NULL }
-	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, FILE_SCHEME }
 
 	private IScopeProvider getClassLoaderProvider(BaseType baseType) throws ConfigurationException, IOException {
 		if (baseType==BaseType.BYTES) {
@@ -143,12 +155,18 @@ public class ClassLoaderURIResolverTest {
 		IScopeProvider classLoaderProvider = getClassLoaderProvider(baseType);
 		String baseUrl = getBase(classLoaderProvider, baseType);
 		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoaderProvider+"] BaseUrl ["+baseUrl+"]");
-		
+
 		String ref = getRef(baseType,refType);
 		String expected = getExpected(baseType,refType);
 		System.out.println("BaseType ["+baseType+"] refType ["+refType+"] ref ["+ref+"] expected ["+expected+"]");
 		if (ref!=null) {
-			testUri(baseType.name(), refType.name(), classLoaderProvider, baseUrl, ref, expected);
+			if(refType.expectsException() != null) {
+				assertThrows(refType.expectsException(), () -> {
+					testUri(baseType.name(), refType.name(), classLoaderProvider, baseUrl, ref, expected);
+				});
+			} else {
+				testUri(baseType.name(), refType.name(), classLoaderProvider, baseUrl, ref, expected);
+			}
 		}
 	}
 

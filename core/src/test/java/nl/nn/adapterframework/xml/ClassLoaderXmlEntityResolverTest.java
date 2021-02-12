@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.xml;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
@@ -122,7 +124,7 @@ public class ClassLoaderXmlEntityResolverTest {
 		assertNotNull(inputSource);
 	}
 
-	@Test(expected = XNIException.class)
+	@Test
 	public void classLoaderXmlEntityResolverCannotLoadExternalEntities() throws Exception {
 		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
 
@@ -131,7 +133,12 @@ public class ClassLoaderXmlEntityResolverTest {
 		assertNotNull(url);
 		resourceIdentifier.setBaseSystemId(url.toExternalForm());
 
-		resolver.resolveEntity(resourceIdentifier);
+		XNIException thrown = assertThrows(XNIException.class, () -> {
+			resolver.resolveEntity(resourceIdentifier);
+		});
+
+		String errorMessage = "Cannot lookup resource [ftp://share.host.org/UDTSchema.xsd] with protocol [ftp], no allowedProtocols";
+		assertTrue("SaxParseException should start with [Cannot get resource ...] but is ["+thrown.getMessage()+"]", thrown.getMessage().startsWith(errorMessage));
 	}
 
 	private class ResourceIdentifier implements XMLResourceIdentifier {
