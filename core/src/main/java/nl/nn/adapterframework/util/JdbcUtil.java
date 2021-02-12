@@ -175,9 +175,6 @@ public class JdbcUtil {
 			case Types.VARBINARY:
 			case Types.BINARY:
 			case Types.BLOB:
-			case Types.LONGVARCHAR:
-			case Types.LONGNVARCHAR:
-			case Types.CLOB :
 			case Types.ARRAY:
 			case Types.DISTINCT:
 			case Types.REF:

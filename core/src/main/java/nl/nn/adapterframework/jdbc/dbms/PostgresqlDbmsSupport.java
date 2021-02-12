@@ -153,7 +153,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 	@Override
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
-		return super.isClobType(rsmeta, colNum) || rsmeta.getColumnType(colNum)==Types.VARCHAR && "text".equals(rsmeta.getColumnTypeName(colNum));
+		return rsmeta.getColumnType(colNum)==Types.VARCHAR && "text".equals(rsmeta.getColumnTypeName(colNum));
 	}
 	
 	@Override
