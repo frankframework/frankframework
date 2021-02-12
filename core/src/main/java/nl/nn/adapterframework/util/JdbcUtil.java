@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -150,47 +150,31 @@ public class JdbcUtil {
 		}
 	}
 
-	public static boolean isBlobType(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta) throws SQLException {
-		switch (rsmeta.getColumnType(colNum)) {
-			case Types.LONGVARBINARY:
-			case Types.VARBINARY:
-			case Types.BINARY:
-			case Types.BLOB:
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	public static boolean isClobType(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta) throws SQLException {
-		switch (rsmeta.getColumnType(colNum)) {
-			case Types.CLOB:
-				return true;
-			default:
-				return false;
-		}
-	}
 
 	public static String getValue(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws JdbcException, IOException, SQLException {
+		if (dbmsSupport.isBlobType(rsmeta, colNum)) {
+			try {
+				return JdbcUtil.getBlobAsString(dbmsSupport, rs,colNum,blobCharset,decompressBlobs,getBlobSmart,encodeBlobBase64);
+			} catch (JdbcException e) {
+				log.debug("Caught JdbcException, assuming no blob found",e);
+				return nullValue;
+			}
+			
+		}
+		if (dbmsSupport.isClobType(rsmeta, colNum)) {
+			try {
+				return JdbcUtil.getClobAsString(dbmsSupport, rs,colNum,false);
+			} catch (JdbcException e) {
+				log.debug("Caught JdbcException, assuming no clob found",e);
+				return nullValue;
+			}
+		}
 		switch(rsmeta.getColumnType(colNum)) {
+			// return "undefined" for types that cannot be rendered to strings easily
 			case Types.LONGVARBINARY:
 			case Types.VARBINARY:
 			case Types.BINARY:
 			case Types.BLOB:
-				try {
-					return JdbcUtil.getBlobAsString(dbmsSupport, rs,colNum,blobCharset,decompressBlobs,getBlobSmart,encodeBlobBase64);
-				} catch (JdbcException e) {
-					log.debug("Caught JdbcException, assuming no blob found",e);
-					return nullValue;
-				}
-			case Types.CLOB :
-				try {
-					return JdbcUtil.getClobAsString(dbmsSupport, rs,colNum,false);
-				} catch (JdbcException e) {
-					log.debug("Caught JdbcException, assuming no clob found",e);
-					return nullValue;
-				}
-			// return "undefined" for types that cannot be rendered to strings easily
 			case Types.ARRAY:
 			case Types.DISTINCT:
 			case Types.REF:
@@ -257,7 +241,7 @@ public class JdbcUtil {
 			return null;
 		}
 		if (charset==null) {
-			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		return StreamUtil.getCharsetDetectingInputStreamReader(blobIntputStream, charset);
 	}
@@ -411,7 +395,7 @@ public class JdbcUtil {
 		Writer result;
 		OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobUpdateHandle);
 		if (charset==null) {
-			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		if (compressBlob) {
 			result = new BufferedWriter(new OutputStreamWriter(new DeflaterOutputStream(out),charset));
@@ -426,7 +410,7 @@ public class JdbcUtil {
 			Object blobHandle=dbmsSupport.getBlobHandle(rs, columnIndex);
 			try (OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobHandle)) {
 				if (charset==null) {
-					charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+					charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 				}
 				if (compressBlob) {
 					try (DeflaterOutputStream dos = new DeflaterOutputStream(out)) {
@@ -627,7 +611,7 @@ public class JdbcUtil {
 				if (!rs.next()) {
 					return null;
 				}
-				return getBlobAsString(dbmsSupport, rs, 1, Misc.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
+				return getBlobAsString(dbmsSupport, rs, 1, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
 			}
 		} catch (Exception e) {
 			throw new JdbcException("could not obtain value using query ["+query+"]",e);

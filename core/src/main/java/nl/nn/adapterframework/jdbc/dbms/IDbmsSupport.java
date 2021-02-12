@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -69,6 +70,7 @@ public interface IDbmsSupport {
 	String getTimestampAsDate(String columnName);
 
 	String getClobFieldType();
+	boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 	boolean mustInsertEmptyClobBeforeData();
 	String emptyClobValue();
 	Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException;
@@ -90,6 +92,7 @@ public interface IDbmsSupport {
 	
 
 	String getBlobFieldType();
+	boolean isBlobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 	boolean mustInsertEmptyBlobBeforeData();
 	String emptyBlobValue();
 	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException;

@@ -468,7 +468,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if(numberOfColumns > 1) {
 					log.warn(getLogPrefix() + "has set scalar=true but the resultset contains ["+numberOfColumns+"] columns. Consider optimizing the query.");
 				}
-				if (JdbcUtil.isBlobType(resultset, 1, rsmeta)) {
+				if (getDbmsSupport().isBlobType(rsmeta, 1)) {
 					if (response!=null) {
 						if (StringUtils.isNotEmpty(contentType)) {
 							response.setHeader("Content-Type", contentType); 
@@ -496,7 +496,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						}
 					}
 				}
-				if (JdbcUtil.isClobType(resultset, 1, rsmeta)) {
+				if (getDbmsSupport().isClobType(rsmeta, 1)) {
 					if (clobSessionVar!=null) {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
 						return new PipeRunResult(null, Message.nullMessage());
