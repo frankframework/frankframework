@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.util.AppConstants;
 
-public class JndiContextPrefixFactoryText {
+public class JndiContextPrefixFactoryTest {
 	private enum ApplicationServer {
 		WAS,TOMCAT,JBOSS;
 	}
