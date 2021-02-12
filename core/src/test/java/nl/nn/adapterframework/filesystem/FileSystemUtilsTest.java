@@ -1,5 +1,8 @@
 package nl.nn.adapterframework.filesystem;
 
+import java.util.Date;
+import java.util.stream.Stream;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,7 +71,9 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		int numOfBackups = 3;
 		int rotateSize = 8;
 		int numOfFilesPresentAtStart=5;
-		
+		if(!_folderExists(folder)) {
+			_createFolder(folder);
+		}
 		if (_fileExists(filename)) {
 			_deleteFile(folder, filename);
 		}
@@ -126,13 +131,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		String dstFolder = "dstFolder";
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
-		
+		if(!_folderExists(srcFolder)) {
+			_createFolder(srcFolder);
+		}
 		if (_fileExists(filename)) {
 			_deleteFile(dstFolder, filename);
 		}
 
 		if (dstFolder!=null) {
-			if  (_folderExists(dstFolder)) {
+			if (!_folderExists(dstFolder)) {
 				_createFolder(dstFolder);
 			}
 		}
@@ -168,13 +175,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		String dstFolder = "dstFolder";
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
-		
+		if(!_folderExists(srcFolder)) {
+			_createFolder(srcFolder);
+		}
 		if (_fileExists(filename)) {
 			_deleteFile(dstFolder, filename);
 		}
 
 		if (dstFolder!=null) {
-			if  (_folderExists(dstFolder)) {
+			if  (!_folderExists(dstFolder)) {
 				_createFolder(dstFolder);
 			}
 		}
@@ -210,7 +219,9 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		String dstFolder = "dstFolder";
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
-		
+		if(!_folderExists(srcFolder)) {
+			_createFolder(srcFolder);
+		}
 		if (dstFolder!=null && !_folderExists(dstFolder)) {
 			_createFolder(dstFolder);
 		}
@@ -239,6 +250,39 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		for (int i=1;i<=numOfFilesPresentAtStart;i++) {
 			assertFileExistsWithContents(dstFolder, filename+"."+i, contents.trim()+i);
 		}
+	}
+
+	@Test
+	public void testFilteredStream() throws Exception {
+		String srcFolderName = "src" + new Date().getTime();
+		_createFolder(srcFolderName);
+		for (int i=0; i < 3; i++) {
+			String filename = "inFilter"+i + FILE1;
+
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+
+		for (int i=0; i < 3; i++) {
+			String filename = i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+		waitForActionToFinish();
+		Stream<F> stream =  FileSystemUtils.getFilteredList(fileSystem, srcFolderName, "inFilter*", null);
+		
+		Stream<F> secondaryStream =  FileSystemUtils.getFilteredList(fileSystem, srcFolderName, "inFilter*", null);
+		
+		System.out.println("asdasdasdsad");
+//		// assert that the file has been overwritten, and no backups have been rotated
+//		assertFileDoesNotExist(srcFolder, filename);
+//		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"new");
+//		for (int i=1;i<=numOfFilesPresentAtStart;i++) {
+//			assertFileExistsWithContents(dstFolder, filename+"."+i, contents.trim()+i);
+//		}
 	}
 
 }
