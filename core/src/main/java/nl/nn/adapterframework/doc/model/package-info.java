@@ -58,6 +58,42 @@ limitations under the License.
  * is included in class {@link nl.nn.adapterframework.doc.model.ConfigChild}, which also references the {@link nl.nn.adapterframework.doc.model.FrankElement} of
  * the parent tag and the {@link nl.nn.adapterframework.doc.model.ElementRole} for a set of allowed child tags.
  * <p>
+ * {@link nl.nn.adapterframework.doc.DocWriterNew} uses config children to enrich the definition of a parent
+ * XML tag with allowed child tags. An additional child tag is added to support syntax 1. For example, a
+ * <code>&lt;Receiver&gt;</code> can contain <code>&lt;Listener className="nl.nn...." ... &gt;</code>.
+ * The element name of the generic element option follows from the syntax 1 name of the applied
+ * {@link nl.nn.adapterframework.doc.model.ElementRole}. When a
+ * {@link nl.nn.adapterframework.doc.model.FrankElement} has config children sharing the same syntax 1 name,
+ * then the different config children should not each define their own generic element option. If that
+ * would be done, multiple definitions for the <code>&lt;Listener&gt;</code> element would be introduced
+ * which would cause an error in the XML parser.
+ * <p>
+ * The model introduces the entity {@link nl.nn.adapterframework.doc.model.ConfigChildSet} for groups
+ * of config children sharing a syntax 1 name. {@link nl.nn.adapterframework.doc.DocWriterNew}
+ * uses objects of type {@link nl.nn.adapterframework.doc.model.ConfigChildSet} to list
+ * the child elements that can be contained in a parent XML element, including the generic
+ * element option.
+ * <p>
+ * {@link nl.nn.adapterframework.doc.model.FrankElement}-s can correspond to XML elements that
+ * are not named after the represented Java class but after the syntax 1 name of an owning
+ * {@link nl.nn.adapterframework.doc.model.ElementRole}. An example is <code>&lt;Forward&gt;</code>, which
+ * represents Java class {@link nl.nn.adapterframework.core.PipeForward}. This naming rule is applied
+ * when a FrankElement is owned by an {@link nl.nn.adapterframework.doc.model.ElementRole} having
+ * an {@link nl.nn.adapterframework.doc.model.ElementType} that is not interface-based.
+ * <p>
+ * This way to name Java classes can cause conflicts when there are different
+ * non-interface {@link nl.nn.adapterframework.doc.model.ElementRole} with a common
+ * syntax 1 name. These roles cannot declare allowed XML elements for their members,
+ * because these would become conflicting definitions for the same XML element.
+ * {@link nl.nn.adapterframework.doc.model.ElementRoleSet} is used to solve this
+ * type of conflicts. An {@link nl.nn.adapterframework.doc.model.ElementRoleSet}
+ * holds the {@link nl.nn.adapterframework.doc.model.ElementRole}-s included
+ * in a {@link nl.nn.adapterframework.doc.model.ConfigChildSet}, but each
+ * {@link nl.nn.adapterframework.doc.model.ElementRoleSet} is created only once.
+ * When multiple {@link nl.nn.adapterframework.doc.model.ConfigChildSet}-s have
+ * the same combination of {@link nl.nn.adapterframework.doc.model.ElementRole}-s,
+ * they share their {@link nl.nn.adapterframework.doc.model.ElementRoleSet}.
+ * <p>
  * Tags in Frank configs can have attributes, which are modeled by class {@link nl.nn.adapterframework.doc.model.FrankAttribute}.
  * The tag in which the attribute occurs is modeled by its {@link nl.nn.adapterframework.doc.model.FrankElement}, see relation
  * "attribute of". The documentation of an attribute may appear in a Java class that differs
