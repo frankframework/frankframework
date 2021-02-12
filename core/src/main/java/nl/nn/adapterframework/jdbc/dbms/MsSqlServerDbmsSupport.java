@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,9 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +41,8 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	protected static final String WITH_UPDLOCK_ROWLOCK = "WITH (UPDLOCK, ROWLOCK)";
 	protected static final String GET_DATE = "GETDATE()";
 	protected static final String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
-	
+
+	private final int CLOB_SIZE_TRESHOLD=10000000;
 
 	@Override
 	public Dbms getDbms() {
@@ -109,6 +113,10 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getClobFieldType() {
 		return "VARCHAR(MAX)";
+	}
+	@Override
+	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
+		return (rsmeta.getColumnType(colNum)==Types.VARCHAR || rsmeta.getColumnType(colNum)==Types.NVARCHAR) && rsmeta.getPrecision(colNum)>CLOB_SIZE_TRESHOLD;
 	}
 	
 

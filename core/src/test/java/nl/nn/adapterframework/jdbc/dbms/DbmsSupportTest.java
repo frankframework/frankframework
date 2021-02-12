@@ -477,7 +477,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				try (ResultSet rs=stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i=1;i<=9;i++) {
-						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==8, dbmsSupport.isBlobType(rsmeta, i));
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==8, dbmsSupport.isBlobType(rsmeta, i));
 					}
 				}
 				
@@ -494,7 +494,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				try (ResultSet rs=stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i=1;i<=9;i++) {
-						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==9, dbmsSupport.isClobType(rsmeta, i));
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==9, dbmsSupport.isClobType(rsmeta, i));
 					}
 				}
 				
@@ -510,7 +510,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				try (ResultSet rs=stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i=1;i<=7;i++) {
-						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==6, dbmsSupport.isBlobType(rsmeta, i));
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==6, dbmsSupport.isBlobType(rsmeta, i));
 					}
 				}
 				
@@ -526,7 +526,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				try (ResultSet rs=stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i=1;i<=7;i++) {
-						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==7, dbmsSupport.isClobType(rsmeta, i));
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==7, dbmsSupport.isClobType(rsmeta, i));
 					}
 				}
 				
