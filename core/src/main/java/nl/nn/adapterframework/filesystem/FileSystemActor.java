@@ -465,7 +465,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					F processedFile = null;
 					switch(action) {
 						case ACTION_MOVE:
-							processedFile = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());;
+							processedFile = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
 							break;
 						case ACTION_COPY:
 							processedFile = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());

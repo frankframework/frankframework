@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.stream.Stream;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -252,6 +253,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		}
 	}
 
+	@Ignore //Complete it first
 	@Test
 	public void testFilteredStream() throws Exception {
 		String srcFolderName = "src" + new Date().getTime();
@@ -272,17 +274,11 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 			}
 		}
 		waitForActionToFinish();
-		Stream<F> stream =  FileSystemUtils.getFilteredList(fileSystem, srcFolderName, "inFilter*", null);
+//		Stream<F> stream =  FileSystemUtils.getFilteredList(fileSystem, srcFolderName, "inFilter*", null);
+//		
+//		Stream<F> secondaryStream =  FileSystemUtils.getFilteredList(fileSystem, srcFolderName, "inFilter*", null);
 		
-		Stream<F> secondaryStream =  FileSystemUtils.getFilteredList(fileSystem, srcFolderName, "inFilter*", null);
-		
-		System.out.println("asdasdasdsad");
-//		// assert that the file has been overwritten, and no backups have been rotated
-//		assertFileDoesNotExist(srcFolder, filename);
-//		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"new");
-//		for (int i=1;i<=numOfFilesPresentAtStart;i++) {
-//			assertFileExistsWithContents(dstFolder, filename+"."+i, contents.trim()+i);
-//		}
+//		
 	}
 
 }
