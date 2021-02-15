@@ -50,4 +50,9 @@ class ElementRoleSet {
 			return Optional.empty();
 		}
 	}
+
+	@Override
+	public String toString() {
+		return ElementRole.describeCollection(roles);
+	}
 }

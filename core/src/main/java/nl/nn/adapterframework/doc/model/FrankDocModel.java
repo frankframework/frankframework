@@ -622,6 +622,9 @@ public class FrankDocModel {
 	}
 
 	void setHighestCommonInterface() {
+		if(log.isTraceEnabled()) {
+			log.trace("Doing FrankDocModel.setHighestCommonInterface");
+		}
 		for(ElementRole role: allElementRoles.values()) {
 			String syntax1Name = role.getSyntax1Name();
 			ElementType et = role.getElementType().getHighestCommonInterface();
@@ -632,11 +635,20 @@ public class FrankDocModel {
 				role.setHighestCommonInterface(role);
 			} else {
 				role.setHighestCommonInterface(result);
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Role [%s] has highest common interface [%s]", role.toString(), result.toString()));
+				}
 			}
+		}
+		if(log.isTraceEnabled()) {
+			log.trace("Done FrankDocModel.setHighestCommonInterface");
 		}
 	}
 
 	void createConfigChildSets() {
+		if(log.isTraceEnabled()) {
+			log.trace("Doing FrankDocModel.createConfigChildSets");
+		}
 		allElementRoles.values().forEach(ElementRole::initConflicts);
 		List<FrankElement> sortedFrankElements = new ArrayList<>(allElements.values());
 		Collections.sort(sortedFrankElements);
@@ -645,21 +657,36 @@ public class FrankDocModel {
 		Collections.sort(sortedElementRoles);
 		sortedElementRoles.stream()
 			.filter(role -> role.getElementType().isFromJavaInterface())
-			.forEach(role -> createTypeBasedElementRoleSets(Arrays.asList(role)));
+			.forEach(role -> createTypeBasedElementRoleSets(Arrays.asList(role), 1));
 		allElementRoleSets.values().forEach(ElementRoleSet::initConflicts);
+		if(log.isTraceEnabled()) {
+			log.trace("Done FrankDocModel.createConfigChildSets");
+		}
 	}
 
 	private void createConfigChildSets(FrankElement frankElement) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Handling FrankElement [%s]", frankElement.getFullName()));
+		}
 		Map<String, List<ConfigChild>> cumChildrenBySyntax1Name = frankElement.getCumulativeConfigChildren(ElementChild.ALL, ElementChild.NONE).stream()
 				.collect(Collectors.groupingBy(c -> c.getElementRole().getSyntax1Name()));
 		for(String syntax1Name: cumChildrenBySyntax1Name.keySet()) {
 			List<ConfigChild> configChildren = cumChildrenBySyntax1Name.get(syntax1Name);
 			if(configChildren.stream().map(ConfigChild::getOwningElement).anyMatch(childOwner -> (childOwner == frankElement))) {
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("Found ConfigChildSet for syntax 1 name [%s]", syntax1Name));
+				}
 				ConfigChildSet configChildSet = new ConfigChildSet(configChildren);
 				frankElement.addConfigChildSet(configChildSet);
 				ElementRoleSet elementRoleSet = findOrCreateElementRoleSet(configChildSet);
+				if(log.isTraceEnabled()) {
+					log.trace(String.format("The config child with syntax 1 name [%s] has ElementRoleSet [%s]", syntax1Name, elementRoleSet.toString()));
+				}
 				configChildSet.setElementRoleSet(elementRoleSet);
 			}
+		}
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Done handling FrankElement [%s]", frankElement.getFullName()));
 		}
 	}
 
@@ -671,12 +698,18 @@ public class FrankDocModel {
 				.map(ElementRole::getKey)
 				.collect(Collectors.toSet());
 		if(! allElementRoleSets.containsKey(key)) {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("New ElementRoleSet for roles [%s]", ElementRole.describeCollection(roles)));
+			}
 			allElementRoleSets.put(key, new ElementRoleSet(roles));
 		}
 		return allElementRoleSets.get(key);
 	}
 
-	private void createTypeBasedElementRoleSets(List<ElementRole> roleGroup) {
+	private void createTypeBasedElementRoleSets(List<ElementRole> roleGroup, int recursionDepth) {
+		if(log.isTraceEnabled()) {
+			log.trace("Enter with roles [%s] and recursion depth [%d]", ElementRole.describeCollection(roleGroup), recursionDepth);
+		}
 		List<FrankElement> rawMembers = roleGroup.stream()
 				.flatMap(role -> role.getRawMembers().stream())
 				.distinct()
@@ -692,11 +725,17 @@ public class FrankDocModel {
 			Set<ElementRole.Key> key = roles.stream().map(ElementRole::getKey).collect(Collectors.toSet());
 			if(! allElementRoleSets.containsKey(key)) {
 				allElementRoleSets.put(key, new ElementRoleSet(roles));
+				if(log.isTraceEnabled()) {
+					log.trace("Added new ElementRoleSet [%s]", allElementRoleSets.get(key).toString());
+				}
 				List<ElementRole> recursionParents = new ArrayList<>(roles);
 				recursionParents = recursionParents.stream().filter(role -> role.getElementType().isFromJavaInterface()).collect(Collectors.toList());
 				Collections.sort(recursionParents);
-				createTypeBasedElementRoleSets(recursionParents);
+				createTypeBasedElementRoleSets(recursionParents, recursionDepth + 1);
 			}
+		}
+		if(log.isTraceEnabled()) {
+			log.trace("Leave for roles [%s] and recursion depth [%d]", ElementRole.describeCollection(roleGroup), recursionDepth);
 		}
 	}
 }

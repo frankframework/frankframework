@@ -123,4 +123,9 @@ public class ConfigChildSet {
 	public Optional<FrankElement> getGenericElementOptionDefault(Predicate<FrankElement> elementFilter) {
 		return elementRoleSet.getGenericElementDefaultCandidates().filter(elementFilter);
 	}
+
+	@Override
+	public String toString() {
+		return elementRoleSet.toString();
+	}
 }

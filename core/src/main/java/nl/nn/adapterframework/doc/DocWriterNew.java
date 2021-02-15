@@ -380,11 +380,17 @@ public class DocWriterNew {
 			log.trace(String.format("Adding cumulative config chidren of FrankElement [%s] to XSD element [%s]", frankElement.getFullName(), xsdElementName));
 		}
 		if(frankElement.isHasOrInheritsPluralConfigChildren(version.getChildSelector(), version.getChildRejector())) {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("FrankElement [%s] has plural config children", frankElement.getFullName()));
+			}
 			XmlBuilder choice = addChoice(sequence, "0", "unbounded");
 			for(ConfigChildSet configChildSet: frankElement.getCumulativeConfigChildSets()) {
 				addPluralConfigChild(choice, configChildSet, frankElement);
 			}
 		} else {
+			if(log.isTraceEnabled()) {
+				log.trace(String.format("FrankElement [%s] does not have plural config children", frankElement.getFullName()));
+			}
 			frankElement.getCumulativeConfigChildren(version.getChildSelector(), version.getChildRejector()).forEach(c -> addConfigChild(sequence, c));
 		}
 		if(log.isTraceEnabled()) {
@@ -903,7 +909,10 @@ public class DocWriterNew {
 				log.trace(String.format("Adding new group for plural config children for FrankElement [%s]", frankElement.getFullName()));
 			}
 			addConfigChildrenWithPluralConfigChildSetsUnchecked(elementBuildingStrategy, frankElement);
-		}		
+		}
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Done applying algorithm for plural config children for FrankElement [%s]", frankElement.getFullName()));
+		}
 	}
 
 	private void addConfigChildrenWithPluralConfigChildSetsUnchecked(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
@@ -920,6 +929,9 @@ public class DocWriterNew {
 	}
 
 	private void addPluralConfigChild(XmlBuilder choice, ConfigChildSet configChildSet, FrankElement frankElement) {
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Adding ConfigChildSet with ElementRoleSet [%s]", configChildSet.toString()));
+		}
 		ConfigChildSetLogContext logContext = ConfigChildSetLogContext.getInstance(log, frankElement, configChildSet);
 		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
 		if((roles.size() == 1) && isNoElementTypeNeeded(roles.get(0))) {
@@ -933,6 +945,9 @@ public class DocWriterNew {
 			}
 			requestElementGroupForConfigChildSet(configChildSet, roles, logContext);
 			DocWriterNewXmlUtils.addGroupRef(choice, elementGroupManager.getGroupName(roles));
+		}
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("Dpme adding ConfigChildSet with ElementRoleSet [%s]", configChildSet.toString()));
 		}
 	}
 
