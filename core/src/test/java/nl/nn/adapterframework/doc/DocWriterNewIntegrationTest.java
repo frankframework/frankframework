@@ -2,7 +2,6 @@ package nl.nn.adapterframework.doc;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -16,8 +15,8 @@ import javax.xml.validation.Validator;
 import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.xml.sax.InputSource;
 
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.model.FrankElementStatistics;
@@ -26,17 +25,18 @@ import nl.nn.adapterframework.util.LogUtil;
 @Ignore("This test takes too long.")
 public class DocWriterNewIntegrationTest {
 	private static Logger log = LogUtil.getLogger(DocWriterNewIntegrationTest.class);
+	private static final String TEST_CONFIGURATION_FILE = "testConfiguration.xml";
 
 	@Test
 	public void testStrict() throws Exception {
 		String schemaFileName = generateXsd(XsdVersion.STRICT);
-		validate(schemaFileName);
+		validate(schemaFileName, TEST_CONFIGURATION_FILE);
 	}
 
 	@Test
 	public void testCompatibility() throws Exception {
 		String schemaFileName = generateXsd(XsdVersion.COMPATIBILITY);
-		validate(schemaFileName);
+		validate(schemaFileName, TEST_CONFIGURATION_FILE);
 	}
 
 	String generateXsd(XsdVersion version) throws IOException {
@@ -56,12 +56,38 @@ public class DocWriterNewIntegrationTest {
 		return output.getAbsolutePath();
 	}
 
-	private void validate(String schemaFileName) throws Exception {
+	private void validate(String schemaFileName, String testConfigurationFileName) throws Exception {
 		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 		Schema schema = schemaFactory.newSchema(new File(schemaFileName));
 		Validator validator = schema.newValidator();
-		validator.validate(new SAXSource(new InputSource(new FileInputStream(new File("testConfiguration.xml")))));
+		String resourcePath = "/doc/testConfigs/" + testConfigurationFileName;
+		Resource resource = Resource.getResource(resourcePath);
+		validator.validate(new SAXSource(resource.asInputSource()));
 		log.info("Validation of XML document against schema [{}] succeeded", schemaFileName);
+	}
+
+	@Test
+	public void testExotic() throws Exception {
+		String outputFileName = generateXsd(
+				XsdVersion.STRICT, "/doc/exotic-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.exotic.Master", "exotic.xsd");
+		validate(outputFileName, "testExotic.xml");
+	}
+
+	private String generateXsd(XsdVersion version, final String digesterRulesFileName, final String rootClassName, String outputSchemaFileName) throws IOException {
+		FrankDocModel model = FrankDocModel.populate(digesterRulesFileName, rootClassName);
+		DocWriterNew docWriter = new DocWriterNew(model);
+		docWriter.init(rootClassName, version);
+		String xsdString = docWriter.getSchema();
+		File output = new File(outputSchemaFileName);
+		log.info("Output file of test xsd: " + output.getAbsolutePath());
+		Writer writer = new BufferedWriter(new FileWriter(output));
+		try {
+			writer.append(xsdString);
+		}
+		finally {
+			writer.close();
+		}
+		return output.getAbsolutePath();
 	}
 
 	@Ignore

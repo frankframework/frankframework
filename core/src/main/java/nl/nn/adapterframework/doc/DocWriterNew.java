@@ -379,8 +379,14 @@ public class DocWriterNew {
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Adding cumulative config chidren of FrankElement [%s] to XSD element [%s]", frankElement.getFullName(), xsdElementName));
 		}
-		// TODO: Capture case of plural config children.
-		frankElement.getCumulativeConfigChildren(version.getChildSelector(), version.getChildRejector()).forEach(c -> addConfigChild(sequence, c));
+		if(frankElement.isHasOrInheritsPluralConfigChildren(version.getChildSelector(), version.getChildRejector())) {
+			XmlBuilder choice = addChoice(sequence, "0", "unbounded");
+			for(ConfigChildSet configChildSet: frankElement.getCumulativeConfigChildSets()) {
+				addPluralConfigChild(choice, configChildSet, frankElement);
+			}
+		} else {
+			frankElement.getCumulativeConfigChildren(version.getChildSelector(), version.getChildRejector()).forEach(c -> addConfigChild(sequence, c));
+		}
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Adding cumulative attributes of FrankElement [%s] to XSD element [%s]", frankElement.getFullName(), xsdElementName));
 		}
@@ -909,20 +915,24 @@ public class DocWriterNew {
 		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
 		List<ConfigChildSet> configChildSets = frankElement.getCumulativeConfigChildSets();
 		for(ConfigChildSet configChildSet: configChildSets) {
-			ConfigChildSetLogContext logContext = ConfigChildSetLogContext.getInstance(log, frankElement, configChildSet);
-			List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
-			if((roles.size() == 1) && isNoElementTypeNeeded(roles.get(0))) {
-				if(logContext.isTraceEnabled()) {
-					logContext.trace("Config child set appears as element reference");
-				}
-				addElementRoleAsElement(choice, roles.get(0));
-			} else {
-				if(log.isTraceEnabled()) {
-					logContext.trace("Config child set appears as group reference");
-				}
-				requestElementGroupForConfigChildSet(configChildSet, roles, logContext);
-				DocWriterNewXmlUtils.addGroupRef(choice, elementGroupManager.getGroupName(roles));
+			addPluralConfigChild(choice, configChildSet, frankElement);
+		}
+	}
+
+	private void addPluralConfigChild(XmlBuilder choice, ConfigChildSet configChildSet, FrankElement frankElement) {
+		ConfigChildSetLogContext logContext = ConfigChildSetLogContext.getInstance(log, frankElement, configChildSet);
+		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
+		if((roles.size() == 1) && isNoElementTypeNeeded(roles.get(0))) {
+			if(logContext.isTraceEnabled()) {
+				logContext.trace("Config child set appears as element reference");
 			}
+			addElementRoleAsElement(choice, roles.get(0));
+		} else {
+			if(log.isTraceEnabled()) {
+				logContext.trace("Config child set appears as group reference");
+			}
+			requestElementGroupForConfigChildSet(configChildSet, roles, logContext);
+			DocWriterNewXmlUtils.addGroupRef(choice, elementGroupManager.getGroupName(roles));
 		}
 	}
 
