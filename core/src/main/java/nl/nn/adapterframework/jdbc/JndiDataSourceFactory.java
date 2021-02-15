@@ -25,10 +25,15 @@ import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
 import lombok.SneakyThrows;
+import nl.nn.adapterframework.core.JndiContextPrefixFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -36,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * would be nice if we could have used JndiObjectFactoryBean but it has too much overhead
  *
  */
-public class JndiDataSourceFactory implements IDataSourceFactory {
+public class JndiDataSourceFactory implements IDataSourceFactory, ApplicationContextAware {
 
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.datasource.default");
 	protected Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
@@ -63,7 +68,7 @@ public class JndiDataSourceFactory implements IDataSourceFactory {
 	 */
 	private CommonDataSource lookupDataSource(String jndiName, Properties jndiEnvironment) throws NamingException {
 		CommonDataSource dataSource = null;
-		String prefixedJndiName = jndiContextPrefix+jndiName;
+		String prefixedJndiName = getPrefixedJndiName(jndiName);
 		try {
 			dataSource = JndiDataSourceLocator.lookup(prefixedJndiName, jndiEnvironment);
 		} catch (NamingException ex) { //Fallback and search again but this time without prefix
@@ -78,6 +83,10 @@ public class JndiDataSourceFactory implements IDataSourceFactory {
 
 		log.debug("located DataSource with JNDI name [" + prefixedJndiName + "]"); //No exceptions during lookup means we found something!
 		return dataSource;
+	}
+
+	private String getPrefixedJndiName(String jndiName) {
+		return (StringUtils.isNotEmpty(jndiContextPrefix)) ? jndiContextPrefix + jndiName : jndiName;
 	}
 
 	/**
@@ -98,5 +107,13 @@ public class JndiDataSourceFactory implements IDataSourceFactory {
 	@Override
 	public List<String> getDataSourceNames() {
 		return new ArrayList<String>(dataSources.keySet());
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		JndiContextPrefixFactory jndiContextFactory = applicationContext.getBean("jndiContextPrefixFactory", JndiContextPrefixFactory.class);
+		if(jndiContextPrefix == null) { // setJndiContextPrefix is called before setApplicationContext. If explicitly set (ie prefix is not null), don't override this value.
+			setJndiContextPrefix(jndiContextFactory.getContextPrefix());
+		}
 	}
 }
