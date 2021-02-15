@@ -1352,6 +1352,7 @@ angular.module('iaf.beheerconsole')
 		serverSide: true,
 		processing: true,
 		paging: true,
+		lengthMenu: [10,25,50,100,500],
 		order: [[ 2, 'asc' ]],
 		columns: columns,
 		sAjaxDataProp: 'messages',
@@ -1373,25 +1374,12 @@ angular.module('iaf.beheerconsole')
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
 				response.recordsFiltered = response.skipMessages + response.messageCount;
-				console.log(response.targetStates);
 				$scope.targetStates = response.targetStates;
 				callback(response);
 			});
 		}
 	};
 	$scope.targetStates = [];
-	$scope.hasProcessState = function(processState){
-		if($scope.targetStates){
-			var indexOfPS = $scope.targetStates.indexOf(processState);
-			if(indexOfPS != -1){
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-	}
 	$scope.search = {
 		id: "",
 		startDate: "",
@@ -1467,15 +1455,17 @@ angular.module('iaf.beheerconsole')
 			$scope.updateTable();
 		});
 	}
-	$scope.movingMessages = false;
-	$scope.moveToAvailable = function() {
-		$scope.movingMessages = true;
-		Api.Post($scope.base_url+"/move", getFormData(), function() {
-			$scope.movingMessages = false;
+	$scope.changingProcessState = false;
+	$scope.changeProcessState = function(targetState) {
+		$scope.changingProcessState = true;
+		var data = getFormData();
+		data.append("targetState", targetState);
+		Api.Post($scope.base_url+"/changeProcessState", data, function() {
+			$scope.changingProcessState = false;
 			$scope.addNote("success", "Successfully moved messages to Available");
 			$scope.updateTable();
 		}, function(data) {
-			$scope.movingMessages = false;
+			$scope.changingProcessState = false;
 			$scope.addNote("danger", "Something went wrong, unable to move selected messages!");
 			$scope.updateTable();
 		});

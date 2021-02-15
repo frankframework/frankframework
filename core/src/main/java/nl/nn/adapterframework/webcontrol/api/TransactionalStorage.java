@@ -286,11 +286,11 @@ public class TransactionalStorage extends Base {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage/move")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage/changeProcessState")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response moveReceiverMessages(
+	public Response changeProcessState(
 			@PathParam("adapterName") String adapterName,
 			@PathParam("receiverName") String receiverName,
 			MultipartBody input
@@ -306,13 +306,13 @@ public class TransactionalStorage extends Base {
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
-
+		ProcessState targetState = ProcessState.valueOf(resolveStringFromMap(input, "targetState"));
 		String[] messageIds = getMessages(input);
 		IMessageBrowser<?> errorStorageBrowser = receiver.getMessageBrowser(ProcessState.ERROR);
 		List<String> errorMessages = new ArrayList<String>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
-				if(!receiver.changeProcessState(errorStorageBrowser.browseMessage(messageIds[i]), ProcessState.AVAILABLE, null)) {
+				if(!receiver.changeProcessState(errorStorageBrowser.browseMessage(messageIds[i]), targetState, null)) {
 					errorMessages.add("could not move message ["+messageIds[i]+"]");
 				}
 			} catch (ListenerException e) {
