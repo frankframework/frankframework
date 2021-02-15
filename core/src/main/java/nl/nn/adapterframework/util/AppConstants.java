@@ -52,6 +52,7 @@ public final class AppConstants extends Properties implements Serializable {
 	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
 	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
+	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
 	public final static String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 
 	private VariableExpander variableExpander;
