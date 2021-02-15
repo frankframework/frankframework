@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -34,6 +35,7 @@ import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Lombok;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -317,7 +319,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				if(StringUtils.isNotEmpty(getWildCard()) || StringUtils.isNotEmpty(getExcludeWildCard())) { 
 					String folder = determineInputFoldername(input, pvl);
 					XmlBuilder dirXml = new XmlBuilder("DeletedFilesList");
-					try(Stream<F> stream = FileSystemUtils.getFilteredList(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
+					try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
 						Iterator<F> it = stream.iterator();
 						if(it.hasNext()) {
 							F file = it.next();
@@ -375,7 +377,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_LIST)) {
 				String folder = arrangeFolder(determineInputFoldername(input, pvl));
 				XmlBuilder dirXml = new XmlBuilder("directory");
-				try(Stream<F> stream = FileSystemUtils.getFilteredList(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
+				try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
 					int count = 0;
 					Iterator<F> it = stream.iterator();
 					while(it.hasNext()) {
@@ -434,9 +436,25 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
 				return fileSystem.getName(renamed);
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
-				return processAction(input, pvl, determineDestination(pvl), ACTION_MOVE);
+				String destinationFolder = determineDestination(pvl);
+				return processAction(input, pvl, (F f) -> {
+					try {
+						return FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
+					} catch (FileSystemException e) {
+						Lombok.sneakyThrow(e);
+					}
+					return null;
+				});
 			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
-				return processAction(input, pvl, determineDestination(pvl), ACTION_COPY);
+				String destinationFolder = determineDestination(pvl);
+				return processAction(input, pvl, (F f) -> {
+					try {
+						return FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
+					} catch (FileSystemException e) {
+						Lombok.sneakyThrow(e);
+					}
+					return null;
+				});
 			} else if (action.equalsIgnoreCase(ACTION_FORWARD)) {
 				F file=getFile(input, pvl);
 				FileSystemUtils.checkSource(fileSystem, file, "forward");
@@ -453,26 +471,18 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	/**
 	 * Helper method to process move and copy actions.
+	 * @throws FileSystemException 
+	 * @throws IOException 
 	 */
-	private String processAction(Message input, ParameterValueList pvl, String destinationFolder, String action) throws FileSystemException, IOException {
+	private String processAction(Message input, ParameterValueList pvl, Function<F, F> action) throws FileSystemException, IOException {
 		if(StringUtils.isNotEmpty(getWildCard()) || StringUtils.isNotEmpty(getExcludeWildCard())) { 
 			String folder = arrangeFolder(determineInputFoldername(input, pvl));
-			XmlBuilder dirXml = new XmlBuilder(action+"FilesList");
-			try(Stream<F> stream = FileSystemUtils.getFilteredList(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
+			XmlBuilder dirXml = new XmlBuilder(getAction()+"FilesList");
+			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
 				Iterator<F> it = stream.iterator();
 				while(it.hasNext()) {
 					F file = it.next();
-					F processedFile = null;
-					switch(action) {
-						case ACTION_MOVE:
-							processedFile = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
-							break;
-						case ACTION_COPY:
-							processedFile = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
-							break;
-						default:
-							break;
-					}
+					F processedFile = action.apply(file);
 					if(processedFile != null) {
 						dirXml.addSubElement(getFileAsXmlBuilder(processedFile, "file"));
 					}
@@ -481,17 +491,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return dirXml.toXML();
 		} else {
 			F file=getFile(input, pvl);
-			F processedFile = null;
-			switch(action) {
-				case ACTION_MOVE:
-					processedFile = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());;
-					break;
-				case ACTION_COPY:
-					processedFile = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
-					break;
-				default:
-					break;
-			}
+			F processedFile = action.apply(file);;
 			return fileSystem.getName(processedFile);
 		}
 	}

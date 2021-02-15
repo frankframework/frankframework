@@ -201,7 +201,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		FS fileSystem=getFileSystem();
-		try(Stream<F> ds = FileSystemUtils.getFilteredList(fileSystem, getInputFolder(), getWildCard(), getExcludeWildCard())) {
+		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildCard(), getExcludeWildCard())) {
 			Iterator<F> it = ds.iterator();
 			if (it==null || !it.hasNext()) {
 				return null;

@@ -267,7 +267,7 @@ public class FileSystemUtils {
 		}
 	}
 
-	public static <F> Stream<F> getFilteredList(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException, IOException {
+	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException, IOException {
 		DirectoryStream<F> ds = fileSystem.listFiles(folder);
 
 		WildCardFilter wildcardfilter =  StringUtils.isEmpty(wildCard) ? null : new WildCardFilter(wildCard);
