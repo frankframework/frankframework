@@ -180,7 +180,7 @@ public class SignaturePipe extends FixedForwardPipe {
 				}
 			}
 			if (getAction().equals(ACTION_SIGN)) {
-				return new PipeRunResult(getForward(), isSignatureBase64() ? Base64.encodeBase64(dsa.sign()):dsa.sign());
+				return new PipeRunResult(getForward(), isSignatureBase64() ? new String(Base64.encodeBase64(dsa.sign())):dsa.sign());
 			} else {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				Message signatureMsg = Message.asMessage(pvl.getValueMap().get(PARAMETER_SIGNATURE));
