@@ -316,24 +316,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 
 			if (action.equalsIgnoreCase(ACTION_DELETE)) {
-				if(StringUtils.isNotEmpty(getWildCard()) || StringUtils.isNotEmpty(getExcludeWildCard())) { 
-					String folder = determineInputFoldername(input, pvl);
-					XmlBuilder dirXml = new XmlBuilder("DeletedFilesList");
-					try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
-						Iterator<F> it = stream.iterator();
-						if(it.hasNext()) {
-							F file = it.next();
-							XmlBuilder item = getFileAsXmlBuilder(file, "file");
-							fileSystem.deleteFile(file);
-							dirXml.addSubElement(item);
-						}
+				return processAction(input, pvl, (F f) -> {
+					try {
+						fileSystem.deleteFile(f);
+						return f;
+					} catch (FileSystemException e) {
+						Lombok.sneakyThrow(e);
 					}
-					return dirXml.toXML();
-				} else {
-					F file=getFile(input, pvl);
-					fileSystem.deleteFile(file);
-					return fileSystem.getName(file);
-				}
+					return null;
+				});
 			} else if (action.equalsIgnoreCase(ACTION_INFO)) {
 				F file=getFile(input, pvl);
 				FileSystemUtils.checkSource(fileSystem, file, "inspect");
@@ -470,7 +461,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	/**
-	 * Helper method to process move and copy actions.
+	 * Helper method to process delete, move and copy actions.
 	 * @throws FileSystemException 
 	 * @throws IOException 
 	 */
@@ -482,17 +473,16 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				Iterator<F> it = stream.iterator();
 				while(it.hasNext()) {
 					F file = it.next();
-					F processedFile = action.apply(file);
-					if(processedFile != null) {
-						dirXml.addSubElement(getFileAsXmlBuilder(processedFile, "file"));
+					XmlBuilder item = getFileAsXmlBuilder(file, "file");
+					if(action.apply(file) != null) {
+						dirXml.addSubElement(item);
 					}
 				}
 			}
 			return dirXml.toXML();
 		} else {
 			F file=getFile(input, pvl);
-			F processedFile = action.apply(file);;
-			return fileSystem.getName(processedFile);
+			return fileSystem.getName(action.apply(file));
 		}
 	}
 
