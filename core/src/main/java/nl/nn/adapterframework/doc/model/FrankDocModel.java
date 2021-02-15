@@ -641,6 +641,11 @@ public class FrankDocModel {
 		List<FrankElement> sortedFrankElements = new ArrayList<>(allElements.values());
 		Collections.sort(sortedFrankElements);
 		sortedFrankElements.forEach(this::createConfigChildSets);
+		List<ElementRole> sortedElementRoles = new ArrayList<>(allElementRoles.values());
+		Collections.sort(sortedElementRoles);
+		sortedElementRoles.stream()
+			.filter(role -> role.getElementType().isFromJavaInterface())
+			.forEach(role -> createTypeBasedElementRoleSets(Arrays.asList(role)));
 		allElementRoleSets.values().forEach(ElementRoleSet::initConflicts);
 	}
 
@@ -669,5 +674,29 @@ public class FrankDocModel {
 			allElementRoleSets.put(key, new ElementRoleSet(roles));
 		}
 		return allElementRoleSets.get(key);
+	}
+
+	private void createTypeBasedElementRoleSets(List<ElementRole> roleGroup) {
+		List<FrankElement> rawMembers = roleGroup.stream()
+				.flatMap(role -> role.getRawMembers().stream())
+				.distinct()
+				.collect(Collectors.toList());
+		Map<String, List<ConfigChild>> configChildrenBySyntax1Name = rawMembers.stream()
+				.flatMap(element -> element.getConfigChildren(ElementChild.ALL).stream())
+				.collect(Collectors.groupingBy(ConfigChild::getSyntax1Name));
+		List<String> names = new ArrayList<>(configChildrenBySyntax1Name.keySet());
+		Collections.sort(names);
+		for(String name: names) {
+			List<ConfigChild> configChildren = configChildrenBySyntax1Name.get(name);
+			Set<ElementRole> roles = configChildren.stream().map(ConfigChild::getElementRole).collect(Collectors.toSet());
+			Set<ElementRole.Key> key = roles.stream().map(ElementRole::getKey).collect(Collectors.toSet());
+			if(! allElementRoleSets.containsKey(key)) {
+				allElementRoleSets.put(key, new ElementRoleSet(roles));
+				List<ElementRole> recursionParents = new ArrayList<>(roles);
+				recursionParents = recursionParents.stream().filter(role -> role.getElementType().isFromJavaInterface()).collect(Collectors.toList());
+				Collections.sort(recursionParents);
+				createTypeBasedElementRoleSets(recursionParents);
+			}
+		}
 	}
 }

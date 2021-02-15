@@ -17,6 +17,7 @@ limitations under the License.
 package nl.nn.adapterframework.doc.model;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,8 +34,11 @@ import lombok.Setter;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ElementRole {
+public class ElementRole implements Comparable<ElementRole> {
 	private static Logger log = LogUtil.getLogger(ElementRole.class);
+
+	private static final Comparator<ElementRole> COMPARATOR =
+			Comparator.comparing(ElementRole::getSyntax1Name).thenComparing(role -> role.getElementType().getFullName());
 
 	private final @Getter ElementType elementType;
 	private final @Getter String syntax1Name;
@@ -128,6 +132,11 @@ public class ElementRole {
 
 	public Key getKey() {
 		return new Key(elementType.getFullName(), syntax1Name);
+	}
+
+	@Override
+	public int compareTo(ElementRole other) {
+		return COMPARATOR.compare(this, other);
 	}
 
 	@Override
