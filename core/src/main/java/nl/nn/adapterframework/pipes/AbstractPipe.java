@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -95,7 +95,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @see IPipeLineSession
  */
 public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable {
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String getInputFromSessionKey=null;
@@ -377,15 +377,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			return getPipeLine().getAdapter();
 		}
 		return null;
-	}
-
-	/**
-	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
-	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
-	 */
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return configurationClassLoader;
 	}
 
 	/**

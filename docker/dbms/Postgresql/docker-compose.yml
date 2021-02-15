@@ -1,6 +1,6 @@
 version: "3.1"
 services:
-  db:
+  postgresql:
     image: iaf-test-db-postgresql
     restart: unless-stopped
     ports:

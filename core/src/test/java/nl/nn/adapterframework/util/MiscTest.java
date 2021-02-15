@@ -27,13 +27,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
  * Misc Tester.
@@ -389,13 +392,13 @@ public class MiscTest {
 	 */
 	@Test
 	public void testCopyContext() throws Exception {
-		Map<String, Object> context1 = new HashMap<>();
-		Map<String, Object> context2 = new HashMap<>();
+		Map<String, Object> from = new HashMap<>();
+		IPipeLineSession to = new PipeLineSessionBase();
 		String keys = "a,b";
-		context1.put("a", 15);
-		context1.put("b", 16);
-		Misc.copyContext(keys, context1, context2);
-		assertTrue(context1.equals(context2));
+		from.put("a", 15);
+		from.put("b", 16);
+		Misc.copyContext(keys, from, to);
+		assertTrue(from.equals(to));
 	}
 
 	/**

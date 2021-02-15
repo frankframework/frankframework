@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -156,7 +156,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
+		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
 		if (msgTransformerPool!=null) {
 			preprocessingStatisticsKeeper =  new StatisticsKeeper("-> message preprocessing");
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			if (omitXmlDeclaration==null) {
 				omitXmlDeclaration=true;
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
 			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
@@ -189,7 +189,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				String styleSheetNameToUse = session.get(styleSheetNameSessionKey).toString();
 			
 				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
-					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getConfigurationClassLoader(), null, null, styleSheetNameToUse, null, true, getParameterList()));
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameToUse, null, true, getParameterList()));
 					poolToUse.open();
 				} else {
 					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
@@ -341,7 +341,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	@IbisDoc({"5", "omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
-	public void setOmitXmlDeclaration(boolean b) {
+	public void setOmitXmlDeclaration(Boolean b) {
 		omitXmlDeclaration = b;
 	}
 	public Boolean getOmitXmlDeclaration() { // can return null too
@@ -365,7 +365,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
-	public void setIndentXml(boolean b) {
+	public void setIndentXml(Boolean b) {
 		indentXml = b;
 	}
 	public Boolean getIndentXml() { // can return null too

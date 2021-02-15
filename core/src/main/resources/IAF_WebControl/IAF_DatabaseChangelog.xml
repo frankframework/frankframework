@@ -36,7 +36,7 @@ TagDatabase
 			<column name="CORRELATIONID" type="java.sql.Types.VARCHAR(256)"/>
 			<column name="MESSAGEDATE" type="DATETIME"/>
 			<column name="COMMENTS" type="java.sql.Types.VARCHAR(1000)"/>
-			<column name="MESSAGE" type="LONGBLOB"/> <!-- LONGBLOB required for MySQL, compatible with BLOB for other dbmses -->
+			<column name="MESSAGE" type="LONGBLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
 			<column name="EXPIRYDATE" type="DATETIME"/>
 			<column name="LABEL" type="java.sql.Types.VARCHAR(100)"/>
 		</createTable>
@@ -91,7 +91,7 @@ TagDatabase
 				<constraints nullable="false"/>
 			</column>
 			<column name="FILENAME" type="java.sql.Types.VARCHAR(150)"/>
-			<column name="CONFIG" type="BLOB"/>
+			<column name="CONFIG" type="LONGBLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
 			<column name="CRE_TYDST" type="DATETIME"/>
 			<column name="RUSER" type="java.sql.Types.VARCHAR(32)"/>
 			<column name="ACTIVECONFIG" type="BOOLEAN"/>

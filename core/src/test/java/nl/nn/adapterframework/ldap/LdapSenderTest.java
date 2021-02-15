@@ -49,7 +49,7 @@ public class LdapSenderTest {
 		inMemoryDirectoryServer = new InMemoryDirectoryServer(config);
 
 		String ldifDataFile = "Ldap/data.ldif";
-		URL ldifDataUrl = ClassUtils.getResourceURL(this, ldifDataFile);
+		URL ldifDataUrl = ClassUtils.getResourceURL(ldifDataFile);
 		if (ldifDataUrl == null) {
 			throw new IOException("cannot find resource [" + ldifDataFile + "]");
 		}
@@ -199,7 +199,7 @@ public class LdapSenderTest {
 
 	private void compareXML(String expectedFile, String result)
 			throws SAXException, IOException {
-		URL expectedUrl = ClassUtils.getResourceURL(this, expectedFile);
+		URL expectedUrl = ClassUtils.getResourceURL(expectedFile);
 		if (expectedUrl == null) {
 			throw new IOException("cannot find resource [" + expectedUrl + "]");
 		}

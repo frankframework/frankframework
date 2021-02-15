@@ -25,7 +25,9 @@ import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.changelog.ChangeSet;
+import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -107,5 +109,14 @@ public class LiquibaseImpl {
 	public Writer getUpdateScript(Writer writer) throws LiquibaseException {
 		liquibase.update(contexts, labelExpression, writer);
 		return writer;
+	}
+
+	public void close() throws DatabaseException {
+		if(liquibase != null) {
+			Database db = liquibase.getDatabase();
+			if(db != null) {
+				db.close();
+			}
+		}
 	}
 }

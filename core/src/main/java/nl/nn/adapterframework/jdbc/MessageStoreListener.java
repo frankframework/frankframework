@@ -51,12 +51,6 @@ import nl.nn.adapterframework.stream.Message;
 			jmsRealm="jdbc"
 			slotId="${instance.name}/ServiceName"
 		/>
-		&lt;!-- DummyTransactionalStorage to enable messagelog browser in the console (messages are moved to messagelog by MessageStoreListener hence JdbcTransactionalStorage isn't needed) -->
-		&lt;messageLog
-			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
-			jmsRealm="jdbc"
-			slotId="${instance.name}/ServiceName"
-		/>
  * </pre></code>
  * 
  * 
@@ -84,11 +78,6 @@ public class MessageStoreListener extends JdbcTableListener {
 	
 	@Override
 	public void configure() throws ConfigurationException {
-		// This class was initially developed as DelayStoreListener with
-		// the following condition added. We could still add an
-		// optional delay attribute but this functionality wasn't used
-		// anymore and the condition is Oracle specific.
-		// + "AND SYSTIMESTAMP >= MESSAGEDATE + INTERVAL '" + delay + "' SECOND");
 		setSelectCondition("SLOTID = '" + slotId + "'");
 		super.configure();
 		if (sessionKeys != null) {
@@ -101,7 +90,6 @@ public class MessageStoreListener extends JdbcTableListener {
 		if (isMoveToMessageLog()) {
 			String setClause = "COMMENTS = '" + Receiver.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
 			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE),setClause));
-			setUpdateStatusQuery(ProcessState.ERROR, createUpdateStatusQuery(getStatusValue(ProcessState.ERROR),null)); 
 		} else {
 			String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
 			setUpdateStatusQuery(ProcessState.DONE, query);
@@ -113,7 +101,7 @@ public class MessageStoreListener extends JdbcTableListener {
 	public Object getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		Object rawMessage = super.getRawMessage(threadContext);
 		if (rawMessage != null && sessionKeys != null) {
-			MessageWrapper messageWrapper = (MessageWrapper)rawMessage;
+			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
 			try {
 				StrTokenizer strTokenizer = StrTokenizer.getCSVInstance().reset(messageWrapper.getMessage().asString());
 				messageWrapper.setMessage(new Message((String)strTokenizer.next()));
@@ -149,7 +137,7 @@ public class MessageStoreListener extends JdbcTableListener {
 	}
 
 
-	@IbisDoc({"identifier for this service", ""})
+	@IbisDoc({"1", "Identifier for this service", ""})
 	public void setSlotId(String slotId) {
 		this.slotId = slotId;
 	}
@@ -157,7 +145,7 @@ public class MessageStoreListener extends JdbcTableListener {
 		return slotId;
 	}
 
-	@IbisDoc({"comma separated list of sessionkey's to be read together with the message. please note: corresponding {@link messagestoresender} must have the same value for this attribute", ""})
+	@IbisDoc({"2", "Comma separated list of sessionKey's to be read together with the message. Please note: corresponding {@link MessagestoreSender} must have the same value for this attribute", ""})
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}
@@ -165,12 +153,18 @@ public class MessageStoreListener extends JdbcTableListener {
 		return sessionKeys;
 	}
 
-	@IbisDoc({"move to messagelog after processing, as the message is already stored in the ibisstore only some fields need to be updated, use a messagelog element with class {@link dummytransactionalstorage} to enable it in the console", "true"})
+	@IbisDoc({"3", "Move to messageLog after processing, as the message is already stored in the ibisstore only some fields need to be updated. When set false, messages are deleted after being processed", "true"})
 	public void setMoveToMessageLog(boolean moveToMessageLog) {
 		this.moveToMessageLog = moveToMessageLog;
 	}
 	public boolean isMoveToMessageLog() {
 		return moveToMessageLog;
+	}
+
+	@Override
+	@IbisDoc({"4", "Value of status field indicating is being processed. Set to 'I' if database has no SKIP LOCKED functionality or the Receiver cannot be set to Required or RequiresNew.", ""})
+	public void setStatusValueInProcess(String string) {
+		super.setStatusValueInProcess(string);
 	}
 
 }

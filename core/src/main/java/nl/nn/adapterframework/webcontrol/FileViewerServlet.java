@@ -113,7 +113,7 @@ public class FileViewerServlet extends HttpServlet  {
 	public static void transformReader(Reader reader, String filename, Map parameters, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException { 
 		PrintWriter out = response.getWriter();
 		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix, true);
-		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
+		URL xsltSource = ClassUtils.getResourceURL(stylesheetUrl);
 		if (xsltSource!=null) {
 			Transformer transformer = XmlUtils.createTransformer(xsltSource);
 			if (parameters!=null) {
@@ -128,7 +128,7 @@ public class FileViewerServlet extends HttpServlet  {
 
 	public static void transformSource(Source source, String filename, Map parameters, HttpServletResponse response, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException { 
 		PrintWriter out = response.getWriter();
-		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
+		URL xsltSource = ClassUtils.getResourceURL(stylesheetUrl);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters!=null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);

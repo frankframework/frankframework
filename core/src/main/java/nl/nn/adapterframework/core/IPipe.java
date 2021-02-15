@@ -41,7 +41,7 @@ public interface IPipe extends INamedObject, IForwardTarget {
 	 * to be handled by the caller of this object.
 	 * Implementations must either consume the message, or pass it on to the next Pipe in the PipeRunResult.
 	 * If the result of the Pipe does not depend on the input, like for the {@link FixedResultPipe}, the Pipe
-	 * should still retrieve an InputStream or Reader from the message, and close that.
+	 * can schedule the input to be closed at session exit, by calling {@link Message#closeOnCloseOf(IPipeLineSession)}
 	 * This allows the previous Pipe to release any resources (e.g. connections) that it might have kept open
 	 * until the message was consumed. Doing so avoids connections leaking from pools, while it enables
 	 * efficient streaming processing of data while it is being read from a stream.
@@ -49,7 +49,7 @@ public interface IPipe extends INamedObject, IForwardTarget {
 	PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException;
 
 	/**
-	 * Indicates the maximum number of treads that may call {@link #doPipe(Message, IPipeLineSession) doPipe()} simultaneously.
+	 * Indicates the maximum number of threads that may call {@link #doPipe(Message, IPipeLineSession) doPipe()} simultaneously.
 	 * A value of 0 indicates an unlimited number of threads.
 	 * Pipe implementations that are not thread-safe, i.e. where <code>doPipe()</code> may only be
 	 * called by one thread at a time, should make sure getMaxThreads always returns a value of 1.

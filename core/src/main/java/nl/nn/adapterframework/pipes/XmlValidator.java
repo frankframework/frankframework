@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -380,7 +380,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		Set<XSD> xsds = new HashSet<XSD>();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			XSD xsd = new XSD();
-			xsd.initNoNamespace(getConfigurationClassLoader(), getNoNamespaceSchemaLocation());
+			xsd.initNoNamespace(this, getNoNamespaceSchemaLocation());
 			xsds.add(xsd);
 		} else {
 			String[] split =  schemaLocation.trim().split("\\s+");
@@ -391,7 +391,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 				xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 				xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-				xsd.initNamespace(split[i], getConfigurationClassLoader(), split[i + 1]);
+				xsd.initNamespace(split[i], this, split[i + 1]);
 				xsds.add(xsd);
 			}
 		}
@@ -413,7 +413,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			}
 			try {
 				Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
-				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(getConfigurationClassLoader(), xsdsGroupedByNamespace, null);
+				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null);
 			} catch(Exception e) {
 				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
 			}
@@ -601,13 +601,13 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		List<Schema> xsds = new ArrayList<Schema>();
 		String schemaLocation = getSchemasId(session);
 		if (getSchemaSessionKey() != null) {
-			final URL url = ClassUtils.getResourceURL(getConfigurationClassLoader(), schemaLocation);
+			final URL url = ClassUtils.getResourceURL(this, schemaLocation);
 			if (url == null) {
 				throw new PipeRunException(this, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
 			}
 			XSD xsd = new XSD();
 			try {
-				xsd.initNoNamespace(getConfigurationClassLoader(), schemaLocation);
+				xsd.initNoNamespace(this, schemaLocation);
 			} catch (ConfigurationException e) {
 				throw new PipeRunException(this, "Could not init xsd ["+schemaLocation+"]", e);
 			}
@@ -861,7 +861,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@IbisDocRef({ABSTRACTXMLVALIDATOR})
-	public void setIgnoreUnknownNamespaces(boolean ignoreUnknownNamespaces) {
+	public void setIgnoreUnknownNamespaces(Boolean ignoreUnknownNamespaces) {
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
 	public Boolean getIgnoreUnknownNamespaces() {

@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.Arrays;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -83,7 +84,7 @@ public class CmisSessionBuilder {
 	public final static String OVERRIDE_WSDL_KEY = "override_wsdl_key";
 	private String overrideEntryPointWSDL;
 
-	private ClassLoader classLoader = this.getClass().getClassLoader();
+	private IScopeProvider scopeProvider = null;
 
 	private int maxConnections = 0;
 	private int timeout = 0;
@@ -94,11 +95,11 @@ public class CmisSessionBuilder {
 		return new CmisSessionBuilder();
 	}
 
-	public CmisSessionBuilder(ClassLoader classLoader) {
-		this.classLoader = classLoader;
+	public CmisSessionBuilder(IScopeProvider scopeProvider) {
+		this.scopeProvider = scopeProvider;
 	}
-	public static CmisSessionBuilder create(ClassLoader classLoader) {
-		return new CmisSessionBuilder(classLoader);
+	public static CmisSessionBuilder create(IScopeProvider scopeProvider) {
+		return new CmisSessionBuilder(scopeProvider);
 	}
 
 	/**
@@ -151,7 +152,7 @@ public class CmisSessionBuilder {
 			// we can manually override this wsdl by reading it from the classpath.
 			//TODO: Does this work with any binding type?
 			if(overrideEntryPointWSDL != null) {
-				URL url = ClassUtils.getResourceURL(classLoader, overrideEntryPointWSDL);
+				URL url = ClassUtils.getResourceURL(scopeProvider, overrideEntryPointWSDL);
 				if(url != null) {
 					try {
 						parameterMap.put(OVERRIDE_WSDL_KEY, Misc.streamToString(url.openStream()));

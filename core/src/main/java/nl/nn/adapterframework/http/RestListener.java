@@ -74,7 +74,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (getView()==null) {
-			if (StringUtils.isEmpty(getMethod()) || getMethod().equalsIgnoreCase("GET")) {
+			if (StringUtils.isEmpty(getMethod()) || "GET".equalsIgnoreCase(getMethod())) {
 				setView(true);
 			} else {
 				setView(false);
@@ -184,9 +184,9 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	@Override
 	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
-		if ("view".equals(attributeName)) {
-			if (attributes.get("method").equalsIgnoreCase("GET")) {
-				return true;
+		if ("view".equals(attributeName)) { // if attribute view is present
+			if (attributes.get("method") == null || "GET".equalsIgnoreCase(attributes.get("method"))) {// if view="true" AND no method has been supplied, or it's set to GET
+				return true; //Then the default is TRUE
 			} else {
 				return false;
 			}
@@ -244,7 +244,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	@IbisDoc({"Indicates whether this listener supports a view (and a link should be put in the ibis console)", "if <code>method=get</code> then <code>true</code>, else <code>false</code>"})
-	public void setView(boolean b) {
+	public void setView(Boolean b) {
 		view = b;
 	}
 	public Boolean getView() {

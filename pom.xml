@@ -296,40 +296,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
-				<configuration>
-					<doclint>none</doclint>
-					<tags>
-						<tag>
-							<name>IbisDoc.required</name>
-							<!-- The value X makes javadoc ignoring the tag. See: https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html#tags -->
-							<placement>X</placement>
-						</tag>
-						<tag>
-							<name>IbisDoc.default</name>
-							<placement>X</placement>
-						</tag>
-						<tag>
-							<name>IbisDoc.optional</name>
-							<placement>X</placement>
-						</tag>
-					</tags>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<failOnError>false</failOnError>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.22.2</version>
 				<configuration>
@@ -537,6 +503,68 @@
 			<modules>
 				<module>test-integration</module>
 			</modules>
+		</profile>
+		<profile>
+			<id>javadoc</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.2.0</version>
+						<configuration>
+							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
+							<doclint>none</doclint>
+							<tags>
+								<tag>
+									<name>IbisDoc.required</name>
+									<!-- The value X makes javadoc ignoring the tag. See: https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html#tags -->
+									<placement>X</placement>
+								</tag>
+								<tag>
+									<name>IbisDoc.default</name>
+									<placement>X</placement>
+								</tag>
+								<tag>
+									<name>IbisDoc.optional</name>
+									<placement>X</placement>
+								</tag>
+							</tags>
+						</configuration>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok-maven-plugin</artifactId>
+						<version>1.18.16.0</version>
+						<executions>
+							<execution>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>delombok</goal>
+								</goals>
+								<configuration>
+									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+									<addOutputDirectory>false</addOutputDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 		<profile>
 			<id>codecoverage</id>

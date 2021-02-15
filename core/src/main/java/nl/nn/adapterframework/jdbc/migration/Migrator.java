@@ -28,17 +28,19 @@ import java.io.Writer;
 import org.apache.commons.lang3.StringUtils;
 
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
 
 /**
- * LiquiBase implementation for IAF
+ * LiquiBase implementation for IAF. 
+ * Please call close method explicitly to release the connection used by liquibase or instantiate this with try-with-resources.
  * 
  * @author	Niels Meijer
  * @since	7.0-B4
  *
  */
-public class Migrator extends JdbcFacade {
+public class Migrator extends JdbcFacade implements AutoCloseable {
 
 	private IbisContext ibisContext;
 	private LiquibaseImpl instance;
@@ -105,5 +107,20 @@ public class Migrator extends JdbcFacade {
 		if(this.instance != null)
 			return instance.getUpdateScript(writer);
 		return writer;
+	}
+
+	@Override
+	public void close() {
+		try {
+			if(this.instance != null) {
+				try {
+					instance.close();
+				} catch (DatabaseException e) {
+					log.error("Failed to close the connection", e);
+				}
+			}
+		} finally {
+			super.close();
+		}
 	}
 }

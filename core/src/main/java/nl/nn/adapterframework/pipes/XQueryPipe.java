@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		super.configure();
 		URL url;
 		if (StringUtils.isNotEmpty(getXqueryName())) {
-			url = ClassUtils.getResourceURL(getConfigurationClassLoader(), getXqueryName());
+			url = ClassUtils.getResourceURL(this, getXqueryName());
 			if (url == null) {
 				throw new ConfigurationException("could not find XQuery '" + getXqueryName() + "'");
 			}

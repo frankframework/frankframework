@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -98,6 +98,7 @@ import com.ctc.wstx.stax.WstxInputFactory;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -546,14 +547,14 @@ public class XmlUtils {
 	public static XMLReader getXMLReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
 		return getXMLReader(null, handler);
 	}
-	
-	public static XMLReader getXMLReader(Configuration classLoaderProvider) throws ParserConfigurationException, SAXException {
-		return getXMLReader(true, classLoaderProvider.getClassLoader());
+
+	public static XMLReader getXMLReader(Configuration scopeProvider) throws ParserConfigurationException, SAXException {
+		return getXMLReader(true, scopeProvider);
 	}
 
 	
-	private static XMLReader getXMLReader(Resource classloaderProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
-		XMLReader xmlReader = getXMLReader(true, classloaderProvider);
+	private static XMLReader getXMLReader(Resource scopeProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
+		XMLReader xmlReader = getXMLReader(true, scopeProvider);
 		xmlReader.setContentHandler(handler);
 		if (handler instanceof LexicalHandler) {
 			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
@@ -564,16 +565,16 @@ public class XmlUtils {
 		return xmlReader;
 	}
 	
-	private static XMLReader getXMLReader(boolean namespaceAware, Resource classLoaderProvider) throws ParserConfigurationException, SAXException {
-		return getXMLReader(namespaceAware, classLoaderProvider==null?null:classLoaderProvider.getClassLoader());
+	private static XMLReader getXMLReader(boolean namespaceAware, Resource resource) throws ParserConfigurationException, SAXException {
+		return getXMLReader(namespaceAware, resource==null?null:resource.getScopeProvider());
 	}
 	
-	private static XMLReader getXMLReader(boolean namespaceAware, ClassLoader classLoader) throws ParserConfigurationException, SAXException {
+	private static XMLReader getXMLReader(boolean namespaceAware, IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
 		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-		if (classLoader!=null) {
-			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(classLoader));
+		if (scopeProvider!=null) {
+			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(scopeProvider));
 		} else {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
 		}
@@ -1005,9 +1006,9 @@ public class XmlUtils {
 		return inputSourceToSAXSource(is, true, null);
 	}
 	
-	private static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource classloaderProvider) throws SAXException {
+	private static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource scopeProvider) throws SAXException {
 		try {
-			return new SAXSource(getXMLReader(namespaceAware, classloaderProvider), is);
+			return new SAXSource(getXMLReader(namespaceAware, scopeProvider), is);
 		} catch (ParserConfigurationException e) {
 			throw new SaxException(e);
 		}
@@ -1998,7 +1999,7 @@ public class XmlUtils {
 	}
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
-		URL xsltSource = ClassUtils.getResourceURL(XmlUtils.class, ADAPTERSITE_XSLT);
+		URL xsltSource = ClassUtils.getResourceURL(ADAPTERSITE_XSLT);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters != null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);

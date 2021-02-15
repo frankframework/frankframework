@@ -88,8 +88,8 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 		paramList.add(p);
 	}
 
+	@Override
 	public ParameterList getParameterList() {
 		return paramList;
 	}
-
 }

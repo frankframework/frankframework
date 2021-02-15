@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class FrankDigesterRules implements RulesModule {
 			throw new IllegalStateException("Digester not set, unable to initialize ["+this.getClass().getSimpleName()+"]");
 		}
 		if(digesterRules == null) {
-			digesterRules = Resource.getResource(digester.getClassLoader(), DIGESTER_RULES_FILE);
+			digesterRules = Resource.getResource(DIGESTER_RULES_FILE);
 		}
 
 		DigesterRulesHandler handler = new DigesterRulesParser(digester, rulesBinder);

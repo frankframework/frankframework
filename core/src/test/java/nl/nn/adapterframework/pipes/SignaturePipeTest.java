@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -28,7 +29,8 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		configureAndStartPipe();
 		
 		PipeRunResult prr = doPipe(new Message(testMessage));
-		
+
+		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(testSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}
@@ -41,6 +43,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		
 		PipeRunResult prr = doPipe(new Message(testMessage));
 		
+		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(testSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}

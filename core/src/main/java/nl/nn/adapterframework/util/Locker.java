@@ -215,7 +215,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 						log.debug(getLogPrefix()+"will not try again");
 
 						if (timeout || e instanceof SQLTimeoutException || e instanceof SQLException && getDbmsSupport().isConstraintViolation((SQLException)e)) {
-							String msg = "error while setting lock: " + e.getMessage();
+							String msg = "could not obtain lock" + e.getMessage();
 							if(messageKeeper != null) {
 								messageKeeper.add(msg, MessageKeeperLevel.INFO);
 							}

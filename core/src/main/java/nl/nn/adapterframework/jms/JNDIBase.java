@@ -1,6 +1,6 @@
 /*
 
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeareFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeareFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -88,11 +88,11 @@ public class JNDIBase implements IConfigurable{
 		}
 	}
 
-	protected Hashtable getJndiEnv() throws NamingException {
+	protected Properties getJndiEnv() throws NamingException {
 		Properties jndiEnv = new Properties();
 
 		if (StringUtils.isNotEmpty(getJndiProperties())) {
-			URL url = ClassUtils.getResourceURL(getConfigurationClassLoader(), getJndiProperties());
+			URL url = ClassUtils.getResourceURL(this, getJndiProperties());
 			if (url==null) {
 				throw new NamingException("cannot find jndiProperties from ["+getJndiProperties()+"]");
 			}

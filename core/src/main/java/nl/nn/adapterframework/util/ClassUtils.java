@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2017 Nationale-Nederlanden
+   Copyright 2013, 2016-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 
 /**
  * A collection of class management utility methods.
@@ -77,76 +78,67 @@ public class ClassUtils {
 	}
 
 	/**
-	 * Get a resource-URL with the ClassLoader derived from an object or class.
-	 * @param obj Object to derive the ClassLoader from
+	 * Get a resource-URL directly from the ClassPath
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
-	@Deprecated
-	static public URL getResourceURL(Object obj, String resource) {
-		return getResourceURL(obj.getClass(), resource);
+	public static URL getResourceURL(String resource) {
+		return getResourceURL(null, resource);
 	}
 
 	/**
-	 * Get a resource-URL with the ClassLoader derived from an object or class.
-	 * @param clazz Class to derive the ClassLoader from
-	 * @param resource name of the resource you are trying to fetch the URL from
-	 * @return URL of the resource or null if it can't be not found
-	 */
-	@Deprecated
-	static public URL getResourceURL(Class clazz, String resource) {
-		return getResourceURL(clazz.getClassLoader(), resource);
-	}
-
-	/**
-	 * Get a resource-URL from a specific ClassLoader. This should be used by
+	 * Get a resource-URL from a specific IConfigurationClassLoader. This should be used by
 	 * classes which are part of the Ibis configuration (like pipes and senders)
 	 * because the configuration might be loaded from outside the webapp
-	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
+	 * ClassPath. Hence the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
 	 * 
 	 * @see IbisContext#init()
 	 */
-	static public URL getResourceURL(ClassLoader classLoader, String resource) {
-		return getResourceURL(classLoader, resource, null);
+	public static URL getResourceURL(IScopeProvider scopeProvider, String resource) {
+		return getResourceURL(scopeProvider, resource, null);
 	}
 
 	/**
-	 * Get a resource-URL from a ClassLoader
-	 * @param classLoader to retrieve the file from
+	 * Get a resource-URL from a ClassLoader, therefore the resource should not start with a leading slash
+	 * @param scopeProvider to retrieve the file from, or NULL when you want to retrieve the resource directly from the ClassPath (using an absolute path)
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
-	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
-		if(classLoader == null) {
+	public static URL getResourceURL(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
+		ClassLoader classLoader = null;
+		if(scopeProvider == null) { // Used by ClassPath resources
 			classLoader = Thread.currentThread().getContextClassLoader();
-			RuntimeException e = new IllegalStateException("getResourceURL called with null classLoader. Avoid this, it is only valid from configure(). Please change the code");
-			log.warn(e);
+		} else {
+			classLoader = scopeProvider.getConfigurationClassLoader();
 		}
+
+		String resourceToUse = resource; //Don't change the original resource name for logging purposes
 		if (resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
-			resource=resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
+			resourceToUse = resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
 		}
-		// Remove slash like Class.getResource(String name) is doing before
-		// delegation to ClassLoader
-		if (resource.startsWith("/")) {
-			resource = resource.substring(1);
+
+		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader. 
+		// Resources retrieved from ClassLoaders should never start with a leading slash
+		if (resourceToUse.startsWith("/")) {
+			resourceToUse = resourceToUse.substring(1);
 		}
-		URL url = classLoader.getResource(resource);
+		URL url = classLoader.getResource(resourceToUse);
 
 		// then try to get it as a URL
 		if (url == null) {
-			if (resource.contains(":")) {
-				String protocol = resource.substring(0, resource.indexOf(":"));
+			if (resourceToUse.contains(":")) {
+				String protocol = resourceToUse.substring(0, resourceToUse.indexOf(":"));
 				if (allowedProtocols==null) {
 					allowedProtocols=defaultAllowedProtocols;
 				}
 				if (StringUtils.isNotEmpty(allowedProtocols)) {
 					//log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] now trying via protocol ["+protocol+"]");
 
-					List<String> protocols = new ArrayList<String>(Arrays.asList(allowedProtocols.split(",")));
+					List<String> protocols = Arrays.asList(allowedProtocols.split(","));
 					if(protocols.contains(protocol)) {
 						try {
-							url = new URL(Misc.replace(resource, " ", "%20"));
+							url = new URL(Misc.replace(resourceToUse, " ", "%20"));
 						} catch(MalformedURLException e) {
 							log.debug("Could not find resource ["+resource+"] in classloader ["+nameOf(classLoader)+"] and not as URL [" + resource + "]: "+e.getMessage());
 						}
@@ -160,6 +152,13 @@ public class ClassUtils {
 		}
 
 		return url;
+	}
+
+	public static List<String> getAllowedProtocols() {
+		if(StringUtils.isEmpty(defaultAllowedProtocols)) {
+			return new ArrayList<String>(); //Arrays.asList(..) won't return an empty List when empty.
+		}
+		return Arrays.asList(defaultAllowedProtocols.split(","));
 	}
 
 	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {

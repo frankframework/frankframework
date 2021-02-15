@@ -15,6 +15,10 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.security.Principal;
 import java.util.Map;
 
@@ -33,7 +37,7 @@ import java.util.Map;
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public interface IPipeLineSession extends Map<String,Object> {
+public interface IPipeLineSession extends Map<String,Object>, AutoCloseable {
 	public static final String originalMessageKey="originalMessage";
 	public static final String originalMessageIdKey="id";
 	public static final String messageIdKey="messageId";
@@ -75,4 +79,13 @@ public interface IPipeLineSession extends Map<String,Object> {
 
 	public Principal getPrincipal();
 
+	
+	public InputStream scheduleCloseOnSessionExit(InputStream stream);
+	public OutputStream scheduleCloseOnSessionExit(OutputStream stream);
+	public Reader scheduleCloseOnSessionExit(Reader reader);
+	public Writer scheduleCloseOnSessionExit(Writer writer);
+	public void unscheduleCloseOnSessionExit(AutoCloseable resource);
+	
+	@Override // to remove throws clause
+	public void close();
 }

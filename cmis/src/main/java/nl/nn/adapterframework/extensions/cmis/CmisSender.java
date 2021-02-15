@@ -233,7 +233,7 @@ public class CmisSender extends SenderWithParametersBase {
 
 	private List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "dynamic");
 
-	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(getConfigurationClassLoader());
+	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
 	private boolean convert2Base64 = AppConstants.getInstance().getBoolean("CmisSender.Base64FileContent", true);
 

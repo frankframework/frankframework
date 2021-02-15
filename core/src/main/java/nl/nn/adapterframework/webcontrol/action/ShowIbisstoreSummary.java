@@ -46,6 +46,7 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
@@ -73,16 +74,10 @@ public class ShowIbisstoreSummary extends ActionBase {
 
 		if (StringUtils.isEmpty(jmsRealm)) {
 			// get jmsRealm value from cookie
-			Cookie[] cookies = request.getCookies();
-			if (null != cookies) {
-				for (int i = 0; i < cookies.length; i++) {
-					Cookie aCookie = cookies[i];
-
-					if (aCookie.getName().equals(cookieName)) {
-						jmsRealm = aCookie.getValue();
-						log.debug("jmsRealm from cookie [" + jmsRealm +"]");
-					}
-				}
+			Cookie cookie = CookieUtil.getCookie(request, cookieName);
+			if (null != cookie) {
+				jmsRealm = cookie.getValue();
+				log.debug("jmsRealm from cookie [" + jmsRealm +"]");
 			}
 		}
 

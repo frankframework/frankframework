@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class JavascriptSender extends SenderSeries {
 		if (StringUtils.isNotEmpty(getJsFileName())) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getJsFileName());
+				resource = ClassUtils.getResourceURL(this, getJsFileName());
 			} catch (Throwable e) {
 				throw new SenderException(
 					getLogPrefix() + "got exception searching for [" + getJsFileName() + "]", e);

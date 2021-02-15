@@ -102,7 +102,7 @@ public class AsposeFontManager {
 	}
 
 	private void unpackFontsZip() throws IOException {
-		URL fontsUrl = ClassUtils.getResourceURL(this.getClass().getClassLoader(), FONTS_RESOURCE_NAME);
+		URL fontsUrl = ClassUtils.getResourceURL(FONTS_RESOURCE_NAME);
 		if(fontsUrl == null) {
 			throw new IllegalStateException("font archive ["+FONTS_RESOURCE_NAME+"] cannot be found");
 		}

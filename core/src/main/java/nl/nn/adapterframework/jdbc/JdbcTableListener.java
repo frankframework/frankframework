@@ -169,7 +169,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		statusValues.put(ProcessState.DONE, string);
 	}
 
-	@IbisDoc({"10", "Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality; In that case the transactionAttribute of the Receiver should be set to Required or RequiresNew, to avoid messages being picked up by multiple threads", ""})
+	@IbisDoc({"10", "Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality and the Receiver can be (and is) set to Required or RequiresNew.", ""})
 	public void setStatusValueInProcess(String string) {
 		statusValues.put(ProcessState.INPROCESS, string);
 	}

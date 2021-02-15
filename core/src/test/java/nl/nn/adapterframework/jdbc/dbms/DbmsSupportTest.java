@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -74,9 +75,10 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 	@Test
 	public void testIsColumnPresentInSchema() throws JdbcException {
-		assertTrue("Should have found existing column", dbmsSupport.isColumnPresent(connection, dbmsSupport.getSchema(connection), "TEMP", "TINT"));
-		assertFalse(dbmsSupport.isColumnPresent(connection, dbmsSupport.getSchema(connection), "TEMP", "XXXX"));
-		assertFalse(dbmsSupport.isColumnPresent(connection, dbmsSupport.getSchema(connection), "XXXX", "XXXX"));
+		String schema = dbmsSupport.getSchema(connection);
+		assertTrue("Should have found existing column in schema ["+schema+"]", dbmsSupport.isColumnPresent(connection, schema, "TEMP", "TINT"));
+		assertFalse(dbmsSupport.isColumnPresent(connection, schema, "TEMP", "XXXX"));
+		assertFalse(dbmsSupport.isColumnPresent(connection, schema, "XXXX", "XXXX"));
 	}
 
 	@Test
@@ -168,7 +170,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=10 FOR UPDATE", "select for update")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				Object clobHandle = dbmsSupport.getClobUpdateHandle(resultSet, 1);
+				Object clobHandle = dbmsSupport.getClobHandle(resultSet, 1);
 				try (Writer writer = dbmsSupport.getClobWriter(resultSet, 1, clobHandle)) {
 					writer.append(clobContents);
 				}
@@ -258,7 +260,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20 FOR UPDATE", "select for update")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				Object blobHandle = dbmsSupport.getBlobUpdateHandle(resultSet, 1);
+				Object blobHandle = dbmsSupport.getBlobHandle(resultSet, 1);
 				try (OutputStream out = dbmsSupport.getBlobOutputStream(resultSet, 1, blobHandle)) {
 					out.write(blobContents.getBytes("UTF-8"));
 				}
@@ -285,7 +287,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=21 FOR UPDATE", "select for update")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				Object blobHandle = dbmsSupport.getBlobUpdateHandle(resultSet, 1);
+				Object blobHandle = dbmsSupport.getBlobHandle(resultSet, 1);
 
 				try (OutputStream blobOutputStream = JdbcUtil.getBlobOutputStream(dbmsSupport, blobHandle, resultSet, 1, true)) {
 					blobOutputStream.write(blobContents.getBytes("UTF-8"));
@@ -468,7 +470,68 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 	}
 	
+	@Test
+	public void testIsBlobType() throws SQLException {
+		try (Connection connection=getConnection()) {
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TINT, TVARCHAR, TNUMBER, TDATE, TDATETIME, TBOOLEAN, TBLOB, TCLOB FROM TEMP")) {
+				try (ResultSet rs=stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = rs.getMetaData();
+					for (int i=1;i<=9;i++) {
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==8, dbmsSupport.isBlobType(rsmeta, i));
+					}
+				}
+				
+			}
+		}
+	}
 	
 	
+	
+	@Test
+	public void testIsClobType() throws SQLException {
+		try (Connection connection=getConnection()) {
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TINT, TVARCHAR, TNUMBER, TDATE, TDATETIME, TBOOLEAN, TBLOB, TCLOB FROM TEMP")) {
+				try (ResultSet rs=stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = rs.getMetaData();
+					for (int i=1;i<=9;i++) {
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==9, dbmsSupport.isClobType(rsmeta, i));
+					}
+				}
+				
+			}
+		}
+	}
+
+	@Test
+	public void testIsBlobTypeIbisTemp() throws Exception {
+		try (Connection connection=getConnection()) {
+			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB1, TCLOB FROM IBISTEMP")) {
+				try (ResultSet rs=stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = rs.getMetaData();
+					for (int i=1;i<=7;i++) {
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==6, dbmsSupport.isBlobType(rsmeta, i));
+					}
+				}
+				
+			}
+		}
+	}
+	
+	@Test
+	public void testIsClobTypeIbisTemp() throws Exception {
+		try (Connection connection=getConnection()) {
+			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB1, TCLOB FROM IBISTEMP")) {
+				try (ResultSet rs=stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = rs.getMetaData();
+					for (int i=1;i<=7;i++) {
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==7, dbmsSupport.isClobType(rsmeta, i));
+					}
+				}
+				
+			}
+		}
+	}
 
 }

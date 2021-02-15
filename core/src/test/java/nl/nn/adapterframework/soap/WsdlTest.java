@@ -33,7 +33,6 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.WebServiceListener;
@@ -269,6 +268,7 @@ public class WsdlTest {
         when(adp.getName()).thenReturn(adapterName);
         when(cfg.getClassLoader()).thenReturn(this.getClass().getClassLoader());
         when(adp.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
+        when(simple.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
         return simple;
     }
 

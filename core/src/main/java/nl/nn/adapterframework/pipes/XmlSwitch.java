@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -90,12 +90,12 @@ public class XmlSwitch extends AbstractPipe {
 			if (!StringUtils.isEmpty(getStyleSheetName())) {
 				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), null, "text", false, getParameterList(), 0);
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), null, "text", false, getParameterList(), 0);
 		} 
 		else {
 			if (!StringUtils.isEmpty(getStyleSheetName())) {
 				try {
-					Resource stylesheet = Resource.getResource(getConfigurationClassLoader(), getStyleSheetName());
+					Resource stylesheet = Resource.getResource(this, getStyleSheetName());
 					if (stylesheet==null) {
 						throw new ConfigurationException("cannot find stylesheet ["+getStyleSheetName()+"]");
 					}

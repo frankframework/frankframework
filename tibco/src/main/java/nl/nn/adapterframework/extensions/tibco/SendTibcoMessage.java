@@ -181,7 +181,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		if (StringUtils.isEmpty(soapAction_work)) {
 			log.debug(getLogPrefix(session) + "deriving default soapAction");
 			try {
-				Resource resource = Resource.getResource(getConfigurationClassLoader(), "/xml/xsl/esb/soapAction.xsl");
+				Resource resource = Resource.getResource(this, "/xml/xsl/esb/soapAction.xsl");
 				TransformerPool tp = TransformerPool.getInstance(resource, 2);
 				soapAction_work = tp.transform(input.asString(), null);
 			} catch (Exception e) {

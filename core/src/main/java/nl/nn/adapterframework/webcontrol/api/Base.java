@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 WeAreFrank!
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -107,10 +108,6 @@ public abstract class Base implements ApplicationContextAware {
 		return ibisManager;
 	}
 
-	public ClassLoader getClassLoader() {
-		return this.getClass().getClassLoader();
-	}
-
 	protected FlowDiagramManager getFlowDiagramManager() {
 		try {
 			return getIbisContext().getBean("flowDiagramManager", FlowDiagramManager.class);
@@ -137,7 +134,7 @@ public abstract class Base implements ApplicationContextAware {
 	protected String resolveStringWithEncoding(MultipartBody inputDataMap, String key, String defaultEncoding) {
 		Attachment msg = inputDataMap.getAttachment(key);
 		if(msg != null) {
-			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 			if(msg.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
 				String charset = msg.getContentType().getParameters().get("charset");
 				if(StringUtils.isNotEmpty(charset)) {
