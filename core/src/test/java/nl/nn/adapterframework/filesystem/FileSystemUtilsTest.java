@@ -1,10 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.util.Date;
-import java.util.stream.Stream;
-
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -45,6 +41,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		assertFileExistsWithContents(folder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
 		
 		F file = fileSystem.toFile(folder, filename);
+
 		// execute rollover
 		FileSystemUtils.rolloverByNumber(fileSystem, file, numOfBackups);
 		
@@ -72,7 +69,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		int numOfBackups = 3;
 		int rotateSize = 8;
 		int numOfFilesPresentAtStart=5;
-		if(!_folderExists(folder)) {
+		if(folder !=null && !_folderExists(folder)) {
 			_createFolder(folder);
 		}
 		if (_fileExists(filename)) {
@@ -251,34 +248,6 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		for (int i=1;i<=numOfFilesPresentAtStart;i++) {
 			assertFileExistsWithContents(dstFolder, filename+"."+i, contents.trim()+i);
 		}
-	}
-
-	@Ignore //Complete it first
-	@Test
-	public void testFilteredStream() throws Exception {
-		String srcFolderName = "src" + new Date().getTime();
-		_createFolder(srcFolderName);
-		for (int i=0; i < 3; i++) {
-			String filename = "inFilter"+i + FILE1;
-
-			if (!_fileExists(filename)) {
-				createFile(srcFolderName, filename, "is not empty");
-			}
-		}
-
-		for (int i=0; i < 3; i++) {
-			String filename = i + FILE1;
-			
-			if (!_fileExists(filename)) {
-				createFile(srcFolderName, filename, "is not empty");
-			}
-		}
-		waitForActionToFinish();
-//		Stream<F> stream =  FileSystemUtils.getFilteredList(fileSystem, srcFolderName, "inFilter*", null);
-//		
-//		Stream<F> secondaryStream =  FileSystemUtils.getFilteredList(fileSystem, srcFolderName, "inFilter*", null);
-		
-//		
 	}
 
 }

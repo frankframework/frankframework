@@ -3,21 +3,28 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
-// needs to be fixed
-@Ignore
-public class LocalFileSystemUtilTest extends FileSystemUtilsTest <Path,LocalFileSystem>{
 
+public class LocalFileSystemUtilTest extends FileSystemUtilsTest <Path,LocalFileSystem>{
+	TemporaryFolder temp;
+
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		temp = new TemporaryFolder();
+		temp.create();
+		super.setUp();
+	}
 	@Override
 	protected LocalFileSystem createFileSystem() {
-		return new LocalFileSystem();
+		LocalFileSystem result=new LocalFileSystem();
+		result.setRoot(temp.getRoot().getAbsolutePath());
+		return result;
 	}
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() throws IOException {
-		TemporaryFolder temp = new TemporaryFolder();
-		temp.create();
 		return new LocalFileSystemTestHelper(temp);
 	}
 }

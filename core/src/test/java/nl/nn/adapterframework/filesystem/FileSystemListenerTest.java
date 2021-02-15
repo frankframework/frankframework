@@ -183,7 +183,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	@Test
 	public void fileListenerTestGetRawMessageWithInProcess() throws Exception {
 		String folderName = "inProcessFolder";
-		_createFolder(folderName);
 		fileListenerTestGetRawMessage(null,folderName);
 	}
 
