@@ -12,6 +12,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -31,6 +32,11 @@ public class JdbcPropertySourceFactory implements ApplicationContextAware {
 		log.debug("looking up properties in database with datasouce ["+datasourceName+"]");
 		ibisProp.setDatasourceName(datasourceName);
 		ibisProp.setName("retrieveJdbcPropertiesFromDatabase");
+		try {
+			ibisProp.configure();
+		} catch (ConfigurationException e) {
+			log.error("could not configure JdbcFacade", e);
+		}
 
 		try (Connection conn = ibisProp.getConnection()) {
 			if (ibisProp.getDbmsSupport().isTablePresent(conn, "IBISPROP")) {

@@ -66,15 +66,14 @@ import nl.nn.adapterframework.util.CredentialFactory;
  */
 public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
 
+	private String datasourceName = AppConstants.getInstance().getResolvedProperty("jdbc.datasource.default");
 	private String authAlias = null;
 	private String username = null;
 	private String password = null;
 
-	private DataSource datasource = null;
-	private String datasourceName = null;
 
 	private boolean transacted = false;
-	private boolean connectionsArePooled=true;
+	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
 	
 	private IDbmsSupportFactory dbmsSupportFactoryDefault=null;
 	private IDbmsSupportFactory dbmsSupportFactory=null;
@@ -85,6 +84,8 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 
 	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
+
+	private DataSource datasource = null;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -301,6 +302,7 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	public String getAuthAlias() {
 		return authAlias;
 	}
+	
 	@IbisDoc({"4", "User name for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setUsername(String username) {
 		this.username = username;
