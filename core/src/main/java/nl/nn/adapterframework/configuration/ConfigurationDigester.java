@@ -94,24 +94,26 @@ public class ConfigurationDigester {
 
 	String lastResolvedEntity = null;
 	
-	private boolean canonicalizeByXsd=AppConstants.getInstance().getBoolean("configuration.canonicalize.byxsd", false);
+	private boolean canonicalizeByXsd=AppConstants.getInstance().getBoolean("configuration.canonicalize.byxsd", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private Configuration configuration;
-		public XmlErrorHandler(Configuration configuration) {
+		private String schema;
+		public XmlErrorHandler(Configuration configuration, String schema) {
 			this.configuration = configuration;
+			this.schema = schema;
 		}
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "Warning when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(configuration, log, "Warning when validating against schema ["+schema+"] in ["+exception.getSystemId()+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "Error when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(configuration, log, "Error when validating against schema ["+schema+"] in ["+exception.getSystemId()+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(configuration, log, "FatalError when validating against schema ["+schema+"] in ["+exception.getSystemId()+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 	}
 
@@ -152,7 +154,7 @@ public class ConfigurationDigester {
 				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
 			}
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
-			XmlErrorHandler xeh = new XmlErrorHandler(configuration);
+			XmlErrorHandler xeh = new XmlErrorHandler(configuration, CONFIGURATION_VALIDATION_SCHEMA);
 			digester.setErrorHandler(xeh);
 		}
 
@@ -181,7 +183,7 @@ public class ConfigurationDigester {
 			}
 			String loaded = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()));
 			if (canonicalizeByXsd) {
-				loaded = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, loaded, new XmlErrorHandler(configuration));
+				loaded = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, loaded, new XmlErrorHandler(configuration, ConfigurationUtils.FRANK_CONFIG_XSD));
 			} else {
 				loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
 			}
@@ -192,7 +194,7 @@ public class ConfigurationDigester {
 			
 			String loadedHide = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
 			if (canonicalizeByXsd) {
-				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, loadedHide, new XmlErrorHandler(configuration));
+				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, loadedHide, new XmlErrorHandler(configuration, ConfigurationUtils.FRANK_CONFIG_XSD));
 			} else {
 				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
 			}

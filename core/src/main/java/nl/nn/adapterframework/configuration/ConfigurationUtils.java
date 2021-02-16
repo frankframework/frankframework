@@ -80,7 +80,7 @@ public class ConfigurationUtils {
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
 	private static final String CANONICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
-	private static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-strict.xsd";
+	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-strict.xsd";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
@@ -116,7 +116,7 @@ public class ConfigurationUtils {
 		ContentHandler handler;
 		try {
 			ElementRoleFilter elementRoleFilter = new ElementRoleFilter(writer);
-			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassUtils.getResourceURL(ConfigurationUtils.class, FRANK_CONFIG_XSD));
+			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassUtils.getResourceURL(FRANK_CONFIG_XSD));
 			validatorHandler.setContentHandler(elementRoleFilter);
 			if (errorHandler!=null) {
 				validatorHandler.setErrorHandler(errorHandler);
@@ -138,7 +138,7 @@ public class ConfigurationUtils {
 	}
 
 	public static String transformConfiguration(Configuration configuration, String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
-		URL xsltSource = ClassUtils.getResourceURL(configuration, xslt);
+		URL xsltSource = ClassUtils.getResourceURL(xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + xslt + "]");
 		}
