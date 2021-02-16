@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -10,7 +11,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
 	protected IFileSystemTestHelper helper;
 	
-	protected abstract IFileSystemTestHelper getFileSystemTestHelper();
+	protected abstract IFileSystemTestHelper getFileSystemTestHelper() throws IOException;
 
 	/**
 	 * Checks if a file with the specified name exists.
