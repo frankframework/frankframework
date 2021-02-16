@@ -454,7 +454,7 @@ class PollGuard extends TimerTask {
 		} else {
 			if (timeoutDetected) {
 				timeoutDetected = false;
-				warn("JMS poll timeout appears to be resolved, number of timeouts ["+pollTimeouts.intValue()+"]");
+				warn("JMS poll timeout appears to be resolved, total number of timeouts detected ["+pollTimeouts.intValue()+"]");
 			}
 		}
 		lastCheck = currentCheck;
