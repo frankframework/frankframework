@@ -28,7 +28,7 @@ class ElementGroupManager {
 		this.childRejector = childRejector;
 	}
 
-	boolean isGroupExists(Set<ElementRole.Key> key) {
+	boolean groupExists(Set<ElementRole.Key> key) {
 		return genericGroupKeyToSeq.containsKey(key);
 	}
 

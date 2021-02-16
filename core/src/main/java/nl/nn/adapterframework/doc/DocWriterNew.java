@@ -723,7 +723,7 @@ public class DocWriterNew {
 		if(logContext.isTraceEnabled()) {
 			logContext.trace(String.format("Element group needed for ElementRole-s [%s]", ElementRole.Key.describeCollection(key)));
 		}
-		if(! elementGroupManager.isGroupExists(key)) {
+		if(! elementGroupManager.groupExists(key)) {
 			if(logContext.isTraceEnabled()) {
 				logContext.trace("Element group does not exist, creating it");
 			}
