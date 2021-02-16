@@ -731,8 +731,8 @@ public class DocWriterNew {
 			XmlBuilder group = DocWriterNewXmlUtils.createGroup(groupName);
 			xsdComplexItems.add(group);
 			XmlBuilder choice = addChoice(group);
-			addElementGroupOptions(choice, roles, logContext);
 			addElementGroupGenericOption(choice, roles, logContext);
+			addElementGroupOptions(choice, roles, logContext);
 		} else if(logContext.isTraceEnabled()) {
 			logContext.trace("Element group already exists");
 		}

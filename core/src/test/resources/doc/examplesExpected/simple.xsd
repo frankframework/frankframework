@@ -20,7 +20,6 @@
   </xs:element>
   <xs:group name="Syntax1NameIChildElementGroup">
     <xs:choice>
-      <xs:group ref="Syntax1NameIChildElementGroupBase" />
       <xs:element name="Syntax1NameIChild">
         <xs:complexType>
           <xs:sequence>
@@ -31,6 +30,7 @@
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
+      <xs:group ref="Syntax1NameIChildElementGroupBase" />
     </xs:choice>
   </xs:group>
   <xs:group name="Syntax1NameIChildElementGroupBase">
