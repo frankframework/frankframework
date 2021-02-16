@@ -379,7 +379,7 @@ public class DocWriterNew {
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Adding cumulative config chidren of FrankElement [%s] to XSD element [%s]", frankElement.getFullName(), xsdElementName));
 		}
-		if(frankElement.isHasOrInheritsPluralConfigChildren(version.getChildSelector(), version.getChildRejector())) {
+		if(frankElement.hasOrInheritsPluralConfigChildren(version.getChildSelector(), version.getChildRejector())) {
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("FrankElement [%s] has plural config children", frankElement.getFullName()));
 			}
@@ -510,7 +510,7 @@ public class DocWriterNew {
 	}
 
 	private void addConfigChildren(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
-		if(frankElement.isHasOrInheritsPluralConfigChildren(version.getChildSelector(), version.getChildRejector())) {
+		if(frankElement.hasOrInheritsPluralConfigChildren(version.getChildSelector(), version.getChildRejector())) {
 			addConfigChildrenWithPluralConfigChildSets(elementBuildingStrategy, frankElement);
 		} else {
 			addConfigChildrenNoPluralConfigChildSets(elementBuildingStrategy, frankElement);

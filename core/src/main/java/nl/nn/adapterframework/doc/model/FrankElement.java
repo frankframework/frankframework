@@ -246,7 +246,7 @@ public class FrankElement implements Comparable<FrankElement> {
 	public FrankElement getNextPluralConfigChildrenAncestor(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
 		FrankElement ancestor = parent;
 		while(ancestor != null) {
-			if(! ancestor.getParent().isHasOrInheritsPluralConfigChildren(selector, rejector)) {
+			if(! ancestor.getParent().hasOrInheritsPluralConfigChildren(selector, rejector)) {
 				return ancestor;
 			}
 			if(ancestor.hasFilledConfigChildSets(selector, rejector)) {
@@ -257,13 +257,13 @@ public class FrankElement implements Comparable<FrankElement> {
 		return null;
 	}
 
-	public boolean isHasOrInheritsPluralConfigChildren(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+	public boolean hasOrInheritsPluralConfigChildren(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
 		boolean hasPluralConfigChildren = configChildSets.values().stream()
 				.anyMatch(c -> c.getFilteredElementRoles(selector, rejector).size() >= 2);
 		boolean inheritsPluralConfigChildren = false;
 		FrankElement ancestor = getNextAncestorThatHasConfigChildren(selector);
 		if(ancestor != null) {
-			inheritsPluralConfigChildren = ancestor.isHasOrInheritsPluralConfigChildren(selector, rejector);
+			inheritsPluralConfigChildren = ancestor.hasOrInheritsPluralConfigChildren(selector, rejector);
 		}
 		return hasPluralConfigChildren || inheritsPluralConfigChildren;
 	}
