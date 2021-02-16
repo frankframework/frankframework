@@ -50,13 +50,6 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		try {
-			if (getDatasource() == null) {
-				throw new ConfigurationException(getLogPrefix() + "has no datasource");
-			}
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		}
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT_COUNT)) {
 			throw new ConfigurationException(getLogPrefix() + "query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT_COUNT + "]");
 		}

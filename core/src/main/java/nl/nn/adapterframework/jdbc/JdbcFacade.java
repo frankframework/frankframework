@@ -66,11 +66,10 @@ import nl.nn.adapterframework.util.CredentialFactory;
  */
 public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
 
-	private String datasourceName = AppConstants.getInstance().getResolvedProperty("jdbc.datasource.default");
+	private String datasourceName = null;
 	private String authAlias = null;
 	private String username = null;
 	private String password = null;
-
 
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
@@ -78,7 +77,6 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	private IDbmsSupportFactory dbmsSupportFactoryDefault=null;
 	private IDbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
-	private boolean credentialsConfigured=false;
 	private CredentialFactory cf=null;
 	private StatisticsKeeper connectionStatistics;
 	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
@@ -94,28 +92,25 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		configureCredentials();
-		connectionStatistics = new StatisticsKeeper("getConnection for "+getName());
-	}
-
-	public void configureCredentials() {
+		if (StringUtils.isEmpty(getDatasourceName())) {
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty("jdbc.datasource.default"));
+		}
+		try {
+			if (getDatasource() == null) {
+				throw new ConfigurationException(getLogPrefix() + "has no datasource");
+			}
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		}
 		if (StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getAuthAlias())) {
 			cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		}
-		credentialsConfigured=true;
-	}
-
-	public String getDataSourceNameToUse() throws JdbcException {
-		String result = getDatasourceName();
-		if (StringUtils.isEmpty(result)) {
-			throw new JdbcException(getLogPrefix()+"no datasourceName specified");
-		}
-		return result;
+		connectionStatistics = new StatisticsKeeper("getConnection for "+getName());
 	}
 
 	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
-			String dsName = getDataSourceNameToUse();
+			String dsName = getDatasourceName();
 			try {
 				datasource = getDataSourceFactory().getDataSource(dsName, getJndiEnv());
 			} catch (NamingException e) {
@@ -226,9 +221,6 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	public Connection getConnection() throws JdbcException {
 		long t0 = System.currentTimeMillis();
 		try {
-			if (!credentialsConfigured) { // 2020-01-15 have to use this hack here, as configure() method is introduced just now in JdbcFacade, and not all code is aware of it.
-				configureCredentials(); 
-			}
 			DataSource ds = getDatasource();
 			try {
 				if (cf!=null) {
@@ -236,7 +228,7 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 				}
 				return ds.getConnection();
 			} catch (SQLException e) {
-				throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDataSourceNameToUse()+"]", e);
+				throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDatasourceName()+"]", e);
 			}
 		} finally {
 			if (connectionStatistics!=null) {
@@ -287,7 +279,7 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 		return result;
 	}
 
-	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", ""})
+	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", "${jdbc.datasource.default}"})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}

@@ -25,8 +25,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.CachedSideTable;
@@ -80,9 +78,6 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getDatasourceName())) {
-			throw new ConfigurationException("datasource must be specified");
-		}
 		createQueries();
 		String instance=AppConstants.getInstance().getString("instance.name","");
 		try (Connection connection = getConnection()) {
