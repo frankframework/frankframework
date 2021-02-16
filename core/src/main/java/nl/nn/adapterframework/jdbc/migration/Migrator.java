@@ -58,10 +58,13 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 	}
 
 	public synchronized void configure(Configuration configuration, String changeLogFile) throws ConfigurationException {
+		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 		setName("JdbcMigrator for configuration["+ configuration.getName() +"]");
+		if(StringUtils.isEmpty(getDatasourceName())) {	
+			setDatasourceName(appConstants.getString("jdbc.migrator.dataSource", null));
+		}
 		super.configure();
 
-		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 
 		if(changeLogFile == null)
 			changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
