@@ -39,6 +39,7 @@ import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -63,6 +64,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -131,6 +133,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private boolean lockRows=false;
 	private int lockWait=-1;
 	private boolean avoidLocking=false;
+	private boolean prettyPrint=false;
 	
 	private String convertedResultQuery;
 
@@ -540,7 +543,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
 				db2xml.setDecompressBlobs(isBlobsCompressed());
 				db2xml.setGetBlobSmart(isBlobSmartGet());
-				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target.asContentHandler());
+				ContentHandler handler = target.asContentHandler();
+				if (isPrettyPrint()) {
+					handler = new PrettyPrintFilter(handler);
+				}
+				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler);
 				return target.getPipeRunResult();
 			} catch (Exception e) {
 				throw new JdbcException(e);
@@ -1209,6 +1216,14 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return avoidLocking;
 	}
 	
+	@IbisDoc({"44", "If true and scalar=false, multiline indented XML is produced", "false"})
+	public void setPrettyPrint(boolean prettyPrint) {
+		this.prettyPrint = prettyPrint;
+	}
+	public boolean isPrettyPrint() {
+		return prettyPrint;
+	}
+
 	public int getBatchSize() {
 		return 0;
 	}
