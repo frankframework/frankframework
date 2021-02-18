@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -69,11 +70,11 @@ public class TransactionalStorage extends Base {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/{storageType:messagelog|errorstorage}/{messageId}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}/{messageId}")
 	public Response browseReceiverMessage(
 				@PathParam("adapterName") String adapterName,
 				@PathParam("receiverName") String receiverName,
-				@PathParam("storageType") String storageType,
+				@PathParam("processState") String processState,
 				@PathParam("messageId") String messageId
 			) throws ApiException {
 
@@ -88,12 +89,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		//StorageType
-		IMessageBrowser<?> storage;
-		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageBrowser(ProcessState.DONE);
-		else
-			storage = receiver.getMessageBrowser(ProcessState.ERROR);
+		IMessageBrowser<?> storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
@@ -103,12 +99,12 @@ public class TransactionalStorage extends Base {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/{storageType:messagelog|errorstorage}/{messageId}/download")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}/{messageId}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadMessage(
 			@PathParam("adapterName") String adapterName,
 			@PathParam("receiverName") String receiverName,
-			@PathParam("storageType") String storageType,
+			@PathParam("processState") String processState,
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
@@ -123,12 +119,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		//StorageType
-		IMessageBrowser<?> storage;
-		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageBrowser(ProcessState.DONE);
-		else
-			storage = receiver.getMessageBrowser(ProcessState.ERROR);
+		IMessageBrowser<?> storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
@@ -138,12 +129,12 @@ public class TransactionalStorage extends Base {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/{storageType:messagelog|errorstorage}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response browseReceiverMessages(
 				@PathParam("adapterName") String adapterName,
 				@PathParam("receiverName") String receiverName,
-				@PathParam("storageType") String storageType,
+				@PathParam("processState") String processState,
 				@QueryParam("type") String type,
 				@QueryParam("host") String host,
 				@QueryParam("id") String id,
@@ -171,20 +162,13 @@ public class TransactionalStorage extends Base {
 		}
 
 		//StorageType
-		IMessageBrowser<?> storage;
-		Set<ProcessState> processStateSet = null;
-		if(storageType.equals("messagelog")) {
-			storage = receiver.getMessageBrowser(ProcessState.DONE);
-		}
-		else {
-			storage = receiver.getMessageBrowser(ProcessState.ERROR);
-			processStateSet = (Set<ProcessState>) receiver.targetProcessStates().get(ProcessState.ERROR);
-		}
+		ProcessState state = ProcessState.getProcessStateFromName(processState); 
+		IMessageBrowser<?> storage = receiver.getMessageBrowser(state);
+		Map<ProcessState, Map<String, String>> targetPSInfo = getTargetProcessStateInfo(receiver.targetProcessStates().get(state));
 
 		if(storage == null) {
 			throw new ApiException("no IMessageBrowser found");
 		}
-
 
 		//Apply filters
 		MessageBrowsingFilter filter = new MessageBrowsingFilter(maxMessages, skipMessages);
@@ -198,19 +182,21 @@ public class TransactionalStorage extends Base {
 		filter.setLabelMask(label);
 		filter.setStartDateMask(startDateStr);
 		filter.setEndDateMask(endDateStr);
-	
+
 		if("desc".equalsIgnoreCase(sort))
 			filter.setSortOrder(SortOrder.DESC);
 		if("asc".equalsIgnoreCase(sort))
 			filter.setSortOrder(SortOrder.ASC);
 		Map<String, Object> resultObj = getMessages(storage, filter);
-		resultObj.put("targetStates", processStateSet);
+		if(targetPSInfo != null && targetPSInfo.size()>0) {
+			resultObj.put("targetStates", targetPSInfo);
+		}
 		return Response.status(Response.Status.OK).entity(resultObj).build();
 	}
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage/{messageId}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response resendReceiverMessage(
@@ -240,7 +226,7 @@ public class TransactionalStorage extends Base {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -286,13 +272,15 @@ public class TransactionalStorage extends Base {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage/changeProcessState")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}/move/{targetState}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response changeProcessState(
 			@PathParam("adapterName") String adapterName,
 			@PathParam("receiverName") String receiverName,
+			@PathParam("processState") String processState,
+			@PathParam("targetState") String targetState,
 			MultipartBody input
 		) throws ApiException {
 
@@ -306,13 +294,12 @@ public class TransactionalStorage extends Base {
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
-		ProcessState targetState = ProcessState.valueOf(resolveStringFromMap(input, "targetState"));
 		String[] messageIds = getMessages(input);
-		IMessageBrowser<?> errorStorageBrowser = receiver.getMessageBrowser(ProcessState.ERROR);
+		IMessageBrowser<?> store = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
 		List<String> errorMessages = new ArrayList<String>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
-				if(!receiver.changeProcessState(errorStorageBrowser.browseMessage(messageIds[i]), targetState, null)) {
+				if(!receiver.changeProcessState(store.browseMessage(messageIds[i]), ProcessState.getProcessStateFromName(targetState), null)) {
 					errorMessages.add("could not move message ["+messageIds[i]+"]");
 				}
 			} catch (ListenerException e) {
@@ -328,7 +315,7 @@ public class TransactionalStorage extends Base {
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage/{messageId}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/Error/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteReceiverMessage(
@@ -358,7 +345,7 @@ public class TransactionalStorage extends Base {
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/Error")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -670,6 +657,21 @@ public class TransactionalStorage extends Base {
 		}
 
 		return returnObj;
+	}
+	
+	public Map<ProcessState, Map<String, String>> getTargetProcessStateInfo(Set<ProcessState> targetProcessStates) {
+		if(targetProcessStates == null) {
+			return null;
+		}
+		Map<ProcessState, Map<String, String>> result = new LinkedHashMap<ProcessState, Map<String,String>>();
+		for (ProcessState ps : targetProcessStates) {
+			Map<String, String> psInfo = new HashMap<String, String>();
+			psInfo.put("name", ps.getName());
+			psInfo.put("icon", ps.getIconName());
+			psInfo.put("type", ps.getType());
+			result.put(ps, psInfo);
+		}
+		return result;
 	}
 
 	public class MessageBrowsingFilter {

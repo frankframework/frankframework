@@ -15,19 +15,31 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 public enum ProcessState {
 
-	AVAILABLE,
-	INPROCESS,
-	DONE,
-	ERROR,
-	HOLD;
+	AVAILABLE("Available", "fa-server", "success"),
+	INPROCESS("InProcess", "fa-share", "success"),
+	DONE("Done", "fa-envelope-o", "success"),
+	ERROR("Error", "fa-times-circle", "danger"),
+	HOLD("Hold", "fa-pause-circle", "warning");
 
+	String name=null;
+	String iconName=null;
+	String type=null;
+
+	private ProcessState(String name, String iconName, String type) {
+		this.name=name;
+		this.iconName = iconName;
+		this.type = type;
+	}
+	
 	public static Set<ProcessState> getMandatoryKnownStates() {
 		Set<ProcessState> knownProcessStates = new LinkedHashSet<>();
 		knownProcessStates.add(AVAILABLE);
@@ -35,7 +47,7 @@ public enum ProcessState {
 	}
 
 	public static Map<ProcessState, Set<ProcessState>> getTargetProcessStates(Set<ProcessState> knownProcessStates) {
-		Map<ProcessState, Set<ProcessState>> targetProcessStates = new HashMap<>();
+		Map<ProcessState, Set<ProcessState>> targetProcessStates = new LinkedHashMap<>();
 		for (ProcessState state : ProcessState.values()) {
 			targetProcessStates.put(state, new LinkedHashSet<>());
 		}
@@ -49,5 +61,36 @@ public enum ProcessState {
 			}
 		}
 		return targetProcessStates;
+	}
+
+	public static ProcessState getProcessStateFromName(String name) {
+		ProcessState[] processStates = ProcessState.values();
+		for (ProcessState processState : processStates) {
+			if(StringUtils.equalsIgnoreCase(processState.getName(), name)) {
+				return processState;
+			}
+		}
+		return null;
+	}
+
+	public void setIconName(String iconName) {
+		this.iconName = iconName;
+	}
+	public String getIconName() {
+		return iconName;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+	public String getType() {
+		return type;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getName() {
+		return name;
 	}
 }

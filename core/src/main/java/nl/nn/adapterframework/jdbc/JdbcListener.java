@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -86,6 +87,13 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		}
+		Map<ProcessState, String> orderedUpdateStatusQueries = new LinkedHashMap<>();
+		for (ProcessState state : ProcessState.values()) {
+			if(updateStatusQueries.containsKey(state)) {
+				orderedUpdateStatusQueries.put(state, updateStatusQueries.get(state));
+			}
+		}
+		updateStatusQueries=orderedUpdateStatusQueries;
 		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates());
 	}
 
