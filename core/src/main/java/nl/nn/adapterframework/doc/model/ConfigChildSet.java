@@ -87,6 +87,10 @@ public class ConfigChildSet {
 		return result;
 	}
 
+	/**
+	 * Handles generic element option recursion as explained in
+	 * {@link nl.nn.adapterframework.doc.model}.
+	 */
 	public static Map<String, List<ElementRole>> getMemberChildren(
 			List<ElementRole> parents, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Predicate<FrankElement> elementFilter) {
 		List<FrankElement> members = parents.stream()
@@ -103,6 +107,10 @@ public class ConfigChildSet {
 				.collect(Collectors.groupingBy(ElementRole::getSyntax1Name)));
 	}
 
+	/**
+	 * Solves conflicts by {@link nl.nn.adapterframework.doc.model.ElementType}
+	 * interface inheritance.
+	 */
 	private static Map<String, List<ElementRole>> promoteIfConflict(Map<String, List<ElementRole>> original) {
 		Map<String, List<ElementRole>> result = new HashMap<>();
 		for(String syntax1Name: original.keySet()) {

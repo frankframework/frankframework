@@ -22,17 +22,18 @@ import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.model.FrankElementStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 
-@Ignore("This test takes too long.")
 public class DocWriterNewIntegrationTest {
 	private static Logger log = LogUtil.getLogger(DocWriterNewIntegrationTest.class);
 	private static final String TEST_CONFIGURATION_FILE = "testConfiguration.xml";
 
+	@Ignore("This test takes too long.")
 	@Test
 	public void testStrict() throws Exception {
 		String schemaFileName = generateXsd(XsdVersion.STRICT);
 		validate(schemaFileName, TEST_CONFIGURATION_FILE);
 	}
 
+	@Ignore("This test takes too long.")
 	@Test
 	public void testCompatibility() throws Exception {
 		String schemaFileName = generateXsd(XsdVersion.COMPATIBILITY);

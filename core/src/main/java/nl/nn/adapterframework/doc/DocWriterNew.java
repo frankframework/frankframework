@@ -227,7 +227,15 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * Finally, 'technical' overrides are ignored by this algorithm, which are
  * setters with an override annotation that are not deprecated and lack
  * IbisDoc or IbisDocRef annotations.
- *
+ * <p>
+ * Please note that the system with DeclaredChildGroup and CumulativeChildGroup
+ * is not applied whent there are <em>plural</em> config children, see
+ * {@link nl.nn.adapterframework.doc.model}. When multiple cumulative
+ * config children of a {@link nl.nn.adapterframework.doc.model.FrankElement}
+ * share cumulative config children with a common syntax 1 name (after filtering
+ * for either compatibility.xsd or strict.xsd), then a different algorithm
+ * is applied to include config children.
+ * 
  * <h1>Summary of XSD definitions</h1>
  *
  * Here is a summary of all definitions that appear in the XSD:
@@ -270,13 +278,12 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *   </tr>
  *     <td><code>xs:group</code></td>
  *     <td><code>ElementGroup</code></td>
- *     <td>Lists all choices that are allowed for a child tag.</td>
+ *     <td>Lists all choices that are allowed for a child tag, including the generic element option.</td>
  *   </tr>
  *   <tr>
  *     <td><code>xs:group</code></td>
- *     <td><code>MemberChildGroup</code></td>
- *     <td>Lists all choices that are allowed for a child tag of a syntax 1 parent tag
- *     (e.g. <code>&lt;Listener className="nl.nn.adapterframework.http.rest.ApiListener"&gt;</code>.</td>
+ *     <td><code>ElementGroupBase</code></td>
+ *     <td>Lists all choices that are allowed for a child tag, excluding the generic element option.</td>
  *   </tr>
  * </table>
  *
@@ -335,6 +342,10 @@ public class DocWriterNew {
 		}
 		FrankElement startElement = model.findFrankElement(startClassName);
 		recursivelyDefineXsdElementOfRoot(startElement);
+		// This call is needed to address generic element option recursion as
+		// described in the package doc of the model. If there are generic
+		// element options that do not correspond to a ConfigChildSet, then
+		// they are finished by this call.
 		finishLeftoverGenericOptionsAttributes();
 		if(log.isTraceEnabled()) {
 			log.trace("Have the XmlBuilder objects. Going to add them in the right order to the schema root builder");
@@ -822,6 +833,14 @@ public class DocWriterNew {
 		XmlBuilder sequence = addSequence(complexType);
 		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
 		fillGenericOption(choice, roles, logContext);
+		// We do not add the attributes here directly, because we may
+		// have to solve a conflict between a member FrankElement and
+		// the XML element name of the generic element option. We need a ConfigChildSet to find
+		// this possible conflicting FrankElement, but it is not available here.
+		// We thus add a task to the ElementGroupManager. Later we check
+		// whether a task is available corresponding to the related
+		// ConfigChildSet. If there is no corresponding ConfigChildSet,
+		// the attributes are set by method finishLeftoverGenericOptionsAttributes().
 		elementGroupManager.addGenericOptionAttributeTask(roles, complexType);
 		if(logContext.isTraceEnabled()) {
 			logContext.trace(String.format("Done with the generic element option, role group [%s]", ElementRole.describeCollection(roles)));

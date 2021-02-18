@@ -657,7 +657,7 @@ public class FrankDocModel {
 		Collections.sort(sortedElementRoles);
 		sortedElementRoles.stream()
 			.filter(role -> role.getElementType().isFromJavaInterface())
-			.forEach(role -> createTypeBasedElementRoleSets(Arrays.asList(role), 1));
+			.forEach(role -> recursivelyCreateElementRoleSets(Arrays.asList(role), 1));
 		allElementRoleSets.values().forEach(ElementRoleSet::initConflicts);
 		if(log.isTraceEnabled()) {
 			log.trace("Done FrankDocModel.createConfigChildSets");
@@ -706,7 +706,12 @@ public class FrankDocModel {
 		return allElementRoleSets.get(key);
 	}
 
-	private void createTypeBasedElementRoleSets(List<ElementRole> roleGroup, int recursionDepth) {
+	/**
+	 * Create {@link nl.nn.adapterframework.doc.model.ElementRoleSet}, taking
+	 * care of generic element option recursion as explained in
+	 * {@link nl.nn.adapterframework.doc.model}.
+	 */
+	private void recursivelyCreateElementRoleSets(List<ElementRole> roleGroup, int recursionDepth) {
 		if(log.isTraceEnabled()) {
 			log.trace("Enter with roles [%s] and recursion depth [%d]", ElementRole.describeCollection(roleGroup), recursionDepth);
 		}
@@ -729,9 +734,9 @@ public class FrankDocModel {
 					log.trace("Added new ElementRoleSet [%s]", allElementRoleSets.get(key).toString());
 				}
 				List<ElementRole> recursionParents = new ArrayList<>(roles);
-				recursionParents = recursionParents.stream().filter(role -> role.getElementType().isFromJavaInterface()).collect(Collectors.toList());
+				recursionParents = recursionParents.stream().collect(Collectors.toList());
 				Collections.sort(recursionParents);
-				createTypeBasedElementRoleSets(recursionParents, recursionDepth + 1);
+				recursivelyCreateElementRoleSets(recursionParents, recursionDepth + 1);
 			}
 		}
 		if(log.isTraceEnabled()) {

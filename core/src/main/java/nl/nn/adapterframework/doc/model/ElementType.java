@@ -92,8 +92,13 @@ public class ElementType {
 	}
 
 	void addMember(FrankElement member) {
-		members.add(member);
-		Collections.sort(members);
+	    // See https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413
+		// for an explanation of this algorithm.
+		int index = Collections.binarySearch(members, member, null);
+	    if (index < 0) {
+	        index = -index - 1;
+	    }
+	    members.add(index, member);
 	}
 
 	FrankElement getSingletonElement() throws ReflectiveOperationException {

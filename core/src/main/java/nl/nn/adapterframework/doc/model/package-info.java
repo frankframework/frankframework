@@ -297,9 +297,13 @@ limitations under the License.
  * To fill a generic element option, we need to get a {@link java.util.Set} of
  * {@link nl.nn.adapterframework.doc.model.ElementRole} holding the roles that are
  * selected for the XML version being created. Then we have to calculate member children
- * recursively from these element role sets. We cannot use {@link nl.nn.adapterframework.doc.model.ElementRoleSet}
+ * recursively from these element role sets. The model provides static method
+ * {@link nl.nn.adapterframework.doc.model.ConfigChildSet#getMemberChildren(java.util.List, java.util.function.Predicate, java.util.function.Predicate, java.util.function.Predicate)}
+ * to support this. We cannot use {@link nl.nn.adapterframework.doc.model.ElementRoleSet}
  * for this in {@link nl.nn.adapterframework.doc.DocWriterNew}, because {@link nl.nn.adapterframework.doc.DocWriterNew}
- * has to filter roles for the chosen version of the XML schema.
+ * has to filter roles for the chosen version of the XML schema. Class {@link nl.nn.adapterframework.doc.model.ElementRoleSet}
+ * works without filtering role. That class has to find conflicting {@link nl.nn.adapterframework.doc.model.FrankElement},
+ * the conflicts not being affected by the version of the XML schema being created.
  *
  */
 package nl.nn.adapterframework.doc.model;
