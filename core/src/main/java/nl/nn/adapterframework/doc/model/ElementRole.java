@@ -43,9 +43,20 @@ public class ElementRole implements Comparable<ElementRole> {
 	private final @Getter ElementType elementType;
 	private final @Getter String syntax1Name;
 	private final int syntax1NameSeq;
+
+	// Used to solve conflicts between members and the element name of the
+	// generic element option, see package-info of this package.
 	private FrankElement defaultElementOptionConflict;
+
+	// Used to solve element role member conflicts as described in
+	// the package-info of this package.
 	private Set<FrankElement> nameConflicts;
+
+	// Used to resolve member conflicts in shared generic element options as
+	// explained in the package-info of this package.
 	private Set<ElementRoleSet> participatesInRoleSets = new HashSet<>();
+
+	// Used to solve conflict caused by ElementType interface inheritance.
 	private @Setter(AccessLevel.PACKAGE) ElementRole highestCommonInterface;
 
 	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq) {
