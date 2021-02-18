@@ -9,6 +9,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Resolves member conflicts of shared generic element options. Also used with
+ * recursion within generic element options. See {@link nl.nn.adapterframework.doc.model}.
+ * @author martijn
+ *
+ */
 class ElementRoleSet {
 	private final Set<ElementRole> roles;
 	private Set<FrankElement> conflicts;
