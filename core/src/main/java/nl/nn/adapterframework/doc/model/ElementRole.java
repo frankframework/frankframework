@@ -43,16 +43,36 @@ public class ElementRole implements Comparable<ElementRole> {
 	private final @Getter ElementType elementType;
 	private final @Getter String syntax1Name;
 	private final int syntax1NameSeq;
-	private @Getter FrankElement defaultElementOptionConflict;
+	private FrankElement defaultElementOptionConflict;
 	private Set<FrankElement> nameConflicts;
 	private Set<ElementRoleSet> participatesInRoleSets = new HashSet<>();
-	private @Getter @Setter(AccessLevel.PACKAGE) ElementRole highestCommonInterface;
+	private @Setter(AccessLevel.PACKAGE) ElementRole highestCommonInterface;
 
 	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq) {
 		this.elementType = elementType;
 		this.syntax1Name = syntax1Name;
 		this.syntax1NameSeq = syntax1NameSeq;
 		defaultElementOptionConflict = null;
+	}
+
+	// TODO: A Lombok getter would look better, but it does not work properly with Javadoc.
+	// A {@link} JavaDoc annotation pointing to a Lombok getter causes the method name to appear
+	// in the text but not as a link.
+	/**
+	 * Used to resolve conflicts by {@link nl.nn.adapterframework.doc.model.ElementType} interface
+	 * inheritance, see {@link nl.nn.adapterframework.doc.model}.
+	 */
+	public ElementRole getHighestCommonInterface() {
+		return highestCommonInterface;
+	}
+
+	// TODO: Same problem with Lombok
+	/**
+	 * Used to resolve conflicts between {@link nl.nn.adapterframework.doc.model.ElementRole} members
+	 * and the element name of the generic element option, see {@link nl.nn.adapterframework.doc.model}.
+	 */
+	public FrankElement getDefaultElementOptionConflict() {
+		return defaultElementOptionConflict;
 	}
 
 	void addParticipatingRoleSet(ElementRoleSet roleSet) {
