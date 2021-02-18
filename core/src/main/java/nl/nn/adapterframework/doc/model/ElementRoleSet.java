@@ -41,7 +41,7 @@ class ElementRoleSet {
 				.collect(Collectors.toSet());
 	}
 
-	boolean isConflict(FrankElement frankElement) {
+	boolean conflictsWithGenericElementOptionElementName(FrankElement frankElement) {
 		return conflicts.contains(frankElement);
 	}
 

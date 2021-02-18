@@ -146,7 +146,7 @@ public class ElementRole implements Comparable<ElementRole> {
 	}
 
 	private boolean noConflictingRoleSet(FrankElement frankElement) {
-		return participatesInRoleSets.stream().noneMatch(roleSet -> roleSet.isConflict(frankElement));
+		return participatesInRoleSets.stream().noneMatch(roleSet -> roleSet.conflictsWithGenericElementOptionElementName(frankElement));
 	}
 
 	public String createXsdElementName(String kindDifferentiatingWord) {
