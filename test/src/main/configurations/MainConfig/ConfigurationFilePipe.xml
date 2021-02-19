@@ -104,6 +104,7 @@
 	        	actions="delete"
 	        	fileName="test.txt"
 	        	directory="${testdata.dir}"
+	        	createDirectory="true"
 	        	deleteEmptyDirectory="true">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>

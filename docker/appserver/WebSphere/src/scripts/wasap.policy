@@ -9,6 +9,8 @@ grant {
   permission java.io.FilePermission "/opt/frank/configuration/-", "read";
   permission java.io.FilePermission "/opt/frank/testtool", "read";
   permission java.io.FilePermission "/opt/frank/testtool/-", "read,write,delete";
+  permission java.io.FilePermission "/opt/frank/testtool-ext", "read";
+  permission java.io.FilePermission "/opt/frank/testtool-ext/-", "read,write,delete";
   permission java.io.FilePermission "/tmp", "read,write,delete";
   permission java.io.FilePermission "/tmp/-", "read,write,delete";
   permission java.io.FilePermission "/work/drivers/-", "read";
