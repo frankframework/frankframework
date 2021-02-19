@@ -1,5 +1,4 @@
-ARG IAF_VERSION=7.6-SNAPSHOT
-FROM iaf-as-tomcat:${IAF_VERSION} AS iaf-test-tomcat
+FROM iaf-as-tomcat AS iaf-test-tomcat
 
 # copy any additional drivers
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
