@@ -4,7 +4,7 @@ ARG TOMCAT_VERSION=8.5.60-jdk8
 # unpack the framework in a separate image to prevent an additional layer
 # adding the framework already unpacked allows adding properties from the resources directory
 FROM alpine:${ALPINE_VERSION} AS unpack
-RUN apk add -U unzip
+RUN apk add --no-cache unzip
 COPY target/dependencies/ibis-adapterframework-webapp.war /tmp/iaf.war
 RUN unzip -qq /tmp/iaf.war -d /tmp/iaf
 
