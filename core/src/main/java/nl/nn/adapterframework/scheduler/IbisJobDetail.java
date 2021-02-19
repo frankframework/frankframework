@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.util.Locker;
 
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.impl.JobDetailImpl;
 
 public class IbisJobDetail extends JobDetailImpl {
@@ -30,11 +31,16 @@ public class IbisJobDetail extends JobDetailImpl {
 	public boolean compareWith(JobDef otherJobDef) {
 		JobDef thisJobDef = getJobDef();
 
+		String thisCron = thisJobDef.getCronExpression();
+		String otherCron = otherJobDef.getCronExpression();
+
 		//If the CRON expression is different in both jobs, it's not equal!
-		if(!thisJobDef.getCronExpression().equals(otherJobDef.getCronExpression())) {
+		if((StringUtils.isEmpty(thisCron)    && StringUtils.isNotEmpty(otherCron)) || 
+			StringUtils.isNotEmpty(thisCron) && !thisCron.equals(otherCron)) {
 			return false;
 		}
-		//If the CRON expression is different in both jobs, it's not equal!
+		
+		//If the Interval expression is different in both jobs, it's not equal!
 		if(thisJobDef.getInterval() != otherJobDef.getInterval()) {
 			return false;
 		}
