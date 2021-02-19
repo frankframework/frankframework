@@ -44,7 +44,7 @@ jobs:
         servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
 
     - name: Build with Maven
-      if: ${{ !secrets.CI_USER }}
+      if: !${{ secrets.CI_USER }}
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
