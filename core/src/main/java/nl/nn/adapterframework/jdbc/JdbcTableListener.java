@@ -35,6 +35,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 public class JdbcTableListener extends JdbcListener implements IProvidesMessageBrowsers<Object> {
 	
 	private String tableName;
+	private String tableAlias="t";
 	private String statusField;
 	private String orderField;
 	private String timestampField;
@@ -62,8 +63,9 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.DONE))) {
 			throw new ConfigurationException(getLogPrefix()+"must specify statusValueProcessed");
 		}
+		String alias = StringUtils.isNotBlank(getTableAlias())?getTableAlias().trim():"";
 		setSelectQuery("SELECT "+getKeyField() + (StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
-						" FROM "+getTableName()+
+						" FROM "+getTableName()+" "+ alias +
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE))?
 						 "='"+getStatusValue(ProcessState.AVAILABLE)+"'":
@@ -128,6 +130,14 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	}
 	public String getTableName() {
 		return tableName;
+	}
+
+	@IbisDoc({"2", "Alias of the table, that can be used in selectCondition", "t"})
+	public void setTableAlias(String string) {
+		tableAlias = string;
+	}
+	public String getTableAlias() {
+		return tableAlias;
 	}
 
 	@IbisDoc({"4", "Field containing the status of the message", ""})
