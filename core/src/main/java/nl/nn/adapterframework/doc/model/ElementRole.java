@@ -195,13 +195,16 @@ public class ElementRole implements Comparable<ElementRole> {
 	}
 
 	@EqualsAndHashCode
-	public static class Key {
-		private @Getter String elementTypeName;
-		private @Getter String syntax1Name;
+	public static final class Key {
+		private final @Getter String elementTypeName;
+		private final @Getter String elementTypeSimpleName;
+		private final @Getter String syntax1Name;
 
 		public Key(String elementTypeName, String syntax1Name) {
 			this.elementTypeName = elementTypeName;
 			this.syntax1Name = syntax1Name;
+			int index = elementTypeName.lastIndexOf(".");
+			this.elementTypeSimpleName = elementTypeName.substring(index + 1);
 		}
 
 		public Key(ConfigChild configChild) {
@@ -210,7 +213,7 @@ public class ElementRole implements Comparable<ElementRole> {
 
 		@Override
 		public String toString() {
-			return "(" + elementTypeName + ", " + syntax1Name + ")"; 
+			return "(" + elementTypeSimpleName + ", " + syntax1Name + ")"; 
 		}
 
 		public static String describeCollection(Collection<ElementRole.Key> keys) {
