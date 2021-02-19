@@ -3,6 +3,7 @@ FROM tomcat:${TOMCAT_VERSION} AS iaf-as-tomcat
 
 # copy the frank framework
 COPY target/dependencies/ibis-adapterframework-webapp.war /usr/local/tomcat/webapps/iaf.war
+RUN unzip -qq /usr/local/tomcat/webapps/iaf.war -d /usr/local/tomcat/webapps/iaf && rm -f /usr/local/tomcat/webapps/iaf.war
 
 # copy environment configuration
 COPY src/scripts/catalinaAdditional.properties /tmp
