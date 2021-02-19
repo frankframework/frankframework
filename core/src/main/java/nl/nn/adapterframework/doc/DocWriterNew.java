@@ -325,9 +325,8 @@ public class DocWriterNew {
 		this.startClassName = startClassName;
 		this.version = version;
 		if(log.isTraceEnabled()) {
-			log.trace(String.format("Initialized DocWriterNew with start element name [%s]", startClassName));
-			log.trace(String.format("Writing version [%s]", version.toString()));
-			log.trace(String.format("File name is [%s]", outputFileNames.get(version)));
+			log.trace(String.format("Initialized DocWriterNew with start element name [%s], version [%s] and output file [%s]",
+					startClassName, version.toString(), outputFileNames.get(version)));
 		}
 		elementGroupManager = new ElementGroupManager(version.getChildSelector(), version.getChildRejector());
 	}
