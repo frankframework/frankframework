@@ -27,23 +27,17 @@ import lombok.Setter;
 
 public enum ProcessState {
 
-	AVAILABLE("Available", "fa-server", "success"),
-	INPROCESS("InProcess", "fa-share", "success"),
-	DONE("Done", "fa-envelope-o", "success"),
-	ERROR("Error", "fa-times-circle", "danger"),
-	HOLD("Hold", "fa-pause-circle", "warning");
+	AVAILABLE("Available"),
+	INPROCESS("InProcess"),
+	DONE("Done"),
+	ERROR("Error"),
+	HOLD("Hold");
 
 	@Getter @Setter
 	private String name;
-	@Getter @Setter
-	private String iconName;
-	@Getter @Setter
-	private String type; //for the color of the icon
 
-	private ProcessState(String name, String iconName, String type) {
+	private ProcessState(String name) {
 		this.name=name;
-		this.iconName = iconName;
-		this.type = type;
 	}
 	
 	public static Set<ProcessState> getMandatoryKnownStates() {

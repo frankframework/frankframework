@@ -830,7 +830,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			String id = getListener().getIdFromRawMessage((M)message, context);
 			resetProblematicHistory(id);
 		}
-		return ((IHasProcessState<M>)getListener()).changeProcessState((M)message, toState, context);
+		return ((IHasProcessState<M>)getListener()).changeProcessState((M)message, toState, context); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
 	}
 
 	@Override

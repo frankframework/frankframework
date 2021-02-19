@@ -90,10 +90,10 @@
 						<button ng-if="targetStates || processState=='Error'" title="Select All Messages" ng-click="selectAll()" class="btn btn-default btn-sm" type="button">Select All</button>
 						<button ng-if="targetStates || processState=='Error'" title="Unselect All Messages" ng-click="unselectAll()" class="btn btn-default btn-sm" type="button">Unselect All</button>
 						<span ng-repeat="targetState in targetStates">
-							<button ladda="changingProcessState" data-style="slide-right" ng-click="changeProcessState(processState, targetState.name)" class="btn btn-default btn-sm" type="button"><i class="fa {{::targetState.icon}}"></i> Move to {{::targetState.name}}</button>
+							<button ladda="changingProcessState" data-style="slide-right" ng-click="changeProcessState(processState, targetState.name)" class="btn btn-default btn-sm" type="button"><i class="fa {{::getProcessStateIcon(targetState.name)}}"></i> Move to {{::targetState.name}}</button>
 						</span>
-						<button ng-if="processState=='Error'" ladda="messagesResending" data-style="slide-right" title="Resend Selected Messages" ng-click="resendMessages()" class="btn btn-warning btn-sm" type="button"><i class="fa fa-repeat"></i> Resend Selected</button>
-						<button ng-if="processState=='Error'" ladda="messagesDeleting" data-style="slide-right" title="Delete Selected Messages" ng-click="deleteMessages()" class="btn btn-danger btn-sm" type="button"><i class="fa fa-times"></i> Delete Selected</button>
+						<button ng-if="::processState=='Error'" ladda="messagesResending" data-style="slide-right" title="Resend Selected Messages" ng-click="resendMessages()" class="btn btn-warning btn-sm" type="button"><i class="fa fa-repeat"></i> Resend Selected</button>
+						<button ng-if="::processState=='Error'" ladda="messagesDeleting" data-style="slide-right" title="Delete Selected Messages" ng-click="deleteMessages()" class="btn btn-danger btn-sm" type="button"><i class="fa fa-times"></i> Delete Selected</button>
 					</div>
 					<table id="datatable" class="table table-striped table-hover" datatable="" dt-options="dtOptions" dt-disable-deep-watchers="true">
 						<thead>

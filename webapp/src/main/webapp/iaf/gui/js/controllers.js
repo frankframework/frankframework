@@ -138,6 +138,34 @@ angular.module('iaf.beheerconsole')
 		warn:0,
 		error:0
 	};
+	$scope.getProcessStateIcon = function(processState){
+		switch(processState) {
+			case "Available":
+				return "fa-server";
+			case "InProcess":
+				return "fa-share";
+			case "Done":
+				return "fa-envelope-o";
+			case "Error":
+				return "fa-times-circle";
+			case "Hold":
+				return "fa-pause-circle";
+		}
+	};
+	$scope.getProcessStateIconColor = function(processState){
+		switch(processState) {
+			case "Available":
+				return "success";
+			case "InProcess":
+				return "success";
+			case "Done":
+				return "success";
+			case "Error":
+				return "danger";
+			case "Hold":
+				return "warning";
+		}
+	};
 
 	Hooks.register("init:once", function() {
 		/* Check IAF version */
@@ -786,6 +814,7 @@ angular.module('iaf.beheerconsole')
 		receiver.state = 'loading';
 		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "decthread"});
 	};
+
 }])
 
 .controller('InfoBarCtrl', ['$scope', function($scope) {
@@ -1268,11 +1297,11 @@ angular.module('iaf.beheerconsole')
 	$scope.selectedMessages = [];
 	var a = '';
 
-	a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]" ng-if="::targetStates"/>';
+	a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]" ng-if="::(targetStates || processState==\'Error\')"/>';
 	a += '<div ng-show="!selectedMessages[message.id]">';
 	a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,processState:processState,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
-	a += '<button ng-if="processState==\'Error\'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
-	a += '<button ng-if="processState==\'Error\'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
+	a += '<button ng-if="::processState==\'Error\'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
+	a += '<button ng-if="::processState==\'Error\'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
 	a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
 	a += '</div';
 

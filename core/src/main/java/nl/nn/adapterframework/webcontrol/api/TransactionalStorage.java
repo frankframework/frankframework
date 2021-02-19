@@ -324,7 +324,7 @@ public class TransactionalStorage extends Base {
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/Error/{messageId}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteReceiverMessage(
@@ -354,7 +354,7 @@ public class TransactionalStorage extends Base {
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/Error")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -676,8 +676,6 @@ public class TransactionalStorage extends Base {
 		for (ProcessState ps : targetProcessStates) {
 			Map<String, String> psInfo = new HashMap<String, String>();
 			psInfo.put("name", ps.getName());
-			psInfo.put("icon", ps.getIconName());
-			psInfo.put("type", ps.getType());
 			result.put(ps, psInfo);
 		}
 		return result;

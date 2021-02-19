@@ -642,8 +642,6 @@ public final class ShowConfigurationStatus extends Base {
 						log.warn("Cannot determine number of messages in process state ["+state+"]", e);
 						info.put("numberOfMessages", "error");
 					}
-					info.put("icon", state.getIconName());
-					info.put("type", state.getType());
 					info.put("name", state.getName());
 					tsInfo.put(state, info);
 				}

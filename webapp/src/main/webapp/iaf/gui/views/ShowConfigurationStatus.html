@@ -350,9 +350,9 @@
                                             <td>
                                                 <span class="pull-right">
                                                 	<span ng-repeat="store in receiver.transactionalStores">
-                                                		<span class="text-{{::store.type}}" title="Browse messages with ProcessState: {{::store.name}}" >
+                                                		<span class="text-{{::getProcessStateIconColor(store.name)}}" title="Browse messages with ProcessState: {{::store.name}}" >
 	                                                        <button ui-lref="pages.storage.list({adapter: adapter.name, receiver: receiver.name, processState: store.name})" class="btn btn-xs btn-default m-l-xs" type="button">
-	                                                            <i class="fa {{::store.icon}}"></i> ({{::store.numberOfMessages}})
+	                                                            <i class="fa {{::getProcessStateIcon(store.name)}}"></i> ({{::store.numberOfMessages}})
 	                                                        </button>
 	                                                    </span>
                                                 	</span>
@@ -383,7 +383,7 @@
                                     <tbody>
                                         <tr ng-repeat="pipes in adapter.pipes" ng-if="pipes.sender">
                                             <td>{{::pipes.name}}</td>
-                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination"> ({{::pipes.destination|truncate:150}})</span></td>
+                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination" title="{{::pipes.destination}"> ({{::pipes.destination|truncate:150}})</span></td>
                                             <td>
                                                 <span class="pull-right">
                                                     <span class="text-success">
