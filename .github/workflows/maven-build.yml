@@ -45,10 +45,13 @@ jobs:
     - name: Create Maven settings.xml file
       if: ${{ env.FFPR }}
       uses: s4u/maven-settings-action@v2.3.0
-      env:
-        PROFILES: ibissource,codecoverage,proprietary
       with:
         servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
+
+    - name: Update maven profiles
+      if: ${{ env.FFPR }}
+      run: |
+        echo "PROFILES=ibissource,codecoverage,proprietary" >> $GITHUB_ENV
 
     - name: Build with Maven
       env:
