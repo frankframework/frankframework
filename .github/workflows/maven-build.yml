@@ -5,7 +5,7 @@ name: Java CI with Maven
 
 env:
   PROFILES: ibissource,codecoverage
-  CI_USER: ${{ secrets.CI_USER }} != 0
+  FFPR: ${{ secrets.CI_USER }} != 0
   
 
 on:
@@ -43,7 +43,7 @@ jobs:
         java-version: 1.8
 
     - name: Create Maven settings.xml file
-      if: ${{ CI_USER }}
+      if: ${{ env.FFPR }}
       uses: s4u/maven-settings-action@v2.3.0
       env:
         PROFILES: ibissource,codecoverage,proprietary
@@ -54,7 +54,7 @@ jobs:
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
-      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -P$PROFILES
+      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -P${{env.PROFILES}}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
