@@ -22,6 +22,9 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public enum ProcessState {
 
 	AVAILABLE("Available", "fa-server", "success"),
@@ -30,9 +33,12 @@ public enum ProcessState {
 	ERROR("Error", "fa-times-circle", "danger"),
 	HOLD("Hold", "fa-pause-circle", "warning");
 
-	String name=null;
-	String iconName=null;
-	String type=null;
+	@Getter @Setter
+	private String name;
+	@Getter @Setter
+	private String iconName;
+	@Getter @Setter
+	private String type; //for the color of the icon
 
 	private ProcessState(String name, String iconName, String type) {
 		this.name=name;
@@ -73,24 +79,4 @@ public enum ProcessState {
 		return null;
 	}
 
-	public void setIconName(String iconName) {
-		this.iconName = iconName;
-	}
-	public String getIconName() {
-		return iconName;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
-	public String getType() {
-		return type;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-	public String getName() {
-		return name;
-	}
 }
