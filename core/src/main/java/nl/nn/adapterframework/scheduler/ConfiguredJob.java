@@ -45,7 +45,7 @@ import org.quartz.JobExecutionException;
  * @see nl.nn.adapterframework.core.IAdapter
  * @see nl.nn.adapterframework.configuration.Configuration
   */
-public class ConfiguredJob extends BaseJob implements Job {
+public class ConfiguredJob extends BaseJob {
 
 	public static final String MANAGER_KEY = "manager";
 	public static final String JOBDEF_KEY = "jobdef";

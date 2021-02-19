@@ -31,17 +31,13 @@ public class IbisJobDetail extends JobDetailImpl {
 	public boolean compareWith(JobDef otherJobDef) {
 		JobDef thisJobDef = getJobDef();
 
-		String thisCron = thisJobDef.getCronExpression();
-		String otherCron = otherJobDef.getCronExpression();
-
 		//If the CRON expression is different in both jobs, it's not equal!
-		if((StringUtils.isEmpty(thisCron)    && StringUtils.isNotEmpty(otherCron)) || 
-			StringUtils.isNotEmpty(thisCron) && !thisCron.equals(otherCron)) {
+		if (!StringUtils.equals(thisJobDef.getCronExpression(), otherJobDef.getCronExpression())) {
 			return false;
 		}
 		
 		//If the Interval expression is different in both jobs, it's not equal!
-		if(thisJobDef.getInterval() != otherJobDef.getInterval()) {
+		if (thisJobDef.getInterval() != otherJobDef.getInterval()) {
 			return false;
 		}
 
@@ -54,12 +50,12 @@ public class IbisJobDetail extends JobDetailImpl {
 		}
 
 		//If both contain a locker but the key is different, it's not equal!
-		if(thisLocker != null && otherLocker != null && !(thisLocker.getObjectId().equals(otherLocker.getObjectId()))) {
+		if (thisLocker != null && otherLocker != null && !StringUtils.equals(thisLocker.getObjectId(), otherLocker.getObjectId())) {
 			return false;
 		}
 
 		//If the message is different in both jobs, it's not equal!
-		if(!thisJobDef.getMessage().equals(otherJobDef.getMessage())) {
+		if (!StringUtils.equals(thisJobDef.getMessage(), otherJobDef.getMessage())) {
 			return false;
 		}
 
