@@ -86,7 +86,7 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 			// messages of 1 MB concurrently to a pipeline which will process
 			// the message in parallel with 10 SenderWrappers (containing a
 			// XsltSender and IbisLocalSender).
-			
+
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
 
@@ -130,12 +130,19 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 	public void setSynchronous(boolean value) {
 		if (!isSynchronous()) {
 			super.setSynchronous(value); 
-		} 
+		}
 	}
 
 	protected TaskExecutor createTaskExecutor() {
 		ThreadPoolTaskExecutor executor = applicationContext.getBean("concurrentTaskExecutor", ThreadPoolTaskExecutor.class);
-		executor.setCorePoolSize(getMaxConcurrentThreads());
+
+		if(getMaxConcurrentThreads() > 0) { //MaxPoolSize defaults to Integer.MAX_VALUE so only set this if a maximum has been set!
+			executor.setMaxPoolSize(getMaxConcurrentThreads());
+			executor.setCorePoolSize(getMaxConcurrentThreads());
+		} else {
+			executor.setCorePoolSize(Integer.MAX_VALUE); //initial pool size
+		}
+
 		return executor;
 	}
 
