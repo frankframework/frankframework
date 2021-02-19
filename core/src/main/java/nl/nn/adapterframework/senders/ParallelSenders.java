@@ -130,7 +130,14 @@ public class ParallelSenders extends SenderSeries {
 
 	protected TaskExecutor createTaskExecutor() {
 		ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) getConfiguration().getIbisManager().getIbisContext().getBean("concurrentTaskExecutor");
-		executor.setCorePoolSize(getMaxConcurrentThreads());
+
+		if(getMaxConcurrentThreads() > 0) { //MaxPoolSize defaults to Integer.MAX_VALUE so only set this if a maximum has been set!
+			executor.setMaxPoolSize(getMaxConcurrentThreads());
+			executor.setCorePoolSize(getMaxConcurrentThreads());
+		} else {
+			executor.setCorePoolSize(Integer.MAX_VALUE); //initial pool size
+		}
+
 		return executor;
 	}
 
