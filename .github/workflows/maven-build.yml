@@ -3,6 +3,9 @@
 
 name: Java CI with Maven
 
+env:
+  PROFILES: ibissource,codecoverage
+
 on:
   push:
     branches: [master, 7.5-release]
@@ -40,22 +43,16 @@ jobs:
     - name: Create Maven settings.xml file
       if: ${{ secrets.CI_USER }}
       uses: s4u/maven-settings-action@v2.3.0
+      env:
+        PROFILES: ibissource,codecoverage,proprietary
       with:
         servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
 
     - name: Build with Maven
-      if: !${{ secrets.CI_USER }}
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
-      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -Pibissource,codecoverage
-
-    - name: Build with Maven
-      if: ${{ secrets.CI_USER }}
-      env:
-        CI_SERVICE: GITHUB
-        TZ: Europe/Amsterdam
-      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -Pibissource,codecoverage,proprietary
+      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -P$PROFILES
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
