@@ -15,12 +15,11 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import nl.nn.adapterframework.configuration.IbisManager;
-
-import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import nl.nn.adapterframework.configuration.IbisManager;
 
 
 

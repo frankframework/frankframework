@@ -54,12 +54,8 @@ public class IbisJobDetail extends JobDetailImpl {
 			return false;
 		}
 
-		//If the message is different in both jobs, it's not equal!
-		if (!StringUtils.equals(thisJobDef.getMessage(), otherJobDef.getMessage())) {
-			return false;
-		}
-
-		return true;
+		//If at this point the message is equal in both jobs, the jobs are equal!
+		return StringUtils.equals(thisJobDef.getMessage(), otherJobDef.getMessage());
 	}
 
 	public void setJobType(JobType type) {
