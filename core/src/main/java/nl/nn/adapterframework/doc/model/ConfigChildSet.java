@@ -1,3 +1,18 @@
+/* 
+Copyright 2021 WeAreFrank! 
+
+Licensed under the Apache License, Version 2.0 (the "License"); 
+you may not use this file except in compliance with the License. 
+You may obtain a copy of the License at 
+
+    http://www.apache.org/licenses/LICENSE-2.0 
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS, 
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+See the License for the specific language governing permissions and 
+limitations under the License. 
+*/
 package nl.nn.adapterframework.doc.model;
 
 import java.util.ArrayList;
@@ -32,7 +47,7 @@ public class ConfigChildSet {
 	private @Getter @Setter ElementRoleSet elementRoleSet;
 
 	/**
-	 * @throws IllegalArgumentException if input children is empty or when the elements
+	 * @throws IllegalStateException if input children is empty or when the elements
 	 * are not in the right sort order
 	 * or do not share a role name. The children should be sorted from derived to ancestor
 	 * owning element and then by order. This precondition should be enforced
@@ -41,7 +56,7 @@ public class ConfigChildSet {
 	ConfigChildSet(List<ConfigChild> configChildren) {
 		this.configChildren = configChildren;
 		if(configChildren.isEmpty()) {
-			throw new IllegalArgumentException("A config child cannot have an empty list of config childs");
+			throw new IllegalStateException("A config child cannot have an empty list of config childs");
 		}
 		if(configChildren.size() >= 2) {
 			FrankElement parent = configChildren.get(0).getOwningElement();
@@ -49,14 +64,14 @@ public class ConfigChildSet {
 			for(ConfigChild c: configChildren.subList(1, configChildren.size())) {
 				if(c.getOwningElement() != parent) {
 					if(c.getOwningElement() != parent.getNextAncestorThatHasConfigChildren(ElementChild.ALL)) {
-						throw new IllegalArgumentException(String.format("Cumulative config children are not sorted: [%s] should not be followed by [%s]",
+						throw new IllegalStateException(String.format("Cumulative config children are not sorted: [%s] should not be followed by [%s]",
 								parent.getFullName(), c.getOwningElement().getFullName()));
 					}
 					parent = c.getOwningElement();
 				}
 				else {
 					if(! (order <= c.getOrder())) {
-						throw new IllegalArgumentException(String.format("Cumulative config children are not sorted by order. Offending config child [%s]",
+						throw new IllegalStateException(String.format("Cumulative config children are not sorted by order. Offending config child [%s]",
 								c.getKey().toString()));
 					}
 					order = c.getOrder();
