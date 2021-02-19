@@ -295,16 +295,25 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 		String[] messageIds = getMessages(input);
-		IMessageBrowser<?> store = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
+
+		ProcessState currentState = ProcessState.getProcessStateFromName(processState);
+		Set<ProcessState> targetProcessStates = receiver.targetProcessStates().get(currentState);
+		ProcessState targetPS = ProcessState.getProcessStateFromName(targetState);
+
 		List<String> errorMessages = new ArrayList<String>();
-		for(int i=0; i < messageIds.length; i++) {
-			try {
-				if(!receiver.changeProcessState(store.browseMessage(messageIds[i]), ProcessState.getProcessStateFromName(targetState), null)) {
-					errorMessages.add("could not move message ["+messageIds[i]+"]");
+		if(targetProcessStates != null && targetProcessStates.contains(targetPS)) {
+			IMessageBrowser<?> store = receiver.getMessageBrowser(currentState);
+			for(int i=0; i < messageIds.length; i++) {
+				try {
+					if(!receiver.changeProcessState(store.browseMessage(messageIds[i]), targetPS, null)) {
+						errorMessages.add("could not move message ["+messageIds[i]+"]");
+					}
+				} catch (ListenerException e) {
+					errorMessages.add(e.getMessage());
 				}
-			} catch (ListenerException e) {
-				errorMessages.add(e.getMessage());
 			}
+		} else {
+			throw new ApiException("It is not allowed to move messages from ["+processState+"] " + "to ["+targetState+"]");
 		}
 
 		if(errorMessages.size() == 0)

@@ -87,8 +87,8 @@
 				</div>
 				<div class="ibox-content">
 					<div class="pull-right" >
-						<button ng-if="::targetStates || processState=='Error'" title="Select All Messages" ng-click="selectAll()" class="btn btn-default btn-sm" type="button">Select All</button>
-						<button ng-if="::targetStates || processState=='Error'" title="Unselect All Messages" ng-click="unselectAll()" class="btn btn-default btn-sm" type="button">Unselect All</button>
+						<button ng-if="targetStates || processState=='Error'" title="Select All Messages" ng-click="selectAll()" class="btn btn-default btn-sm" type="button">Select All</button>
+						<button ng-if="targetStates || processState=='Error'" title="Unselect All Messages" ng-click="unselectAll()" class="btn btn-default btn-sm" type="button">Unselect All</button>
 						<span ng-repeat="targetState in targetStates">
 							<button ladda="changingProcessState" data-style="slide-right" ng-click="changeProcessState(processState, targetState.name)" class="btn btn-default btn-sm" type="button"><i class="fa {{::targetState.icon}}"></i> Move to {{::targetState.name}}</button>
 						</span>
