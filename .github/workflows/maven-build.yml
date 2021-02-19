@@ -5,6 +5,8 @@ name: Java CI with Maven
 
 env:
   PROFILES: ibissource,codecoverage
+  CI_USER: ${{ secrets.CI_USER }} != 0
+  
 
 on:
   push:
@@ -41,7 +43,7 @@ jobs:
         java-version: 1.8
 
     - name: Create Maven settings.xml file
-      if: ${{ secrets.CI_USER }}
+      if: ${{ CI_USER }}
       uses: s4u/maven-settings-action@v2.3.0
       env:
         PROFILES: ibissource,codecoverage,proprietary
