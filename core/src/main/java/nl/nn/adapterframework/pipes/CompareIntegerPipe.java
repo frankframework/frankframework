@@ -102,15 +102,6 @@ public class CompareIntegerPipe extends AbstractPipe {
 
 	}
 
-	/**
-	 * @param pvl
-	 * @param operandName
-	 * @param sessionkey
-	 * @param message
-	 * @param session
-	 * @return
-	 * @throws PipeRunException 
-	 */
 	private Integer getOperandValue(ParameterValueList pvl, String operandName, String sessionkey, Message message, IPipeLineSession session) throws PipeRunException {
 		ParameterValue pv = pvl.getParameterValue(operandName);
 		Integer operand = null;

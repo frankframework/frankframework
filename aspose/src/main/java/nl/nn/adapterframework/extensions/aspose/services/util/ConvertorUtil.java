@@ -61,9 +61,7 @@ public class ConvertorUtil {
 	 * replaced with the given extension.
 	 * 
 	 * @param argFilename
-	 * @param extension
-	 *            (without the period).
-	 * @return
+	 * @param extension (without the period).
 	 */
 	public static String createTidyFilename(String argFilename, String extension) {
 		String extensionWithDelim = EXTENSION_DELIMITER + extension;
