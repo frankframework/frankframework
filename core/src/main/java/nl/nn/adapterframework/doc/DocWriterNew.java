@@ -603,7 +603,7 @@ public class DocWriterNew {
 			public void handleCumulativeChildrenOf(FrankElement elem) {
 				String referencedGroupName = xsdCumulativeGroupNameForChildren(elem);
 				if(log.isTraceEnabled()) {
-					log.trace("Appending XSD group [%s] with reference to [%s]", cumulativeGroupName, referencedGroupName);
+					log.trace(String.format("Appending XSD group [%s] with reference to [%s]", cumulativeGroupName, referencedGroupName));
 				}
 				DocWriterNewXmlUtils.addGroupRef(cumulativeBuilder, referencedGroupName);
 			}
@@ -647,7 +647,7 @@ public class DocWriterNew {
 		FrankElement elementInType = singleElementOf(role);
 		if(elementInType == null) {
 			if(log.isTraceEnabled()) {
-				log.trace("Omitting config child [%s] because of name conflict", child.toString());
+				log.trace(String.format("Omitting config child [%s] because of name conflict", child.toString()));
 			}
 			return null;
 		}
@@ -1043,7 +1043,7 @@ public class DocWriterNew {
 			public void handleCumulativeChildrenOf(FrankElement elem) {
 				String referencedGroupName = xsdCumulativeGroupNameForAttributes(elem);
 				if(log.isTraceEnabled()) {
-					log.trace("Appending XSD group [%s] with reference to [%s]", cumulativeGroupName, referencedGroupName);
+					log.trace(String.format("Appending XSD group [%s] with reference to [%s]", cumulativeGroupName, referencedGroupName));
 				}
 				DocWriterNewXmlUtils.addAttributeGroupRef(cumulativeBuilder, referencedGroupName);				
 			}

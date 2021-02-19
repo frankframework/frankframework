@@ -713,7 +713,7 @@ public class FrankDocModel {
 	 */
 	private void recursivelyCreateElementRoleSets(List<ElementRole> roleGroup, int recursionDepth) {
 		if(log.isTraceEnabled()) {
-			log.trace("Enter with roles [%s] and recursion depth [%d]", ElementRole.describeCollection(roleGroup), recursionDepth);
+			log.trace(String.format("Enter with roles [%s] and recursion depth [%d]", ElementRole.describeCollection(roleGroup), recursionDepth));
 		}
 		List<FrankElement> rawMembers = roleGroup.stream()
 				.flatMap(role -> role.getRawMembers().stream())
@@ -731,7 +731,7 @@ public class FrankDocModel {
 			if(! allElementRoleSets.containsKey(key)) {
 				allElementRoleSets.put(key, new ElementRoleSet(roles));
 				if(log.isTraceEnabled()) {
-					log.trace("Added new ElementRoleSet [%s]", allElementRoleSets.get(key).toString());
+					log.trace(String.format("Added new ElementRoleSet [%s]", allElementRoleSets.get(key).toString()));
 				}
 				List<ElementRole> recursionParents = new ArrayList<>(roles);
 				recursionParents = recursionParents.stream().collect(Collectors.toList());
@@ -740,7 +740,7 @@ public class FrankDocModel {
 			}
 		}
 		if(log.isTraceEnabled()) {
-			log.trace("Leave for roles [%s] and recursion depth [%d]", ElementRole.describeCollection(roleGroup), recursionDepth);
+			log.trace(String.format("Leave for roles [%s] and recursion depth [%d]", ElementRole.describeCollection(roleGroup), recursionDepth));
 		}
 	}
 }
