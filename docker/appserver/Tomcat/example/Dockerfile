@@ -8,4 +8,5 @@ COPY target/dependencies/*.jar /usr/local/tomcat/lib/
 COPY src/scripts/context.xml /usr/local/tomcat/conf/Catalina/localhost/iaf.xml
 
 # copy configuration, properties and testscenarios
-COPY target/dependencies/frank /opt/frank
+COPY target/dependencies/frank/resources target/dependencies/frank/configuration /usr/local/tomcat/webapps/iaf/WEB-INF/classes/
+COPY target/dependencies/frank/testtool /opt/frank/testtool

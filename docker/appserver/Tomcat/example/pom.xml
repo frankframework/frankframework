@@ -63,10 +63,28 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>copy-configuration</id>
+						<id>unpack-resources</id>
 						<phase>package</phase>
 						<goals>
-							<goal>copy</goal>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-example</artifactId>
+									<classifier>resources</classifier>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/frank/resources</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-configurations</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
 						</goals>
 						<configuration>
 							<artifactItems>
@@ -75,15 +93,9 @@
 									<artifactId>ibis-adapterframework-example</artifactId>
 									<classifier>configurations</classifier>
 								</artifactItem>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
-									<classifier>resources</classifier>
-								</artifactItem>
 							</artifactItems>
-							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
-							<stripVersion>true</stripVersion>
 							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
 						</configuration>
 					</execution>
 					<execution>
