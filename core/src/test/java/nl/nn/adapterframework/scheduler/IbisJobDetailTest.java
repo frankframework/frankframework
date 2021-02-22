@@ -45,6 +45,15 @@ public class IbisJobDetailTest {
 	}
 
 	@Test
+	public void compareOtherCron() throws Exception {
+		jobDef2.setCronExpression("0 0 *");
+		jobDef1.configure(null);
+		jobDef2.configure(null);
+		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		assertFalse(jobDetail1.compareWith(jobDef2));
+	}
+
+	@Test
 	public void compareEqualCron() throws Exception {
 		jobDef1.setCronExpression("0 0 *");
 		jobDef2.setCronExpression("0 0 *");
@@ -74,6 +83,15 @@ public class IbisJobDetailTest {
 	}
 
 	@Test
+	public void compareOtherInterval() throws Exception {
+		jobDef2.setInterval(100);
+		jobDef1.configure(null);
+		jobDef2.configure(null);
+		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		assertFalse(jobDetail1.compareWith(jobDef2));
+	}
+
+	@Test
 	public void compareEqualInterval() throws Exception {
 		jobDef1.setInterval(100);
 		jobDef2.setInterval(100);
@@ -95,10 +113,26 @@ public class IbisJobDetailTest {
 	
 	@Test
 	public void compareOneLocker() throws Exception {
-		Locker locker1 = new Locker() {
-			public void configure() {}
+		Locker locker = new Locker() {
+			public void configure() {
+				// override configure, to avoid having to fully configure the Locker. We just use it's existence here.
+			}
 		};
-		jobDef1.setLocker(locker1);
+		jobDef1.setLocker(locker);
+		jobDef1.configure(null);
+		jobDef2.configure(null);
+		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		assertFalse(jobDetail1.compareWith(jobDef2));
+	}
+
+	@Test
+	public void compareOtherLocker() throws Exception {
+		Locker locker = new Locker() {
+			public void configure() {
+				// override configure, to avoid having to fully configure the Locker. We just use it's existence here.
+			}
+		};
+		jobDef2.setLocker(locker);
 		jobDef1.configure(null);
 		jobDef2.configure(null);
 		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
@@ -108,7 +142,9 @@ public class IbisJobDetailTest {
 	@Test
 	public void compareEqualLocker() throws Exception {
 		Locker locker1 = new Locker() {
-			public void configure() {}
+			public void configure() {
+				// override configure, to avoid having to fully configure the Locker. We just use it's objectId here.
+			}
 			
 			public String getObjectId() {
 				return "fakeObjectId";
@@ -116,7 +152,9 @@ public class IbisJobDetailTest {
 		};
 		jobDef1.setLocker(locker1);
 		Locker locker2 = new Locker() {
-			public void configure() {}
+			public void configure() {
+				// override configure, to avoid having to fully configure the Locker. We just use it's objectId here.
+			}
 
 			public String getObjectId() {
 				return "fakeObjectId";
@@ -132,7 +170,9 @@ public class IbisJobDetailTest {
 	@Test
 	public void compareDifferentLocker() throws Exception {
 		Locker locker1 = new Locker() {
-			public void configure() {}
+			public void configure() {
+				// override configure, to avoid having to fully configure the Locker. We just use it's objectId here.
+			}
 			
 			public String getObjectId() {
 				return "fakeObjectId 1";
@@ -140,7 +180,9 @@ public class IbisJobDetailTest {
 		};
 		jobDef1.setLocker(locker1);
 		Locker locker2 = new Locker() {
-			public void configure() {}
+			public void configure() {
+				// override configure, to avoid having to fully configure the Locker. We just use it's objectId here.
+			}
 
 			public String getObjectId() {
 				return "fakeObjectId 2";
@@ -156,6 +198,15 @@ public class IbisJobDetailTest {
 	@Test
 	public void compareOneMessage() throws Exception {
 		jobDef1.setMessage("fakeMessage");
+		jobDef1.configure(null);
+		jobDef2.configure(null);
+		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		assertFalse(jobDetail1.compareWith(jobDef2));
+	}
+
+	@Test
+	public void compareOtherMessage() throws Exception {
+		jobDef2.setMessage("fakeMessage");
 		jobDef1.configure(null);
 		jobDef2.configure(null);
 		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
