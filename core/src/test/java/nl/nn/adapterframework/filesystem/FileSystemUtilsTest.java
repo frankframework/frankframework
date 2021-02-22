@@ -41,6 +41,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		assertFileExistsWithContents(folder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
 		
 		F file = fileSystem.toFile(folder, filename);
+
 		// execute rollover
 		FileSystemUtils.rolloverByNumber(fileSystem, file, numOfBackups);
 		
@@ -68,7 +69,9 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		int numOfBackups = 3;
 		int rotateSize = 8;
 		int numOfFilesPresentAtStart=5;
-		
+		if(folder !=null && !_folderExists(folder)) {
+			_createFolder(folder);
+		}
 		if (_fileExists(filename)) {
 			_deleteFile(folder, filename);
 		}
@@ -126,13 +129,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		String dstFolder = "dstFolder";
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
-		
+		if(!_folderExists(srcFolder)) {
+			_createFolder(srcFolder);
+		}
 		if (_fileExists(filename)) {
 			_deleteFile(dstFolder, filename);
 		}
 
 		if (dstFolder!=null) {
-			if  (_folderExists(dstFolder)) {
+			if (!_folderExists(dstFolder)) {
 				_createFolder(dstFolder);
 			}
 		}
@@ -168,13 +173,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		String dstFolder = "dstFolder";
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
-		
+		if(!_folderExists(srcFolder)) {
+			_createFolder(srcFolder);
+		}
 		if (_fileExists(filename)) {
 			_deleteFile(dstFolder, filename);
 		}
 
 		if (dstFolder!=null) {
-			if  (_folderExists(dstFolder)) {
+			if  (!_folderExists(dstFolder)) {
 				_createFolder(dstFolder);
 			}
 		}
@@ -210,7 +217,9 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		String dstFolder = "dstFolder";
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
-		
+		if(!_folderExists(srcFolder)) {
+			_createFolder(srcFolder);
+		}
 		if (dstFolder!=null && !_folderExists(dstFolder)) {
 			_createFolder(dstFolder);
 		}

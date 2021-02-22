@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -77,26 +75,15 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		int eventKey;
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getDatasourceName())) {
-			throw new ConfigurationException("datasource must be specified");
-		}
+		super.configure();
 		createQueries();
 		String instance=AppConstants.getInstance().getString("instance.name","");
-		Connection connection=null;
-		try {
-			connection = getConnection();
-			instanceKey=instances.findOrInsert(connection,instance);			
-		} catch (JdbcException e) {
+		try (Connection connection = getConnection()) {
+			instanceKey=instances.findOrInsert(connection,instance);
+		} catch (JdbcException | SQLException e) {
 			throw new ConfigurationException("could not find instancekey for instance ["+instance+"]",e);
-		} finally {
-			if (connection!=null) {
-				try {
-					connection.close();
-				} catch (SQLException e1) {
-					throw new ConfigurationException("could not close connection to find instancekey for instance ["+instance+"]",e1);
-				}
-			}
 		}
 	}	
 
@@ -151,6 +138,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 
 
+	@Override
 	public Object start(Date now, Date mainMark, Date detailMark) throws SenderException {
 		List nameList=new LinkedList();
 		List valueList=new LinkedList();
@@ -215,6 +203,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public void end(Object data) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;	
 		try {
@@ -244,6 +233,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;	
 		PreparedStatement stmt = null;
@@ -290,6 +280,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public void handleScalar(Object data, String scalarName, long value) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;
 		PreparedStatement stmt = null;
@@ -317,6 +308,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public void handleScalar(Object data, String scalarName, Date value) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;	
 		PreparedStatement stmt = null;
@@ -348,6 +340,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public Object openGroup(Object parentData, String name, String type) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)parentData;
 		int parentKey=sessionInfo.groupKey;
@@ -364,6 +357,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public void closeGroup(Object data) throws SenderException {
 		// nothing to do
 	}

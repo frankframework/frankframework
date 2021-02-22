@@ -14,14 +14,16 @@
 		name="esbFFConnectionFactory"
 		class="org.springframework.jndi.JndiObjectFactoryBean"
 		>
-		<property name="jndiName" value="${jndiContextPrefix}jms/qcf_tibco_esb_ff"/>
+		<property name="resourceRef" value="true"/>
+		<property name="jndiName" value="jms/qcf_tibco_esb_ff"/>
 	</bean>
 
 	<bean
 		name="esbRRConnectionFactory"
 		class="org.springframework.jndi.JndiObjectFactoryBean"
 		>
-		<property name="jndiName" value="${jndiContextPrefix}jms/qcf_tibco_esb_rr"/>
+		<property name="resourceRef" value="true"/>
+		<property name="jndiName" value="jms/qcf_tibco_esb_rr"/>
 	</bean>
 
 	<import resource="springJms.xml"/>

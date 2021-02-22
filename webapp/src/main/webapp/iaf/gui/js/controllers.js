@@ -38,6 +38,7 @@ angular.module('iaf.beheerconsole')
 
 				$rootScope.dtapStage = data["dtap.stage"];
 				$rootScope.dtapSide = data["dtap.side"];
+				$rootScope.userName = data["userName"];
 
 				if($rootScope.dtapStage == "LOC") {
 					Debug.setLevel(3);

@@ -25,8 +25,10 @@ import java.io.Writer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -149,6 +151,11 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	public String getClobFieldType() {
 		return "TEXT";
 	}
+	@Override
+	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
+		return rsmeta.getColumnType(colNum)==Types.VARCHAR && "text".equals(rsmeta.getColumnTypeName(colNum));
+	}
+	
 	@Override
 	public Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException {
 		return rs.getCharacterStream(column);

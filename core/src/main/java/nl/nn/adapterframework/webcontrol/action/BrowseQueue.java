@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
@@ -43,59 +44,48 @@ import org.apache.struts.action.ActionMapping;
 public class BrowseQueue extends ActionBase {
 	
 
-public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
-	// Initialize action
-	initAction(request);
+		// Initialize action
+		initAction(request);
 
+		if (form == null) {
+			log.debug(" Creating new browseQueueForm bean under key [" + mapping.getAttribute()+"]");
 
-	if (form == null) {
-		log.debug(" Creating new browseQueueForm bean under key [" + mapping.getAttribute()+"]");
+			IniDynaActionForm browseQueueForm = new IniDynaActionForm();
 
-		IniDynaActionForm browseQueueForm = new IniDynaActionForm();
-
-		if ("request".equals(mapping.getScope())) {
-			request.setAttribute(mapping.getAttribute(), form);
-		} else {
-			session.setAttribute(mapping.getAttribute(), form);
-		}
-	} 
-
-	IniDynaActionForm browseQueueForm = (IniDynaActionForm) form;
-	Cookie[] cookies = request.getCookies();
-
-	if (null != cookies) {
-		for (int i = 0; i < cookies.length; i++) {
-			Cookie aCookie = cookies[i];
-
-			if (aCookie.getName().equals(AppConstants.getInstance().getString("WEB_QBROWSECOOKIE_NAME", "WEB_QBROWSECOOKIE"))) {
-				StringTagger cs = new StringTagger(aCookie.getValue());
-
-				log.debug("restoring values from cookie: " + cs.toString());
-				try {
-					browseQueueForm.set("jmsRealm",	       cs.Value("jmsRealm"));
-					browseQueueForm.set("destinationName", cs.Value("destinationName"));
-					browseQueueForm.set("destinationType", cs.Value("destinationType"));
-					browseQueueForm.set("numberOfMessagesOnly", new Boolean(cs.Value("numberOfMessagesOnly")));
-					browseQueueForm.set("showPayload", new Boolean(cs.Value("showPayload")));
-				} catch (Exception e) {
-					log.warn("could not restore Cookie value's",e);
-				}
+			if ("request".equals(mapping.getScope())) {
+				request.setAttribute(mapping.getAttribute(), form);
+			} else {
+				session.setAttribute(mapping.getAttribute(), form);
 			}
+		} 
 
+		IniDynaActionForm browseQueueForm = (IniDynaActionForm) form;
+
+		Cookie cookie = CookieUtil.getCookie(request, AppConstants.getInstance().getString("WEB_QBROWSECOOKIE_NAME", "WEB_QBROWSECOOKIE"));
+		if (null != cookie) {
+			StringTagger cs = new StringTagger(cookie.getValue());
+
+			log.debug("restoring values from cookie: " + cs.toString());
+			try {
+				browseQueueForm.set("jmsRealm",	       cs.Value("jmsRealm"));
+				browseQueueForm.set("destinationName", cs.Value("destinationName"));
+				browseQueueForm.set("destinationType", cs.Value("destinationType"));
+				browseQueueForm.set("numberOfMessagesOnly", new Boolean(cs.Value("numberOfMessagesOnly")));
+				browseQueueForm.set("showPayload", new Boolean(cs.Value("showPayload")));
+			} catch (Exception e) {
+				log.warn("could not restore Cookie value's",e);
+			}
 		}
+
+		List jmsRealms=JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		if (jmsRealms.size()==0) jmsRealms.add("no realms defined");
+		browseQueueForm.set("jmsRealms", jmsRealms);
+
+		// Forward control to the specified success URI
+		log.debug("forward to success");
+		return (mapping.findForward("success"));
+
 	}
-
-	List jmsRealms=JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-	if (jmsRealms.size()==0) jmsRealms.add("no realms defined");
-	browseQueueForm.set("jmsRealms", jmsRealms);
-
-	// Forward control to the specified success URI
-	log.debug("forward to success");
-	return (mapping.findForward("success"));
-
 }
-
-
-}
-

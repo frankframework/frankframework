@@ -73,13 +73,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 
 	@Override
 	public void configure() throws ConfigurationException {
-		try {
-			if (getDatasource()==null) {
-				throw new ConfigurationException(getLogPrefix()+"has no datasource");
-			}
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		}
+		super.configure();
 		try {
 			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, getSelectQuery());
 			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? getPeekQuery() : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, getSelectQuery());

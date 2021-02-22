@@ -24,7 +24,9 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -146,6 +148,17 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return "CLOB";
 	}
 	@Override
+	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
+		switch (rsmeta.getColumnType(colNum)) {
+		case Types.LONGVARCHAR:
+		case Types.LONGNVARCHAR:
+		case Types.CLOB:
+			return true;
+		default:
+			return false;
+		}
+	}
+	@Override
 	public boolean mustInsertEmptyClobBeforeData() {
 		return false;
 	}
@@ -218,6 +231,18 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public String getBlobFieldType() {
 		return "BLOB";
+	}
+	@Override
+	public boolean isBlobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
+		switch (rsmeta.getColumnType(colNum)) {
+		case Types.LONGVARBINARY:
+		case Types.VARBINARY:
+		case Types.BINARY:
+		case Types.BLOB:
+			return true;
+		default:
+			return false;
+		}
 	}
 	@Override
 	public boolean mustInsertEmptyBlobBeforeData() {

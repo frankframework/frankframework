@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
@@ -57,9 +56,7 @@ import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -78,7 +75,6 @@ public class JdbcUtil {
 
 	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
 	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
-	private static Properties jdbcProperties = null;
 
 	@Deprecated
 	public static String warningsToString(SQLWarning warnings) {
@@ -154,47 +150,31 @@ public class JdbcUtil {
 		}
 	}
 
-	public static boolean isBlobType(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta) throws SQLException {
-		switch (rsmeta.getColumnType(colNum)) {
-			case Types.LONGVARBINARY:
-			case Types.VARBINARY:
-			case Types.BINARY:
-			case Types.BLOB:
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	public static boolean isClobType(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta) throws SQLException {
-		switch (rsmeta.getColumnType(colNum)) {
-			case Types.CLOB:
-				return true;
-			default:
-				return false;
-		}
-	}
 
 	public static String getValue(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws JdbcException, IOException, SQLException {
+		if (dbmsSupport.isBlobType(rsmeta, colNum)) {
+			try {
+				return JdbcUtil.getBlobAsString(dbmsSupport, rs,colNum,blobCharset,decompressBlobs,getBlobSmart,encodeBlobBase64);
+			} catch (JdbcException e) {
+				log.debug("Caught JdbcException, assuming no blob found",e);
+				return nullValue;
+			}
+			
+		}
+		if (dbmsSupport.isClobType(rsmeta, colNum)) {
+			try {
+				return JdbcUtil.getClobAsString(dbmsSupport, rs,colNum,false);
+			} catch (JdbcException e) {
+				log.debug("Caught JdbcException, assuming no clob found",e);
+				return nullValue;
+			}
+		}
 		switch(rsmeta.getColumnType(colNum)) {
+			// return "undefined" for types that cannot be rendered to strings easily
 			case Types.LONGVARBINARY:
 			case Types.VARBINARY:
 			case Types.BINARY:
 			case Types.BLOB:
-				try {
-					return JdbcUtil.getBlobAsString(dbmsSupport, rs,colNum,blobCharset,decompressBlobs,getBlobSmart,encodeBlobBase64);
-				} catch (JdbcException e) {
-					log.debug("Caught JdbcException, assuming no blob found",e);
-					return nullValue;
-				}
-			case Types.CLOB :
-				try {
-					return JdbcUtil.getClobAsString(dbmsSupport, rs,colNum,false);
-				} catch (JdbcException e) {
-					log.debug("Caught JdbcException, assuming no clob found",e);
-					return nullValue;
-				}
-			// return "undefined" for types that cannot be rendered to strings easily
 			case Types.ARRAY:
 			case Types.DISTINCT:
 			case Types.REF:
@@ -261,7 +241,7 @@ public class JdbcUtil {
 			return null;
 		}
 		if (charset==null) {
-			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		return StreamUtil.getCharsetDetectingInputStreamReader(blobIntputStream, charset);
 	}
@@ -415,7 +395,7 @@ public class JdbcUtil {
 		Writer result;
 		OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobUpdateHandle);
 		if (charset==null) {
-			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		if (compressBlob) {
 			result = new BufferedWriter(new OutputStreamWriter(new DeflaterOutputStream(out),charset));
@@ -430,7 +410,7 @@ public class JdbcUtil {
 			Object blobHandle=dbmsSupport.getBlobHandle(rs, columnIndex);
 			try (OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobHandle)) {
 				if (charset==null) {
-					charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+					charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 				}
 				if (compressBlob) {
 					try (DeflaterOutputStream dos = new DeflaterOutputStream(out)) {
@@ -631,28 +611,13 @@ public class JdbcUtil {
 				if (!rs.next()) {
 					return null;
 				}
-				return getBlobAsString(dbmsSupport, rs, 1, Misc.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
+				return getBlobAsString(dbmsSupport, rs, 1, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
 			}
 		} catch (Exception e) {
 			throw new JdbcException("could not obtain value using query ["+query+"]",e);
 		}
 	}
 
-	public static Properties executePropertiesQuery(Connection connection, String query) throws JdbcException {
-		Properties props = new Properties();
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			try (ResultSet rs = stmt.executeQuery()) {
-				while (rs.next()) {
-					props.put(rs.getString(1), rs.getString(2));
-				}
-				return props;
-			}
-		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query ["+query+"]",e);
-		}
-	}
-	
 	public static int executeIntQuery(Connection connection, String query) throws JdbcException {
 		return executeIntQuery(connection,query,null,null);
 	}
@@ -786,42 +751,6 @@ public class JdbcUtil {
 		} catch (Exception e) {
 			throw new JdbcException("could not execute query ["+query+"]"+displayParameters(param1,param2,param3,param4,param5),e);
 		}
-	}
-
-	/**
-	 * Use with caution, this assumes you've defined a JMS realm and uses the first datasource found, if any.
-	 */
-	public static synchronized Properties retrieveJdbcPropertiesFromDatabase() {
-		if (jdbcProperties == null) {
-			String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (jmsRealm != null) {
-				jdbcProperties = new Properties();
-				JdbcFacade ibisProp = new JdbcFacade();
-				ibisProp.setJmsRealm(jmsRealm); //Use a realm here so it copies over proxied datasources
-				ibisProp.setName("retrieveJdbcPropertiesFromDatabase");
-
-				try (Connection conn = ibisProp.getConnection()) {
-					if (ibisProp.getDbmsSupport().isTablePresent(conn, "ibisprop")) {
-						String query = "select name, value from ibisprop";
-						jdbcProperties.putAll(executePropertiesQuery(conn, query));
-					}
-				} catch (Exception e) {
-					log.error("error reading jdbc properties", e);
-				}
-			}
-		}
-		return jdbcProperties;
-	}
-
-	/**
-	 * Use with caution, this assumes you've defined a JMS realm and uses the first datasource found, if any.
-	 */
-	public static synchronized void resetJdbcProperties() {
-		if(jdbcProperties != null) {
-			jdbcProperties.clear();
-			jdbcProperties = null;
-		}
-		retrieveJdbcPropertiesFromDatabase();
 	}
 
 	public static String selectAllFromTable(IDbmsSupport dbmsSupport, Connection conn, String tableName) throws SQLException {

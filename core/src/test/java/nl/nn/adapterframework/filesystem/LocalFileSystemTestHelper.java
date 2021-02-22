@@ -1,12 +1,11 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.junit.rules.TemporaryFolder;
 
@@ -29,46 +28,46 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 		// not necessary
 	}
 	
-	protected File getFileHandle(String filename) {
-		return new File(folder.getRoot().getAbsolutePath(), filename);
+	protected Path getFileHandle(String filename) {
+		return Paths.get(folder.getRoot().getAbsolutePath(), filename);
 	}
-	protected File getFileHandle(String subfolder, String filename) {
+	protected Path getFileHandle(String subfolder, String filename) {
 		if (subfolder==null) {
 			return getFileHandle(filename);
 		}
-		return new File(folder.getRoot().getAbsolutePath()+"/"+subfolder, filename);
+		return Paths.get(folder.getRoot().getAbsolutePath()+"/"+subfolder, filename);
 	}
 
 	@Override
 	public boolean _fileExists(String subfolder, String filename) {
-		return getFileHandle(subfolder,filename).exists();
+		return Files.exists(getFileHandle(subfolder,filename));
 	}
 
 	@Override
-	public void _deleteFile(String folder, String filename) {
-		getFileHandle(folder, filename).delete();
+	public void _deleteFile(String folder, String filename) throws IOException {
+		Files.delete(getFileHandle(folder, filename));
 	}
 
 	@Override
 	public OutputStream _createFile(String folder, String filename) throws IOException {
-		File f = getFileHandle(folder, filename);
+		Path f = getFileHandle(folder, filename);
 		try {
-			f.createNewFile();
+			Files.createFile(f);
 		} catch (IOException e) {
-			throw new IOException("Cannot create file ["+f.getAbsolutePath()+"]",e);
+			throw new IOException("Cannot create file ["+f.toString()+"]",e);
 		}
-		return new FileOutputStream(f);
+		return Files.newOutputStream(f);
 	}
 
 	@Override
 	public void _createFolder(String filename) throws IOException {
-		File f = getFileHandle(filename);
-		f.mkdir();
+		Path f = getFileHandle(filename);
+		Files.createDirectory(f);
 	}
 
 	@Override
-	public InputStream _readFile(String folder, String filename) throws FileNotFoundException {
-		return new FileInputStream(getFileHandle(folder, filename));
+	public InputStream _readFile(String folder, String filename) throws IOException {
+		return Files.newInputStream(getFileHandle(folder, filename));
 	}
 
 	@Override
