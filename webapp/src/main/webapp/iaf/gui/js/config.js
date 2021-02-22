@@ -103,11 +103,11 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.storage', {
 		abstract: true,
-		url: "/adapters/:adapter/receivers/:receiver/store/",
+		url: "/adapters/:adapter/receivers/:receiver/",
 		template: "<div ui-view ng-controller='StorageBaseCtrl'></div>",
 		controller: function($state) {
-			$state.current.data.pageTitle = $state.params.processState;
-			$state.current.data.breadcrumbs = "Adapter > "+$state.params.processState;
+			$state.current.data.pageTitle = $state.params.processState + " List";
+			$state.current.data.breadcrumbs = "Adapter > "+$state.params.processState+" List";
 		},
 		params: {
 			adapter: { value: '', squash: true},
@@ -120,7 +120,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		},
 	})
 	.state('pages.storage.list', {
-		url: ":processState",
+		url: "store/:processState",
 		templateUrl: "views/txstorage/adapter_storage_list.html",
 		resolve: {
 			loadPlugin: function($ocLazyLoad) {
@@ -129,13 +129,13 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		},
 	})
 	.state('pages.storage.view', {
-		url: ":processState/:messageId",
+		url: "store/:processState/message/:messageId",
 		templateUrl: "views/txstorage/adapter_storage_view.html",
 		params: {
 			messageId: { value: '', squash: true},
 		},
 		controller: function($state) {
-			$state.current.data.breadcrumbs = "Adapter > "+$state.params.processState+" > View Message "+$state.params.messageId;
+			$state.current.data.breadcrumbs = "Adapter > "+$state.params.processState+" List > View Message "+$state.params.messageId;
 		},
 	})
 	

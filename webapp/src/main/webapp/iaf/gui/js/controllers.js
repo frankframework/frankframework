@@ -1261,7 +1261,7 @@ angular.module('iaf.beheerconsole')
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
 
-		Api.Delete($scope.base_url+"/"+encodeURIComponent(encodeURIComponent(message.id)), function() {
+		Api.Delete($scope.base_url+"/message/"+encodeURIComponent(encodeURIComponent(message.id)), function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
 			$scope.addNote("success", "Successfully deleted message with ID: "+message.id);
@@ -1279,7 +1279,7 @@ angular.module('iaf.beheerconsole')
 	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
 
-		Api.Put($scope.base_url+"/"+encodeURIComponent(encodeURIComponent(message.id)), false, function() {
+		Api.Put($scope.base_url+"/message/"+encodeURIComponent(encodeURIComponent(message.id)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
 			$scope.addNote("success", "Successfully resent message with ID: "+message.id);
@@ -1502,7 +1502,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	Api.Get($scope.base_url+"/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
+	Api.Get($scope.base_url+"/message/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
 		$scope.message.data = data;
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {

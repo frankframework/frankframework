@@ -70,7 +70,7 @@ public class TransactionalStorage extends Base {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}/{messageId}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}/message/{messageId}")
 	public Response browseReceiverMessage(
 				@PathParam("adapterName") String adapterName,
 				@PathParam("receiverName") String receiverName,
@@ -99,7 +99,7 @@ public class TransactionalStorage extends Base {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}/{messageId}/download")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}/message/{messageId}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadMessage(
 			@PathParam("adapterName") String adapterName,
@@ -196,7 +196,7 @@ public class TransactionalStorage extends Base {
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error/{messageId}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error/message/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response resendReceiverMessage(
@@ -324,7 +324,7 @@ public class TransactionalStorage extends Base {
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error/{messageId}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error/message/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteReceiverMessage(
