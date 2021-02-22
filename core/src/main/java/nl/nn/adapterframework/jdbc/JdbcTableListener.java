@@ -69,7 +69,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 						 "='"+getStatusValue(ProcessState.AVAILABLE)+"'":
 						 " NOT IN ('"+getStatusValue(ProcessState.ERROR)+"','"+getStatusValue(ProcessState.DONE)+(StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD))?"','"+getStatusValue(ProcessState.HOLD):"")+"')")+
 						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND ("+getSelectCondition()+")": "") +
-						 (StringUtils.isNotEmpty(getOrderField())? " ORDER BY "+getOrderField():""));
+						(StringUtils.isNotEmpty(getOrderField())? " ORDER BY "+getOrderField():""));
 		statusValues.forEach((state, value) -> setUpdateStatusQuery(state, createUpdateStatusQuery(value, null)));
 		super.configure();
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.INPROCESS)) && !getDbmsSupport().hasSkipLockedFunctionality()) {
@@ -83,7 +83,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 				" SET "+getStatusField()+"='"+fieldValue+"'"+
 				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"="+getDbmsSupport().getSysDate():"")+
 				(StringUtils.isNotEmpty(additionalSetClause)?","+additionalSetClause:"")+
-				" WHERE "+getKeyField()+"=?";
+				" WHERE "+getStatusField()+"!='"+fieldValue+"' AND "+getKeyField()+"=?";
 	}
 
 	@Override
