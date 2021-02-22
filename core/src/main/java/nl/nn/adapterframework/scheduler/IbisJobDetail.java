@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.util.Locker;
 
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.impl.JobDetailImpl;
 
 public class IbisJobDetail extends JobDetailImpl {
@@ -31,11 +32,12 @@ public class IbisJobDetail extends JobDetailImpl {
 		JobDef thisJobDef = getJobDef();
 
 		//If the CRON expression is different in both jobs, it's not equal!
-		if(!thisJobDef.getCronExpression().equals(otherJobDef.getCronExpression())) {
+		if (!StringUtils.equals(thisJobDef.getCronExpression(), otherJobDef.getCronExpression())) {
 			return false;
 		}
-		//If the CRON expression is different in both jobs, it's not equal!
-		if(thisJobDef.getInterval() != otherJobDef.getInterval()) {
+		
+		//If the Interval expression is different in both jobs, it's not equal!
+		if (thisJobDef.getInterval() != otherJobDef.getInterval()) {
 			return false;
 		}
 
@@ -48,16 +50,12 @@ public class IbisJobDetail extends JobDetailImpl {
 		}
 
 		//If both contain a locker but the key is different, it's not equal!
-		if(thisLocker != null && otherLocker != null && !(thisLocker.getObjectId().equals(otherLocker.getObjectId()))) {
+		if (thisLocker != null && otherLocker != null && !StringUtils.equals(thisLocker.getObjectId(), otherLocker.getObjectId())) {
 			return false;
 		}
 
-		//If the message is different in both jobs, it's not equal!
-		if(!thisJobDef.getMessage().equals(otherJobDef.getMessage())) {
-			return false;
-		}
-
-		return true;
+		//If at this point the message is equal in both jobs, the jobs are equal!
+		return StringUtils.equals(thisJobDef.getMessage(), otherJobDef.getMessage());
 	}
 
 	public void setJobType(JobType type) {
