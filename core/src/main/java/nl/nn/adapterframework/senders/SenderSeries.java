@@ -109,11 +109,6 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public String getLogPrefix() {
-		return ClassUtils.nameOf(this)+" ["+getName()+"] ";
-	}
-
-	@Override
 	public boolean isSynchronous() {
 		return synchronous;
 	}

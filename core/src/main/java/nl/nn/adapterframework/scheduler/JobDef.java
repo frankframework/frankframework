@@ -434,9 +434,13 @@ public class JobDef extends TransactionAttributes {
 	}
 
 	public void configure(Configuration config) throws ConfigurationException {
+		super.configure();
 		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
+		if (StringUtils.isEmpty(getName())) {
+			throw new ConfigurationException("jobdef function ["+getFunction()+"] name must be specified");
+		}
 		if (StringUtils.isEmpty(getFunction())) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
 		}

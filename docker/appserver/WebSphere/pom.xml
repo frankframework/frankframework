@@ -167,10 +167,15 @@
 						<inherited>false</inherited>
 						<configuration>
 							<target>
+								<exec executable="docker-compose">
+									<arg value="down"/>
+									<arg value="--volumes"/>
+									<arg value="--remove-orphans"/>
+								</exec>
 								<exec executable="docker">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-test-as-websphere:${project.version}"/>
+									<arg value="iaf-test-as-websphere"/>
 									<arg value="."/>
 								</exec>
 							</target>
