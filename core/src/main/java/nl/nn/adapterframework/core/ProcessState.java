@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +47,7 @@ public enum ProcessState {
 	}
 
 	public static Map<ProcessState, Set<ProcessState>> getTargetProcessStates(Set<ProcessState> knownProcessStates) {
-		Map<ProcessState, Set<ProcessState>> targetProcessStates = new LinkedHashMap<>();
+		Map<ProcessState, Set<ProcessState>> targetProcessStates = new HashMap<>();
 		for (ProcessState state : ProcessState.values()) {
 			targetProcessStates.put(state, new LinkedHashSet<>());
 		}

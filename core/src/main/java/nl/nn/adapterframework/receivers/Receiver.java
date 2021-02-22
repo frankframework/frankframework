@@ -296,7 +296,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private EventHandler eventHandler=null;
 
 	private Set<ProcessState> knownProcessStates = new LinkedHashSet<ProcessState>();
-	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new LinkedHashMap<>();
+	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
 
 
 	/**
