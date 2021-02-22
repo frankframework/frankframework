@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -357,11 +357,13 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 								throws SQLException {
 							for (int i = 0; i < reportColumnNames.size(); i++) {
 								String value = getValue(rs, i + 1);
-								checkpoints.add(new Checkpoint(report,
+								Checkpoint checkpoint = new Checkpoint(report,
 										Thread.currentThread().getName(),
 										Storage.class.getName(),
 										"Column " + reportColumnNames.get(i),
-										value, Checkpoint.TYPE_INPUTPOINT, 0));
+										Checkpoint.TYPE_INPUTPOINT, 0);
+								checkpoint.setMessage(value);
+								checkpoints.add(checkpoint);
 							}
 							return null;
 						}
