@@ -148,9 +148,6 @@ public class Wsdl {
             throw new IllegalArgumentException("Adapter has no name");
         }
         inputValidator = (IXmlValidator)pipeLine.getInputValidator();
-        if (inputValidator == null) {
-            throw new IllegalStateException("Adapter has no input validator");
-        }
         if (inputValidator.getConfigurationException() != null) {
             if (inputValidator.getConfigurationException().getMessage() != null) {
                 throw new IllegalStateException(inputValidator.getConfigurationException().getMessage());

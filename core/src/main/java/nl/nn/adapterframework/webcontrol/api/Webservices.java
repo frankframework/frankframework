@@ -55,6 +55,7 @@ import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.soap.WsdlUtils;
 
 /**
  * Shows all monitors.
@@ -95,11 +96,14 @@ public final class Webservices extends Base {
 
 		List<Map<String, Object>> wsdls = new ArrayList<Map<String, Object>>();
 		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
-			Map<String, Object> wsdlMap = new HashMap<String, Object>(2);
+			Map<String, Object> wsdlMap = null;
 			try {
-				Wsdl wsdl = new Wsdl(adapter.getPipeLine());
-				wsdlMap.put("name", wsdl.getName());
-				wsdlMap.put("extension", getWsdlExtension());
+				if(WsdlUtils.canHaveWsdl(adapter)) { // check eligibility
+					wsdlMap = new HashMap<String, Object>(2);
+					Wsdl wsdl = new Wsdl(adapter.getPipeLine());
+					wsdlMap.put("name", wsdl.getName());
+					wsdlMap.put("extension", getWsdlExtension());
+				}
 			} catch (Exception e) {
 				wsdlMap.put("name", adapter.getName());
 
@@ -109,7 +113,9 @@ public final class Webservices extends Base {
 					wsdlMap.put("error", e.toString());
 				}
 			}
-			wsdls.add(wsdlMap);
+			if(wsdlMap != null) {
+				wsdls.add(wsdlMap);
+			}
 		}
 		returnMap.put("wsdls", wsdls);
 

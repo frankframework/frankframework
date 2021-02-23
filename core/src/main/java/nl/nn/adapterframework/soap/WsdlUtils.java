@@ -26,9 +26,13 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.xerces.util.XMLChar;
 
 import javanet.staxutils.IndentingXMLStreamWriter;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -119,5 +123,20 @@ public abstract class WsdlUtils {
     static String validUri(String uri) {
         return uri == null ? null : uri.replaceAll(" ", "_");
     }
+
+    //check if the adapter has an WebServiceListener with an inputValidator 
+	public static boolean canHaveWsdl(Adapter adapter) {
+		IValidator inputValidator = adapter.getPipeLine().getInputValidator();
+		boolean haveWebServiceListener = false;
+		for (IListener listener : WsdlUtils.getListeners(adapter)) {
+			if(listener instanceof WebServiceListener) {
+				haveWebServiceListener = true;
+			}
+		}
+		if(inputValidator != null && haveWebServiceListener) {
+			return true;
+		}
+		return false;
+	}
 
 }
