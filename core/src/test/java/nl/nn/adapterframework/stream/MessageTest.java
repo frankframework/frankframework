@@ -93,7 +93,7 @@ public class MessageTest {
 	}
 	
 	protected void testToString(Message adapter, Class<?> clazz) {
-		testToString(adapter,clazz);
+		testToString(adapter,clazz,null);
 	}
 	
 	protected void testToString(Message adapter, Class<?> clazz, Class<?> wrapperClass) {
