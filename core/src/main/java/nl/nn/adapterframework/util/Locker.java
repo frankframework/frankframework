@@ -272,7 +272,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	}
 	
 
-	@IbisDoc({"Format for date which is added after <code>objectid</code> (e.g. yyyymmdd to be sure the job is executed only once a day)", ""})
+	@IbisDoc({"Format for date which is added after <code>objectid</code> (e.g. yyyyMMdd to be sure the job is executed only once a day)", ""})
 	public void setDateFormatSuffix(String dateFormatSuffix) {
 		this.dateFormatSuffix = dateFormatSuffix;
 	}

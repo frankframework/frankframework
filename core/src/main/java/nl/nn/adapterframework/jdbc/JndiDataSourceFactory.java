@@ -15,41 +15,38 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import org.springframework.jndi.JndiLocatorSupport;
+import nl.nn.adapterframework.util.AppConstants;
 
-import lombok.SneakyThrows;
+public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDataSource> implements IDataSourceFactory {
 
-public class JndiDataSourceFactory extends JndiLocatorSupport implements IDataSourceFactory {
-	
-	protected Map<String,DataSource> dataSources = new ConcurrentHashMap<>();
-	
-	{
-		setResourceRef(true); //the prefix "java:comp/env/" will be added if the JNDI name doesn't already contain it. 
+	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.datasource.default");
+
+	public JndiDataSourceFactory() {
+		super(CommonDataSource.class);
 	}
-	
+
 	@Override
 	public DataSource getDataSource(String dataSourceName) throws NamingException {
-		return dataSources.computeIfAbsent(dataSourceName, k -> compute(k));
-	}
-	
-	@SneakyThrows(NamingException.class)
-	private DataSource compute(String dataSourceName) {
-		return augmentDataSource(lookupDataSource(dataSourceName), dataSourceName);
+		return get(dataSourceName);
 	}
 
-	protected CommonDataSource lookupDataSource(String jndiName) throws NamingException {
-		return super.lookup(jndiName, CommonDataSource.class);
+	@Override
+	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws NamingException {
+		return get(dataSourceName, jndiEnvironment);
 	}
 
-	protected DataSource augmentDataSource(CommonDataSource dataSource, String dataSourceName) {
-		return (DataSource)dataSource;
+
+	@Override
+	public List<String> getDataSourceNames() {
+		return new ArrayList<String>(objects.keySet());
 	}
 
 }

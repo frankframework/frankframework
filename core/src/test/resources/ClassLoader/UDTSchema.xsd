@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns1="urn:entities" targetNamespace="urn:entities" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="xxx"/>
+</xs:schema>

@@ -3,10 +3,12 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -143,7 +145,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		if (files==null) {
 			throw new FileSystemException("files in folder ["+folderName+"] is null");
 		}
-		return FileSystemUtils.getDirectoryStream((Iterator<M>)files.values().iterator());
+		List<M> fileList = new ArrayList<M>();
+		fileList.addAll((Collection<? extends M>) files.values());
+		return FileSystemUtils.getDirectoryStream(fileList.iterator());
 	}
 
 	@Override

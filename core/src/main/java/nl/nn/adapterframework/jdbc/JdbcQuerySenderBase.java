@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -63,6 +64,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -131,6 +133,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private boolean lockRows=false;
 	private int lockWait=-1;
 	private boolean avoidLocking=false;
+	private boolean prettyPrint=false;
 	
 	private String convertedResultQuery;
 
@@ -468,7 +471,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if(numberOfColumns > 1) {
 					log.warn(getLogPrefix() + "has set scalar=true but the resultset contains ["+numberOfColumns+"] columns. Consider optimizing the query.");
 				}
-				if (JdbcUtil.isBlobType(resultset, 1, rsmeta)) {
+				if (getDbmsSupport().isBlobType(rsmeta, 1)) {
 					if (response!=null) {
 						if (StringUtils.isNotEmpty(contentType)) {
 							response.setHeader("Content-Type", contentType); 
@@ -496,7 +499,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						}
 					}
 				}
-				if (JdbcUtil.isClobType(resultset, 1, rsmeta)) {
+				if (getDbmsSupport().isClobType(rsmeta, 1)) {
 					if (clobSessionVar!=null) {
 						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
 						return new PipeRunResult(null, Message.nullMessage());
@@ -540,7 +543,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
 				db2xml.setDecompressBlobs(isBlobsCompressed());
 				db2xml.setGetBlobSmart(isBlobSmartGet());
-				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), target.asContentHandler());
+				ContentHandler handler = target.asContentHandler();
+				if (isPrettyPrint()) {
+					handler = new PrettyPrintFilter(handler);
+				}
+				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler);
 				return target.getPipeRunResult();
 			} catch (Exception e) {
 				throw new JdbcException(e);
@@ -555,7 +562,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		XmlBuilder result=new XmlBuilder("result");
 		JdbcUtil.warningsToXml(statement.getWarnings(),result);
 		rs.next();
-		Object blobUpdateHandle=getDbmsSupport().getBlobUpdateHandle(rs, blobColumn);
+		Object blobUpdateHandle=getDbmsSupport().getBlobHandle(rs, blobColumn);
 		OutputStream dbmsOutputStream = JdbcUtil.getBlobOutputStream(getDbmsSupport(), blobUpdateHandle, rs, blobColumn, compressBlob);
 		return new BlobOutputStream(getDbmsSupport(), blobUpdateHandle, blobColumn, dbmsOutputStream, rs, result);
 	}
@@ -592,7 +599,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		XmlBuilder result=new XmlBuilder("result");
 		JdbcUtil.warningsToXml(statement.getWarnings(),result);
 		rs.next();
-		Object clobUpdateHandle=getDbmsSupport().getClobUpdateHandle(rs, clobColumn);
+		Object clobUpdateHandle=getDbmsSupport().getClobHandle(rs, clobColumn);
 		Writer dbmsWriter = getDbmsSupport().getClobWriter(rs, clobColumn, clobUpdateHandle);
 		return new ClobWriter(getDbmsSupport(), clobUpdateHandle, clobColumn, dbmsWriter, rs, result);
 	}
@@ -1010,7 +1017,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return resultQuery;
 	}
 
-	@IbisDoc({"8", "Comma separated list of columns whose values are to be returned. Works only if the driver implements jdbc 3.0 getGeneratedKeys()", ""})
+	@IbisDoc({"8", "Comma separated list of columns whose values are to be returned. Works only if the driver implements jdbc 3.0 getGeneratedKeys(). Note: not all drivers support multiple values and returned field names may vary between drivers", ""})
 	public void setColumnsReturned(String string) {
 		columnsReturned = string;
 	}
@@ -1209,6 +1216,14 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return avoidLocking;
 	}
 	
+	@IbisDoc({"44", "If true and scalar=false, multiline indented XML is produced", "false"})
+	public void setPrettyPrint(boolean prettyPrint) {
+		this.prettyPrint = prettyPrint;
+	}
+	public boolean isPrettyPrint() {
+		return prettyPrint;
+	}
+
 	public int getBatchSize() {
 		return 0;
 	}

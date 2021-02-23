@@ -35,12 +35,12 @@ public enum Dbms {
 
 	private String key;
 	private String productName;
-	private Class dbmsSupportClass;
+	private Class<? extends IDbmsSupport> dbmsSupportClass;
 	
-	private Dbms(String key, Class dbmsSupportClass) {
+	private Dbms(String key, Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this(key, key, dbmsSupportClass);
 	}
-	private Dbms(String key, String productName, Class dbmsSupportClass) {
+	private Dbms(String key, String productName, Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this.key = key;
 		this.productName = productName;
 		this.dbmsSupportClass = dbmsSupportClass;

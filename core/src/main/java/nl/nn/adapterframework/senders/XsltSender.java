@@ -341,7 +341,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	@IbisDoc({"5", "omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
-	public void setOmitXmlDeclaration(boolean b) {
+	public void setOmitXmlDeclaration(Boolean b) {
 		omitXmlDeclaration = b;
 	}
 	public Boolean getOmitXmlDeclaration() { // can return null too
@@ -365,7 +365,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
-	public void setIndentXml(boolean b) {
+	public void setIndentXml(Boolean b) {
 		indentXml = b;
 	}
 	public Boolean getIndentXml() { // can return null too

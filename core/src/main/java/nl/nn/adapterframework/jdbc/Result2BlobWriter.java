@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -37,11 +38,11 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since   4.7
  */
 public class Result2BlobWriter extends Result2LobWriterBase {
-	
+
 	@Override
 	protected Object getLobHandle(IDbmsSupport dbmsSupport, ResultSet rs) throws SenderException {
 		try {
-			return dbmsSupport.getBlobUpdateHandle(rs, querySender.getBlobColumn());
+			return dbmsSupport.getBlobHandle(rs, querySender.getBlobColumn());
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
@@ -64,19 +65,20 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 		}
 	}
 
-	@IbisDoc({"column that contains the clob to be updated", "1"})
+	@IbisDoc({"1", "Column that contains the BLOB to be updated", "1"})
 	public void setBlobColumn(int column) {
 		querySender.setBlobColumn(column);
 	}
 
-	@IbisDoc({"charset used to read and write blobs", "utf-8"})
+	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	public void setBlobsCompressed(boolean compressed) {
+		querySender.setBlobsCompressed(compressed);
+	}
+
+	@IbisDocRef({"3", FIXEDQUERYSENDER})
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}
 
-	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})
-	public void setBlobsCompressed(boolean compressed) {
-		querySender.setBlobsCompressed(compressed);
-	}
 	
 }

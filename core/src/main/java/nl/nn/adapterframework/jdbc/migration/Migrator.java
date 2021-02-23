@@ -1,5 +1,5 @@
 /*
-Copyright 2017, 2020, 2021 Integration Partners B.V.
+Copyright 2017, 2020, 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -58,10 +58,13 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 	}
 
 	public synchronized void configure(Configuration configuration, String changeLogFile) throws ConfigurationException {
+		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 		setName("JdbcMigrator for configuration["+ configuration.getName() +"]");
+		if(StringUtils.isEmpty(getDatasourceName())) {	
+			setDatasourceName(appConstants.getString("jdbc.migrator.dataSource", null));
+		}
 		super.configure();
 
-		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 
 		if(changeLogFile == null)
 			changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
@@ -73,17 +76,12 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 			log.debug(msg);
 		}
 		else {
-			if(StringUtils.isEmpty(getDatasourceName())) {
-				String dataSource = appConstants.getString("jdbc.migrator.dataSource", appConstants.getResolvedProperty("jdbc.datasource.default"));
-				setDatasourceName(dataSource);
-			}
-
 			try {
 				JdbcConnection connection = new JdbcConnection(getConnection());
 				instance = new LiquibaseImpl(ibisContext, connection, configuration, changeLogFile);
 			}
 			catch (ValidationFailedException e) {
-				ConfigurationWarnings.add(configuration, log, "liquibase validation failed", e);
+				ConfigurationWarnings.add(configuration, log, "liquibase validation failed: "+e.getMessage(), e);
 			}
 			catch (LiquibaseException e) {
 				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize", e);

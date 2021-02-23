@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import microsoft.exchange.webservices.data.property.complex.EmailAddressCollecti
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
 import microsoft.exchange.webservices.data.property.complex.InternetMessageHeader;
+import microsoft.exchange.webservices.data.property.complex.InternetMessageHeaderCollection;
 import microsoft.exchange.webservices.data.property.complex.ItemAttachment;
 import microsoft.exchange.webservices.data.property.complex.ItemId;
 import microsoft.exchange.webservices.data.property.complex.Mailbox;
@@ -524,21 +525,24 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			result.put(IMailFileSystem.DATETIME_SENT_KEY, getDateTimeSent(emailMessage)); 
 			result.put(IMailFileSystem.DATETIME_RECEIVED_KEY, getDateTimeReceived(emailMessage)); 
 			try {
-				for(InternetMessageHeader internetMessageHeader : emailMessage.getInternetMessageHeaders()) {
-					Object curEntry = result.get(internetMessageHeader.getName());
-					if (curEntry==null) {
-						result.put(internetMessageHeader.getName(), internetMessageHeader.getValue());
-						continue;
+				InternetMessageHeaderCollection internetMessageHeaders = emailMessage.getInternetMessageHeaders();
+				if (internetMessageHeaders!=null) {
+					for(InternetMessageHeader internetMessageHeader : internetMessageHeaders) {
+						Object curEntry = result.get(internetMessageHeader.getName());
+						if (curEntry==null) {
+							result.put(internetMessageHeader.getName(), internetMessageHeader.getValue());
+							continue;
+						}
+						List<Object> values;
+						if (curEntry instanceof List) {
+							values = (List<Object>)curEntry;
+						} else {
+							values = new LinkedList<Object>();
+							values.add(curEntry);
+							result.put(internetMessageHeader.getName(),values);
+						}
+						values.add(internetMessageHeader.getValue());
 					}
-					List<Object> values;
-					if (curEntry instanceof List) {
-						values = (List<Object>)curEntry;
-					} else {
-						values = new LinkedList<Object>();
-						values.add(curEntry);
-						result.put(internetMessageHeader.getName(),values);
-					}
-					values.add(internetMessageHeader.getValue());
 				}
 			} catch (ServiceLocalException e) {
 				log.warn("Message ["+f.getId()+"] Cannot load message headers: "+ e.getMessage());
@@ -547,9 +551,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			return result;
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
+			exchangeService = null;
 			throw new FileSystemException(e);
 		} finally {
-			releaseConnection(exchangeService);
+			if (exchangeService!=null) {
+				releaseConnection(exchangeService);
+			}
 		}
 	}
 
@@ -620,7 +627,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 		byte[] content = null;
 		if (a instanceof FileAttachment) {
-			content=((FileAttachment)a).getContent(); // TODO: should do streaming, instead of via byte array
+			content=((FileAttachment)a).getContent();
 		}
 		if (a instanceof ItemAttachment) {
 			ItemAttachment itemAttachment=(ItemAttachment)a;

@@ -662,7 +662,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					if (!rs.next()) {
 						throw new SenderException("could not retrieve row for stored message ["+ messageId+"]");
 					}
-					Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, 1);
+					Object blobHandle=dbmsSupport.getBlobHandle(rs, 1);
 					try (ObjectOutputStream oos = new ObjectOutputStream(JdbcUtil.getBlobOutputStream(dbmsSupport, blobHandle, rs, 1, isBlobsCompressed()))) {
 						oos.writeObject(message);
 					}

@@ -1,5 +1,5 @@
 cd %~dp0
-docker-compose down --volumes
+docker-compose down --volumes --remove-orphans
 docker image prune --force
 docker volume prune --force
 

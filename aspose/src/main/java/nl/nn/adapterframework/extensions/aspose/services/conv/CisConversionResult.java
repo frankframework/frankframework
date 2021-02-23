@@ -57,17 +57,6 @@ public class CisConversionResult {
 	 */
 	private File pdfResultFile;
 
-	/**
-	 * CreateCisConversionResult
-	 * 
-	 * @param conversionOption
-	 * @param mediaType
-	 * @param documentName
-	 * @param pdfResultFile
-	 * @param failureReason
-	 * @param argAttachments
-	 * @return
-	 */
 	public static CisConversionResult createCisConversionResult(ConversionOption conversionOption, MediaType mediaType,
 			String documentName, File pdfResultFile, String failureReason, List<CisConversionResult> argAttachments) {
 
@@ -88,12 +77,6 @@ public class CisConversionResult {
 
 	/**
 	 * Create a successful CisConversionResult
-	 *
-	 * @param conversionOption
-	 * @param mediaTypeReceived
-	 * @param pdfResultFile
-	 * @param attachments
-	 * @return
 	 */
 	public static CisConversionResult createSuccessResult(ConversionOption conversionOption,
 			MediaType mediaTypeReceived, String documentName, File pdfResultFile,

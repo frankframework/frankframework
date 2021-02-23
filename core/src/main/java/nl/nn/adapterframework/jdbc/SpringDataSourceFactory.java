@@ -15,9 +15,6 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
@@ -25,10 +22,8 @@ import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 
 public class SpringDataSourceFactory extends JndiDataSourceFactory {
 
-	protected Map<String,DataSource> dataSources = new ConcurrentHashMap<>();
-
 	@Override
-	protected DataSource augmentDataSource(CommonDataSource dataSource, String dataSourceName) {
+	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
 		return new LazyConnectionDataSourceProxy((DataSource)dataSource);
 	}
 
