@@ -19,7 +19,7 @@ The image contains the following directories to be configured:
 The image also contains the following files to be configured:
 | file | description | notes |
 |---|---|---|
-| /usr/local/tomcat/conf/Catalina/localhost/iaf.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing |
+| /usr/local/tomcat/conf/Catalina/localhost/iaf.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing. Changing this file will require a new instance to be started, it cannot be reloaded |
 | /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use environment variables or append to the file, see [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
 
 To run the image, run the following command, adding environment variables and mounts as needed:
