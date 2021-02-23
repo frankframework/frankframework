@@ -5,23 +5,30 @@ Docker images are provided, suitable both for local and server use. Images are p
 
 General use
 ===========
+The image contains an empty framework-instance that needs to be configured before use.
 
-The container contains the following important directories:
+The image contains the following directories to be configured:
 | directory | description | notes |
 |---|---|---|
-| /opt/frank/resources | For application-wide properties, may contain files or a .jar with all files |
-| /opt/frank/configurations | For configurations, may contain a .jar or directory per configuration or a .jar containing directories per configuration | When using a .jar with multiple configurations, your resources should include a property configurations.<configurationName>.configurationFile containing the path to the Configuration.xml in the .jar |
+| /opt/frank/resources | For application-wide properties, may contain files or a .jar with all files | Minimum required properties to set are `instance.name` and `configurations.names`, can also be set using environment variables |
+| /opt/frank/configurations | For configurations, may contain a directory with files per configuration or a .jar containing a directory per configuration | When Configuration.xml is not located at <configurationName>/Configuration.xml, your resources should include a property `configurations.<configurationName>.configurationFile` containing the path to the Configuration.xml |
 | /opt/frank/testtool | For Larva tests that are included in the image | |
 | /opt/frank/testtool-ext | For Larva tests that are mounted from the environment | |
-| /usr/local/tomcat/lib | Contains drivers and other dependencies | |
+| /usr/local/tomcat/lib | Contains drivers and other dependencies | Contains all Framework required drivers by default |
 
-The container also contains the following important files:
+The image also contains the following files to be configured:
 | file | description | notes |
 |---|---|---|
-| /usr/local/tomcat/conf/Catalina/localhost/<web.contextpath>.xml | mount/copy of your context.xml | web.contextpath=ROOT if not set in catalina.properties |
-| /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, but append to it if necessary, see the [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
+| /usr/local/tomcat/conf/Catalina/localhost/iaf.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing |
+| /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use environment variables or append to the file, see [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
 
+To run the image, run the following command, adding environment variables and mounts as needed:
 
+`docker run --publish <hostport>:8080 [-e <name>=<value>] [--mount type=bind,source=<source>,target=<target>] --name <name> TBD/TBD/iaf-as-tomcat[:<version>]`
+
+To start building your own image based on the provided image, start your Dockerfile with:
+
+`FROM TBD/TBD/iaf-as-tomcat<:version>`
 
 Considerations
 ==============
