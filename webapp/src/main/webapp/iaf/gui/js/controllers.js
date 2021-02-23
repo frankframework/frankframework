@@ -139,6 +139,34 @@ angular.module('iaf.beheerconsole')
 		warn:0,
 		error:0
 	};
+	$scope.getProcessStateIcon = function(processState){
+		switch(processState) {
+			case "Available":
+				return "fa-server";
+			case "InProcess":
+				return "fa-share";
+			case "Done":
+				return "fa-envelope-o";
+			case "Error":
+				return "fa-times-circle";
+			case "Hold":
+				return "fa-pause-circle";
+		}
+	};
+	$scope.getProcessStateIconColor = function(processState){
+		switch(processState) {
+			case "Available":
+				return "success";
+			case "InProcess":
+				return "success";
+			case "Done":
+				return "success";
+			case "Error":
+				return "danger";
+			case "Hold":
+				return "warning";
+		}
+	};
 
 	Hooks.register("init:once", function() {
 		/* Check IAF version */
@@ -787,6 +815,7 @@ angular.module('iaf.beheerconsole')
 		receiver.state = 'loading';
 		Api.Put("adapters/" + adapter.name + "/receivers/" + receiver.name, {"action": "decthread"});
 	};
+
 }])
 
 .controller('InfoBarCtrl', ['$scope', function($scope) {
@@ -1218,11 +1247,11 @@ angular.module('iaf.beheerconsole')
 	$scope.receiverName = $state.params.receiver;
 	if(!$scope.receiverName)
 		return SweetAlert.Warning("Invalid URL", "No receiver name provided!");
-	$scope.storageType = $state.params.storageType;
-	if(!$scope.storageType)
+	$scope.processState = $state.params.processState;
+	if(!$scope.processState)
 		return SweetAlert.Warning("Invalid URL", "No storage type provided!");
 
-	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/"+$scope.storageType;
+	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/store/"+$scope.processState;
 
 	$scope.updateTable = function() {
 		var table = $('#datatable').DataTable();
@@ -1233,7 +1262,7 @@ angular.module('iaf.beheerconsole')
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
 
-		Api.Delete($scope.base_url+"/"+encodeURIComponent(encodeURIComponent(message.id)), function() {
+		Api.Delete($scope.base_url+"/message/"+encodeURIComponent(encodeURIComponent(message.id)), function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
 			$scope.addNote("success", "Successfully deleted message with ID: "+message.id);
@@ -1251,7 +1280,7 @@ angular.module('iaf.beheerconsole')
 	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
 
-		Api.Put($scope.base_url+"/"+encodeURIComponent(encodeURIComponent(message.id)), false, function() {
+		Api.Put($scope.base_url+"/message/"+encodeURIComponent(encodeURIComponent(message.id)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
 			$scope.addNote("success", "Successfully resent message with ID: "+message.id);
@@ -1268,20 +1297,14 @@ angular.module('iaf.beheerconsole')
 	$scope.closeNotes();
 	$scope.selectedMessages = [];
 	var a = '';
-	
-	if($scope.storageType == 'errorstorage'){
-		a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>';
-		a += '<div ng-show="!selectedMessages[message.id]">';
-		a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,storageType:storageType,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
-		a += '<button ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
-		a += '<button ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
-		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
-		a += '</div';
-	} else {
-		a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,storageType:storageType,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
-		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
 
-	}
+	a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]" ng-if="::(targetStates || processState==\'Error\')"/>';
+	a += '<div ng-show="!selectedMessages[message.id]">';
+	a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,processState:processState,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
+	a += '<button ng-if="::processState==\'Error\'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
+	a += '<button ng-if="::processState==\'Error\'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
+	a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+	a += '</div';
 
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
@@ -1295,7 +1318,7 @@ angular.module('iaf.beheerconsole')
 		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false },
 		{ "name": "label", "data": "label", bSortable: false },
 	];
-	var filterCookie = Cookies.get($scope.storageType+"Filter");
+	var filterCookie = Cookies.get($scope.processState+"Filter");
 	if(filterCookie) {
 		for(i in columns) {
 			var column = columns[i];
@@ -1320,10 +1343,10 @@ angular.module('iaf.beheerconsole')
 		stateSave: true,
 		stateSaveCallback: function(settings, data) {
 			data.columns = columns;
-			Session.set('DataTable'+$scope.storageType, data);
+			Session.set('DataTable'+$scope.processState, data);
 		},
 		stateLoadCallback: function(settings) {
-			return Session.get('DataTable'+$scope.storageType);
+			return Session.get('DataTable'+$scope.processState);
 		},
 		drawCallback: function( settings ) {
 			// reset visited rows with all draw actions e.g. pagination, filter, search
@@ -1353,7 +1376,8 @@ angular.module('iaf.beheerconsole')
 		serverSide: true,
 		processing: true,
 		paging: true,
-		order: [[ 2, 'asc' ]],
+		lengthMenu: [10,25,50,100,500,999],
+		order: [[ 3, 'asc' ]],
 		columns: columns,
 		sAjaxDataProp: 'messages',
 		ajax: function (data, callback, settings) {
@@ -1374,11 +1398,12 @@ angular.module('iaf.beheerconsole')
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
 				response.recordsFiltered = response.skipMessages + response.messageCount;
+				$scope.targetStates = response.targetStates;
 				callback(response);
 			});
 		}
 	};
-
+	$scope.targetStates = [];
 	$scope.search = {
 		id: "",
 		startDate: "",
@@ -1390,7 +1415,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.updateFilter = function(column) {
-		Cookies.set($scope.storageType+"Filter", $scope.displayColumn);
+		Cookies.set($scope.processState+"Filter", $scope.displayColumn);
 
 		var table = $('#datatable').DataTable();
 		if(table) {
@@ -1454,6 +1479,20 @@ angular.module('iaf.beheerconsole')
 			$scope.updateTable();
 		});
 	}
+	$scope.changingProcessState = false;
+	$scope.changeProcessState = function(processState, targetState) {
+		$scope.changingProcessState = true;
+		var data = getFormData();
+		Api.Post($scope.base_url+"/move/"+targetState, data, function() {
+			$scope.changingProcessState = false;
+			$scope.addNote("success", "Successfully changed the state of messages to "+targetState);
+			$scope.updateTable();
+		}, function(data) {
+			$scope.changingProcessState = false;
+			$scope.addNote("danger", "Something went wrong, unable to move selected messages!");
+			$scope.updateTable();
+		});
+	}
 }])
 
 .controller('AdapterViewStorageIdCtrl', ['$scope', 'Api', '$state', 'SweetAlert', function($scope, Api, $state, SweetAlert) {
@@ -1464,7 +1503,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	Api.Get($scope.base_url+"/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
+	Api.Get($scope.base_url+"/message/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
 		$scope.message.data = data;
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {
@@ -1472,7 +1511,7 @@ angular.module('iaf.beheerconsole')
 		} else {
 			SweetAlert.Warning("Message not found", "message id ["+$scope.message.id+"] error ["+statusText+"]");
 		}
-		$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, storageType:$scope.storageType});
+		$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, processState:$scope.processState});
 	}, {responseType:'text', transformResponse: function(data) {
 		return data;
 	}});
@@ -1480,14 +1519,14 @@ angular.module('iaf.beheerconsole')
 	$scope.resendMessage = function(message) {
 		$scope.doResendMessage(message, function(messageId) {
 			//Go back to the storage list if successful
-			$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, storageType:$scope.storageType});
+			$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, processState:$scope.processState});
 		});
 	};
 
 	$scope.deleteMessage = function(message) {
 		$scope.doDeleteMessage(message, function(messageId) {
 			//Go back to the storage list if successful
-			$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, storageType:$scope.storageType});
+			$state.go("pages.storage.list", {adapter:$scope.adapterName, receiver:$scope.receiverName, processState:$scope.processState});
 		});
 	};
 }])

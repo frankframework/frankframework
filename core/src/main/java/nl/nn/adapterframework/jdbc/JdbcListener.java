@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,6 +81,13 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		}
+		Map<ProcessState, String> orderedUpdateStatusQueries = new LinkedHashMap<>();
+		for (ProcessState state : ProcessState.values()) {
+			if(updateStatusQueries.containsKey(state)) {
+				orderedUpdateStatusQueries.put(state, updateStatusQueries.get(state));
+			}
+		}
+		updateStatusQueries=orderedUpdateStatusQueries;
 		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates());
 	}
 
@@ -303,15 +311,14 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		}
 		String query = getUpdateStatusQuery(toState);
 		String key=getIdFromRawMessage(rawMessage,context);
-		execute(connection, query, key);
-		return true;
+		return execute(connection, query, key);
 	}
 
-	protected void execute(Connection conn, String query) throws ListenerException {
-		execute(conn,query,null);
+	protected boolean execute(Connection conn, String query) throws ListenerException {
+		return execute(conn,query,null);
 	}
 
-	protected void execute(Connection conn, String query, String parameter) throws ListenerException {
+	protected boolean execute(Connection conn, String query, String parameter) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
 			if (trace && log.isDebugEnabled()) log.debug("executing statement ["+query+"]");
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
@@ -321,11 +328,12 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 					JdbcUtil.setParameter(stmt, 1, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}
 
-				stmt.execute();
+				return stmt.executeUpdate() > 0;
 			} catch (SQLException e) {
 				throw new ListenerException(getLogPrefix()+"exception executing statement ["+query+"]",e);
 			}
 		}
+		return false;
 	}
 
 	protected void setUpdateStatusQuery(ProcessState state, String query) {

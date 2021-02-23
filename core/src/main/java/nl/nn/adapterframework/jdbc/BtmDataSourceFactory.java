@@ -26,7 +26,7 @@ import bitronix.tm.resource.jdbc.PoolingDataSource;
 public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
 
 	@Override
-	protected DataSource augmentDataSource(CommonDataSource dataSource, String dataSourceName) {
+	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
 		PoolingDataSource result = new PoolingDataSource();
 		result.setUniqueName(dataSourceName);
 		result.setMaxPoolSize(100);
@@ -38,6 +38,6 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 
 	@Override
 	public void destroy() throws Exception {
-		dataSources.values().forEach(ds -> ((PoolingDataSource)ds).close());
+		objects.values().forEach(ds -> ((PoolingDataSource)ds).close());
 	}
 }

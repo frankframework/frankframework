@@ -349,21 +349,13 @@
                                             <td ng-if="!receiver.threadCount && receiver.state !='started'">-</td>
                                             <td>
                                                 <span class="pull-right">
-                                                    <span class="text-success" title="View Messages Processed">
-                                                        <button ng-show="{{::receiver.hasMessageLog}}" ui-lref="pages.storage.list({adapter: adapter.name, receiver: receiver.name, storageType: 'messagelog'})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i class="fa fa-envelope-o"></i> ({{::receiver.messageLogCount}})
-                                                        </button>
-                                                    </span>
-                                                    <span class="text-success" title="View Messages in Process">
-                                                        <button ng-show="{{::receiver.hasInProcessLog}}" ui-lref="pages.inprocesslog.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i class="fa fa-share"></i> ({{::receiver.inProcessLogCount}})
-                                                        </button>
-                                                    </span>
-                                                    <span class="text-danger" title="View Messages in Error">
-                                                        <button ng-show="{{::receiver.hasErrorStorage}}" ui-lref="pages.storage.list({adapter: adapter.name, receiver: receiver.name, storageType: 'errorstorage'})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i class="fa fa-times-circle"></i> ({{::receiver.errorStorageCount}})
-                                                        </button>
-                                                    </span>
+                                                	<span ng-repeat="store in receiver.transactionalStores">
+                                                		<span class="text-{{::getProcessStateIconColor(store.name)}}" title="Browse messages with ProcessState: {{::store.name}}" >
+	                                                        <button ui-lref="pages.storage.list({adapter: adapter.name, receiver: receiver.name, processState: store.name})" class="btn btn-xs btn-default m-l-xs" type="button">
+	                                                            <i class="fa {{::getProcessStateIcon(store.name)}}"></i> ({{::store.numberOfMessages}})
+	                                                        </button>
+	                                                    </span>
+                                                	</span>
                                                     <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
                                                     <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
@@ -391,7 +383,7 @@
                                     <tbody>
                                         <tr ng-repeat="pipes in adapter.pipes" ng-if="pipes.sender">
                                             <td>{{::pipes.name}}</td>
-                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination"> ({{::pipes.destination}})</span></td>
+                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination" title="{{::pipes.destination}"> ({{::pipes.destination|truncate:150}})</span></td>
                                             <td>
                                                 <span class="pull-right">
                                                     <span class="text-success">

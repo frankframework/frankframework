@@ -125,7 +125,7 @@
 								<exec executable="docker">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-test-tomcat:${project.version}"/>
+									<arg value="iaf-test-tomcat"/>
 									<arg value="."/>
 								</exec>
 							</target>

@@ -20,14 +20,26 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+import lombok.Setter;
+
 public enum ProcessState {
 
-	AVAILABLE,
-	INPROCESS,
-	DONE,
-	ERROR,
-	HOLD;
+	AVAILABLE("Available"),
+	INPROCESS("InProcess"),
+	DONE("Done"),
+	ERROR("Error"),
+	HOLD("Hold");
 
+	@Getter @Setter
+	private String name;
+
+	private ProcessState(String name) {
+		this.name=name;
+	}
+	
 	public static Set<ProcessState> getMandatoryKnownStates() {
 		Set<ProcessState> knownProcessStates = new LinkedHashSet<>();
 		knownProcessStates.add(AVAILABLE);
@@ -50,4 +62,15 @@ public enum ProcessState {
 		}
 		return targetProcessStates;
 	}
+
+	public static ProcessState getProcessStateFromName(String name) {
+		ProcessState[] processStates = ProcessState.values();
+		for (ProcessState processState : processStates) {
+			if(StringUtils.equalsIgnoreCase(processState.getName(), name)) {
+				return processState;
+			}
+		}
+		return null;
+	}
+
 }
