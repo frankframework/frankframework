@@ -43,8 +43,8 @@ public class FrankDocModelGroupsTest {
 
 	@Test
 	public void whenElementTypeThenGroupCreated() {
-		assertTrue(instance.getGroups().containsKey("IGroupContainer"));
-		FrankDocGroup group = instance.getGroups().get("IGroupContainer");
+		assertTrue(instance.getGroups().containsKey("GroupContainer"));
+		FrankDocGroup group = instance.getGroups().get("GroupContainer");
 		assertEquals("GroupContainer", group.getName());
 		List<FrankElement> elements = group.getElements();
 		assertEquals(1, elements.size());

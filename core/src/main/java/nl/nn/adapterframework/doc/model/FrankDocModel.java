@@ -56,7 +56,12 @@ public class FrankDocModel {
 	static final String OTHER = "Other";
 
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
+	
+	/**
+	 * Values of the groups map are sorted alphabetically.
+	 */
 	private @Getter LinkedHashMap<String, FrankDocGroup> groups = new LinkedHashMap<>();
+
 	// We want to iterate FrankElement in the order they are created, to be able
 	// to create the ElementRole objects in the right order. 
 	private @Getter Map<String, FrankElement> allElements = new LinkedHashMap<>();
@@ -86,7 +91,7 @@ public class FrankDocModel {
 			result.setOverriddenFrom();
 			result.setHighestCommonInterface();
 			result.createConfigChildSets();
-			result.setElementNamesOfFrankElements();
+			result.setElementNamesOfFrankElements(rootClassName);
 			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -547,14 +552,15 @@ public class FrankDocModel {
 			if(elementType.isFromJavaInterface()) {
 				FrankDocGroup interfaceBasedGroup = FrankDocGroup.getInstanceFromElementType(elementType);
 				elementType.setFrankDocGroup(interfaceBasedGroup);
-				if(groupsBase.containsKey(elementType.getSimpleName())) {
-					groupsBase.get(elementType.getSimpleName()).add(interfaceBasedGroup);
+				String groupName = elementType.getGroupName();
+				if(groupsBase.containsKey(groupName)) {
+					groupsBase.get(groupName).add(interfaceBasedGroup);
 				} else {
-					groupsBase.put(elementType.getSimpleName(), Arrays.asList(interfaceBasedGroup));
+					groupsBase.put(groupName, Arrays.asList(interfaceBasedGroup));
 				}
 				if(log.isTraceEnabled()) {
 					log.trace(String.format("Appended group [%s] with candidate element type [%s], which is based on a Java interface",
-							elementType.getSimpleName(), elementType.getFullName()));
+							groupName, elementType.getFullName()));
 				}
 			}
 			else {
@@ -628,7 +634,9 @@ public class FrankDocModel {
 		}
 	}
 
-	void setElementNamesOfFrankElements() {
+	void setElementNamesOfFrankElements(String rootClassName) {
+		FrankElement root = allElements.get(rootClassName);
+		root.addXmlElementName(root.getSimpleName());
 		for(ElementRole role: allElementRoles.values()) {
 			role.getMembers().forEach(frankElement -> frankElement.addXmlElementName(frankElement.getXsdElementName(role)));
 		}

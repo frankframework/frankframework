@@ -36,6 +36,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 public class FrankElement implements Comparable<FrankElement> {
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
@@ -87,8 +88,7 @@ public class FrankElement implements Comparable<FrankElement> {
 		// for an explanation of this algorithm.
 		int index = Collections.binarySearch(xmlElementNames, elementName, null);
 	    if (index < 0) {
-	        index = -index - 1;
-	        xmlElementNames.add(index, elementName);
+	        xmlElementNames.add(Misc.binarySearchResultToInsertionPoint(index), elementName);
 	    }
 	}
 

@@ -1354,5 +1354,19 @@ public class Misc {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * Use this method to insert into a sorted list. Method {@link java.util.Collections#binarySearch(List, Object)}
+	 * searches with O(log n) operations for an element in an already sorted list. If the
+	 * element is not present, a negative result is produced. If you want to insert the element,
+	 * then apply this function to the returned value. The result is the index at which
+	 * you have to insert. See <a href="https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413">Stack Overfloe</a>
+	 * for more information. 
+	 */
+	public static int binarySearchResultToInsertionPoint(int index) {
+	    if (index < 0) {
+	        index = -index - 1;
+	    }
+	    return index;
+	}
 }
