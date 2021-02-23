@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.doc.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -28,9 +29,13 @@ public class FrankDocModelGroupsTest {
 	@Test
 	public void whenElementTypeThenGroupCreated() {
 		assertTrue(instance.getGroups().containsKey("IGroupContainer"));
-		List<FrankElement> elements = instance.getGroups().get("IGroupContainer").getElements();
+		FrankDocGroup group = instance.getGroups().get("IGroupContainer");
+		assertEquals("GroupContainer", group.getName());
+		List<FrankElement> elements = group.getElements();
 		assertEquals(1, elements.size());
-		assertEquals("GroupContainer", instance.getGroups().get("IGroupContainer").getElements().get(0).getSimpleName());
+		assertEquals("GroupContainer", group.getElements().get(0).getSimpleName());
+		ElementType elementType = instance.getAllTypes().get(I_GROUP_CONTAINER);
+		assertSame(group, elementType.getFrankDocGroup());
 	}
 
 	@Test
@@ -40,5 +45,7 @@ public class FrankDocModelGroupsTest {
 		assertEquals(1, other.getElements().size());
 		FrankElement element = other.getElements().get(0);
 		assertEquals("GroupChild", element.getSimpleName());
+		ElementType elementType = instance.getAllTypes().get("nl.nn.adapterframework.doc.testtarget.groups.GroupChild");
+		assertSame(other, elementType.getFrankDocGroup());
 	}
 }

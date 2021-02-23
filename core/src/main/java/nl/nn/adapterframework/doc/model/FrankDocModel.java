@@ -560,10 +560,12 @@ public class FrankDocModel {
 		List<FrankElement> membersOfOther = new ArrayList<>();
 		for(ElementType elementType: getAllTypes().values()) {
 			if(elementType.isFromJavaInterface()) {
+				FrankDocGroup interfaceBasedGroup = FrankDocGroup.getInstanceFromElementType(elementType);
+				elementType.setFrankDocGroup(interfaceBasedGroup);
 				if(groupsBase.containsKey(elementType.getSimpleName())) {
-					groupsBase.get(elementType.getSimpleName()).add(FrankDocGroup.getInstanceFromElementType(elementType));
+					groupsBase.get(elementType.getSimpleName()).add(interfaceBasedGroup);
 				} else {
-					groupsBase.put(elementType.getSimpleName(), Arrays.asList(FrankDocGroup.getInstanceFromElementType(elementType)));
+					groupsBase.put(elementType.getSimpleName(), Arrays.asList(interfaceBasedGroup));
 				}
 				if(log.isTraceEnabled()) {
 					log.trace(String.format("Appended group [%s] with candidate element type [%s], which is based on a Java interface",
@@ -588,7 +590,11 @@ public class FrankDocModel {
 			log.warn(String.format("Name \"[%s]\" cannot been used for others group because it is the name of an ElementType", OTHER));
 		}
 		else {
-			groupsBase.put(OTHER, Arrays.asList(FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther)));
+			final FrankDocGroup groupOther = FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther);
+			allTypes.values().stream()
+				.filter(et -> ! et.isFromJavaInterface())
+				.forEach(et -> et.setFrankDocGroup(groupOther));
+			groupsBase.put(OTHER, Arrays.asList(groupOther));
 		}
 		for(String groupName: groupsBase.keySet()) {
 			if(groupsBase.get(groupName).size() != 1) {

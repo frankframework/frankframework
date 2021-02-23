@@ -185,10 +185,7 @@ public class FrankElement {
 		if(! elementType.isFromJavaInterface()) {
 			return Utils.toUpperCamelCase(syntax1Name);
 		}
-		String postfixToRemove = elementType.getSimpleName();
-		if(postfixToRemove.startsWith("I")) {
-			postfixToRemove = postfixToRemove.substring(1);
-		}
+		String postfixToRemove = elementType.getGroupName();
 		String result = simpleName;
 		if(result.endsWith(postfixToRemove)) {
 			result = result.substring(0, result.lastIndexOf(postfixToRemove));

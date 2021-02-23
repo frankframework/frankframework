@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -44,6 +45,7 @@ public class ElementType {
 	private static Logger log = LogUtil.getLogger(ElementType.class);
 	private @Getter Map<String, FrankElement> members;
 	private @Getter boolean fromJavaInterface;
+	private @Getter @Setter FrankDocGroup frankDocGroup;
 	
 	private @Getter LinkedHashSet<ElementRole> elementRoles = new LinkedHashSet<>();
 
@@ -91,6 +93,14 @@ public class ElementType {
 
 	public String getSimpleName() {
 		return interfaceHierarchy.getSimpleName();
+	}
+
+	String getGroupName() {
+		String result = getSimpleName();
+		if(result.startsWith("I")) {
+			result = result.substring(1);
+		}
+		return result;
 	}
 
 	void addMember(FrankElement member) {

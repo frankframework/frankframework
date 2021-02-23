@@ -94,7 +94,7 @@ public abstract class FrankDocGroup {
 		private ElementType elementType;
 
 		FromType(ElementType elementType) {
-			super(elementType.getSimpleName());
+			super(elementType.getGroupName());
 			this.elementType = elementType;
 		}
 
