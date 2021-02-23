@@ -30,6 +30,7 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.core.JndiContextPrefixFactory;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -73,13 +74,18 @@ public class JndiObjectFactory<O extends L,L> implements ApplicationContextAware
 		String prefixedJndiName = getPrefixedJndiName(jndiName);
 		try {
 			object = ObjectLocator.lookup(prefixedJndiName, jndiEnvironment, lookupClass);
-		} catch (NamingException ex) { //Fallback and search again but this time without prefix
+		} catch (NamingException e) { //Fallback and search again but this time without prefix
 			if (!jndiName.equals(prefixedJndiName)) { //Only if a prefix is set!
-				log.debug("prefixed JNDI name [" + prefixedJndiName + "] not found - trying original name [" + jndiName + "]");
+				log.debug("prefixed JNDI name [" + prefixedJndiName + "] not found - trying original name [" + jndiName + "], exception: ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
 
-				object = ObjectLocator.lookup(jndiName, jndiEnvironment, lookupClass);
+				try {
+					object = ObjectLocator.lookup(jndiName, jndiEnvironment, lookupClass);
+				} catch (NamingException e2) {
+					e.addSuppressed(e2);
+					throw e;
+				}
 			} else { //Either the fallback lookup should throw the NamingException or this one if no Object is found!
-				throw ex;
+				throw e;
 			}
 		}
 
