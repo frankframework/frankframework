@@ -123,7 +123,7 @@ public abstract class WsdlUtils {
         return uri == null ? null : uri.replaceAll(" ", "_");
     }
 
-    //check if the adapter has an WebServiceListener with an inputValidator 
+    //check if the adapter has WebServiceListener with an inputValidator 
 	public static boolean canHaveWsdl(Adapter adapter) {
 		IValidator inputValidator = adapter.getPipeLine().getInputValidator();
 		boolean haveWebServiceListener = false;
