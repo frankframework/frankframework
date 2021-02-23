@@ -31,7 +31,6 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -133,10 +132,7 @@ public abstract class WsdlUtils {
 				haveWebServiceListener = true;
 			}
 		}
-		if(inputValidator != null && haveWebServiceListener) {
-			return true;
-		}
-		return false;
+		return inputValidator != null && haveWebServiceListener;
 	}
 
 }
