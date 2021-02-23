@@ -81,7 +81,7 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 				instance = new LiquibaseImpl(ibisContext, connection, configuration, changeLogFile);
 			}
 			catch (ValidationFailedException e) {
-				ConfigurationWarnings.add(configuration, log, "liquibase validation failed", e);
+				ConfigurationWarnings.add(configuration, log, "liquibase validation failed: "+e.getMessage(), e);
 			}
 			catch (LiquibaseException e) {
 				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize", e);

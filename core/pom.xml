@@ -448,7 +448,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>3.5.3</version>
+			<version>3.5.3</version><!-- beware, Liquibase checksum generation is not consistent over liquibase versions, see https://liquibase.jira.com/browse/CORE-3204 -->
 		</dependency>
 
 		<dependency>

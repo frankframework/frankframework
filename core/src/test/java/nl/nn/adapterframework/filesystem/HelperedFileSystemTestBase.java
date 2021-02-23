@@ -17,8 +17,6 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	 * Checks if a file with the specified name exists.
 	 * @param folder to search in for the file, set to null for root folder. 
 	 * @param filename
-	 * @return
-	 * @throws Exception
 	 */
 	@Override
 	protected boolean _fileExists(String folder, String filename) throws Exception {
@@ -27,9 +25,6 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	
 	/**
 	 * Checks if a folder with the specified name exists.
-	 * @param folderName
-	 * @return
-	 * @throws Exception
 	 */
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
@@ -37,10 +32,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	}
 	
 	/**
-	 * Deletes the file with the specified name
-	 * @param folder 
-	 * @param filename
-	 * @throws Exception
+	 * Deletes the file with the specified name.
 	 */
 	@Override
 	protected void _deleteFile(String folder, String filename) throws Exception {
@@ -48,12 +40,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	}
 	
 	/**
-	 * Creates a file with the specified name and returns output stream 
-	 * to be able to write that file.
-	 * @param folder 
-	 * @param filename
-	 * @return
-	 * @throws Exception
+	 * Creates a file with the specified name and returns output stream to be able to write that file.
 	 */
 	@Override
 	protected OutputStream _createFile(String folder, String filename) throws Exception {
@@ -61,11 +48,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	}
 
 	/**
-	 * Returns an input stream of the file 
-	 * @param folder 
-	 * @param filename
-	 * @return
-	 * @throws Exception
+	 * Returns an input stream of the file.
 	 */
 	@Override
 	protected InputStream _readFile(String folder, String filename) throws Exception {
@@ -73,7 +56,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	}
 	
 	/**
-	 * Creates a folder 
+	 * Creates a folder.
 	 */
 	@Override
 	protected void _createFolder(String foldername) throws Exception {
@@ -81,7 +64,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	}
 
 	/**
-	 * Deletes the folder 
+	 * Deletes the folder.
 	 */
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {
