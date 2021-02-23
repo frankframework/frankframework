@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,7 +49,6 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 	private String sessionKey = "file";
 	private String propertiesFileName = "wsdl.properties";
-	private static final String WSDL_EXTENSION = ".wsdl";
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
