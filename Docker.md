@@ -11,7 +11,7 @@ The image contains the following directories to be configured:
 | directory | description | notes |
 |---|---|---|
 | /opt/frank/resources | For application-wide properties, may contain files or a .jar with all files | Minimum required properties to set are `instance.name` and `configurations.names`, can also be set using environment variables |
-| /opt/frank/configurations | For configurations, may contain a directory with files per configuration or a .jar containing a directory per configuration | When Configuration.xml is not located at <configurationName>/Configuration.xml, your resources should include a property `configurations.<configurationName>.configurationFile` containing the path to the Configuration.xml |
+| /opt/frank/configurations | For configurations, may contain a directory with files per configuration or a .jar containing a directory per configuration | When Configuration.xml is not located at `<configurationName>/Configuration.xml`, your resources should include a property `configurations.<configurationName>.configurationFile` containing the path to the Configuration.xml |
 | /opt/frank/testtool | For Larva tests that are included in the image | |
 | /opt/frank/testtool-ext | For Larva tests that are mounted from the environment | |
 | /usr/local/tomcat/lib | Contains drivers and other dependencies | Contains all Framework required drivers by default |
