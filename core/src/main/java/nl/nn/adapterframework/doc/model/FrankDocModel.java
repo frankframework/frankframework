@@ -85,6 +85,7 @@ public class FrankDocModel {
 			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
 			result.calculateHighestCommonInterfaces();
 			result.setOverriddenFrom();
+			result.setElementNamesOfFrankElements();
 			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -640,6 +641,12 @@ public class FrankDocModel {
 		}
 		if(log.isTraceEnabled()) {
 			log.trace("Done setting property overriddenFrom");
+		}
+	}
+
+	void setElementNamesOfFrankElements() {
+		for(ElementRole role: allElementRoles.values()) {
+			role.getMembers().forEach(frankElement -> frankElement.addXmlElementName(frankElement.getXsdElementName(role)));
 		}
 	}
 }

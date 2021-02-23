@@ -18,6 +18,7 @@ package nl.nn.adapterframework.doc.model;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,6 +45,7 @@ public class FrankElement {
 	private @Getter FrankElement parent;
 
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
+	private @Getter List<String> xmlElementNames;
 	private @Getter FrankElementStatistics statistics;
 
 	FrankElement(Class<?> clazz) {
@@ -63,11 +65,22 @@ public class FrankElement {
 		this.allChildren = new HashMap<>();
 		this.allChildren.put(FrankAttribute.class, new LinkedHashMap<>());
 		this.allChildren.put(ConfigChild.class, new LinkedHashMap<>());
+		this.xmlElementNames = new ArrayList<>();
 	}
 
 	public void setParent(FrankElement parent) {
 		this.parent = parent;
 		this.statistics = new FrankElementStatistics(this);
+	}
+
+	public void addXmlElementName(String elementName) {
+		// See https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413
+		// for an explanation of this algorithm.
+		int index = Collections.binarySearch(xmlElementNames, elementName, null);
+	    if (index < 0) {
+	        index = -index - 1;
+	        xmlElementNames.add(index, elementName);
+	    }
 	}
 
 	public void setAttributes(List<FrankAttribute> inputAttributes) {
