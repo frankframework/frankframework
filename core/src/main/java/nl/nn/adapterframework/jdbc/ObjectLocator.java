@@ -18,7 +18,6 @@ package nl.nn.adapterframework.jdbc;
 import java.util.Properties;
 
 import javax.naming.NamingException;
-import javax.sql.CommonDataSource;
 
 import org.springframework.jndi.JndiObjectLocator;
 
@@ -26,14 +25,10 @@ import org.springframework.jndi.JndiObjectLocator;
  * This class doesn't have to be instantiated through Spring. 
  * It a helper class for setting the JNDI Context, if any.
  */
-public class JndiDataSourceLocator extends JndiObjectLocator {
+public class ObjectLocator<L> extends JndiObjectLocator {
 
-	public JndiDataSourceLocator() {
-		this(null);
-	}
-
-	public JndiDataSourceLocator(Properties jndiEnvironment) {
-		setExpectedType(CommonDataSource.class);
+	public ObjectLocator(Properties jndiEnvironment, Class<L> lookupClass) {
+		setExpectedType(lookupClass);
 
 		if(jndiEnvironment != null) {
 			setJndiEnvironment(jndiEnvironment);
@@ -41,14 +36,14 @@ public class JndiDataSourceLocator extends JndiObjectLocator {
 	}
 
 	@Override
-	public CommonDataSource lookup(String jndiName) throws NamingException {
-		return (CommonDataSource) super.lookup(jndiName, getExpectedType());
+	public L lookup(String jndiName) throws NamingException {
+		return (L) super.lookup(jndiName, getExpectedType());
 	}
 
 	/**
 	 * Directly return a JNDI Object 
 	 */
-	public static CommonDataSource lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
-		return new JndiDataSourceLocator(jndiEnvironment).lookup(jndiName);
+	public static <L> L lookup(String jndiName, Properties jndiEnvironment, Class<L> lookupClass) throws NamingException {
+		return new ObjectLocator<L>(jndiEnvironment, lookupClass).lookup(jndiName);
 	}
 }

@@ -316,15 +316,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 
 			if (action.equalsIgnoreCase(ACTION_DELETE)) {
-				return processAction(input, pvl, (F f) -> {
-					try {
-						fileSystem.deleteFile(f);
-						return f;
-					} catch (FileSystemException e) {
-						Lombok.sneakyThrow(e);
-					}
-					return null;
-				});
+				return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
 			} else if (action.equalsIgnoreCase(ACTION_INFO)) {
 				F file=getFile(input, pvl);
 				FileSystemUtils.checkSource(fileSystem, file, "inspect");
@@ -428,24 +420,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return fileSystem.getName(renamed);
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
 				String destinationFolder = determineDestination(pvl);
-				return processAction(input, pvl, (F f) -> {
-					try {
-						return FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
-					} catch (FileSystemException e) {
-						Lombok.sneakyThrow(e);
-					}
-					return null;
-				});
+				return processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder()));
 			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
 				String destinationFolder = determineDestination(pvl);
-				return processAction(input, pvl, (F f) -> {
-					try {
-						return FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder());
-					} catch (FileSystemException e) {
-						Lombok.sneakyThrow(e);
-					}
-					return null;
-				});
+				return processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder()));
 			} else if (action.equalsIgnoreCase(ACTION_FORWARD)) {
 				F file=getFile(input, pvl);
 				FileSystemUtils.checkSource(fileSystem, file, "forward");
@@ -460,12 +438,16 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return input;
 	}
 
+	
+	private interface FileAction<F> {
+		public F execute(F f) throws FileSystemException;
+	}
 	/**
 	 * Helper method to process delete, move and copy actions.
 	 * @throws FileSystemException 
 	 * @throws IOException 
 	 */
-	private String processAction(Message input, ParameterValueList pvl, Function<F, F> action) throws FileSystemException, IOException {
+	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException {
 		if(StringUtils.isNotEmpty(getWildCard()) || StringUtils.isNotEmpty(getExcludeWildCard())) { 
 			String folder = arrangeFolder(determineInputFoldername(input, pvl));
 			XmlBuilder dirXml = new XmlBuilder(getAction()+"FilesList");
@@ -474,7 +456,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				while(it.hasNext()) {
 					F file = it.next();
 					XmlBuilder item = getFileAsXmlBuilder(file, "file");
-					if(action.apply(file) != null) {
+					if(action.execute(file) != null) {
 						dirXml.addSubElement(item);
 					}
 				}
@@ -482,7 +464,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			return dirXml.toXML();
 		} else {
 			F file=getFile(input, pvl);
-			return fileSystem.getName(action.apply(file));
+			return fileSystem.getName(action.execute(file));
 		}
 	}
 
