@@ -30,6 +30,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Models a collection of FrankElement. The collection can be characterized by
@@ -102,12 +103,7 @@ public class ElementType {
 	}
 
 	void addMember(FrankElement member) {
-	    // See https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413
-		// for an explanation of this algorithm.
-		int index = Collections.binarySearch(members, member, null);
-	    if (index < 0) {
-	        index = -index - 1;
-	    }
+		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(members, member, null));
 	    members.add(index, member);
 	}
 
@@ -150,6 +146,16 @@ public class ElementType {
 			}
 			return result;
 		}
+	}
+
+	/**
+	 * Get the members that can be referenced with syntax 2. Only non-abstracts are returned.
+	 */
+	public List<FrankElement> getSyntax2Members() {
+		return members.stream()
+				.filter(frankElement -> ! frankElement.getXmlElementNames().isEmpty())
+				.sorted()
+				.collect(Collectors.toList());
 	}
 
 	@Override
