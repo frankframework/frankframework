@@ -63,7 +63,7 @@ import nl.nn.adapterframework.validation.XSD;
  * @author  Michiel Meeuwissen
  * @author  Jaco de Groot
  */
-public class Wsdl {
+public class WsdlGenerator {
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected static final String WSDL_NAMESPACE                 = "http://schemas.xmlsoap.org/wsdl/";
@@ -137,11 +137,11 @@ public class Wsdl {
 
     private List<String> warnings = new ArrayList<String>();
 
-    public Wsdl(PipeLine pipeLine) {
+    public WsdlGenerator(PipeLine pipeLine) {
     	this(pipeLine, null);
     }
 
-    public Wsdl(PipeLine pipeLine, String generationInfo) {
+    public WsdlGenerator(PipeLine pipeLine, String generationInfo) {
         this.pipeLine = pipeLine;
         this.name = this.pipeLine.getAdapter().getName();
         if (this.name == null) {
@@ -173,9 +173,9 @@ public class Wsdl {
             if (inputValidator instanceof EsbSoapValidator) {
                 esbSoap = true;
                 boolean esbNamespaceWithoutServiceContext = false;
-                String schemaLocation = WsdlUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
+                String schemaLocation = WsdlGeneratorUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
                 if (EsbSoapWrapperPipe.isValidNamespace(schemaLocation)) {
-                    String s = WsdlUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
+                    String s = WsdlGeneratorUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
                     esbNamespaceWithoutServiceContext = EsbSoapWrapperPipe.isEsbNamespaceWithoutServiceContext(s);
                     int i = s.lastIndexOf('/');
                     esbSoapOperationVersion = s.substring(i + 1);
@@ -224,7 +224,7 @@ public class Wsdl {
                     warn("Could not determine operation version");
                 } else {
                     String wsdlType = "abstract";
-                    for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                    for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
                         if (listener instanceof WebServiceListener
                                 || listener instanceof JmsListener) {
                             wsdlType = "concrete";
@@ -244,7 +244,7 @@ public class Wsdl {
                             + esbSoapServiceContextVersion + "/"
                             + esbSoapOperationName + "/"
                             + esbSoapOperationVersion;
-                    String inputParadigm = WsdlUtils.getEsbSoapParadigm(inputValidator);
+                    String inputParadigm = WsdlGeneratorUtils.getEsbSoapParadigm(inputValidator);
                     if (inputParadigm != null) {
                         if (!"Action".equals(inputParadigm)
                                 && !"Event".equals(inputParadigm)
@@ -258,7 +258,7 @@ public class Wsdl {
                     }
 //                    if (outputValidator != null || isMixedValidator) {
                       if (outputValidator != null) {
-                        String outputParadigm = WsdlUtils.getEsbSoapParadigm(outputValidator);
+                        String outputParadigm = WsdlGeneratorUtils.getEsbSoapParadigm(outputValidator);
                         if (outputParadigm != null) {
                             if (!"Response".equals(outputParadigm)) {
                                 warn("Paradigm for output message which was extracted from soapBody should be Response instead of '"
@@ -271,14 +271,14 @@ public class Wsdl {
                 }
             }
             if (tns == null) {
-                for(IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                for(IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
                     if (listener instanceof WebServiceListener) {
                         webServiceListenerNamespace = ((WebServiceListener)listener).getServiceNamespaceURI();
                         tns = webServiceListenerNamespace;
                     }
                 }
                 if (tns == null) {
-                    tns = WsdlUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
+                    tns = WsdlGeneratorUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
                 }
                 if (tns != null) {
                     if (tns.endsWith("/")) {
@@ -300,7 +300,7 @@ public class Wsdl {
             }
         }
         this.fileName = fileName;
-        this.targetNamespace = WsdlUtils.validUri(tns);
+        this.targetNamespace = WsdlGeneratorUtils.validUri(tns);
         if (inputValidator instanceof SoapValidator && ((SoapValidator)inputValidator).getSoapVersionEnum()==SoapVersion.SOAP12) {
             wsdlSoapNamespace = WSDL_SOAP12_NAMESPACE;
             wsdlSoapPrefix = WSDL_SOAP12_NAMESPACE_PREFIX;
@@ -411,7 +411,7 @@ public class Wsdl {
         	outputHeaderIsOptional = isHeaderOptional(outputValidator);
             outputBodyElement = getBodyElement(outputValidator, outputXsds, "outputValidator");
         }
-        for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+        for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
             if (listener instanceof WebServiceListener) {
                 httpActive = true;
             } else if (listener instanceof JmsListener) {
@@ -490,7 +490,7 @@ public class Wsdl {
 				if (entries.add(zipName)) {
 					ZipEntry xsdEntry = new ZipEntry(zipName);
 					out.putNextEntry(xsdEntry);
-					XMLStreamWriter writer = WsdlUtils.getWriter(out, false);
+					XMLStreamWriter writer = WsdlGeneratorUtils.getWriter(out, false);
 					SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
 					out.closeEntry();
 				} else {
@@ -508,7 +508,7 @@ public class Wsdl {
      * @throws IOException
      */
     public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, ConfigurationException,  NamingException {
-        XMLStreamWriter w = WsdlUtils.getWriter(out, isIndent());
+        XMLStreamWriter w = WsdlGeneratorUtils.getWriter(out, isIndent());
 
         w.writeStartDocument(XmlUtils.STREAM_FACTORY_ENCODING, "1.0");
         w.setPrefix(WSDL_NAMESPACE_PREFIX, WSDL_NAMESPACE);
@@ -640,10 +640,10 @@ public class Wsdl {
     protected void portType(XMLStreamWriter w) throws XMLStreamException, IOException {
         w.writeStartElement(WSDL_NAMESPACE, "portType");
         w.writeAttribute("name", "PortType_" + getName()); {
-        	for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+        	for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
                 if (listener instanceof WebServiceListener || listener instanceof JmsListener) {
 		        	w.writeStartElement(WSDL_NAMESPACE, "operation");
-		            w.writeAttribute("name", "Operation_" + WsdlUtils.getNCName(getSoapAction(listener))); {
+		            w.writeAttribute("name", "Operation_" + WsdlGeneratorUtils.getNCName(getSoapAction(listener))); {
 		                if (StringUtils.isNotEmpty(inputRoot)) {
 		                    w.writeEmptyElement(WSDL_NAMESPACE, "input");
 		                    w.writeAttribute("message", getTargetNamespacePrefix() + ":" + "Message_" + inputRoot);
@@ -710,12 +710,12 @@ public class Wsdl {
 
     protected void httpBinding(XMLStreamWriter w, String namePrefix) throws XMLStreamException, IOException, ConfigurationException {
         w.writeStartElement(WSDL_NAMESPACE, "binding");
-        w.writeAttribute("name", namePrefix + "Binding_" + WsdlUtils.getNCName(getName()));
+        w.writeAttribute("name", namePrefix + "Binding_" + WsdlGeneratorUtils.getNCName(getName()));
         w.writeAttribute("type", getTargetNamespacePrefix() + ":" + "PortType_" + getName()); {
             w.writeEmptyElement(wsdlSoapNamespace, "binding");
             w.writeAttribute("transport", SOAP_HTTP_NAMESPACE);
             w.writeAttribute("style", "document");
-            for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+            for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
                 if (listener instanceof WebServiceListener) {
                     writeSoapOperation(w, listener);
                 }
@@ -726,7 +726,7 @@ public class Wsdl {
 
     protected void writeSoapOperation(XMLStreamWriter w, IListener<?> listener) throws XMLStreamException, IOException, ConfigurationException {
         w.writeStartElement(WSDL_NAMESPACE, "operation");
-        w.writeAttribute("name", "Operation_" + WsdlUtils.getNCName(getSoapAction(listener))); {
+        w.writeAttribute("name", "Operation_" + WsdlGeneratorUtils.getNCName(getSoapAction(listener))); {
             w.writeEmptyElement(wsdlSoapNamespace, "operation");
             w.writeAttribute("style", "document");
             w.writeAttribute("soapAction", getSoapAction(listener));
@@ -765,7 +765,7 @@ public class Wsdl {
 
     protected void jmsBinding(XMLStreamWriter w, String namePrefix) throws XMLStreamException, IOException, ConfigurationException {
         w.writeStartElement(WSDL_NAMESPACE, "binding");
-        w.writeAttribute("name", namePrefix + "Binding_" + WsdlUtils.getNCName(getName()));
+        w.writeAttribute("name", namePrefix + "Binding_" + WsdlGeneratorUtils.getNCName(getName()));
         w.writeAttribute("type", getTargetNamespacePrefix() + ":" + "PortType_" + getName()); {
             w.writeEmptyElement(wsdlSoapNamespace, "binding");
             w.writeAttribute("style", "document");
@@ -773,7 +773,7 @@ public class Wsdl {
                 w.writeAttribute("transport", ESB_SOAP_JMS_NAMESPACE);
                 w.writeEmptyElement(ESB_SOAP_JMS_NAMESPACE, "binding");
                 w.writeAttribute("messageFormat", "Text");
-                for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+                for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
                     if (listener instanceof JmsListener) {
                         writeSoapOperation(w, listener);
                     }
@@ -796,7 +796,7 @@ public class Wsdl {
             httpService(w, servlet, httpPrefix);
         }
         if (jmsActive) {
-            for (IListener<?> listener : WsdlUtils.getListeners(pipeLine.getAdapter())) {
+            for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
                 if (listener instanceof JmsListener) {
                     jmsService(w, (JmsListener)listener, jmsPrefix);
                 }
@@ -806,10 +806,10 @@ public class Wsdl {
 
     protected void httpService(XMLStreamWriter w, String servlet, String namePrefix) throws XMLStreamException {
     	w.writeStartElement(WSDL_NAMESPACE, "service");
-        w.writeAttribute("name", "Service_" + WsdlUtils.getNCName(getName())); {
+        w.writeAttribute("name", "Service_" + WsdlGeneratorUtils.getNCName(getName())); {
             w.writeStartElement(WSDL_NAMESPACE, "port");
-            w.writeAttribute("name", namePrefix + "Port_" + WsdlUtils.getNCName(getName()));
-            w.writeAttribute("binding", getTargetNamespacePrefix() + ":" + namePrefix + "Binding_" + WsdlUtils.getNCName(getName())); {
+            w.writeAttribute("name", namePrefix + "Port_" + WsdlGeneratorUtils.getNCName(getName()));
+            w.writeAttribute("binding", getTargetNamespacePrefix() + ":" + namePrefix + "Binding_" + WsdlGeneratorUtils.getNCName(getName())); {
                 w.writeEmptyElement(wsdlSoapNamespace, "address");
                 w.writeAttribute("location", getLocation(servlet));
             }
@@ -820,15 +820,15 @@ public class Wsdl {
 
     protected void jmsService(XMLStreamWriter w, JmsListener listener, String namePrefix) throws XMLStreamException, NamingException {
         w.writeStartElement(WSDL_NAMESPACE, "service");
-        w.writeAttribute("name", "Service_" + WsdlUtils.getNCName(getName())); {
+        w.writeAttribute("name", "Service_" + WsdlGeneratorUtils.getNCName(getName())); {
             if (!esbSoap) {
                 // Per example of https://docs.jboss.org/author/display/JBWS/SOAP+over+JMS
                 w.writeStartElement(SOAP_JMS_NAMESPACE, "jndiConnectionFactoryName");
                 w.writeCharacters(listener.getQueueConnectionFactoryName());
             }
             w.writeStartElement(WSDL_NAMESPACE, "port");
-            w.writeAttribute("name", namePrefix + "Port_" + WsdlUtils.getNCName(getName()));
-            w.writeAttribute("binding", getTargetNamespacePrefix() + ":" + namePrefix + "Binding_" + WsdlUtils.getNCName(getName())); {
+            w.writeAttribute("name", namePrefix + "Port_" + WsdlGeneratorUtils.getNCName(getName()));
+            w.writeAttribute("binding", getTargetNamespacePrefix() + ":" + namePrefix + "Binding_" + WsdlGeneratorUtils.getNCName(getName())); {
                 w.writeEmptyElement(wsdlSoapNamespace, "address");
                 String destinationName = listener.getDestinationName();
                 if (destinationName != null) {

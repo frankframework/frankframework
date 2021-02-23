@@ -54,8 +54,8 @@ import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.soap.Wsdl;
-import nl.nn.adapterframework.soap.WsdlUtils;
+import nl.nn.adapterframework.soap.WsdlGenerator;
+import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 
 /**
  * Shows all monitors.
@@ -98,9 +98,9 @@ public final class Webservices extends Base {
 		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			Map<String, Object> wsdlMap = null;
 			try {
-				if(WsdlUtils.canHaveWsdl(adapter)) { // check eligibility
+				if(WsdlGeneratorUtils.canHaveWsdl(adapter)) { // check eligibility
 					wsdlMap = new HashMap<String, Object>(2);
-					Wsdl wsdl = new Wsdl(adapter.getPipeLine());
+					WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine());
 					wsdlMap.put("name", wsdl.getName());
 					wsdlMap.put("extension", getWsdlExtension());
 				}
@@ -184,7 +184,7 @@ public final class Webservices extends Base {
 			// from the adapter itself, or from appconstant wsdl.<adapterName>.location or wsdl.location
 			String servletName = "external address of ibis"; 
 			String generationInfo = "by FrankConsole";
-			Wsdl wsdl = new Wsdl(adapter.getPipeLine(), generationInfo);
+			WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);
 			wsdl.setUseIncludes(useIncludes||zip);
 			wsdl.init();

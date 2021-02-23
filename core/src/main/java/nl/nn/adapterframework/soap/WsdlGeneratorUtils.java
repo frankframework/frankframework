@@ -39,9 +39,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public abstract class WsdlUtils {
+public abstract class WsdlGeneratorUtils {
 
-    private WsdlUtils() {
+    private WsdlGeneratorUtils() {
         // this class has no instances
     }
 
@@ -127,7 +127,7 @@ public abstract class WsdlUtils {
 	public static boolean canHaveWsdl(Adapter adapter) {
 		IValidator inputValidator = adapter.getPipeLine().getInputValidator();
 		boolean haveWebServiceListener = false;
-		for (IListener listener : WsdlUtils.getListeners(adapter)) {
+		for (IListener listener : WsdlGeneratorUtils.getListeners(adapter)) {
 			if(listener instanceof WebServiceListener) {
 				haveWebServiceListener = true;
 			}
