@@ -151,7 +151,7 @@ public class ElementType {
 	/**
 	 * Get the members that can be referenced with syntax 2. Only non-abstracts are returned.
 	 */
-	public List<FrankElement> getSyntax2Members() {
+	List<FrankElement> getSyntax2Members() {
 		return members.stream()
 				.filter(frankElement -> ! frankElement.getXmlElementNames().isEmpty())
 				.sorted()

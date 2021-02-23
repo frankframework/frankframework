@@ -581,6 +581,7 @@ public class FrankDocModel {
 			log.warn(String.format("Name \"[%s]\" cannot been used for others group because it is the name of an ElementType", OTHER));
 		}
 		else {
+			Collections.sort(membersOfOther);
 			final FrankDocGroup groupOther = FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther);
 			allTypes.values().stream()
 				.filter(et -> ! et.isFromJavaInterface())

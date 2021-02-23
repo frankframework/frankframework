@@ -60,6 +60,7 @@ public abstract class FrankDocGroup {
 	}
 
 	public abstract List<FrankElement> getElements();
+	public abstract String getCategory();
 	public abstract boolean isFromElementType();
 
 	private static class Other extends FrankDocGroup {
@@ -82,6 +83,11 @@ public abstract class FrankDocGroup {
 		public boolean isFromElementType() {
 			return false;
 		}
+
+		@Override
+		public String getCategory() {
+			return getName();
+		}
 	}
 
 	private static class FromType extends FrankDocGroup {
@@ -94,12 +100,18 @@ public abstract class FrankDocGroup {
 
 		@Override
 		public List<FrankElement> getElements() {
-			return new ArrayList<>(elementType.getMembers());
+			return new ArrayList<>(elementType.getSyntax2Members());
 		}
 		
 		@Override
 		public boolean isFromElementType() {
 			return true;
+		}
+
+		@Override
+		public String getCategory() {
+			ElementType highestCommonInterface = elementType.getHighestCommonInterface();
+			return highestCommonInterface.getGroupName();
 		}
 	}
 }
