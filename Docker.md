@@ -9,6 +9,8 @@ General use
 The container contains the following important directories:
 | location | description |
 |---|---|
+| /opt/frank/resources | For application-wide properties, may contain files or a .jar with all files |
+| /opt/frank/configurations | For configurations, may contain a .jar or directories per configuration, when using .jar additional properties per configuration need to be set in resources |
 | /opt/frank/testtool | For Larva tests that are included in the image |
 | /opt/frank/testtool-ext | For Larva tests that are mounted from the environment |
 | /usr/local/tomcat/lib/ | Contains drivers and other dependencies |
@@ -18,6 +20,8 @@ The container also contains the following important files:
 |---|---|
 | /usr/local/tomcat/conf/Catalina/localhost/iaf.xml | mount/copy of your context.xml |
 | /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values, append if needed |
+
+
 
 Considerations
 ==============
