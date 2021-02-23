@@ -19,9 +19,11 @@ package nl.nn.adapterframework.jms;
 import javax.jms.ConnectionFactory;
 import javax.jms.XAConnectionFactory;
 
+import org.springframework.beans.factory.DisposableBean;
+
 import bitronix.tm.resource.jms.PoolingConnectionFactory;
 
-public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory {
+public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory implements DisposableBean {
 
 	@Override
 	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
@@ -34,7 +36,8 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory {
 		return result;
 	}
 
-	public void shutdown() {
+	@Override
+	public void destroy() throws Exception {
 		objects.values().forEach(cf -> ((PoolingConnectionFactory)cf).close());
 	}
 }
