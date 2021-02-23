@@ -18,11 +18,15 @@ package nl.nn.adapterframework.doc.model;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -33,8 +37,11 @@ import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class FrankElement {
+public class FrankElement implements Comparable<FrankElement> {
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
+
+	private static final Comparator<FrankElement> COMPARATOR =
+			Comparator.comparing(FrankElement::getSimpleName).thenComparing(FrankElement::getFullName);
 
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
@@ -47,10 +54,12 @@ public class FrankElement {
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
 	private @Getter List<String> xmlElementNames;
 	private @Getter FrankElementStatistics statistics;
+	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 
 	FrankElement(Class<?> clazz) {
 		this(clazz.getName(), clazz.getSimpleName(), Modifier.isAbstract(clazz.getModifiers()));
 		isDeprecated = clazz.getAnnotation(Deprecated.class) != null;
+		configChildSets = new LinkedHashMap<>();
 	}
 
 	/**
@@ -204,6 +213,83 @@ public class FrankElement {
 			result = result.substring(0, result.lastIndexOf(postfixToRemove));
 		}
 		result = result + Utils.toUpperCamelCase(syntax1Name);
+		return result;
+	}
+
+	void addConfigChildSet(ConfigChildSet configChildSet) {
+		configChildSets.put(configChildSet.getSyntax1Name(), configChildSet);
+	}
+
+	public ConfigChildSet getConfigChildSet(String syntax1Name) {
+		return configChildSets.get(syntax1Name);
+	}
+
+	public List<ConfigChildSet> getCumulativeConfigChildSets() {
+		Map<String, ConfigChildSet> resultAsMap = new HashMap<>();
+		for(String syntax1Name: configChildSets.keySet()) {
+			resultAsMap.put(syntax1Name, configChildSets.get(syntax1Name));
+		}
+		if(parent != null) {
+			List<ConfigChildSet> inheritedConfigChildSets = getParent().getCumulativeConfigChildSets();
+			for(ConfigChildSet inherited: inheritedConfigChildSets) {
+				resultAsMap.putIfAbsent(inherited.getSyntax1Name(), inherited);
+			}
+		}
+		List<ConfigChildSet> result = new ArrayList<>();
+		List<String> keys = new ArrayList<>(resultAsMap.keySet());
+		Collections.sort(keys);
+		for(String key: keys) {
+			result.add(resultAsMap.get(key));
+		}
+		return result;
+	}
+
+	public boolean hasFilledConfigChildSets(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		if(configChildSets.isEmpty()) {
+			return false;
+		}
+		return configChildSets.values().stream()
+				.anyMatch(cs -> cs.getConfigChildren().stream().filter(selector.or(rejector)).collect(Collectors.counting()) >= 1);
+	}
+
+	public FrankElement getNextPluralConfigChildrenAncestor(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		FrankElement ancestor = parent;
+		while(ancestor != null) {
+			if(! ancestor.getParent().hasOrInheritsPluralConfigChildren(selector, rejector)) {
+				return ancestor;
+			}
+			if(ancestor.hasFilledConfigChildSets(selector, rejector)) {
+				return ancestor;
+			}
+			ancestor = ancestor.getParent();
+		}
+		return null;
+	}
+
+	public boolean hasOrInheritsPluralConfigChildren(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		boolean hasPluralConfigChildren = configChildSets.values().stream()
+				.anyMatch(c -> c.getFilteredElementRoles(selector, rejector).size() >= 2);
+		boolean inheritsPluralConfigChildren = false;
+		FrankElement ancestor = getNextAncestorThatHasConfigChildren(selector);
+		if(ancestor != null) {
+			inheritsPluralConfigChildren = ancestor.hasOrInheritsPluralConfigChildren(selector, rejector);
+		}
+		return hasPluralConfigChildren || inheritsPluralConfigChildren;
+	}
+
+	@Override
+	public int compareTo(FrankElement other) {
+		return COMPARATOR.compare(this, other);
+	}
+
+	static String describe(Collection<FrankElement> collection) {
+		return collection.stream().map(FrankElement::getFullName).collect(Collectors.joining(", "));
+	}
+
+	static Set<FrankElement> join(Set<FrankElement> s1, Set<FrankElement> s2) {
+		Set<FrankElement> result = new HashSet<>();
+		result.addAll(s1);
+		result.addAll(s2);
 		return result;
 	}
 }

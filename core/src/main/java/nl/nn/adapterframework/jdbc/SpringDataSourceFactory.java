@@ -23,7 +23,7 @@ import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 public class SpringDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override
-	protected DataSource augmentDataSource(CommonDataSource dataSource, String dataSourceName) {
+	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
 		return new LazyConnectionDataSourceProxy((DataSource)dataSource);
 	}
 

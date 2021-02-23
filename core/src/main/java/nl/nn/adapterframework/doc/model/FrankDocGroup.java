@@ -59,7 +59,6 @@ public abstract class FrankDocGroup {
 		this.name = name;
 	}
 
-	public abstract boolean hasElement(String elementFullName);
 	public abstract List<FrankElement> getElements();
 	public abstract boolean isFromElementType();
 
@@ -72,11 +71,6 @@ public abstract class FrankDocGroup {
 			for(FrankElement elem: elements) {
 				this.elements.put(elem.getFullName(), elem);
 			}
-		}
-
-		@Override
-		public boolean hasElement(String elementFullName) {
-			return elements.containsKey(elementFullName);
 		}
 
 		@Override
@@ -99,13 +93,8 @@ public abstract class FrankDocGroup {
 		}
 
 		@Override
-		public boolean hasElement(String elementFullName) {
-			return elementType.getMembers().containsKey(elementFullName);
-		}
-
-		@Override
 		public List<FrankElement> getElements() {
-			return new ArrayList<>(elementType.getMembers().values());
+			return new ArrayList<>(elementType.getMembers());
 		}
 		
 		@Override
