@@ -43,13 +43,13 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 
 	@Override
 	public <T> T toWriter(T message, Writer writer) {
-		((Message)message).captureStream(testTool.getMaxMessageLength(), writer);
+		((Message)message).captureCharacterStream(testTool.getMaxMessageLength(), writer);
 		return message;
 	}
 
 	@Override
 	public <T> T toOutputStream(T message, OutputStream outputStream) {
-		((Message)message).captureStream(testTool.getMaxMessageLength(), outputStream);
+		((Message)message).captureBinaryStream(testTool.getMaxMessageLength(), outputStream);
 		return message;
 	}
 

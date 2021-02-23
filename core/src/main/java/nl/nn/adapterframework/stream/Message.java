@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilterInputStream;
@@ -55,6 +56,7 @@ public class Message implements Serializable, AutoCloseable {
 	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
+	private Object wrappedRequest;
 	private String charset; // representing a charset of byte typed requests
 
 	private Message(Object request, String charset) {
@@ -192,16 +194,16 @@ public class Message implements Serializable, AutoCloseable {
 			log.debug("returning Reader as Reader");
 			return (Reader) request;
 		}
-		if (isBinary()) {
-			String readerCharset = charset; //Don't overwrite the Message's charset
-			if (StringUtils.isEmpty(readerCharset)) {
-				readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			}
-			log.debug("returning InputStream as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(), readerCharset);
+		if (request instanceof String) {
+			log.debug("returning String as Reader");
+			return new StringReader(request.toString());
 		}
-		log.debug("returning String as Reader");
-		return new StringReader(request.toString());
+		String readerCharset = charset; //Don't overwrite the Message's charset
+		if (StringUtils.isEmpty(readerCharset)) {
+			readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		}
+		log.debug("returning InputStream as Reader");
+		return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(), readerCharset);
 	}
 
 	/**
@@ -349,7 +351,11 @@ public class Message implements Serializable, AutoCloseable {
 		if (request==null) {
 			return "null";
 		}
-		return super.toString()+": "+request.getClass().getTypeName()+": "+request.toString();
+		if (wrappedRequest == null) {
+			return super.toString()+": "+request.getClass().getTypeName()+": "+request.toString();
+		} else {
+			return super.toString()+": "+wrappedRequest.getClass().getTypeName()+": "+wrappedRequest.toString();
+		}
 	}
 
 	public static Message asMessage(Object object) {
@@ -504,15 +510,19 @@ public class Message implements Serializable, AutoCloseable {
 	 * Can be called when {@link #requiresStream()} it true and {@link #isBinary()} is true to retrieve a copy of (part
 	 * of) the byte stream that is in this message, after the stream has been closed. Primarily for debugging purposes.
 	 */
-	public <O extends OutputStream> O captureStream(O outputStream) {
-		return captureStream(10000, outputStream);
+	public ByteArrayOutputStream captureBinaryStream() {
+		return captureBinaryStream(new ByteArrayOutputStream());
 	}
-	public <O extends OutputStream> O captureStream(int maxSize, O outputStream) {
+	public <O extends OutputStream> O captureBinaryStream(O outputStream) {
+		return captureBinaryStream(10000, outputStream);
+	}
+	public <O extends OutputStream> O captureBinaryStream(int maxSize, O outputStream) {
 		if (!requiresStream() || !isBinary()) {
 			return null;
 		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
 		try {
+			wrappedRequest = request;
 			request = new FilterInputStream(asInputStream()) {
 				
 				int pos;
@@ -565,18 +575,19 @@ public class Message implements Serializable, AutoCloseable {
 	 * Can be called when {@link #requiresStream()} it true and {@link #isBinary()} is false to retrieve a copy of (part
 	 * of) the character stream that is in this message, after the stream has been closed.
 	 */
-	public StringWriter captureStream() {
-		return captureStream(new StringWriter());
+	public StringWriter captureCharacterStream() {
+		return captureCharacterStream(new StringWriter());
 	}
-	public <W extends Writer> W captureStream(W writer) {
-		return captureStream(10000, writer);
+	public <W extends Writer> W captureCharacterStream(W writer) {
+		return captureCharacterStream(10000, writer);
 	}
-	public <W extends Writer> W captureStream(int maxSize, W writer) {
+	public <W extends Writer> W captureCharacterStream(int maxSize, W writer) {
 		if (!requiresStream() || isBinary()) {
 			return null;
 		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
 		try {
+			wrappedRequest = request;
 			request = new FilterReader(asReader()) {
 
 				int pos;
