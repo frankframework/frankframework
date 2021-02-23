@@ -18,6 +18,8 @@ package nl.nn.adapterframework.jms;
 import javax.jms.Destination;
 import javax.naming.NamingException;
 
+import nl.nn.adapterframework.jdbc.JndiObjectFactory;
+
 public class JndiDestinationFactory extends JndiObjectFactory<Destination,Destination> implements IDestinationFactory {
 
 	public JndiDestinationFactory() {

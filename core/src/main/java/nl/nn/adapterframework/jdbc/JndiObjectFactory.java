@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jms;
+package nl.nn.adapterframework.jdbc;
 
 import java.util.Map;
 import java.util.Properties;
@@ -35,9 +35,8 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Baseclass for Jndi lookups.
+ * Would be nice if we could have used JndiObjectFactoryBean but it has too much overhead
  * 
- * @author Gerrit van Brakel
- *
  * @param <O> Object class used by clients
  * @param <L> Class looked up in JNDI
  */

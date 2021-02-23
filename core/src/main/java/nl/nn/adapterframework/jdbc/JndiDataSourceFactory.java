@@ -23,13 +23,8 @@ import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import nl.nn.adapterframework.jms.JndiObjectFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
-/**
- * would be nice if we could have used JndiObjectFactoryBean but it has too much overhead
- *
- */
 public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDataSource> implements IDataSourceFactory {
 
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.datasource.default");

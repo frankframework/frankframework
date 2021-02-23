@@ -18,6 +18,8 @@ package nl.nn.adapterframework.jms;
 import javax.jms.ConnectionFactory;
 import javax.naming.NamingException;
 
+import nl.nn.adapterframework.jdbc.JndiObjectFactory;
+
 public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFactory,ConnectionFactory> implements IConnectionFactoryFactory {
 
 	public JndiConnectionFactoryFactory() {
