@@ -7,19 +7,19 @@ General use
 ===========
 
 The container contains the following important directories:
-| location | description |
-|---|---|
+| directory | description | notes |
+|---|---|---|
 | /opt/frank/resources | For application-wide properties, may contain files or a .jar with all files |
-| /opt/frank/configurations | For configurations, may contain a .jar or directories per configuration, when using .jar additional properties per configuration need to be set in resources |
-| /opt/frank/testtool | For Larva tests that are included in the image |
-| /opt/frank/testtool-ext | For Larva tests that are mounted from the environment |
-| /usr/local/tomcat/lib/ | Contains drivers and other dependencies |
+| /opt/frank/configurations | For configurations, may contain a .jar or directory per configuration or a .jar containing directories per configuration | When using a .jar with multiple configurations, your resources should include a property configurations.<configurationName>.configurationFile containing the path to the Configuration.xml in the .jar |
+| /opt/frank/testtool | For Larva tests that are included in the image | |
+| /opt/frank/testtool-ext | For Larva tests that are mounted from the environment | |
+| /usr/local/tomcat/lib | Contains drivers and other dependencies | |
 
 The container also contains the following important files:
-| location | description |
-|---|---|
-| /usr/local/tomcat/conf/Catalina/localhost/iaf.xml | mount/copy of your context.xml |
-| /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values, append if needed |
+| file | description | notes |
+|---|---|---|
+| /usr/local/tomcat/conf/Catalina/localhost/<web.contextpath>.xml | mount/copy of your context.xml | web.contextpath=ROOT if not set in catalina.properties |
+| /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, but append to it if necessary, see the [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
 
 
 
