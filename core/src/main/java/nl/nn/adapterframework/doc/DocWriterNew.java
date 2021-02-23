@@ -702,7 +702,7 @@ public class DocWriterNew {
 		}
 		ConfigChildSet configChildSet = child.getOwningElement().getConfigChildSet(child.getSyntax1Name());
 		if(log.isTraceEnabled()) {
-			ThreadContext.push(String.format("Owning elenent [%s], ConfigChildSet [%s]", child.getOwningElement().getSimpleName(), configChildSet.toString()));
+			ThreadContext.push(String.format("Owning element [%s], ConfigChildSet [%s]", child.getOwningElement().getSimpleName(), configChildSet.toString()));
 		}
 		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
 		requestElementGroupForConfigChildSet(configChildSet, roles);
@@ -961,7 +961,7 @@ public class DocWriterNew {
 	private void addPluralConfigChild(XmlBuilder choice, ConfigChildSet configChildSet, FrankElement frankElement) {
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Adding ConfigChildSet with ElementRoleSet [%s]", configChildSet.toString()));
-			ThreadContext.push(String.format("Owning elenent [%s], ConfigChildSet [%s]", frankElement.getSimpleName(), configChildSet.toString()));
+			ThreadContext.push(String.format("Owning element [%s], ConfigChildSet [%s]", frankElement.getSimpleName(), configChildSet.toString()));
 		}
 		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
 		if((roles.size() == 1) && isNoElementTypeNeeded(roles.get(0))) {
