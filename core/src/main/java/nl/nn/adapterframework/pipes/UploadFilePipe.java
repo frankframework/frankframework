@@ -37,7 +37,7 @@ import org.apache.commons.lang.StringUtils;
  * @author Peter Leeuwenburgh
  */
 @Deprecated
-@ConfigurationWarning("Please replace with UnzipPipe")
+@ConfigurationWarning("Please replace with UnzipPipe. Configure UnzipPipe with getInputFromSessionKey='file', directorySessionKey='destination' and keepOriginalFileName='true'.")
 public class UploadFilePipe extends FixedForwardPipe {
 
 	private String directory;
