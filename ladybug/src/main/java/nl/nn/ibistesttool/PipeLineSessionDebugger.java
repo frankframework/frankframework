@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
-
-import org.apache.commons.lang.NotImplementedException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Wrapper class for PipeLineSession to be able to debug storing values in
@@ -54,7 +55,7 @@ public class PipeLineSessionDebugger implements IPipeLineSession {
 		return pipeLineSession.getMessageId();
 	}
 
-	public String getOriginalMessage() {
+	public Message getOriginalMessage() {
 		return pipeLineSession.getOriginalMessage();
 	}
 

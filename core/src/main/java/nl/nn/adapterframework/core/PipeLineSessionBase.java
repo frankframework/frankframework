@@ -72,8 +72,8 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	}
 
 	@Override
-	public String getOriginalMessage() {
-		return (String) Message.asObject(get(originalMessageKey));
+	public Message getOriginalMessage() {
+		return Message.asMessage(get(originalMessageKey));
 	}
 
 	/**

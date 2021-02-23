@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.security.Principal;
 import java.util.Map;
+
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -65,7 +67,7 @@ public interface IPipeLineSession extends Map<String,Object>, AutoCloseable {
 	 * @return the message that was passed to the <code>PipeLine</code> which
 	 *         should be stored under <code>originalMessageKey</code>
 	 */
-	public String getOriginalMessage();
+	public Message getOriginalMessage();
 
 	/**
 	 * Set a SecurityHandler. NOTE: It can also be set via key in PipeLineSession.
