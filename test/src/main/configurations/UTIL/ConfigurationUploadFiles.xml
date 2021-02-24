@@ -55,10 +55,20 @@
 				<forward name="success" path="uploadFiles" />
 			</pipe>
 
-			<pipe name="uploadFiles" className="nl.nn.adapterframework.pipes.UploadFilePipe"
-				storeResultInSessionKey="tempDir">
-				<forward name="success" path="showUploadedFiles" />
-			</pipe>
+<!-- 			<pipe name="uploadFiles" className="nl.nn.adapterframework.pipes.UploadFilePipe" -->
+<!-- 				storeResultInSessionKey="tempDir"> -->
+<!-- 				<forward name="success" path="showUploadedFiles" /> -->
+<!-- 			</pipe> -->
+
+			<!-- Replace UploadFilePipe with UnzipPipe-->
+			<UnzipPipe name="uploadFiles"
+				storeResultInSessionKey="tempDir" 
+				getInputFromSessionKey="file"
+				directorySessionKey = "destination" 
+				keepOriginalFileName="true" 
+			>
+				<Forward name="success" path="showUploadedFiles" />
+			</UnzipPipe>
 
 			<pipe name="showUploadedFiles" className="nl.nn.adapterframework.pipes.CreateRestViewPipe"
 				styleSheetName="UploadFiles/xsl/ShowUploadedFiles.xsl" xslt2="true"

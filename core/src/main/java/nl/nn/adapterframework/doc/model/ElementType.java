@@ -18,8 +18,7 @@ package nl.nn.adapterframework.doc.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -27,6 +26,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -42,11 +42,9 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class ElementType {
 	private static Logger log = LogUtil.getLogger(ElementType.class);
-	private @Getter Map<String, FrankElement> members;
+	private @Getter(AccessLevel.PACKAGE) List<FrankElement> members;
 	private @Getter boolean fromJavaInterface;
 	
-	private @Getter LinkedHashSet<ElementRole> elementRoles = new LinkedHashSet<>();
-
 	private static class InterfaceHierarchyItem {
 		private @Getter String fullName;
 		private @Getter String simpleName;
@@ -81,7 +79,7 @@ public class ElementType {
 
 	ElementType(Class<?> clazz) {
 		interfaceHierarchy = new InterfaceHierarchyItem(clazz);
-		members = new HashMap<>();
+		members = new ArrayList<>();
 		this.fromJavaInterface = clazz.isInterface();
 	}
 
@@ -94,18 +92,20 @@ public class ElementType {
 	}
 
 	void addMember(FrankElement member) {
-		members.put(member.getFullName(), member);
+	    // See https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413
+		// for an explanation of this algorithm.
+		int index = Collections.binarySearch(members, member, null);
+	    if (index < 0) {
+	        index = -index - 1;
+	    }
+	    members.add(index, member);
 	}
 
 	FrankElement getSingletonElement() throws ReflectiveOperationException {
 		if(members.size() != 1) {
 			throw new ReflectiveOperationException(String.format("Expected that ElementType [%s] contains exactly one element", getFullName()));
 		}
-		return members.values().iterator().next();
-	}
-
-	void registerElementRole(ElementRole elementRole) {
-		elementRoles.add(elementRole);
+		return members.iterator().next();
 	}
 
 	void calculateHighestCommonInterface(FrankDocModel model) {
