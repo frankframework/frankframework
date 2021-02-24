@@ -64,12 +64,6 @@ public interface IPipeLineSession extends Map<String,Object>, AutoCloseable {
 	public String getMessageId();
 
 	/**
-	 * @return the message that was passed to the <code>PipeLine</code> which
-	 *         should be stored under <code>originalMessageKey</code>
-	 */
-	public Message getOriginalMessage();
-
-	/**
 	 * Set a SecurityHandler. NOTE: It can also be set via key in PipeLineSession.
 	 * @param handler ISecurityHandler to set
 	 */

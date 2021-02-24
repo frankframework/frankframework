@@ -55,10 +55,6 @@ public class PipeLineSessionDebugger implements IPipeLineSession {
 		return pipeLineSession.getMessageId();
 	}
 
-	public Message getOriginalMessage() {
-		return pipeLineSession.getOriginalMessage();
-	}
-
 	public void setSecurityHandler(ISecurityHandler handler) {
 		pipeLineSession.setSecurityHandler(handler);
 	}
