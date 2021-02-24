@@ -152,7 +152,7 @@
 		brokerURL="vm://localhost"
 	/>
 	
-	<!--  future configuration of JMS destinations -->
+	<!--  future configuration of JMS destinations
 	<Environment name="jms/GetMessageRequest" value="ESB.Infrastructure.TS.Test.TestIAF.1.GetMessage.1.Request"  type="java.lang.String" />
 	<Environment name="jms/UpdateMessageAction" value="ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action"  type="java.lang.String" />
 	-->
