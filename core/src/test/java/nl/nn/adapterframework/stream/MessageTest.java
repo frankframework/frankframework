@@ -217,7 +217,6 @@ public class MessageTest {
 		Message adapter = new Message(source);
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
-		adapter.asInputStream().close();
 		adapter.close();
 		
 		String captured = new String(outputStream.toByteArray(), "utf-8");
