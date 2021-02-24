@@ -9,6 +9,7 @@
 	>
 
 	<import resource="springTOMCAT.xml"/>
+	<import resource="springJms.xml"/>
 
 	<bean
 		name="txManagerReal"

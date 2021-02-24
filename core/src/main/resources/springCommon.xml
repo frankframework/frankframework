@@ -28,6 +28,7 @@
 	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.SpringDataSourceFactory" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jms.JndiConnectionFactoryFactory" />
 
 	<bean id="jdbcPropertySourceFactory" class="nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory" />
 

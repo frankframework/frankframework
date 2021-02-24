@@ -9,15 +9,6 @@
 	>
 
 	<bean
-		name="btmTransactionManager"
-		class="bitronix.tm.TransactionManagerServices"
-		factory-method="getTransactionManager"
-		depends-on="btmConfig,defaultDataSource"
-		destroy-method="shutdown"
-	/>
-
-
-	<bean
 		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
 		autowire="byName"
 		>
