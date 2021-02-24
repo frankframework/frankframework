@@ -7,21 +7,6 @@ General use
 ===========
 The image contains an empty framework-instance that needs to be configured before use.
 
-The image contains the following directories to be configured:
-| directory | description | notes |
-|---|---|---|
-| /opt/frank/resources | For application-wide properties, may contain files or a .jar with all files | Minimum required properties to set are `instance.name` and `configurations.names`, can also be set using environment variables |
-| /opt/frank/configurations | For configurations, may contain a directory with files per configuration or a .jar containing a directory per configuration | When Configuration.xml is not located at `<configurationName>/Configuration.xml`, your resources should include a property `configurations.<configurationName>.configurationFile` containing the path to the Configuration.xml |
-| /opt/frank/testtool | For Larva tests that are included in the image | |
-| /opt/frank/testtool-ext | For Larva tests that are mounted from the environment | |
-| /usr/local/tomcat/lib | Contains drivers and other dependencies | Contains all Framework required drivers by default |
-
-The image also contains the following files to be configured:
-| file | description | notes |
-|---|---|---|
-| /usr/local/tomcat/conf/Catalina/localhost/iaf.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing. Changing this file will require a new instance to be started, it cannot be reloaded |
-| /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use environment variables or append to the file, see [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
-
 To run the image, run the following command, adding environment variables and mounts as needed:
 
 `docker run --publish <hostport>:8080 [-e <name>=<value>] [--mount type=bind,source=<source>,target=<target>] --name <name> TBD/TBD/iaf-as-tomcat[:<version>]`
@@ -29,6 +14,39 @@ To run the image, run the following command, adding environment variables and mo
 To start building your own image based on the provided image, start your Dockerfile with:
 
 `FROM TBD/TBD/iaf-as-tomcat<:version>`
+
+See the sections on [Directories](##Directories) and [Files](##Files) for information on which directories and files to mount/copy.
+
+Filesystem
+==========
+
+## Directories
+The image contains the following directories:
+| directory | description | notes |
+|---|---|---|
+| /opt/frank/resources | For application-wide properties, may contain files or a .jar with all files | Minimum required properties to set are `instance.name` and `configurations.names`, can also be set using environment variables |
+| /opt/frank/configurations | For configurations, may contain a directory with files per configuration or a .jar containing a directory per configuration | When Configuration.xml is not located at `<configurationName>/Configuration.xml`, your resources should include a property `configurations.<configurationName>.configurationFile` containing the path to the Configuration.xml |
+| /opt/frank/testtool | For Larva tests that are included in the image | |
+| /opt/frank/testtool-ext | For Larva tests that are mounted from the environment | |
+| /usr/local/tomcat/lib | Contains drivers and other dependencies | Contains all Framework required drivers by default |
+| /usr/local/tomcat/logs | Log directory | |
+
+## Files
+The image also contains the following files:
+| file | description | notes |
+|---|---|---|
+| /usr/local/tomcat/conf/Catalina/localhost/iaf.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing. Changing this file will require a new instance to be started, it cannot be reloaded |
+| /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use [Environment variables](#Environment-variables) or append to the file, see [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
+
+Logging
+=======
+
+Generated logs are stored in `/usr/local/tomcat/logs`.
+
+Environment variables
+=====================
+
+Environment variables can be used to set properties. Environment variables have the highest precedence and override properties set in Tomcat, resources and configurations.
 
 Considerations
 ==============
