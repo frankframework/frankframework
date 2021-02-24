@@ -22,9 +22,8 @@
 		url="jdbc:oracle:thin:@localhost:1521:xe"
 		username="testiaf_user"
 		password="testiaf_user"
-		maxActive="10"
-		maxIdle="2"
-		maxWait="5000"
+		maxTotal="10"
+		maxWaitMillis="5000"
 	/>
 
 	<Resource
@@ -115,7 +114,8 @@
 		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
 		username="testiaf_user"
 		password="testiaf_user00" 
-		maxActive="20" maxIdle="10" maxWait="5000" 
+		maxTotal="10"
+		maxWaitMillis="5000"
 	/>	
 		
 	<Resource
@@ -144,5 +144,17 @@
 		SSLTrace="false"
 		SSLDebugTrace="false"
 	/>
+
+	<Resource
+		name="jms/qcf-activemq"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.apache.activemq.ActiveMQXAConnectionFactory"
+		brokerURL="vm://localhost"
+	/>
+	
+	<!--  future configuration of JMS destinations
+	<Environment name="jms/GetMessageRequest" value="ESB.Infrastructure.TS.Test.TestIAF.1.GetMessage.1.Request"  type="java.lang.String" />
+	<Environment name="jms/UpdateMessageAction" value="ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action"  type="java.lang.String" />
+	-->
 	
 </Context>

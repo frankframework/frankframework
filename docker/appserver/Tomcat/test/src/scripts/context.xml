@@ -144,5 +144,17 @@
 		SSLTrace="false"
 		SSLDebugTrace="false"
 	/>
+
+	<Resource
+		name="jms/qcf-activemq"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.apache.activemq.ActiveMQXAConnectionFactory"
+		brokerURL="vm://localhost"
+	/>
+	
+	<!--  future configuration of JMS destinations
+	<Environment name="jms/GetMessageRequest" value="ESB.Infrastructure.TS.Test.TestIAF.1.GetMessage.1.Request"  type="java.lang.String" />
+	<Environment name="jms/UpdateMessageAction" value="ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action"  type="java.lang.String" />
+	-->
 	
 </Context>

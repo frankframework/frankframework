@@ -13,32 +13,32 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc;
+package nl.nn.adapterframework.jms;
 
-import javax.sql.CommonDataSource;
-import javax.sql.DataSource;
-import javax.sql.XADataSource;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.XAConnectionFactory;
 
 import org.springframework.beans.factory.DisposableBean;
 
-import bitronix.tm.resource.jdbc.PoolingDataSource;
-import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import bitronix.tm.resource.jms.PoolingConnectionFactory;
+import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
 
-public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
+public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory implements DisposableBean {
 
 	@Override
-	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
-		PoolingDataSource result = new PoolingDataSource();
-		result.setUniqueName(dataSourceName);
+	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
+		PoolingConnectionFactory result = new PoolingConnectionFactory();
+		result.setUniqueName(connectionFactoryName);
 		result.setMaxPoolSize(100);
 		result.setAllowLocalTransactions(true);
-		result.setXaDataSource((XADataSource)dataSource);
+		result.setXaConnectionFactory((XAConnectionFactory)connectionFactory);
 		result.init();
 		return result;
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		objects.values().forEach(ds -> ((PoolingDataSource)ds).close());
+		objects.values().forEach(cf -> ((PoolingConnectionFactory)cf).close());
 	}
 }

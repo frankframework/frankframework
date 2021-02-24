@@ -13,20 +13,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc;
+package nl.nn.adapterframework.jms;
 
-import javax.sql.CommonDataSource;
-import javax.sql.DataSource;
+import java.util.List;
+import java.util.Properties;
 
-import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
+import javax.jms.ConnectionFactory;
+import javax.naming.NamingException;
 
-import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+public interface IConnectionFactoryFactory {
+	
+	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException;
+	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException;
 
-public class SpringDataSourceFactory extends JndiDataSourceFactory {
-
-	@Override
-	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
-		return new LazyConnectionDataSourceProxy((DataSource)dataSource);
-	}
+	/**
+	 * Return all known/registered ConnectionFactories
+	 */
+	public List<String> getConnectionFactoryNames();
 
 }

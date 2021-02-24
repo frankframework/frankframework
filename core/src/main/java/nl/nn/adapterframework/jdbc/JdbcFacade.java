@@ -40,7 +40,7 @@ import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
-import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -64,7 +64,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
+public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
 
 	private String datasourceName = null;
 	private String authAlias = null;

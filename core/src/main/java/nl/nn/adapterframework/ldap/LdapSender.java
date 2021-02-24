@@ -48,7 +48,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -240,7 +240,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @author Jaco de Groot
  */
-public class LdapSender extends JNDIBase implements ISenderWithParameters {
+public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";

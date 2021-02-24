@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc;
+package nl.nn.adapterframework.jndi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,7 @@ import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
+import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
 public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDataSource> implements IDataSourceFactory {
