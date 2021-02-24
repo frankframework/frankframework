@@ -125,14 +125,16 @@ public final class Webservices extends Base {
 				Receiver receiver = listener.getReceiver();
 				IAdapter adapter = receiver == null? null : receiver.getAdapter();
 				Map<String, Object> endpoint = new HashMap<>();
-				endpoint.put("uriPattern", listener.getUriPattern());
+				String uriPattern = listener.getUriPattern();
+				endpoint.put("uriPattern", uriPattern);
 				endpoint.put("method", method);
 				if (adapter!=null) endpoint.put("adapter", adapter.getName());
 				if (receiver!=null) endpoint.put("receiver", receiver.getName());
 				PipeLine pipeline = adapter.getPipeLine();
-				if (ApiServiceDispatcher.getJsonValidator(pipeline)!=null || pipeline.getOutputValidator()!=null) { 
+				if (ApiServiceDispatcher.getJsonValidator(pipeline)!=null || pipeline.getOutputValidator()!=null) {
+					String schemaResource = uriPattern.substring(1).replace("/", "_")+"_"+method+"_"+"openapi.json";
 					// N.B. OpenAPI 3.0 generation via ApiServiceDispatcher.mapResponses() is currently not based on explicit outputValidator. 
-					endpoint.put("schemaResource","openapi.json");
+					endpoint.put("schemaResource",schemaResource);
 				} else {
 					endpoint.put("error","Pipeline has no validator. Content in the response mappings will be empty in the generated schema.");
 				}
