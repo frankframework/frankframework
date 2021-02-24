@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc;
+package nl.nn.adapterframework.jndi;
 
 import java.util.Map;
 import java.util.Properties;
@@ -30,6 +30,7 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.core.JndiContextPrefixFactory;
+import nl.nn.adapterframework.jdbc.ObjectLocator;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -40,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @param <O> Object class used by clients
  * @param <L> Class looked up in JNDI
  */
-public class JndiObjectFactory<O extends L,L> implements ApplicationContextAware {
+public class JndiObjectFactory<O,L> implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private Class<L> lookupClass;
@@ -93,7 +94,7 @@ public class JndiObjectFactory<O extends L,L> implements ApplicationContextAware
 	}
 
 	@SuppressWarnings("unchecked")
-	protected O augment(L object, String objectName) {
+	protected O augment(L object, String objectName) throws NamingException {
 		return (O)object;
 	}
 
@@ -102,9 +103,14 @@ public class JndiObjectFactory<O extends L,L> implements ApplicationContextAware
 	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a JNDI lookup.
 	 */
 	public O add(L object, String jndiName) {
-		return objects.computeIfAbsent(jndiName, k -> augment(object, jndiName));
+		return objects.computeIfAbsent(jndiName, k -> compute(object, jndiName));
 	}
 
+	@SneakyThrows(NamingException.class)
+	private O compute(L object, String jndiName) {
+		return augment(object, jndiName);
+	}
+	
 	private String getPrefixedJndiName(String jndiName) {
 		return (StringUtils.isNotEmpty(jndiContextPrefix)) ? jndiContextPrefix + jndiName : jndiName;
 	}

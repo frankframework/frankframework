@@ -22,6 +22,7 @@ import javax.jms.XAConnectionFactory;
 import org.springframework.beans.factory.DisposableBean;
 
 import bitronix.tm.resource.jms.PoolingConnectionFactory;
+import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
 
 public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory implements DisposableBean {
 

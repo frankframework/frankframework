@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jms;
+package nl.nn.adapterframework.jndi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.Properties;
 import javax.jms.ConnectionFactory;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.jdbc.JndiObjectFactory;
+import nl.nn.adapterframework.jms.IConnectionFactoryFactory;
 
 public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFactory,ConnectionFactory> implements IConnectionFactoryFactory {
 

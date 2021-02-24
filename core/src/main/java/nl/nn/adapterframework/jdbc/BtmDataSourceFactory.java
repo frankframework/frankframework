@@ -22,6 +22,7 @@ import javax.sql.XADataSource;
 import org.springframework.beans.factory.DisposableBean;
 
 import bitronix.tm.resource.jdbc.PoolingDataSource;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
 
