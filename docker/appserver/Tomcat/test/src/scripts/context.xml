@@ -146,7 +146,7 @@
 	/>
 
 	<Resource
-		name="jms/qcf_activemq"
+		name="jms/qcf-activemq"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.apache.activemq.ActiveMQXAConnectionFactory"
 		brokerURL="vm://localhost"
