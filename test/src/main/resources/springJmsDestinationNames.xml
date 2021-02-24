@@ -19,26 +19,4 @@
 			</map>
 		</constructor-arg>
 	</bean>
-	<!--
-	A bit of a hack to overwrite the proxiedConnectionFactories in this file to
-	add the jms/qcf to make jms/qcf work for ActiveMQ and Tibco too. Maybe it's
-	better to create a springJmsCustom.xml and import it in springJms.xml. Or
-	make it possible to configure jms queue names and qcf's outside the Spring
-	config.
-	-->
-	<bean name="proxiedConnectionFactories" class="java.util.HashMap">
-		<constructor-arg>
-			<map>
-				<entry key="jms/qcf_tibco_esb_ff">
-					<ref bean="defaultXAConnectionFactory"/>
-				</entry>
-				<entry key="jms/qcf_tibco_esb_rr">
-					<ref bean="esbRRConnectionFactory"/>
-				</entry>
-				<entry key="jms/qcf">
-					<ref bean="defaultXAConnectionFactory"/>
-				</entry>
-			</map>
-		</constructor-arg>
-	</bean>
 </beans>

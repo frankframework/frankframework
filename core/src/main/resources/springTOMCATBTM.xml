@@ -37,5 +37,6 @@
 	</bean>
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.BtmDataSourceFactory" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jms.BtmConnectionFactoryFactory" />
 
 </beans>

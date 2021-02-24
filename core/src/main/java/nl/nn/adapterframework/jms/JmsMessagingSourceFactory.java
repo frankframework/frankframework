@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.apache.commons.lang.StringUtils;
+import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since   4.4
  */
 public class JmsMessagingSourceFactory extends MessagingSourceFactory {
-	static private Map jmsMessagingSourceMap = new HashMap();
+	static private Map<String,MessagingSource> jmsMessagingSourceMap = new HashMap<>();
 	private JMSFacade jmsFacade;
 	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 
@@ -56,7 +56,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	@Override
-	protected Map getMessagingSourceMap() {
+	protected Map<String,MessagingSource> getMessagingSourceMap() {
 		return jmsMessagingSourceMap;
 	}
 
@@ -64,8 +64,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Context context = getContext();
 		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName, createDestination, useJms102); 
-		return new JmsMessagingSource(jmsConnectionFactoryName, jmsFacade.getJndiContextPrefix(), context, connectionFactory, getMessagingSourceMap(), 
-				authAlias, createDestination, jmsFacade.getDestinationFactory(), useJms102);
+		return new JmsMessagingSource(jmsConnectionFactoryName, jmsFacade.getJndiContextPrefix(), context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, jmsFacade.getProxiedDestinationNames(), useJms102);
 	}
 
 	@Override
@@ -74,22 +73,17 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	@Override
-	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination, boolean useJms102) throws IbisException, NamingException {
+	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination, boolean useJms102) throws IbisException {
+		IConnectionFactoryFactory connectionFactoryFactory = jmsFacade.getConnectionFactoryFactory();
+		if (connectionFactoryFactory==null) {
+			throw new ConfigurationException("No ConnectionFactoryFactory was configured");
+		}
+		
 		ConnectionFactory connectionFactory;
-		if (jmsFacade.getConnectionFactoryFactory() != null) {
-			log.debug(jmsFacade.getLogPrefix()+"looking up proxied connection factory ["+cfName+"]");
-			connectionFactory = jmsFacade.getConnectionFactoryFactory().getConnectionFactory(cfName);
-		} else {
-			String prefixedCfName=jmsFacade.getJndiContextPrefix()+cfName;
-			log.debug(jmsFacade.getLogPrefix()+"looking up connection factory ["+prefixedCfName+"]");
-			if (StringUtils.isNotEmpty(jmsFacade.getJndiContextPrefix())) {
-				log.debug(jmsFacade.getLogPrefix()+"using JNDI context prefix ["+jmsFacade.getJndiContextPrefix()+"]");
-			}
-			try {
-				connectionFactory = (ConnectionFactory)getContext().lookup(prefixedCfName);
-			} catch (NamingException e) {
-				throw new JmsException("Could not find connection factory ["+prefixedCfName+"]", e);
-			}
+		try {
+			connectionFactory = connectionFactoryFactory.getConnectionFactory(cfName, jmsFacade.getJndiEnv());
+		} catch (NamingException e) {
+			throw new JmsException("Could not find connection factory ["+cfName+"]", e);
 		}
 		if (connectionFactory == null) {
 			throw new JmsException("Could not find connection factory ["+cfName+"]");
@@ -110,7 +104,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			connectionFactoryInfo = connectionFactory.toString();
 		}
 		log.info(jmsFacade.getLogPrefix()+"looked up connection factory ["+cfName+"]: ["+connectionFactoryInfo+"]");
-		return connectionFactory;
+		return new TransactionAwareConnectionFactoryProxy(connectionFactory);
 	}
 
 	public String getConnectionFactoryInfo(ConnectionFactory connectionFactory) {
@@ -125,10 +119,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		try {
 			connection = connectionFactory.createConnection();
 			ConnectionMetaData metaData = connection.getMetaData();
-			info = "jms provider name [" + metaData.getJMSProviderName()
-					+ "] jms provider version [" + metaData.getProviderVersion()
-					+ "] jms version [" + metaData.getJMSVersion()
-					+ "]";
+			info = "jms provider name [" + metaData.getJMSProviderName() + "] jms provider version [" + metaData.getProviderVersion() + "] jms version [" + metaData.getJMSVersion() + "]";
 		} catch (JMSException e) {
 			log.warn("Exception determining connection factory info",e);
 		} finally {
@@ -157,8 +148,8 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		}
 
 		@Override
-		public Connection createConnection(String arg0, String arg1) throws JMSException {
-			return wrapped.createConnection(arg0,arg1);
+		public Connection createConnection(String userName, String password) throws JMSException {
+			return wrapped.createConnection(userName, password);
 		}
 	}
 
@@ -176,8 +167,8 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		}
 
 		@Override
-		public QueueConnection createQueueConnection(String arg0, String arg1) throws JMSException {
-			return wrapped.createQueueConnection(arg0,arg1);
+		public QueueConnection createQueueConnection(String userName, String password) throws JMSException {
+			return wrapped.createQueueConnection(userName, password);
 		}
 
 		@Override
@@ -186,8 +177,8 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		}
 
 		@Override
-		public Connection createConnection(String arg0, String arg1) throws JMSException {
-			return createQueueConnection(arg0, arg1);
+		public Connection createConnection(String userName, String password) throws JMSException {
+			return createQueueConnection(userName, password);
 		}
 	}
 
@@ -205,8 +196,8 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		}
 
 		@Override
-		public TopicConnection createTopicConnection(String arg0, String arg1) throws JMSException {
-			return wrapped.createTopicConnection(arg0,arg1);
+		public TopicConnection createTopicConnection(String userName, String password) throws JMSException {
+			return wrapped.createTopicConnection(userName, password);
 		}
 
 		@Override
@@ -215,8 +206,8 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		}
 
 		@Override
-		public Connection createConnection(String arg0, String arg1) throws JMSException {
-			return createTopicConnection(arg0, arg1);
+		public Connection createConnection(String userName, String password) throws JMSException {
+			return createTopicConnection(userName, password);
 		}
 	}
 }

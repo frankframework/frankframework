@@ -93,7 +93,7 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 	private Destination destination;
 
 	private @Setter @Getter IConnectionFactoryFactory connectionFactoryFactory = null;
-	private @Setter @Getter IDestinationFactory destinationFactory = null;
+	private @Setter @Getter Map<String, String> proxiedDestinationNames;
 
 	// ---------------------------------------------------------------------
 	// Queue fields

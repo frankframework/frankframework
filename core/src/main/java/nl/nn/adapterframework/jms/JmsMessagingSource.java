@@ -35,24 +35,31 @@ import org.apache.commons.lang.StringUtils;
  */
 public class JmsMessagingSource extends MessagingSource {
 	private String jndiContextPrefix;
-	private IDestinationFactory destinationFactory;
+	private Map<String, String> proxiedDestinationNames;
 
 	public JmsMessagingSource(String connectionFactoryName,
 			String jndiContextPrefix, Context context,
-			ConnectionFactory connectionFactory, Map messagingSourceMap,
+			ConnectionFactory connectionFactory, Map<String,MessagingSource> messagingSourceMap,
 			String authAlias, boolean createDestination,
-			IDestinationFactory destinationFactory, boolean useJms102) {
+			Map<String, String> proxiedDestinationNames, boolean useJms102) {
 		super(connectionFactoryName, context,
 				connectionFactory, messagingSourceMap, authAlias,
 				createDestination, useJms102);
 		this.jndiContextPrefix = jndiContextPrefix;
-		this.destinationFactory = destinationFactory;
+		this.proxiedDestinationNames = proxiedDestinationNames;
 	}
 
 	public Destination lookupDestination(String destinationName) throws JmsException, NamingException {
 		Destination dest=null;
 		if (createDestination()) {
 			log.debug(getLogPrefix() + "looking up destination by creating it [" + destinationName + "]");
+			if (proxiedDestinationNames != null) {
+				String proxiedDestinationName = proxiedDestinationNames.get(destinationName);
+				if (proxiedDestinationName != null) {
+					log.debug(getLogPrefix() + "replacing destination name with proxied destination name [" + proxiedDestinationName + "]");
+					destinationName = proxiedDestinationName;
+				}
+			}
 			dest = createDestination(destinationName);
 		} else {
 			String prefixedDestinationName = getJndiContextPrefix() + destinationName;

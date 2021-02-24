@@ -15,11 +15,20 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.util.List;
+import java.util.Properties;
+
 import javax.jms.ConnectionFactory;
 import javax.naming.NamingException;
 
 public interface IConnectionFactoryFactory {
 	
 	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException;
+	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException;
+
+	/**
+	 * Return all known/registered ConnectionFactories
+	 */
+	public List<String> getConnectionFactoryNames();
 
 }

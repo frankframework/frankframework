@@ -12,36 +12,10 @@
 		name="btmTransactionManager"
 		class="bitronix.tm.TransactionManagerServices"
 		factory-method="getTransactionManager"
-		depends-on="btmConfig,defaultDataSource,defaultXAConnectionFactory"
+		depends-on="btmConfig,defaultDataSource"
 		destroy-method="shutdown"
 	/>
 
-	<bean
-		name="defaultXAConnectionFactory"
-		class="bitronix.tm.resource.jms.PoolingConnectionFactory"
-		init-method="init"
-		destroy-method="close"
-		>
-		<property name="uniqueName" value="${instance.name.lc}.defaultXAConnectionFactory"/>
-		<property name="maxPoolSize" value="100"/>
-		<property name="allowLocalTransactions" value="true"/>
-		<property name="XaConnectionFactory">
-			<ref bean="esbFFConnectionFactory"/>
-		</property>
-	</bean>
-
-	<bean name="proxiedConnectionFactories" class="java.util.HashMap">
-		<constructor-arg>
-			<map>
-				<entry key="jms/qcf_tibco_esb_ff">
-					<ref bean="defaultXAConnectionFactory"/>
-				</entry>
-				<entry key="jms/qcf_tibco_esb_rr">
-					<ref bean="esbRRConnectionFactory"/>
-				</entry>
-			</map>
-		</constructor-arg>
-	</bean>
 
 	<bean
 		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"

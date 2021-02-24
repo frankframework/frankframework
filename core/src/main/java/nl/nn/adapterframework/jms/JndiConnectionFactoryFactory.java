@@ -15,6 +15,10 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import javax.jms.ConnectionFactory;
 import javax.naming.NamingException;
 
@@ -31,5 +35,14 @@ public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFa
 		return get(connectionFactoryName);
 	}
 	
+	@Override
+	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException {
+		return get(connectionFactoryName, jndiEnvironment);
+	}
+
+	@Override
+	public List<String> getConnectionFactoryNames() {
+		return new ArrayList<String>(objects.keySet());
+	}
 
 }
