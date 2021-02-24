@@ -37,14 +37,10 @@ public class JmsMessagingSource extends MessagingSource {
 	private String jndiContextPrefix;
 	private Map<String, String> proxiedDestinationNames;
 
-	public JmsMessagingSource(String connectionFactoryName,
-			String jndiContextPrefix, Context context,
+	public JmsMessagingSource(String connectionFactoryName, String jndiContextPrefix, Context context,
 			ConnectionFactory connectionFactory, Map<String,MessagingSource> messagingSourceMap,
-			String authAlias, boolean createDestination,
-			Map<String, String> proxiedDestinationNames, boolean useJms102) {
-		super(connectionFactoryName, context,
-				connectionFactory, messagingSourceMap, authAlias,
-				createDestination, useJms102);
+			String authAlias, boolean createDestination, Map<String, String> proxiedDestinationNames, boolean useJms102) {
+		super(connectionFactoryName, context, connectionFactory, messagingSourceMap, authAlias, createDestination, useJms102);
 		this.jndiContextPrefix = jndiContextPrefix;
 		this.proxiedDestinationNames = proxiedDestinationNames;
 	}
