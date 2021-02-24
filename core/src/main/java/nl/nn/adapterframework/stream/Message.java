@@ -153,7 +153,7 @@ public class Message implements Serializable, AutoCloseable {
 	}
 
 	public boolean isBinary() {
-		return charset == null && (request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[]);
+		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
 	}
 	
 	public boolean isRepeatable() {
@@ -194,16 +194,16 @@ public class Message implements Serializable, AutoCloseable {
 			log.debug("returning Reader as Reader");
 			return (Reader) request;
 		}
-		if (request instanceof String) {
-			log.debug("returning String as Reader");
-			return new StringReader(request.toString());
+		if (isBinary()) {
+			String readerCharset = charset; //Don't overwrite the Message's charset
+			if (StringUtils.isEmpty(readerCharset)) {
+				readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			}
+			log.debug("returning InputStream as Reader");
+			return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(), readerCharset);
 		}
-		String readerCharset = charset; //Don't overwrite the Message's charset
-		if (StringUtils.isEmpty(readerCharset)) {
-			readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		}
-		log.debug("returning InputStream as Reader");
-		return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(), readerCharset);
+		log.debug("returning String as Reader");
+		return new StringReader(request.toString());
 	}
 
 	/**
@@ -507,8 +507,8 @@ public class Message implements Serializable, AutoCloseable {
 	}
 	
 	/**
-	 * Can be called when {@link #requiresStream()} it true and {@link #isBinary()} is true to retrieve a copy of (part
-	 * of) the byte stream that is in this message, after the stream has been closed. Primarily for debugging purposes.
+	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
+	 * message, after the stream has been closed. Primarily for debugging purposes.
 	 */
 	public ByteArrayOutputStream captureBinaryStream() {
 		return captureBinaryStream(new ByteArrayOutputStream());
@@ -517,7 +517,7 @@ public class Message implements Serializable, AutoCloseable {
 		return captureBinaryStream(10000, outputStream);
 	}
 	public <O extends OutputStream> O captureBinaryStream(int maxSize, O outputStream) {
-		if (!requiresStream() || !isBinary()) {
+		if (!requiresStream()) {
 			return null;
 		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
@@ -572,8 +572,11 @@ public class Message implements Serializable, AutoCloseable {
 	}
 	
 	/**
-	 * Can be called when {@link #requiresStream()} it true and {@link #isBinary()} is false to retrieve a copy of (part
-	 * of) the character stream that is in this message, after the stream has been closed.
+	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
+	 * message, after the stream has been closed. Primarily for debugging purposes.
+	 * 
+	 * When isBinary() is true the Message's charset is used when present to create a Reader that reads the InputStream.
+	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
 	 */
 	public StringWriter captureCharacterStream() {
 		return captureCharacterStream(new StringWriter());
@@ -582,7 +585,7 @@ public class Message implements Serializable, AutoCloseable {
 		return captureCharacterStream(10000, writer);
 	}
 	public <W extends Writer> W captureCharacterStream(int maxSize, W writer) {
-		if (!requiresStream() || isBinary()) {
+		if (!requiresStream()) {
 			return null;
 		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));

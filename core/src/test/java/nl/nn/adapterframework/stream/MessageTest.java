@@ -123,6 +123,13 @@ public class MessageTest {
 	}
 	
 	@Test
+	public void testInputStreamWithCharsetAsReader() throws Exception {
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
+		Message adapter = new Message(source, "utf-8");
+		testAsReader(adapter);
+	}
+	
+	@Test
 	public void testInputStreamAsInputSource() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
 		Message adapter = new Message(source);
@@ -167,6 +174,18 @@ public class MessageTest {
 	public void testInputStreamAsReaderCaptured() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
 		Message adapter = new Message(source);
+		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
+		assertNotNull(outputStream);
+		testAsReader(adapter);
+		
+		String captured = new String(outputStream.toByteArray(), "utf-8");
+		assertEquals(testString, captured);
+	}
+	
+	@Test
+	public void testInputStreamWithCharsetAsReaderCaptured() throws Exception {
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
+		Message adapter = new Message(source, "utf-8");
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsReader(adapter);
