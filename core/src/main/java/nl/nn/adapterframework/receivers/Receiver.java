@@ -911,7 +911,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					targetState = ProcessState.DONE;
 				}
 			}
-			if (targetState !=null) {
+			if (targetState !=null && getListener() instanceof IHasProcessState) {
 				changeProcessState(rawMessage, targetState, null);
 			}
 			if (errorStorage!=null) {
