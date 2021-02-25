@@ -18,6 +18,7 @@ package nl.nn.adapterframework.doc;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -29,11 +30,11 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
-public class DocWriterNewExamplesTest {
+public class DocWriterNewAndJsonGenerationExamplesTest {
 	@Parameters(name = "{1}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.examples.simple.Start", "simple.xsd"}
+			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"}
 		});
 	}
 
@@ -46,6 +47,9 @@ public class DocWriterNewExamplesTest {
 	@Parameter(2)
 	public String expectedXsdFileName;
 
+	@Parameter(3)
+	public String expectedJsonFileName;
+	
 	@Test
 	public void testXsd() throws Exception {
 		FrankDocModel model = createModel();
@@ -64,5 +68,15 @@ public class DocWriterNewExamplesTest {
 
 	private String getDigesterRulesPath(String fileName) {
 		return "doc/" + fileName;
+	}
+
+	@Test
+	public void testJson() throws Exception {
+		FrankDocModel model = createModel();
+		FrankDocJsonFactory jsonFactory = new FrankDocJsonFactory(model);
+		JSONObject jsonObject = jsonFactory.getJson();
+		String actual = jsonObject.toString(2);
+		String expectedJson = TestFileUtils.getTestFile("/doc/examplesExpected/" + expectedJsonFileName);
+		TestAssertions.assertEqualsIgnoreCRLF(expectedJson, actual);
 	}
 }

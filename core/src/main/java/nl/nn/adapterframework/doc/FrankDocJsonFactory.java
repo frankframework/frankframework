@@ -52,7 +52,7 @@ public class FrankDocJsonFactory {
 		result.put("name", group.getName());
 		result.put("category", group.getCategory());
 		List<String> memberReferences = group.getElements().stream()
-				.map(FrankElement::getSimpleName)
+				.map(FrankElement::getFullName)
 				.collect(Collectors.toList());
 		result.put("members", memberReferences);
 		return result;
@@ -74,11 +74,15 @@ public class FrankDocJsonFactory {
 		result.put("fullName", frankElement.getFullName());
 		result.put("isAbstract", frankElement.isAbstract());
 		result.put("isDeprecated", frankElement.isDeprecated());
-		result.put("parent", frankElement.getParent().getFullName());
+		result.put("parent", getParentOrNull(frankElement));
 		result.put("elementNames", new JSONArray(frankElement.getXmlElementNames()));
 		result.put("attributes", getAttributes(frankElement));
 		result.put("children", getConfigChildren(frankElement));
 		return result;
+	}
+
+	private static String getParentOrNull(FrankElement frankElement) {
+		return frankElement.getParent() == null? null: frankElement.getParent().getFullName();
 	}
 
 	private JSONArray getAttributes(FrankElement frankElement) throws JSONException {
@@ -113,7 +117,7 @@ public class FrankDocJsonFactory {
 		result.put("isMandatory", child.isMandatory());
 		result.put("isMultiple", child.isAllowMultiple());
 		result.put("roleName", child.getElementRole().getSyntax1Name());
-		result.put("group", child.getElementRole().getElementType().getFrankDocGroup());
+		result.put("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
 		result.put("description", child.getDescription());
 		return result;
 	}
