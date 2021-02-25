@@ -1,4 +1,4 @@
-ARG TOMCAT_VERSION=8.5.60-jdk8
+ARG TOMCAT_VERSION=9.0.43-jdk8
 FROM tomcat:${TOMCAT_VERSION} AS iaf-as-tomcat
 
 # copy the frank framework
