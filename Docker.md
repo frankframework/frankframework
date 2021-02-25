@@ -3,6 +3,19 @@ Frank!Framework with Docker
 
 Docker images are provided, suitable both for local and server use. Images are provided from the registry located at <https://TBD>, the source is avalaible from the [docker-folder](docker/appserver/Tomcat) in this repository.
 
+# Contents
+
+- [General use](#General-use)
+- [Filesystem](#Filesystem)
+  - [Directories](#Directories)
+  - [Files](#Files)
+- [Logging](#Logging)
+- [Environment variables](#Environment-variables)
+- [Considerations](#Considerations)
+  - [HTTPS and security](#HTTPS-and-security)
+  - [Secrets](#Secrets)
+
+
 General use
 ===========
 The image contains an empty framework-instance that needs to be configured before use.
@@ -13,9 +26,9 @@ To run the image, run the following command, adding environment variables and mo
 
 To start building your own image based on the provided image, start your Dockerfile with:
 
-`FROM TBD/TBD/iaf-as-tomcat<:version>`
+`FROM TBD/TBD/iaf-as-tomcat[:<version>]`
 
-See the sections on [Directories](##Directories) and [Files](##Files) for information on which directories and files to mount/copy.
+See the sections on [Directories](#Directories) and [Files](#Files) for information on which directories and files to mount/copy.
 
 Filesystem
 ==========
@@ -54,7 +67,7 @@ Considerations
 
 The images are based on Tomcat, all restrictions and considerations that apply to Tomcat also apply to using the provided images.
 
-## HTTPS/security
+## HTTPS and security
 
 By default, the image uses the default server.xml of Tomcat which is not configured for inbound HTTPS traffic and user authentication. To secure your application, replace server.xml with a secured version matching your requirements.
 
