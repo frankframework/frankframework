@@ -22,13 +22,15 @@ The image contains an empty framework-instance that needs to be configured befor
 
 To run the image, run the following command, adding environment variables and mounts as needed:
 
-`docker run --publish <hostport>:8080 [-e <name>=<value>] [--mount type=bind,source=<source>,target=<target>] --name <name> TBD/TBD/iaf-as-tomcat[:<version>]`
+`docker run --publish <hostport>:8080 [-e <name>=<value>] [--mount type=bind,source=<source>,target=<target>] --name <name> TBD/TBD/iaf-as-tomcat[:<tag>]`
 
 To start building your own image based on the provided image, start your Dockerfile with:
 
-`FROM TBD/TBD/iaf-as-tomcat[:<version>]`
+`FROM TBD/TBD/iaf-as-tomcat[:<tag>]`
 
 See the sections on [Directories](#Directories) and [Files](#Files) for information on which directories and files to mount/copy.
+
+For a list of available tags, see <https://TBD>.
 
 Filesystem
 ==========
