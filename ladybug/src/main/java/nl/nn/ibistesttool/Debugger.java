@@ -202,7 +202,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 	@Override
 	public Object storeInSessionKey(String correlationId, Object sessionKey, Object result) {
-		return testTool.outputpoint(correlationId, null, "SessionKey " + sessionKey.toString(), result);
+		return testTool.outputpoint(correlationId, null, "SessionKey " + sessionKey, result);
 	}
 
 	@Override
