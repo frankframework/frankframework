@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -386,8 +386,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return getMessageConsumer(session, destination, getMessageSelector());
 	}
 
-	public MessageProducer getMessageProducer(Session session,
-			Destination destination) throws NamingException, JMSException {
+	public MessageProducer getMessageProducer(Session session, Destination destination) throws NamingException, JMSException {
 		MessageProducer mp;
 		if (useJms102()) {
 			if (useTopicFunctions) {
@@ -721,7 +720,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/**
 	 * The name of the destination, this may be a <code>queue</code> or <code>topic</code> name.
 	 */
-	@IbisDoc({"name of the jms destination (queue or topic) to use", ""})
+	@IbisDoc({"1", "Name of the JMS destination (queue or topic) to use", ""})
 	public void setDestinationName(String destinationName) {
 		this.destinationName = destinationName;
 	}
@@ -734,7 +733,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls wether Topic functions are used or Queue functions.
 	 */
-	@IbisDoc({"either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
+	@IbisDoc({"2", "either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
 	public void setDestinationType(String type) {
 		this.destinationType = type;
 		if (destinationType.equalsIgnoreCase("TOPIC")) {
@@ -746,6 +745,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public String getDestinationType() {
 		return destinationType;
 	}
+    public boolean isUseTopicFunctions() {
+        return useTopicFunctions;
+    }
+
 
 	/**
 	 * Sets the JMS-acknowledge mode. This controls for non transacted listeners the way messages are acknowledged.
@@ -781,7 +784,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/**
 	 * String-version of {@link #setAckMode(int)}
 	 */
-	@IbisDoc({"", "auto_acknowledge"})
+	@IbisDoc({"3", "Acknowledge mode, can be one of ('auto' or 'auto_acknowledge'), ('dups' or 'dups_ok_acknowledge') or ('client' or 'client_acknowledge')", "auto_acknowledge",})
 	public void setAcknowledgeMode(String acknowledgeMode) {
 
 		if (acknowledgeMode.equalsIgnoreCase("auto") || acknowledgeMode.equalsIgnoreCase("AUTO_ACKNOWLEDGE")) {
@@ -799,9 +802,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				}
 
 	}
-	/**
-	 * String-version of {@link #getAckMode()}
-	 */
 	public String getAcknowledgeMode() {
 		return getAcknowledgeModeAsString(getAckMode());
 	}
@@ -811,7 +811,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 *
 	 * When set <code>true</code>, the JMS provider ensures that messages aren't lost when the application might crash.
 	 */
-	@IbisDoc({"rather useless attribute, and not the same as <code>deliverymode</code>. you probably want to use that.", ""})
+	@IbisDoc({"4", "Normally, if (lookupDestination=true AND destinationType=TOPIC) then the topic is created, instead of looked up. By setting persistent=true in that case, the topic will be looked up.", "false"})
+	@Deprecated
 	public void setPersistent(boolean value) {
 		persistent = value;
 	}
@@ -819,17 +820,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return persistent;
 	}
 
-	/**
-	 * SubscriberType should <b>DURABLE</b> or <b>TRANSIENT</b>
-	 * Only applicable for topics <br/>
-	 */
+	@IbisDoc({"5", "SubscriberType, should <b>DURABLE</b> or <b>TRANSIENT</b>. Only applicable for topics ", "DURABLE"})
 	public void setSubscriberType(String subscriberType) {
-		if ((!subscriberType.equalsIgnoreCase("DURABLE"))
-			&& (!subscriberType.equalsIgnoreCase("TRANSIENT"))) {
-			throw new IllegalArgumentException(
-				"invalid subscriberType, should be DURABLE or TRANSIENT. "
-					+ this.subscriberType
-					+ " is assumed");
+		if ((!subscriberType.equalsIgnoreCase("DURABLE")) && (!subscriberType.equalsIgnoreCase("TRANSIENT"))) {
+			throw new IllegalArgumentException("invalid subscriberType, should be DURABLE or TRANSIENT. " + this.subscriberType + " is assumed");
 		} else
 			this.subscriberType = subscriberType;
 	}
@@ -841,7 +835,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
-	@IbisDoc({"jndi-name of the queueconnectionfactory, used when <code>destinationtype<code>=</code>queue</code>", ""})
+	@IbisDoc({"6", "JNDI-name of the queueconnectionfactory, used when <code>destinationtype<code>=</code>queue</code>", ""})
 	public void setQueueConnectionFactoryName(String name) {
 		queueConnectionFactoryName=name;
 	}
@@ -853,7 +847,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
-	@IbisDoc({"jndi-name of the topicconnectionfactory, used when <code>destinationtype<code>=</code>topic</code>", ""})
+	@IbisDoc({"7", "jndi-name of the topicconnectionfactory, used when <code>destinationtype<code>=</code>topic</code>", ""})
 	public void setTopicConnectionFactoryName(String topicConnectionFactoryName) {
 		this.topicConnectionFactoryName = topicConnectionFactoryName;
 	}
@@ -882,44 +876,44 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return jmsTransacted;
 	}
 
-	@IbisDoc({"transform the value of the correlationid to a hexadecimal value if it starts with id: (preserving the id: part). useful when sending messages to mq which expects this value to be in hexadecimal format when it starts with id:, otherwise generating the error: mqjms1044: string is not a valid hexadecimal number", "false"})
-	public void setCorrelationIdToHex(boolean correlationIdToHex) {
-		this.correlationIdToHex = correlationIdToHex;
-	}
-
-	@IbisDoc({"prefix to check before executing correlationidtohex. when empty (and correlationidtohex equals true) all correlationid's are transformed, this is useful in case you want the entire correlationid to be transformed (for example when the receiving party doesn't allow characters like a colon to be present in the correlationid).", "id:"})
-	public void setCorrelationIdToHexPrefix(String correlationIdToHexPrefix) {
-		this.correlationIdToHexPrefix = correlationIdToHexPrefix;
-	}
-
 	/**
 	 * Controls whether messages are send under transaction control.
 	 * If set <code>true</code>, messages are committed or rolled back under control of an XA-transaction.
 	 */
-	@IbisDoc({"", "false"})
+	@IbisDoc({"8", "", "false"})
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
 	}
-	/**
-	 * Set the time-to-live in milliseconds of a message
-	 * @param ttl exp time in milliseconds
-	 */
-	@IbisDoc({"the time (in milliseconds) it takes for the message to expire. if the message is not consumed before, it will be lost. make sure to set it to a positive value for request/repy type of messages.", "0 (unlimited)"})
-	public void setMessageTimeToLive(long ttl){
-		this.messageTimeToLive=ttl;
-	}
-	/**
-	 * Get the  time-to-live in milliseconds of a message
-	 */
-	public long getMessageTimeToLive(){
-		return this.messageTimeToLive;
+	@Override
+	public boolean isTransacted() {
+		return transacted;
 	}
 
+	@IbisDoc({"9", "Transform the value of the correlationid to a hexadecimal value if it starts with id: (preserving the id: part). "+ 
+			"Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with id:, otherwise generating the error: MQJMS1044: String is not a valid hexadecimal number", "false"})
+	public void setCorrelationIdToHex(boolean correlationIdToHex) {
+		this.correlationIdToHex = correlationIdToHex;
+	}
 	public boolean isCorrelationIdToHex() {
 		return correlationIdToHex;
 	}
 
-	@IbisDoc({"if set (>=0) and the length of the correlationid exceeds this maximum length, the correlationid is trimmed from the left side of a string to this maximum length", "-1"})
+
+	@IbisDoc({"10", "Prefix to check before executing correlationIdToHex. If empty (and correlationIdToHex equals true) all correlationid's are transformed, this is useful in case you want the entire correlationId to be transformed (for example when the receiving party doesn't allow characters like a colon to be present in the correlationId).", "id:"})
+	public void setCorrelationIdToHexPrefix(String correlationIdToHexPrefix) {
+		this.correlationIdToHexPrefix = correlationIdToHexPrefix;
+	}
+
+
+	@IbisDoc({"11", "The time (in milliseconds) it takes for the message to expire. If the message is not consumed before, it will be lost. Mmake sure to set it to a positive value for request/repy type of messages.", "0 (unlimited)"})
+	public void setMessageTimeToLive(long ttl){
+		this.messageTimeToLive=ttl;
+	}
+	public long getMessageTimeToLive(){
+		return this.messageTimeToLive;
+	}
+
+	@IbisDoc({"12", "If set (>=0) and the length of the correlationId exceeds this maximum length, the correlationId is trimmed from the left side of a string to this maximum length", "-1"})
 	public void setCorrelationIdMaxLength(int i) {
 		correlationIdMaxLength = i;
 	}
@@ -927,20 +921,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return correlationIdMaxLength;
 	}
 
-	/**
-	 * Indicates whether messages are send under transaction control.
-	 * @see #setTransacted(boolean)
-	 */
-	@Override
-	public boolean isTransacted() {
-		return transacted;
-	}
 
-    public boolean isUseTopicFunctions() {
-        return useTopicFunctions;
-    }
-
-	@IbisDoc({"when set, the value of this attribute is used as a selector to filter messages.", "0 (unlimited)"})
+	@IbisDoc({"13", "If set, the value of this attribute is used as a selector to filter messages.", "0 (unlimited)"})
 	public void setMessageSelector(String newMessageSelector) {
 		this.messageSelector=newMessageSelector;
 	}
@@ -948,7 +930,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return messageSelector;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to jms server", ""})
+	@IbisDoc({"14", "Alias used to obtain credentials for authentication to JMS server", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
@@ -956,7 +938,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return authAlias;
 	}
 
-	@IbisDoc({"when set <code>false</code>, the destinationname is used directly instead of performing a jndi lookup", "true"})
+	@IbisDoc({"15", "If set <code>false</code>, the destinationName is used directly instead of performing a JNDI lookup", "true"})
 	public void setLookupDestination(boolean b) {
 		lookupDestination = b;
 	}

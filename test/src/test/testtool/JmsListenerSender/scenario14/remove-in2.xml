@@ -1,0 +1,5 @@
+<remove>
+	<jmsRealm>qcf</jmsRealm>
+	<destinationName>tempqueue</destinationName>
+	<destinationType>QUEUE</destinationType>
+</remove>
