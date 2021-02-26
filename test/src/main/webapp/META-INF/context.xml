@@ -19,7 +19,7 @@
 		name="jdbc/ibis4test-oracle-xe"
 		type="javax.sql.DataSource"
 		driverClassName="oracle.jdbc.driver.OracleDriver"
-		url="jdbc:oracle:thin:@host.docker.internal:1521:xe"
+		url="jdbc:oracle:thin:@localhost:1521:xe"
 		username="testiaf_user"
 		password="testiaf_user"
 		maxTotal="10"
