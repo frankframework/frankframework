@@ -30,7 +30,7 @@
 		name="jdbc/ibis4test-oracle"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
+		URL="jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB"
 		user="testiaf_user"
 		password="testiaf_user00"
 	/>
@@ -40,7 +40,7 @@
 		auth="Container" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
-		URL="jdbc:sqlserver://localhost:1433;database=testiaf"
+		URL="jdbc:sqlserver://host.docker.internal:1433;database=testiaf"
 		user="testiaf_user"
 		password="testiaf_user00"
 		sendStringParametersAsUnicode="false"
@@ -62,7 +62,7 @@
 		name="jdbc/ibis4test-mysql"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		url="jdbc:mysql://localhost:3307/testiaf"
+		url="jdbc:mysql://host.docker.internal:3307/testiaf"
 		user="testiaf_user"
 		password="testiaf_user00"
 		sslMode="DISABLED"
@@ -78,7 +78,7 @@
 		name="jdbc/ibis4test-mariadb"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		url="jdbc:mysql://localhost:3306/testiaf"
+		url="jdbc:mysql://host.docker.internal:3306/testiaf"
 		user="testiaf_user"
 		password="testiaf_user00"
 		sslMode="DISABLED"
@@ -151,10 +151,5 @@
 		type="org.apache.activemq.ActiveMQXAConnectionFactory"
 		brokerURL="vm://localhost"
 	/>
-	
-	<!--  future configuration of JMS destinations
-	<Environment name="jms/GetMessageRequest" value="ESB.Infrastructure.TS.Test.TestIAF.1.GetMessage.1.Request"  type="java.lang.String" />
-	<Environment name="jms/UpdateMessageAction" value="ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action"  type="java.lang.String" />
-	-->
 	
 </Context>
