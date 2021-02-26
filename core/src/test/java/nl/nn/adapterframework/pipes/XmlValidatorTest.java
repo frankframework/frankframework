@@ -109,12 +109,13 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
     
     @Override
 	public String validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException,
+			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws Exception,
 			IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
     	XmlValidator validator =getValidator(schemaLocation, addNamespaceToSchema, implementation);
     	if (rootelement!=null) validator.setRoot(rootelement);
    		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
    		validator.configure();
+   		validator.start();
     	return runAndEvaluate(validator, inputfile, expectedFailureReasons);
     }
 
@@ -165,4 +166,31 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 //		validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
 //	}
 
+	
+	public void testStoreRootElement(String schema, String root, String inputFile) throws Exception {
+		XmlValidator validator = new XmlValidator();
+
+		validator.registerForward(getSuccess());
+		validator.setThrowException(true);
+		validator.setFullSchemaChecking(true);
+		validator.setRoot(root);
+		validator.setRootElementSessionKey("rootElement");
+		validator.setSchemaLocation(schema);
+		validator.configure();
+		validator.start();
+
+		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
+		IPipeLineSession session = new PipeLineSessionBase();
+		PipeRunResult result = validator.doPipe(new Message(testXml), session);
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals(root, (String)session.get("rootElement"));
+		assertEquals("success", forward.getName());
+	}
+
+	@Test
+	public void testStoreRootElement() throws Exception {
+		testStoreRootElement(SCHEMA_LOCATION_BASIC_A_OK, "A", INPUT_FILE_BASIC_A_OK);
+	}
+	
 }

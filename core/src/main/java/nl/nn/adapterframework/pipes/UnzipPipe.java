@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,10 +36,12 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -104,23 +106,23 @@ public class UnzipPipe extends FixedForwardPipe {
 	private File dir; // File representation of directory
 	private List<String> base64Extensions;
 
-	private boolean checkDirectory=false;
+	private boolean assumeDirectoryExists=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDirectory())) {
 			if (StringUtils.isEmpty(getDirectorySessionKey()) && !isCollectFileContents()) {
-				throw new ConfigurationException(getLogPrefix(null)+"directory or directorySessionKey must be specified");
+				throw new ConfigurationException("directory or directorySessionKey must be specified");
 			}
 		} else {
 			dir = new File(getDirectory());
-			if(!isCheckDirectory()) {
+			if(!isAssumeDirectoryExists()) {
 				if (!dir.exists()) {
-					throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] does not exist");
+					throw new ConfigurationException("directory ["+getDirectory()+"] does not exist");
 				}
 				if (!dir.isDirectory()) {
-					throw new ConfigurationException(getLogPrefix(null)+"directory ["+getDirectory()+"] is not a directory");
+					throw new ConfigurationException("directory ["+getDirectory()+"] is not a directory");
 				}
 			}
 		}
@@ -233,11 +235,11 @@ public class UnzipPipe extends FixedForwardPipe {
 								}
 							}
 						}
-						FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
-						log.debug(getLogPrefix(session)+"writing ZipEntry ["+filename+"] to file ["+tmpFile.getPath()+"]");
-						count++;
-						Misc.streamToStream(inputStream, fileOutputStream, false);
-						fileOutputStream.close();
+						try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
+							log.debug(getLogPrefix(session)+"writing ZipEntry ["+filename+"] to file ["+tmpFile.getPath()+"]");
+							count++;
+							Misc.streamToStream(StreamUtil.dontClose(inputStream), fileOutputStream);
+						}
 					}
 					if (isCollectResults()) {
 						entryResults += "<result item=\"" + count + "\"><zipEntry>"
@@ -252,7 +254,7 @@ public class UnzipPipe extends FixedForwardPipe {
 							if (base64Extensions.contains(extension)) {
 								fileContent = new String(Base64.encodeBase64Chunked(fileContentBytes));
 							} else {
-								fileContent = new String(fileContentBytes, Misc.DEFAULT_INPUT_STREAM_ENCODING);
+								fileContent = new String(fileContentBytes, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 								fileContent = XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(fileContent);
 							}
 							entryResults += "<fileContent>" + fileContent + "</fileContent>";
@@ -281,7 +283,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	public String getDirectory() {
 		return directory;
 	}
-	
+
 	@IbisDoc({"sessionkey with a directory value to extract the archive to", ""})
 	public void setDirectorySessionKey(String directorySessionKey) {
 		this.directorySessionKey = directorySessionKey;
@@ -289,7 +291,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	public String getDirectorySessionKey() {
 		return directorySessionKey;
 	}
-	
+
 	@IbisDoc({"when true, file is automatically deleted upon normal jvm termination", "true"})
 	public void setDeleteOnExit(boolean b) {
 		deleteOnExit = b;
@@ -337,14 +339,18 @@ public class UnzipPipe extends FixedForwardPipe {
 	public boolean isCreateSubdirectories() {
 		return createSubdirectories;
 	}
-	
-	@IbisDoc({"if set <code>true</code>, validation on directory is ignored", "false"})
-	public boolean isCheckDirectory()
-	{
-		return checkDirectory;
+
+	@IbisDoc({"if set <code>true</code>, validation of directory is ignored", "false"})
+	public void setAssumeDirectoryExists(boolean assumeDirectoryExists) {
+		this.assumeDirectoryExists = assumeDirectoryExists;
 	}
-	public void setCheckDirectory(boolean checkDirectory)
-	{
-		this.checkDirectory = checkDirectory;
+	public boolean isAssumeDirectoryExists() {
+		return assumeDirectoryExists;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("the attribute 'checkDirectory' has been renamed to 'assumeDirectoryExists'")
+	public void setCheckDirectory(boolean checkDirectory) {
+		this.assumeDirectoryExists = checkDirectory;
 	}
 }

@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import org.w3c.dom.Element;
 
-import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
@@ -121,7 +120,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		}
 
-		JmsMessageBrowser jmsBrowser = new JmsMessageBrowser();
+		JmsBrowser<javax.jms.Message> jmsBrowser = new JmsBrowser<>();
 		jmsBrowser.setName("XmlQueueBrowserSender");
 		if (jmsRealm != null) {
 			jmsBrowser.setJmsRealm(jmsRealm);
@@ -131,7 +130,6 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 		}
 		jmsBrowser.setDestinationName(destinationName);
 		jmsBrowser.setDestinationType(destinationType);
-		IMessageBrowser browser = jmsBrowser;
 		IMessageBrowsingIterator it = null;
 
 		boolean remove = false;
@@ -156,7 +154,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 		}
 		try {
 			int count = 0;
-			it = browser.getIterator();
+			it = jmsBrowser.getIterator();
 			while (it.hasNext()) {
 				count++;
 				JmsMessageBrowserIteratorItem jmsMessageBrowserIteratorItem = (JmsMessageBrowserIteratorItem) it

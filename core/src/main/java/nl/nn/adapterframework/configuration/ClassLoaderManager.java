@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.configuration;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -24,11 +25,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
-import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * Loads a ClassLoader on a per Configuration basis. It is possible to specify the ClassLoader type and to make 
@@ -76,7 +76,7 @@ public class ClassLoaderManager {
 		catch (Exception e) {
 			throw new ConfigurationException("invalid classLoaderType ["+className+"]", e);
 		}
-		LOG.debug("successfully instantiated classloader ["+classLoader.toString()+"] with parent classloader ["+parentClassLoader.toString()+"]");
+		LOG.debug("successfully instantiated classloader ["+ClassUtils.nameOf(classLoader)+"] with parent classloader ["+ClassUtils.nameOf(parentClassLoader)+"]");
 
 		//If the classLoader implements IClassLoader, configure it
 		if(classLoader instanceof IConfigurationClassLoader) {
@@ -95,12 +95,12 @@ public class ClassLoaderManager {
 
 				//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 				Object castValue = getCastValue(method.getParameterTypes()[0], value);
-				LOG.debug("trying to set property ["+parentProperty+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+loader.toString()+"]");
+				LOG.debug("trying to set property ["+parentProperty+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+ClassUtils.nameOf(loader)+"]");
 
 				try {
 					method.invoke(loader, castValue);
 				} catch (Exception e) {
-					throw new ConfigurationException("error while calling method ["+setter+"] on classloader ["+loader.toString()+"]", e);
+					throw new ConfigurationException("error while calling method ["+setter+"] on classloader ["+ClassUtils.nameOf(loader)+"]", e);
 				}
 			}
 
@@ -114,10 +114,10 @@ public class ClassLoaderManager {
 						LOG.debug(msg, ce);
 						break;
 					case INFO:
-						ibisContext.log(configurationName, null, msg, MessageKeeperMessage.INFO_LEVEL, ce);
+						ibisContext.log(configurationName, null, msg, MessageKeeperLevel.INFO, ce);
 						break;
 					case WARN:
-						ConfigurationWarnings.add(LOG, msg, ce);
+						ConfigurationWarnings.addGlobalWarning(LOG, msg, ce);
 						break;
 					case ERROR:
 					default:
@@ -127,7 +127,7 @@ public class ClassLoaderManager {
 				//Break here, we cannot continue when there are ConfigurationExceptions!
 				return null;
 			}
-			LOG.info("configured classloader ["+loader.toString()+"]");
+			LOG.info("configured classloader ["+ClassUtils.nameOf(loader)+"]");
 		}
 
 		return classLoader;
@@ -170,7 +170,7 @@ public class ClassLoaderManager {
 				throw new ConfigurationException("failed to locate parent configuration ["+parentConfig+"]");
 
 			classLoader = createClassloader(configurationName, classLoaderType, get(parentConfig));
-			LOG.debug("created a new classLoader ["+classLoader.toString()+"] with parentConfig ["+parentConfig+"]");
+			LOG.debug("created a new classLoader ["+ClassUtils.nameOf(classLoader)+"] with parentConfig ["+parentConfig+"]");
 		}
 		else
 			classLoader = createClassloader(configurationName, classLoaderType);
@@ -184,7 +184,7 @@ public class ClassLoaderManager {
 		classLoaders.put(configurationName, classLoader);
 		if (classLoaders.size() > MAX_CLASSLOADER_ITEMS) {
 			String msg = "Number of ClassLoader instances exceeds [" + MAX_CLASSLOADER_ITEMS + "]. Too many ClassLoader instances can cause an OutOfMemoryError";
-			ConfigurationWarnings.add(LOG, msg);
+			ConfigurationWarnings.addGlobalWarning(LOG, msg);
 		}
 		return classLoader;
 	}
@@ -241,14 +241,36 @@ public class ClassLoaderManager {
 		if (classLoader == null)
 			throw new ConfigurationException("classloader cannot be null");
 
-		if (classLoader instanceof ReloadAware) {
-			((ReloadAware)classLoader).reload();
+		if (classLoader instanceof IConfigurationClassLoader) {
+			((IConfigurationClassLoader) classLoader).reload();
 		} else {
-			LOG.warn("classloader ["+classLoader.toString()+"] is not ReloadAware, ignoring reload");
+			LOG.warn("classloader ["+ClassUtils.nameOf(classLoader)+"] does not derive from IConfigurationClassLoader, ignoring reload");
 		}
 	}
 
 	public boolean contains(String currentConfigurationName) {
 		return (classLoaders.containsKey(currentConfigurationName));
+	}
+
+	/**
+	 * Removes all created ClassLoaders
+	 */
+	public void shutdown() {
+		for (Iterator<String> iterator = classLoaders.keySet().iterator(); iterator.hasNext();) {
+			String configurationClassLoader = iterator.next();
+			ClassLoader classLoader = classLoaders.get(configurationClassLoader);
+			if(classLoader instanceof IConfigurationClassLoader) {
+				((IConfigurationClassLoader) classLoader).destroy();
+			} else {
+				LOG.warn("classloader ["+ClassUtils.nameOf(classLoader)+"] does not derive from IConfigurationClassLoader, ignoring destroy");
+			}
+			iterator.remove();
+			LOG.info("removed classloader ["+ClassUtils.nameOf(classLoader)+"]");
+		}
+		if(classLoaders.size() > 0) {
+			LOG.warn("not all ClassLoaders where removed. Removing references to remaining classloaders "+classLoaders);
+
+			classLoaders.clear();
+		}
 	}
 }

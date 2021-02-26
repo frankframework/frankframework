@@ -2,10 +2,12 @@ package nl.nn.adapterframework.testtool;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Dir2Xml;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Enumeration;
 
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
@@ -97,6 +99,16 @@ public class FileSender {
 		consoleLogger.setOutputPrintStream(System.out);
 		consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
 		ant.addBuildListener(consoleLogger);
+		
+		// iterate over appConstants and add them as properties
+		AppConstants appConstants = AppConstants.getInstance();
+		@SuppressWarnings("unchecked")
+		Enumeration<String> enums = (Enumeration<String>) appConstants.propertyNames();
+		while (enums.hasMoreElements()) {
+			String key = enums.nextElement();
+			ant.setProperty(key, appConstants.getResolvedProperty(key));
+		}
+
 		ant.init();
 		ProjectHelper helper = new ProjectHelperImpl();
 		helper.parse(ant, new File(filename));

@@ -38,17 +38,17 @@ import nl.nn.adapterframework.stream.StreamingPipe;
 /**
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
  * 
- * <table align="top">
+ * <table align="top" border="1">
  * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
- * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
+ * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td></tr>
  * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
  * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>readDelete</td><td>like read, but deletes the file after it has been read</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <tr><td>copy</td><td>copy a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <tr><td>delete</td><td>delete a file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
+ * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
  * <tr><td>write</td><td>write contents to a file<td>
  *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
  *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
@@ -79,7 +79,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public void configure() throws ConfigurationException {
 		super.configure();
 		getFileSystem().configure();
-		actor.configure(fileSystem, getParameterList(), this);
+		try { 
+			actor.configure(fileSystem, getParameterList(), this);
+		} catch (ConfigurationException e) {
+			throw new ConfigurationException(getLogPrefix(null),e);
+		}
 	}
 	
 	@Override
@@ -112,11 +116,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	
 	@Override
 	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
-		MessageOutputStream result = actor.provideOutputStream(session, getNextPipe());
-		if (result!=null && result.getForward()==null) {
-			result.setForward(getForward());
-		}
- 		return result;
+		return actor.provideOutputStream(session, getNextPipe());
 	}
 
 
@@ -197,8 +197,8 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 
 	@IbisDocRef({"5", FILESYSTEMACTOR})
-	public void setBase64(String base64) {
-		actor.setBase64(base64);
+	public void setOverwrite(boolean overwrite) {
+		actor.setOverwrite(overwrite);
 	}
 
 	@IbisDocRef({"6", FILESYSTEMACTOR})
@@ -214,6 +214,12 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@IbisDocRef({"8", FILESYSTEMACTOR})
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
+	}
+	
+	@IbisDocRef({"9", FILESYSTEMACTOR})
+	@Deprecated
+	public void setBase64(String base64) {
+		actor.setBase64(base64);
 	}
 
 }

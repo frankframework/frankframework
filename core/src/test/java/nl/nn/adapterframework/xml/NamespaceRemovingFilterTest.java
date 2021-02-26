@@ -39,10 +39,9 @@ public class NamespaceRemovingFilterTest {
 		StringWriter target = new StringWriter();
 		XmlWriter xmlWriter = new XmlWriter(target);
 		
-		NamespaceRemovingFilter filter = new NamespaceRemovingFilter();
-		filter.setContentHandler(xmlWriter);
+		NamespaceRemovingFilter filter = new NamespaceRemovingFilter(xmlWriter);
 		
-		XmlUtils.parseXml(filter, source);
+		XmlUtils.parseXml(source, filter);
 
 		String actual = new String (target.toString());
 		assertEquals(expected, actual);

@@ -1,5 +1,6 @@
 /*
-   Copyright 2013, 2018, 2020 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,13 +17,16 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -37,75 +41,92 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	protected static final String WITH_UPDLOCK_ROWLOCK = "WITH (UPDLOCK, ROWLOCK)";
 	protected static final String GET_DATE = "GETDATE()";
 	protected static final String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
-	
 
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_MSSQLSERVER;
+	private final int CLOB_SIZE_TRESHOLD=10000000; // larger than this is considered a CLOB, smaller a string
+
+	@Override
+	public Dbms getDbms() {
+		return Dbms.MSSQL;
 	}
 
-	public String getDbmsName() {
-		return "MS SQL";
+	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
 	}
 
+	@Override
 	public String getSysDate() {
 		return "CURRENT_TIMESTAMP";
 	}
 
+	@Override
+	public String getDateAndOffset(String dateValue, int daysOffset) {
+		return "DATEADD(day, "+daysOffset+ "," + dateValue + ")";
+	}
+
+	@Override
 	public String getNumericKeyFieldType() {
 		return "INT";
 	}
 
+	@Override
 	public String getAutoIncrementKeyFieldType() {
 		return "INT IDENTITY";
 	}
 	
+	@Override
 	public boolean autoIncrementKeyMustBeInserted() {
 		return false;
 	}
 
+	@Override
 	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
 		return "SELECT @@IDENTITY";
 	}
 
+	@Override
 	public String getTimestampFieldType() {
 		return "DATETIME";
 	}
+	
+	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "CONVERT(datetime, '" + formattedDate + "', 120)";
+	}
+	@Override
+	public String getTimestampAsDate(String columnName) {
+		return "CONVERT(VARCHAR(10), "+columnName+", 120)";
+	}
 
+
+	@Override
 	public String getBlobFieldType() {
 		return "VARBINARY(MAX)";
 	}
-
-	public boolean mustInsertEmptyBlobBeforeData() {
-		return false;
+	@Override
+	public String emptyBlobValue() {
+		return "0x";
 	}
 
+	@Override
+	public String getClobFieldType() {
+		return "VARCHAR(MAX)";
+	}
+	@Override
+	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
+		return (rsmeta.getColumnType(colNum)==Types.VARCHAR || rsmeta.getColumnType(colNum)==Types.NVARCHAR) && rsmeta.getPrecision(colNum)>CLOB_SIZE_TRESHOLD;
+	}
+	
+
+	@Override
 	public String getTextFieldType() {
 		return "VARCHAR";
 	}
 	
-	@Override
-	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
-		if (isQueryConversionRequired(sqlDialectFrom)) {
-			if (OracleDbmsSupport.dbmsName.equalsIgnoreCase(sqlDialectFrom)) {
-				List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
-				StringBuilder sb = new StringBuilder();
-				for (String singleQuery : multipleQueries) {
-					QueryExecutionContext singleQueryExecutionContext = new QueryExecutionContext(singleQuery, queryExecutionContext.getQueryType(), queryExecutionContext.getParameterList());
-					String convertedQuery = OracleToMSSQLTranslator.convertQuery(singleQueryExecutionContext, multipleQueries.size() == 1);
-					if (convertedQuery != null) {
-						sb.append(convertedQuery);
-						if (singleQueryExecutionContext.getQueryType()!=null && !singleQueryExecutionContext.getQueryType().equals(queryExecutionContext.getQueryType())) {
-							queryExecutionContext.setQueryType(singleQueryExecutionContext.getQueryType());
-						}
-					}
-				}
-				queryExecutionContext.setQuery(sb.toString());
-			} else {
-				warnConvertQuery(sqlDialectFrom);
-			}
-		}
-	}
 	
+	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
@@ -122,50 +143,66 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return result;
 	}
 
+	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+		}
+		// see http://www.mssqltips.com/tip.asp?tip=1257
+		String result=selectQuery.substring(0,KEYWORD_SELECT.length())+(batchSize>0?" TOP "+batchSize:"")+selectQuery.substring(KEYWORD_SELECT.length());
+		int wherePos=result.toLowerCase().indexOf("where");
+		if (wherePos<0) {
+			result+=" WITH (readpast)";
+		} else {
+			result=result.substring(0,wherePos)+" WITH (readpast) "+result.substring(wherePos);
+		}
+		return result;
+	}
+
+	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		String query="select top(1) * from "+tableName;
 		return query;
 	} 
 
+	@Override
+	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
+		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
+			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+		}
+		String result=selectQuery;
+		int wherePos=result.toLowerCase().indexOf("where");
+		if (wherePos<0) {
+			result+=" WITH (nolock)";
+		} else {
+			result=result.substring(0,wherePos)+" WITH (nolock) "+result.substring(wherePos);
+		}
+		return result;
+	}
+
+	@Override
 	public String provideTrailingFirstRowsHint(int rowCount) {
 		return " OPTION (FAST "+rowCount+")";
 	}
 
+	@Override
 	public String getSchema(Connection conn) throws JdbcException {
-		return JdbcUtil.executeStringQuery(conn, "SELECT DB_NAME()");
+		return JdbcUtil.executeStringQuery(conn, "SELECT SCHEMA_NAME()");
 	}
 
-	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
-		return doIsTablePresent(conn, "INFORMATION_SCHEMA.TABLES", "TABLE_CATALOG", "TABLE_NAME", schemaName, tableName.toUpperCase());
-	}
-	
-	public boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-		return doIsTableColumnPresent(conn, "INFORMATION_SCHEMA.COLUMNS", "TABLE_CATALOG", "TABLE_NAME", "COLUMN_NAME", schemaName, tableName, columnName);
-	}
-
-	public boolean isUniqueConstraintViolation(SQLException e) {
-		if (e.getErrorCode()==2627) {
-			// Violation of %ls constraint '%.*ls'. Cannot insert duplicate key in object '%.*ls'.
-			return true;
-		} else {
-			return false;
-		}
-	}
-
+	@Override
 	public String getRowNumber(String order, String sort) {
 		return "row_number() over (order by "+order+(sort==null?"":" "+sort)+") "+getRowNumberShortName();
 	}
 
+	@Override
 	public String getRowNumberShortName() {
 		return "rn";
 	}
 
+	@Override
 	public String getLength(String column) {
 		return "LEN("+column+")";
-	}
-
-	public String getIbisStoreSummaryQuery() {
-		return "select type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120) msgdate, count(*) msgcount from ibisstore group by slotid, type, CONVERT(VARCHAR(10), MESSAGEDATE, 120) order by type, slotid, CONVERT(VARCHAR(10), MESSAGEDATE, 120)";
 	}
 
 	@Override
@@ -221,4 +258,15 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 			return false;
 		}
 	}
+	
+	@Override
+	public String getBooleanFieldType() {
+		return "BIT";
+	}
+	
+	@Override
+	public String getBooleanValue(boolean value) {
+		return value? "1":"0";
+	}
+
 }

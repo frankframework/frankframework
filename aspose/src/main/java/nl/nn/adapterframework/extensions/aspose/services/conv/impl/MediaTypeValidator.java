@@ -47,11 +47,6 @@ class MediaTypeValidator {
 
 	/**
 	 * Detects media type from input stream
-	 * 
-	 * @param inputStream
-	 * @param filename
-	 * @return
-	 * @throws IOException
 	 */
 	public MediaType getMediaType(InputStream inputStream, String filename) throws IOException {
 		// Create every time as TemporaryResources is not thread-safe

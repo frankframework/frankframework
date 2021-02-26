@@ -1,16 +1,23 @@
 ---
 name: Bug report
 about: Create a report to help us improve
+title: ''
+labels: Bug
+assignees: ''
 
 ---
 
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**Category**
+**Reporter**
+Please state your name. If we don't know who is reporting, a solution of the issue might be delayed.
+
+**Category** 
+Use following Tags to categorize your bug report
  - Frank Console
  - Frank Framework
- - Ladybug (debugging tool)
+ - Ladybug (debugging tool) --> This project has it's own repository. Please report issues in [ibissource/ibis-ladybug](https://github.com/ibissource/ibis-ladybug/issues)
  - Larva (unit test tool)
  - Performance
 
@@ -28,9 +35,10 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Environment:**
- - Application server (f.e. Tomcat/websphere/JBOSS/Jetty)
- - Browser [e.g. chrome, safari]
- - IAF Version [e.g. 7.4]
+ - Application server: [e.g. Tomcat/WebSphere/JBOSS/Jetty]
+ - DBMS: [e.g. Oracle, MSSQL, MariaDB, MySql,PostgreSQL]
+ - Browser: [e.g. Chrome, Safari, Edge]
+ - IAF Version: [e.g. 7.5, 7.6]
 
 **Additional context**
-Add any other context about the problem here. (f.e. ladybug report / test adapter with larva test) 
+Add any other context about the problem here. (f.e. ladybug report / test adapter with larva test)

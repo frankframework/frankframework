@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -53,6 +54,8 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	protected Map<String,Object>     openLobHandles  = Collections.synchronizedMap(new HashMap<String,Object>());
 
 	protected FixedQuerySender querySender;
+
+	protected final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -90,17 +93,17 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		Message message = new Message(streamId);
 		QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
 		PreparedStatement statement=queryExecutionContext.getStatement();
-		JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
+		JdbcUtil.applyParameters(dbmsSupport, statement, queryExecutionContext.getParameterList(), message, session);
 		ResultSet rs =statement.executeQuery();
 		openResultSets.put(streamId,rs);
-		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
 		Object lobHandle=getLobHandle(dbmsSupport, rs);
 		openLobHandles.put(streamId, lobHandle);
 		return getWriter(dbmsSupport, lobHandle, rs);
 	}
 	
 	@Override
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		try {
 			return super.finalizeResult(session,streamId, error);
 		} finally {
@@ -115,20 +118,22 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	}
 
 	
-	@IbisDoc({"the sql query text", ""})
+	@IbisDoc({"1", "The SQL query text", ""})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
 
-	@IbisDoc({"can be configured from jmsrealm, too", ""})
+	@IbisDocRef({"2", FIXEDQUERYSENDER})
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
 
+	@IbisDocRef({"3", FIXEDQUERYSENDER})
 	public String getPhysicalDestinationName() {
 		return querySender.getPhysicalDestinationName(); 
 	}
 
+	@IbisDocRef({"4", FIXEDQUERYSENDER})
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}

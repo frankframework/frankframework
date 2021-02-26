@@ -37,14 +37,10 @@ public class JmsMessagingSource extends MessagingSource {
 	private String jndiContextPrefix;
 	private Map<String, String> proxiedDestinationNames;
 
-	public JmsMessagingSource(String connectionFactoryName,
-			String jndiContextPrefix, Context context,
-			ConnectionFactory connectionFactory, Map messagingSourceMap,
-			String authAlias, boolean createDestination,
-			Map<String, String> proxiedDestinationNames, boolean useJms102) {
-		super(connectionFactoryName, context,
-				connectionFactory, messagingSourceMap, authAlias,
-				createDestination, useJms102);
+	public JmsMessagingSource(String connectionFactoryName, String jndiContextPrefix, Context context,
+			ConnectionFactory connectionFactory, Map<String,MessagingSource> messagingSourceMap,
+			String authAlias, boolean createDestination, Map<String, String> proxiedDestinationNames, boolean useJms102) {
+		super(connectionFactoryName, context, connectionFactory, messagingSourceMap, authAlias, createDestination, useJms102);
 		this.jndiContextPrefix = jndiContextPrefix;
 		this.proxiedDestinationNames = proxiedDestinationNames;
 	}
@@ -72,8 +68,7 @@ public class JmsMessagingSource extends MessagingSource {
 		return dest;
 	}
 
-	public Destination createDestination(String destinationName)
-			throws JmsException {
+	public Destination createDestination(String destinationName) throws JmsException {
 		Destination dest = null;
 		Session session = null;
 		try {

@@ -1,6 +1,6 @@
 <throwable>
   <class>nl.nn.adapterframework.core.SenderException</class>
-  <message>[nl.nn.adapterframework.senders.IbisJavaSender] [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-JmsFFSender]: (RequestProcessorException) RequestProcessor [ibis4test-JmsFFSender] caught exception: &lt;request action=&quot;exception&quot;&gt;
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-JmsFFSender]: (RequestProcessorException) RequestProcessor [ibis4test-JmsFFSender] caught exception: &lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</message>
   <cause>

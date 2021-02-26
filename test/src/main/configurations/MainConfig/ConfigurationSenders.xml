@@ -3,10 +3,7 @@
 		name="SendersExceptionInSenderWithExceptionForward"
 		description="Senders Exception In Sender With Failure Forward"
 		>
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GenericReceiverSendersExceptionInSenderWithExceptionForward"
-			>
+		<receiver name="GenericReceiverSendersExceptionInSenderWithExceptionForward">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersExceptionInSenderWithExceptionForward"
@@ -14,7 +11,7 @@
 			/>
 		</receiver>
 
-		<pipeline firstPipe="Generate timestamp">
+		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
@@ -50,10 +47,7 @@
 
 	<adapter name="SendersExceptionInSubAdapter" description="Senders Exception In Sub Adapter">
 
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GenericReceiverTestToolExceptionInSubAdapter"
-			>
+		<receiver name="GenericReceiverTestToolExceptionInSubAdapter">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersExceptionInSubAdapter"
@@ -61,7 +55,7 @@
 			/>
 		</receiver>
 
-		<pipeline firstPipe="Generate timestamp">
+		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
@@ -96,10 +90,7 @@
 
 	<adapter name="SendersParallelSenders" description="Senders Parallel Senders">
 
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GenericReceiverTestToolParallelSenders"
-			>
+		<receiver name="GenericReceiverTestToolParallelSenders">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersParallelSenders"
@@ -107,7 +98,7 @@
 			/>
 		</receiver>
 
-		<pipeline firstPipe="Generate timestamp">
+		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
@@ -130,7 +121,7 @@
 						<sender className="nl.nn.adapterframework.senders.SenderSeries">
 							<sender
 								className="nl.nn.adapterframework.senders.XsltSender"
-								styleSheetName="SkipEmptyTags/Copy.xsl"
+								styleSheetName="XsltPipe/copy.xsl"
 								>
 								<param name="timestamp" sessionKey="timestamp"/>
 							</sender>
@@ -150,7 +141,7 @@
 								/>
 							<sender
 								className="nl.nn.adapterframework.senders.XsltSender"
-								styleSheetName="SkipEmptyTags/Copy.xsl"
+								styleSheetName="XsltPipe/copy.xsl"
 								>
 								<param name="timestamp" sessionKey="timestamp"/>
 							</sender>
@@ -164,7 +155,7 @@
 						<sender className="nl.nn.adapterframework.senders.SenderSeries">
 							<sender
 								className="nl.nn.adapterframework.senders.XsltSender"
-								styleSheetName="SkipEmptyTags/Copy.xsl"
+								styleSheetName="XsltPipe/copy.xsl"
 								>
 								<param name="timestamp" sessionKey="timestamp"/>
 							</sender>
@@ -218,10 +209,7 @@
 
 	<adapter name="SendersIsolated" description="Senders Isolated">
 
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GenericReceiverTestIsolated"
-			>
+		<receiver name="GenericReceiverTestIsolated">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersIsolated"
@@ -229,7 +217,7 @@
 			/>
 		</receiver>
 
-		<pipeline firstPipe="Generate timestamp">
+		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>

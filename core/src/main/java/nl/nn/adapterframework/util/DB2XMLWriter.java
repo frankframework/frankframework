@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,22 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.SaxDocumentBuilder;
+import nl.nn.adapterframework.xml.SaxElementBuilder;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Transforms a java.sql.Resultset to a XML stream.
@@ -68,195 +75,187 @@ public class DB2XMLWriter {
 	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 	private static boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
-    public static String getFieldType (int type) {
-	    switch (type) {
-	          case Types.INTEGER : return ("INTEGER");
-	          case Types.NUMERIC : return ("NUMERIC");
-	          case Types.CHAR :    return ("CHAR");
-	          case Types.DATE :    return ("DATE");
-	          case Types.TIMESTAMP : return ("TIMESTAMP");
-	          case Types.DOUBLE : return ("DOUBLE");
-	          case Types.FLOAT : return ("FLOAT");
-	          case Types.ARRAY : return ("ARRAY");
-	          case Types.BLOB : return ("BLOB");
-	          case Types.CLOB : return ("CLOB");
-	          case Types.DISTINCT : return ("DISTINCT");
-	          case Types.LONGVARBINARY : return ("LONGVARBINARY");
-	          case Types.VARBINARY : return ("VARBINARY");
-	          case Types.BINARY : return ("BINARY");
-	          case Types.REF : return ("REF");
-	          case Types.STRUCT : return ("STRUCT");
-	          case Types.JAVA_OBJECT  : return ("JAVA_OBJECT");
-	          case Types.VARCHAR  : return ("VARCHAR");
-	          case Types.TINYINT: return ("TINYINT");
-	          case Types.TIME: return ("TIME");
-	          case Types.REAL: return ("REAL");
-	          case Types.BOOLEAN: return ("BOOLEAN");
-	          case Types.BIT: return ("BIT");
-	          case Types.BIGINT: return ("BIGINT");
-	          case Types.SMALLINT: return ("SMALLINT");
-		}
-     	return ("Unknown");
-    }
-
-   /**
-    * Retrieve the Resultset as a well-formed XML string
-    */
-	public synchronized String getXML(ResultSet rs) {
-		return getXML(rs, Integer.MAX_VALUE);
+	public static String getFieldType (int type) {
+		return JDBCType.valueOf(type).getName();
 	}
 
 	/**
 	 * Retrieve the Resultset as a well-formed XML string
 	 */
-	public synchronized String getXML(ResultSet rs, int maxlength) {
-		return getXML(rs, maxlength, true);
+	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs) {
+		return getXML(dbmsSupport, rs, Integer.MAX_VALUE);
 	}
 
-	public synchronized String getXML(ResultSet rs, int maxlength, boolean includeFieldDefinition) {
-		if (null == rs)
-			return "";
-
-		if (maxlength < 0)
-			maxlength = Integer.MAX_VALUE;
-
-		XmlBuilder mainElement = new XmlBuilder(docname);
-		Statement stmt=null;
-		try {
-			stmt = rs.getStatement();
-			if (stmt!=null) {
-				JdbcUtil.warningsToXml(stmt.getWarnings(),mainElement);
-			}
-		} catch (SQLException e1) {
-			log.warn("exception obtaining statement warnings", e1);
-		}
-		int rowCounter=0;
-		try {
-			ResultSetMetaData rsmeta = rs.getMetaData();
-			if (includeFieldDefinition) {
-				int nfields = rsmeta.getColumnCount();
-
-				XmlBuilder fields = new XmlBuilder("fielddefinition");
-				for (int j = 1; j <= nfields; j++) {
-					XmlBuilder field = new XmlBuilder("field");
-
-					String columnName = "" + rsmeta.getColumnName(j);
-					if(convertFieldnamesToUppercase)
-						columnName = columnName.toUpperCase();
-					field.addAttribute("name", columnName);
-
-					//Not every JDBC implementation implements these attributes!
-					try {
-						field.addAttribute("type", "" + getFieldType(rsmeta.getColumnType(j)));
-					} catch (SQLException e) {
-						log.debug("Could not determine columnType",e);
-					}
-					try {
-						field.addAttribute("columnDisplaySize", "" + rsmeta.getColumnDisplaySize(j));
-					} catch (SQLException e) {
-						log.debug("Could not determine columnDisplaySize",e);
-					}
-					try {
-						field.addAttribute("precision", "" + rsmeta.getPrecision(j));
-					} catch (SQLException e) {
-						log.warn("Could not determine precision",e);
-					} catch (NumberFormatException e2) {
-						if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
-					}
-					try {
-						field.addAttribute("scale", "" + rsmeta.getScale(j));
-					} catch (SQLException e) {
-						log.debug("Could not determine scale",e);
-					}
-					try {
-						field.addAttribute("isCurrency", "" + rsmeta.isCurrency(j));
-					} catch (SQLException e) {
-						log.debug("Could not determine isCurrency",e);
-					}
-					try {
-						String columnTypeName = "" + rsmeta.getColumnTypeName(j);
-						if(convertFieldnamesToUppercase)
-							columnTypeName = columnTypeName.toUpperCase();
-						field.addAttribute("columnTypeName", columnTypeName);
-					} catch (SQLException e) {
-						log.debug("Could not determine columnTypeName",e);
-					}
-					try {
-						field.addAttribute("columnClassName", "" + rsmeta.getColumnClassName(j));
-					} catch (SQLException e) {
-						log.debug("Could not determine columnClassName",e);
-					}
-					fields.addSubElement(field);
-				}
-				mainElement.addSubElement(fields);
-			}
-
-			//----------------------------------------
-			// Process result rows
-			//----------------------------------------
-
-			XmlBuilder queryresult = new XmlBuilder(recordname);
-			while (rs.next() && rowCounter < maxlength) {
-				XmlBuilder row = getRowXml(rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
-				queryresult.addSubElement(row);
-				rowCounter++;
-			}
-			mainElement.addSubElement(queryresult);
-		} catch (Exception e) {
-			log.error("Error occured at row [" + rowCounter+"]", e);
-		}
-		String answer = mainElement.toXML();
-		return answer;
+	/**
+	 * Retrieve the Resultset as a well-formed XML string
+	 */
+	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength) {
+		return getXML(dbmsSupport, rs, maxlength, true);
 	}
 
-	public static XmlBuilder getRowXml(ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException {
-		XmlBuilder row = new XmlBuilder("row");
-		row.addAttribute("number", "" + rowNumber);
+	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition) {
+		try {
+			XmlWriter xmlWriter = new XmlWriter();
+			PrettyPrintFilter ppf = new PrettyPrintFilter(xmlWriter);
+			getXML(dbmsSupport, rs, maxlength, includeFieldDefinition, ppf);
+			return xmlWriter.toString();
+		} catch (SAXException e) {
+			log.warn("cannot convert ResultSet to XML", e);
+			return "<error>"+XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
+		}
+	}
+
+
+	public void getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, ContentHandler handler) throws SAXException {
 	
-		for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
-			XmlBuilder resultField = new XmlBuilder("field");
-
-			String columnName = "" + rsmeta.getColumnName(i);
-			if(convertFieldnamesToUppercase)
-				columnName = columnName.toUpperCase();
-			resultField.addAttribute("name", columnName);
-
+		try (SaxDocumentBuilder root = new SaxDocumentBuilder(docname, handler)) {
+			if (null == rs) {
+				return;
+			}	
+			if (maxlength < 0) {
+				maxlength = Integer.MAX_VALUE;
+			}
+			Statement stmt=null;
 			try {
-				String value = JdbcUtil.getValue(rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
-				if (rs.wasNull()) {
-					resultField.addAttribute("null","true");
+				stmt = rs.getStatement();
+				if (stmt!=null) {
+					JdbcUtil.warningsToXml(stmt.getWarnings(), root);
 				}
-				resultField.setValue(value);
-	
-			} catch (Exception e) {
-				throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);
+			} catch (SQLException e1) {
+				log.warn("exception obtaining statement warnings", e1);
 			}
-			row.addSubElement(resultField);
+			int rowCounter=0;
+			try {
+				ResultSetMetaData rsmeta = rs.getMetaData();
+				if (includeFieldDefinition) {
+					int nfields = rsmeta.getColumnCount();
+
+					try (SaxElementBuilder fields = root.startElement("fielddefinition")) {
+
+						for (int j = 1; j <= nfields; j++) {
+							try (SaxElementBuilder field = fields.startElement("field")) {
+
+								String columnName = "" + rsmeta.getColumnName(j);
+								if(convertFieldnamesToUppercase)
+									columnName = columnName.toUpperCase();
+								field.addAttribute("name", columnName);
+
+								//Not every JDBC implementation implements these attributes!
+								try {
+									field.addAttribute("type", "" + getFieldType(rsmeta.getColumnType(j)));
+								} catch (SQLException e) {
+									log.debug("Could not determine columnType",e);
+								}
+								try {
+									field.addAttribute("columnDisplaySize", "" + rsmeta.getColumnDisplaySize(j));
+								} catch (SQLException e) {
+									log.debug("Could not determine columnDisplaySize",e);
+								}
+								try {
+									field.addAttribute("precision", "" + rsmeta.getPrecision(j));
+								} catch (SQLException e) {
+									log.warn("Could not determine precision",e);
+								} catch (NumberFormatException e2) {
+									if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
+								}
+								try {
+									field.addAttribute("scale", "" + rsmeta.getScale(j));
+								} catch (SQLException e) {
+									log.debug("Could not determine scale",e);
+								}
+								try {
+									field.addAttribute("isCurrency", "" + rsmeta.isCurrency(j));
+								} catch (SQLException e) {
+									log.debug("Could not determine isCurrency",e);
+								}
+								try {
+									String columnTypeName = "" + rsmeta.getColumnTypeName(j);
+									if(convertFieldnamesToUppercase)
+										columnTypeName = columnTypeName.toUpperCase();
+									field.addAttribute("columnTypeName", columnTypeName);
+								} catch (SQLException e) {
+									log.debug("Could not determine columnTypeName",e);
+								}
+								try {
+									field.addAttribute("columnClassName", "" + rsmeta.getColumnClassName(j));
+								} catch (SQLException e) {
+									log.debug("Could not determine columnClassName",e);
+								}
+							}
+						}
+					}
+				}
+
+				//----------------------------------------
+				// Process result rows
+				//----------------------------------------
+
+				try (SaxElementBuilder queryresult = root.startElement(recordname)) {
+					while (rs.next() && rowCounter < maxlength) {
+						getRowXml(queryresult, dbmsSupport, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces, getBlobSmart);
+						rowCounter++;
+					}
+				}
+			} catch (Exception e) {
+				log.error("Error occured at row [" + rowCounter+"]", e);
+			}
 		}
-		JdbcUtil.warningsToXml(rs.getWarnings(),row);
-		return row;
+ 	}
+
+	public static String getRowXml(IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
+		SaxElementBuilder parent = new SaxElementBuilder();
+		getRowXml(parent, dbmsSupport, rs, rowNumber, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart);
+		return parent.toString();
+	}
+
+	public static void getRowXml(SaxElementBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
+		try (SaxElementBuilder row = rows.startElement("row")) {
+			row.addAttribute("number", "" + rowNumber);
+			for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
+				try (SaxElementBuilder resultField = row.startElement("field")) {
+
+					String columnName = "" + rsmeta.getColumnName(i);
+					if(convertFieldnamesToUppercase) 
+						columnName = columnName.toUpperCase();
+					resultField.addAttribute("name", columnName);
+
+					try {
+						String value = JdbcUtil.getValue(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
+						if (rs.wasNull()) {
+							resultField.addAttribute("null","true");
+						} 
+						resultField.addValue(value);
+					} catch (Exception e) {
+						throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);
+					}
+				}
+			}
+			JdbcUtil.warningsToXml(rs.getWarnings(), row);
+		}
 	}
 
 
-   public void setDocumentName(String s) {
-     docname = s;
-   }
-   public void setRecordName(String s) {
-     recordname = s;
-   }
-   
-   /**
-	* Set the presentation of a <code>Null</code> value
-	**/
-   public void setNullValue(String s) {
-	 nullValue=s;
-   }
-   /**
-	* Get the presentation of a <code>Null</code> value
-	**/
-   public String getNullValue () {
-	 return nullValue;
-   }
+	public void setDocumentName(String s) {
+		docname = s;
+	}
+
+	public void setRecordName(String s) {
+		recordname = s;
+	}
+
+	/**
+	 * Set the presentation of a <code>Null</code> value
+	 */
+	public void setNullValue(String s) {
+		nullValue = s;
+	}
+
+	/**
+	 * Get the presentation of a <code>Null</code> value
+	 */
+	public String getNullValue() {
+		return nullValue;
+	}
 
 	public void setTrimSpaces(boolean b) {
 		trimSpaces = b;

@@ -21,9 +21,9 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -43,17 +43,16 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ibisContext = ((Adapter) getAdapter()).getConfiguration()
-				.getIbisManager().getIbisContext();
+		ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
 	}
 
 	@Override
-	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return Message.asMessage(doGet(session));
+			return new PipeRunResult(getForward(), doGet(session));
 		} else if (method.equalsIgnoreCase("POST")) {
-			return Message.asMessage(doPost(session));
+			return new PipeRunResult(getForward(), doPost(session));
 		} else {
 			throw new PipeRunException(this,
 					getLogPrefix(session) + "Illegal value for method ["

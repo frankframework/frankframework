@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.StringTokenizer;
@@ -31,6 +30,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.StringUtils;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -67,7 +67,16 @@ public class CompressPipe extends FixedForwardPipe {
 	private boolean compress;
 	private boolean convert2String;
 	private String fileFormat;
-	
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+
+		if(!resultIsContent && !messageIsContent && outputDirectory == null) {
+			throw new ConfigurationException("outputDirectory must be set");
+		}
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		try {
@@ -165,13 +174,8 @@ public class CompressPipe extends FixedForwardPipe {
 		} catch(Exception e) {
 			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
 			if (exceptionForward!=null) {
-				try {
-					log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
-					String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message.asString(),session.getMessageId(),0);
-					return new PipeRunResult(exceptionForward,resultmsg);
-				} catch (IOException e1) {
-					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
-				}
+				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
+				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0));
 			}
 			throw new PipeRunException(this, getLogPrefix(session) + "Unexpected exception during compression", e);
 		}

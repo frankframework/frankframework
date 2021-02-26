@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -47,9 +48,9 @@ import org.jdom2.output.XMLOutputter;
  */
 @Plugin(name = "IbisXmlLayout", category = "Core", elementType = "layout", printObject = true)
 public class IbisXmlLayout extends IbisMaskingLayout {
-	private boolean alwaysWriteExceptions = true;
+	private boolean alwaysWriteExceptions = false;
 
-	IbisXmlLayout(final Configuration config, final Charset charset, final boolean alwaysWriteExceptions) {
+	protected IbisXmlLayout(final Configuration config, final Charset charset, final boolean alwaysWriteExceptions) {
 		super(config, charset);
 		this.alwaysWriteExceptions = alwaysWriteExceptions;
 	}
@@ -57,7 +58,7 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 	@Override
 	protected String serializeEvent(LogEvent event) {
 		XmlBuilder eventBuilder = XmlBuilder.create("event");
-		eventBuilder.addAttribute("logger", event.getLoggerFqcn());
+		eventBuilder.addAttribute("logger", event.getLoggerName());
 		eventBuilder.addAttribute("timestamp", ""+event.getTimeMillis());
 		eventBuilder.addAttribute("level", event.getLevel().name());
 		eventBuilder.addAttribute("thread", event.getThreadName());
@@ -86,7 +87,7 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 			@PluginConfiguration final Configuration config,
 			// LOG4J2-783 use platform default by default, so do not specify defaultString for charset
 			@PluginAttribute(value = "charset") final Charset charset,
-			@PluginAttribute(value = "alwaysWriteExceptions", defaultBoolean = true) final boolean alwaysWriteExceptions) {
+			@PluginAttribute(value = "alwaysWriteExceptions", defaultBoolean = false) final boolean alwaysWriteExceptions) {
 		return new IbisXmlLayout(config, charset, alwaysWriteExceptions);
 	}
 
@@ -103,7 +104,8 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 
 		public void setElementContent(String value) {
 			if (value != null) {
-				element.setText(value);
+				//Escape illegal JDOM characters
+				element.setText(StringEscapeUtils.escapeJava(value));
 			}
 		}
 

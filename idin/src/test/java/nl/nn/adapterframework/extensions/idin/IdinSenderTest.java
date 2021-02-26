@@ -77,7 +77,7 @@ public class IdinSenderTest extends Mockito {
 
 	@Before
 	public void initializeIdinSender() throws FileNotFoundException, ParserConfigurationException, SAXException, IOException {
-		URL expectedUrl = ClassUtils.getResourceURL(this, "bankid-config.xml");
+		URL expectedUrl = ClassUtils.getResourceURL("bankid-config.xml");
 		Configuration.defaultInstance().Load(expectedUrl.openStream());
 		Communicator communicator = mock(Communicator.class);
 		DirectoryResponse response = mock(DirectoryResponse.class);

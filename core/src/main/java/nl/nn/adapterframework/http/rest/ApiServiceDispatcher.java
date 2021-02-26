@@ -15,18 +15,27 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IAdapter;
@@ -34,6 +43,7 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -59,7 +69,16 @@ public class ApiServiceDispatcher {
 	}
 
 	public ApiDispatchConfig findConfigForUri(String uri) {
-		ApiDispatchConfig config = null;
+		List<ApiDispatchConfig> configs = findMatchingConfigsForUri(uri, true);
+		return configs.isEmpty()? null : configs.get(0); 
+	}
+
+	public List<ApiDispatchConfig> findMatchingConfigsForUri(String uri) {
+		return findMatchingConfigsForUri(uri, false); 
+	}
+
+	private List<ApiDispatchConfig>  findMatchingConfigsForUri(String uri, boolean exactMatch) {
+		List<ApiDispatchConfig> results = new ArrayList<>();
 
 		String uriSegments[] = uri.split("/");
 
@@ -68,25 +87,27 @@ public class ApiServiceDispatcher {
 			log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
 
 			String patternSegments[] = uriPattern.split("/");
-			if(patternSegments.length != uriSegments.length)
+			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
 				continue;
+			}
 
 			int matches = 0;
-			for (int i = 0; i < patternSegments.length; i++) {
+			for (int i = 0; i < uriSegments.length; i++) {
 				if(patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
 					matches++;
-				}
-				else {
-					break;
+				} else {
+					continue;
 				}
 			}
 			if(matches == uriSegments.length) {
-				config = patternClients.get(uriPattern);
-				break;
+				ApiDispatchConfig result = patternClients.get(uriPattern); 
+				results.add(result);
+				if (exactMatch) {
+					return results;
+				}
 			}
 		}
-
-		return config;
+		return results;
 	}
 
 	public synchronized void registerServiceClient(ApiListener listener) throws ListenerException {
@@ -131,6 +152,16 @@ public class ApiServiceDispatcher {
 	}
 
 	protected JsonObject generateOpenApiJsonSchema() {
+		return generateOpenApiJsonSchema(getPatternClients().values());
+	}
+
+	protected JsonObject generateOpenApiJsonSchema(ApiDispatchConfig client) {
+		List<ApiDispatchConfig> clientList = Arrays.asList(client);
+		return generateOpenApiJsonSchema(clientList);
+	}
+
+	protected JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients) {
+
 		JsonObjectBuilder root = Json.createObjectBuilder();
 		root.add("openapi", "3.0.0");
 		String instanceName = AppConstants.getInstance().getProperty("instance.name");
@@ -143,22 +174,35 @@ public class ApiServiceDispatcher {
 		JsonObjectBuilder paths = Json.createObjectBuilder();
 		JsonObjectBuilder schemas = Json.createObjectBuilder();
 
-		for (Entry<String, ApiDispatchConfig> entry : getPatternClients().entrySet()) {
-			ApiDispatchConfig config = entry.getValue();
+		for (ApiDispatchConfig config : clients) {
 			JsonObjectBuilder methods = Json.createObjectBuilder();
+			ApiListener listener = null;
 			for (String method : config.getMethods()) {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
-				ApiListener listener = config.getApiListener(method);
+				listener = config.getApiListener(method);
 				if(listener != null && listener.getReceiver() != null) {
 					IAdapter adapter = listener.getReceiver().getAdapter();
-					methodBuilder.add("summary", adapter.getDescription());
-					methodBuilder.add("operationId", adapter.getName());
-					methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
-				}
+					if (StringUtils.isNotEmpty(adapter.getDescription())) {
+						methodBuilder.add("summary", adapter.getDescription());
+					}
+					if(StringUtils.isNotEmpty(listener.getOperationId())) {
+						methodBuilder.add("operationId", listener.getOperationId());
+					}
+					// GET and DELETE methods cannot have a requestBody according to the specs.
+					if(!method.equals("GET") && !method.equals("DELETE")) {
+						mapRequest(adapter, listener.getConsumesEnum(), methodBuilder);
+					}
+					mapParamsInRequest(adapter, listener, methodBuilder);
 
+					//ContentType may have more parameters such as charset and formdata-boundry
+					MediaTypes produces = listener.getProducesEnum();
+					methodBuilder.add("responses", mapResponses(adapter, produces, schemas));
+				}
 				methods.add(method.toLowerCase(), methodBuilder);
 			}
-			paths.add("/"+config.getUriPattern(), methods);
+			if(listener != null) {
+				paths.add(listener.getUriPattern(), methods);
+			}
 		}
 		root.add("paths", paths.build());
 		root.add("components", Json.createObjectBuilder().add("schemas", schemas));
@@ -166,7 +210,7 @@ public class ApiServiceDispatcher {
 		return root.build();
 	}
 
-	private Json2XmlValidator getJsonValidator(PipeLine pipeline) {
+	public static Json2XmlValidator getJsonValidator(PipeLine pipeline) {
 		IPipe validator = pipeline.getInputValidator();
 		if(validator == null) {
 			validator = pipeline.getPipe(pipeline.getFirstPipe());
@@ -177,21 +221,66 @@ public class ApiServiceDispatcher {
 		return null;
 	}
 
-	private JsonObjectBuilder mapResponses(IAdapter adapter, String contentType, JsonObjectBuilder schemas) {
+	private void mapParamsInRequest(IAdapter adapter, ApiListener listener, JsonObjectBuilder methodBuilder) {
+		String uriPattern = listener.getUriPattern();
+		JsonArrayBuilder paramBuilder = Json.createArrayBuilder();
+		if(uriPattern.contains("{")) {
+			Pattern p = Pattern.compile("[^{/}]+(?=})");
+			Matcher m = p.matcher(uriPattern);
+			while(m.find()) {
+				JsonObjectBuilder param = Json.createObjectBuilder();
+				param.add("name", m.group());
+				param.add("in", "path");
+				param.add("required", true);
+				param.add("schema", Json.createObjectBuilder().add("type", "string"));
+				paramBuilder.add(param);
+			}
+		}
+		Json2XmlValidator validator = getJsonValidator(adapter.getPipeLine());
+		if(validator != null && !validator.getParameterList().isEmpty()) {
+			for (Parameter parameter : validator.getParameterList()) {
+				if(StringUtils.isNotEmpty(parameter.getSessionKey())) {
+					JsonObjectBuilder param = Json.createObjectBuilder();
+					param.add("name", parameter.getSessionKey());
+					param.add("in", "query");
+					String parameterType = parameter.getType() != null ? parameter.getType() : "string";
+					param.add("schema", Json.createObjectBuilder().add("type", parameterType));
+					paramBuilder.add(param);
+				}
+			}
+		}
+		JsonArray paramBuilderArray = paramBuilder.build();
+		if(!paramBuilderArray.isEmpty()) {
+			methodBuilder.add("parameters", paramBuilderArray);
+		}
+	}
+
+	private void mapRequest(IAdapter adapter, MediaTypes consumes, JsonObjectBuilder methodBuilder) {
+		PipeLine pipeline = adapter.getPipeLine();
+		Json2XmlValidator validator = getJsonValidator(pipeline);
+		if(validator != null && StringUtils.isNotEmpty(validator.getRoot())) {
+			JsonObjectBuilder requestBodyContent = Json.createObjectBuilder();
+			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder().add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+validator.getRoot()));
+			requestBodyContent.add("content", Json.createObjectBuilder().add(consumes.getContentType(), schemaBuilder));
+			methodBuilder.add("requestBody", requestBodyContent);
+		}
+	}
+
+	private JsonObjectBuilder mapResponses(IAdapter adapter, MediaTypes contentType, JsonObjectBuilder schemas) {
 		JsonObjectBuilder responses = Json.createObjectBuilder();
 
 		PipeLine pipeline = adapter.getPipeLine();
 		Json2XmlValidator validator = getJsonValidator(pipeline);
 		JsonObjectBuilder schema = null;
+		String ref = null;
 		if(validator != null) {
 			JsonObject jsonSchema = validator.createJsonSchemaDefinitions("#/components/schemas/");
 			if(jsonSchema != null) {
 				for (Entry<String,JsonValue> entry: jsonSchema.entrySet()) {
 					schemas.add(entry.getKey(), entry.getValue());
 				}
-				String ref = validator.getMessageRoot(true);
+				ref = validator.getMessageRoot(true);
 				schema = Json.createObjectBuilder();
-				schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+ref));
 			}
 		}
 
@@ -209,10 +298,21 @@ public class ApiServiceDispatcher {
 			exit.add("description", status.getReasonPhrase());
 			if(!ple.getEmptyResult()) {
 				JsonObjectBuilder content = Json.createObjectBuilder();
-				if(schema == null) {
-					content.addNull(contentType);
-				} else {
-					content.add(contentType, schema);
+				if(StringUtils.isNotEmpty(ref)){
+					String reference = null;
+					if(StringUtils.isNotEmpty(ple.getResponseRoot())) {
+						reference = ple.getResponseRoot();
+					} else {
+						List<String> references = Arrays.asList(ref.split(","));
+						if(ple.getState().equals("success")) {
+							reference = references.get(0);
+						} else {
+							reference = references.get(references.size()-1);
+						}
+					}
+					// JsonObjectBuilder add method consumes the schema
+					schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+reference));
+					content.add(contentType.getContentType(), schema);
 				}
 				exit.add("content", content);
 			}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,30 +28,23 @@ import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 public class TransformerFilter extends FullXmlFilter {
 
-	private FullXmlFilter lastFilter;
 	private TransformerHandler transformerHandler;
 	
-	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, boolean expectChildThreads) {
-		super();
+	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
+		super(transformerHandler);
 		if (expectChildThreads) {
-			lastFilter = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session);
-		} else {
-			lastFilter = new FullXmlFilter();
+			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
 		}
 		SAXResult transformedStream = new SAXResult();
-		transformedStream.setHandler(lastFilter);
-		transformedStream.setLexicalHandler((LexicalHandler)lastFilter);
+		transformedStream.setHandler(handler);
+		if (handler instanceof LexicalHandler) {
+			transformedStream.setLexicalHandler((LexicalHandler)handler);
+		}
 		this.transformerHandler=transformerHandler;
 		transformerHandler.setResult(transformedStream);
-		super.setContentHandler(transformerHandler);
 	}
 
 
-	@Override
-	public void setContentHandler(ContentHandler handler) {
-		lastFilter.setContentHandler(handler);
-	}
-	
 	public Transformer getTransformer() {
 		return transformerHandler.getTransformer();
 	}

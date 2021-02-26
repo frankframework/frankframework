@@ -9,16 +9,14 @@ import org.xml.sax.SAXException;
 import junit.framework.TestCase;
 import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.pipes.FilePipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class Json2XmlValidatorSmileyTest extends TestCase {
 
@@ -90,7 +88,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		assertJsonEqual(expectedJson,json);
 		String xml=jsonToXml(json);
 		System.out.println("testJson2Xml: xml ["+xml+"]");
-		assertEquals(expectedXmlNoNewline,xml);
+		MatchUtils.assertXmlEquals("json2xml", expectedXmlNoNewline, xml, false);
 	}
 
 	public void testJson2XmlViaPipe() throws Exception {

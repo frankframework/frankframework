@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public class JsonXsltSender extends XsltSender {
 			return super.createHandler(input, session, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,null,threadLifeCycleEventListener,session);
+		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener,session);
 		return super.createHandler(input, session, prev);
 	}
 

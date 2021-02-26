@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018, 2020 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,16 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.codec.binary.Base64OutputStream;
+import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -30,6 +36,9 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -40,14 +49,14 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Niels Meijer
  * @version 2.0
  */
-public class Base64Pipe extends FixedForwardPipe {
+public class Base64Pipe extends StreamingPipe {
 
 	private String direction = "encode";
 	private int lineLength = 76;
 	private String lineSeparator = "auto";
-	private String charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String charset = null;
 	private String outputType = "string";
-	private boolean convertToString = true;
+	private boolean convertToString = true; // Deprecated, but set to true, apparently for backward compatibility. We could consider setting it false, avoiding needless conversions from bytes to string
 
 	private List<String> outputTypes = Arrays.asList("string", "bytes", "stream");
 
@@ -58,7 +67,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		super.configure();
 		String dir=getDirection();
 		if (!dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode"))
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for direction ["+dir+"], must be 'encode' or 'decode'");
+			throw new ConfigurationException("illegal value for direction ["+dir+"], must be 'encode' or 'decode'");
 
 		if(outputTypes != null && !outputTypes.contains(outputType))
 			throw new ConfigurationException("unknown outputType ["+outputType+"] supported attributes are "+outputTypes.toString()+"");
@@ -77,11 +86,11 @@ public class Base64Pipe extends FixedForwardPipe {
 			}
 		}
 
-		if(!convertToString) {
-			//Allow this for backwards compatibility
-			if(getDirection().equals("decode"))
-				setOutputType("bytes");
+		// Allow this for backwards compatibility
+		if(!convertToString && getDirection().equals("decode")) {
+			setOutputType("bytes");
 		}
+
 	}
 
 	private void setLineSeparatorArray(String separator) {
@@ -90,43 +99,72 @@ public class Base64Pipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		boolean directionEncode = "encode".equals(getDirection());//TRUE encode - FALSE decode
+
 		InputStream binaryInputStream;
 		try {
-			binaryInputStream = message.asInputStream(getCharset());
+			binaryInputStream = message.asInputStream(directionEncode ? getCharset() : null);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		boolean direction = "encode".equals(getDirection());//TRUE encode - FALSE decode
-		InputStream base64 = new Base64InputStream(binaryInputStream, direction, getLineLength(), lineSeparatorArray);
-		Object result = null;
+		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
-		if(getOutputType().equals("string")) {
+		Message result = new Message(base64);
+		if (!directionEncode && StringUtils.isNotEmpty(getCharset())) {
 			try {
-				result = Misc.streamToString(base64, getCharset());
+				result = new Message(result.asReader(getCharset()));
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot convert base64 result to String using charset ["+getCharset()+"]", e);
+				throw new PipeRunException(this,"cannot open stream", e);
 			}
 		}
-		else if(getOutputType().equals("bytes")) {
-			try {
-				result = Misc.streamToBytes(base64);
-			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot convert base64 result to Byte[]", e);
-			}
-		}
-		else {
-			result = base64;
+		if(getOutputType().equals("stream")) {
+			return new PipeRunResult(getForward(), result);
 		}
 
-		return new PipeRunResult(getForward(), result);
+		try (MessageOutputStream target=getTargetStream(session)) {
+			if(getOutputType().equals("string")) {
+				try (Writer writer = target.asWriter()) {
+					Misc.readerToWriter(result.asReader(), writer);
+				}
+			} else {
+				try (OutputStream out = target.asStream()) {
+					Misc.streamToStream(result.asInputStream(), out);
+				}
+			}
+			return target.getPipeRunResult();
+		} catch (Exception e) {
+			throw new PipeRunException(this, "cannot convert base64 "+getDirection()+" result", e);
+		}
 	}
 
-	@IbisDoc({"1", "either <code>encode</code> or <code>decode</code>", "encode"})
+	@SuppressWarnings("resource")
+	@Override
+	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+		MessageOutputStream target = getTargetStream(session);
+		boolean directionEncode = "encode".equals(getDirection());//TRUE encode - FALSE decode
+		OutputStream targetStream;
+		if (!directionEncode && StringUtils.isNotEmpty(getCharset())) {
+			targetStream = new WriterOutputStream(target.asWriter(), getCharset());
+		} else {
+			targetStream = target.asStream();
+		}
+		OutputStream base64 = new Base64OutputStream(targetStream, directionEncode, getLineLength(), lineSeparatorArray);
+		if (directionEncode && StringUtils.isNotEmpty(getCharset())) {
+			try {
+				return new MessageOutputStream(this, new OutputStreamWriter(base64, getCharset()), target);
+			} catch (UnsupportedEncodingException e) {
+				throw new StreamingException("cannot open OutputStreamWriter", e);
+			}
+		}
+		return new MessageOutputStream(this, base64, target);
+	}
+
+	
+	@IbisDoc({"1", "Either <code>encode</code> or <code>decode</code>", "encode"})
 	public void setDirection(String string) {
 		direction = string.toLowerCase();
 	}
-
 	public String getDirection() {
 		return direction;
 	}
@@ -143,16 +181,15 @@ public class Base64Pipe extends FixedForwardPipe {
 		convertToString = b;
 	}
 
-	@IbisDoc({"2", "either <code>string</code>, <code>bytes</code> or <code>stream</code>", "string"})
+	@IbisDoc({"2", "Either <code>string</code>, <code>bytes</code> or <code>stream</code>", "string"})
 	public void setOutputType(String outputType) {
 		this.outputType = outputType.toLowerCase();
 	}
-
 	public String getOutputType() {
 		return outputType;
 	}
 
-	@IbisDoc({"3", "character encoding to be used to encode or decode message to or from string. (only used when convert2string=true)", "utf-8"})
+	@IbisDoc({"3", "Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode.", ""})
 	public void setCharset(String string) {
 		charset = string;
 	}
@@ -160,7 +197,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		return charset;
 	}
 
-	@IbisDoc({"4", " (only used when direction=encode) defines separator between lines. special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
+	@IbisDoc({"4", " (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
 	public void setLineSeparator(String lineSeparator) {
 		this.lineSeparator = lineSeparator;
 	}
@@ -168,12 +205,11 @@ public class Base64Pipe extends FixedForwardPipe {
 		return lineSeparator;
 	}
 
-	@IbisDoc({"5", " (only used when direction=encode) each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). if linelength &lt;= 0, then the output will not be divided into lines", "auto"})
+	@IbisDoc({"5", " (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines", "76"})
 	public void setLineLength(int lineLength) {
 		this.lineLength = lineLength;
 	}
 	public int getLineLength() {
 		return lineLength;
 	}
-
 }

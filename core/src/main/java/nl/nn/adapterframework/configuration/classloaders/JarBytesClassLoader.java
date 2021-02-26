@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden
+   Copyright 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.jar.JarInputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class JarBytesClassLoader extends BytesClassLoader {
 
@@ -43,22 +44,26 @@ public abstract class JarBytesClassLoader extends BytesClassLoader {
 			while ((jarEntry = jarInputStream.getNextJarEntry()) != null) {
 				String fileName = jarEntry.getName();
 				if(getBasePath() != null) {
+					boolean isFolder = fileName.endsWith("/"); // if the name ends with a slash, assume it's a folder
+					if(isFolder || fileName.startsWith("META-INF/")) { //Ignore all folders and files in META-INF
+						log.debug("ignoring {} [{}]", (isFolder?"folder":"file"), fileName);
+						continue;
+					}
+
 					if(fileName.startsWith(getBasePath())) { //Remove BasePath from the filename
 						fileName = fileName.substring(getBasePath().length());
-					} else {
+					} else { //Found a file that's not in the BasePath folder
 						if(!fileName.endsWith(".class")) { //Allow classes to be in the root path, but not resources
-							log.error("invalid file ["+fileName+"] not in folder ["+getBasePath()+"]");
+							log.warn("invalid file ["+fileName+"] not in folder ["+getBasePath()+"]");
 							continue; //Don't add the file to the resources lists
 						}
 					}
 				}
-				resources.put(fileName, Misc.streamToBytes(jarInputStream));
+				resources.put(fileName, Misc.streamToBytes(StreamUtil.dontClose(jarInputStream)));
 			}
 			return resources;
 		} catch (IOException e) {
-			throw new ConfigurationException(
-					"Could not read resources from jar input stream for configuration '"
-					+ getConfigurationName() + "'", e);
+			throw new ConfigurationException("Could not read resources from jar input stream for configuration '" + getConfigurationName() + "'", e);
 		}
 	}
 }

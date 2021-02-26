@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,22 +23,22 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 
-import org.apache.commons.digester.Digester;
-import org.apache.commons.digester.Rule;
-import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
+import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.binder.DigesterLoader;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 
+import nl.nn.adapterframework.configuration.digester.FrankDigesterRules;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.AppConstants;
@@ -84,94 +81,61 @@ import nl.nn.adapterframework.xml.SaxException;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	private static final Logger LOG = LogUtil.getLogger(ConfigurationDigester.class);
+	private final Logger log = LogUtil.getLogger(ConfigurationDigester.class);
+	private final Logger configLogger = LogUtil.getLogger("CONFIG");
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
-	private static final String DIGESTER_RULES_DEFAULT = "digester-rules.xml";
+	private static final String CONFIGURATION_VALIDATION_KEY = "configurations.validate";
+	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
-	private static final String CONFIGURATION_VALIDATION_KEY = "validate.configuration";
+	private static final String ATTRIBUTEGETTER_XSLT = "xml/xsl/AttributesGetter.xsl";
 
-	private static final String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
-
-	private String digesterRulesFile = DIGESTER_RULES_DEFAULT;
-	private boolean configLogAppend = false;
+	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	String lastResolvedEntity = null;
 
 	private class XmlErrorHandler implements ErrorHandler  {
+		private Configuration configuration;
+		public XmlErrorHandler(Configuration configuration) {
+			this.configuration = configuration;
+		}
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
-			LOG.error(exception);
-			throw(exception);
+			ConfigurationWarnings.add(configuration, log, "Warning when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
-			LOG.error(exception);
-			throw(exception);
+			ConfigurationWarnings.add(configuration, log, "Error when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
-			LOG.error(exception);
-			throw(exception);
+			ConfigurationWarnings.add(configuration, log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 	}
 
-	public Digester getDigester(Configuration configuration) throws SAXNotSupportedException, SAXNotRecognizedException {
-		Digester digester = new Digester() {
+	public Digester getDigester(Configuration configuration) throws ConfigurationException, ParserConfigurationException, SAXException {
+		XMLReader reader = XmlUtils.getXMLReader(configuration);
+		Digester digester = new Digester(reader) {
 			// override Digester.createSAXException() implementations to obtain a clear unduplicated message and a properly nested stacktrace on IBM JDK 
 			@Override
 			public SAXException createSAXException(String message, Exception e) {
-				return SaxException.createSaxException(message, locator, e);
+				return SaxException.createSaxException(message, getDocumentLocator(), e);
 			}
 			@Override
 			public SAXException createSAXException(Exception e) {
-				return SaxException.createSaxException(null, locator, e);
+				return SaxException.createSaxException(null, getDocumentLocator(), e);
 			}
 		};
 
 		digester.setUseContextClassLoader(true);
 		digester.push(configuration);
 
-		URL digesterRulesURL = ClassUtils.getResourceURL(configuration.getClassLoader(), getDigesterRules());
-		FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
-		digester.addRuleSet(ruleSet);
+		Resource digesterRulesResource = Resource.getResource(getDigesterRules());
 
-		Rule attributeChecker = new AttributeCheckingRule();
-		digester.addRule("*/jmsRealms", attributeChecker);
-		digester.addRule("*/jmsRealm", attributeChecker);
-		digester.addRule("*/sapSystem", attributeChecker);
-		digester.addRule("*/adapter", attributeChecker);
-		digester.addRule("*/pipeline", attributeChecker);
-		digester.addRule("*/errorMessageFormatter", attributeChecker);
-		digester.addRule("*/receiver", attributeChecker);
-		digester.addRule("*/sender", attributeChecker);
-		digester.addRule("*/listener", attributeChecker);
-		digester.addRule("*/postboxSender", attributeChecker);
-		digester.addRule("*/postboxListener", attributeChecker);
-		digester.addRule("*/errorSender", attributeChecker);
-		digester.addRule("*/messageLog", attributeChecker);
-		digester.addRule("*/inProcessStorage", attributeChecker);
-		digester.addRule("*/errorStorage", attributeChecker);
-		digester.addRule("*/pipe", attributeChecker);
-		digester.addRule("*/readerFactory", attributeChecker);
-		digester.addRule("*/manager", attributeChecker);
-		digester.addRule("*/manager/flow", attributeChecker);
-		digester.addRule("*/recordHandler", attributeChecker);
-		digester.addRule("*/resultHandler", attributeChecker);
-		digester.addRule("*/forward", attributeChecker);
-		digester.addRule("*/child", attributeChecker);
-		digester.addRule("*/param", attributeChecker);
-		digester.addRule("*/pipeline/exits/exit", attributeChecker);
-		digester.addRule("*/scheduler/job", attributeChecker);
-		digester.addRule("*/locker", attributeChecker);
-		digester.addRule("*/directoryCleaner", attributeChecker);
-		digester.addRule("*/statistics", attributeChecker);
-		digester.addRule("*/handler", attributeChecker);
-		digester.addRule("*/cache", attributeChecker);
-		digester.addRule("*/inputValidator", attributeChecker);
-		digester.addRule("*/outputValidator", attributeChecker);
-		digester.addRule("*/inputWrapper", attributeChecker);
-		digester.addRule("*/outputWrapper", attributeChecker);
+		FrankDigesterRules digesterRules = new FrankDigesterRules(digester, digesterRulesResource);
+		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
+		loader.addRules(digester);
+
 		if (MonitorManager.getInstance().isEnabled()) {
 			MonitorManager.getInstance().setDigesterRules(digester);
 		}
@@ -181,8 +145,12 @@ public class ConfigurationDigester {
 			digester.setValidating(true);
 			digester.setNamespaceAware(true);
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", "AdapterFramework.xsd");
-			XmlErrorHandler xeh = new XmlErrorHandler();
+			URL xsdUrl = ClassUtils.getResourceURL(CONFIGURATION_VALIDATION_SCHEMA);
+			if (xsdUrl==null) {
+				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
+			}
+			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
+			XmlErrorHandler xeh = new XmlErrorHandler(configuration);
 			digester.setErrorHandler(xeh);
 		}
 
@@ -190,38 +158,29 @@ public class ConfigurationDigester {
 	}
 
 	public void digestConfiguration(ClassLoader classLoader, Configuration configuration) throws ConfigurationException {
-		digestConfiguration(classLoader, configuration, configLogAppend);
-		configLogAppend = true;
-	}
-
-	public void digestConfiguration(ClassLoader classLoader, Configuration configuration, boolean configLogAppend) throws ConfigurationException {
 		String configurationFile = ConfigurationUtils.getConfigurationFile(classLoader, configuration.getName());
 		Digester digester = null;
 		try {
 			digester = getDigester(configuration);
-			URL digesterRulesURL = ClassUtils.getResourceURL(classLoader, getDigesterRules());
-			if (digesterRulesURL == null) {
-				throw new ConfigurationException("Digester rules file not found: " + getDigesterRules());
-			}
 
-			Resource configurationResource = Resource.getResource(classLoader, configurationFile);
+			Resource configurationResource = Resource.getResource(configuration, configurationFile);
 			if (configurationResource == null) {
 				throw new ConfigurationException("Configuration file not found: " + configurationFile);
 			}
-			if(LOG.isDebugEnabled()) LOG.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"] configLogAppend ["+configLogAppend+"]");
+			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
 			String original = XmlUtils.identityTransform(configurationResource);
 			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
-			List<String> propsToHide = new ArrayList<String>();
+			List<String> propsToHide = new ArrayList<>();
 			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 			}
 			String loaded = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()));
 			String loadedHide = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
-			loaded = ConfigurationUtils.getUglifiedConfiguration(configuration, loaded);
-			loadedHide = ConfigurationUtils.getUglifiedConfiguration(configuration, loadedHide);
+			loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
+			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
 			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
 			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
 			if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
@@ -229,7 +188,7 @@ public class ConfigurationDigester {
 				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}
 			configuration.setLoadedConfiguration(loadedHide);
-			saveConfig(loadedHide, configLogAppend);
+			configLogger.info(loadedHide);
 			digester.parse(new StringReader(loaded));
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
@@ -237,30 +196,19 @@ public class ConfigurationDigester {
 			if (digester != null ) {
 				currentElementName = digester.getCurrentElementName();
 			}
-			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
+
+			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
 				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
-			throw e;
 		}
 		if (MonitorManager.getInstance().isEnabled()) {
 			MonitorManager.getInstance().configure(configuration);
 		}
 	}
 
-	private void saveConfig(String config, boolean append) {
-		String directoryName = AppConstants.getInstance().getResolvedProperty("log.dir");
-		String fileName = AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"-config.xml";
-		File file = new File(directoryName, fileName);
-		try (FileWriter fileWriter = new FileWriter(file, append)) {
-			fileWriter.write(config);
-		} catch (IOException e) {
-			LOG.warn("Could not write configuration to file ["+file.getPath()+"]",e);
-		}
-	}
-	
-	private  void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
-		URL xsltSource = ClassUtils.getResourceURL(this.getClass().getClassLoader(), attributesGetter_xslt);
+	private void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
+		URL xsltSource = ClassUtils.getResourceURL(ATTRIBUTEGETTER_XSLT);
 		if (xsltSource == null) {
-			throw new ConfigurationException("cannot find resource ["+attributesGetter_xslt+"]");
+			throw new ConfigurationException("cannot find resource ["+ATTRIBUTEGETTER_XSLT+"]");
 		}
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		String attributes = XmlUtils.transformXml(transformer, configurationSource);
@@ -287,8 +235,8 @@ public class ConfigurationDigester {
 	public void setDigesterRules(String string) {
 		digesterRulesFile = string;
 	}
+
 	public String getDigesterRules() {
 		return digesterRulesFile;
 	}
-
 }

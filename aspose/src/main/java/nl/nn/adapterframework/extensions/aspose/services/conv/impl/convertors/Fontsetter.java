@@ -25,7 +25,6 @@ import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
 public class Fontsetter {
-	private static final String FONTS_RESOURCE_DIR = "/fonts/";
 	private String fontFilesLocation = null;
 
 	public Fontsetter(String pdfOutputLocation) {
@@ -39,7 +38,7 @@ public class Fontsetter {
 	 * @param doc
 	 */
 	public void setFontSettings(Document doc) {
-		String pathToFonts = fontFilesLocation + FONTS_RESOURCE_DIR;
+		String pathToFonts = fontFilesLocation;
 		FontSettings fontSettings = new FontSettings();
 
 		// Retrieve the array of environment-dependent font sources that are searched by

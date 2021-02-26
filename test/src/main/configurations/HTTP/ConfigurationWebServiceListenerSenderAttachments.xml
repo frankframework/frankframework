@@ -2,8 +2,7 @@
 	<!-- Receiving Listeners -->
 	<adapter name="WebServiceListenerAddressAttachments"
 		description="Test the functioning of the WebServiceListener with the attribute Address receiving attachments">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeoutAddress">
+		<receiver name="WebServiceListenerTimeoutAddress">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws/address/attachments" />
 		</receiver>
@@ -19,8 +18,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerAddressAttachmentsMultipartSessionKey"
 		description="Test the functioning of the WebServiceListener with the attribute Address receiving attachments using multipart sessionkey">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeoutAddressMultipartSessionKey">
+		<receiver name="WebServiceListenerTimeoutAddressMultipartSessionKey">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws/address/attachments/multipart" />
 		</receiver>
@@ -41,8 +39,7 @@
 	<!-- Returning Listeners -->
 	<adapter name="WebServiceListenerAddressAttachmentsReturnAttachments"
 		description="Test the functioning of the WebServiceListener with the attribute Address returning attachments">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeoutAddress">
+		<receiver name="WebServiceListenerTimeoutAddress">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws/address/attachments/returning" attachmentSessionKeys="attachment1"/>
 		</receiver>
@@ -66,8 +63,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerAddressAttachmentsReturnAttachmentsSessionKey"
 		description="Test the functioning of the WebServiceListener with the attribute Address returning attachments">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeoutAddress">
+		<receiver name="WebServiceListenerTimeoutAddress">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws/address/attachments/returning/sessionkey"/>
 		</receiver>
@@ -97,8 +93,7 @@
 	<!-- Sending Senders -->
 	<adapter name="WebServiceSenderAddressAttachmentsWithParam" 
 		description="Test the functioning of the WebServiceSender sending attachments to a listener with address">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderAddress">
+		<receiver name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsWithParam" />
 		</receiver>
@@ -119,8 +114,7 @@
 	</adapter>
     <adapter name="WebServiceSenderAddressAttachments" 
 		description="Test the functioning of the WebServiceSender sending attachments to a listener with address">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderAddress">
+		<receiver name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsMultipart" />
 		</receiver>
@@ -160,8 +154,7 @@
 	<!-- Receiving Senders -->
 	<adapter name="WebServiceSenderAddressAttachmentsReturningAttachments" 
 		description="Test the functioning of the WebServiceSender receiving attachments from a listener with address">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderAddress">
+		<receiver name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsReturning" />
 		</receiver>
@@ -179,13 +172,13 @@
 			</pipe>
 			<pipe
 				name="WriteStream" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" getInputFromSessionKey="multipart1" fileName="${testdata.dir}\webservices\received.txt"
+				actions="write" getInputFromSessionKey="multipart1" fileName="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="ReadFile"/>
 			</pipe>
 			<pipe
 				name="ReadFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" fileName="${testdata.dir}\webservices\received.txt"
+				actions="read" fileName="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="EXIT"/>
 			</pipe>
@@ -193,8 +186,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderAddressAttachmentsReturningAttachmentsSessionKey" 
 		description="Test the functioning of the WebServiceSender receiving attachments from a listener with address and multipartXml sessionkey">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderAddress">
+		<receiver name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsReturningSessionKey" />
 		</receiver>
@@ -212,13 +204,13 @@
 			</pipe>
 			<pipe
 				name="WriteStream" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" getInputFromSessionKey="multipart1" fileName="${testdata.dir}\webservices\received.txt"
+				actions="write" getInputFromSessionKey="multipart1" fileName="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="ReadFile"/>
 			</pipe>
 			<pipe
 				name="ReadFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" fileName="${testdata.dir}\webservices\received.txt"
+				actions="read" fileName="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="EXIT"/>
 			</pipe>

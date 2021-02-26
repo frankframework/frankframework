@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2020 Nationale-Nederlanden
+   Copyright 2013, 2017-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 import org.apache.commons.lang.StringUtils;
@@ -99,7 +100,7 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
 
 		String serviceNamespaceURI;
 		if (serviceNamespaceURIParameter!=null) {
@@ -115,11 +116,15 @@ public class WebServiceSender extends HttpSender {
 			soapActionURI=getSoapAction();
 		}
 
-		String soapmsg;
-		if (isSoap()) {
-			soapmsg = soapWrapper.putInEnvelope(message, getEncodingStyle(), serviceNamespaceURI, null, getNamespaceDefs());
-		} else {
-			soapmsg = message;
+		Message soapmsg;
+		try {
+			if (isSoap()) {
+				soapmsg = soapWrapper.putInEnvelope(message, getEncodingStyle(), serviceNamespaceURI, null, getNamespaceDefs());
+			} else {
+				soapmsg = message;
+			}
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix()+"error reading message", e);
 		}
 
 		if (wsscf!=null) {
@@ -134,12 +139,13 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	protected String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
-		String httpResult = null;
+	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+		Message httpResult = null;
 		try {
 			httpResult = super.extractResult(responseHandler, session);
+			httpResult.preserve();
 		} catch (SenderException e) {
-			soapWrapper.checkForSoapFault(getResponseBodyAsString(responseHandler), e);
+			soapWrapper.checkForSoapFault(getResponseBody(responseHandler), e);
 			throw e;
 		}
 

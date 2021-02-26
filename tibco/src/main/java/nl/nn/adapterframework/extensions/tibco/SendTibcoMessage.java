@@ -37,6 +37,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
@@ -100,7 +101,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	private String soapAction;
 
 	@Override
-	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		Session jSession = null;
 		MessageProducer msgProducer = null;
@@ -180,7 +181,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		if (StringUtils.isEmpty(soapAction_work)) {
 			log.debug(getLogPrefix(session) + "deriving default soapAction");
 			try {
-				Resource resource = Resource.getResource(getConfigurationClassLoader(), "/xml/xsl/esb/soapAction.xsl");
+				Resource resource = Resource.getResource(this, "/xml/xsl/esb/soapAction.xsl");
 				TransformerPool tp = TransformerPool.getInstance(resource, 2);
 				soapAction_work = tp.transform(input.asString(), null);
 			} catch (Exception e) {
@@ -310,7 +311,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return Message.asMessage(result);
+		return new PipeRunResult(getForward(), result);
 	}
 
 	public String getUrl() {

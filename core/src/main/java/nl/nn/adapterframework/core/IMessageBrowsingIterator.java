@@ -21,10 +21,12 @@ package nl.nn.adapterframework.core;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public interface IMessageBrowsingIterator {
+public interface IMessageBrowsingIterator extends AutoCloseable {
 
 	boolean hasNext() throws ListenerException;
 	IMessageBrowsingIteratorItem  next() throws ListenerException;
-	void    close() throws ListenerException;
+
+	@Override
+	void  close() throws ListenerException;
 
 }

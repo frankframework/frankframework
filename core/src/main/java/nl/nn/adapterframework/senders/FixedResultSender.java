@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResult FixedResult}, but now as a ISender.
+ * FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResultPipe FixedResultPipe}, but now as a ISender.
  *
  * <table border="1">
  * <p><b>Parameters:</b>
@@ -81,7 +81,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 	    
 		if (StringUtils.isNotEmpty(fileName)) {
 			try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(getConfigurationClassLoader(), fileName), SystemUtils.LINE_SEPARATOR);
+				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this, fileName), SystemUtils.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+fileName+"]", e);
 			}
@@ -117,7 +117,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(getConfigurationClassLoader(), styleSheetName);
+			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
 			if (xsltSource!=null) {
 				try{
 					String xsltResult = null;

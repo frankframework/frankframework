@@ -1,9 +1,8 @@
 <project default="copy.files">
 	<target name="copy.files">
-		<property name="root.dir" value="c:/temp/testdata/fxf" />
-		<delete dir="${root.dir}" />
-		<mkdir dir="${root.dir}" />
-		<mkdir dir="${root.dir}/NNX01234/in" />
-		<copy file="file.txt" todir="${root.dir}/NNX01234/in" />
+		<delete dir="${fxf.dir}" />
+		<mkdir dir="${fxf.dir}" />
+		<mkdir dir="${fxf.dir}/NNX01234/in" />
+		<copy file="file.txt" todir="${fxf.dir}/NNX01234/in" />
 	</target>
 </project>

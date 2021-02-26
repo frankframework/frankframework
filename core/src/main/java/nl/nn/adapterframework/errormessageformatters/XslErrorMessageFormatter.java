@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018, 2020 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,16 +57,16 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	private String xpathExpression;
 
 	@Override
-	public String format(String errorMessage, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 
-		String result = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
+		Message result = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
 
 		if (StringUtils.isNotEmpty(getStyleSheet()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			try {
 				Transformer errorTransformer;
 
 				if (StringUtils.isNotEmpty(getStyleSheet())) {
-					URL url = ClassUtils.getResourceURL(getClassLoader(), styleSheet);
+					URL url = ClassUtils.getResourceURL(this, styleSheet);
 					errorTransformer = XmlUtils.createTransformer(url);
 				}
 				else {
@@ -94,7 +94,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 					XmlUtils.setTransformerParameters(errorTransformer, parametervalues );
 				}
-				result = XmlUtils.transformXml(errorTransformer, result);
+				result = new Message(XmlUtils.transformXml(errorTransformer, result.asSource()));
 			} catch (IOException e) {
 				log.error(" cannot retrieve [" + styleSheet + "]", e);
 			} catch (javax.xml.transform.TransformerConfigurationException te) {

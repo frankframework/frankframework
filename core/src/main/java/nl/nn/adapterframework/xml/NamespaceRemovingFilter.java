@@ -16,18 +16,14 @@
 package nl.nn.adapterframework.xml;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 public class NamespaceRemovingFilter extends FullXmlFilter {
 //	Logger log = LogUtil.getLogger(this.getClass());
 	
-	public NamespaceRemovingFilter() {
-		super();
-	}
-		
-	public NamespaceRemovingFilter(XMLReader xmlReader) {
-		super(xmlReader);
+	public NamespaceRemovingFilter(ContentHandler handler) {
+		super(handler);
 	}
 
 	@Override

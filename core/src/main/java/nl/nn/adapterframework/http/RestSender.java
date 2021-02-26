@@ -21,13 +21,15 @@ import org.apache.http.Header;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+@Deprecated
 public class RestSender extends HttpSender {
 
 	@Override
-	protected String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
-		String responseString = super.extractResult(responseHandler, session);
+	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+		String responseString = super.extractResult(responseHandler, session).asString();
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 		XmlBuilder result = new XmlBuilder("result");
 
@@ -58,6 +60,6 @@ public class RestSender extends HttpSender {
 			result.addSubElement(message);
 		}
 
-		return result.toXML();
+		return Message.asMessage(result.toXML());
 	}
 }

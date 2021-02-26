@@ -53,6 +53,7 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 		instance.setThrowException(true);
 		instance.setFullSchemaChecking(true);
 		instance.configure("init");
+		instance.start();
 
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		ValidationContext context = instance.createValidationContext(session, null, null);
@@ -112,7 +113,7 @@ public class ValidatorEntityExpansionTest extends EntityResolvingTest {
 
 		validatorHandler.setContentHandler(ch);
 
-		instance.validate(is, validatorHandler, session, context, false);
+		instance.validate(is, validatorHandler, session, context);
 
 		XmlValidatorErrorHandler errorHandler = context.getErrorHandler();
 		if (errorHandler.hasErrorOccured()) {

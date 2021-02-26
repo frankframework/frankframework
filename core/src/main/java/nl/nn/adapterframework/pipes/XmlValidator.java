@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017, 2020 Nationale-Nederlanden
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.pipes;
-
 
 import java.io.IOException;
 import java.net.URL;
@@ -31,23 +30,27 @@ import java.util.StringTokenizer;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -56,9 +59,11 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.Schema;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.SchemasProvider;
+import nl.nn.adapterframework.validation.ValidationContext;
 import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
+import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 
 
 /**
@@ -67,7 +72,6 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 * <table border="1">
 * <tr><th>state</th><th>condition</th></tr>
 * <tr><td>"success"</td><td>default</td></tr>
-* <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
 * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
 * <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
 * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
@@ -79,11 +83,17 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
 */
 public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator {
 
-	private String soapNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
-	private boolean forwardFailureToSuccess = false;
- 
+	private String schemaLocation;
+	private String noNamespaceSchemaLocation;
+	private String schemaSessionKey;
 	private String root;
 	private String responseRoot;
+	private boolean forwardFailureToSuccess = false;
+	private String soapNamespace = SoapVersion.SOAP11.namespace;
+	private String rootElementSessionKey;
+	private String rootNamespaceSessionKey;
+
+
 	private Set<List<String>> requestRootValidations;
 	private Set<List<String>> responseRootValidations;
 	private Map<List<String>, List<String>> invalidRootNamespaces;
@@ -94,12 +104,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private TransformerPool transformerPoolGetRootNamespace; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 	private TransformerPool transformerPoolRemoveNamespaces; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 
-	protected String schemaLocation;
-	protected String noNamespaceSchemaLocation;
-	protected String schemaSessionKey;
-
 	protected ConfigurationException configurationException;
 
+	protected final String ABSTRACTXMLVALIDATOR="nl.nn.adapterframework.validation.AbstractXmlValidator";
 	{
 		setNamespaceAware(true);
 	}
@@ -120,7 +127,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
 					StringUtils.isNotEmpty(getSchemaLocation())) &&
 					StringUtils.isNotEmpty(getSchemaSessionKey())) {
-				throw new ConfigurationException(getLogPrefix(null) + "cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
+				throw new ConfigurationException("cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
 			}
 			checkSchemaSpecified();
 			if (StringUtils.isNotEmpty(getSoapNamespace())) {
@@ -134,7 +141,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				try {
 					transformerPoolExtractSoapBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
 				} catch (TransformerConfigurationException te) {
-					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from getSoapBody", te);
+					throw new ConfigurationException("got error creating transformer from getSoapBody", te);
 				}
 	
 				transformerPoolGetRootNamespace = XmlUtils.getGetRootNamespaceTransformerPool();
@@ -143,7 +150,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	
 			if (!isForwardFailureToSuccess() && !isThrowException()){
 				if (findForward("failure")==null) {
-					throw new ConfigurationException(getLogPrefix(null)+ "must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
+					throw new ConfigurationException("must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
 				}
 			}
 	
@@ -162,9 +169,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			if (getSchemasId()!=null) {
 				getSchemas(true);
 			}
-			if (isRecoverAdapter()) {
-				validator.reset();
-			}
+
 			validator.configure(getLogPrefix(null));
 			registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
 			registerEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
@@ -178,11 +183,27 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 	}
 
+	@Override
+	public void start() throws PipeStartException {
+		try {
+			validator.start();
+			super.start();
+		} catch (ConfigurationException e) {
+			throw new PipeStartException("unable to start validator", e);
+		}
+	}
+
+	@Override
+	public void stop() {
+		validator.stop();
+		super.stop();
+	}
+
 	protected void checkSchemaSpecified() throws ConfigurationException {
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) &&
 				StringUtils.isEmpty(getSchemaLocation()) &&
 				StringUtils.isEmpty(getSchemaSessionKey())) {
-			throw new ConfigurationException(getLogPrefix(null) + "must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
+			throw new ConfigurationException("must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
 		}
 	}
 
@@ -233,7 +254,13 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	protected PipeForward validate(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), getRootValidations(responseMode), getInvalidRootNamespaces(), false);
+		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
+		ValidatorHandler validatorHandler = validator.getValidatorHandler(session, context);
+		XMLFilterImpl storeRootFilter = StringUtils.isNotEmpty(getRootElementSessionKey()) ? new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey(), null) : null;
+		if (storeRootFilter!=null) {
+			validatorHandler.setContentHandler(storeRootFilter);
+		}
+		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context);
 		return determineForward(resultEvent, session, responseMode);
 	}
 
@@ -326,153 +353,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 
-	/**
-	 * Enable full schema grammar constraint checking, including checking which may
-	 * be time-consuming or memory intensive. Currently, particle unique attribution
-	 * constraint checking and particle derivation resriction checking are
-	 * controlled by this option.
-	 * <p>
-	 * see property http://apache.org/xml/features/validation/schema-full-checking
-	 * </p>
-	 * Defaults to <code>false</code>;
-	 */
-	@IbisDoc({ "perform addional memory intensive checks", "<code>false</code>" })
-	public void setFullSchemaChecking(boolean fullSchemaChecking) {
-		validator.setFullSchemaChecking(fullSchemaChecking);
-	}
-
-	public boolean isFullSchemaChecking() {
-		return validator.isFullSchemaChecking();
-	}
-
-	/**
-	 * <p>
-	 * The filename of the schema on the classpath. It is not possible to specify a
-	 * namespace using this attribute.
-	 * <p>
-	 * An example value would be "xml/xsd/GetPartyDetail.xsd"
-	 * </p>
-	 * <p>
-	 * The value of the schema attribute is only used if the schemaLocation
-	 * attribute and the noNamespaceSchemaLocation are not set
-	 * </p>
-	 * 
-	 * @see ClassUtils#getResourceURL
-	 */
-	@IbisDoc({"the filename of the schema on the classpath. see doc on the method. (effectively the same as nonamespaceschemalocation)", "" })
-	public void setSchema(String schema) {
-		setNoNamespaceSchemaLocation(schema);
-	}
-	@Override
-	public String getSchema() {
-		return getNoNamespaceSchemaLocation();
-	}
-
-	/**
-	 * <p>Pairs of URI references (one for the namespace name, and one for a
-	 * hint as to the location of a schema document defining names for that
-	 * namespace name).</p>
-	 * <p> The syntax is the same as for schemaLocation attributes
-	 * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
-	 * <p>The user can specify more than one XML Schema in the list.</p>
-	 * <p><b>Note</b> that spaces are considered separators for this attributed.
-	 * This means that, for example, spaces in filenames should be escaped to %20.
-	 * </p>
-	 *
-	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
-	 */
-	@IbisDoc({"pairs of uri references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). see doc on the method.", ""})
-	public void setSchemaLocation(String schemaLocation) {
-		this.schemaLocation = schemaLocation;
-	}
-
-	@Override
-	public String getSchemaLocation() {
-		return schemaLocation;
-	}
-
-	/**
-	 * <p>A URI reference as a hint as to the location of a schema document with
-	 * no target namespace.</p>
-	 */
-	@IbisDoc({"a uri reference as a hint as to the location of a schema document with no target namespace. see doc on the method.", ""})
-	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
-		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
-	}
-
-	public String getNoNamespaceSchemaLocation() {
-		return noNamespaceSchemaLocation;
-	}
-
-	/**
-	 * <p>The sessionkey to a value that is the uri to the schema definition.</P>
-	 */
-	@IbisDoc({" ", ""})
-	public void setSchemaSessionKey(String schemaSessionKey) {
-		this.schemaSessionKey = schemaSessionKey;
-	}
-	public String getSchemaSessionKey() {
-		return schemaSessionKey;
-	}
-
-	/**
-	 * @deprecated attribute name changed to {@link #setSchemaSessionKey(String) schemaSessionKey}
-	 */
-	@Deprecated
-	@ConfigurationWarning("please use 'schemaSessionKey' instead.")
-	public void setSchemaSession(String schemaSessionKey) {
-		setSchemaSessionKey(schemaSessionKey);
-	}
-
-
-	/**
-	 * Indicates wether to throw an error (piperunexception) when the xml is not
-	 * compliant.
-	 */
-	@IbisDoc({"should the xmlvalidator throw a piperunexception on a validation error (if not, a forward with name 'failure' should be defined.", "<code>false</code>"})
-	public void setThrowException(boolean throwException) {
-		validator.setThrowException(throwException);
-	}
-	public boolean isThrowException() {
-		return validator.isThrowException();
-	}
-
-	@IbisDoc({"if set: key of session variable to store reasons of mis-validation in", "failurereason"})
-	public void setReasonSessionKey(String reasonSessionKey) {
-		validator.setReasonSessionKey(reasonSessionKey);
-	}
-	public String getReasonSessionKey() {
-		return validator.getReasonSessionKey();
-	}
-
-	@IbisDoc({"like <code>reasonsessionkey</code> but stores reasons in xml format and more extensive", "xmlfailurereason"})
-	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
-		validator.setXmlReasonSessionKey(xmlReasonSessionKey);
-	}
-	public String getXmlReasonSessionKey() {
-		return validator.getXmlReasonSessionKey();
-	}
-
-	@IbisDoc({"name of the root element. or a comma separated list of names to choose from (only one is allowed)", ""})
-	public void setRoot(String root) {
-		this.root = root;
-		addRequestRootValidation(Arrays.asList(root));
-	}
-	public String getRoot() {
-		return root;
-	}
-	public void setResponseRoot(String responseRoot) {
-		this.responseRoot = responseRoot;
-		addResponseRootValidation(Arrays.asList(responseRoot));
-	}
-	protected String getResponseRoot() {
-		return responseRoot;
-	}
-
-	@Override
-	public String getMessageRoot() {
-		return getRoot();
-	}
 	
 	public String getMessageRoot(boolean responseMode) {
 		return responseMode?getResponseRoot():getMessageRoot();
@@ -484,89 +364,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
         return new QName(getSchema()/* TODO*/, getRoot());
     }
 
-	@IbisDoc({"when set <code>true</code>, the input is assumed to be the name of the file to be validated. otherwise the input itself is validated", "<code>false</code>"})
-	public void setValidateFile(boolean b) {
-		validator.setValidateFile(b);
-	}
-	public boolean isValidateFile() {
-		return validator.isValidateFile();
-	}
-
-	@IbisDoc({"characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code>", "utf-8"})
-	public void setCharset(String string) {
-		validator.setCharset(string);
-	}
-	public String getCharset() {
-		return  validator.getCharset();
-	}
-
-    public void setImplementation(Class<AbstractXmlValidator> clazz) throws IllegalAccessException, InstantiationException {
-        validator = clazz.newInstance();
-    }
-
-    public boolean isAddNamespaceToSchema() {
-        return validator.isAddNamespaceToSchema();
-    }
-
-	@IbisDoc({"when set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "<code>false</code>"})
-    public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
-        validator.setAddNamespaceToSchema(addNamespaceToSchema);
-    }
-
-	@IbisDoc({"comma separated list of schemalocations which are excluded from an import or include in the schema document", ""})
-	public void setImportedSchemaLocationsToIgnore(String string) {
-		validator.setImportedSchemaLocationsToIgnore(string);
-    }
-
-	public String getImportedSchemaLocationsToIgnore() {
-		return validator.getImportedSchemaLocationsToIgnore();
-	}
-
-    public boolean isUseBaseImportedSchemaLocationsToIgnore() {
-        return validator.isUseBaseImportedSchemaLocationsToIgnore();
-    }
-
-	@IbisDoc({"when set <code>true</code>, the comparison for importedschemalocationstoignore is done on base filename without any path", "<code>false</code>"})
-    public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
-        validator.setUseBaseImportedSchemaLocationsToIgnore(useBaseImportedSchemaLocationsToIgnore);
-    }
-
-	@IbisDoc({"comma separated list of namespaces which are excluded from an import or include in the schema document", ""})
-	public void setImportedNamespacesToIgnore(String string) {
-		validator.setImportedNamespacesToIgnore(string);
-	}
-
-	public String getImportedNamespacesToIgnore() {
-		return validator.getImportedNamespacesToIgnore();
-	}
-
-    @Deprecated
-	@IbisDoc({"The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message, " +
-		"the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. " +
-		"Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator} "+
-		"is now the preferred solution in case a SOAP message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
-	public void setSoapNamespace(String string) {
-		soapNamespace = string;
-    }
-
-    @Deprecated
-	public String getSoapNamespace() {
-		return soapNamespace;
-	}
-
-	@IbisDoc({"when set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "<code>true</code>"})
-	public void setWarn(boolean warn) {
-        validator.setWarn(warn);
-    }
-
-	@IbisDoc({"ignore namespaces in the input message which are unknown", "true when schema or nonamespaceschemalocation is used, false otherwise"})
-	public void setIgnoreUnknownNamespaces(boolean ignoreUnknownNamespaces) {
-		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
-	}
-
-	public boolean getIgnoreUnknownNamespaces() {
-		return validator.getIgnoreUnknownNamespaces();
-	}
 
 	@Override
 	public String getSchemasId() {
@@ -583,7 +380,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		Set<XSD> xsds = new HashSet<XSD>();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			XSD xsd = new XSD();
-			xsd.initNoNamespace(getConfigurationClassLoader(), getNoNamespaceSchemaLocation());
+			xsd.initNoNamespace(this, getNoNamespaceSchemaLocation());
 			xsds.add(xsd);
 		} else {
 			String[] split =  schemaLocation.trim().split("\\s+");
@@ -594,7 +391,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 				xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 				xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-				xsd.initNamespace(split[i], getConfigurationClassLoader(), split[i + 1]);
+				xsd.initNamespace(split[i], this, split[i + 1]);
 				xsds.add(xsd);
 			}
 		}
@@ -616,7 +413,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			}
 			try {
 				Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
-				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(getConfigurationClassLoader(), xsdsGroupedByNamespace, null);
+				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null);
 			} catch(Exception e) {
 				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
 			}
@@ -648,7 +445,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@Override
-	public IPipe getResponseValidator() {
+	public IValidator getResponseValidator() {
 		if (isConfiguredForMixedValidation()) {
 			return new ResponseValidatorWrapper(this);
 		}
@@ -735,7 +532,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			return owner.getXsds();
 		}
 
-		
+		@Override
+		public String getDocumentation() {
+			return null;
+		}
 	}
 	
 	public boolean isMixedValidator(Object outputValidator) {
@@ -800,14 +600,14 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
 		List<Schema> xsds = new ArrayList<Schema>();
 		String schemaLocation = getSchemasId(session);
-		if (schemaSessionKey != null) {
-			final URL url = ClassUtils.getResourceURL(getConfigurationClassLoader(), schemaLocation);
+		if (getSchemaSessionKey() != null) {
+			final URL url = ClassUtils.getResourceURL(this, schemaLocation);
 			if (url == null) {
 				throw new PipeRunException(this, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
 			}
 			XSD xsd = new XSD();
 			try {
-				xsd.initNoNamespace(getConfigurationClassLoader(), schemaLocation);
+				xsd.initNoNamespace(this, schemaLocation);
 			} catch (ConfigurationException e) {
 				throw new PipeRunException(this, "Could not init xsd ["+schemaLocation+"]", e);
 			}
@@ -815,15 +615,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			return xsds;
 		}
 		return null;
-	}
-
-	@IbisDoc({"when set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "<code>false</code>"})
-	public void setForwardFailureToSuccess(boolean b) {
-		this.forwardFailureToSuccess = b;
-	}
-
-	public Boolean isForwardFailureToSuccess() {
-		return forwardFailureToSuccess;
 	}
 
 	@Override
@@ -874,23 +665,247 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		this.invalidRootNamespaces.put(path, invalidRootNamespaces);
 	}
 
-	@IbisDoc({"when set <code>true</code>, the number for caching validators in appconstants is ignored and no caching is done (for this validator only)", "<code>false</code>"})
+	public Map<List<String>, List<String>> getInvalidRootNamespaces() {
+		return invalidRootNamespaces;
+	}
+
+	@Override
+	public String getDocumentation() {
+		return null;
+	}
+
+	public void setImplementation(Class<AbstractXmlValidator> clazz) throws IllegalAccessException, InstantiationException {
+		validator = clazz.newInstance();
+	}
+
+
+	/**
+	 * <p>
+	 * The filename of the schema on the classpath. It is not possible to specify a
+	 * namespace using this attribute.
+	 * <p>
+	 * An example value would be "xml/xsd/GetPartyDetail.xsd"
+	 * </p>
+	 * <p>
+	 * The value of the schema attribute is only used if the schemaLocation
+	 * attribute and the noNamespaceSchemaLocation are not set
+	 * </p>
+	 * 
+	 * @see ClassUtils#getResourceURL
+	 */
+	@IbisDoc({"1", "the filename of the schema on the classpath. see doc on the method. (effectively the same as noNamespaceSchemaLocation)", "" })
+	public void setSchema(String schema) {
+		setNoNamespaceSchemaLocation(schema);
+	}
+	@Override
+	public String getSchema() {
+		return getNoNamespaceSchemaLocation();
+	}
+
+	/**
+	 * <p>Pairs of URI references (one for the namespace name, and one for a
+	 * hint as to the location of a schema document defining names for that
+	 * namespace name).</p>
+	 * <p> The syntax is the same as for schemaLocation attributes
+	 * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
+	 * <p>The user can specify more than one XML Schema in the list.</p>
+	 * <p><b>Note</b> that spaces are considered separators for this attributed.
+	 * This means that, for example, spaces in filenames should be escaped to %20.
+	 * </p>
+	 *
+	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
+	 */
+	@IbisDoc({"2", "Pairs of uri references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). see doc on the method.", ""})
+	public void setSchemaLocation(String schemaLocation) {
+		this.schemaLocation = schemaLocation;
+	}
+	@Override
+	public String getSchemaLocation() {
+		return schemaLocation;
+	}
+
+	@IbisDoc({"3", "A uri reference as a hint as to the location of a schema document with no target namespace.", ""})
+	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
+		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
+	}
+	public String getNoNamespaceSchemaLocation() {
+		return noNamespaceSchemaLocation;
+	}
+
+	@IbisDoc({"4", "session key for retrieving a schema", ""})
+	public void setSchemaSessionKey(String schemaSessionKey) {
+		this.schemaSessionKey = schemaSessionKey;
+	}
+	public String getSchemaSessionKey() {
+		return schemaSessionKey;
+	}
+
+	@IbisDoc({"5", "Name of the root element, or a comma separated list of names to choose from (only one is allowed)", ""})
+	public void setRoot(String root) {
+		this.root = root;
+		if (root!=null) {
+			addRequestRootValidation(Arrays.asList(root.split(",")));
+		}
+	}
+	public String getRoot() {
+		return root;
+	}
+	@IbisDoc({"6", "Name of the response root element, or a comma separated list of names to choose from (only one is allowed)", ""})
+	public void setResponseRoot(String responseRoot) {
+		this.responseRoot = responseRoot;
+		if (responseRoot!=null) {
+			addResponseRootValidation(Arrays.asList(responseRoot.split(",")));
+		}
+	}
+	protected String getResponseRoot() {
+		return responseRoot;
+	}
+
+	@Override
+	public String getMessageRoot() {
+		return getRoot();
+	}
+
+	@IbisDoc({"7", "If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "<code>false</code>"})
+	public void setForwardFailureToSuccess(boolean b) {
+		this.forwardFailureToSuccess = b;
+	}
+	public boolean isForwardFailureToSuccess() {
+		return forwardFailureToSuccess;
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setFullSchemaChecking(boolean fullSchemaChecking) {
+		validator.setFullSchemaChecking(fullSchemaChecking);
+	}
+	public boolean isFullSchemaChecking() {
+		return validator.isFullSchemaChecking();
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setThrowException(boolean throwException) {
+		validator.setThrowException(throwException);
+	}
+	public boolean isThrowException() {
+		return validator.isThrowException();
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setReasonSessionKey(String reasonSessionKey) {
+		validator.setReasonSessionKey(reasonSessionKey);
+	}
+	public String getReasonSessionKey() {
+		return validator.getReasonSessionKey();
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
+		validator.setXmlReasonSessionKey(xmlReasonSessionKey);
+	}
+	public String getXmlReasonSessionKey() {
+		return validator.getXmlReasonSessionKey();
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setValidateFile(boolean b) {
+		validator.setValidateFile(b);
+	}
+	public boolean isValidateFile() {
+		return validator.isValidateFile();
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setCharset(String string) {
+		validator.setCharset(string);
+	}
+	public String getCharset() {
+		return  validator.getCharset();
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
+		validator.setAddNamespaceToSchema(addNamespaceToSchema);
+	}
+	public boolean isAddNamespaceToSchema() {
+		return validator.isAddNamespaceToSchema();
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setImportedSchemaLocationsToIgnore(String string) {
+		validator.setImportedSchemaLocationsToIgnore(string);
+	}
+	public String getImportedSchemaLocationsToIgnore() {
+		return validator.getImportedSchemaLocationsToIgnore();
+	}
+
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
+		validator.setUseBaseImportedSchemaLocationsToIgnore(useBaseImportedSchemaLocationsToIgnore);
+	}
+	public boolean isUseBaseImportedSchemaLocationsToIgnore() {
+		return validator.isUseBaseImportedSchemaLocationsToIgnore();
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setImportedNamespacesToIgnore(String string) {
+		validator.setImportedNamespacesToIgnore(string);
+	}
+	public String getImportedNamespacesToIgnore() {
+		return validator.getImportedNamespacesToIgnore();
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setWarn(boolean warn) {
+		validator.setWarn(warn);
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	public void setIgnoreUnknownNamespaces(Boolean ignoreUnknownNamespaces) {
+		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
+	}
+	public Boolean getIgnoreUnknownNamespaces() {
+		return validator.getIgnoreUnknownNamespaces();
+	}
+
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		validator.setIgnoreCaching(ignoreCaching);
 	}
 
-	@IbisDoc({"when set, the value in appconstants is overwritten (for this validator only)", "<code>application default (false)</code>"})
-	public void setLazyInit(boolean lazyInit) {
-		validator.setLazyInit(lazyInit);
-	}
-
-
-	@IbisDoc({"When set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property. ", "<code>1.1</code>"})
+	@IbisDocRef({ABSTRACTXMLVALIDATOR})
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {
 		validator.setXmlSchemaVersion(xmlSchemaVersion);
 	}
-
-	public Map<List<String>, List<String>> getInvalidRootNamespaces() {
-		return invalidRootNamespaces;
+	
+	@Deprecated
+	@IbisDoc({"The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message, " +
+		"the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. " +
+		"Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator} "+
+		"is now the preferred solution in case a SOAP message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
+	public void setSoapNamespace(String string) {
+		soapNamespace = string;
 	}
+	@Deprecated
+	public String getSoapNamespace() {
+		return soapNamespace;
+	}
+
+	@IbisDoc({"40", "key of session variable to store the name of the root element",""})
+	public void setRootElementSessionKey(String rootElementSessionKey) {
+		this.rootElementSessionKey = rootElementSessionKey;
+	}
+	public String getRootElementSessionKey() {
+		return rootElementSessionKey;
+	}
+
+	@IbisDoc({"41", "key of session variable to store the namespace of the root element",""})
+	public void setRootNamespaceSessionKey(String rootNamespaceSessionKey) {
+		this.rootNamespaceSessionKey = rootNamespaceSessionKey;
+	}
+	public String getRootNamespaceSessionKey() {
+		return rootNamespaceSessionKey;
+	}
+
+
 }

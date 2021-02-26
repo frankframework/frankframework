@@ -2,15 +2,12 @@ package nl.nn.adapterframework.validation;
 
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
-
-import java.io.IOException;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeRunException;
 
 /**
  * @author Gerrit van Brakel / Michiel Meeuwissen
@@ -18,7 +15,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 
     @Test
-    public void straighforward() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+    public void straighforward() throws Exception {
     	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_OK,false,null);
     	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR,false,MSG_INVALID_CONTENT);
     	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK,false,MSG_CANNOT_FIND_DECLARATION);
@@ -34,7 +31,7 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 //    }
 
     @Test
-    public void addTargetNamespace() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+    public void addTargetNamespace() throws Exception {
     	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_OK,true,null);
     	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR,true,MSG_INVALID_CONTENT);
     	validation(ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK,true,null);

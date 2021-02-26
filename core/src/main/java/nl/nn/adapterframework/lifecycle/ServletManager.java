@@ -81,8 +81,8 @@ public class ServletManager {
 	}
 
 	public void registerServlet(String servletName, Servlet servletClass, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
-		log.info("instantiated IbisInitializer servlet name ["+servletName+"] servletClass ["+servletClass+"] loadOnStartup ["+loadOnStartup+"]");
-		getServletContext().log("instantiated IbisInitializer servlet ["+servletName+"]");
+		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servletClass+"] loadOnStartup ["+loadOnStartup+"]");
+		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
 
 
 		AppConstants appConstants = AppConstants.getInstance();
@@ -98,7 +98,13 @@ public class ServletManager {
 		String[] rolesCopy = new String[0];
 		if(roles != null && !stage.equalsIgnoreCase("LOC"))
 			rolesCopy = roles;
+
 		String roleNames = appConstants.getString(propertyPrefix+"securityroles", null);
+		if(StringUtils.isNotEmpty(roleNames)) {
+			log.warn("property ["+propertyPrefix+"securityroles] has been replaced with ["+propertyPrefix+"securityRoles"+"]");
+		}
+		roleNames = appConstants.getString(propertyPrefix+"securityRoles", roleNames);
+
 		if(StringUtils.isNotEmpty(roleNames))
 			rolesCopy = roleNames.split(",");
 		declareRoles(rolesCopy);
@@ -107,7 +113,7 @@ public class ServletManager {
 		ServletSecurityElement constraint = new ServletSecurityElement(httpConstraintElement);
 
 		String urlMappingCopy = appConstants.getString(propertyPrefix+"urlMapping", urlMapping);
-		if(!urlMappingCopy.startsWith("/")) {
+		if(!urlMappingCopy.startsWith("/") && !urlMappingCopy.startsWith("*")) {
 			urlMappingCopy = "/"+urlMappingCopy;
 		}
 		serv.addMapping(urlMappingCopy);

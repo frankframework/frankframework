@@ -168,6 +168,8 @@ public final class SendJmsMessageExecute extends ActionBase {
 	          cookieValue += "destinationType=\"" + form_destinationType + "\"";
 	          Cookie sendJmsCookie = new Cookie(AppConstants.getInstance().getProperty("WEB_JMSCOOKIE_NAME"), cookieValue);
 	          sendJmsCookie.setMaxAge(Integer.MAX_VALUE);
+	          sendJmsCookie.setHttpOnly(true);
+	          sendJmsCookie.setSecure(true);
 	          log.debug("Store cookie for " + request.getServletPath()+
 	          " cookieName[" + AppConstants.getInstance().getProperty("WEB_JMSCOOKIE_NAME")+"] "+
 	          " cookieValue[" + new StringTagger(cookieValue).toString()+"]");

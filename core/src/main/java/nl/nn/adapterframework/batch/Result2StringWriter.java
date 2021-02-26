@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,40 +17,32 @@ package nl.nn.adapterframework.batch;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 
 
 /**
- * Resulthandler that writes the transformed record to a String, that is passed literally to the next Pipe.
- * 
+ * Resulthandler that writes the transformed record to a String, that is passed to the next Pipe literally.
  * 
  * @author Gerrit van Brakel
  * @since   4.7
  */
 public class Result2StringWriter extends ResultWriter {
 	
-	private Map<String,Writer> openWriters = Collections.synchronizedMap(new HashMap<>());
-	
 	@Override
 	protected Writer createWriter(IPipeLineSession session, String streamId) throws Exception {
-		Writer writer=new StringWriter();
-		openWriters.put(streamId,writer); // this map is never read...
-		return writer;
+		return new StringWriter();
 	}
-	
+
 	@Override
-	public Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
 		super.finalizeResult(session,streamId, error);
 		StringWriter writer = (StringWriter)getWriter(session,streamId,false);
 		String result=null;
 		if (writer!=null) {
 			result = (writer).getBuffer().toString();
 		} 
-		return result;		
+		return result;
 	}
 
 }

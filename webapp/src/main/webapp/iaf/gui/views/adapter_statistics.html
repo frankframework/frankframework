@@ -15,79 +15,19 @@
 				<div class="ibox-content">
 					<div class="col-md-12 table-responsive">
 						<h4>Adapter statistics by the hour</h4>
-							<div style="height:300px;">
-								<canvas id="line" class="chart chart-line" chart-options="options" chart-data="hourlyStatistics.data" 
-								chart-labels="hourlyStatistics.labels" chart-dataset-override="dataset" chart-series="series">
-								</canvas>
-							</div>
+						<div style="height:300px;">
+							<canvas id="line" class="chart chart-line" chart-options="options" chart-data="hourlyStatistics.data" 
+							chart-labels="hourlyStatistics.labels" chart-dataset-override="dataset" chart-series="series">
+							</canvas>
+						</div>
 					</div>
 					<div class="col-md-4 m-t-md table-responsive">
 						<h4>Total message processing duration (in ms)</h4>
 						<table class="table">
 							<tbody>
-								<tr>
-									<td>Count</td>
-									<td>{{stats.totalMessageProccessingTime.count | dash}}</td>
-								</tr>
-								<tr>
-									<td>Min</td>
-									<td>{{stats.totalMessageProccessingTime.min | dash}}</td>
-								</tr>
-								<tr>
-									<td>Max</td>
-									<td>{{stats.totalMessageProccessingTime.max | dash}}</td>
-								</tr>
-								<tr>
-									<td>Average</td>
-									<td>{{stats.totalMessageProccessingTime.avg | dash}}</td>
-								</tr>
-								<tr>
-									<td>stdDev</td>
-									<td>{{stats.totalMessageProccessingTime.stdDev | dash}}</td>
-								</tr>
-								<tr>
-									<td>Sum</td>
-									<td>{{stats.totalMessageProccessingTime.sum | dash}}</td>
-								</tr>
-								<tr>
-									<td>First</td>
-									<td>{{stats.totalMessageProccessingTime.first | dash}}</td>
-								</tr>
-								<tr>
-									<td>Last</td>
-									<td>{{stats.totalMessageProccessingTime.last | dash}}</td>
-								</tr>
-								<tr>
-									<td>100ms</td>
-									<td>{{stats.totalMessageProccessingTime["100ms"] | perc}}</td>
-								</tr>
-								<tr>
-									<td>1000ms</td>
-									<td>{{stats.totalMessageProccessingTime["1000ms"] | perc}}</td>
-								</tr>
-								<tr>
-									<td>2000ms</td>
-									<td>{{stats.totalMessageProccessingTime["2000ms"] | perc}}</td>
-								</tr>
-								<tr>
-									<td>10000ms</td>
-									<td>{{stats.totalMessageProccessingTime["10000ms"] | perc}}</td>
-								</tr>
-								<tr>
-									<td>p50</td>
-									<td>{{stats.totalMessageProccessingTime.p50 | dash}}</td>
-								</tr>
-								<tr>
-									<td>p90</td>
-									<td>{{stats.totalMessageProccessingTime.p90 | dash}}</td>
-								</tr>
-								<tr>
-									<td>p95</td>
-									<td>{{stats.totalMessageProccessingTime.p95 | dash}}</td>
-								</tr>
-								<tr>
-									<td>p98</td>
-									<td>{{stats.totalMessageProccessingTime.p98 | dash}}</td>
+								<tr ng-repeat="(key, value) in stats.totalMessageProccessingTime | formatStatistics:statisticsTimeBoundaries" ng-if="$index > 0">
+									<td>{{::statisticsTimeBoundaries[key]}}</td>
+									<td>{{value}}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -115,45 +55,14 @@
 							<thead>
 								<tr>
 									<th>Receiver</th>
-									<th>Threads</th>
-									<th>Count</th>
-									<th>Min</th>
-									<th>Max</th>
-									<th>Avg</th>
-									<th>stdDev</th>
-									<th>Sum</th>
-									<th>First</th>
-									<th>Last</th>
-									<th>< 100ms</th>
-									<th>< 1000ms</th>
-									<th>< 2000ms</th>
-									<th>< 10000ms</th>
-									<th>p50</th>
-									<th>p90</th>
-									<th>p95</th>
-									<th>p98</th>
+									<th># Threads Processing</th>
+									<th ng-repeat="name in statisticsTimeBoundaries" ng-if="$index > 0">{{::name}}</th>
 								</tr>
 							</thead>
 							<tbody ng-repeat="receiver in stats.receivers">
-								<tr ng-repeat="p in receiver.processing">
+								<tr ng-repeat="threadsProcessing in ::receiver.processing">
 									<td>{{receiver.name}}</td>
-									<td>Thread {{$index}}</td>
-									<td>{{::p.count | dash}}</td>
-									<td>{{::p.min | dash}}</td>
-									<td>{{::p.max | dash}}</td>
-									<td>{{::p.avg | dash}}</td>
-									<td>{{::p.stdDev | dash}}</td>
-									<td>{{::p.sum | dash}}</td>
-									<td>{{::p.first | dash}}</td>
-									<td>{{::p.last | dash}}</td>
-									<td>{{::p['100ms'] | perc}}</td>
-									<td>{{::p['1000ms'] | perc}}</td>
-									<td>{{::p['2000ms'] | perc}}</td>
-									<td>{{::p['10000ms'] | perc}}</td>
-									<td>{{::p.p50 | dash}}</td>
-									<td>{{::p.p90 | dash}}</td>
-									<td>{{::p.p95 | dash}}</td>
-									<td>{{::p.p98 | dash}}</td>
+									<td ng-repeat="values in ::threadsProcessing | formatStatistics:statisticsTimeBoundaries">{{::values}}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -163,44 +72,12 @@
 						<table class="table">
 							<thead>
 								<tr>
-									<th>Name</th>
-									<th>Count</th>
-									<th>Min</th>
-									<th>Max</th>
-									<th>Avg</th>
-									<th>stdDev</th>
-									<th>Sum</th>
-									<th>First</th>
-									<th>Last</th>
-									<th>< 100ms</th>
-									<th>< 1000ms</th>
-									<th>< 2000ms</th>
-									<th>< 10000ms</th>
-									<th>p50</th>
-									<th>p90</th>
-									<th>p95</th>
-									<th>p98</th>
+									<th ng-repeat="name in statisticsTimeBoundaries">{{::name}}</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="p in stats.durationPerPipe">
-									<td>{{::p.name}}</td>
-									<td>{{::p.count | dash}}</td>
-									<td>{{::p.min | dash}}</td>
-									<td>{{::p.max | dash}}</td>
-									<td>{{::p.avg | dash}}</td>
-									<td>{{::p.stdDev | dash}}</td>
-									<td>{{::p.sum | dash}}</td>
-									<td>{{::p.first | dash}}</td>
-									<td>{{::p.last | dash}}</td>
-									<td>{{::p['100ms'] | perc}}</td>
-									<td>{{::p['1000ms'] | perc}}</td>
-									<td>{{::p['2000ms'] | perc}}</td>
-									<td>{{::p['10000ms'] | perc}}</td>
-									<td>{{::p.p50 | dash}}</td>
-									<td>{{::p.p90 | dash}}</td>
-									<td>{{::p.p95 | dash}}</td>
-									<td>{{::p.p98 | dash}}</td>
+								<tr ng-repeat="pipe in stats.durationPerPipe">
+									<td ng-repeat="values in ::pipe | formatStatistics:statisticsTimeBoundaries">{{::values}}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -210,40 +87,12 @@
 						<table class="table">
 							<thead>
 								<tr>
-									<th>Name</th>
-									<th>Count</th>
-									<th>Min</th>
-									<th>Max</th>
-									<th>Avg</th>
-									<th>stdDev</th>
-									<th>Sum</th>
-									<th>First</th>
-									<th>Last</th>
-									<th>< 100000B</th>
-									<th>< 1000000B</th>
-									<th>p50</th>
-									<th>p90</th>
-									<th>p95</th>
-									<th>p98</th>
+									<th ng-repeat="name in statisticsSizeBoundaries">{{::name}}</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="p in stats.sizePerPipe">
-									<td>{{::p.name}}</td>
-									<td>{{::p.count | dash}}</td>
-									<td>{{::p.min | dash}}</td>
-									<td>{{::p.max | dash}}</td>
-									<td>{{::p.avg | dash}}</td>
-									<td>{{::p.stdDev | dash}}</td>
-									<td>{{::p.sum | dash}}</td>
-									<td>{{::p.first | dash}}</td>
-									<td>{{::p.last | dash}}</td>
-									<td>{{::p['100000B'] | perc}}</td>
-									<td>{{::p['1000000B'] | perc}}</td>
-									<td>{{::p.p50 | dash}}</td>
-									<td>{{::p.p90 | dash}}</td>
-									<td>{{::p.p95 | dash}}</td>
-									<td>{{::p.p98 | dash}}</td>
+								<tr ng-repeat="pipe in stats.sizePerPipe">
+									<td ng-repeat="values in ::pipe | formatStatistics:statisticsSizeBoundaries">{{::values}}</td>
 								</tr>
 							</tbody>
 						</table>

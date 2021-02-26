@@ -20,7 +20,8 @@
 		'ui.bootstrap',                 // Ui Bootstrap
 		'ngIdle',                       // Idle timer
 		'ngSanitize',                   // ngSanitize
-		'angular-ladda'                 // Ladda
+		'angular-ladda',                // Ladda
+		'toaster'                       // Toastr
 	]).constant("appConstants", {
 		//Configure these in the server AppConstants!!!
 		//The settings here are defaults and will be overwritten upon set in any .properties file.

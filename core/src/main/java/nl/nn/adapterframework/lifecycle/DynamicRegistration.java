@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServlet;
 
 public interface DynamicRegistration {
 
-	public interface Servlet extends DynamicRegistration {
+	public interface Servlet extends DynamicRegistration, javax.servlet.Servlet {
 		public HttpServlet getServlet();
 		public String getUrlMapping();
 		public String[] getRoles();

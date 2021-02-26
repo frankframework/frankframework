@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.akamai;
 
-import static org.junit.Assert.assertEquals;
+import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
@@ -42,8 +42,8 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public NetStorageSender createSender() {
 		return spy(new NetStorageSender() {
 			@Override
-			public String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
-				return getResponseBodyAsString(responseHandler);
+			public Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+				return new Message( getResponseBodyAsString(responseHandler, true) );
 			}
 		});
 	}
@@ -79,7 +79,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("duAction.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -104,7 +104,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("duAction.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {

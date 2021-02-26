@@ -21,14 +21,13 @@ import java.io.UnsupportedEncodingException;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlUtils;
 
 
 /**
@@ -127,10 +126,8 @@ public class BytesOutputPipe extends FixedForwardPipe {
 		Object result = null;
 
 		try {
-			XMLReader parser = XMLReaderFactory.createXMLReader();
 			FieldsContentHandler fieldsContentHandler = new FieldsContentHandler();
-			parser.setContentHandler(fieldsContentHandler);
-			parser.parse(message.asInputSource());
+			XmlUtils.parseXml(message.asInputSource(), fieldsContentHandler);
 			result = fieldsContentHandler.getResult();
 		} catch (SAXException e) {
 			throw new PipeRunException(this, "SAXException", e);

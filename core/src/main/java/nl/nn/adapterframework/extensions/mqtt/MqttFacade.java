@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Integration Partners
+   Copyright 2017 - 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.mqtt;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -30,7 +31,10 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
-public class MqttFacade implements HasPhysicalDestination {
+import lombok.Getter;
+
+public class MqttFacade implements HasPhysicalDestination, IConfigurable {
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
@@ -50,7 +54,8 @@ public class MqttFacade implements HasPhysicalDestination {
 	private String username;
 	private String password;
 	private String authAlias;
-
+	
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getClientId())) {
 			throw new ConfigurationException("clientId must be specified");
@@ -108,6 +113,7 @@ public class MqttFacade implements HasPhysicalDestination {
 		return "TOPIC(" + getTopic() + ") on (" + getBrokerUrl() + ")";
 	}
 
+	@Override
 	public String toString() {
 		ToStringBuilder ts = new ToStringBuilder(this);
 		ts.append("topic", getTopic());
@@ -118,9 +124,11 @@ public class MqttFacade implements HasPhysicalDestination {
 		return ts.toString();
 	}
 
+	@Override
 	public void setName(String newName) {
 		name = newName;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}

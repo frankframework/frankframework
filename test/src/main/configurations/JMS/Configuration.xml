@@ -1,5 +1,4 @@
 <!DOCTYPE configuration [
-	<!ENTITY ConfigurationBatch SYSTEM "./ConfigurationBatch.xml">
 	<!ENTITY ConfigurationCompactMessage SYSTEM "./ConfigurationCompactMessage.xml">
 	<!ENTITY ConfigurationEsbJmsListenerSender SYSTEM "./ConfigurationEsbJmsListenerSender.xml">
 	<!ENTITY ConfigurationFxF3 SYSTEM "./ConfigurationFxF3.xml">
@@ -8,7 +7,6 @@
 	<!ENTITY ConfigurationJmsHeaders SYSTEM "./ConfigurationJmsHeaders.xml">
 ]>
 <configuration name="JMS">
-	&ConfigurationBatch;
 	&ConfigurationCompactMessage;
 	&ConfigurationEsbJmsListenerSender;
 	&ConfigurationFxF3;

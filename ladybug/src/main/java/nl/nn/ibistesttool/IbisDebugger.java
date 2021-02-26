@@ -31,7 +31,7 @@ import nl.nn.adapterframework.stream.Message;
 public interface IbisDebugger {
 
 	public Message pipeLineInput(PipeLine pipeLine, String correlationId, Message input);
-	public String pipeLineOutput(PipeLine pipeLine, String correlationId, String output);
+	public Message pipeLineOutput(PipeLine pipeLine, String correlationId, Message output);
 	public Throwable pipeLineAbort(PipeLine pipeLine, String correlationId, Throwable throwable);
 
 	public Object pipeLineSessionKey(String correlationId, String sessionKey, Object sessionValue);
@@ -44,7 +44,7 @@ public interface IbisDebugger {
 	public Message senderOutput(ISender sender, String correlationId, Message output);
 	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable);
 
-	public String replyListenerInput(IListener<?> listener, String correlationId, String input);
+	public String replyListenerInput(IListener<?> listener, String messageId, String correlationId);
 	public String replyListenerOutput(IListener<?> listener, String correlationId, String output);
 	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable);
 

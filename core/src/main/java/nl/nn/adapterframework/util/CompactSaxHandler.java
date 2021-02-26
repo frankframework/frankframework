@@ -43,11 +43,11 @@ public class CompactSaxHandler extends DefaultHandler {
 	private StringBuffer messageBuffer = new StringBuffer();
 	private StringBuffer charBuffer = new StringBuffer();
 	private StringBuffer namespaceBuffer = new StringBuffer();
-	private List elements = new ArrayList();
-	private Map context = null;
+	private List<String> elements = new ArrayList<>();
+	private Map<String,Object> context = null;
 
-	public void startElement(String uri, String localName, String qName,
-			Attributes attributes) throws SAXException {
+	@Override
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 
 		printCharBuffer();
 
@@ -61,16 +61,15 @@ public class CompactSaxHandler extends DefaultHandler {
 		}
 
 		if (isRemoveCompactMsgNamespaces()) {
-			messageBuffer.append("<" + localName + attributeBuffer.toString()
-					+ ">");
+			messageBuffer.append("<" + localName + attributeBuffer.toString() + ">");
 		} else {
-			messageBuffer.append("<" + qName + namespaceBuffer
-					+ attributeBuffer.toString() + ">");
+			messageBuffer.append("<" + qName + namespaceBuffer + attributeBuffer.toString() + ">");
 		}
 		elements.add(localName);
 		namespaceBuffer.setLength(0);
 	}
 
+	@Override
 	public void startPrefixMapping(String prefix, String uri) {
 		String thisPrefix = "";
 		if (prefix != "") {
@@ -81,13 +80,12 @@ public class CompactSaxHandler extends DefaultHandler {
 		}
 	}
 
-	public void endElement(String uri, String localName, String qName)
-			throws SAXException {
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {
 		int lastIndex = elements.size() - 1;
 		String lastElement = (String) elements.get(lastIndex);
 		if (!lastElement.equals(localName)) {
-			throw new SAXException("expected end element [" + lastElement
-					+ "] but got end element [" + localName + "]");
+			throw new SAXException("expected end element [" + lastElement + "] but got end element [" + localName + "]");
 		}
 
 		printCharBuffer();
@@ -99,8 +97,8 @@ public class CompactSaxHandler extends DefaultHandler {
 		elements.remove(lastIndex);
 	}
 
-	public void characters(char[] ch, int start, int length)
-			throws SAXException {
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {
 		charBuffer.append(ch, start, length);
 	}
 
@@ -110,11 +108,8 @@ public class CompactSaxHandler extends DefaultHandler {
 			String after = "";
 
 			if (chompLength >= 0 && charBuffer.length() > chompLength) {
-				before = "*** character data size [" + charBuffer.length()
-						+ "] exceeds [" + getChompCharSize()
-						+ "] and is chomped ***";
-				after = "...(" + (charBuffer.length() - chompLength)
-						+ " characters more)";
+				before = "*** character data size [" + charBuffer.length() + "] exceeds [" + getChompCharSize() + "] and is chomped ***";
+				after = "...(" + (charBuffer.length() - chompLength) + " characters more)";
 				charBuffer.setLength(chompLength);
 			}
 
@@ -122,11 +117,8 @@ public class CompactSaxHandler extends DefaultHandler {
 			String lastElement = (String) elements.get(lastIndex);
 
 			if (context != null
-					&& ((getElementToMove() != null
-							&& lastElement.equals(getElementToMove()) || (getElementToMoveChain() != null && elementsToString()
-							.equals(getElementToMoveChain()))))
-					&& !(charBuffer.toString().startsWith(VALUE_MOVE_START) && charBuffer
-							.toString().endsWith(VALUE_MOVE_END))) {
+					&& ((getElementToMove() != null && lastElement.equals(getElementToMove()) || (getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain()))))
+					&& !(charBuffer.toString().startsWith(VALUE_MOVE_START) && charBuffer.toString().endsWith(VALUE_MOVE_END))) {
 				String elementToMoveSK;
 				if (getElementToMoveSessionKey() == null) {
 					elementToMoveSK = "ref_" + lastElement;
@@ -141,13 +133,10 @@ public class CompactSaxHandler extends DefaultHandler {
 						elementToMoveSK = etmsk + counter;
 					}
 				}
-				context.put(elementToMoveSK, before + charBuffer.toString()
-						+ after);
-				messageBuffer.append(VALUE_MOVE_START + elementToMoveSK
-						+ VALUE_MOVE_END);
+				context.put(elementToMoveSK, before + charBuffer.toString() + after);
+				messageBuffer.append(VALUE_MOVE_START + elementToMoveSK + VALUE_MOVE_END);
 			} else {
-				messageBuffer.append(before
-						+ XmlUtils.encodeChars(charBuffer.toString()) + after);
+				messageBuffer.append(before + XmlUtils.encodeChars(charBuffer.toString()) + after);
 			}
 
 			charBuffer.setLength(0);
@@ -167,7 +156,7 @@ public class CompactSaxHandler extends DefaultHandler {
 		return chain;
 	}
 
-	public void setContext(Map map) {
+	public void setContext(Map<String,Object> map) {
 		context = map;
 	}
 

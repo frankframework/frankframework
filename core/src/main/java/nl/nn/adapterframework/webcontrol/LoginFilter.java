@@ -103,7 +103,7 @@ public class LoginFilter implements Filter {
 	protected String ldapAuthObserverBase;
 	protected String ldapAuthDataAdminBase;
 	protected String ldapAuthTesterBase;
-	protected final List<String> allowedExtentions = new ArrayList<String>();
+	protected final List<String> allowedExtensions = new ArrayList<String>();
 	protected final List<String> allowedObserverPaths = new ArrayList<String>();
 	protected final List<String> allowedDataAdminPaths = new ArrayList<String>();
 	protected final List<String> allowedTesterPaths = new ArrayList<String>();
@@ -122,9 +122,9 @@ public class LoginFilter implements Filter {
 		}
 
 		if (ldapAuthModeNum >= LDAP_AUTH_MODE_SIMPLE) {
-			String allowedExtentionsString = filterConfig.getInitParameter("allowedExtentions");
-			if (allowedExtentionsString != null) {
-				allowedExtentions.addAll(Arrays.asList(allowedExtentionsString.split("\\s+")));
+			String allowedExtensionsString = filterConfig.getInitParameter("allowedExtensions");
+			if (allowedExtensionsString != null) {
+				allowedExtensions.addAll(Arrays.asList(allowedExtensionsString.split("\\s+")));
 			}
 
 			String allowedObserverPathsString = filterConfig.getInitParameter("allowedObserverPaths");
@@ -228,7 +228,7 @@ public class LoginFilter implements Filter {
 	}
 
 	private boolean hasAllowedExtension(String path) {
-		for (String allowedExtension : allowedExtentions) {
+		for (String allowedExtension : allowedExtensions) {
 			if (FileUtils.extensionEqualsIgnoreCase(path, allowedExtension)) {
 				return true;
 			}

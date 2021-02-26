@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,19 +19,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * Listener that polls a directory via FTP for files according to a wildcard. 
@@ -41,19 +43,20 @@ import org.apache.commons.lang.builder.ToStringStyle;
  *
  * @author  John Dekker
  */
-public class FtpListener extends FtpSession implements IPullingListener<String>, INamedObject, RunStateEnquiring {
+@Deprecated
+@ConfigurationWarning("Please replace with FtpFileSystemListener")
+public class FtpListener extends FtpSession implements IPullingListener<String>, RunStateEnquiring {
 
 	private LinkedList<String> remoteFilenames;
 	private RunStateEnquirer runStateEnquirer=null;
 
-	private String name;
 	private String remoteDirectory;
 	private long responseTime = 3600000; // one hour
 
 	private long localResponseTime =  1000; // time between checks if adapter still state 'started'
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, String rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
 	}
 
 	@Override
@@ -109,7 +112,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 				openClient(remoteDirectory);
 				List<String> names = ls(remoteDirectory, true, true);
 				log.debug("FtpListener [" + getName() + "] received ls result of ["+names.size()+"] files");
-				if (names != null && names.size() > 0) {
+				if (names.size() > 0) {
 					remoteFilenames.addAll(names);
 				}
 			}
@@ -159,8 +162,8 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	 * Returns a string of the rawMessage
 	 */
 	@Override
-	public String getStringFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		return rawMessage.toString();
+	public Message extractMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		return new Message(rawMessage);
 	}
 
 	protected boolean canGoOn() {
@@ -172,18 +175,6 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		runStateEnquirer=enquirer;
 	}
 
-
-	
-	@Override
-	@IbisDoc({"name of the listener", ""})
-	public void setName(String name) {
-		this.name = name;
-	}
-	@Override
-	public String getName() {
-		return name;
-	}
-	
 	@IbisDoc({"time between pollings", "3600000 (one hour)"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;

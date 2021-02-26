@@ -1,5 +1,5 @@
 /*
-Copyright 2017, 2020 Integration Partners B.V.
+Copyright 2017, 2020, 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,22 +15,32 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+
+import java.io.Writer;
+
+import org.apache.commons.lang3.StringUtils;
+
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
 
 /**
- * LiquiBase implementation for IAF
+ * LiquiBase implementation for IAF. 
+ * Please call close method explicitly to release the connection used by liquibase or instantiate this with try-with-resources.
  * 
  * @author	Niels Meijer
  * @since	7.0-B4
  *
  */
-public class Migrator extends JdbcFacade {
+public class Migrator extends JdbcFacade implements AutoCloseable {
 
 	private IbisContext ibisContext;
 	private LiquibaseImpl instance;
@@ -38,49 +48,46 @@ public class Migrator extends JdbcFacade {
 	public Migrator() {
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
-		configure(null, null, null);
+		throw new IllegalStateException("No configuration is specified!");
 	}
 
-	public void configure(String configurationName) throws ConfigurationException {
-		configure(configurationName, null, null);
+	public void configure(Configuration configuration) throws ConfigurationException {
+		configure(configuration, null);
 	}
 
-	public void configure(String configurationName, ClassLoader classLoader) throws ConfigurationException {
-		configure(configurationName, classLoader, null);
-	}
+	public synchronized void configure(Configuration configuration, String changeLogFile) throws ConfigurationException {
+		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+		setName("JdbcMigrator for configuration["+ configuration.getName() +"]");
+		if(StringUtils.isEmpty(getDatasourceName())) {	
+			setDatasourceName(appConstants.getString("jdbc.migrator.dataSource", null));
+		}
+		super.configure();
 
-	public synchronized void configure(String configurationName, ClassLoader classLoader, String changeLogFile) throws ConfigurationException {
-
-		AppConstants appConstants = AppConstants.getInstance(classLoader);
 
 		if(changeLogFile == null)
 			changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
-		LiquibaseClassLoaderWrapper cl = new LiquibaseClassLoaderWrapper(classLoader);
+		LiquibaseClassLoaderWrapper cl = new LiquibaseClassLoaderWrapper(configuration.getClassLoader());
 		if(cl.getResource(changeLogFile) == null) {
 			String msg = "unable to find database changelog file ["+changeLogFile+"]";
-			if(configurationName != null)
-				msg += " classLoader ["+classLoader+"]";
-
+			msg += " classLoader ["+ClassUtils.nameOf(configuration.getClassLoader())+"]";
 			log.debug(msg);
 		}
 		else {
-			String dataSource = appConstants.getString("jdbc.migrator.dataSource", appConstants.getResolvedProperty("jdbc.datasource.default"));
-			setDatasourceName(dataSource);
-
 			try {
 				JdbcConnection connection = new JdbcConnection(getConnection());
-				instance = new LiquibaseImpl(ibisContext, cl, connection, configurationName, changeLogFile);
+				instance = new LiquibaseImpl(ibisContext, connection, configuration, changeLogFile);
 			}
 			catch (ValidationFailedException e) {
-				throw new ConfigurationException("liquibase validation failed", e);
+				ConfigurationWarnings.add(configuration, log, "liquibase validation failed: "+e.getMessage(), e);
 			}
 			catch (LiquibaseException e) {
-				throw new ConfigurationException("liquibase failed to initialize", e);
+				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize", e);
 			}
 			catch (Throwable e) {
-				throw new ConfigurationException("liquibase failed to initialize, error connecting to database ["+dataSource+"]", e);
+				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
 			}
 		}
 	}
@@ -92,5 +99,26 @@ public class Migrator extends JdbcFacade {
 	public void update() {
 		if(this.instance != null)
 			instance.update();
+	}
+
+	public Writer getUpdateSql(Writer writer) throws LiquibaseException {
+		if(this.instance != null)
+			return instance.getUpdateScript(writer);
+		return writer;
+	}
+
+	@Override
+	public void close() {
+		try {
+			if(this.instance != null) {
+				try {
+					instance.close();
+				} catch (DatabaseException e) {
+					log.error("Failed to close the connection", e);
+				}
+			}
+		} finally {
+			super.close();
+		}
 	}
 }

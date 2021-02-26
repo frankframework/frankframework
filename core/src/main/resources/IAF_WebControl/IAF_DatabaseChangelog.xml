@@ -24,6 +24,7 @@ TagDatabase
  -->
 
 	<changeSet id="IAF_Util:1" author="Niels Meijer">
+		<validCheckSum>7:4a9c70190e4678c16c7d392b8ecff571</validCheckSum> <!-- #1481, BLOB->LONGBLOB -->
 		<comment>Add IBISSTORE Table</comment>
 		<createTable tableName="IBISSTORE">
 			<column name="MESSAGEKEY" type="BIGINT" autoIncrement="true">
@@ -36,7 +37,7 @@ TagDatabase
 			<column name="CORRELATIONID" type="java.sql.Types.VARCHAR(256)"/>
 			<column name="MESSAGEDATE" type="DATETIME"/>
 			<column name="COMMENTS" type="java.sql.Types.VARCHAR(1000)"/>
-			<column name="MESSAGE" type="BLOB"/>
+			<column name="MESSAGE" type="LONGBLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
 			<column name="EXPIRYDATE" type="DATETIME"/>
 			<column name="LABEL" type="java.sql.Types.VARCHAR(100)"/>
 		</createTable>
@@ -82,6 +83,7 @@ TagDatabase
 	</changeSet>
 
 	<changeSet id="IAF_Util:5" author="Niels Meijer">
+		<validCheckSum>7:85bdc937b35ee7e69753df403f970e82</validCheckSum> <!-- #1481, BLOB->LONGBLOB -->
 		<comment>Add IBISCONFIG Table</comment>
 		<createTable tableName="IBISCONFIG">
 			<column name="NAME" type="java.sql.Types.VARCHAR(100)">
@@ -91,7 +93,7 @@ TagDatabase
 				<constraints nullable="false"/>
 			</column>
 			<column name="FILENAME" type="java.sql.Types.VARCHAR(150)"/>
-			<column name="CONFIG" type="BLOB"/>
+			<column name="CONFIG" type="LONGBLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
 			<column name="CRE_TYDST" type="DATETIME"/>
 			<column name="RUSER" type="java.sql.Types.VARCHAR(32)"/>
 			<column name="ACTIVECONFIG" type="BOOLEAN"/>
@@ -127,6 +129,13 @@ TagDatabase
 		</createTable>
 		<!-- in Quartz the JobKey is defined by name and group, hence this being the primairy key constraint in the database as well -->
 		<addPrimaryKey tableName="IBISSCHEDULES" columnNames="JOBNAME, JOBGROUP" constraintName="PK_IBISSCHEDULES"/>
+	</changeSet>
+	
+	<changeSet id="IAF_Util:7" author="Ali Sihab Akcan">
+		<comment>Add description column to IBISSCHEDULES Table</comment>
+		<addColumn tableName="IBISSCHEDULES" >
+			<column afterColumn="MESSAGE" name="DESCRIPTION"  type="java.sql.Types.VARCHAR(255)"/> 
+		</addColumn>
 	</changeSet>
 
 </databaseChangeLog>

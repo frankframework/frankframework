@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Integration Partners
+   Copyright 2017, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import nl.nn.adapterframework.core.IReceiver;
-
-
 /**
  * When a listener implements this interface it will get a reference to it's
  * parent receiver.
@@ -25,9 +22,9 @@ import nl.nn.adapterframework.core.IReceiver;
  * @author Jaco de Groot
  *
  */
-public interface ReceiverAware {
+public interface ReceiverAware<M> {
 
-	public void setReceiver(IReceiver receiver);
-	public IReceiver getReceiver();
+	public void setReceiver(Receiver<M> receiver);
+	public Receiver<M> getReceiver();
 
 }

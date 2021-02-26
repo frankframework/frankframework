@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden
+   Copyright 2013, 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,17 +59,13 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 			if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
 			result=senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 			if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
-			try {
-				String cacheValue=cache.transformValue(result.asString(), session);
-				if (cacheValue==null) {
-					if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");
-					return result;
-				}
-				cache.put(key, cacheValue);
-				result = new Message(cacheValue);
-			} catch (IOException e) {
-				throw new SenderException(e);
+			String cacheValue = cache.transformValue(result, session);
+			if (cacheValue==null) {
+				if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");
+				return result;
 			}
+			cache.put(key, cacheValue);
+			result = new Message(cacheValue);
 		}
 		return result;
 	}

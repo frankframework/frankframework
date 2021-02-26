@@ -1,0 +1,6 @@
+line 1
+line 2
+BOL line 3
+line 4
+BOL line 5
+line 6

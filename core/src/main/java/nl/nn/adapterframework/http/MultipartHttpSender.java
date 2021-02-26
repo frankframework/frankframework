@@ -20,6 +20,7 @@ import java.io.InputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.stream.Message;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.mime.FormBodyPart;
@@ -68,8 +69,11 @@ public class MultipartHttpSender extends HttpSender {
 		}
 	}
 
+	/**
+	 * Automatically detect if the response is a multipart response or not. (duh!)
+	 */
 	@Override
-	protected String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
 		String contentType = responseHandler.getHeader("content-type");
 		if(contentType != null)
 			setMultipartResponse(contentType.contains("multipart"));

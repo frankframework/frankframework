@@ -3,8 +3,15 @@
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	default-autowire="byName"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
 	>
+
+	<bean
+		name="metrics"
+		class="nl.nn.adapterframework.lifecycle.ApplicationMetrics"
+		autowire="byName"
+		scope="singleton"
+	/>
 
 	<bean
 		name="lowerCasePropertyPlaceholderConfigurer"
@@ -13,13 +20,17 @@
 	/>
 
 	<bean
-		name="jndiContextPrefixPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
-		autowire="byName"
-		>
-		<property name="propertyName" value="jndiContextPrefix"/>
-		<property name="propertyValue" value=""/>
-	</bean>
+		id="jndiContextPrefix"
+		factory-bean="jndiContextPrefixFactory"
+		factory-method="getContextPrefix"
+	/>
+
+	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
+
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.SpringDataSourceFactory" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory" />
+
+	<bean id="jdbcPropertySourceFactory" class="nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory" />
 
 	<bean
 		name="hostnamePropertyPlaceholderConfigurer"
@@ -46,7 +57,16 @@
 		autowire="byName"
 		scope="prototype"
 		>
-		<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
+	</bean>
+
+	<bean
+		name="proto-locker"
+		class="nl.nn.adapterframework.util.Locker"
+		autowire="byName"
+		scope="prototype"
+		>
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
 	<bean
@@ -55,7 +75,51 @@
 		autowire="byName"
 		scope="prototype"
 		>
-		<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
+	</bean>
+
+	<bean
+		name="adapterService"
+		class="nl.nn.adapterframework.configuration.JmxRegisteringAdapterService"
+		autowire="byName"
+		scope="prototype"
+		>
+	</bean>
+
+	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+		<property name="locateExistingServerIfPossible" value="true" /><!-- indicate to first look for a server -->
+		<property name="defaultDomain" value="${instance.name}" />
+		<property name="agentId" value="" /> <!-- an empty string forces the PlatformMbeanServer to be used -->
+	</bean>
+
+	<bean id="namingStrategy" class="nl.nn.adapterframework.jmx.JmxNamingStrategy">
+		<property name="defaultDomain" value="${instance.name}" />
+	</bean>
+
+	<bean name="MBeanManager" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
+		<property name="namingStrategy" ref="namingStrategy" />
+		<property name="server" ref="mbeanServer"/>
+		<property name="ensureUniqueRuntimeObjectNames" value="false" />
+		<property name="assembler">
+			<bean class="nl.nn.adapterframework.jmx.JmxMBeanInfoAssembler" />
+		</property>
+		<property name="registrationPolicy" value="REPLACE_EXISTING"/>
+	</bean>
+
+	<bean
+		name="flowDiagramManager"
+		class="nl.nn.adapterframework.util.flow.FlowDiagramManager"
+		autowire="no"
+		scope="singleton"
+		lazy-init="true"
+		>
+	</bean>
+	<bean
+		name="flowGenerator"
+		class="nl.nn.adapterframework.util.flow.V8FlowGenerator"
+		scope="prototype"
+		lazy-init="true"
+		>
 	</bean>
 
 	<bean
@@ -104,22 +168,30 @@
 				>
 				<property name="pipeLineProcessor">
 					<bean
-						class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
+						class="nl.nn.adapterframework.processors.CheckSemaphorePipeLineProcessor"
 						autowire="byName"
 						scope="prototype"
 						>
 						<property name="pipeLineProcessor">
 							<bean
-								class="nl.nn.adapterframework.processors.LockerPipeLineProcessor"
+								class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
 								autowire="byName"
 								scope="prototype"
 								>
 								<property name="pipeLineProcessor">
 									<bean
-										class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
+										class="nl.nn.adapterframework.processors.LockerPipeLineProcessor"
 										autowire="byName"
 										scope="prototype"
-									/>
+										>
+										<property name="pipeLineProcessor">
+											<bean
+												class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
+												autowire="byName"
+												scope="prototype"
+											/>
+										</property>
+									</bean>
 								</property>
 							</bean>
 						</property>
@@ -137,40 +209,48 @@
 		>
 		<property name="pipeProcessor">
 			<bean
-				class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
+				class="nl.nn.adapterframework.processors.ExceptionHandlingPipeProcessor"
 				autowire="byName"
 				scope="prototype"
 				>
 				<property name="pipeProcessor">
 					<bean
-						class="nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor"
+						class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
 						autowire="byName"
 						scope="prototype"
 						>
 						<property name="pipeProcessor">
 							<bean
-								class="nl.nn.adapterframework.processors.TransactionAttributePipeProcessor"
+								class="nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor"
 								autowire="byName"
 								scope="prototype"
 								>
 								<property name="pipeProcessor">
 									<bean
-										class="nl.nn.adapterframework.processors.LockerPipeProcessor"
+										class="nl.nn.adapterframework.processors.TransactionAttributePipeProcessor"
 										autowire="byName"
 										scope="prototype"
 										>
 										<property name="pipeProcessor">
 											<bean
-												class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
+												class="nl.nn.adapterframework.processors.LockerPipeProcessor"
 												autowire="byName"
 												scope="prototype"
 												>
 												<property name="pipeProcessor">
 													<bean
-														class="nl.nn.adapterframework.processors.CorePipeProcessor"
+														class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
 														autowire="byName"
 														scope="prototype"
-													/>
+														>
+														<property name="pipeProcessor">
+															<bean
+																class="nl.nn.adapterframework.processors.CorePipeProcessor"
+																autowire="byName"
+																scope="prototype"
+															/>
+														</property>
+													</bean>
 												</property>
 											</bean>
 										</property>
@@ -219,11 +299,32 @@
 	Beans created from Configuration.xml, but prototyped here for
 	extra dependencies which cannot be created otherwise.
 	Bean names are prefixed with 'proto-' so that autowiring by
-	name doesn't create unnessecary instances.
+	name doesn't create instances unnecessarily.
 	-->
 	<bean
 		name="proto-adapter"
 		class="nl.nn.adapterframework.core.Adapter"
+		autowire="byName"
+		scope="prototype"
+	/>
+
+	<bean
+		name="proto-errorMessageFormatter"
+		class="nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter"
+		autowire="byName"
+		scope="prototype"
+	/>
+
+	<bean
+		name="proto-forward"
+		class="nl.nn.adapterframework.core.PipeForward"
+		autowire="byName"
+		scope="prototype"
+	/>
+
+	<bean
+		name="proto-exit"
+		class="nl.nn.adapterframework.core.PipeLineExit"
 		autowire="byName"
 		scope="prototype"
 	/>
@@ -244,7 +345,7 @@
 
 	<bean
 		name="proto-receiver"
-		class="nl.nn.adapterframework.receivers.GenericReceiver"
+		class="nl.nn.adapterframework.receivers.Receiver"
 		autowire="byName"
 		scope="prototype"
 	/>
@@ -252,7 +353,7 @@
 	<!-- Default pipe is a message-sending pipe -->
 	<bean
 		name="proto-pipe"
-		class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+		class="nl.nn.adapterframework.pipes.SenderPipe"
 		autowire="byName"
 		scope="prototype"
 	/>
@@ -361,11 +462,9 @@
 		>
 		<property name="dbmsSupportMap">
 			<props>
-				<prop key="Oracle">nl.nn.adapterframework.jdbc.dbms.OracleDbmsSupport</prop>
-				<prop key="Microsoft SQL Server">nl.nn.adapterframework.jdbc.dbms.MsSqlServerDbmsSupport</prop>
+				<!-- configure additional DbmsSupport mappings here -->
 				<prop key="DB2/NT">nl.nn.adapterframework.jdbc.dbms.Db2DbmsSupport</prop>
 				<prop key="DB2/LINUXX8664">nl.nn.adapterframework.jdbc.dbms.Db2DbmsSupport</prop>
-				<prop key="H2">nl.nn.adapterframework.jdbc.dbms.H2DbmsSupport</prop>
 			</props>
 		</property>
 	</bean>

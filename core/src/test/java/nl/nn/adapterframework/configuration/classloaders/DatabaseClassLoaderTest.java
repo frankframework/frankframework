@@ -32,7 +32,6 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealm;
@@ -40,7 +39,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.testutil.TestAppender;
 
-public class DatabaseClassLoaderTest extends ClassLoaderTestBase<DatabaseClassLoader> {
+public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
 	private final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
 	private final String ERROR_SUFFIX = "]";
 

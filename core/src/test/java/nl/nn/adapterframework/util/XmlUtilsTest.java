@@ -1,16 +1,18 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 
 public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
@@ -53,10 +55,9 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root><a>a</a><b/><c/></root>",true,false);
 		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"   <a>a</a>"+lineSeparator+"   <b/>"+lineSeparator+"   <c/>"+lineSeparator+"</root>",true,true);
 	}
-	
+
 	@Test
 	public void testGetRootNamespace() throws SAXException, TransformerException, IOException, ConfigurationException {
-		String lineSeparator=System.getProperty("line.separator");
 		testGetRootNamespace("<root><a>a</a><b></b><c/></root>","");
 		testGetRootNamespace("<root xmlns=\"xyz\"><a>a</a><b></b><c/></root>","xyz");
 		testGetRootNamespace("<root xmlns:xx=\"xyz\"><a xmlns=\"xyz\">a</a><b></b><c/></root>","");
@@ -106,27 +107,14 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 	}
 
-	
-	@Test()
-	public void testIdentityTransform() throws SAXException, TransformerException, IOException {
-		String in="<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>";
-		String xslt="<?xml version=\"1.0\"?>"+
-					"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" ><xsl:output method=\"xml\"/>"+
-						"<xsl:template match=\"@*|*|processing-instruction()|comment()\">"+
-							"<xsl:copy>"+
-								"<xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"+
-							"</xsl:copy>"+
-						"</xsl:template>"+
-					"</xsl:stylesheet>";
-		TransformerPool tp = TransformerPool.getInstance(xslt);
-		
-		String actual=tp.transform(in, null, true);
-		assertEquals("String,namespaceAware",in,actual);
-		
-		Source source = XmlUtils.stringToSourceForSingleUse(in, true);
-		actual = tp.transform(source);
-		assertEquals("Source,namespaceAware",in,actual);
-	}
-	
+	@Test
+	public void testIdentityTransformWithDefaultEntityResolver() throws Exception { //External EntityResolving is still possible with the XMLEntityResolver
+		Resource resource = Resource.getResource(new TestScopeProvider(), "XmlUtils/EntityResolution/in-file-entity-c-temp.xml");
+		SAXException thrown = assertThrows(SAXException.class, () -> {
+			XmlUtils.identityTransform(resource);
+		});
 
+		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:///c:/temp/test.xml] in scope [nl.nn.adapterframework.testutil.TestScopeProvider";
+		assertTrue("SaxParseException should start with [Cannot get resource ...] but is ["+thrown.getMessage()+"]", thrown.getMessage().startsWith(errorMessage));
+	}
 }

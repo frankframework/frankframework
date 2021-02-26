@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.Arrays;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -83,7 +84,7 @@ public class CmisSessionBuilder {
 	public final static String OVERRIDE_WSDL_KEY = "override_wsdl_key";
 	private String overrideEntryPointWSDL;
 
-	private ClassLoader classLoader = this.getClass().getClassLoader();
+	private IScopeProvider scopeProvider = null;
 
 	private int maxConnections = 0;
 	private int timeout = 0;
@@ -94,11 +95,11 @@ public class CmisSessionBuilder {
 		return new CmisSessionBuilder();
 	}
 
-	public CmisSessionBuilder(ClassLoader classLoader) {
-		this.classLoader = classLoader;
+	public CmisSessionBuilder(IScopeProvider scopeProvider) {
+		this.scopeProvider = scopeProvider;
 	}
-	public static CmisSessionBuilder create(ClassLoader classLoader) {
-		return new CmisSessionBuilder(classLoader);
+	public static CmisSessionBuilder create(IScopeProvider scopeProvider) {
+		return new CmisSessionBuilder(scopeProvider);
 	}
 
 	/**
@@ -122,6 +123,9 @@ public class CmisSessionBuilder {
 		}
 		if (StringUtils.isEmpty(repository)) {
 			throw new CmisSessionException("no repository configured");
+		}
+		if (StringUtils.isEmpty(getBindingType())) {
+			throw new CmisSessionException("no bindingType configured");
 		}
 		if(overrideEntryPointWSDL != null && !"webservices".equals(getBindingType())) {
 			throw new CmisSessionException("illegal value for bindingtype [" + getBindingType() + "], overrideEntryPointWSDL only supports webservices");
@@ -148,7 +152,7 @@ public class CmisSessionBuilder {
 			// we can manually override this wsdl by reading it from the classpath.
 			//TODO: Does this work with any binding type?
 			if(overrideEntryPointWSDL != null) {
-				URL url = ClassUtils.getResourceURL(classLoader, overrideEntryPointWSDL);
+				URL url = ClassUtils.getResourceURL(scopeProvider, overrideEntryPointWSDL);
 				if(url != null) {
 					try {
 						parameterMap.put(OVERRIDE_WSDL_KEY, Misc.streamToString(url.openStream()));
@@ -207,7 +211,7 @@ public class CmisSessionBuilder {
 			CredentialFactory pcf = new CredentialFactory(proxyAuthAlias, proxyUserName, proxyPassword);
 			parameterMap.put("proxyHost", proxyHost);
 			parameterMap.put("proxyPort", "" + proxyPort);
-			parameterMap.put("proxyUserName", pcf.getUsername());
+			parameterMap.put("proxyUsername", pcf.getUsername());
 			parameterMap.put("proxyPassword", pcf.getPassword());
 		}
 
@@ -326,7 +330,7 @@ public class CmisSessionBuilder {
 		return this;
 	}
 
-	public CmisSessionBuilder setProxyUserName(String string) {
+	public CmisSessionBuilder setProxyUsername(String string) {
 		proxyUserName = string;
 		return this;
 	}
@@ -417,7 +421,7 @@ public class CmisSessionBuilder {
 		return (new ReflectionToStringBuilder(this) {
 			@Override
 			protected boolean accept(Field f) {
-				return super.accept(f) && !f.getName().contains("password");
+				return super.accept(f) && !f.getName().contains("password") && !f.getName().contains("classLoader");
 			}
 		}).toString();
 	}

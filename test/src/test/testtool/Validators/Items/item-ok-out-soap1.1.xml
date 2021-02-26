@@ -1,0 +1,5 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body><Item_Response xmlns="urn:items"><Status>a</Status><Item>
+		<Id>1</Id>
+	</Item><Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+		<Status>OK</Status>
+	</Result></Item_Response></soapenv:Body></soapenv:Envelope>

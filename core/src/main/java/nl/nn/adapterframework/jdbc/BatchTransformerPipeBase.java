@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -43,6 +44,8 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	
 	protected FixedQuerySender querySender;
+
+	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -99,7 +102,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 			connection = querySender.getConnection();
 			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
 			PreparedStatement statement=queryExecutionContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+			JdbcUtil.applyParameters(querySender.getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			ResultSet rs = statement.executeQuery();
 			if (rs==null || !rs.next()) {
 				throw new SenderException("query has empty resultset");
@@ -110,12 +113,17 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		}
 	}
 
+	public String getPhysicalDestinationName() {
+		return querySender.getPhysicalDestinationName();
+	}
+
 	@Override
 	public void addParameter(Parameter p) {
 		querySender.addParameter(p);
 	}
 
 
+	@IbisDocRef({"1", FIXEDQUERYSENDER})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
@@ -123,6 +131,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		return querySender.getQuery();
 	}
 	
+	@IbisDocRef({"2", FIXEDQUERYSENDER})
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
@@ -130,13 +139,9 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		return querySender.getDatasourceName();
 	}
 
-	public String getPhysicalDestinationName() {
-		return querySender.getPhysicalDestinationName();
-	}
-
+	@IbisDocRef({"3", FIXEDQUERYSENDER})
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
-	
 
 }

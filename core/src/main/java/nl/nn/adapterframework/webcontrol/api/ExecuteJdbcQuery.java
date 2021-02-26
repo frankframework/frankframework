@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,13 +15,12 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.transformer.AbstractQueryOutputTransformer;
-import nl.nn.adapterframework.jdbc.transformer.QueryOutputToCSV;
-import nl.nn.adapterframework.jdbc.transformer.QueryOutputToJson;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.stream.Message;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -31,12 +30,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import nl.nn.adapterframework.jdbc.transformer.AbstractQueryOutputTransformer;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToCSV;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToJson;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Executes a query.
@@ -49,6 +53,7 @@ import java.util.Map.Entry;
 public final class ExecuteJdbcQuery extends Base {
 
 	public static final String DBXML2CSV_XSLT="xml/xsl/dbxml2csv.xslt";
+	private Logger secLog = LogUtil.getLogger("SEC");
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -57,20 +62,9 @@ public final class ExecuteJdbcQuery extends Base {
 	public Response getJdbcInfo() throws ApiException {
 
 		Map<String, Object> result = new HashMap<String, Object>();
-		JmsRealmFactory realmFactory = JmsRealmFactory.getInstance();
 
-		List<String> jmsRealms = realmFactory.getRegisteredDatasourceRealmNamesAsList();
-		List<String> datasources = new ArrayList<>();
-		if (jmsRealms.size() == 0) {
-			datasources.add("no datasources found in jmsRealms");
-		} else {
-			for (String jmsRealm:jmsRealms) {
-				JmsRealm realm =  realmFactory.getJmsRealm(jmsRealm);
-				datasources.add(realm.getDatasourceName());
-			}
-		}
-
-		result.put("datasources", datasources);
+		IDataSourceFactory dataSourceFactory = getIbisContext().getBean("dataSourceFactory", IDataSourceFactory.class);
+		result.put("datasources", dataSourceFactory.getDataSourceNames());
 
 		List<String> resultTypes = new ArrayList<String>();
 		resultTypes.add("csv");
@@ -88,7 +82,8 @@ public final class ExecuteJdbcQuery extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 
-		String datasource = null, resultType = null, query = null, queryType = "select", result = "", returnType = MediaType.APPLICATION_XML;
+		String datasource = null, resultType = null, query = null, queryType = null, result = "", returnType = MediaType.APPLICATION_XML;
+		boolean avoidLocking = false, trimSpaces=false;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("datasource")) {
@@ -103,15 +98,37 @@ public final class ExecuteJdbcQuery extends Base {
 					returnType = MediaType.APPLICATION_JSON;
 				}
 			}
+			if(key.equalsIgnoreCase("avoidLocking")) {
+				avoidLocking = Boolean.parseBoolean(entry.getValue().toString());
+			}
+			if(key.equalsIgnoreCase("trimSpaces")) {
+				trimSpaces = Boolean.parseBoolean(entry.getValue().toString());
+			}
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
-				if(query.toLowerCase().indexOf("select") == -1) queryType = "other";
+			}
+			if(key.equalsIgnoreCase("type")) {
+				queryType = entry.getValue().toString();
+			}
+		}
+
+		if(StringUtils.isEmpty(queryType)) {
+			queryType = "other"; // defaults to other
+
+			String[] commands = new String[] {"select", "show"}; //if it matches, set it to select
+			for (String command : commands) {
+				if(query.toLowerCase().startsWith(command)) {
+					queryType = "select";
+					break;
+				}
 			}
 		}
 
 		if(datasource == null || resultType == null || query == null) {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
 		}
+
+		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
 
 		//We have all info we need, lets execute the query!
 		DirectQuerySender qs;
@@ -125,7 +142,10 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.setName("QuerySender");
 			qs.setDatasourceName(datasource);
 			qs.setQueryType(queryType);
+			qs.setTrimSpaces(trimSpaces);
+			qs.setAvoidLocking(avoidLocking);
 			qs.setBlobSmartGet(true);
+			qs.setPrettyPrint(true);
 			qs.configure(true);
 			qs.open();
 			Message message = qs.sendMessage(new Message(query), null);

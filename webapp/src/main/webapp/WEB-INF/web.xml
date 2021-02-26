@@ -19,7 +19,7 @@
 		<filter-name>LoginFilter</filter-name>
 		<filter-class>nl.nn.adapterframework.webcontrol.LoginFilter</filter-class>
 		<init-param>
-			<param-name>allowedExtentions</param-name>
+			<param-name>allowedExtensions</param-name>
 			<param-value>css js gif jpg png svg</param-value>
 		</init-param>
 		<init-param>
@@ -34,11 +34,6 @@
 			<param-name>allowedTesterPaths</param-name>
 			<param-value>/sendJmsMessage.do /sendJmsMessageExecute.do /rest/testPipeLine /rest/testIfsaService /testService.do /testServiceExecute.do /executeJdbcQuery.do /executeJdbcQueryExecute.do /testtool</param-value>
 		</init-param>
-	</filter>
-
-	<filter>
-		<filter-name>ParamWrapperFilter</filter-name>
-		<filter-class>nl.nn.adapterframework.webcontrol.ParamWrapperFilter</filter-class>
 	</filter>
 
 	<filter>
@@ -64,11 +59,6 @@
 	<filter-mapping>
 		<filter-name>LoginFilter</filter-name>
 		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>ParamWrapperFilter</filter-name>
-		<servlet-name>action</servlet-name>
 	</filter-mapping>
 
 	<!--
@@ -105,34 +95,6 @@
 		<url-pattern>/servlet/*</url-pattern>
 	</servlet-mapping>
 	<!-- END Soap Router -->
-
-	<!-- Action Servlet Configuration -->
-	<servlet>
-		<display-name>Struts Action servlet</display-name>
-		<servlet-name>action</servlet-name>
-		<servlet-class>org.apache.struts.action.ActionServlet</servlet-class>
-		<init-param>
-			<param-name>application</param-name>
-			<param-value>ApplicationResources</param-value>
-		</init-param>
-		<init-param>
-			<param-name>config</param-name>
-			<param-value>/WEB-INF/struts-config.xml</param-value>
-		</init-param>
-		<init-param>
-			<param-name>debug</param-name>
-			<param-value>2</param-value>
-		</init-param>
-		<init-param>
-			<param-name>detail</param-name>
-			<param-value>2</param-value>
-		</init-param>
-		<init-param>
-			<param-name>validate</param-name>
-			<param-value>true</param-value>
-		</init-param>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
 
 	<!-- Index Servlet -->
 	<servlet>
@@ -173,50 +135,7 @@
 		<servlet-name>RestListener</servlet-name>
 		<servlet-class>nl.nn.adapterframework.http.RestListenerServlet</servlet-class>
 	</servlet>
-	<servlet>
-		<display-name>IAF API</display-name>
-		<servlet-name>IAFAPI</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.api.ServletDispatcher</servlet-class>
-		<init-param>
-			<param-name>resteasy.servlet.mapping.prefix</param-name>
-			<param-value>/iaf/api</param-value>
-		</init-param>
-		<!-- REPLACE-MARKER init-param>
-			<param-name>resteasy.role.based.security</param-name>
-			<param-value>true</param-value>
-		</init-param> REPLACE-MARKER --> 
-		<init-param>
-			<param-name>resteasy.providers</param-name>
-			<param-value>
-				nl.nn.adapterframework.webcontrol.api.ApiExceptionHandler,
-				nl.nn.adapterframework.webcontrol.api.AuthorizationFilter
-			</param-value>
-		</init-param>
-		<init-param>
-			<param-name>resteasy.resources</param-name>
-			<param-value>
-				nl.nn.adapterframework.webcontrol.api.Init,
-				nl.nn.adapterframework.webcontrol.api.ExecuteJdbcQuery,
-				nl.nn.adapterframework.webcontrol.api.ServerStatistics,
-				nl.nn.adapterframework.webcontrol.api.ShowConfiguration,
-				nl.nn.adapterframework.webcontrol.api.ShowConfigurationStatus,
-				nl.nn.adapterframework.webcontrol.api.ShowEnvironmentVariables,
-				nl.nn.adapterframework.webcontrol.api.TestPipeline,
-				nl.nn.adapterframework.webcontrol.api.TestServiceListener,
-				nl.nn.adapterframework.webcontrol.api.ShowSecurityItems,
-				nl.nn.adapterframework.webcontrol.api.BrowseJdbcTable,
-				nl.nn.adapterframework.webcontrol.api.ShowIbisstoreSummary,
-				nl.nn.adapterframework.webcontrol.api.ShowMonitors,
-				nl.nn.adapterframework.webcontrol.api.ShowAdapterStatistics,
-				nl.nn.adapterframework.webcontrol.api.ShowScheduler,
-				nl.nn.adapterframework.webcontrol.api.ShowLogging,
-				nl.nn.adapterframework.webcontrol.api.Webservices,
-				nl.nn.adapterframework.webcontrol.api.BrowseQueue,
-				nl.nn.adapterframework.webcontrol.api.SendJmsMessage,
-				nl.nn.adapterframework.webcontrol.api.TransactionalStorage,
-			</param-value>
-		</init-param>
-	</servlet>
+
 	<servlet-mapping>
 		<servlet-name>FileViewerServlet</servlet-name>
 		<url-pattern>/FileViewerServlet</url-pattern>
@@ -241,20 +160,10 @@
 		<servlet-name>RestListener</servlet-name>
 		<url-pattern>/rest-public/*</url-pattern>
 	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>IAFAPI</servlet-name>
-		<url-pattern>/iaf/api/*</url-pattern>
-	</servlet-mapping>
 
 	<servlet-mapping>
 		<servlet-name>IndexProxy</servlet-name>
 		<url-pattern>/index.jsp</url-pattern>
-	</servlet-mapping>
-
-	<!-- Action Servlet Mapping -->
-	<servlet-mapping>
-		<servlet-name>action</servlet-name>
-		<url-pattern>*.do</url-pattern>
 	</servlet-mapping>
 
 	<!-- Test Tool Servlet Mapping -->
@@ -300,6 +209,8 @@
 		</taglib>
 	</jsp-config>
 
+	<!-- this login-config might trigger application server authentication popups. -->
+	<!-- TODO: find a way to dynamically set this! -->
 	<login-config>
 		<auth-method>BASIC</auth-method>
 		<realm-name>Ibis</realm-name>
@@ -360,8 +271,6 @@
 		<web-resource-collection>
 			<web-resource-name>ObserverAccessResourceCollection</web-resource-name>
 			<description>collection of url's for observer access</description>
-			<url-pattern>/</url-pattern>
-			<url-pattern>/index.jsp</url-pattern>
 			<url-pattern>/configHandler.do</url-pattern>
 			<url-pattern>/showAdapterStatistics.do</url-pattern>
 			<url-pattern>/showLogging.do</url-pattern>

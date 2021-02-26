@@ -1,7 +1,6 @@
 <module>
-	<adapter name="WebControlTestPipeLine">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebControlTestPipeLine">
+	<adapter name="WebControlTestPipeLine" active="${strutsConsole.enabled}">
+		<receiver name="WebControlTestPipeLine">
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="WebControlTestPipeLine" uriPattern="testPipeLine" view="false"
 				authRoles="IbisAdmin,IbisTester" writeToSecLog="true"

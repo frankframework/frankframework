@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 Integration Partners
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,19 +39,11 @@ public class Verify extends PGPAction {
 				.decryptAndVerifyStream()
 				.withConfig(keyringConfig);
 
-		InputStream decryptionStream;
-		if(senders == null) {
-			decryptionStream = validation
-					.andValidateSomeoneSigned()
-					.fromEncryptedInputStream(inputStream);
-		} else {
-			decryptionStream = validation
-					.andRequireSignatureFromAllKeys(senders)
-					.fromEncryptedInputStream(inputStream);
+		try (InputStream decryptionStream = senders == null 
+				? validation.andValidateSomeoneSigned().fromEncryptedInputStream(inputStream)
+				: validation.andRequireSignatureFromAllKeys(senders).fromEncryptedInputStream(inputStream)) {
+			Streams.pipeAll(decryptionStream, outputStream);
 		}
-
-		Streams.pipeAll(decryptionStream, outputStream);
-		inputStream.close();
 	}
 
 }

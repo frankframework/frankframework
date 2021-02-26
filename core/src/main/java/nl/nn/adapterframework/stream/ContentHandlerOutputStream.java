@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019,2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.io.PipedOutputStream;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -63,11 +62,8 @@ public class ContentHandlerOutputStream extends PipedOutputStream implements Thr
 		public void run() {
 			try {
 				threadConnector.startThread(null);
-				boolean namespaceAware=true;
-				boolean resolveExternalEntities=false;
 				InputSource inputSource = new InputSource(pipedInputStream);
-				XMLReader xmlReader = XmlUtils.getXMLReader(namespaceAware, resolveExternalEntities, handler);
-				xmlReader.parse(inputSource);
+				XmlUtils.parseXml(inputSource, handler);
 				threadConnector.endThread(null);
 			} catch (Exception e) {
 				Throwable t = threadConnector.abortThread(e);

@@ -53,6 +53,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.ldap.LdapSender;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -115,7 +116,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String queueRegex;
 
 	@Override
-	public Message doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
 		String result;
 		String url_work;
 		String authAlias_work;
@@ -174,7 +175,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				boolean countOnly = ("true".equalsIgnoreCase(countOnly_work) ? true
 						: false);
 				if (countOnly) {
-					return Message.asMessage(getQueueMessageCountOnly(admin, queueName_work));
+					return new PipeRunResult(getForward(), getQueueMessageCountOnly(admin, queueName_work));
 				}
 			}
 
@@ -226,7 +227,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return Message.asMessage(result);
+		return new PipeRunResult(getForward(), result);
 	}
 
 	private LdapSender retrieveLdapSender(String ldapUrl, CredentialFactory cf) {

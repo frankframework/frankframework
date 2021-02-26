@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -23,26 +24,26 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
-import nl.nn.adapterframework.configuration.AdapterService;
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.IAdapterService;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.ejb.ListenerPortPoller;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
@@ -51,6 +52,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -67,8 +69,8 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	private List<Configuration> configurations = new ArrayList<Configuration>();
 	private SchedulerHelper schedulerHelper;
 	private PlatformTransactionManager transactionManager;
-	private ListenerPortPoller listenerPortPoller;
 	private ApplicationEventPublisher applicationEventPublisher;
+	private FlowDiagramManager flowDiagramManager;
 
 	@Override
 	public void setIbisContext(IbisContext ibisContext) {
@@ -107,6 +109,23 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	public void startConfiguration(Configuration configuration) {
 		startAdapters(configuration);
 		startScheduledJobs(configuration);
+		updateFlowDiagram(configuration);
+	}
+
+	private void updateFlowDiagram(Configuration configuration) {
+		if (flowDiagramManager != null) {
+			try {
+				flowDiagramManager.generate(configuration);
+			} catch (IOException e) {
+				ConfigurationWarnings.add(configuration, log, "Error generating flow diagram for configuration ["+configuration.getName()+"]", e);
+			}
+		}
+	}
+
+	@Autowired(required = false)
+	@Qualifier("flowDiagramManager")
+	public void setFlowDiagramManager(FlowDiagramManager flowDiagramManager) {
+		this.flowDiagramManager = flowDiagramManager;
 	}
 
 	/**
@@ -114,9 +133,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	 */
 	@Override
 	public void shutdown() {
-		if (listenerPortPoller != null) {
-			listenerPortPoller.clear();
-		}
 		unload((String) null);
 		IbisCacheManager.shutdown();
 	}
@@ -152,8 +168,8 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			}
 		}
 		while (configuration.getRegisteredAdapters().size() > 0) {
-			IAdapter adapter = configuration.getRegisteredAdapter(0);
-			AdapterService adapterService = configuration.getAdapterService();
+			Adapter adapter = configuration.getRegisteredAdapter(0);
+			IAdapterService adapterService = configuration.getAdapterService();
 			adapterService.unRegisterAdapter(adapter);
 		}
 
@@ -223,8 +239,20 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		} else if (action.equalsIgnoreCase("STOPRECEIVER")) {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
-					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
-					IReceiver receiver = adapter.getReceiverByName(receiverName);
+					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+
+					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+					RunStateEnum currentRunState = receiver.getRunState();
+					if (!currentRunState.equals(RunStateEnum.STARTED)) {
+						if (currentRunState.equals(RunStateEnum.STOPPING) || currentRunState.equals(RunStateEnum.STOPPED)) {
+							adapter.getMessageKeeper().info(receiver, "already in state [" + currentRunState + "]");
+							return;
+						} else {
+							adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
+							return;
+						}
+					}
+
 					receiver.stopRunning();
 					log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
 				}
@@ -232,8 +260,20 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		} else if (action.equalsIgnoreCase("STARTRECEIVER")) {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
-					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
-					IReceiver receiver = adapter.getReceiverByName(receiverName);
+					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+
+					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+					RunStateEnum currentRunState = receiver.getRunState();
+					if (!currentRunState.equals(RunStateEnum.STOPPED)) {
+						if (currentRunState.equals(RunStateEnum.STARTING) || currentRunState.equals(RunStateEnum.STARTED)) {
+							adapter.getMessageKeeper().info(receiver, "already in state [" + currentRunState + "]");
+							return;
+						} else {
+							adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
+							return;
+						}
+					}
+
 					receiver.startRunning();
 					log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
 				}
@@ -255,13 +295,10 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		} else if (action.equalsIgnoreCase("INCTHREADS")) {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
-					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
-					IReceiver receiver = adapter.getReceiverByName(receiverName);
-					if (receiver instanceof IThreadCountControllable) {
-						IThreadCountControllable tcc = (IThreadCountControllable)receiver;
-						if (tcc.isThreadCountControllable()) {
-							tcc.increaseThreadCount();
-						}
+					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+					Receiver receiver = adapter.getReceiverByName(receiverName);
+					if (receiver.isThreadCountControllable()) {
+						receiver.increaseThreadCount();
 					}
 					log.info("receiver [" + receiverName + "] increased threadcount on request of " + commandIssuedBy);
 				}
@@ -269,13 +306,10 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		} else if (action.equalsIgnoreCase("DECTHREADS")) {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
-					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
-					IReceiver receiver = adapter.getReceiverByName(receiverName);
-					if (receiver instanceof IThreadCountControllable) {
-						IThreadCountControllable tcc = (IThreadCountControllable)receiver;
-						if (tcc.isThreadCountControllable()) {
-							tcc.decreaseThreadCount();
-						}
+					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+					Receiver receiver = adapter.getReceiverByName(receiverName);
+					if (receiver.isThreadCountControllable()) {
+						receiver.decreaseThreadCount();
 					}
 					log.info("receiver [" + receiverName + "] decreased threadcount on request of " + commandIssuedBy);
 				}
@@ -300,35 +334,23 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		} else if (action.equalsIgnoreCase("MOVEMESSAGE")) {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
-					IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
-					IReceiver receiver = adapter.getReceiverByName(receiverName);
-					if (receiver instanceof ReceiverBase) {
-						ReceiverBase rb = (ReceiverBase) receiver;
-						ITransactionalStorage errorStorage = rb.getErrorStorage();
-						if (errorStorage == null) {
-							log.error("action ["
-									+ action
-									+ "] is only allowed for receivers with an ErrorStorage");
-						} else {
-							if (errorStorage instanceof JdbcTransactionalStorage) {
-								JdbcTransactionalStorage jdbcErrorStorage = (JdbcTransactionalStorage) rb.getErrorStorage();
-								IListener listener = rb.getListener();
-								if (listener instanceof EsbJmsListener) {
-									EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
-									EsbUtils.receiveMessageAndMoveToErrorStorage(
-											esbJmsListener, jdbcErrorStorage);
-								} else {
-									log.error("action ["
-											+ action
-											+ "] is currently only allowed for EsbJmsListener, not for type ["
-											+ listener.getClass().getName() + "]");
-								}
+					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+					Receiver receiver = adapter.getReceiverByName(receiverName);
+					ITransactionalStorage errorStorage = receiver.getErrorStorage();
+					if (errorStorage == null) {
+						log.error("action [" + action + "] is only allowed for receivers with an ErrorStorage");
+					} else {
+						if (errorStorage instanceof JdbcTransactionalStorage) {
+							JdbcTransactionalStorage jdbcErrorStorage = (JdbcTransactionalStorage) receiver.getErrorStorage();
+							IListener listener = receiver.getListener();
+							if (listener instanceof EsbJmsListener) {
+								EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
+								EsbUtils.receiveMessageAndMoveToErrorStorage(esbJmsListener, jdbcErrorStorage);
 							} else {
-								log.error("action ["
-										+ action
-										+ "] is currently only allowed for JdbcTransactionalStorage, not for type ["
-										+ errorStorage.getClass().getName() + "]");
+								log.error("action [" + action + "] is currently only allowed for EsbJmsListener, not for type [" + listener.getClass().getName() + "]");
 							}
+						} else {
+							log.error("action [" + action + "] is currently only allowed for JdbcTransactionalStorage, not for type [" + errorStorage.getClass().getName() + "]");
 						}
 					}
 				}
@@ -357,7 +379,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 
 	private void startAdapters(Configuration configuration) {
 		log.info("Starting all autostart-configured adapters for configuation " + configuration.getName());
-		for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
+		for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
 			if (adapter.isAutoStart()) {
 				log.info("Starting adapter [" + adapter.getName() + "]");
 				adapter.startRunning();
@@ -365,27 +387,21 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		}
 	}
 
-	private void stopAdapters() {
-		for (Configuration configuration : configurations) {
-			stopAdapters(configuration);
-		}
-	}
-
 	private void stopAdapters(Configuration configuration) {
 		configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
 		log.info("Stopping all adapters for configuation " + configuration.getName());
-		List<IAdapter> adapters = new ArrayList<IAdapter>(configuration.getAdapterService().getAdapters().values());
+		List<Adapter> adapters = new ArrayList<Adapter>(configuration.getAdapterService().getAdapters().values());
 		Collections.reverse(adapters);
-		for (IAdapter adapter : adapters) {
+		for (Adapter adapter : adapters) {
 			log.info("Stopping adapter [" + adapter.getName() + "]");
 			adapter.stopRunning();
 		}
 	}
 
 	@Override
-	public IAdapter getRegisteredAdapter(String name) {
-		List<IAdapter> adapters = getRegisteredAdapters();
-		for (IAdapter adapter : adapters) {
+	public Adapter getRegisteredAdapter(String name) {
+		List<Adapter> adapters = getRegisteredAdapters();
+		for (Adapter adapter : adapters) {
 			if (name.equals(adapter.getName())) {
 				return adapter;
 			}
@@ -394,15 +410,15 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	@Override
-	public List<IAdapter> getRegisteredAdapters() {
-		List<IAdapter> registeredAdapters = new ArrayList<IAdapter>();
+	public List<Adapter> getRegisteredAdapters() {
+		List<Adapter> registeredAdapters = new ArrayList<Adapter>();
 		for (Configuration configuration : configurations) {
 			registeredAdapters.addAll(configuration.getRegisteredAdapters());
 		}
 		return registeredAdapters;
 	}
 
-	public List<IAdapter> getRegisteredAdapters(String configurationName) {
+	public List<Adapter> getRegisteredAdapters(String configurationName) {
 		for (Configuration configuration : configurations) {
 			if (configurationName.equals(configuration.getName())) {
 				return configuration.getRegisteredAdapters();
@@ -414,7 +430,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	@Override
 	public List<String> getSortedStartedAdapterNames() {
 		List<String> startedAdapters = new ArrayList<String>();
-		for (IAdapter adapter : getRegisteredAdapters()) {
+		for (Adapter adapter : getRegisteredAdapters()) {
 			// add the adapterName if it is started.
 			if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
 				startedAdapters.add(adapter.getName());
@@ -440,14 +456,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	public void setTransactionManager(PlatformTransactionManager transactionManager) {
 		log.debug("setting transaction manager to [" + transactionManager + "]");
 		this.transactionManager = transactionManager;
-	}
-
-	public ListenerPortPoller getListenerPortPoller() {
-		return listenerPortPoller;
-	}
-
-	public void setListenerPortPoller(ListenerPortPoller listenerPortPoller) {
-		this.listenerPortPoller = listenerPortPoller;
 	}
 
 	@Override

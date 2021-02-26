@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.xml;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 public class PrettyPrintFilter extends FullXmlFilter {
@@ -26,6 +27,10 @@ public class PrettyPrintFilter extends FullXmlFilter {
 	private boolean elementsSeen;
 	private boolean elementContentSeen;
 	
+	public PrettyPrintFilter(ContentHandler handler) {
+		super(handler);
+	}
+
 	private void write(String string) throws SAXException {
 		super.characters(string.toCharArray(), 0, string.length());
 	}

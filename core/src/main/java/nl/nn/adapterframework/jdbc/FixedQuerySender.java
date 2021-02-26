@@ -20,10 +20,13 @@ import java.sql.Connection;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -44,6 +47,7 @@ import nl.nn.adapterframework.stream.Message;
 public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext> {
 
 	private String query=null;
+	private int batchSize;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -59,17 +63,6 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 		return getQuery();
 	}
 
-	/**
-	 * Sets the SQL-query text to be executed each time sendMessage() is called.
-	 */
-	@IbisDoc({"the sql query text to be excecuted each time sendmessage() is called", ""})
-	public void setQuery(String query) {
-		this.query = query;
-	}
-	public String getQuery() {
-		return query;
-	}
-
 	@Override
 	public boolean canProvideOutputStream() {
 		return  "updateClob".equalsIgnoreCase(getQueryType()) && StringUtils.isEmpty(getClobSessionKey()) ||
@@ -81,7 +74,10 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	public QueryExecutionContext openBlock(IPipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			Connection connection = getConnectionForSendMessage(null);
-			return super.prepareStatementSet(null, connection, null, session);
+			QueryExecutionContext result = super.prepareStatementSet(null, connection, null, session);
+			JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null;
+			result.setJdbcSession(jdbcSession);
+			return result;
 		} catch (JdbcException e) {
 			throw new SenderException("cannot get StatementSet",e);
 		}
@@ -94,9 +90,19 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			super.closeStatementSet(blockHandle, session);
 		} finally {
 			try {
-				closeConnectionForSendMessage(blockHandle.getConnection(), session);
-			} catch (JdbcException | TimeOutException e) {
-				throw new SenderException("cannot close connection", e);
+				if (blockHandle.getJdbcSession()!=null) {
+					try {
+						blockHandle.getJdbcSession().close();
+					} catch (Exception e) {
+						throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
+					}
+				}
+			} finally {
+				try {
+					closeConnectionForSendMessage(blockHandle.getConnection(), session);
+				} catch (JdbcException | TimeOutException e) {
+					throw new SenderException("cannot close connection", e);
+				}
 			}
 		}
 	}
@@ -113,13 +119,43 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 
 	@Override
+	// implements IBlockEnabledSender.sendMessage()
 	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		return new Message(executeStatementSet(blockHandle, message, session));
+		return executeStatementSet(blockHandle, message, session, null).getResult();
 	}
 
 	@Override
-	protected final String sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	// implements IStreamingSender.sendMessage()
+	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+		QueryExecutionContext blockHandle = openBlock(session);
+		try {
+			return executeStatementSet(blockHandle, message, session, next);
+		} finally {
+			closeBlock(blockHandle, session);
+		}
+	}
+
+	@Override
+	protected final PipeRunResult sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryExecutionContext,...)");
+	}
+
+
+	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called", ""})
+	public void setQuery(String query) {
+		this.query = query;
+	}
+	public String getQuery() {
+		return query;
+	}
+
+	@IbisDoc({"2", "When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other.", "0"})
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+	}
+	@Override
+	public int getBatchSize() {
+		return batchSize;
 	}
 
 }

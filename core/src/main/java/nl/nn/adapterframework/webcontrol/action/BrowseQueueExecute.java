@@ -24,18 +24,17 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.core.IMessageBrowser;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
+import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
 
 /**
  * @author Johan Verrips
@@ -80,15 +79,14 @@ public class BrowseQueueExecute extends ActionBase {
 						.booleanValue();
 
 		// initiate MessageSender
-		JmsMessageBrowser jmsBrowser = new JmsMessageBrowser();
+		JmsBrowser<javax.jms.Message> jmsBrowser = new JmsBrowser<>();
 		jmsBrowser.setName("BrowseQueueAction");
 		jmsBrowser.setJmsRealm(form_jmsRealm);
 		jmsBrowser.setDestinationName(form_destinationName);
 		jmsBrowser.setDestinationType(form_destinationType);
-		IMessageBrowser browser = jmsBrowser;
 		IMessageBrowsingIterator it=null;
 		try {
-			it = browser.getIterator();
+			it = jmsBrowser.getIterator();
 			List messages = new ArrayList();
 			while (it.hasNext()) {
 				messages.add(it.next());
@@ -158,6 +156,8 @@ public class BrowseQueueExecute extends ActionBase {
 					"WEB_QBROWSECOOKIE"),
 				cookieValue);
 		sendJmsCookie.setMaxAge(Integer.MAX_VALUE);
+		sendJmsCookie.setHttpOnly(true);
+		sendJmsCookie.setSecure(true);
 		log.debug(
 			"Store cookie for "
 				+ request.getServletPath()

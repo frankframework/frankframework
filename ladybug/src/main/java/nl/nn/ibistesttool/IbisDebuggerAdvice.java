@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,7 +33,6 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -69,7 +69,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 
 	// Contract for testtool state:
 	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
-	// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
+	// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
 	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 	private IbisDebugger ibisDebugger;
 	private static boolean enabled=true;
@@ -83,11 +83,12 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	/**
 	 * Provides advice for {@link CorePipeLineProcessor#processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe)}
 	 */
-	public Object debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, String correlationId, Message message, IPipeLineSession pipeLineSession) throws Throwable {
+	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, String correlationId, Message message, IPipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (PipeLineResult)proceedingJoinPoint.proceed();
 		}
-		message = (Message)ibisDebugger.pipeLineInput(pipeLine, correlationId, message);
+		message = ibisDebugger.pipeLineInput(pipeLine, correlationId, message);
+		StringWriter capture = message.captureStream();
 		TreeSet<String> keys = new TreeSet<String>(pipeLineSession.keySet());
 		Iterator<String> iterator = keys.iterator();
 		while (iterator.hasNext()) {
@@ -105,6 +106,10 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 			pipeLineResult = (PipeLineResult)proceedingJoinPoint.proceed(args);
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeLineAbort(pipeLine, correlationId, throwable);
+		} finally {
+			if (capture!=null && ibisDebugger instanceof Debugger) {
+				((Debugger)ibisDebugger).capturedInput(correlationId, capture.toString());
+			}
 		}
 		pipeLineResult.setResult(ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult()));
 		return pipeLineResult;
@@ -117,24 +122,24 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		if (!isEnabled()) {
 			return (PipeRunResult)proceedingJoinPoint.proceed();
 		}
-		boolean preserveInput = pipe instanceof IExtendedPipe && ((IExtendedPipe)pipe).isPreserveInput();
-		Message preservedInput=null;
-		if (preserveInput) {
-			message.preserve();
-			preservedInput = message;
-		}
 		String messageId = pipeLineSession.getMessageId();
 		message = ibisDebugger.pipeInput(pipeLine, pipe, messageId, message);
+		StringWriter capture = message.captureStream();
 		PipeRunResult pipeRunResult = null;
 		try {
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[2] = message;
-			pipeRunResult = (PipeRunResult)proceedingJoinPoint.proceed(args);
+			pipeRunResult = (PipeRunResult)proceedingJoinPoint.proceed(args); // in case of 'preserveInput', this result is already replaced with the preserved input
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeAbort(pipeLine, pipe, messageId, throwable);
+		} finally {
+			if (capture!=null && ibisDebugger instanceof Debugger) {
+				((Debugger)ibisDebugger).capturedInput(messageId, capture.toString());
+			}
 		}
-		if (preserveInput) {
-			pipeRunResult.setResult(ibisDebugger.preserveInput(messageId, preservedInput));
+		if (pipe instanceof IExtendedPipe && ((IExtendedPipe)pipe).isPreserveInput()) {
+			// signal in the debugger that the result of the pipe has been replaced with the original input
+			pipeRunResult.setResult(ibisDebugger.preserveInput(messageId, pipeRunResult.getResult()));
 		}
 		pipeRunResult.setResult(ibisDebugger.pipeOutput(pipeLine, pipe, messageId, pipeRunResult.getResult()));
 		return pipeRunResult;
@@ -142,94 +147,55 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 
 	/**
 	 * Provides advice for {@link CheckSemaphorePipeProcessor#processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession)}
+	 * CheckSemaphorePipeProcessor is just after InputOutputPipeProcessor, so it sees the effect of the replacements made by the latter.
 	 */
-	public Object debugPipeGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws Throwable {
+	public PipeRunResult debugPipeGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (PipeRunResult)proceedingJoinPoint.proceed();
 		}
 		if (pipe instanceof IExtendedPipe) {
 			IExtendedPipe pe = (IExtendedPipe)pipe;
 			String messageId = pipeLineSession.getMessageId();
-			message = (Message)debugGetInputFrom(pipeLineSession, messageId, message,
+			message = debugGetInputFrom(pipeLineSession, messageId, message,
 					pe.getGetInputFromSessionKey(),
 					pe.getGetInputFromFixedValue(),
 					pe.getEmptyInputReplacement());
 		}
 		Object[] args = proceedingJoinPoint.getArgs();
 		args[2] = message;
-		return proceedingJoinPoint.proceed(args);
+		return (PipeRunResult)proceedingJoinPoint.proceed(args); // the PipeRunResult contains the original result, before replacing via preserveInput
 	}
 
-	/**
-	 * Provides advice for {@link ISender#sendMessage(Message message, IPipeLineSession session)}
-	 */
-	public Object debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session) throws Throwable {
+	private <M> M debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session, int messageParamIndex) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (M)proceedingJoinPoint.proceed();
 		}
-		String correlationId = session==null ? null : session.getMessageId();
 		ISender sender = (ISender)proceedingJoinPoint.getTarget();
 		if (!sender.isSynchronous() && sender instanceof JmsSender) {
-			// Ignore JmsSenders within JmsListeners (calling JmsSender without
-			// ParameterResolutionContext) within Receivers.
-			return proceedingJoinPoint.proceed();
+			// Ignore JmsSenders within JmsListeners (calling JmsSender without ParameterResolutionContext) within Receivers.
+			return (M)proceedingJoinPoint.proceed();
 		} 
-		boolean preserveInput = sender instanceof SenderWrapperBase && ((SenderWrapperBase)sender).isPreserveInput();
-		Message preservedInput=null;
-		if (preserveInput) {
-			message.preserve();
-			preservedInput = message;
-		}
-		Message result = debugSenderInputAbort(proceedingJoinPoint, sender, correlationId, message);
-		if (sender instanceof ISenderWithParameters && ibisDebugger.stubSender(sender, correlationId)) {
-			ISenderWithParameters psender = (ISenderWithParameters)sender;
-			// Resolve parameters so they will be added to the report like when the sender was not stubbed and would
-			// resolve parameters itself
-			ParameterList parameterList = psender.getParameterList();
-			if (parameterList!=null) {
-				parameterList.getValues(message, session);
-			}
-		}
-		if (preserveInput) {
-			result = ibisDebugger.preserveInput(correlationId, preservedInput);
-		}
-		return ibisDebugger.senderOutput(sender, correlationId, result);
-	}
-	
-	private Message debugSenderInputAbort(ProceedingJoinPoint proceedingJoinPoint, ISender sender, String correlationId, Message message) throws Throwable {
-		message = ibisDebugger.senderInput(sender, correlationId, message);
-		Message result = null;
+
+		String messageId = session == null ? null : session.getMessageId();
+		message = ibisDebugger.senderInput(sender, messageId, message); 
+		StringWriter capture = message.captureStream();
+
+		M result = null; // result can be PipeRunResult (for StreamingSenders) or Message (for all other Senders)
 		// For SenderWrapperBase continue even when it needs to be stubbed
 		// because for SenderWrapperBase this will be checked when it calls
 		// sendMessage on his senderWrapperProcessor, hence
 		// debugSenderGetInputFrom will be called.
-		if (!ibisDebugger.stubSender(sender, correlationId) || sender instanceof SenderWrapperBase) {
+		if (!ibisDebugger.stubSender(sender, messageId) || sender instanceof SenderWrapperBase) {
 			try {
 				Object[] args = proceedingJoinPoint.getArgs();
-				args[0] = message;
-				result = (Message)proceedingJoinPoint.proceed(args);
+				args[messageParamIndex] = message;
+				result = (M)proceedingJoinPoint.proceed(args);
 			} catch(Throwable throwable) {
-				throw ibisDebugger.senderAbort(sender, correlationId, throwable);
-			}
-		}
-		return result;
-	}
-
-
-	public Object debugSimpleSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session) throws Throwable {
-		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
-		}
-		String correlationId = session == null ? null : session.getMessageId();
-		ISender sender = (ISender)proceedingJoinPoint.getTarget();
-		message = ibisDebugger.senderInput(sender, correlationId, message); 
-
-		Object result = null;
-		if (!ibisDebugger.stubSender(sender, correlationId)) {
-			try {
-				result = proceedingJoinPoint.proceed();
-			} catch(Throwable throwable) {
-				throw ibisDebugger.senderAbort(sender, correlationId, throwable);
+				throw ibisDebugger.senderAbort(sender, messageId, throwable);
+			} finally {
+				if (capture!=null && ibisDebugger instanceof Debugger) {
+					((Debugger)ibisDebugger).capturedInput(messageId, capture.toString());
+				}
 			}
 		} else {
 			// Resolve parameters so they will be added to the report like when the sender was not stubbed and would
@@ -240,27 +206,41 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 					parameterList.getValues(message, session);
 				}
 			}
+			if (capture!=null && ibisDebugger instanceof Debugger) {
+				((Debugger)ibisDebugger).capturedInput(messageId, capture.toString());
+			}
+		}
+		if (sender instanceof SenderWrapperBase && ((SenderWrapperBase)sender).isPreserveInput()) {
+			// signal in the debugger that the result of the sender has been replaced with the original input
+			result = (M)ibisDebugger.preserveInput(messageId, (Message)result);
 		}
 		if (result!=null && result instanceof PipeRunResult) {
 			PipeRunResult prr = (PipeRunResult)result;
-			prr.setResult(ibisDebugger.senderOutput(sender, correlationId, prr.getResult()));
+			prr.setResult(ibisDebugger.senderOutput(sender, messageId, prr.getResult()));
 			return result;
 		}
-		return ibisDebugger.senderOutput(sender, correlationId, Message.asMessage(result));
+		return (M)ibisDebugger.senderOutput(sender, messageId, Message.asMessage(result));
 	}
 	
 	/**
+	 * Provides advice for {@link ISender#sendMessage(Message message, IPipeLineSession session)}
+	 */
+	public Message debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session) throws Throwable {
+		return (Message)debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0);
+	}
+
+	/**
 	 * Provides advice for {@link IBlockEnabledSender#sendMessage(Object blockHandle, Message message, IPipeLineSession session)}
 	 */
-	public Object debugBlockEnabledSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, IPipeLineSession session) throws Throwable {
-		return debugSimpleSenderInputOutputAbort(proceedingJoinPoint, message, session);
+	public Message debugBlockEnabledSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, IPipeLineSession session) throws Throwable {
+		return (Message)debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 1);
 	}
 
 	/**
 	 * Provides advice for {@link IStreamingSender#sendMessage(Message message, IPipeLineSession session, IForwardTarget next)}
 	 */
-	public Object debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session, IForwardTarget nexte) throws Throwable {
-		return debugSimpleSenderInputOutputAbort(proceedingJoinPoint, message, session);
+	public PipeRunResult debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, IPipeLineSession session, IForwardTarget next) throws Throwable {
+		return (PipeRunResult)debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0);
 	}
 	 
 	/**
@@ -301,18 +281,21 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	/**
 	 * Provides advice for {@link CacheSenderWrapperProcessor#sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session)}
 	 */
-	public Object debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws Throwable {
+	public Message debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (Message)proceedingJoinPoint.proceed();
 		}
-		String correlationId = session == null ? null : session.getMessageId();
-		message = (Message)debugGetInputFrom(session, correlationId, message, senderWrapperBase.getGetInputFromSessionKey(), senderWrapperBase.getGetInputFromFixedValue(), null);
-		if (ibisDebugger.stubSender(senderWrapperBase, correlationId)) {
+		String messageId = session == null ? null : session.getMessageId();
+		message = debugGetInputFrom(session, messageId, message, 
+				senderWrapperBase.getGetInputFromSessionKey(), 
+				senderWrapperBase.getGetInputFromFixedValue(), 
+				null);
+		if (ibisDebugger.stubSender(senderWrapperBase, messageId)) {
 			return null;
 		} else {
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[1] = message;
-			return proceedingJoinPoint.proceed(args);
+			return (Message)proceedingJoinPoint.proceed(args); // this message contains the original result, before replacing via preserveInput
 		}
 	}
 
@@ -415,13 +398,10 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		}
 		Object result = proceedingJoinPoint.proceed();
 		Parameter parameter = (Parameter)proceedingJoinPoint.getTarget();
-		return ibisDebugger.parameterResolvedTo(parameter, session.getMessageId(), result);
+		return ibisDebugger.parameterResolvedTo(parameter, session==null?null:session.getMessageId(), result); // session is null in afterMessageProcessed()
 	}
 
-	/**
-	 * provides advice for {@link CacheSenderWrapperProcessor#sendMessage(String correlationID, Message message, IPipeLineSession session)}
-	 */
-	private Object debugGetInputFrom(IPipeLineSession pipeLineSession, String correlationId, Message input, String inputFromSessionKey, String inputFromFixedValue, String emptyInputReplacement) {
+	private Message debugGetInputFrom(IPipeLineSession pipeLineSession, String correlationId, Message input, String inputFromSessionKey, String inputFromFixedValue, String emptyInputReplacement) {
 		if (StringUtils.isNotEmpty(inputFromSessionKey)) {
 			input = Message.asMessage(pipeLineSession.get(inputFromSessionKey));
 			input = (Message)ibisDebugger.getInputFromSessionKey(correlationId, inputFromSessionKey, input);

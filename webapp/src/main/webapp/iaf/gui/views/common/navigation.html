@@ -21,9 +21,9 @@
 				<a ui-sref="pages.status"><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a>
 			</li>
 			<li ng-class="{active: $state.includes('configuration')}" class="nav-group">
-				<a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configuration</span> <span class="fa arrow"></span></a>
+				<a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configurations</span> <span class="fa arrow"></span></a>
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('configuration')}">
-					<li ui-sref-active="active"><a ui-sref="pages.configuration">Show Configuration</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.configuration">Show Configurations</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.manage_configurations">Manage Configurations</a></li>
 				</ul>
 			</li>
@@ -35,8 +35,8 @@
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('testing')}">
 					<li ui-sref-active="active"><a ui-sref="pages.larva">Larva</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.ladybug">Ladybug</a></li>
-					<li ui-sref-active="active"><a ui-sref="pages.test_pipeline">Test Pipeline</a></li>
-					<li ui-sref-active="active"><a ui-sref="pages.test_servicelistener">Test serviceListener</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.test_pipeline">Test a Pipeline</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.test_servicelistener">Test a ServiceListener</a></li>
 				</ul>
 			</li>
 			<li ng-class="{active: $state.includes('jdbc')}" class="nav-group">
@@ -44,7 +44,8 @@
 				<ul class="nav nav-second-level" ng-class="{in: $state.includes('jdbc')}">
 					<li ui-sref-active="active"><a ui-sref="pages.execute_query">Execute Query</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.browse_tables">Browse Tables</a></li>
-					<li ui-sref-active="active"><a ui-sref="pages.ibisstore_summary">IBISstore Summary</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.ibisstore_summary">Ibisstore Summary</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.liquibase">Liquibase Script</a></li>
 				</ul>
 			</li>
 			<li ng-class="{active: $state.includes('jms')}" class="nav-group">
@@ -75,8 +76,11 @@
 			<li style="border-top: 1px solid #19aa8d;">
 				<a ng-click="sendFeedback()" class="pointer"><i class="fa fa-commenting-o"></i> <span class="nav-label">Send Feedback!</span></a>
 			</li>
-			<li>
+			<li ng-if="strutsConsoleEnabled">
 				<a href="../../rest/showConfigurationStatus" alt="GUI 1.2" class="pointer"><i class="fa fa-backward"></i> <span class="nav-label">GUI 1.2</span></a>
+			</li>
+			<li ng-if="!strutsConsoleEnabled">
+				<a ng-click="showStrutsConsoleDisabled()" alt="GUI 1.2" class="pointer"><i class="fa fa-backward"></i> <span class="nav-label">GUI 1.2</span></a>
 			</li>
 			<li>
 				<a target="_blank" href="https://ibissource.org" alt="ibissource.org"><i class="fa fa-comments"></i> <span class="nav-label">Community</span></a>

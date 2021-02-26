@@ -25,13 +25,19 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -39,12 +45,6 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.webcontrol.Download;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Extension to transactionalstorage browser, that enables delete and repost.
@@ -56,7 +56,8 @@ public class BrowseExecute extends Browse {
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
-	protected boolean performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
+	@Override
+	protected boolean performAction(Adapter adapter, Receiver receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
         PlatformTransactionManager transactionManager = ibisManager.getTransactionManager();
 		log.debug("retrieved transactionManager ["+ClassUtils.nameOf(transactionManager)+"]["+transactionManager+"] from ibismanager ["+ibisManager+"]");
 
@@ -142,22 +143,21 @@ public class BrowseExecute extends Browse {
 		}
 	}
 
-	private void exportMessage(IMessageBrowser mb, String id, ReceiverBase receiver, ZipOutputStream zipOutputStream) {
+	private void exportMessage(IMessageBrowser mb, String id, Receiver receiver, ZipOutputStream zipOutputStream) {
 		IListener listener = null;
 		if (receiver!=null) {
 			listener = receiver.getListener();
 		}
 		try {
 			Object rawmsg = mb.browseMessage(id);
-			IMessageBrowsingIteratorItem msgcontext=mb.getContext(id);
-			try {
+			try (IMessageBrowsingIteratorItem msgcontext=mb.getContext(id)) {
 				String msg=null;
 				String msgId=msgcontext.getId();
 				String msgMid=msgcontext.getOriginalId();
 				String msgCid=msgcontext.getCorrelationId();
 				HashMap context = new HashMap();
 				if (listener!=null) {
-					msg = listener.getStringFromRawMessage(rawmsg,context);
+					msg = listener.extractMessage(rawmsg,context).asString();
 				} else {
 					msg = Message.asString(rawmsg);
 				}
@@ -217,7 +217,7 @@ public class BrowseExecute extends Browse {
 							
 				if (listener!=null && listener instanceof IBulkDataListener) {
 					IBulkDataListener bdl=(IBulkDataListener)listener;
-					String bulkfilename=bdl.retrieveBulkData(rawmsg,msg,context);
+					String bulkfilename=bdl.retrieveBulkData(rawmsg,new Message(msg),context);
 
 					zipOutputStream.closeEntry();
 		
@@ -230,8 +230,6 @@ public class BrowseExecute extends Browse {
 					bulkfile.delete();
 				}
 				zipOutputStream.closeEntry();
-			} finally {
-				msgcontext.release();
 			}
 		} catch (Throwable e) {
 			error(", ", "errors.generic", "Could not export message with id ["+id+"]", e);

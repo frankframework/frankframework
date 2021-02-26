@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
@@ -53,7 +54,6 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>no errors and all scenarios passed</td></tr>
  * <tr><td>"fail"</td><td>errors or failed scenarios</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * 
  * @author Jaco de Groot
@@ -139,6 +139,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		this.writeToSystemOut = writeToSystemOut;
 	}
 
+	@IbisDoc("The scenario sub directory to execute")
 	public void setExecute(String execute) {
 		this.execute = execute;
 	}

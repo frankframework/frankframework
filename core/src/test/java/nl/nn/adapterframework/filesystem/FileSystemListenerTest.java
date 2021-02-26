@@ -15,11 +15,10 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 
 public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -30,9 +29,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 	protected FileSystemListener<F,FS> fileSystemListener;
 	protected Map<String,Object> threadContext;
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	
 	public abstract FileSystemListener<F,FS> createFileSystemListener();
@@ -187,7 +183,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	@Test
 	public void fileListenerTestGetRawMessageWithInProcess() throws Exception {
 		String folderName = "inProcessFolder";
-		_createFolder(folderName);
 		fileListenerTestGetRawMessage(null,folderName);
 	}
 
@@ -206,8 +201,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		
-		String message=fileSystemListener.getStringFromRawMessage(rawMessage, threadContext);
-		assertThat(message,CoreMatchers.containsString(filename));
+		Message message=fileSystemListener.extractMessage(rawMessage, threadContext);
+		assertThat(message.asString(),CoreMatchers.containsString(filename));
 	}
 
 	@Test
@@ -225,8 +220,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		
-		String message=fileSystemListener.getStringFromRawMessage(rawMessage, threadContext);
-		assertEquals(contents,message);
+		Message message=fileSystemListener.extractMessage(rawMessage, threadContext);
+		assertEquals(contents,message.asString());
 	}
 
 //	@Test

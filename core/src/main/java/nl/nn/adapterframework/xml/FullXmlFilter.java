@@ -35,11 +35,14 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 		super();
 	}
 
-	public FullXmlFilter(XMLReader parent) {
-		super(parent);
-		setParentsLexicalHandler(parent);
+	public FullXmlFilter(ContentHandler handler) {
+		this();
+		if (handler!=null) {
+			setContentHandler(handler);
+		}
 	}
 
+	
 	
 	@Override
 	public void setContentHandler(ContentHandler handler) {

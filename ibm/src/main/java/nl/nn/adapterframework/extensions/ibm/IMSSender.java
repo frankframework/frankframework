@@ -25,7 +25,6 @@ import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.Session;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
@@ -37,6 +36,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * JMS sender which will add an IMS header to the message and call the MQ specific logic.
@@ -100,8 +101,7 @@ public class IMSSender extends MQSender {
 	}
 	
 	@Override
-	public Message createMessage(Session session, String correlationID, String message)
-			throws NamingException, JMSException {
+	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws NamingException, JMSException {
 		
 		BytesMessage bytesMessage = null;
 		bytesMessage = session.createBytesMessage();
@@ -128,7 +128,7 @@ public class IMSSender extends MQSender {
 			bos.write(IIH_HEADER_SECURITY_SCOPE.getBytes(CHARSET));
 			bos.write(IIH_HEADER_RESERVED.getBytes(CHARSET));
 			
-			byte[] data = message.getBytes(CHARSET);
+			byte[] data = message.asByteArray(CHARSET.name());
 
 			bos.write(shortToBytes(data.length + 13)); //LL, +13 is for LL, ZZ and transaction code bytes
 			bos.write(new byte[2]); //ZZ
@@ -153,7 +153,7 @@ public class IMSSender extends MQSender {
 	}
 
 	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		BytesMessage message;
 		try {
 			message = (BytesMessage)rawMessage;
@@ -190,8 +190,11 @@ public class IMSSender extends MQSender {
 		
 		byte[] readBuffer = new byte[readBufferLength];
 		message.readBytes(readBuffer);
-				
-		return new String(readBuffer, charset);
+		
+		if (StreamUtil.DEFAULT_INPUT_STREAM_ENCODING.equals(charset)) {
+			return new Message(readBuffer);
+		}
+		return new Message(new String(readBuffer, charset));
 	}
 	
 	private String byteToString(ByteBuffer byteBuffer, String charset, int size) throws UnsupportedEncodingException {

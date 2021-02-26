@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -53,7 +54,7 @@ import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
@@ -103,7 +104,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	protected DefaultMessageListenerContainer createMessageListenerContainer() throws ConfigurationException {
 		try {
-			Class klass = Class.forName(messageListenerClassName);
+			Class<?> klass = Class.forName(messageListenerClassName);
 			return (DefaultMessageListenerContainer) klass.newInstance();
 		} catch (Exception e) {
 			throw new ConfigurationException(getLogPrefix()+"error creating instance of MessageListenerContainer ["+messageListenerClassName+"]", e);
@@ -270,7 +271,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				txStatus = txManager.getTransaction(TX);
 			}
 
-			Map<String,Session> threadContext = new HashMap<>();
+			Map<String,Object> threadContext = new HashMap<>();
 			try {
 				IPortConnectedListener<Message> listener = getListener();
 				threadContext.put(THREAD_CONTEXT_SESSION_KEY,session);
@@ -417,8 +418,11 @@ class PollGuard extends TimerTask {
 	private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
 	private SpringJmsConnector springJmsConnector;
 	private long lastCheck;
-	private long lastPollFinishedTimeToIgnore;
+	private long previousLastPollFinishedTime;
+	private boolean timeoutDetected = false;
 
+	private static AtomicInteger pollTimeouts = new AtomicInteger();
+	
 	PollGuard() {
 		lastCheck = System.currentTimeMillis();
 	}
@@ -431,36 +435,34 @@ class PollGuard extends TimerTask {
 	public void run() {
 		long lastPollFinishedTime = springJmsConnector.getLastPollFinishedTime();
 		if (log.isTraceEnabled()) {
-			log.trace(springJmsConnector.getLogPrefix() + "check last poll finished time "
-					+ simpleDateFormat.format(new Date(lastPollFinishedTime)));
+			log.trace(springJmsConnector.getLogPrefix() + "check last poll finished time " + simpleDateFormat.format(new Date(lastPollFinishedTime)));
 		}
-		if (lastPollFinishedTime < lastCheck
-				&& lastPollFinishedTime != lastPollFinishedTimeToIgnore
+		long currentCheck = System.currentTimeMillis();
+		if (lastPollFinishedTime < lastCheck) {
+ 			if (lastPollFinishedTime != previousLastPollFinishedTime
 				&& springJmsConnector.threadsProcessing.getValue() == 0
 				&& springJmsConnector.getReceiver().getRunState() == RunStateEnum.STARTED
 				&& !springJmsConnector.getJmsContainer().isRecovering()) {
-			lastPollFinishedTimeToIgnore = lastPollFinishedTime;
-			error("last poll finished at " + simpleDateFormat.format(new Date(lastPollFinishedTime))
-					+ ", an attempt will be made to stop and start listener");
-			try {
-				springJmsConnector.getListener().close();
-			} catch (ListenerException e) {
-				springJmsConnector.getReceiver().setRunState(RunStateEnum.ERROR);
-				error("could not stop listener");
-			}
-			try {
-				springJmsConnector.getListener().open();
-			} catch (ListenerException e) {
-				springJmsConnector.getReceiver().setRunState(RunStateEnum.ERROR);
-				error("could not start listener");
+ 				previousLastPollFinishedTime = lastPollFinishedTime;
+ 				timeoutDetected = true;
+ 				warn("JMS poll timeout ["+pollTimeouts.incrementAndGet()+"] last poll finished ["+((currentCheck-lastPollFinishedTime)/1000)+"] s ago, an attempt will be made to stop and start listener");
+
+ 				// Try to auto-recover the listener, when PollGuard detects `no activity` AND `threadsProcessing` == 0
+ 				springJmsConnector.getListener().getReceiver().stopRunning();
+ 				springJmsConnector.getListener().getReceiver().startRunning();
+ 			}
+		} else {
+			if (timeoutDetected) {
+				timeoutDetected = false;
+				warn("JMS poll timeout appears to be resolved, total number of timeouts detected ["+pollTimeouts.intValue()+"]");
 			}
 		}
-		lastCheck = System.currentTimeMillis();
+		lastCheck = currentCheck;
 	}
 
-	private void error(String message) {
-		log.error(springJmsConnector.getLogPrefix() + message);
-		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperMessage.ERROR_LEVEL);
+	private void warn(String message) {
+		log.warn(springJmsConnector.getLogPrefix() + message);
+		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperLevel.WARN);
 	}
 
 }

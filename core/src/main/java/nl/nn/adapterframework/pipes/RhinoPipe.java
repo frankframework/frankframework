@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -87,31 +87,26 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
+				resource = ClassUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
-				throw new ConfigurationException(
-					getLogPrefix(null) + "got exception searching for [" + getFileName() + "]", e);
+				throw new ConfigurationException("got exception searching for [" + getFileName() + "]", e);
 			}
 			if (resource == null) {
-				throw new ConfigurationException(
-					getLogPrefix(null) + "cannot find resource [" + getFileName() + "]");
+				throw new ConfigurationException("cannot find resource [" + getFileName() + "]");
 			}
 			try {
 				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new ConfigurationException(
-					getLogPrefix(null) + "got exception loading [" + getFileName() + "]", e);
+				throw new ConfigurationException("got exception loading [" + getFileName() + "]", e);
 			}
 		}
 		if ((StringUtils.isEmpty(fileInput)) && inputString == null) { 
 			// No input from file or input string. Only from session-keys?
-			throw new ConfigurationException(
-				getLogPrefix(null) + "has neither fileName nor inputString specified");
+			throw new ConfigurationException("has neither fileName nor inputString specified");
 		}
 		if (StringUtils.isEmpty(jsfunctionName)) { 
 			// Cannot run the code in factory without any function start point
-			throw new ConfigurationException(
-				getLogPrefix(null) + "JavaScript functionname not specified!");
+			throw new ConfigurationException("JavaScript functionname not specified!");
 		}
 	}
 
@@ -134,7 +129,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
+				resource = ClassUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+getFileName()+"]", e);
 			}

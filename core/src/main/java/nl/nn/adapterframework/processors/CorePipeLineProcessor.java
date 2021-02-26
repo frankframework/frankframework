@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,10 +51,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
-		// Object is the object that is passed to and returned from Pipes
-		PipeRunResult pipeRunResult;
-		// the PipeLineResult
-		PipeLineResult pipeLineResult=new PipeLineResult();
 
 		if (message.isEmpty()) {
 			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
@@ -67,17 +63,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				if (adapter == null) {
 					log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
 				} else {
-					String input;
-					try {
-						input = message.asString();
-					} catch (IOException e) {
-						throw new PipeRunException(null, "cannot open stream", e);
-					}
-					PipeLineResult plr = adapter.processMessage(messageId, input, pipeLineSession);
-					if (plr == null || !plr.getState().equals("success")) {
+					PipeLineResult plr = adapter.processMessage(messageId, message, pipeLineSession);
+					if (plr == null || !plr.isSuccessful()) {
 						throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
 					}
-					message = new Message(plr.getResult());
+					message = plr.getResult();
 					log.debug("input after running adapterBeforeOnEmptyInput [" + message + "]");
 				}
 			}
@@ -167,11 +157,12 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			}
 		}
 
-		boolean outputValidated=false;
+		PipeLineResult pipeLineResult=new PipeLineResult();
+		boolean outputValidationFailed=false;
 		try {
 			while (!ready){
 
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
+				PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
 				message=pipeRunResult.getResult();
 
 				// TODO: this should be moved to a StatisticsPipeProcessor
@@ -195,49 +186,62 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 				if (forwardTarget instanceof PipeLineExit) {
 					PipeLineExit plExit= (PipeLineExit)forwardTarget;
-					boolean outputWrapError = false;
-					IPipe outputWrapper = pipeLine.getOutputWrapper();
-					if (outputWrapper !=null) {
-						log.debug("wrapping PipeLineResult");
-						PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
-						if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
-							PipeForward wrapForward=wrapResult.getPipeForward();
-							if (wrapForward.getPath()==null) {
-								throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"] of outputWrapper has emtpy forward path");
-							}
-							log.warn("setting next pipe to ["+wrapForward.getPath()+"] due to wrap fault");
-							outputWrapError = true;
-							pipeToRun = pipeLine.getPipe(wrapForward.getPath());
-							if (pipeToRun==null) {
-								throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"], path ["+wrapForward.getPath()+"] does not correspond to a pipe");
-							}
-						} else {
-							log.debug("wrap succeeded");
-							message = wrapResult.getResult();
-						}
-						log.debug("PipeLineResult after wrapping [" + message.toString() + "]");
-					}
-
-					if (!outputWrapError) {
-						IPipe outputValidator = pipeLine.getOutputValidator();
-						if ((outputValidator !=null) && !outputValidated) {
-							outputValidated=true;
-							log.debug("validating PipeLineResult");
-							PipeRunResult validationResult;
-							validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
-							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-								PipeForward validationForward=validationResult.getPipeForward();
-								if (validationForward.getPath()==null) {
-									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
+					if(!plExit.getEmptyResult()) {
+						boolean outputWrapError = false;
+						IPipe outputWrapper = pipeLine.getOutputWrapper();
+						if (outputWrapper !=null) {
+							log.debug("wrapping PipeLineResult");
+							PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
+							if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+								PipeForward wrapForward=wrapResult.getPipeForward();
+								if (wrapForward.getPath()==null) {
+									throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"] of outputWrapper has emtpy forward path");
 								}
-								log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
-								pipeToRun = pipeLine.getPipe(validationForward.getPath());
+								log.warn("setting next pipe to ["+wrapForward.getPath()+"] due to wrap fault");
+								outputWrapError = true;
+								pipeToRun = pipeLine.getPipe(wrapForward.getPath());
 								if (pipeToRun==null) {
-									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+									throw new PipeRunException(pipeToRun,"forward ["+wrapForward.getName()+"], path ["+wrapForward.getPath()+"] does not correspond to a pipe");
 								}
 							} else {
-								log.debug("validation succeeded");
-								message = validationResult.getResult();
+								log.debug("wrap succeeded");
+								message = wrapResult.getResult();
+							}
+							if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ));
+						}
+
+						if (!outputWrapError) {
+							IPipe outputValidator = pipeLine.getOutputValidator();
+							if (outputValidator != null) {
+								if (outputValidationFailed) {
+									log.debug("validating error message after PipeLineResult validation failed");
+								} else {
+									log.debug("validating PipeLineResult");
+								}
+								PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
+								if (!validationResult.getPipeForward().getName().equals("success")) {
+									if (!outputValidationFailed) {
+										outputValidationFailed=true;
+										PipeForward validationForward=validationResult.getPipeForward();
+										if (validationForward.getPath()==null) {
+											throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
+										}
+										log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
+										pipeToRun = pipeLine.getPipe(validationForward.getPath());
+										if (pipeToRun==null) {
+											throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+										}
+									} else {
+										log.warn("validation of error message by validator ["+outputValidator.getName()+"] failed, returning result anyhow"); // to avoid endless looping
+										message = validationResult.getResult();
+										ready=true;
+									}
+								} else {
+									log.debug("validation succeeded");
+									message = validationResult.getResult();
+									ready=true;
+								}
+							} else {
 								ready=true;
 							}
 						} else {
@@ -251,11 +255,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						pipeLineResult.setState(state);
 						pipeLineResult.setExitCode(plExit.getExitCode());
 						if (message.asObject()!=null && !plExit.getEmptyResult()) {
-							try {
-								pipeLineResult.setResult(message.asString());
-							} catch (IOException e) {
-								throw new PipeRunException(null, "cannot open result stream", e);
-							}
+							pipeLineResult.setResult(message);
 						} else {
 							pipeLineResult.setResult(null);
 						}
@@ -268,7 +268,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								skString = skString + "\n " + key + "=[" + value + "]";
 							}
 							log.debug("Available session keys at finishing pipeline of adapter [" + pipeLine.getOwner().getName() + "]:" + skString);
-							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: ["+ (message.asObject()==null?"<null>":"("+message.asObject().getClass().getSimpleName()+") ["+message.asObject() +"]" )+ "] with exit-state ["+state+"]");
+							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ) + " with exit-state ["+state+"]");
 						}
 					}
 				} else {

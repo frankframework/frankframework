@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,12 +48,13 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender to obtain information from and write to an LDAP Directory.
@@ -239,7 +240,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Gerrit van Brakel
  * @author Jaco de Groot
  */
-public class LdapSender extends JNDIBase implements ISenderWithParameters {
+public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -278,7 +279,6 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	private static final String DEFAULT_RESULT_CHANGE_UNICODE_PWD_OK = DEFAULT_RESULT;
 	private static final String DEFAULT_RESULT_CHANGE_UNICODE_PWD_NOK = "<LdapResult>Change unicodePwd FAILED - Invalid old and/or new password</LdapResult>";
 
-	private String name;
 	private String operation = OPERATION_READ;
 	private String manipulationSubject = MANIPULATION_ATTRIBUTE;
 	private String ldapProviderURL;
@@ -1193,13 +1193,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			XmlBuilder attributeElem = new XmlBuilder("attribute");
 			attributeElem.addAttribute("name", attribute.getID());
 			if (attribute.size() == 1 && attribute.get() != null) {
-				attributeElem.addAttribute("value", attribute.get().toString());
+				attributeElem.addAttribute("value", XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(attribute.get().toString()));
 			} else {
 				NamingEnumeration values = attribute.getAll();
 				while (values.hasMore()) {
 					Object value = values.next();
 					XmlBuilder itemElem = new XmlBuilder("item");
-					itemElem.addAttribute("value", value.toString());
+					itemElem.addAttribute("value", XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(value.toString()));
 					attributeElem.addSubElement(itemElem);
 				}
 			}
@@ -1254,16 +1254,6 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	@Override
 	public ParameterList getParameterList() {
 		return paramList;
-	}
-
-	@IbisDoc({"name of the sender", ""})
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-	@Override
-	public String getName() {
-		return name;
 	}
 
 	@IbisDoc({"specifies operation to perform. Must be one of <ul><li><code>read</code>: read the contents of an entry</li><li><code>create</code>: create an attribute or an entry</li><li><code>update</code>: update an attribute or an entry</li><li><code>delete</code>: delete an attribute or an entry</li><li><code>search</code>: search for an entry in the direct children of the specified root</li><li><code>deepSearch</code>: search for an entry in the complete tree below the specified root</li><li><code>getSubContexts</code>: get a list of the direct children of the specifed root</li><li><code>getTree</code>: get a copy of the complete tree below the specified root</li><li><code>challenge</code>: check username and password against LDAP specifying principal and credential using parameters</li><li><code>changeUnicodePwd</code>: typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991))</li></ul>", "read"})

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
 */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
 import java.util.Map;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Base-interface for IPullingListener and IPushingListener.
@@ -26,7 +27,7 @@ import java.util.Map;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-public interface IListener<M> extends INamedObject {
+public interface IListener<M> extends IConfigurable {
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method 
@@ -35,20 +36,21 @@ public interface IListener<M> extends INamedObject {
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> or <code>open()</code> method, to improve performance.
 	 */ 
+	@Override
 	public void configure() throws ConfigurationException;
-	
+
 	/**
 	 * Prepares the listener for receiving messages.
 	 * <code>open()</code> is called once each time the listener is started.
 	 */
-	void open() throws ListenerException;
-	
+	public void open() throws ListenerException;
+
 	/**
 	 * Close all resources used for listening.
 	 * Called once once each time the listener is stopped.
 	 */
-	void close() throws ListenerException;
-	
+	public void close() throws ListenerException;
+
 	/**
 	 * Extracts ID-string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the context.
@@ -70,12 +72,12 @@ public interface IListener<M> extends INamedObject {
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
 	 */
-	String getStringFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException;
+	Message extractMessage(M rawMessage, Map<String,Object> context) throws ListenerException;
 	
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the 
 	 * Pipeline. 
 	 */
-	void afterMessageProcessed(PipeLineResult processResult, M rawMessage, Map<String,Object> context) throws ListenerException;
+	void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException;
 
 }

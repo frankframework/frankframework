@@ -11,12 +11,11 @@ To prevent problems with data transactionality, we will be using an Oracle datab
 ## 1. Proprietary modules and JAR dependencies
 
 Download the following JAR files. We advice you to place them in the Servers\lib folder of your Eclipse workspace. If you don't have this folder, you can create it.
-* [activemq-core-5.6.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/activemq-core/5.6.0)
+* [activemq-all-5.6.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/activemq-core/5.6.0)
 * [geronimo-j2ee-management\_1.1_spec-1.0.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-j2ee-management_1.1_spec/1.0.1)
 * [geronimo-jms\_1.1_spec-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jms_1.1_spec/1.1.1)
 * [geronimo-jta\_1.1_spec-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jta_1.1_spec/1.1.1)
-* [kahadb-5.6.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/kahadb/5.6.0)
-* [ojdbc7.jar](https://www.oracle.com/technetwork/database/features/jdbc/jdbc-drivers-12c-download-1958347.html)
+* [ojdbc8.jar](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html)
 * [service-dispatcher-1.5.jar](https://mvnrepository.com/artifact/org.ibissource/service-dispatcher)
 
 In Tomcat's launch configuration (found in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add JARs... ] button. Select all JARs in the lib folder, press OK, and press OK again.
@@ -25,7 +24,7 @@ In Tomcat's launch configuration (found in the Tomcat Overview window), go to th
 
 The module's test scenarios can be run manually with the Larva testtool. This will be done within an iaf-test instance running on your Tomcat server. To make this possible...
 
-1. In the Project Explorer, go to your Tomcat's _catalina.properties_ file. At the bottom, add the lines `log.dir=c:/temp` (lower case 'c' is mandatory) and `otap.stage=LOC`.
+1. In the Project Explorer, go to your Tomcat's _catalina.properties_ file. At the bottom, add the lines `log.dir=c:/temp` (lower case 'c' is mandatory) and `dtap.stage=LOC`.
 2. In the Tomcat Overview window, set the port number for HTTP/1.1 to 80, or another if 80 is already taken. Oracle will be using port 8080.
 3. In the same window, go to the Modules tab at the bottom and add "/iaf-test" as a web module.
 4. In the Project Explorer, right-click the iaf-test module and select Properties. Go to Deployment Assembly, press [ Add... ]. Select Folder, press [ Next ]. Select the src/main/configurations folder, and press Finish. In the text field right of your new src/main/configurations item, enter `WEB-INF/classes/configurations`.
@@ -37,7 +36,13 @@ To make sure our database can be used, we'll have to run an ant script. Navigate
 * _/setupDB/Oracle/create_user.xml_
 * _/setupDir/setupDir.xml_
 
-## 4. Running the test scenarios
+## 4. In ibis-adapterframework-test, select Oracle database
+
+The ibis-adapterframeworkt-test project supports multiple databases. You need to set a property to select the right database. In Eclipse, please go to the Servers project and open `Servers\Tomcat v7.0 Server at localhost-config\catalina.properties`. Add the following line there:
+
+    jdbc.datasource.default=${jdbc.datasource.oracle}
+
+## 5. Running the test scenarios
 
 Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Ibis console by browsing to http://localhost/iaf-test/.
 

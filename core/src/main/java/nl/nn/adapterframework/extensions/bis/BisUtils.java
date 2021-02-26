@@ -28,6 +28,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -197,12 +198,12 @@ public class BisUtils {
 		}
 		return resultElement.toXML();
 	}
-	public String prepareReply(String rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
+	public Message prepareReply(Message rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
 		ArrayList messages = new ArrayList();
 		if (messageHeader != null) {
 			messages.add(messageHeader);
 		}
-		messages.add(rawReply);
+		messages.add(rawReply.asString());
 
 		String payload = null;
 		if (result == null) {
@@ -220,7 +221,7 @@ public class BisUtils {
 				payload = Misc.listToString(messages);
 			}
 		}
-		return payload;
+		return new Message(payload);
 	}
 
 	public String errorCodeToText(String errorCode) {

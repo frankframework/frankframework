@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,21 +21,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
-import org.springframework.transaction.TransactionDefinition;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
-import nl.nn.adapterframework.core.HasTransactionAttribute;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -45,6 +40,8 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.TransactionAttributes;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -52,9 +49,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -80,6 +75,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * <p>Since 4.1 this class also has parameters, so that descendants of this class automatically are parameter-enabled.
  * However, your documentation should say if and how parameters are used!<p>
+ * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself<p>
  * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
  * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLogIntermediaryResults (String) logIntermediaryResults}</td><td>when set, the value in AppConstants is overwritten (for this pipe only)</td><td>&nbsp;</td></tr>
@@ -98,9 +94,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @see IPipeLineSession
  */
-public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, EventThrowing {
-	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable {
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String getInputFromSessionKey=null;
@@ -119,14 +114,11 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean restoreMovedElements=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	
-	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
-	private int transactionTimeout=0;
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
 	private Locker locker;
 	private String emptyInputReplacement=null;
 	private boolean writeToSecLog = false;
 	private String secLogSessionKeys = null;
-	private boolean recoverAdapter = false;
 	private String logIntermediaryResults = null;
 	private String hideRegex = null;
 
@@ -166,10 +158,11 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		}
 
 		if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
-			throw new ConfigurationException(getLogPrefix(null)+"cannot have both an elementToMove and an elementToMoveChain specified");
+			throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 		}
 
 		if (pipeForwards.isEmpty()) {
+			//TODO pipe will follow the next forward no need to show warning
 			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
 		} else {
 			for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
@@ -194,6 +187,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		}
 
 		eventHandler = MonitorManager.getEventHandler();
+		super.configure();
 	}
 
 	/**
@@ -278,33 +272,18 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * @see PipeForward
 	 */
 	@Override
+	@IbisDoc({"30"})
 	public void registerForward(PipeForward forward) {
 		PipeForward current = pipeForwards.get(forward.getName());
 		if (current==null){
 			pipeForwards.put(forward.getName(), forward);
 		} else {
-			if (!isRecoverAdapter()) {
-				if (forward.getPath().equals(current.getPath())) {
-					ConfigurationWarnings.add(this, log, "has forward ["+forward.getName()+"] which is already registered");
-				} else {
-					log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
-				}
+			if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
+				ConfigurationWarnings.add(this, log, "has forward ["+forward.getName()+"] which is already registered");
+			} else {
+				log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
 			}
 		}
-	}
-
-	protected boolean isRecoverAdapter() {
-		boolean recover = false;
-		IAdapter iAdapter = getAdapter();
-		if (iAdapter == null) {
-			recover = recoverAdapter;
-		} else {
-			if (iAdapter instanceof Adapter) {
-				Adapter adapter = (Adapter) iAdapter;
-				recover = adapter.isRecover();
-			}
-		}
-		return recover;
 	}
 
 	/**
@@ -334,7 +313,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	/**
 	 * The <code>toString()</code> method retrieves its value
 	 * by reflection, so overriding this method is mostly not
-	 * usefull.
+	 * useful.
 	 * @see ToStringBuilder#reflectionToString
 	 *
 	 **/
@@ -358,6 +337,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * Add a parameter to the list of parameters
 	 * @param param the PipeParameter.
 	 */
+	@IbisDoc({"10"})
 	public void addParameter(Parameter param) {
 		log.debug("Pipe ["+getName()+"] added parameter ["+param.toString()+"]");
 		parameterList.add(param);
@@ -392,19 +372,11 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	@Override
-	public IAdapter getAdapter() {
+	public Adapter getAdapter() {
 		if (getPipeLine()!=null) {
 			return getPipeLine().getAdapter();
 		}
 		return null;
-	}
-
-	/**
-	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
-	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
-	 */
-	public ClassLoader getConfigurationClassLoader() {
-		return configurationClassLoader;
 	}
 
 	/**
@@ -435,7 +407,15 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return this.name;
 	}
 
-	@IbisDoc({"2", "when set, input is taken from this session key, instead of regular input", ""})
+	@IbisDoc({"2", "controls whether pipe is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the pipe is not included in the configuration", "true"})
+	public void setActive(boolean b) {
+		active = b;
+	}
+	@Override
+	public boolean isActive() {
+		return active;
+	}
+
 	@Override
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;
@@ -445,7 +425,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return getInputFromSessionKey;
 	}
 
-	@IbisDoc({"3", "when set, this fixed value is taken as input, instead of regular input", ""})
 	@Override
 	public void setGetInputFromFixedValue(String string) {
 		getInputFromFixedValue = string;
@@ -455,17 +434,15 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return getInputFromFixedValue;
 	}
 
-	@IbisDoc({"4", "when set, the result is stored under this session key", ""})
 	@Override
-	public void setStoreResultInSessionKey(String string) {
-		storeResultInSessionKey = string;
+	public void setEmptyInputReplacement(String string) {
+		emptyInputReplacement = string;
 	}
 	@Override
-	public String getStoreResultInSessionKey() {
-		return storeResultInSessionKey;
+	public String getEmptyInputReplacement() {
+		return emptyInputReplacement;
 	}
 
-	@IbisDoc({"5", "when set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
 	@Override
 	public void setPreserveInput(boolean preserveInput) {
 		this.preserveInput = preserveInput;
@@ -475,11 +452,51 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return preserveInput;
 	}
 
-	/**
-	 * Sets a threshold for the duration of message execution;
-	 * If the threshold is exceeded, the message is logged to be analyzed.
-	 */
-	@IbisDoc({"if durationthreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified, then the message is logged informatory", "-1"})
+	@Override
+	public void setStoreResultInSessionKey(String string) {
+		storeResultInSessionKey = string;
+	}
+	@Override
+	public String getStoreResultInSessionKey() {
+		return storeResultInSessionKey;
+	}
+
+	@Override
+	public void setChompCharSize(String string) {
+		chompCharSize = string;
+	}
+	@Override
+	public String getChompCharSize() {
+		return chompCharSize;
+	}
+
+	@Override
+	public void setElementToMove(String string) {
+		elementToMove = string;
+	}
+	@Override
+	public String getElementToMove() {
+		return elementToMove;
+	}
+
+	@Override
+	public void setElementToMoveSessionKey(String string) {
+		elementToMoveSessionKey = string;
+	}
+	@Override
+	public String getElementToMoveSessionKey() {
+		return elementToMoveSessionKey;
+	}
+	
+	@Override
+	public void setElementToMoveChain(String string) {
+		elementToMoveChain = string;
+	}
+	@Override
+	public String getElementToMoveChain() {
+		return elementToMoveChain;
+	}
+
 	@Override
 	public void setDurationThreshold(long maxDuration) {
 		this.durationThreshold = maxDuration;
@@ -489,61 +506,15 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return durationThreshold;
 	}
 
-	@IbisDoc({"if set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})
-	@Override
-	public void setChompCharSize(String string) {
-		chompCharSize = string;
-	}
-
-	@Override
-	public String getChompCharSize() {
-		return chompCharSize;
-	}
-
-	@IbisDoc({"if set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementtomovesessionkey</code> + }", ""})
-	@Override
-	public void setElementToMove(String string) {
-		elementToMove = string;
-	}
-
-	@Override
-	public String getElementToMove() {
-		return elementToMove;
-	}
-
-	@IbisDoc({"(only used when <code>elementtomove</code> is set) name of the session key under which the character data is stored", "ref_ + the name of the element"})
-	@Override
-	public void setElementToMoveSessionKey(String string) {
-		elementToMoveSessionKey = string;
-	}
-
-	@Override
-	public String getElementToMoveSessionKey() {
-		return elementToMoveSessionKey;
-	}
-
-	@IbisDoc({"like <code>elementtomove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. 'adapter;pipeline;pipe')", ""})
-	@Override
-	public void setElementToMoveChain(String string) {
-		elementToMoveChain = string;
-	}
-
-	@Override
-	public String getElementToMoveChain() {
-		return elementToMoveChain;
-	}
-
 	@Override
 	public void setRemoveCompactMsgNamespaces(boolean b) {
 		removeCompactMsgNamespaces = b;
 	}
-
 	@Override
 	public boolean isRemoveCompactMsgNamespaces() {
 		return removeCompactMsgNamespaces;
 	}
 
-	@IbisDoc({"when set <code>true</code>, compacted messages in the result are restored to their original format (see also  {@link nl.nn.adapterframework.receivers.ReceiverBase#setElementToMove(java.lang.String)})", "false"})
 	@Override
 	public void setRestoreMovedElements(boolean restoreMovedElements) {
 		this.restoreMovedElements = restoreMovedElements;
@@ -553,6 +524,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return restoreMovedElements;
 	}
 
+	
 	@IbisDoc({"controls namespace-awareness of possible xml parsing in descender-classes", "application default"})
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
@@ -561,71 +533,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return namespaceAware;
 	}
 
-	@IbisDoc({"Defines transaction and isolation behaviour."
-			+ "For developers: it is equal"
-	        + "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>."
-	        + "Possible values are:"
-	        + "  <table border=\"1\">"
-	        + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T2</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>none</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
-	        + " 										      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>error</td></tr>"
-	        + "  </table>", "Supports"})
-	public void setTransactionAttribute(String attribute) throws ConfigurationException {
-		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
-		if (transactionAttribute<0) {
-			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
-		}
-	}
-	@Override
-	public String getTransactionAttribute() {
-		return JtaUtil.getTransactionAttributeString(transactionAttribute);
-	}
-
-    @IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
-    	    + "option is represented with a number. The numbers mean:"
-    	    + "<table>"
-    	    + "<tr><td>0</td><td>Required</td></tr>"
-    	    + "<tr><td>1</td><td>Supports</td></tr>"
-    	    + "<tr><td>2</td><td>Mandatory</td></tr>"
-    	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
-    	    + "<tr><td>4</td><td>NotSupported</td></tr>"
-    	    + "<tr><td>5</td><td>Never</td></tr>"
-    	    + "</table>", "1"})
-	public void setTransactionAttributeNum(int i) {
-		transactionAttribute = i;
-	}
-	@Override
-	public int getTransactionAttributeNum() {
-		return transactionAttribute;
-	}
-
-	@IbisDoc({"controls whether pipe is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the pipe is not included in the configuration", "true"})
-	public void setActive(boolean b) {
-		active = b;
-	}
-	@Override
-	public boolean isActive() {
-		return active;
-	}
-
-	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
-	public void setTransactionTimeout(int i) {
-		transactionTimeout = i;
-	}
-	@Override
-	public int getTransactionTimeout() {
-		return transactionTimeout;
-	}
 
 	@Override
 	public boolean hasSizeStatistics() {
@@ -636,23 +543,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 
 	@Override
+	@IbisDoc({"20"})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}
 	@Override
 	public Locker getLocker() {
 		return locker;
-	}
-
-	@IbisDoc({"when set and the regular input is empty, this fixed value is taken as input", ""})
-	@Override
-	public void setEmptyInputReplacement(String string) {
-		emptyInputReplacement = string;
-	}
-
-	@Override
-	public String getEmptyInputReplacement() {
-		return emptyInputReplacement;
 	}
 
 	public DummyNamedObject getInSizeStatDummyObject() {
@@ -672,7 +569,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return writeToSecLog;
 	}
 
-	@IbisDoc({"(only used when <code>writetoseclog=true</code>) comma separated list of keys of session variables that is appended to the security log record", ""})
 	@Override
 	public void setSecLogSessionKeys(String string) {
 		secLogSessionKeys = string;
@@ -680,10 +576,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	@Override
 	public String getSecLogSessionKeys() {
 		return secLogSessionKeys;
-	}
-
-	public void setRecoverAdapter(boolean b) {
-		recoverAdapter = b;
 	}
 
 	public void setLogIntermediaryResults(String string) {
@@ -697,7 +589,6 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
-
 	public String getHideRegex() {
 		return hideRegex;
 	}

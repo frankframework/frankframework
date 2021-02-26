@@ -1,7 +1,6 @@
 <module>
-	<adapter name="WebControlWebservices">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebControlWebservices">
+	<adapter name="WebControlWebservices" active="${strutsConsole.enabled}">
+		<receiver name="WebControlWebservices">
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="WebControlWebservices" uriPattern="webservices" view="false" />
 		</receiver>

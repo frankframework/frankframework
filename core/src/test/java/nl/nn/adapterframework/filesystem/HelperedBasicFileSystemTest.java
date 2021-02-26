@@ -3,25 +3,16 @@ package nl.nn.adapterframework.filesystem;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
 public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends BasicFileSystemTest<F,FS> {
 
 	protected IFileSystemTestHelper helper;
 	
-	/**
-	 * Returns the file system 
-	 * @return fileSystem
-	 * @throws ConfigurationException
-	 */
 	protected abstract IFileSystemTestHelper getFileSystemTestHelper();
 
 	/**
 	 * Checks if a file with the specified name exists.
 	 * @param folder to search in for the file, set to null for root folder. 
 	 * @param filename
-	 * @return
-	 * @throws Exception
 	 */
 	@Override
 	protected boolean _fileExists(String folder, String filename) throws Exception {
@@ -30,9 +21,6 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 	
 	/**
 	 * Checks if a folder with the specified name exists.
-	 * @param folderName
-	 * @return
-	 * @throws Exception
 	 */
 	@Override
 	protected boolean _folderExists(String folderName) throws Exception {
@@ -41,9 +29,6 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 	
 	/**
 	 * Deletes the file with the specified name
-	 * @param folder 
-	 * @param filename
-	 * @throws Exception
 	 */
 	@Override
 	protected void _deleteFile(String folder, String filename) throws Exception {
@@ -53,10 +38,6 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 	/**
 	 * Creates a file with the specified name and returns output stream 
 	 * to be able to write that file.
-	 * @param folder 
-	 * @param filename
-	 * @return
-	 * @throws Exception
 	 */
 	@Override
 	protected OutputStream _createFile(String folder, String filename) throws Exception {
@@ -65,10 +46,6 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 
 	/**
 	 * Returns an input stream of the file 
-	 * @param folder 
-	 * @param filename
-	 * @return
-	 * @throws Exception
 	 */
 	@Override
 	protected InputStream _readFile(String folder, String filename) throws Exception {
@@ -77,8 +54,6 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 	
 	/**
 	 * Creates a folder 
-	 * @param filename
-	 * @throws Exception
 	 */
 	@Override
 	protected void _createFolder(String foldername) throws Exception {
@@ -87,8 +62,6 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 
 	/**
 	 * Deletes the folder 
-	 * @param filename
-	 * @throws Exception
 	 */
 	@Override
 	protected void _deleteFolder(String folderName) throws Exception {

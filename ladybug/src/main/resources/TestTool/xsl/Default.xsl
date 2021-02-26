@@ -4,12 +4,18 @@
 	
 	<xsl:template match="/Report">
 		<xsl:copy>
-			<!-- Ignore the report's name to prevent renaming-related run failures -->
+			<!-- Select all report attributes -->
+			<!-- <xsl:apply-templates select="@*"/> -->
+
 			<!-- Select the report name attribute -->
 			<!-- <xsl:apply-templates select="@Name"/> -->
 
-			<!-- Select all report attributes -->
-			<!-- <xsl:apply-templates select="@*"/> -->
+			<!-- Select all report attributes except the name attribute -->
+			<!-- <xsl:apply-templates select="@*[local-name() != 'Name']"/> -->
+
+			<!-- For comparing reports it's better not to select (most of) the report attributes (and not enable the -->
+			<!-- examples above) because (most of) the report attributes change on every rerun or can be adjusted by -->
+			<!-- the user in between runs (e.g. when renaming a report) -->
 
 			<!-- Select the first and last checkpoint -->
 			<xsl:apply-templates select="Checkpoint[1]"/>

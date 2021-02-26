@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 					sessionData.writeEntry(filename,message,isCloseInputstreamOnExit(),getCharset());
 				}
 			} else {
-				Object paramValue=pvl.getParameterValue(PARAMETER_CONTENTS).getValue();
+				Message paramValue=Message.asMessage(pvl.getParameterValue(PARAMETER_CONTENTS).getValue());
 				sessionData.writeEntry(filename,paramValue,isCloseInputstreamOnExit(),getCharset());
 			}
 			return message;

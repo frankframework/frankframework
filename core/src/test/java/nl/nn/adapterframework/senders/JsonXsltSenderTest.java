@@ -2,7 +2,6 @@ package nl.nn.adapterframework.senders;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.io.StringReader;
 
 import javax.json.Json;
@@ -10,9 +9,7 @@ import javax.json.JsonStructure;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 

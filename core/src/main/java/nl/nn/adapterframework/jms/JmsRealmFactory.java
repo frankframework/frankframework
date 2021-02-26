@@ -58,10 +58,13 @@ public class JmsRealmFactory {
 
 	}
 
-	
+	/**
+	 * Test method to cleanup the static references
+	 */
 	public void clear() {
-		jmsRealms=new LinkedHashMap<String, JmsRealm>();
+		jmsRealms = new LinkedHashMap<String, JmsRealm>();
 	}
+
 	/**
 	 * Get a requested JmsRealm with the given name, null is returned if no realm
 	 * under given name
@@ -110,6 +113,7 @@ public class JmsRealmFactory {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
+	@Deprecated //remove with struts console
 	public String getFirstDatasourceJmsRealm() {
 		Iterator<String> it = getRegisteredRealmNames();
 		while (it.hasNext()) {
@@ -121,6 +125,7 @@ public class JmsRealmFactory {
 		return null;
 	}
 
+	@Deprecated //remove with struts console
 	public List<String> getRegisteredDatasourceRealmNamesAsList() {
 		Iterator<String> it = getRegisteredRealmNames();
 		List<String> result = new ArrayList<String>();

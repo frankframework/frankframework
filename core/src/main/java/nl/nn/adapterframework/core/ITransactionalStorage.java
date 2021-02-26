@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,22 +19,19 @@ import java.io.Serializable;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * The <code>ITransactionalStorage</code> is responsible for storing and 
  * retrieving-back messages under transaction control.
- * @see nl.nn.adapterframework.receivers.ReceiverBase
+ * @see nl.nn.adapterframework.receivers.Receiver
  * @author  Gerrit van Brakel
  * @since   4.1
 */
-public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
+public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
 	public static final int MAXCOMMENTLEN=1000;
 
-	public static final String TYPE_ERRORSTORAGE="E";
-	public static final String TYPE_MESSAGESTORAGE="M";
-	public static final String TYPE_MESSAGELOG_PIPE="L";
-	public static final String TYPE_MESSAGELOG_RECEIVER="A";
 
 
 	/**
@@ -47,36 +44,31 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	public void configure() throws ConfigurationException;
 
 	/**
-	 * Store the message, returns new messageId.
+	 * Store the message, returns storageKey.
 	 * 
 	 * The messageId should be unique.
 	 */
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException;
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;
 	
-    /**
-     * Check if the storage contains message with the given original messageId
-     * (as passed to storeMessage).
-     */
-    public boolean containsMessageId(String originalMessageId) throws ListenerException;
-
-    public boolean containsCorrelationId(String correlationId) throws ListenerException;
+	/**
+	 * Retrieves and deletes the message.
+	 */
+	public S getMessage(String storageKey) throws ListenerException;
 
 
 	/**
 	 *  slotId allows using component to define a kind of 'subsection'.
 	 */	
-	public String getSlotId();
+	@IbisDoc({"1", "Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes", ""})
 	public void setSlotId(String string);
+	public String getSlotId();
 
 
-	/**
-	 *  type is one character: E for error, I for inprocessStorage, L for logging.
-	 */	
-	public String getType();
+	@IbisDoc({"2", "Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). Receiver will always set type to E for errorStorage and always set type to A for messageLog. SenderPipe will set type to L for messageLog (when type isn't specified). See {@link MessagestoreSender} for type M", "E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe"})
 	public void setType(String string);
+	public String getType();
 	
 	public boolean isActive();
 	
-	public int getMessageCount() throws ListenerException;
 
 }

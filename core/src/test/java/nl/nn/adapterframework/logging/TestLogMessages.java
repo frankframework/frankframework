@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,10 +22,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.Test;
 
-import nl.nn.adapterframework.logging.IbisLoggerConfigurationFactory;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -107,13 +108,11 @@ public class TestLogMessages {
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(6, logEvents.size());
 
-			String expectedWarn = "<event logger=\"org.apache.logging.log4j.spi.AbstractLogger\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" + 
-			"  <message>my beautiful warning &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \"world\"</message>\n" + 
-			"  <throwable />\n" + 
+			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" + 
+			"  <message>my beautiful warning &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
 			"</event>";
-			String expectedError = "<event logger=\"org.apache.logging.log4j.spi.AbstractLogger\" timestamp=\"xxx\" level=\"ERROR\" thread=\"HIDE-HERE\">\n" + 
-			"  <message>my beautiful error &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \"world\"</message>\n" + 
-			"  <throwable />\n" + 
+			String expectedError = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"ERROR\" thread=\"HIDE-HERE\">\n" + 
+			"  <message>my beautiful error &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
 			"</event>";
 
 			//Remove the timestamp
@@ -125,6 +124,72 @@ public class TestLogMessages {
 		}
 		finally {
 			Thread.currentThread().setName(threadName);
+			TestAppender.removeAppender(appender);
+		}
+	}
+
+	@Test
+	public void testCdataInMessage() {
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			log.debug("my beautiful <![CDATA[debug]]> for me & you --> \"world\"");
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size());
+			String message = logEvents.get(0);
+			assertEquals("DEBUG - my beautiful <![CDATA[debug]]> for me & you --> \"world\"", message);
+		}
+		finally {
+			IbisMaskingLayout.cleanGlobalReplace();
+			TestAppender.removeAppender(appender);
+		}
+	}
+
+	@Test
+	public void testUnicodeCharactersInMessage() {
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			log.debug("my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"");
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size());
+			String message = logEvents.get(0);
+			assertEquals("DEBUG - my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"", message);
+		}
+		finally {
+			IbisMaskingLayout.cleanGlobalReplace();
+			TestAppender.removeAppender(appender);
+		}
+	}
+
+	@Test
+	public void testXmlLayoutWithUnicodeAndCdata() {
+		TestAppender appender = TestAppender.newBuilder().useIbisXmlLayout().build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			log.debug("my beautiful  aâΔع你好ಡತ  debug <![CDATA[message]]> for me & you --> \"world\"");
+			log.info("my beautiful  aâΔع你好ಡತ  info <![CDATA[message]]> for me & you --> \"world\"");
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(2, logEvents.size());
+
+			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"DEBUG\" thread=\"main\">\n" + 
+			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  debug &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
+			"</event>";
+			String expectedError = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"INFO\" thread=\"main\">\n" + 
+			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  info &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" + 
+			"</event>";
+
+			//Remove the timestamp
+			String actualWarn = logEvents.get(0).replaceAll("(?<=timestamp=\").+?(?=\")", "xxx");
+			String actualError = logEvents.get(1).replaceAll("(?<=timestamp=\").+?(?=\")", "xxx");
+
+			TestAssertions.assertEqualsIgnoreCRLF(expectedWarn, actualWarn);
+			TestAssertions.assertEqualsIgnoreCRLF(expectedError, actualError);
+		}
+		finally {
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -146,7 +211,7 @@ public class TestLogMessages {
 			TestAssertions.assertEqualsIgnoreCRLF(expected, message);
 		}
 		finally {
-			IbisMaskingLayout.setMaxLength(0);
+			IbisMaskingLayout.setMaxLength(-1);
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -177,7 +242,7 @@ public class TestLogMessages {
 
 	@Test(expected = IllegalStateException.class)
 	public void throwExceptionWhenOldLog4jVersion() throws Exception {
-		URL log4jOld = TestFileUtils.getTestFileURL("/logging/log4j-old.xml");
+		URL log4jOld = TestFileUtils.getTestFileURL("/Logging/log4j-old.xml");
 		assertNotNull("cannot find log4j-old.xml", log4jOld);
 		InputStream oldLog4jConfiguration = log4jOld.openStream();
 		IbisLoggerConfigurationFactory.readLog4jConfiguration(oldLog4jConfiguration);
@@ -185,12 +250,44 @@ public class TestLogMessages {
 
 	@Test
 	public void readLog4jConfiguration() throws Exception {
-		URL log4jNew = TestFileUtils.getTestFileURL("/logging/log4j-new.xml");
+		URL log4jNew = TestFileUtils.getTestFileURL("/Logging/log4j-new.xml");
 		assertNotNull("cannot find log4j-new.xml", log4jNew);
 		InputStream newLog4jConfiguration = log4jNew.openStream();
 
 		String config = IbisLoggerConfigurationFactory.readLog4jConfiguration(newLog4jConfiguration);
-		String expected = TestFileUtils.getTestFile("/logging/log4j-new.xml");
+		String expected = TestFileUtils.getTestFile("/Logging/log4j-new.xml");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, config);
+	}
+
+	@Test
+	public void testChangeLogLevel() {
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
+		TestAppender.addToRootLogger(appender);
+		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests we use the `nl.nn` logger instead of the rootlogger
+
+		try {
+			Configurator.setLevel(rootLoggerName, Level.DEBUG);
+			log.debug("debug");
+
+			Configurator.setLevel(rootLoggerName, Level.INFO);
+			log.debug("debug");
+			log.info("info");
+
+			Configurator.setLevel(rootLoggerName, Level.WARN);
+			log.debug("debug");
+			log.info("info");
+			log.warn("warn");
+
+			Configurator.setLevel(rootLoggerName, Level.ERROR);
+			log.debug("debug");
+			log.info("info");
+			log.warn("warn");
+			log.error("error");
+
+			assertEquals(4, appender.getNumberOfAlerts());
+		} finally {
+			TestAppender.removeAppender(appender);
+			Configurator.setLevel(rootLoggerName, Level.DEBUG);
+		}
 	}
 }

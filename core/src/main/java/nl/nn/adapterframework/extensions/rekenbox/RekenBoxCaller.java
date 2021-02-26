@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ import nl.nn.adapterframework.util.Misc;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setRekenBoxName(String) rekenBoxName}</td><td>fixed name of the rekenbox (or wrapper) to be called. If empty, the name is determined from the request</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRunPath(String) runPath}</td><td>directory on server where rekenbox-executable can be found</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTemplateDir(String) templateDir}</td><td>rekenbox template directory on server</td><td>&nbsp;</td></tr>
@@ -92,14 +91,14 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			!(getCommandLineType().equals("straight") || 
 			  getCommandLineType().equals("switches") || 
 			  getCommandLineType().equals("redirected"))) {
-			  	throw new ConfigurationException(getLogPrefix(null)+"commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
+			  	throw new ConfigurationException("commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
 			  }
 		inputOutputDir= new File(getInputOutputDirectory());
 		if (!inputOutputDir.exists()) {
-			throw new ConfigurationException(getLogPrefix(null)+"inputOutputDirectory ["+getInputOutputDirectory()+"] does not exist");
+			throw new ConfigurationException("inputOutputDirectory ["+getInputOutputDirectory()+"] does not exist");
 		}
 		if (!inputOutputDir.isDirectory()) {
-			throw new ConfigurationException(getLogPrefix(null)+"inputOutputDirectory ["+getInputOutputDirectory()+"] is not a directory");
+			throw new ConfigurationException("inputOutputDirectory ["+getInputOutputDirectory()+"] is not a directory");
 		}
 		formatter = new DecimalFormat("000000000000".substring(0,Long.toString(getMaxRequestNumber()).length()));
 		String baseFileName=getBaseFileName();

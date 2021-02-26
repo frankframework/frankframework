@@ -25,7 +25,7 @@ import org.xml.sax.ext.EntityResolver2;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-/*
+/**
  * Entity resolver which resolves external entities to an empty string. This
  * will prevent the XML parser from downloading resources as specified by URI's
  * in a DOCTYPE.

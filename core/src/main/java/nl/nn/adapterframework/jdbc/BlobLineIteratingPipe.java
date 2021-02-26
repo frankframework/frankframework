@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,7 +59,6 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified.</td></tr>
  * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
  * </table>
@@ -73,7 +72,7 @@ public class BlobLineIteratingPipe extends LobLineIteratingPipeBase {
 	@Override
 	protected Reader getReader(ResultSet rs) throws SenderException {
 		try {
-			return JdbcUtil.getBlobReader(rs,1,querySender.getBlobCharset(),querySender.isBlobsCompressed());
+			return JdbcUtil.getBlobReader(querySender.getDbmsSupport(), rs,1,querySender.getBlobCharset(),querySender.isBlobsCompressed());
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

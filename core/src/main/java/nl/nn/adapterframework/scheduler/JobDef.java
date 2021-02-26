@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package nl.nn.adapterframework.scheduler;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,8 +35,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -47,22 +43,21 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
-import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.http.RestListener;
-import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jdbc.dbms.Dbms;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -71,15 +66,13 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DirectoryCleaner;
-import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -94,6 +87,7 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * <table border="1">
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
  * <tr><td>{@link Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.util.DirectoryCleaner directoryCleaner}</td><td>optional: specification of the directories to clean when function is cleanupfilesystem</td></tr>
  * </table>
  * </p>
  * <p> 
@@ -352,24 +346,23 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
  * 
  * @author  Johan  Verrips
  */
-public class JobDef {
-	protected Logger log=LogUtil.getLogger(this);
+public class JobDef extends TransactionAttributes {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
 
-    private String name;
-    private String cronExpression;
-    private long interval = -1;
-    private JobDefFunctions function;
-    private String configurationName;
-    private String adapterName;
-    private String description;
-    private String receiverName;
+	private String name;
+	private String cronExpression;
+	private long interval = -1;
+	private JobDefFunctions function;
+	private String configurationName;
+	private String adapterName;
+	private String description;
+	private String receiverName;
 	private String query;
 	private int queryTimeout = 0;
 	private String jmsRealm;
-	private Locker locker=null;
+	private Locker locker = null;
 	private int numThreads = 1;
 	private int countThreads = 0;
 	private String message = null;
@@ -379,10 +372,6 @@ public class JobDef {
 
 	private StatisticsKeeper statsKeeper;
 
-	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
-	private int transactionTimeout=0;
-
-	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
 
 	private String jobGroup = null;
@@ -390,14 +379,14 @@ public class JobDef {
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 
 	private class MessageLogObject {
-		private String jmsRealmName;
+		private String datasourceName;
 		private String tableName;
 		private String expiryDateField;
 		private String keyField;
 		private String typeField;
 
-		public MessageLogObject(String jmsRealmName, String tableName, String expiryDateField, String keyField, String typeField) {
-			this.jmsRealmName = jmsRealmName;
+		public MessageLogObject(String datasourceName, String tableName, String expiryDateField, String keyField, String typeField) {
+			this.datasourceName = datasourceName;
 			this.tableName = tableName;
 			this.expiryDateField = expiryDateField;
 			this.keyField = keyField;
@@ -406,8 +395,10 @@ public class JobDef {
 
 		@Override
 		public boolean equals(Object o) {
+			if(o == null || !(o instanceof MessageLogObject)) return false;
+
 			MessageLogObject mlo = (MessageLogObject) o;
-			if (mlo.getJmsRealmName().equals(jmsRealmName) &&
+			if (mlo.getDatasourceName().equals(datasourceName) &&
 				mlo.getTableName().equals(tableName) &&
 				mlo.expiryDateField.equals(expiryDateField)) {
 				return true;
@@ -416,8 +407,8 @@ public class JobDef {
 			}
 		}
 
-		public String getJmsRealmName() {
-			return jmsRealmName;
+		public String getDatasourceName() {
+			return datasourceName;
 		}
 
 		public String getTableName() {
@@ -443,9 +434,13 @@ public class JobDef {
 	}
 
 	public void configure(Configuration config) throws ConfigurationException {
+		super.configure();
 		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
+		if (StringUtils.isEmpty(getName())) {
+			throw new ConfigurationException("jobdef function ["+getFunction()+"] name must be specified");
+		}
 		if (StringUtils.isEmpty(getFunction())) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
 		}
@@ -481,8 +476,7 @@ public class JobDef {
 			getLocker().configure();
 		}
 
-		txDef = SpringTxManagerProxy.getTransactionDefinition(getTransactionAttributeNum(),getTransactionTimeout());
-
+		super.configure();
 		messageKeeper.add("job successfully configured");
 	}
 
@@ -496,74 +490,56 @@ public class JobDef {
 	}
 
 	protected void executeJob(IbisManager ibisManager) {
-		if (incrementCountThreads()) { 
+		if (!incrementCountThreads()) { 
+			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+			log.error(getLogPrefix()+msg);
+			return;
+		}
+		try {
+			IbisTransaction itx = IbisTransaction.getTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
 			try {
-				IbisTransaction itx = null;
-				TransactionStatus txStatus = null;
-				if (getTxManager()!=null) {
-					//txStatus = getTxManager().getTransaction(txDef);
-					itx = new IbisTransaction(getTxManager(), txDef, "scheduled job ["+getName()+"]");
-					txStatus = itx.getStatus();
-				}
-				try {
-					if (getLocker()!=null) {
-						String objectId = null;
+				if (getLocker() != null) {
+					String objectId = null;
+					try {
+						objectId = getLocker().acquire(getMessageKeeper());
+					} catch (Exception e) {
+						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
+						log.error(getLogPrefix()+e.getMessage());
+					}
+					if (objectId!=null) {
+						TimeoutGuard tg = new TimeoutGuard("Job "+getName());
 						try {
-							try {
-								objectId = getLocker().lock();
-							} catch (Exception e) {
-								boolean isUniqueConstraintViolation = false;
-								if (e instanceof SQLException) {
-									SQLException sqle = (SQLException) e;
-									isUniqueConstraintViolation = locker.getDbmsSupport().isUniqueConstraintViolation(sqle);
-								}
-								String msg = "error while setting lock: " + e.getMessage();
-								if (isUniqueConstraintViolation) {
-									getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
-									log.info(getLogPrefix()+msg);
-								} else {
-									getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
-									log.error(getLogPrefix()+msg);
-								}
-							}
-							if (objectId!=null) {
-								TimeoutGuard tg = new TimeoutGuard("Job "+getName());
-								try {
-									tg.activateGuard(getTransactionTimeout());
-									runJob(ibisManager);
-								} finally {
-									if (tg.cancel()) {
-										log.error(getLogPrefix()+"thread has been interrupted");
-									} 
-								}
-							}
+							tg.activateGuard(getTransactionTimeout());
+							runJob(ibisManager);
 						} finally {
-							if (objectId!=null) {
-								try {
-									getLocker().unlock(objectId);
-								} catch (Exception e) {
-									String msg = "error while removing lock: " + e.getMessage();
-									getMessageKeeper().add(msg, MessageKeeperMessage.WARN_LEVEL);
-									log.warn(getLogPrefix()+msg);
+							if (tg.cancel()) {
+								log.error(getLogPrefix()+"thread has been interrupted");
+								if(itx != null) {
+									itx.setRollbackOnly();
 								}
 							}
 						}
+						try {
+							getLocker().release(objectId);
+						} catch (Exception e) {
+							String msg = "error while removing lock: " + e.getMessage();
+							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
+							log.warn(getLogPrefix()+msg);
+						}
 					} else {
-						runJob(ibisManager);
+						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
 					}
-				} finally {
-					if (txStatus!=null) {
-						//getTxManager().commit(txStatus);
-						itx.commit();
-					}
+				} else {
+					runJob(ibisManager);
 				}
 			} finally {
-				decrementCountThreads();
+				if(itx != null) {
+					itx.commit();
+				}
 			}
-		} else {
-			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be interrupted";
-			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
-			log.error(getLogPrefix()+msg);
+		} finally {
+			decrementCountThreads();
 		}
 	}
 
@@ -583,6 +559,7 @@ public class JobDef {
 
 	protected void runJob(IbisManager ibisManager) {
 		long startTime = System.currentTimeMillis();
+		getMessageKeeper().add("starting to run the job");
 
 		switch(function) {
 		case DUMPSTATS:
@@ -619,39 +596,39 @@ public class JobDef {
 		}
 
 		long endTime = System.currentTimeMillis();
-		statsKeeper.addValue(endTime - startTime);
+		long duration = endTime - startTime;
+		statsKeeper.addValue(duration);
+		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
 	}
 
-	private void cleanupDatabase(IbisManager ibisManager) {
-		Date date = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
-
-		List<String> jmsRealmNames = new ArrayList<String>();
+	/**
+	 * Locate all Lockers, and find out which datasources are used.
+	 * @return distinct list of all datasourceNames used by lockers
+	 */
+	private List<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
+		List<String> datasourceNames = new ArrayList<>();
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
 			for (JobDef jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
-					String jmsRealmName = jobdef.getLocker().getJmsRealName();
-					if (!jmsRealmNames.contains(jmsRealmName)) {
-						jmsRealmNames.add(jmsRealmName);
+					String datasourceName = jobdef.getLocker().getDatasourceName();
+					if(StringUtils.isNotEmpty(datasourceName) && !datasourceNames.contains(datasourceName)) {
+						datasourceNames.add(datasourceName);
 					}
 				}
 			}
 		}
 
 		for (IAdapter adapter : ibisManager.getRegisteredAdapters()) {
-			if (adapter instanceof Adapter) {
-				PipeLine pipeLine = ((Adapter)adapter).getPipeLine();
-				if (pipeLine != null) {
-					for (IPipe pipe : pipeLine.getPipes()) {
-						if (pipe instanceof IExtendedPipe) {
-							IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
-							if (extendedPipe.getLocker() != null) {
-								String jmsRealmName = extendedPipe.getLocker().getJmsRealName();
-								if (!jmsRealmNames.contains(jmsRealmName)) {
-									jmsRealmNames.add(jmsRealmName);
-								}
+			PipeLine pipeLine = adapter.getPipeLine();
+			if (pipeLine != null) {
+				for (IPipe pipe : pipeLine.getPipes()) {
+					if (pipe instanceof IExtendedPipe) {
+						IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
+						if (extendedPipe.getLocker() != null) {
+							String datasourceName = extendedPipe.getLocker().getDatasourceName();
+							if(StringUtils.isNotEmpty(datasourceName) && !datasourceNames.contains(datasourceName)) {
+								datasourceNames.add(datasourceName);
 							}
 						}
 					}
@@ -659,80 +636,126 @@ public class JobDef {
 			}
 		}
 
-		for (Iterator<String> iter = jmsRealmNames.iterator(); iter.hasNext();) {
-			String jmsRealmName = iter.next();
-			setJmsRealm(jmsRealmName);
-			DirectQuerySender qs;
-			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			qs.setJmsRealm(jmsRealmName);
-			String deleteQuery;
-			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < CONVERT(datetime, '" + formattedDate + "', 120)";
-			} else {
-				deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
-			}
-			setQuery(deleteQuery);
-			qs = null;
-			executeQueryJob(ibisManager);
-		}
+		return datasourceNames;
+	}
 
-		List<MessageLogObject> messageLogs = new ArrayList<MessageLogObject>();
-		for(IAdapter iadapter : ibisManager.getRegisteredAdapters()) {
-			Adapter adapter = (Adapter)iadapter;
+	
+	private void collectMessageLogs(List<MessageLogObject> messageLogs, ITransactionalStorage<?> transactionalStorage) {
+		if (transactionalStorage!=null && transactionalStorage instanceof JdbcTransactionalStorage) {
+			JdbcTransactionalStorage<?> messageLog = (JdbcTransactionalStorage<?>)transactionalStorage;
+			String datasourceName = messageLog.getDatasourceName();
+			String expiryDateField = messageLog.getExpiryDateField();
+			String tableName = messageLog.getTableName();
+			String keyField = messageLog.getKeyField();
+			String typeField = messageLog.getTypeField();
+			MessageLogObject mlo = new MessageLogObject(datasourceName, tableName, expiryDateField, keyField, typeField);
+			if (!messageLogs.contains(mlo)) {
+				messageLogs.add(mlo);
+			}
+		}
+	}
+	
+	private List<MessageLogObject> getAllMessageLogs(IbisManager ibisManager) {
+		List<MessageLogObject> messageLogs = new ArrayList<>();
+		for(IAdapter adapter : ibisManager.getRegisteredAdapters()) {
+			for (Receiver<?> receiver: adapter.getReceivers()) {
+				collectMessageLogs(messageLogs, receiver.getMessageLog());
+			}
 			PipeLine pipeline = adapter.getPipeLine();
 			for (int i=0; i<pipeline.getPipes().size(); i++) {
 				IPipe pipe = pipeline.getPipe(i);
 				if (pipe instanceof MessageSendingPipe) {
 					MessageSendingPipe msp=(MessageSendingPipe)pipe;
-					if (msp.getMessageLog()!=null) {
-						ITransactionalStorage transactionStorage = msp.getMessageLog();
-						if (transactionStorage instanceof JdbcTransactionalStorage) {
-							JdbcTransactionalStorage messageLog = (JdbcTransactionalStorage)transactionStorage;
-							String jmsRealmName = messageLog.getJmsRealName();
-							String expiryDateField = messageLog.getExpiryDateField();
-							String tableName = messageLog.getTableName();
-							String keyField = messageLog.getKeyField();
-							String typeField = messageLog.getTypeField();
-							MessageLogObject mlo = new MessageLogObject(jmsRealmName, tableName, expiryDateField, keyField, typeField);
-							if (!messageLogs.contains(mlo)) {
-								messageLogs.add(mlo);
-							}
-						}
-					}
+					collectMessageLogs(messageLogs, msp.getMessageLog());
+				}
+			}
+		}
+		return messageLogs;
+	}
+
+	private void cleanupDatabase(IbisManager ibisManager) {
+		Date date = new Date();
+
+		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);
+		
+		List<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
+
+		for (Iterator<String> iter = datasourceNames.iterator(); iter.hasNext();) {
+			String datasourceName = iter.next();
+			FixedQuerySender qs = null;
+			try {
+				qs = ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+				qs.setDatasourceName(datasourceName);
+				qs.setName("cleanupDatabase-IBISLOCK");
+				qs.setQueryType("other");
+				qs.setTimeout(getQueryTimeout());
+				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
+				qs.setQuery(query);
+				Parameter param = new Parameter();
+				param.setName("now");
+				param.setType(Parameter.TYPE_TIMESTAMP);
+				param.setValue(DateUtils.format(date));
+				qs.addParameter(param);
+				qs.configure();
+				qs.open();
+
+				Message result = qs.sendMessage(Message.nullMessage(), null);
+				log.info("result [" + result + "]");
+			} catch (Exception e) {
+				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
+				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+				log.error(getLogPrefix()+msg);
+			} finally {
+				if(qs != null) {
+					qs.close();
 				}
 			}
 		}
 
+		List<MessageLogObject> messageLogs = getAllMessageLogs(ibisManager);
+
 		for (MessageLogObject mlo: messageLogs) {
-			setJmsRealm(mlo.getJmsRealmName());
-			DirectQuerySender qs;
-			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			qs.setJmsRealm(mlo.getJmsRealmName());
-			String deleteQuery;
-			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
-					+ mlo.getKeyField() + " IN (SELECT "
-						+ mlo.getKeyField() + " FROM " + mlo.getTableName()
-						+ " WITH (rowlock,updlock,readpast) WHERE "
-						+ mlo.getTypeField() + " IN ('"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
-						+ "') AND " + mlo.getExpiryDateField()
-						+ " < CONVERT(datetime, '" + formattedDate + "', 120))";
+			DirectQuerySender qs = null;
+			try {
+				qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+				qs.setDatasourceName(mlo.getDatasourceName());
+				qs.setName("cleanupDatabase-"+mlo.getTableName());
+				qs.setQueryType("other");
+				qs.setTimeout(getQueryTimeout());
+
+				Parameter param = new Parameter();
+				param.setName("now");
+				param.setType(Parameter.TYPE_TIMESTAMP);
+				param.setValue(DateUtils.format(date));
+				qs.addParameter(param);
+				qs.configure(true);
+				qs.open();
+				
+				String query;
+				if (qs.getDatabaseType() == Dbms.MSSQL) {
+					query = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT "+(maxRows>0?"TOP "+maxRows+" ":"") + mlo.getKeyField() + " FROM " + mlo.getTableName()
+							+ " WITH (readpast) WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+							+ "') AND " + mlo.getExpiryDateField() + " < ?)";
+					qs.setSqlDialect(Dbms.MSSQL.getKey());
+				}
+				else {
+					query = ("DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT " + mlo.getKeyField() + " FROM " + mlo.getTableName()
+					+ " WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+					+ "') AND " + mlo.getExpiryDateField() + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
+					qs.setSqlDialect(Dbms.ORACLE.getKey());
+				}
+
+				Message result = qs.sendMessage(new Message(query), null);
+				log.info("result [" + result + "]");
+			} catch (Exception e) {
+				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
+				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+				log.error(getLogPrefix()+msg);
+			} finally {
+				if(qs != null) {
+					qs.close();
+				}
 			}
-			else {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
-						+ mlo.getTypeField() + " IN ('"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
-						+ "') AND " + mlo.getExpiryDateField()
-						+ " < TO_TIMESTAMP('" + formattedDate
-						+ "', 'YYYY-MM-DD HH24:MI:SS')";
-			}
-			qs = null;
-			setQuery(deleteQuery);
-			setQueryTimeout(900);
-			executeQueryJob(ibisManager);
 		}
 	}
 
@@ -745,81 +768,75 @@ public class JobDef {
 	private void checkReload(IbisManager ibisManager) {
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
-			getMessageKeeper().add(msg, MessageKeeperMessage.INFO_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
 			log.info(getLogPrefix() + msg);
 			return;
 		}
-		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 
-		if (StringUtils.isNotEmpty(configJmsRealm)) {
-			List<String> configNames = new ArrayList<String>();
-			List<String> configsToReload = new ArrayList<String>();
+		String dataSource = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+		List<String> configNames = new ArrayList<String>();
+		List<String> configsToReload = new ArrayList<String>();
 
-			Connection conn = null;
-			ResultSet rs = null;
-			FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-			qs.setJmsRealm(configJmsRealm);
-			qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
-			String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
-			String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = '"+booleanValueTrue+"' and AUTORELOAD = '"+booleanValueTrue+"'";
-			try {
-				qs.configure();
-				qs.open();
-				conn = qs.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(selectQuery);
+		FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+		qs.setDatasourceName(dataSource);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
+		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = '"+booleanValueTrue+"' and AUTORELOAD = '"+booleanValueTrue+"'";
+		try {
+			qs.configure();
+			qs.open();
+			try (Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					String configName = configuration.getName();
 					configNames.add(configName);
 					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
 						stmt.setString(1, configName);
-						rs = stmt.executeQuery();
-						if (rs.next()) {
-							String ibisConfigVersion = rs.getString(1);
-							String configVersion = configuration.getVersion();
-							if(StringUtils.isEmpty(configVersion)) {
-								log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
-							}
-							else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
-								log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
-								configsToReload.add(configName);
+						try (ResultSet rs = stmt.executeQuery()) {
+							if (rs.next()) {
+								String ibisConfigVersion = rs.getString(1);
+								String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
+									log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
+								}
+								else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+									log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
+									configsToReload.add(configName);
+								}
 							}
 						}
 					}
 				}
-			} catch (Exception e) {
-				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
-			} finally {
-				JdbcUtil.fullClose(conn, rs);
-				qs.close();
 			}
+		} catch (Exception e) {
+			getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
+		} finally {
+			qs.close();
+		}
 
-			if (!configsToReload.isEmpty()) {
-				for (String configToReload : configsToReload) {
-					ibisManager.getIbisContext().reload(configToReload);
-				}
+		if (!configsToReload.isEmpty()) {
+			for (String configToReload : configsToReload) {
+				ibisManager.getIbisContext().reload(configToReload);
 			}
-			
-			if (CONFIG_AUTO_DB_CLASSLOADER) {
-				// load new (activated) configs
-				List<String> dbConfigNames = null;
-				try {
-					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, true);
-				} catch (ConfigurationException e) {
-					getMessageKeeper().add("error while retrieving configuration names from database", e);
-				}
-				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
-					for (String currentDbConfigurationName : dbConfigNames) {
-						if (!configNames.contains(currentDbConfigurationName)) {
-							ibisManager.getIbisContext().load(currentDbConfigurationName);
-						}
+		}
+		
+		if (CONFIG_AUTO_DB_CLASSLOADER) {
+			// load new (activated) configs
+			List<String> dbConfigNames = null;
+			try {
+				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), dataSource, true);
+			} catch (ConfigurationException e) {
+				getMessageKeeper().add("error while retrieving configuration names from database", e);
+			}
+			if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
+				for (String currentDbConfigurationName : dbConfigNames) {
+					if (!configNames.contains(currentDbConfigurationName)) {
+						ibisManager.getIbisContext().load(currentDbConfigurationName);
 					}
 				}
 				// unload old (deactivated) configurations
-				if (configNames != null && !configNames.isEmpty()) {
-					for (String currentConfigurationName : configNames) {
-						if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
-							ibisManager.getIbisContext().unload(currentConfigurationName);
-						}
+				for (String currentConfigurationName : configNames) {
+					if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+						ibisManager.getIbisContext().unload(currentConfigurationName);
 					}
 				}
 			}
@@ -837,7 +854,7 @@ public class JobDef {
 	 */
 	private void loadDatabaseSchedules(IbisManager ibisManager) {
 		if(!(ibisManager instanceof DefaultIbisManager)) {
-			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperLevel.ERROR);
 			return;
 		}
 
@@ -861,84 +878,83 @@ public class JobDef {
 		}
 
 		// Get all IbisSchedules that have been stored in the database
-		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 		FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(configJmsRealm);
+		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 
-		Connection conn = null;
-		ResultSet rs = null;
 		try {
 			qs.configure();
 			qs.open();
-			conn = qs.getConnection();
-			PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES");
-			rs = stmt.executeQuery();
-
-			while(rs.next()) {
-				String jobName = rs.getString("JOBNAME");
-				String jobGroup = rs.getString("JOBGROUP");
-				String adapterName = rs.getString("ADAPTER");
-				String receiverName = rs.getString("RECEIVER");
-				String cronExpression = rs.getString("CRON");
-				int interval = rs.getInt("EXECUTIONINTERVAL");
-				String message = rs.getString("MESSAGE");
-				boolean hasLocker = rs.getBoolean("LOCKER");
-				String lockKey = rs.getString("LOCK_KEY");
-
-				JobKey key = JobKey.jobKey(jobName, jobGroup);
-
-				//Create a new JobDefinition so we can compare it with existing jobs
-				DatabaseJobDef jobdef = new DatabaseJobDef();
-				jobdef.setCronExpression(cronExpression);
-				jobdef.setName(jobName);
-				jobdef.setInterval(interval);
-				jobdef.setJobGroup(jobGroup);
-				jobdef.setAdapterName(adapterName);
-				jobdef.setReceiverName(receiverName);
-				jobdef.setMessage(message);
-
-				if(hasLocker) {
-					Locker locker = (Locker) ibisManager.getIbisContext().createBeanAutowireByName(Locker.class);
-					locker.setName(lockKey);
-					locker.setObjectId(lockKey);
-					locker.setJmsRealm(configJmsRealm);
-					jobdef.setLocker(locker);
-				}
-
-				try {
-					jobdef.configure();
-				} catch (ConfigurationException e) {
-					getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
-				}
-
-				// If the job is found, find out if it is different from the existing one and update if necessarily
-				if(databaseJobDetails.containsKey(key)) {
-					IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
-					if(!oldJobDetails.compareWith(jobdef)) {
-						log.debug("updating DatabaseSchedule ["+key+"]");
-						try {
-							sh.scheduleJob(ibisManager, jobdef);
-						} catch (SchedulerException e) {
-							getMessageKeeper().add("unable to update schedule ["+key+"]", e);
+			try (Connection conn = qs.getConnection()) {
+				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
+					try (ResultSet rs = stmt.executeQuery()) {
+						while(rs.next()) {
+							String jobName = rs.getString("JOBNAME");
+							String jobGroup = rs.getString("JOBGROUP");
+							String adapterName = rs.getString("ADAPTER");
+							String receiverName = rs.getString("RECEIVER");
+							String cronExpression = rs.getString("CRON");
+							int interval = rs.getInt("EXECUTIONINTERVAL");
+							String message = rs.getString("MESSAGE");
+							boolean hasLocker = rs.getBoolean("LOCKER");
+							String lockKey = rs.getString("LOCK_KEY");
+			
+							JobKey key = JobKey.jobKey(jobName, jobGroup);
+			
+							//Create a new JobDefinition so we can compare it with existing jobs
+							DatabaseJobDef jobdef = new DatabaseJobDef();
+							jobdef.setCronExpression(cronExpression);
+							jobdef.setName(jobName);
+							jobdef.setInterval(interval);
+							jobdef.setJobGroup(jobGroup);
+							jobdef.setAdapterName(adapterName);
+							jobdef.setReceiverName(receiverName);
+							jobdef.setMessage(message);
+			
+							if(hasLocker) {
+								Locker locker = (Locker) ibisManager.getIbisContext().createBeanAutowireByName(Locker.class);
+			
+								locker.setName(lockKey);
+								locker.setObjectId(lockKey);
+								locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+								jobdef.setLocker(locker);
+							}
+			
+							try {
+								jobdef.configure();
+							} catch (ConfigurationException e) {
+								getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
+							}
+			
+							// If the job is found, find out if it is different from the existing one and update if necessarily
+							if(databaseJobDetails.containsKey(key)) {
+								IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
+								if(!oldJobDetails.compareWith(jobdef)) {
+									log.debug("updating DatabaseSchedule ["+key+"]");
+									try {
+										sh.scheduleJob(ibisManager, jobdef);
+									} catch (SchedulerException e) {
+										getMessageKeeper().add("unable to update schedule ["+key+"]", e);
+									}
+								}
+								// Remove the key that has been found from the databaseJobDetails Map
+								databaseJobDetails.remove(key);
+							} else {
+								// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
+								log.debug("add DatabaseSchedule ["+key+"]");
+								try {
+									sh.scheduleJob(ibisManager, jobdef);
+								} catch (SchedulerException e) {
+									getMessageKeeper().add("unable to add schedule ["+key+"]", e);
+								}
+							}
 						}
-					}
-					// Remove the key that has been found from the databaseJobDetails Map
-					databaseJobDetails.remove(key);
-				} else {
-					// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
-					log.debug("add DatabaseSchedule ["+key+"]");
-					try {
-						sh.scheduleJob(ibisManager, jobdef);
-					} catch (SchedulerException e) {
-						getMessageKeeper().add("unable to add schedule ["+key+"]", e);
 					}
 				}
 			}
 		} catch (Exception e) { // Only catch database related exceptions!
 			getMessageKeeper().add("unable to retrieve schedules from database", e);
 		} finally {
-			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
 
@@ -967,7 +983,7 @@ public class JobDef {
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
 			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg,MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg);
 		} finally {
 			qs.close();
@@ -1006,7 +1022,7 @@ public class JobDef {
 		}
 		catch(Exception e) {
 			String msg = "error while sending message (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg, MessageKeeperMessage.ERROR_LEVEL);
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg, e);
 		}
 	}
@@ -1016,169 +1032,69 @@ public class JobDef {
 		int countAdapterStateStarted=0;
 		int countReceiver=0;
 		int countReceiverStateStarted=0;
-		for (IAdapter iAdapter : ibisManager.getRegisteredAdapters()) {
+		for (Adapter adapter: ibisManager.getRegisteredAdapters()) {
 			countAdapter++;
-			if (iAdapter instanceof Adapter) {
-				Adapter adapter = (Adapter) iAdapter;
-				RunStateEnum adapterRunState = adapter.getRunState();
-				if (adapterRunState.equals(RunStateEnum.ERROR)) {
-					log.debug("trying to recover adapter [" + adapter.getName()
-							+ "]");
+			RunStateEnum adapterRunState = adapter.getRunState();
+			boolean startAdapter = false;
+			if (adapterRunState.equals(RunStateEnum.ERROR)) { //if not previously configured, there is no point in trying to do this again.
+				log.debug("trying to recover adapter [" + adapter.getName() + "]");
+
+				if (!adapter.configurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
 					try {
-						adapter.setRecover(true);
 						adapter.configure();
 					} catch (ConfigurationException e) {
-						// do nothing
-						log.warn("error during recovering adapter ["
-								+ adapter.getName() + "]: " + e.getMessage());
-					} finally {
-						adapter.setRecover(false);
-					}
-					if (adapter.configurationSucceeded()) {
-						adapter.stopRunning();
-						int count = 10;
-						while (count-- >= 0
-								&& !adapter.getRunState().equals(
-										RunStateEnum.STOPPED)) {
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-								// do nothing
-							}
-						}
-					}
-					// check for start is in method startRunning in Adapter self
-					if (adapter.isAutoStart()) {
-						adapter.startRunning();
-					}
-					log.debug("finished recovering adapter ["
-							+ adapter.getName() + "]");
+						// log the warning and do nothing, it couldn't configure before, it still can't...
+						log.warn("error configuring adapter [" + adapter.getName() + "] while trying to recover", e);
+					} 
 				}
-				String message = "adapter [" + adapter.getName()
-						+ "] has state [" + adapterRunState + "]";
-				adapterRunState = adapter.getRunState();
-				if (adapterRunState.equals(RunStateEnum.STARTED)) {
-					countAdapterStateStarted++;
+
+				if (adapter.configurationSucceeded()) {
+					startAdapter = adapter.isAutoStart(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
+				}
+			}
+
+			String message = "adapter [" + adapter.getName() + "] has state [" + adapterRunState + "]";
+			adapterRunState = adapter.getRunState();
+			if (adapterRunState.equals(RunStateEnum.STARTED)) {
+				countAdapterStateStarted++;
+				heartbeatLog.info(message);
+			} else if (adapterRunState.equals(RunStateEnum.ERROR)) {
+				heartbeatLog.error(message);
+			} else {
+				heartbeatLog.warn(message);
+			}
+
+			for (Receiver<?> receiver: adapter.getReceivers()) {
+				countReceiver++;
+
+				RunStateEnum receiverRunState = receiver.getRunState();
+				if (adapterRunState.equals(RunStateEnum.STARTED) && receiverRunState.equals(RunStateEnum.ERROR) && receiver.configurationSucceeded()) { //Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
+					log.debug("trying to recover receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
+
+					receiver.startRunning();
+
+					log.debug("finished recovering receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
+				}
+
+				receiverRunState = receiver.getRunState();
+				message = "receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "] has state [" + receiverRunState + "]";
+				if (receiverRunState.equals(RunStateEnum.STARTED)) {
+					countReceiverStateStarted++;
 					heartbeatLog.info(message);
-				} else if (adapterRunState.equals(RunStateEnum.ERROR)) {
+				} else if (receiverRunState.equals(RunStateEnum.ERROR)) {
 					heartbeatLog.error(message);
 				} else {
 					heartbeatLog.warn(message);
 				}
-				for (Iterator<IReceiver> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
-					IReceiver iReceiver = receiverIt.next();
-					countReceiver++;
-
-					if (iReceiver instanceof ReceiverBase) {
-						ReceiverBase receiver = (ReceiverBase) iReceiver;
-					
-						RunStateEnum receiverRunState = receiver.getRunState();
-						if (!adapterRunState.equals(RunStateEnum.ERROR)
-								&& receiverRunState.equals(RunStateEnum.ERROR)) {
-							log.debug("trying to recover receiver ["
-									+ receiver.getName() + "] of adapter ["
-									+ adapter.getName() + "]");
-							try {
-								if (receiver!=null) {
-									receiver.setRecover(true);
-								}
-								adapter.configureReceiver(receiver);
-							} finally {
-								if (receiver!=null) {
-									receiver.setRecover(false);
-								}
-							}
-							if (receiver!=null) {
-								if (receiver.configurationSucceeded()) {
-									receiver.stopRunning();
-									int count = 10;
-									while (count-- >= 0
-											&& !receiver.getRunState().equals(
-													RunStateEnum.STOPPED)) {
-										try {
-											Thread.sleep(1000);
-										} catch (InterruptedException e) {
-											log.debug("Interrupted waiting for receiver to stop", e);
-										}
-									}
-								}
-								// check for start is in method startRunning in
-								// ReceiverBase self
-								receiver.startRunning();
-								log.debug("finished recovering receiver ["
-										+ receiver.getName() + "] of adapter ["
-										+ adapter.getName() + "]");
-							}
-						} else if (receiverRunState
-								.equals(RunStateEnum.STARTED)) {
-							// workaround for started RestListeners of which
-							// uriPattern is not registered correctly
-							IListener listener = receiver.getListener();
-							if (listener instanceof RestListener) {
-								RestListener restListener = (RestListener) listener;
-								String matchingPattern = RestServiceDispatcher
-										.getInstance().findMatchingPattern("/"
-												+ restListener.getUriPattern());
-								if (matchingPattern == null) {
-									log.debug("trying to recover receiver ["
-											+ receiver.getName()
-											+ "] (restListener) of adapter ["
-											+ adapter.getName() + "]");
-									if (receiver!=null) {
-										if (receiver.configurationSucceeded()) {
-											receiver.stopRunning();
-											int count = 10;
-											while (count-- >= 0
-													&& !receiver.getRunState().equals(
-															RunStateEnum.STOPPED)) {
-												try {
-													Thread.sleep(1000);
-												} catch (InterruptedException e) {
-													log.debug("Interrupted waiting for receiver to stop", e);
-												}
-											}
-										}
-										// check for start is in method startRunning in
-										// ReceiverBase self
-										receiver.startRunning();
-										log.debug("finished recovering receiver ["
-												+ receiver.getName() + "] (restListener) of adapter ["
-												+ adapter.getName() + "]");
-									}
-								}
-							}
-						}
-						receiverRunState = receiver.getRunState();
-						message = "receiver [" + receiver.getName()
-								+ "] of adapter [" + adapter.getName()
-								+ "] has state [" + receiverRunState + "]";
-						if (receiverRunState.equals(RunStateEnum.STARTED)) {
-							countReceiverStateStarted++;
-							heartbeatLog.info(message);
-						} else if (receiverRunState.equals(RunStateEnum.ERROR)) {
-							heartbeatLog.error(message);
-						} else {
-							heartbeatLog.warn(message);
-						}
-					} else {
-						log.warn("will not try to recover receiver ["
-								+ iReceiver.getName() + "] of adapter ["
-								+ adapter.getName()
-								+ "], is not of type Receiver but ["
-								+ iAdapter.getClass().getName() + "]");
-					}
-				}
-			} else {
-				log.warn("will not try to recover adapter ["
-						+ iAdapter.getName()
-						+ "], is not of type Adapter but ["
-						+ iAdapter.getClass().getName() + "]");
 			}
+
+			if (startAdapter) { // can only be true if adapter was in error before and AutoStart is enabled
+				adapter.startRunning();
+			}
+
+			log.debug("finished recovering adapter [" + adapter.getName() + "]");
 		}
-		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter
-				+ "] adapters and [" + countReceiverStateStarted + "/"
-				+ countReceiver + "] receivers have state ["
-				+ RunStateEnum.STARTED + "]");
+		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunStateEnum.STARTED + "]");
 	}
 
 	public String getLogPrefix() {
@@ -1205,7 +1121,7 @@ public class JobDef {
 		this.description = description;
 	}
 	public String getDescription() {
-	   return description;
+		return description;
 	}
 
 	@IbisDoc({"cron expression that determines the frequency of execution (see below)", ""})
@@ -1216,7 +1132,7 @@ public class JobDef {
 		return cronExpression;
 	}
 
-	@IbisDoc({"repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 the keep waiting indefinitely instead of max 60 seconds for the adapter to start.", ""})
+	@IbisDoc({"repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 to keep waiting indefinitely instead of max 60 seconds for the adapter to start.", ""})
 	public void setInterval(long interval) {
 		this.interval = interval;
 	}
@@ -1225,7 +1141,7 @@ public class JobDef {
 		return interval;
 	}
 
-	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery", ""})
+	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
 	public void setFunction(String function) throws ConfigurationException {
 		try {
 			this.function = JobDefFunctions.fromValue(function);
@@ -1290,6 +1206,9 @@ public class JobDef {
 		return jmsRealm;
 	}
 
+	@IbisDoc({"Optional Locker, to avoid parallel execution of the Job by multiple threads or servers. The Job is NOT executed when the lock cannot be obtained, " +
+				"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner. " +
+				"N.B. To retain the lock, even after the transaction of the Job rolled back, set Lockers transactionAttribute=\"RequiresNew\" and type=\"P\"; Otherwise, the Locker will join the transaction of the Job and/or the Lock will be released."})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 		locker.setName("Locker of job ["+getName()+"]");
@@ -1298,64 +1217,6 @@ public class JobDef {
 		return locker;
 	}
 
-	@IbisDoc({"The transactionAttribute declares transactional behavior of job execution. It "
-			+ "applies both to database transactions and XA transactions. "
-	        + "In general, a transactionAttribute is used to start a new transaction or suspend the current one when required. "
-			+ "For developers: it is equal "
-	        + "to <a href=\"http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494\">EJB transaction attribute</a>. "
-	        + "Possible values for transactionAttribute: "
-	        + "  <table border=\"1\">"
-	        + "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T2</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>none</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
-	        + " 										      <tr><td>T1</td>  <td>T1</td></tr>"
-	        + "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
-	        + "											      <tr><td>T1</td>  <td>error</td></tr>"
-	        + "  </table>", "Supports"})
-
-	public void setTransactionAttribute(String attribute) throws ConfigurationException {
-		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
-		if (transactionAttribute<0) {
-			String msg="illegal value for transactionAttribute ["+attribute+"]";
-			messageKeeper.add(msg);
-			throw new ConfigurationException(msg);
-		}
-	}
-	public String getTransactionAttribute() {
-		return JtaUtil.getTransactionAttributeString(transactionAttribute);
-	}
-
-    @IbisDoc({"Like <code>transactionAttribute</code>, but the chosen "
-    	    + "option is represented with a number. The numbers mean:"
-    	    + "<table>"
-    	    + "<tr><td>0</td><td>Required</td></tr>"
-    	    + "<tr><td>1</td><td>Supports</td></tr>"
-    	    + "<tr><td>2</td><td>Mandatory</td></tr>"
-    	    + "<tr><td>3</td><td>RequiresNew</td></tr>"
-    	    + "<tr><td>4</td><td>NotSupported</td></tr>"
-    	    + "<tr><td>5</td><td>Never</td></tr>"
-    	    + "</table>", "1"})
-	public void setTransactionAttributeNum(int i) {
-		transactionAttribute = i;
-	}
-	public int getTransactionAttributeNum() {
-		return transactionAttribute;
-	}
-
-	@IbisDoc({"timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
-	public void setTransactionTimeout(int i) {
-		transactionTimeout = i;
-	}
-	public int getTransactionTimeout() {
-		return transactionTimeout;
-	}
 
 	public void setTxManager(PlatformTransactionManager manager) {
 		txManager = manager;

@@ -19,10 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.StringTokenizer;
-
-import javax.sql.DataSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -68,7 +65,6 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private FixedQuerySender qs;
 	private String query;
-	private Map<String, DataSource> proxiedDataSources;
 	private String jmsRealm;
 
 	@Override
@@ -78,7 +74,6 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
 		qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 
-		qs.setProxiedDataSources(proxiedDataSources);
 		qs.setJmsRealm(jmsRealm);
 
 		//dummy query required
@@ -87,8 +82,8 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 		Connection conn = null;
 		try {
-			conn = qs.getConnection();
-			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, "*")) {
+			conn = qs.getConnection(); // TODO this should not be done in configure, qs is not yet open.
+			if (!qs.getDbmsSupport().isTablePresent(conn, tableName)) {
 				throw new ConfigurationException("The table [" + tableName + "] doesn't exist");
 			}
 			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, labelField)) {
@@ -100,11 +95,8 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			if (!qs.getDbmsSupport().isColumnPresent(conn, tableName, valueOutField)) {
 				throw new ConfigurationException("The column [" + valueOutField + "] doesn't exist");
 			}
-			query = "SELECT " + valueOutField + " FROM " + tableName + 
-					" WHERE " + labelField+ "=? AND " + valueInField + "=?";
+			query = "SELECT " + valueOutField + " FROM " + tableName + " WHERE " + labelField+ "=? AND " + valueInField + "=?";
 		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} catch (SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
 			JdbcUtil.close(conn);
@@ -175,11 +167,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			buffer.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
 
 		} catch (Throwable t) {
-			throw new PipeRunException(
-				this,
-				getLogPrefix(session) + " Exception on transforming domain",
-				t);
-
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming domain", t);
 		} finally {
 			JdbcUtil.fullClose(conn, stmt);
 		}
@@ -187,31 +175,20 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), buffer.toString());
 	}
 
-	public String getValueOut(
-		String label,
-		String valueIn,
-		String type,
-		PreparedStatement stmt)
-		throws JdbcException, SQLException {
-		ResultSet rs = null;
-		try {
-			stmt.setString(1, label);
-			if (type.equals(TYPE_NUMBER)) {
-				double d = Double.valueOf(valueIn.toString()).doubleValue();
-				stmt.setDouble(2, d);
-			} else {
-				stmt.setString(2, valueIn);
-			}
-			rs = stmt.executeQuery();
+	public String getValueOut(String label, String valueIn, String type, PreparedStatement stmt) throws JdbcException, SQLException {
+		stmt.setString(1, label);
+		if (type.equals(TYPE_NUMBER)) {
+			double d = Double.valueOf(valueIn.toString()).doubleValue();
+			stmt.setDouble(2, d);
+		} else {
+			stmt.setString(2, valueIn);
+		}
+		try (ResultSet rs = stmt.executeQuery()) {
 			String result = null;
 			if (rs.next()) {
 				result = rs.getString(1);
 			}
 			return result;
-		} finally {
-			if (rs != null) {
-				rs.close();
-			}
 		}
 	}
 
@@ -220,10 +197,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		try {
 			qs.open();
 		} catch (Throwable t) {
-			PipeStartException pse =
-				new PipeStartException(
-					getLogPrefix(null) + "could not start",
-					t);
+			PipeStartException pse = new PipeStartException(getLogPrefix(null) + "could not start", t);
 			pse.setPipeNameInError(getName());
 			throw pse;
 		}
@@ -233,10 +207,6 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	public void stop() {
 		log.info(getLogPrefix(null) + "is closing");
 		qs.close();
-	}
-
-	public void setProxiedDataSources(Map<String, DataSource> proxiedDataSources) {
-		this.proxiedDataSources = proxiedDataSources;
 	}
 
 	public void setJmsRealm(String jmsRealm) {

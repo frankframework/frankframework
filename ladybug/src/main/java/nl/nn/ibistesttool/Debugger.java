@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Message pipeLineInput(PipeLine pipeLine, String correlationId, Message input) {
-		return Message.asMessage(testTool.startpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), input.asObject()));
+		return Message.asMessage(testTool.startpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), input==null?null:input.asObject()));
 	}
 
 	@Override
@@ -86,8 +86,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public String pipeLineOutput(PipeLine pipeLine, String correlationId, String output) {
-		return (String)testTool.endpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), output);
+	public Message pipeLineOutput(PipeLine pipeLine, String correlationId, Message output) {
+		return Message.asMessage(testTool.endpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), output==null?null:output.asObject()));
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	@Override
 	public Message pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, Message input) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		Message result = Message.asMessage(testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input.asObject()));
+		Message result = Message.asMessage(testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input==null?null:input.asObject()));
 		if (pipeDescription.getDescription() != null) {
 			testTool.infopoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), pipeDescription.getDescription());
 			Iterator<String> iterator = pipeDescription.getResourceNames().iterator();
@@ -114,7 +114,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	@Override
 	public Message pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, Message output) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		return Message.asMessage(testTool.endpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), output.asObject()));
+		return Message.asMessage(testTool.endpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), output==null?null:output.asObject()));
 	}
 
 	@Override
@@ -126,12 +126,12 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Message senderInput(ISender sender, String correlationId, Message input) {
-		return Message.asMessage(testTool.startpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), input.asObject()));
+		return Message.asMessage(testTool.startpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), input==null?null:input.asObject()));
 	}
 
 	@Override
 	public Message senderOutput(ISender sender, String correlationId, Message output) {
-		return Message.asMessage(testTool.endpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), output.asObject()));
+		return Message.asMessage(testTool.endpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), output==null?null:output.asObject()));
 	}
 
 	@Override
@@ -192,11 +192,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		return testTool.inputpoint(correlationId, null, "getEmptyInputReplacement", replacementValue);
 	}
 
+	public Object capturedInput(String correlationId, String value) {
+		return testTool.inputpoint(correlationId, null, "Captured input ", value);
+	}
+
 	@Override
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value) {
 		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value);
 	}
-
 	@Override
 	public Object storeInSessionKey(String correlationId, Object sessionKey, Object result) {
 		return testTool.outputpoint(correlationId, null, "SessionKey " + sessionKey.toString(), result);
@@ -204,7 +207,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Message preserveInput(String correlationId, Message input) {
-		return Message.asMessage(testTool.outputpoint(correlationId, null, "PreserveInput", input.asObject()));
+		return Message.asMessage(testTool.outputpoint(correlationId, null, "PreserveInput", input==null?null:input.asObject()));
 	}
 	
 	@Override
@@ -217,7 +220,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			String checkpointName = checkpoint.getName();
 			if (checkpointName.startsWith("Pipeline ")) {
 				String pipelineName = checkpointName.substring("Pipeline ".length());
-				String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
+				Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner));
 				IAdapter adapter = ibisManager.getRegisteredAdapter(pipelineName);
 				if (adapter != null) {
 					IPipeLineSession pipeLineSession = new PipeLineSessionBase();

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,18 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.net.URL;
+import java.util.List;
 import java.util.jar.JarFile;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
-import static org.junit.Assert.*;
+import nl.nn.adapterframework.testutil.TestAppender;
 
-public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoader> {
+public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {
 
 	@Override
 	protected String getScheme() {
@@ -32,10 +35,14 @@ public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoad
 
 	@Override
 	public JarFileClassLoader createClassLoader(ClassLoader parent) throws Exception {
-		URL file = this.getClass().getResource(JAR_FILE);
-		assertNotNull("jar url ["+JAR_FILE+"] not found", file);
-		JarFile jarFile = new JarFile(file.getFile());
-		assertNotNull("jar file not found",jarFile);
+		return createClassLoader(parent, JAR_FILE);
+	}
+
+	private JarFileClassLoader createClassLoader(ClassLoader parent, String jarFile) throws Exception {
+		URL file = this.getClass().getResource(jarFile);
+		assertNotNull("jar url ["+jarFile+"] not found", file);
+
+		assertNotNull("jar file not found", new JarFile(file.getFile())); // verify the jar file
 
 		JarFileClassLoader cl = new JarFileClassLoader(parent);
 		cl.setJar(file.getFile());
@@ -70,5 +77,29 @@ public class JarFileClassLoaderTest extends ClassLoaderTestBase<JarFileClassLoad
 
 		URL url = getResource(fileNameWithBasePath); //This ClassLoader doesn't have a BasePath so we need to append it
 		assertEquals("Path of resource invalid", fileNameWithBasePath, url.getPath());
+	}
+
+	@Test
+	public void testMyConfig() throws Exception {
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
+		TestAppender.addToRootLogger(appender);
+
+		try {
+			JarFileClassLoader classLoader = createClassLoader(null, "/ClassLoader/zip/myConfig.zip");
+	
+			appConstants.put("configurations.myConfig.classLoaderType", classLoader.getClass().getSimpleName());
+			classLoader.configure(ibisContext, "myConfig");
+
+			List<String> logEvents = appender.getLogLines();
+			System.out.println(logEvents);
+			URL configurationURL = classLoader.getResource("Configuration.xml");
+			assertNotNull("unable to locate test file [Configuration.xml]", configurationURL);
+
+			assertEquals("Should find 8 log messages", 8, logEvents.size());
+			long warnMsgs = logEvents.stream().filter(k -> k.startsWith("WARN")).count();
+			assertEquals("Should find one warning message", 1, warnMsgs);
+		} finally {
+			TestAppender.removeAppender(appender);
+		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
-public class LocalFileSystemSender extends FileSystemSender<File, LocalFileSystem>{
+public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSystem>{
 
 	public LocalFileSystemSender() {
 		setFileSystem(new LocalFileSystem());
@@ -30,16 +30,6 @@ public class LocalFileSystemSender extends FileSystemSender<File, LocalFileSyste
 	@IbisDoc({"1", "Optional base folder, that serves as root for all other folders", ""})
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
-	}
-
-	@IbisDoc({"2", "Filter of files to look for in inputdirectory, e.g. '*.inp'", ""})
-	public void setWildcard(String wildcard) {
-		getFileSystem().setWildcard(wildcard);
-	}
-
-	@IbisDoc({"3", "Filter of files to be excluded when looking in inputdirectory", ""})
-	public void setExcludeWildcard(String excludeWildcard) {
-		getFileSystem().setExcludeWildcard(excludeWildcard);
 	}
 
 }

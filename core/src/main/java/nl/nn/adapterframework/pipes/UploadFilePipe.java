@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -35,7 +36,8 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author Peter Leeuwenburgh
  */
-
+@Deprecated
+@ConfigurationWarning("Please replace with UnzipPipe. Configure UnzipPipe with getInputFromSessionKey='file', directorySessionKey='destination' and keepOriginalFileName='true'.")
 public class UploadFilePipe extends FixedForwardPipe {
 
 	private String directory;

@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * <h4>configuring IbisJavaSender and JavaListener</h4>
  * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisJavaSender</li>
+ *   <li>Define a SenderPipe with an IbisJavaSender</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
  * </ul>
  * In the Adapter to be called:
@@ -124,7 +124,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			String correlationID = session==null ? null : (String)session.get(IPipeLineSession.businessCorrelationIdKey);
 			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
 			if (isMultipartResponse()) {
-				return new Message(HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session, null));
+				return HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session);
 			}
 		
 		} catch (ParameterException e) {

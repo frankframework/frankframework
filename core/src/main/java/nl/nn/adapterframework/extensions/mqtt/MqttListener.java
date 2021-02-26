@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Integration Partners
+   Copyright 2017, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,23 +15,22 @@
 */
 package nl.nn.adapterframework.extensions.mqtt;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.receivers.ReceiverAware;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.core.IPushingListener;
+import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.receivers.ReceiverAware;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
@@ -57,17 +56,19 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  * @author Niels Meijer
  */
 
-public class MqttListener extends MqttFacade implements ReceiverAware, IPushingListener<MqttMessage>, MqttCallbackExtended {
+public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessage>, IPushingListener<MqttMessage>, MqttCallbackExtended {
 
-	private ReceiverBase receiver;
+	private Receiver<MqttMessage> receiver;
 	private IMessageHandler<MqttMessage> messageHandler;
 	private IbisExceptionListener ibisExceptionListener;
 
-	public void setReceiver(IReceiver receiver) {
-		this.receiver = (ReceiverBase)receiver;
+	@Override
+	public void setReceiver(Receiver<MqttMessage> receiver) {
+		this.receiver = receiver;
 	}
 
-	public IReceiver getReceiver() {
+	@Override
+	public Receiver<MqttMessage> getReceiver() {
 		return receiver;
 	}
 
@@ -81,32 +82,24 @@ public class MqttListener extends MqttFacade implements ReceiverAware, IPushingL
 		this.ibisExceptionListener = ibisExceptionListener;
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		// See connectionLost(Throwable)
-		receiver.setOnError(ReceiverBase.ONERROR_RECOVER);
-		// Don't recreate client when trying to recover
-		if (!receiver.isRecover() && !receiver.isRecoverAdapter()) {
-			super.configure();
-			client.setCallback(this);
-		}
+		receiver.setOnErrorEnum(Receiver.OnError.RECOVER);
+		// Recover will be triggered when connectionLost was called or listener 
+		// could not start in which case client is already disconnected.
+
+		super.configure();
+		client.setCallback(this);
 	}
 
+	@Override
 	public void open() throws ListenerException {
 		try {
 			super.open();
 			client.subscribe(getTopic(), getQos());
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new ListenerException("Could not subscribe to topic", e);
-		}
-	}
-
-	public void close() {
-		// Prevent log.warn() when trying to recover. Recover will be triggered
-		// when connectionLost was called or listener could not start in which
-		// case client is already disconnected.
-		if (!receiver.isRecover() && !receiver.isRecoverAdapter()) {
-			super.close();
 		}
 	}
 
@@ -131,7 +124,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware, IPushingL
 		log.debug(message);
 		// Call receiver which will set status to error after which recover job
 		// will try to recover. Note that at configure time
-		// receiver.setOnError(ReceiverBase.ONERROR_RECOVER) was called. Also
+		// receiver.setOnError(Receiver.ONERROR_RECOVER) was called. Also
 		// note that mqtt lib will also try to recover (when automaticReconnect
 		// is true) (see connectComplete also) which will probably recover
 		// earlier because of it's smaller interval. When no connection was
@@ -159,15 +152,11 @@ public class MqttListener extends MqttFacade implements ReceiverAware, IPushingL
 	}
 
 	@Override
-	public String getStringFromRawMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
-		try {
-			return new String(rawMessage.getPayload(), getCharset());
-		} catch (UnsupportedEncodingException e) {
-			throw new ListenerException("Could not encode message", e);
-		}
+	public Message extractMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
+		return new Message(rawMessage.getPayload(),getCharset());
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> context) throws ListenerException {
 	}
 }

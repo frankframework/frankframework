@@ -2,7 +2,6 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="EnvironmentVariablesCtrl">
-	<uib-alert ng-repeat="alert in state" type="{{alert.type}}">{{alert.message}}</uib-alert>
 	<div class="row">
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">
@@ -56,7 +55,7 @@
 							<div class="row">
 								<div class="col-md-offset-2 col-md-10">
 									<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
-									<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+									<button ladda="updateDynamicParams" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
 								</div>
 							</div>
 						</div>
@@ -69,6 +68,7 @@
 	<div class="row">
 		<div class="col-lg-12 tabs-container">
 			<ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+				<li ng-class="{active : selectedConfiguration == 'All'}"><a ng-click="changeConfiguration('All')">All</a></li>
 				<li ng-class="{active : selectedConfiguration == configuration.name}" ng-repeat="configuration in configurations">
 					<a ng-click="changeConfiguration(configuration.name)">{{::configuration.name}}</a>
 				</li>

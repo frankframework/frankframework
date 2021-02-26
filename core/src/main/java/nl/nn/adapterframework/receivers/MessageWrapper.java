@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ListenerException;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Wrapper for messages that are not serializable.
@@ -29,39 +30,42 @@ import java.util.Map;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public class MessageWrapper implements Serializable, IMessageWrapper {
+public class MessageWrapper<M> implements Serializable, IMessageWrapper {
 
 	static final long serialVersionUID = -8251009650246241025L;
 
-	private Map context = new HashMap();
-	private String text;
+	private Map<String,Object> context = new LinkedHashMap<>();
+	private Message message;
 	private String id;
 
 	public MessageWrapper()  {
 		super();
 	}
-	public MessageWrapper(Object message, IListener listener) throws ListenerException  {
+	public MessageWrapper(M rawMessage, IListener<M> listener) throws ListenerException  {
 		this();
-		text = listener.getStringFromRawMessage(message, context);
+		message = listener.extractMessage(rawMessage, context);
 		Object rm = context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
-		id = listener.getIdFromRawMessage(message, context);
+		id = listener.getIdFromRawMessage(rawMessage, context);
 	}
 
-	public Map getContext() {
+	@Override
+	public Map<String,Object> getContext() {
 		return context;
 	}
 
 	public void setId(String string) {
 		id = string;
 	}
+	@Override
 	public String getId() {
 		return id;
 	}
 
-	public void setText(String string) {
-		text = string;
+	public void setMessage(Message message) {
+		this.message = message;
 	}
-	public String getText() {
-		return text;
+	@Override
+	public Message getMessage() {
+		return message;
 	}
 }

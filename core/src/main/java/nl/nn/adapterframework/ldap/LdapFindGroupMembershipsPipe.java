@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.ldap;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -78,7 +79,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
 		options.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
 		ldapClient= new LdapClient(options);
-		ldapClient.registerCache(cache);
+		ldapClient.setCache(cache);
 		ldapClient.configure();
 	}
 
@@ -109,7 +110,13 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "input is null");
 		}
-		String searchedDN=message.toString();
+		
+		String searchedDN;
+		try {
+			searchedDN = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session) + "Failure converting input to string", e);
+		}
 
 		Set<String> memberships;
 		try {
@@ -136,7 +143,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 
 
 	@Override
-	public void registerCache(ICacheAdapter<String, Set<String>> cache) {
+	public void setCache(ICacheAdapter<String, Set<String>> cache) {
 		this.cache=cache;
 	}
 	@Override
@@ -145,7 +152,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 	}
 
 	
-	@IbisDoc({"1", "when <code>true</code>, the memberOf attribute is also searched in all the found members", "false"})
+	@IbisDoc({"1", "when <code>true</code>, the memberOf attribute is also searched in all the found members", "true"})
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}

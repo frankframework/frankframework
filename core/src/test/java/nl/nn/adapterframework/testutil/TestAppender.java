@@ -19,12 +19,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.Filter.Result;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.Filter.Result;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 
 import nl.nn.adapterframework.logging.IbisPatternLayout;
@@ -54,7 +54,7 @@ public class TestAppender extends AbstractAppender {
 		}
 
 		public B useIbisXmlLayout() {
-			IbisXmlLayout layout = IbisXmlLayout.createLayout(getConfiguration(), null, true);
+			IbisXmlLayout layout = IbisXmlLayout.createLayout(getConfiguration(), null, false);
 			return setLayout(layout);
 		}
 
@@ -91,12 +91,7 @@ public class TestAppender extends AbstractAppender {
 	}
 
 	public static void addToRootLogger(TestAppender appender) {
-		addToRootLogger(appender, Level.DEBUG);
-	}
-
-	public static void addToRootLogger(TestAppender appender, Level level) {
 		Logger logger = getRootLogger();
-		logger.setLevel(level);
 		logger.addAppender(appender);
 	}
 

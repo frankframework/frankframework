@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,10 +51,10 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
 		if (log.isDebugEnabled()) log.debug("cache key ["+key+"]");
-		String result;
+		Message result;
 		String state;
 		synchronized (cache) {
-			result = cache.get("r"+key);
+			result = new Message(cache.get("r"+key));
 			state = cache.get("s"+key);
 		}
 		if (result!=null && state!=null) {

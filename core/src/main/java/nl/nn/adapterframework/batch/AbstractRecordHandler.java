@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+    Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,15 +21,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -44,6 +45,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String inputSeparator;
@@ -76,11 +78,15 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	public void addInputField(int length) {
 		inputFields.add(new InputField(length));
 	}
-	
+
+	@Deprecated
 	public void registerChild(InputfieldsPart part) {
-		setInputFields(part.getValue());
+		registerInputFields(part);
 	}
 
+	public void registerInputFields(InputfieldsPart part) {
+		setInputFields(part.getValue());
+	}
 
 	protected int getNumberOfInputFields() {
 		return inputFields.size();
@@ -163,8 +169,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		
 		for (Iterator<Integer> it = recordIdentifyingFields.iterator(); it.hasNext();) {
 			int i = (it.next()).intValue();
-			Object field=record.get(i-1);
-			String fieldValue=field==null?"":field.toString();
+			String field=record.get(i-1);
+			String fieldValue=field==null?"":field;
 			if (result==null) {
 				result=fieldValue;
 			} else {
@@ -177,24 +183,24 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	@Override
 	public boolean isNewRecordType(IPipeLineSession session, boolean equalRecordHandlers, List<String> prevRecord, List<String> curRecord) {
 		if (getRecordIdentifyingFieldList().size() == 0) {
-			log.debug("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
+			if (log.isTraceEnabled()) log.trace("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
 			return false;
 		}
 		if (! equalRecordHandlers) {
-			log.debug("isNewRecordType(): equalRecordTypes ["+equalRecordHandlers+"], so returning true");
+			if (log.isTraceEnabled()) log.trace("isNewRecordType(): equalRecordTypes ["+equalRecordHandlers+"], so returning true");
 			return true;
 		}
 			
 		if (prevRecord == null) {
-			log.debug("isNewRecordType(): no previous record, so returning true");
+			if (log.isTraceEnabled()) log.trace("isNewRecordType(): no previous record, so returning true");
 			return true;
 		}
 		for (Iterator<Integer> it = recordIdentifyingFields.iterator(); it.hasNext();) {
 			int i = (it.next()).intValue();
-			Object prevField=prevRecord.get(i-1);
-			Object curField=curRecord.get(i-1);
+			String prevField=prevRecord.get(i-1);
+			String curField=curRecord.get(i-1);
 			if (! prevField.equals(curField)) {
-				log.debug("isNewRecordType(): fields ["+i+"] different previous value ["+prevField+"] current value ["+curField+"], so returning true");
+				if (log.isTraceEnabled()) log.trace("isNewRecordType(): fields ["+i+"] different previous value ["+prevField+"] current value ["+curField+"], so returning true");
 				return true;
 			}
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019, 2020 Nationale-Nederlanden
+   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class JsonPipe extends FixedForwardPipe {
 	private String direction = "json2xml";
 	private String version = "1";
 	private boolean addXmlRootElement=true;
-	
+
 	private TransformerPool tpXml2Json;
 
 	@Override
@@ -49,13 +49,13 @@ public class JsonPipe extends FixedForwardPipe {
 		super.configure();
 		String dir = getDirection();
 		if (dir == null) {
-			throw new ConfigurationException(getLogPrefix(null) + "direction must be set");
+			throw new ConfigurationException("direction must be set");
 		}
 		if (!"json2xml".equals(dir) && !"xml2json".equals(dir)) {
-			throw new ConfigurationException(getLogPrefix(null) + "illegal value for direction [" + dir + "], must be 'xml2json' or 'json2xml'");
+			throw new ConfigurationException("illegal value for direction [" + dir + "], must be 'xml2json' or 'json2xml'");
 		}
 		if ("xml2json".equals(dir) && "2".equals(getVersion())) {
-			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), getConfigurationClassLoader(), "/xml/xsl/xml2json.xsl", 0);
+			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, "/xml/xsl/xml2json.xsl", 0);
 		}
 	}
 

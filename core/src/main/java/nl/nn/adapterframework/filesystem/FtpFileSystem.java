@@ -19,6 +19,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,12 +30,11 @@ import java.util.Map;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * 
@@ -43,9 +43,10 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFile> {
 
-	protected Logger log = LogUtil.getLogger(this);
-
 	private String remoteDirectory = "";
+
+	private boolean open;
+
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -59,12 +60,21 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		} catch (FtpConnectException e) {
 			throw new FileSystemException("Cannot connect to the FTP server with domain ["+getHost()+"]", e);
 		}
+		open=true;
 	}
 
 	@Override
 	public void close() {
+		open=false;
 		closeClient();
 	}
+
+
+	@Override
+	public boolean isOpen() {
+		return open;
+	}
+
 
 	@Override
 	public FTPFile toFile(String filename) throws FileSystemException {
@@ -79,9 +89,19 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public Iterator<FTPFile> listFiles(String folder) throws FileSystemException {
+	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		try {
-			return new FTPFilePathIterator(folder, ftpClient.listFiles(folder));
+			FTPFile[] files = ftpClient.listFiles(folder);
+			return files == null? 0 : files.length;
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
+	}
+	
+	@Override
+	public DirectoryStream<FTPFile> listFiles(String folder) throws FileSystemException {
+		try {
+			return FileSystemUtils.getDirectoryStream(new FTPFilePathIterator(folder, ftpClient.listFiles(folder)));
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -126,10 +146,10 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public InputStream readFile(FTPFile f) throws FileSystemException, IOException {
+	public Message readFile(FTPFile f) throws FileSystemException, IOException {
 		InputStream inputStream = ftpClient.retrieveFileStream(f.getName());
 		ftpClient.completePendingCommand();
-		return inputStream;
+		return new Message(inputStream);
 	}
 
 	@Override
@@ -181,31 +201,18 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public FTPFile renameFile(FTPFile f, String newName, boolean force) throws FileSystemException {
-		if(exists(toFile(newName))) {
-			throw new FileSystemException("Cannot rename file. Destination file already exists.");
-		}
+	public FTPFile renameFile(FTPFile source, FTPFile destination) throws FileSystemException {
 		try {
-			ftpClient.rename(f.getName(), newName);
+			ftpClient.rename(source.getName(), destination.getName());
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-		return toFile(newName);
-	}
-
-	protected String getDestinationFilename(FTPFile f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
-		if(!folderExists(destinationFolder)) {
-			if(createFolder) {
-				createFolder(destinationFolder);
-			}
-			throw new FileSystemException("Cannot "+action+" file. Destination folder ["+destinationFolder+"] does not exist.");
-		}
-		return destinationFolder+"/"+f.getName();
+		return destination;
 	}
 
 	@Override
 	public FTPFile moveFile(FTPFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		String destinationFilename = getDestinationFilename(f, destinationFolder, createFolder, "move");
+		String destinationFilename = destinationFolder+"/"+f.getName();
 		try {
 			ftpClient.rename(f.getName(), destinationFilename);
 		} catch (IOException e) {
@@ -303,4 +310,5 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			}
 		}
 	}
+
 }

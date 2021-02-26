@@ -71,7 +71,7 @@
 													<a>
 														<xsl:attribute name="href">
 											<xsl:value-of
-															select="concat($srcPrefix,'rest/webservices/',@name,@extention)" />
+															select="concat($srcPrefix,'rest/webservices/',@name,@extension)" />
 										</xsl:attribute>
 														<xsl:value-of select="@name" />
 													</a>
@@ -80,7 +80,7 @@
 													<a>
 														<xsl:attribute name="href">
 											<xsl:value-of
-															select="concat($srcPrefix,'rest/webservices/',@name,@extention,'?useIncludes=true')" />
+															select="concat($srcPrefix,'rest/webservices/',@name,@extension,'?useIncludes=true')" />
 										</xsl:attribute>
 														<xsl:text>using includes</xsl:text>
 													</a>

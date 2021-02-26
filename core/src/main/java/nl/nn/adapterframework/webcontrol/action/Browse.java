@@ -25,17 +25,23 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.DynaActionForm;
+
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
@@ -44,12 +50,6 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.FileViewerServlet;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.DynaActionForm;
 
 /**
  * Basic browser for transactional storage.
@@ -64,7 +64,7 @@ public class Browse extends ActionBase {
 	
 	
 	// if performAction returns true, no forward should be returned
-	protected boolean performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
+	protected boolean performAction(Adapter adapter, Receiver receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
 		log.debug("performing action ["+action+"]");
 		return false;
 	}
@@ -161,7 +161,7 @@ public class Browse extends ActionBase {
 		log.debug("storageType ["+storageType+"] action ["+action+"] submit ["+submit+"] adapterName ["+adapterName+"] receiverName ["+receiverName+"] pipeName ["+pipeName+"] issued by ["+commandIssuedBy+"]");
 
 		
-		Adapter adapter = (Adapter)ibisManager.getRegisteredAdapter(adapterName);
+		Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 
 		IMessageBrowser mb;
 		IListener listener=null;
@@ -171,26 +171,26 @@ public class Browse extends ActionBase {
 				MessageSendingPipe pipe=(MessageSendingPipe)adapter.getPipeLine().getPipe(pipeName);
 				mb=pipe.getMessageLog();
 			} else {
-				ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
-				mb = receiver.getMessageLog();
+				Receiver receiver = adapter.getReceiverByName(receiverName);
+				mb = receiver.getMessageBrowser(ProcessState.DONE);
 			}
 			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
 			if ("export selected".equalsIgnoreCase(action)) {
 				performAction(adapter, null, action, mb, messageId, selected, request, response);
 			}
 		} else {
-			ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+			Receiver receiver = adapter.getReceiverByName(receiverName);
 			if (receiver==null) {
 				error("cannot find Receiver ["+receiverName+"]", null);
 				return null;
 			}
-			mb = receiver.getErrorStorage();
+			mb = receiver.getMessageBrowser(ProcessState.ERROR);
 			if (performAction(adapter, receiver, action, mb, messageId, selected, request, response))
 				return null;
 			listener = receiver.getListener();
 		}
 		try {
-			logCount = "(" + ((ITransactionalStorage) mb).getMessageCount() + ")";
+			logCount = "(" + mb.getMessageCount() + ")";
 		} catch (Exception e) {
 			log.warn(e);
 			logCount = "(?)";
@@ -202,9 +202,9 @@ public class Browse extends ActionBase {
 				String msg=null;
 				if(rawmsg instanceof MessageWrapper) {
 					MessageWrapper msgsgs = (MessageWrapper) rawmsg;
-					msg = msgsgs.getText();
+					msg = msgsgs.getMessage().asString();
 				} else if (listener!=null) {
-					msg = listener.getStringFromRawMessage(rawmsg, null);
+					msg = listener.extractMessage(rawmsg, null).asString();
 				} else {
 					msg = Message.asString(rawmsg);
 				}
@@ -220,8 +220,7 @@ public class Browse extends ActionBase {
 				FileViewerServlet.showReaderContents(new StringReader(msg),"msg"+messageId,type,response,"message ["+messageId+"]");
 				return null;
 			} else {
-				IMessageBrowsingIterator mbi=mb.getIterator(startDate, endDate, SortOrder.NONE);
-				try {
+				try (IMessageBrowsingIterator mbi=mb.getIterator(startDate, endDate, SortOrder.NONE)) {
 					XmlBuilder messages=new XmlBuilder("messages");
 					messages.addAttribute("storageType",storageType);
 					messages.addAttribute("action",action);
@@ -235,8 +234,7 @@ public class Browse extends ActionBase {
  					}
 					int messageCount;
 					for (messageCount=0; mbi.hasNext(); ) {
-						IMessageBrowsingIteratorItem iterItem = mbi.next();
-						try {
+						try (IMessageBrowsingIteratorItem iterItem = mbi.next()) {
 							String cType=iterItem.getType();
 							String cHost=iterItem.getHost();
 							String cId=iterItem.getId();
@@ -278,7 +276,7 @@ public class Browse extends ActionBase {
 								Object rawmsg = mb.browseMessage(cId);
 								String msg=null;
 								if (listener!=null) {
-									msg = listener.getStringFromRawMessage(rawmsg,new HashMap());
+									msg = listener.extractMessage(rawmsg,new HashMap()).asString();
 								} else {
 									msg = Message.asString(rawmsg);
 								}
@@ -298,7 +296,9 @@ public class Browse extends ActionBase {
 								message.addAttribute("correlationId",cCorrelationId);
 								message.addAttribute("type",cType);
 								message.addAttribute("host",cHost);
-								message.addAttribute("insertDate",DateUtils.format(insertDate, DateUtils.FORMAT_FULL_GENERIC));
+								if (insertDate!=null) {
+									message.addAttribute("insertDate",DateUtils.format(insertDate, DateUtils.FORMAT_FULL_GENERIC));
+								}
 								if (iterItem.getExpiryDate()!=null) {
 									message.addAttribute("expiryDate",DateUtils.format(iterItem.getExpiryDate(), DateUtils.FORMAT_FULL_GENERIC));
 								}
@@ -311,21 +311,17 @@ public class Browse extends ActionBase {
 								log.warn("stopped iterating messages after ["+messageCount+"]: limit reached");
 								break;
 							}
-						} finally {
-							iterItem.release();
 						}
 					}
 					messages.addAttribute("messageCount",Integer.toString(messageCount-skipMessages));
 					request.setAttribute("messages",messages.toXML());
-				} finally {
-					mbi.close();
 				}
 			}
 		} catch (Throwable e) {
 			error("Caught Exception", e);
 			throw new ServletException(e);
 		}
-		
+
 		if (!errors.isEmpty()) {
 			saveErrors(request, errors);
 		}		

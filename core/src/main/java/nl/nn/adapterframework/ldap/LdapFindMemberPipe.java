@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
@@ -139,7 +140,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		return false;
 	}
 
-
+	@IbisDoc({"1", "The dn of the group to search in when the parameter dnSearchIn is not set", ""})
 	public void setDnSearchIn(String string) {
 		dnSearchIn = string;
 	}
@@ -147,6 +148,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		return dnSearchIn;
 	}
 
+	@IbisDoc({"2", "The dn of the member to search for when the parameter dnFind is not set", ""})
 	public void setDnFind(String string) {
 		dnFind = string;
 	}
@@ -154,6 +156,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		return dnFind;
 	}
 
+	@IbisDoc({"3", "when <code>true</code>, the member attribute is also searched in all the found members", "true"})
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,9 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
-
 /**
  * The point of this classLoader is to always return the same mocked response.
  * That way we can test all individual ClassLoaders the same way.
@@ -33,7 +30,7 @@ import nl.nn.adapterframework.configuration.classloaders.ReloadAware;
  * @author Niels Meijer
  *
  */
-public class ClassLoaderMock extends ClassLoader implements ReloadAware {
+public class ClassLoaderMock extends ClassLoader {
 
 	public static final String ROOTDIR = "/dummy/directory/";
 	public static final String BASEPATH = "basepath/";
@@ -111,10 +108,5 @@ public class ClassLoaderMock extends ClassLoader implements ReloadAware {
 			urls.add(parent);
 
 		return urls.elements();
-	}
-
-	@Override
-	public void reload() throws ConfigurationException {
-		//don't do anything
 	}
 }

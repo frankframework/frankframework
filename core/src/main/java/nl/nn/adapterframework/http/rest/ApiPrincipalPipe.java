@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020 Integration Partners
+   Copyright 2017-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,10 +54,10 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 
 		String action = getAction();
 		if (action==null) {
-			throw new ConfigurationException(getLogPrefix(null)+"action must be set");
+			throw new ConfigurationException("action must be set");
 		}
 		if (!allowedActions.contains(action)) {
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for action ["+action+"], must be one of " + allowedActions.toString());
+			throw new ConfigurationException("illegal value for action ["+action+"], must be one of " + allowedActions.toString());
 		}
 
 		cache = ApiCacheManager.getInstance();
@@ -102,7 +102,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			userPrincipal.setData(input);
 			userPrincipal.setToken(token);
 			if(getAuthenticationMethod().equals("cookie")) {
-				Cookie cookie = new Cookie("authenticationToken", token);
+				Cookie cookie = new Cookie(ApiListenerServlet.AUTHENTICATION_COOKIE_NAME, token);
 				cookie.setPath("/");
 				cookie.setMaxAge(authTTL);
 				cookie.setHttpOnly(true);

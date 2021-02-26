@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Integration Partners B.V.
+Copyright 2019-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,21 +15,46 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import java.nio.charset.Charset;
+
+import nl.nn.adapterframework.util.StreamUtil;
+
 public enum MediaTypes {
 
-	ANY("*/*"),
+	ANY("*/*", null),
 	TEXT("text/plain"),
 	XML("application/xml"),
 	JSON("application/json"),
-	PDF("application/pdf"),
+	PDF("application/pdf", null), //raw binary formats do not have a charset
+	OCTET("application/octet-stream", null), //raw binary formats do not have a charset
 	MULTIPART_RELATED("multipart/related"),
 	MULTIPART_FORMDATA("multipart/form-data"),
 	MULTIPART("multipart/*");
 
 	private final String mediaType;
+	private final Charset defaultCharset;
 
+	/**
+	 * Creates a new MediaType with the default charset (UTF-8)
+	 */
 	private MediaTypes(String mediaType) {
+		this(mediaType, Charset.forName(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
+	}
+
+	/**
+	 * Creates a new MediaType with the given charset.
+	 * `null` means no charset!
+	 */
+	private MediaTypes(String mediaType, Charset charset) {
 		this.mediaType = mediaType;
+		this.defaultCharset = charset;
+	}
+
+	/**
+	 * returns the default charset for the given mediatype or null when non is allowed
+	 */
+	public Charset getDefaultCharset() {
+		return defaultCharset;
 	}
 
 	public String getContentType() {

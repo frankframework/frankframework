@@ -1,12 +1,14 @@
 <!DOCTYPE configuration [
 	<!ENTITY Authentication SYSTEM "./ConfigurationAuthentication.xml">
+	<!ENTITY Batch SYSTEM "./ConfigurationBatch.xml">
 	<!ENTITY Cache SYSTEM "./ConfigurationCache.xml">
 	<!ENTITY Checksum SYSTEM "./ConfigurationChecksum.xml">
 	<!ENTITY Zip SYSTEM "./ConfigurationZip.xml">
 	<!ENTITY ErrorMessageFormatter SYSTEM "./ConfigurationErrorMessageFormatter.xml">
 	<!ENTITY ExceptionPipe SYSTEM "./ConfigurationExceptionPipe.xml">
-	<!ENTITY SkipEmptyTags SYSTEM "./ConfigurationSkipEmptyTags.xml">
+	<!ENTITY ExchangeMail SYSTEM "./ConfigurationExchangeMail.xml">
 	<!ENTITY ReplacerPipe SYSTEM "./ConfigurationReplacerPipe.xml">
+	<!ENTITY ReplaceInputAndPreserve SYSTEM "./ConfigurationReplaceInputAndPreserve.xml">
 	<!ENTITY CompareStringPipe SYSTEM "./ConfigurationCompareStringPipe.xml">
 	<!ENTITY CompareXmlStringPipe SYSTEM "./ConfigurationCompareXmlStringPipe.xml">
 	<!ENTITY QuerySender SYSTEM "./ConfigurationQuerySender.xml">
@@ -50,18 +52,23 @@
 	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
 	<!ENTITY Parameters SYSTEM "./ConfigurationParameters.xml">
 	<!ENTITY MessageStore SYSTEM "./ConfigurationMessageStoreSenderAndListener.xml">
+	<!ENTITY MessageStorePeek SYSTEM "./ConfigurationMessageStoreSenderAndListenerPeek.xml">
 	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
-	<!ENTITY SoapValidator SYSTEM "./ConfigurationSoapValidator.xml">
+	<!ENTITY Validators SYSTEM "./ConfigurationValidators.xml">
+	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
+	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
+	&Batch;
 	&Cache;
 	&Checksum;
 	&Zip;
 	&ErrorMessageFormatter;
 	&ExceptionPipe;
-	&SkipEmptyTags;
+	&ExchangeMail;
 	&ReplacerPipe;
+	&ReplaceInputAndPreserve;
 	&CompareStringPipe;
 	&CompareXmlStringPipe;
 	&QuerySender;
@@ -105,6 +112,9 @@
 	&Javascript;
 	&Parameters;
 	&MessageStore;
+	&MessageStorePeek;
 	&BlockEnabledSenders;
-	&SoapValidator;
+	&Validators;
+	&ApiWsdlGenerator;
+	&Unzip;
 </configuration>

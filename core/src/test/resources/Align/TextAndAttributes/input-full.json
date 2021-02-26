@@ -1,0 +1,29 @@
+{
+  "Root": {
+    "MetaData": {
+      "label": [
+        {
+          "@name": "abc",
+          "#text": "1234567890"
+        },
+        {
+          "@name": "def",
+          "#text": "Soapui"
+        },
+        {
+          "@name": "xyz",
+          "#text": "12345678901234567890123456789012345678901234567890"
+        }
+      ]
+    },
+    "intLabel": {
+      "@id": "myLabel",
+      "#text": 25
+    },
+    "location": {
+      "@x": 1,
+      "@y": 2,
+      "#text": "somewhere"
+    }
+  }
+}

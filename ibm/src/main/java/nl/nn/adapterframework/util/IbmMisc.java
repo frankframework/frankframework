@@ -37,7 +37,7 @@ import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
  * @since 5.0.29
  */
 public class IbmMisc {
-    private static final Logger LOG = LogUtil.getLogger(Misc.class);
+    private static final Logger LOG = LogUtil.getLogger(IbmMisc.class);
 	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
 	public static final String GETJMSDEST_XSLT = "xml/xsl/getJmsDestinations.xsl";
 
@@ -122,12 +122,9 @@ public class IbmMisc {
         return Misc.fileToString(csFile);
     }
 
-	public static String getConnectionPoolProperties(String confResString,
-			String providerType, String jndiName) throws IOException,
-			DomBuilderException, TransformerException, SAXException {
+	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) throws IOException, DomBuilderException, TransformerException, SAXException {
 		// providerType: 'JDBC' or 'JMS'
-		URL url = ClassUtils
-				.getResourceURL(IbmMisc.class, GETCONNPOOLPROP_XSLT);
+		URL url = ClassUtils.getResourceURL(GETCONNPOOLPROP_XSLT);
 		if (url == null) {
 			throw new IOException("cannot find resource ["
 					+ GETCONNPOOLPROP_XSLT + "]");
@@ -145,19 +142,15 @@ public class IbmMisc {
 		return connectionPoolProperties;
 	}
 
-	public static String getJmsDestinations(String confResString)
-			throws IOException, DomBuilderException, TransformerException, SAXException {
-		URL url = ClassUtils.getResourceURL(IbmMisc.class, GETJMSDEST_XSLT);
+	public static String getJmsDestinations(String confResString) throws IOException, DomBuilderException, TransformerException, SAXException {
+		URL url = ClassUtils.getResourceURL(GETJMSDEST_XSLT);
 		if (url == null) {
-			throw new IOException(
-					"cannot find resource [" + GETJMSDEST_XSLT + "]");
+			throw new IOException("cannot find resource [" + GETJMSDEST_XSLT + "]");
 		}
 		Transformer t = XmlUtils.createTransformer(url, 2);
 		String jmsDestinations = XmlUtils.transformXml(t, confResString);
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("jmsDestinations [" + chomp(jmsDestinations, 100, true)
-					+ "]");
-		}
+		if (LOG.isDebugEnabled()) LOG.debug("jmsDestinations [" + chomp(jmsDestinations, 100, true) + "]");
+
 		return jmsDestinations;
 	}
 	

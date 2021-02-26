@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2020 Nationale-Nederlanden
+   Copyright 2013, 2018-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,18 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 /**
  * Singleton class that knows about the ServiceListeners that are active.
  * <br/>
@@ -60,7 +62,7 @@ public class ServiceDispatcher  {
 	 * 
 	 * @since 4.3
 	 */
-	public String dispatchRequest(String serviceName, String correlationId, String request, Map requestContext) throws ListenerException {
+	public String dispatchRequest(String serviceName, String correlationId, String request, Map<String,Object> requestContext) throws ListenerException {
 		if (log.isDebugEnabled()) {
 			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+correlationId+"] message ["+request+"]");
 		}
@@ -70,7 +72,12 @@ public class ServiceDispatcher  {
 			throw new ListenerException("service ["+serviceName+"] is not registered");
 		}
 
-		String result = client.processRequest(correlationId, request, requestContext);
+		String result;
+		try {
+			result = client.processRequest(correlationId, new Message(request), requestContext).asString();
+		} catch (IOException e) {
+			throw new ListenerException(e);
+		}
 		if (result == null) {
 			log.warn("result is null!");
 		}

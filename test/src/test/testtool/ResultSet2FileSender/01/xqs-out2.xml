@@ -129,11 +129,11 @@
 <result item="2">
 <result>
 	<fielddefinition>
-		<field name="COUNT(*)" type="NUMERIC" columnDisplaySize="22" precision="0" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
+		<field name="NUM_NO_TIMESTAMP" type="NUMERIC" columnDisplaySize="22" precision="0" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
 	</fielddefinition>
 	<rowset>
 		<row number="0">
-			<field name="COUNT(*)">1</field>
+			<field name="NUM_NO_TIMESTAMP">1</field>
 		</row>
 	</rowset>
 </result>

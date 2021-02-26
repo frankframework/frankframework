@@ -1,4 +1,4 @@
 <FXF>
   <Transfer_name>CRC32</Transfer_name>
-  <Local_File>c:\temp\testdata\checksum.txt</Local_File>
+  <Local_File>${testdata.dir}\checksum.txt</Local_File>
 </FXF>

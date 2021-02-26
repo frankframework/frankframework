@@ -29,12 +29,6 @@
 				className="nl.nn.adapterframework.jdbc.MessageStoreListener"
 				jmsRealm="jdbc" slotId="TestMessageStoreSenderAndListener-Queue"
 				sessionKeys="key1,key2" />
-			<errorStorage
-				className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" slotId="TestMessageStoreSenderAndListener-ReadErrors" />
-			<messageLog
-				className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" slotId="TestMessageStoreSenderAndListener-ReadLog" />
 		</Receiver>
 		<Pipeline firstPipe="DoIt">
 			<Exit state="success" path="EXIT" code="200" />

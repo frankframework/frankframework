@@ -18,6 +18,7 @@ package nl.nn.adapterframework.util;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 import java.util.Date;
 import java.util.Set;
@@ -30,18 +31,14 @@ import java.util.Set;
  */
 public class MessageKeeperMessage {
 
-	public static final String INFO_LEVEL = "INFO";
-	public static final String WARN_LEVEL = "WARN";
-	public static final String ERROR_LEVEL = "ERROR";
-	
 	private Date messageDate=new Date();
 	private String messageText;
-	private String messageLevel;
+	private MessageKeeperLevel messageLevel;
 	
 	/**
 	* Set the messagetext of this message. The text will be xml-encoded.
 	*/
-	public MessageKeeperMessage(String message, String level){
+	public MessageKeeperMessage(String message, MessageKeeperLevel level){
 	//	this.messageText=XmlUtils.encodeChars(message);
 		this.messageText=maskMessage(message);
 		this.messageLevel=level;
@@ -49,7 +46,7 @@ public class MessageKeeperMessage {
 	/**
 	* Set the messagetext and -date of this message. The text will be xml-encoded.
 	*/
-	public MessageKeeperMessage(String message, Date date, String level) {
+	public MessageKeeperMessage(String message, Date date, MessageKeeperLevel level) {
 	//	this.messageText=XmlUtils.encodeChars(message);
 		this.messageText=maskMessage(message);
 		this.messageDate=date;
@@ -74,6 +71,6 @@ public class MessageKeeperMessage {
 		return messageText;
 	}
 	public String getMessageLevel() {
-		return messageLevel;
+		return messageLevel.name();
 	}
 }

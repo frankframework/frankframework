@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,13 +25,14 @@ import com.sap.mw.jco.IFunctionTemplate;
 import com.sap.mw.jco.IRepository;
 import com.sap.mw.jco.JCO;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 /**
@@ -56,6 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class SapFunctionFacade implements ISapFunctionFacade {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private String sapSystemName;
@@ -245,7 +247,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 	}
 
 
-	public String functionCall2message(JCO.Function function) {
+	public Message functionCall2message(JCO.Function function) {
 		JCO.ParameterList input = function.getImportParameterList();
 		
 		int messageFieldIndex = findFieldIndex(input, getRequestFieldIndex(), getRequestFieldName());
@@ -268,7 +270,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 			result+="</request>";
 		}
 
-		return result;
+		return new Message(result);
 	}
 
 	public Message functionResult2message(JCO.Function function) {

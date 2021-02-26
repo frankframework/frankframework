@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Properties;
 import java.util.UUID;
 
 import org.junit.After;
@@ -24,6 +25,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.AmazonS3Sender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 
 
 /**
@@ -34,6 +36,9 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
 
+	public static final String AMAZONS3_PROPERTIES = "amazonS3.properties";
+	private static Properties properties;
+	
 	@Rule
 	public TestName name = new TestName();
 	
@@ -56,9 +61,28 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		setWaitMillis(waitMilis);
 	}
 	
+	private void setAttributesFromPropertiesFile() throws Exception {
+		try {
+			if (properties == null) {
+				properties = new Properties();
+			}
+			properties.load(ClassUtils.getResourceURL(AMAZONS3_PROPERTIES).openStream());	 
+			accessKey = properties.getProperty("accessKey");
+			secretKey = properties.getProperty("secretKey");
+			proxyHost = properties.getProperty("proxyHost");
+			if (properties.getProperty("proxyHost") != null) {
+				proxyPort = Integer.parseInt(properties.getProperty("proxyPort"));
+			}
+		} catch (Exception e) {
+			log.error("There was an error reading propertie file: {} ", e.getMessage());
+			throw e;
+		}
+	}	
+	
 	@Override
 	@Before
 	public void setUp() throws Exception {
+		setAttributesFromPropertiesFile();
 		super.setUp();
 	}
 	
@@ -86,7 +110,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	}
 
 	@Test
-	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException, IOException {
+	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
 		fileSystemSender.setAction("createBucket");
 
 		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
@@ -100,7 +124,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	}
 
 	@Test
-	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException, IOException {
+	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
 		fileSystemSender.setAction("deleteBucket");
 
 		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);

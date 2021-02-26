@@ -40,7 +40,7 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 	private Serializer serializer;
 
 	/**
-	 * @param logPattern the pattern to use or DEFAULT when null
+	 * @param pattern the pattern to use or DEFAULT when null
 	 * @param alwaysWriteExceptions defaults to true
 	 * @param disableAnsi defaults to false
 	 * @param noConsoleNoAnsi defaults to false

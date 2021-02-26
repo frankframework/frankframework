@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,51 +33,46 @@ import org.apache.logging.log4j.Logger;
 public class DbmsSupportFactory implements IDbmsSupportFactory {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private final static String PRODUCT_NAME_ORACLE_="Oracle";
-	private final static String PRODUCT_NAME_MSSQLSERVER="Microsoft SQL Server";
 
 	private Properties dbmsSupportMap; 
 
+	@Override
 	public IDbmsSupport getDbmsSupport(Connection conn) {
 		String product;
+		String productVersion;
 		try {
 			DatabaseMetaData md = conn.getMetaData();
-			product=md.getDatabaseProductName();
+			product = md.getDatabaseProductName();
+			productVersion = md.getDatabaseProductVersion();
+			
+			log.debug("found product ["+product+"] productVersion ["+productVersion+"]");
 		} catch (SQLException e1) {
 			throw new RuntimeException("cannot obtain product from connection metadata", e1);
 		}
-		Properties supportMap=getDbmsSupportMap();
-		if (supportMap!=null) {
-			if (StringUtils.isEmpty(product)) {
-				log.warn("no product found from connection metadata");
+		if (StringUtils.isEmpty(product)) {
+			log.warn("no product found from connection metadata");
+		} else {
+			Properties supportMap=getDbmsSupportMap();
+			if (supportMap==null) {
+				log.debug("no dbmsSupportMap specified, reverting to built-in types");
 			} else {
 				if (!supportMap.containsKey(product)) {
-					log.warn("product ["+product+"] not configured in dbmsSupportMap");
+					log.debug("product ["+product+"] not configured in dbmsSupportMap, will search in built-in types");
 				} else {
 					String dbmsSupportClass=supportMap.getProperty(product);
 					if (StringUtils.isEmpty(dbmsSupportClass)) {
-						log.warn("product ["+product+"] configured empty in dbmsSupportMap");
+						log.warn("product ["+product+"] configured empty in dbmsSupportMap, will search in built-in types");
 					} else {
 						try {
-							if (log.isDebugEnabled()) log.debug("creating dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"]");
+							if (log.isDebugEnabled()) log.debug("creating dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"] productVersion ["+productVersion+"]");
 							return (IDbmsSupport)ClassUtils.newInstance(dbmsSupportClass);
 						} catch (Exception e) {
-							throw new RuntimeException("Cannot create dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"]",e);
+							throw new RuntimeException("Cannot create dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"] productVersion ["+productVersion+"]",e);
 						} 
 					}
 				}
 			}
-		}
-		else {
-			log.warn("no dbmsSupportMap specified, reverting to built in types");
-			if (PRODUCT_NAME_ORACLE_.equals(product)) {
-				log.debug("Setting databasetype to ORACLE");
-				return new OracleDbmsSupport();
-			}
-			if (PRODUCT_NAME_MSSQLSERVER.equals(product)) {
-				log.debug("Setting databasetype to MSSQLSERVER");
-				return new MsSqlServerDbmsSupport();
-			}
+			return Dbms.findDbmsSupportByProduct(product, productVersion);
 		}
 		log.debug("Setting databasetype to GENERIC, productName ["+product+"]");
 		return new GenericDbmsSupport();
