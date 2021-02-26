@@ -101,7 +101,7 @@ public class MessageTest {
 		String actual = adapter.toString();
 		String startsWith = Message.class.getName();
 		MatcherAssert.assertThat("Result of toString() doesn't start with " + startsWith,
-				startsWith.equals(actual.substring(0, actual.indexOf("@") + 1)));
+				startsWith.equals(actual.substring(0, actual.indexOf("@"))));
 		int i = actual.indexOf(": ") + 2;
 		assertEquals(clazz.getTypeName(), actual.substring(i).substring(0, actual.substring(i).indexOf(": ")));
 		if (wrapperClass == null) {
