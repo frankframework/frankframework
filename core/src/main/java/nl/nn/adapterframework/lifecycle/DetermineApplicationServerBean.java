@@ -34,7 +34,6 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 
 	private ServletContext servletContext;
 	private Logger log = LogUtil.getLogger(this);
-	private String applicationServerType = null;
 
 	@Override
 	public void setServletContext(ServletContext servletContext) {

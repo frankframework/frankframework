@@ -105,7 +105,7 @@ public class JmsRealmFactory {
 			log.warn("overwriting JmsRealm [" + jmsRealm.toString() + "]. Realm with name ["+realmName+"] already exists");
 		}
 		jmsRealms.put(realmName, jmsRealm);
-		if(log.isDebugEnabled()) log.debug("JmsRealmFactory registered realm [" + jmsRealm.toString() + "]");
+		log.debug("JmsRealmFactory registered realm [{}]", () -> jmsRealm.toString());
 	}
 
 	@Override
