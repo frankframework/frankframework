@@ -36,6 +36,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
@@ -98,7 +99,9 @@ public class MessageTest {
 	
 	protected void testToString(Message adapter, Class<?> clazz, Class<?> wrapperClass) {
 		String actual = adapter.toString();
-		assertEquals(Message.class.getName(), actual.substring(0, actual.indexOf("@")));
+		String startsWith = Message.class.getName();
+		MatcherAssert.assertThat("Result of toString() doesn't start with " + startsWith,
+				startsWith.equals(actual.substring(0, actual.indexOf("@") + 1)));
 		int i = actual.indexOf(": ") + 2;
 		assertEquals(clazz.getTypeName(), actual.substring(i).substring(0, actual.substring(i).indexOf(": ")));
 		if (wrapperClass == null) {
