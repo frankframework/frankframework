@@ -1,0 +1,113 @@
+{
+  "elements": [
+    {
+      "attributes": [
+        {
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "description": "",
+          "isDeprecated": false,
+          "name": "clemens"
+        },
+        {
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "description": "",
+          "isDeprecated": false,
+          "name": "arnold"
+        },
+        {
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "description": "",
+          "isDeprecated": false,
+          "name": "dennis"
+        },
+        {
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "description": "",
+          "isDeprecated": false,
+          "name": "bernhard"
+        }
+      ],
+      "children": [
+        {
+          "description": "",
+          "group": "Proton",
+          "isDeprecated": false,
+          "isMandatory": false,
+          "isMultiple": false,
+          "roleName": "roleAlpha"
+        },
+        {
+          "description": "",
+          "group": "Mnemonic",
+          "isDeprecated": false,
+          "isMandatory": false,
+          "isMultiple": false,
+          "roleName": "roleBeta"
+        },
+        {
+          "description": "",
+          "group": "Other",
+          "isDeprecated": false,
+          "isMandatory": false,
+          "isMultiple": false,
+          "roleName": "roleEpsilon"
+        },
+        {
+          "description": "",
+          "group": "Nemesis",
+          "isDeprecated": false,
+          "isMandatory": false,
+          "isMultiple": false,
+          "roleName": "roleDelta"
+        }
+      ],
+      "elementNames": ["Master"],
+      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+      "isAbstract": false,
+      "isDeprecated": false,
+      "name": "Master",
+      "parent": "java.lang.Object"
+    },
+    {
+      "attributes": [],
+      "children": [],
+      "elementNames": [],
+      "fullName": "java.lang.Object",
+      "isAbstract": false,
+      "isDeprecated": false,
+      "name": "Object"
+    },
+    {
+      "attributes": [],
+      "children": [],
+      "elementNames": ["RoleEpsilon"],
+      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Opaque",
+      "isAbstract": false,
+      "isDeprecated": false,
+      "name": "Opaque",
+      "parent": "java.lang.Object"
+    }
+  ],
+  "groups": [
+    {
+      "category": "Mnemonic",
+      "members": [],
+      "name": "Mnemonic"
+    },
+    {
+      "category": "Nemesis",
+      "members": [],
+      "name": "Nemesis"
+    },
+    {
+      "category": "Other",
+      "members": ["nl.nn.adapterframework.doc.testtarget.examples.sequence.Opaque"],
+      "name": "Other"
+    },
+    {
+      "category": "Proton",
+      "members": [],
+      "name": "Proton"
+    }
+  ]
+}

@@ -34,7 +34,8 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	@Parameters(name = "{1}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"}
+			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"},
+			{"examples-sequence-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"}
 		});
 	}
 
