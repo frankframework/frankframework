@@ -35,10 +35,7 @@ public class FrankDocModelGroupsTest {
 	
 	@Before
 	public void setUp() throws SAXException, IOException, ReflectiveOperationException {
-		instance = new FrankDocModel();
-		instance.createConfigChildDescriptorsFrom("doc/fake-group-digester-rules.xml");
-		instance.findOrCreateElementType(Utils.getClass(I_GROUP_CONTAINER));
-		instance.buildGroups();
+		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.groups.GroupContainer");
 	}
 
 	@Test
