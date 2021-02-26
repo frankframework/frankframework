@@ -1,126 +1,126 @@
 {
-  "elements": [
-    {
-      "attributes": [{
-        "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
-        "isDeprecated": false,
-        "name": "abstractParentOfStartAttribute"
-      }],
-      "children": [],
-      "elementNames": [],
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
-      "isAbstract": true,
-      "isDeprecated": false,
-      "name": "AbstractParentOfStart",
-      "parent": "java.lang.Object"
-    },
-    {
-      "attributes": [
-        {
-          "default": "this default value",
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
-          "description": "First attribute of DescribedPossibleIChild.",
-          "isDeprecated": false,
-          "name": "firstAttribute"
-        },
-        {
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
-          "description": "Second attribute of DescribedPossibleIChild",
-          "isDeprecated": false,
-          "name": "secondAttribute"
-        }
-      ],
-      "children": [],
-      "elementNames": ["DescribedPossibleISyntax1NameIChild"],
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
-      "isAbstract": false,
-      "isDeprecated": false,
-      "name": "DescribedPossibleIChild",
-      "parent": "java.lang.Object"
-    },
-    {
-      "attributes": [
-        {
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
-          "isDeprecated": false,
-          "name": "firstAttribute"
-        },
-        {
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
-          "isDeprecated": false,
-          "name": "secondAttribute"
-        }
-      ],
-      "children": [],
-      "elementNames": ["NotDescribedPossibleISyntax1NameIChild"],
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
-      "isAbstract": false,
-      "isDeprecated": false,
-      "name": "NotDescribedPossibleIChild",
-      "parent": "java.lang.Object"
-    },
-    {
-      "attributes": [],
-      "children": [],
-      "elementNames": [],
-      "fullName": "java.lang.Object",
-      "isAbstract": false,
-      "isDeprecated": false,
-      "name": "Object"
-    },
-    {
-      "attributes": [{
-        "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.Start",
-        "isDeprecated": false,
-        "name": "attribute"
-      }],
-      "children": [
-        {
-          "group": "Child",
-          "isDeprecated": false,
-          "isMandatory": false,
-          "isMultiple": false,
-          "roleName": "syntax1NameIChild"
-        },
-        {
-          "group": "Other",
-          "isDeprecated": false,
-          "isMandatory": false,
-          "isMultiple": true,
-          "roleName": "syntax1NameTChild"
-        }
-      ],
-      "elementNames": ["Start"],
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.Start",
-      "isAbstract": false,
-      "isDeprecated": false,
-      "name": "Start",
-      "parent": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart"
-    },
-    {
-      "attributes": [],
-      "children": [],
-      "elementNames": ["Syntax1NameTChild"],
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.TChild",
-      "isAbstract": false,
-      "isDeprecated": false,
-      "name": "TChild",
-      "parent": "java.lang.Object"
-    }
-  ],
   "groups": [
     {
+      "name": "Child",
       "category": "Child",
       "members": [
         "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
         "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild"
-      ],
-      "name": "Child"
+      ]
     },
     {
+      "name": "Other",
       "category": "Other",
-      "members": ["nl.nn.adapterframework.doc.testtarget.examples.simple.TChild"],
-      "name": "Other"
+      "members": ["nl.nn.adapterframework.doc.testtarget.examples.simple.TChild"]
+    }
+  ],
+  "elements": [
+    {
+      "name": "AbstractParentOfStart",
+      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
+      "isAbstract": true,
+      "isDeprecated": false,
+      "parent": "java.lang.Object",
+      "elementNames": [],
+      "attributes": [{
+        "name": "abstractParentOfStartAttribute",
+        "isDeprecated": false,
+        "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart"
+      }],
+      "children": []
+    },
+    {
+      "name": "DescribedPossibleIChild",
+      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
+      "isAbstract": false,
+      "isDeprecated": false,
+      "parent": "java.lang.Object",
+      "elementNames": ["DescribedPossibleISyntax1NameIChild"],
+      "attributes": [
+        {
+          "name": "firstAttribute",
+          "isDeprecated": false,
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
+          "description": "First attribute of DescribedPossibleIChild.",
+          "default": "this default value"
+        },
+        {
+          "name": "secondAttribute",
+          "isDeprecated": false,
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
+          "description": "Second attribute of DescribedPossibleIChild"
+        }
+      ],
+      "children": []
+    },
+    {
+      "name": "NotDescribedPossibleIChild",
+      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
+      "isAbstract": false,
+      "isDeprecated": false,
+      "parent": "java.lang.Object",
+      "elementNames": ["NotDescribedPossibleISyntax1NameIChild"],
+      "attributes": [
+        {
+          "name": "firstAttribute",
+          "isDeprecated": false,
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild"
+        },
+        {
+          "name": "secondAttribute",
+          "isDeprecated": false,
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild"
+        }
+      ],
+      "children": []
+    },
+    {
+      "name": "Object",
+      "fullName": "java.lang.Object",
+      "isAbstract": false,
+      "isDeprecated": false,
+      "elementNames": [],
+      "attributes": [],
+      "children": []
+    },
+    {
+      "name": "Start",
+      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.Start",
+      "isAbstract": false,
+      "isDeprecated": false,
+      "parent": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
+      "elementNames": ["Start"],
+      "attributes": [{
+        "name": "attribute",
+        "isDeprecated": false,
+        "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.Start"
+      }],
+      "children": [
+        {
+          "isDeprecated": false,
+          "isMandatory": false,
+          "isMultiple": false,
+          "roleName": "syntax1NameIChild",
+          "group": "Child"
+        },
+        {
+          "isDeprecated": false,
+          "isMandatory": false,
+          "isMultiple": true,
+          "roleName": "syntax1NameTChild",
+          "group": "Other"
+        }
+      ]
+    },
+    {
+      "name": "TChild",
+      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.TChild",
+      "isAbstract": false,
+      "isDeprecated": false,
+      "parent": "java.lang.Object",
+      "elementNames": ["Syntax1NameTChild"],
+      "attributes": [],
+      "children": []
     }
   ]
 }

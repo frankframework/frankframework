@@ -1,113 +1,113 @@
 {
+  "groups": [
+    {
+      "name": "Mnemonic",
+      "category": "Mnemonic",
+      "members": []
+    },
+    {
+      "name": "Nemesis",
+      "category": "Nemesis",
+      "members": []
+    },
+    {
+      "name": "Other",
+      "category": "Other",
+      "members": ["nl.nn.adapterframework.doc.testtarget.examples.sequence.Opaque"]
+    },
+    {
+      "name": "Proton",
+      "category": "Proton",
+      "members": []
+    }
+  ],
   "elements": [
     {
+      "name": "Master",
+      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+      "isAbstract": false,
+      "isDeprecated": false,
+      "parent": "java.lang.Object",
+      "elementNames": ["Master"],
       "attributes": [
         {
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
-          "description": "",
+          "name": "clemens",
           "isDeprecated": false,
-          "name": "clemens"
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "description": ""
         },
         {
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
-          "description": "",
+          "name": "arnold",
           "isDeprecated": false,
-          "name": "arnold"
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "description": ""
         },
         {
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
-          "description": "",
+          "name": "dennis",
           "isDeprecated": false,
-          "name": "dennis"
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "description": ""
         },
         {
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
-          "description": "",
+          "name": "bernhard",
           "isDeprecated": false,
-          "name": "bernhard"
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "description": ""
         }
       ],
       "children": [
         {
-          "description": "",
+          "isDeprecated": false,
+          "isMandatory": false,
+          "isMultiple": false,
+          "roleName": "roleAlpha",
           "group": "Proton",
+          "description": ""
+        },
+        {
           "isDeprecated": false,
           "isMandatory": false,
           "isMultiple": false,
-          "roleName": "roleAlpha"
-        },
-        {
-          "description": "",
+          "roleName": "roleBeta",
           "group": "Mnemonic",
+          "description": ""
+        },
+        {
           "isDeprecated": false,
           "isMandatory": false,
           "isMultiple": false,
-          "roleName": "roleBeta"
-        },
-        {
-          "description": "",
+          "roleName": "roleEpsilon",
           "group": "Other",
-          "isDeprecated": false,
-          "isMandatory": false,
-          "isMultiple": false,
-          "roleName": "roleEpsilon"
+          "description": ""
         },
         {
-          "description": "",
-          "group": "Nemesis",
           "isDeprecated": false,
           "isMandatory": false,
           "isMultiple": false,
-          "roleName": "roleDelta"
+          "roleName": "roleDelta",
+          "group": "Nemesis",
+          "description": ""
         }
-      ],
-      "elementNames": ["Master"],
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
-      "isAbstract": false,
-      "isDeprecated": false,
-      "name": "Master",
-      "parent": "java.lang.Object"
+      ]
     },
     {
-      "attributes": [],
-      "children": [],
-      "elementNames": [],
+      "name": "Object",
       "fullName": "java.lang.Object",
       "isAbstract": false,
       "isDeprecated": false,
-      "name": "Object"
+      "elementNames": [],
+      "attributes": [],
+      "children": []
     },
     {
-      "attributes": [],
-      "children": [],
-      "elementNames": ["RoleEpsilon"],
+      "name": "Opaque",
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Opaque",
       "isAbstract": false,
       "isDeprecated": false,
-      "name": "Opaque",
-      "parent": "java.lang.Object"
-    }
-  ],
-  "groups": [
-    {
-      "category": "Mnemonic",
-      "members": [],
-      "name": "Mnemonic"
-    },
-    {
-      "category": "Nemesis",
-      "members": [],
-      "name": "Nemesis"
-    },
-    {
-      "category": "Other",
-      "members": ["nl.nn.adapterframework.doc.testtarget.examples.sequence.Opaque"],
-      "name": "Other"
-    },
-    {
-      "category": "Proton",
-      "members": [],
-      "name": "Proton"
+      "parent": "java.lang.Object",
+      "elementNames": ["RoleEpsilon"],
+      "attributes": [],
+      "children": []
     }
   ]
 }

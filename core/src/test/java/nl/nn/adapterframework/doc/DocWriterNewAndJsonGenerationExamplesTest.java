@@ -15,10 +15,13 @@ limitations under the License.
 */
 package nl.nn.adapterframework.doc;
 
+import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEqual;
+
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.json.JSONObject;
+import javax.json.JsonObject;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -50,7 +53,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 
 	@Parameter(3)
 	public String expectedJsonFileName;
-	
+
 	@Test
 	public void testXsd() throws Exception {
 		FrankDocModel model = createModel();
@@ -75,9 +78,9 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	public void testJson() throws Exception {
 		FrankDocModel model = createModel();
 		FrankDocJsonFactory jsonFactory = new FrankDocJsonFactory(model);
-		JSONObject jsonObject = jsonFactory.getJson();
-		String actual = jsonObject.toString(2);
+		JsonObject jsonObject = jsonFactory.getJson();
+		String actual = jsonObject.toString();
 		String expectedJson = TestFileUtils.getTestFile("/doc/examplesExpected/" + expectedJsonFileName);
-		TestAssertions.assertEqualsIgnoreCRLF(expectedJson, actual);
+		assertJsonEqual("Comparing JSON", expectedJson, actual);
 	}
 }

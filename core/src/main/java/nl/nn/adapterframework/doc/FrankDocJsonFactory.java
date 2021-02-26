@@ -19,12 +19,16 @@ package nl.nn.adapterframework.doc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonBuilderFactory;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.doc.model.ElementChild;
@@ -38,103 +42,114 @@ public class FrankDocJsonFactory {
 	private static Logger log = LogUtil.getLogger(FrankDocJsonFactory.class);
 
 	private FrankDocModel model;
+	private JsonBuilderFactory bf;
 
 	FrankDocJsonFactory(FrankDocModel model) {
 		this.model = model;
+		bf = Json.createBuilderFactory(null);
 	}
 
-	public JSONObject getJson() {
+	public JsonObject getJson() {
 		try {
-			JSONObject result = new JSONObject();
-			result.put("groups", getGroups());
-			result.put("elements", getElements());
-			return result;
-		} catch(JSONException e) {
+			JsonObjectBuilder result = bf.createObjectBuilder();
+			result.add("groups", getGroups());
+			result.add("elements", getElements());
+			return result.build();
+		} catch(JsonException e) {
 			log.warn("Error producing JSON", e);
 			return null;
 		}
 	}
 
-	private JSONArray getGroups() throws JSONException {
-		JSONArray result = new JSONArray();
+	private JsonArray getGroups() throws JsonException {
+		JsonArrayBuilder result = bf.createArrayBuilder();
 		for(FrankDocGroup group: model.getGroups().values()) {
-			result.put(getGroup(group));
+			result.add(getGroup(group));
 		}
-		return result;
+		return result.build();
 	}
 
-	private JSONObject getGroup(FrankDocGroup group) throws JSONException {
-		JSONObject result = new JSONObject();
-		result.put("name", group.getName());
-		result.put("category", group.getCategory());
-		List<String> memberReferences = group.getElements().stream()
+	private JsonObject getGroup(FrankDocGroup group) throws JsonException {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", group.getName());
+		result.add("category", group.getCategory());
+		final JsonArrayBuilder members = bf.createArrayBuilder();
+		group.getElements().stream()
 				.map(FrankElement::getFullName)
-				.collect(Collectors.toList());
-		result.put("members", memberReferences);
-		return result;
+				.forEach(members::add);
+		result.add("members", members);
+		return result.build();
 	}
 
-	private JSONArray getElements() throws JSONException {
+	private JsonArray getElements() throws JsonException {
 		List<FrankElement> allElements = new ArrayList<>(model.getAllElements().values());
 		Collections.sort(allElements);
-		JSONArray result = new JSONArray();
+		JsonArrayBuilder result = bf.createArrayBuilder();
 		for(FrankElement frankElement: allElements) {
-			result.put(getElement(frankElement));
+			result.add(getElement(frankElement));
 		}
-		return result;
+		return result.build();
 	}
 
-	private JSONObject getElement(FrankElement frankElement) throws JSONException {
-		JSONObject result = new JSONObject();
-		result.put("name", frankElement.getSimpleName());
-		result.put("fullName", frankElement.getFullName());
-		result.put("isAbstract", frankElement.isAbstract());
-		result.put("isDeprecated", frankElement.isDeprecated());
-		result.put("parent", getParentOrNull(frankElement));
-		result.put("elementNames", new JSONArray(frankElement.getXmlElementNames()));
-		result.put("attributes", getAttributes(frankElement));
-		result.put("children", getConfigChildren(frankElement));
-		return result;
+	private JsonObject getElement(FrankElement frankElement) throws JsonException {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", frankElement.getSimpleName());
+		result.add("fullName", frankElement.getFullName());
+		result.add("isAbstract", frankElement.isAbstract());
+		result.add("isDeprecated", frankElement.isDeprecated());
+		addIfNotNull(result, "parent", getParentOrNull(frankElement));
+		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
+		frankElement.getXmlElementNames().forEach(xmlElementNames::add);
+		result.add("elementNames", xmlElementNames);
+		result.add("attributes", getAttributes(frankElement));
+		result.add("children", getConfigChildren(frankElement));
+		return result.build();
 	}
 
 	private static String getParentOrNull(FrankElement frankElement) {
 		return frankElement.getParent() == null? null: frankElement.getParent().getFullName();
 	}
 
-	private JSONArray getAttributes(FrankElement frankElement) throws JSONException {
-		JSONArray result = new JSONArray();
+	private JsonArray getAttributes(FrankElement frankElement) throws JsonException {
+		JsonArrayBuilder result = bf.createArrayBuilder();
 		for(FrankAttribute attribute: frankElement.getAttributes(ElementChild.IN_COMPATIBILITY_XSD)) {
-			result.put(getAttribute(attribute));
+			result.add(getAttribute(attribute));
 		}
-		return result;
+		return result.build();
 	}
 
-	private JSONObject getAttribute(FrankAttribute frankAttribute) throws JSONException {
-		JSONObject result = new JSONObject();
-		result.put("name", frankAttribute.getName());
-		result.put("isDeprecated", frankAttribute.isDeprecated());
-		result.put("describer", frankAttribute.getDescribingElement().getFullName());
-		result.put("description", frankAttribute.getDescription());
-		result.put("default", frankAttribute.getDefaultValue());
-		return result;
+	private JsonObject getAttribute(FrankAttribute frankAttribute) throws JsonException {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", frankAttribute.getName());
+		result.add("isDeprecated", frankAttribute.isDeprecated());
+		result.add("describer", frankAttribute.getDescribingElement().getFullName());
+		addIfNotNull(result, "description", frankAttribute.getDescription());
+		addIfNotNull(result, "default", frankAttribute.getDefaultValue());
+		return result.build();
 	}
 
-	private JSONArray getConfigChildren(FrankElement frankElement) throws JSONException {
-		JSONArray result = new JSONArray();
+	private void addIfNotNull(JsonObjectBuilder builder, String field, String value) {
+		if(value != null) {
+			builder.add(field, value);
+		}
+	}
+
+	private JsonArray getConfigChildren(FrankElement frankElement) throws JsonException {
+		JsonArrayBuilder result = bf.createArrayBuilder();
 		for(ConfigChild child: frankElement.getConfigChildren(ElementChild.IN_COMPATIBILITY_XSD)) {
-			result.put(getConfigChild(child));
+			result.add(getConfigChild(child));
 		}
-		return result;
+		return result.build();
 	}
 
-	private JSONObject getConfigChild(ConfigChild child) throws JSONException {
-		JSONObject result = new JSONObject();
-		result.put("isDeprecated", child.isDeprecated());
-		result.put("isMandatory", child.isMandatory());
-		result.put("isMultiple", child.isAllowMultiple());
-		result.put("roleName", child.getElementRole().getSyntax1Name());
-		result.put("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
-		result.put("description", child.getDescription());
-		return result;
+	private JsonObject getConfigChild(ConfigChild child) throws JsonException {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("isDeprecated", child.isDeprecated());
+		result.add("isMandatory", child.isMandatory());
+		result.add("isMultiple", child.isAllowMultiple());
+		result.add("roleName", child.getElementRole().getSyntax1Name());
+		result.add("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
+		addIfNotNull(result, "description", child.getDescription());
+		return result.build();
 	}
 }
