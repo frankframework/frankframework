@@ -18,7 +18,6 @@ package nl.nn.adapterframework.doc.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -103,8 +102,7 @@ public class ElementType {
 	}
 
 	void addMember(FrankElement member) {
-		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(members, member, null));
-	    members.add(index, member);
+		Misc.addToSortedListNonUnique(members, member);
 	}
 
 	FrankElement getSingletonElement() throws ReflectiveOperationException {

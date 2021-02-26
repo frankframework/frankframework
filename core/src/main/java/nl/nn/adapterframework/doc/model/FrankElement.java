@@ -84,12 +84,7 @@ public class FrankElement implements Comparable<FrankElement> {
 	}
 
 	public void addXmlElementName(String elementName) {
-		// See https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413
-		// for an explanation of this algorithm.
-		int index = Collections.binarySearch(xmlElementNames, elementName, null);
-	    if (index < 0) {
-	        xmlElementNames.add(Misc.binarySearchResultToInsertionPoint(index), elementName);
-	    }
+		Misc.addToSortedListUnique(xmlElementNames, elementName);
 	}
 
 	public void setAttributes(List<FrankAttribute> inputAttributes) {

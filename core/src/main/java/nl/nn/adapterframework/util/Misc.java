@@ -38,6 +38,7 @@ import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -1355,15 +1356,21 @@ public class Misc {
 		}
 	}
 
-	/**
-	 * Use this method to insert into a sorted list. Method {@link java.util.Collections#binarySearch(List, Object)}
-	 * searches with O(log n) operations for an element in an already sorted list. If the
-	 * element is not present, a negative result is produced. If you want to insert the element,
-	 * then apply this function to the returned value. The result is the index at which
-	 * you have to insert. See <a href="https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413">Stack Overfloe</a>
-	 * for more information. 
-	 */
-	public static int binarySearchResultToInsertionPoint(int index) {
+	public static <T> void addToSortedListUnique(List<T> list, T item) {
+		int index = Collections.binarySearch(list, item, null);
+	    if (index < 0) {
+	        list.add(Misc.binarySearchResultToInsertionPoint(index), item);
+	    }
+	}
+
+	public static <T> void addToSortedListNonUnique(List<T> list, T item) {
+		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(list, item, null));
+	    list.add(index, item);		
+	}
+
+	private static int binarySearchResultToInsertionPoint(int index) {
+		// See https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413
+		// for more information.
 	    if (index < 0) {
 	        index = -index - 1;
 	    }
