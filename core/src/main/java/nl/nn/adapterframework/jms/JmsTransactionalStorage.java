@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 
 	private String slotId=null;
 	private String type=null;
-	private boolean active=true;   
+	private boolean active=true;
 
 	private final String ITRANSACTIONALSTORAGE = "nl.nn.adapterframework.core.ITransactionalStorage";
 
@@ -55,7 +55,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		super();
 		setTransacted(true);
 		setPersistent(true);
-		setDestinationType("QUEUE");
+		setDestinationTypeEnum(DestinationTypeEnum.QUEUE);
 	}
 
 	@Override

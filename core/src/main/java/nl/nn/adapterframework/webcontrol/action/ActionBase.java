@@ -25,15 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.http.HttpUtils;
-import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.struts.action.Action;
@@ -45,6 +36,16 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.action.DynaActionForm;
 import org.apache.struts.util.MessageResources;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.http.HttpUtils;
+import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 
 /**
@@ -80,8 +81,7 @@ public abstract class ActionBase extends Action {
      * This proc should start with <code>initAction(request)</code>
      * @see Action
      */
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
-		throws IOException, ServletException {
+	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException, ConfigurationException {
 		if (isWriteToSecLog()) {
 			if (secLogMessage && isWriteSecLogMessage()) {
 				DynaActionForm dynaActionForm = (DynaActionForm) form;
@@ -107,8 +107,7 @@ public abstract class ActionBase extends Action {
 		return executeSub(mapping, form, request, response);
 	}
 
-    public abstract ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException;
+    public abstract ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException, ConfigurationException;
     
     /**
      * looks under the session for an attribute named forward. Returns it as an ActionForward

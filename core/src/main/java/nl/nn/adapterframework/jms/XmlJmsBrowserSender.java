@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import org.w3c.dom.Element;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
@@ -129,7 +130,11 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			jmsBrowser.setQueueConnectionFactoryName(queueConnectionFactoryName);
 		}
 		jmsBrowser.setDestinationName(destinationName);
-		jmsBrowser.setDestinationType(destinationType);
+		try {
+			jmsBrowser.setDestinationType(destinationType);
+		} catch (ConfigurationException e) {
+			throw new SenderException(e);
+		}
 		IMessageBrowsingIterator it = null;
 
 		boolean remove = false;

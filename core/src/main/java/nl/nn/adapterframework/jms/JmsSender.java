@@ -17,6 +17,7 @@ package nl.nn.adapterframework.jms;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -35,7 +36,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -65,7 +65,7 @@ import nl.nn.adapterframework.stream.Message;
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private String replyToName = null;
-	private int deliveryMode = 0;
+	private DeliveryModeEnum deliveryMode = DeliveryModeEnum.NOT_SET;
 	private String messageType = null;
 	private int priority=-1;
 	private boolean synchronous=false;
@@ -184,9 +184,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			if (getMessageType()!=null) {
 				msg.setJMSType(getMessageType());
 			}
-			if (getDeliveryModeInt()>0) {
-				msg.setJMSDeliveryMode(getDeliveryModeInt());
-				mp.setDeliveryMode(getDeliveryModeInt());
+			if (getDeliveryModeEnum()!=DeliveryModeEnum.NOT_SET) {
+				msg.setJMSDeliveryMode(getDeliveryModeEnum().deliveryMode);
+				mp.setDeliveryMode(getDeliveryModeEnum().deliveryMode);
 			}
 			if (getPriority()>=0) {
 				msg.setJMSPriority(getPriority());
@@ -212,10 +212,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			// send message	
 			send(mp, msg);
 			if (log.isDebugEnabled()) {
-				log.debug("[" + getName() + "] " + "sent message [" + message + "] " + "to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryMode() + "] " + ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
+				log.debug("[" + getName() + "] " + "sent message [" + message + "] " + "to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryModeEnum() + "] " + ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info("[" + getName() + "] " + "sent message to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryMode() + "] " + ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
+					log.info("[" + getName() + "] " + "sent message to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryModeEnum() + "] " + ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
 				}
 			}
 			if (isSynchronous()) {
@@ -333,7 +333,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		ToStringBuilder ts = new ToStringBuilder(this);
 		ts.append("name", getName());
 		ts.append("replyToName", replyToName);
-		ts.append("deliveryMode", getDeliveryMode());
+		ts.append("deliveryMode", getDeliveryModeEnum());
 		result += ts.toString();
 		return result;
 
@@ -373,18 +373,18 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		return messageType;
 	}
 
-	@IbisDoc({"5", "Controls mode that messages are sent with: either 'persistent' or 'non_persistent'", "not set by application"})
-	public void setDeliveryMode(String deliveryMode) {
-		int newMode = stringToDeliveryMode(deliveryMode);
-		if (newMode==0) {
-			ConfigurationWarnings.add(this, log, "unknown delivery mode ["+deliveryMode+"], delivery mode not changed");
-		} else
-			this.deliveryMode=newMode;
+	@IbisDoc({"5", "Controls mode that messages are sent with: either 'PERSISTENT' or 'NON_PERSISTENT'", "not set by application"})
+	public void setDeliveryMode(String deliveryMode) throws ConfigurationException {
+		try {
+			this.deliveryMode = DeliveryModeEnum.valueOf(deliveryMode.toUpperCase());
+		} catch (IllegalArgumentException iae) {
+			throw new ConfigurationException("unknown deliveryMode ["+deliveryMode+"]. Must be one of "+ Arrays.asList(DeliveryModeEnum.values()));
+		}
 	}
-	public String getDeliveryMode() {
-		return deliveryModeToString(deliveryMode);
+	public void setDeliveryModeEnum(DeliveryModeEnum deliveryMode) {
+		this.deliveryMode = deliveryMode;
 	}
-	public int getDeliveryModeInt() {
+	public DeliveryModeEnum getDeliveryModeEnum() {
 		return deliveryMode;
 	}
 	

@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jms;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +47,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IXAEnabled;
@@ -72,17 +74,14 @@ import nl.nn.adapterframework.util.DateUtils;
  */
 public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled {
 
-	public static final String MODE_PERSISTENT     = "PERSISTENT";
-	public static final String MODE_NON_PERSISTENT = "NON_PERSISTENT";
-
 	private boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
 	private boolean useJms102 = AppConstants.getInstance().getBoolean("jms.useJms102", false);
 
 	private boolean transacted = false;
 	private boolean jmsTransacted = false;
-	private String subscriberType = "DURABLE"; // DURABLE or TRANSIENT
+	private SubscriberTypeEnum subscriberType = SubscriberTypeEnum.DURABLE;
 
-	private int ackMode = Session.AUTO_ACKNOWLEDGE;
+	private AcknowledgeModeEnum ackMode = AcknowledgeModeEnum.AUTO_ACKNOWLEDGE;
 	private boolean persistent;
 	private long messageTimeToLive = 0;
 	private String destinationName;
@@ -90,7 +89,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private String authAlias;
 	private boolean lookupDestination = true;
 
-	private String destinationType = "QUEUE"; // QUEUE or TOPIC
+	private DestinationTypeEnum destinationType = DestinationTypeEnum.QUEUE; // QUEUE or TOPIC
 
 	protected MessagingSource messagingSource;
 	private Map<String,Destination> destinations = new ConcurrentHashMap<>();
@@ -115,27 +114,48 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private String correlationIdToHexPrefix = "ID:";
 	private int correlationIdMaxLength = -1;
 
-	public static int stringToDeliveryMode(String mode) {
-		if (MODE_PERSISTENT.equalsIgnoreCase(mode)) {
-			return DeliveryMode.PERSISTENT;
+	public enum AcknowledgeModeEnum {
+		NOT_SET(0, ""),
+		AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE, "auto"),
+		CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE, "client"),
+		DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE, "dups");
+		
+		int acknowledgeMode;
+		String shortName;
+		private AcknowledgeModeEnum(int acknowledgeMode, String shortName) {
+			this.acknowledgeMode = acknowledgeMode;
+			this.shortName=shortName;
 		}
-		if (MODE_NON_PERSISTENT.equalsIgnoreCase(mode)) {
-			return DeliveryMode.NON_PERSISTENT;
+	}
+	
+	public enum DeliveryModeEnum {
+		NOT_SET(0),
+		PERSISTENT(DeliveryMode.PERSISTENT),
+		NON_PERSISTENT(DeliveryMode.NON_PERSISTENT);
+		
+		int deliveryMode;
+		private DeliveryModeEnum(int deliveryMode) {
+			this.deliveryMode = deliveryMode;
 		}
-		return 0;
+		
+		public static DeliveryModeEnum parse(int deliveryMode) {
+			for(DeliveryModeEnum modeEnum:values()) {
+				if (modeEnum.deliveryMode==deliveryMode) {
+					return modeEnum;
+				}
+			}
+			throw new IllegalArgumentException("unknown deliveryMode ["+deliveryMode+"]");
+		}
 	}
 
-	public static String deliveryModeToString(int mode) {
-		if (mode == 0) {
-			return "not set by application";
-		}
-		if (mode == DeliveryMode.PERSISTENT) {
-			return MODE_PERSISTENT;
-		}
-		if (mode == DeliveryMode.NON_PERSISTENT) {
-			return MODE_NON_PERSISTENT;
-		}
-		return "unknown delivery mode [" + mode + "]";
+	public enum SubscriberTypeEnum {
+		DURABLE,
+		TRANSIENT;
+	}
+
+	public enum DestinationTypeEnum {
+		QUEUE,
+		TOPIC;
 	}
 
 	protected String getLogPrefix() {
@@ -205,7 +225,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	protected Session createSession() throws JmsException {
 		try {
-			return getMessagingSource().createSession(isJmsTransacted(), getAckMode());
+			return getMessagingSource().createSession(isJmsTransacted(), getAckModeEnum().acknowledgeMode);
 		} catch (IbisException e) {
 			if (e instanceof JmsException) {
 				throw (JmsException)e;
@@ -219,17 +239,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			getMessagingSource().releaseSession(session);
 		} catch (JmsException e) {
 			log.warn("Exception releasing session", e);
-		}
-	}
-
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		if (StringUtils.isEmpty(getDestinationName())) {
-			throw new ConfigurationException("destinationName must be specified");
-		}
-		if (StringUtils.isEmpty(getDestinationType())) {
-			throw new ConfigurationException("destinationType must be specified");
 		}
 	}
 
@@ -307,6 +316,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	public Destination getDestination() throws NamingException, JMSException, JmsException {
+		if (StringUtils.isEmpty(getDestinationName())) {
+			throw new JmsException("no (default) destinationName specified");
+		}
 		return getDestination(getDestinationName());
 	}
 	
@@ -438,7 +450,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String result = getDestinationType()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
+		String result = getDestinationTypeEnum()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
 			result+=" selector ["+getMessageSelector()+"]";
 		}
@@ -481,26 +493,34 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private TopicSubscriber getTopicSubscriber(TopicSession session, Topic topic, String selector) throws NamingException, JMSException {
 
 		TopicSubscriber topicSubscriber;
-		if (subscriberType.equalsIgnoreCase("DURABLE")) {
+		switch (subscriberType) {
+		case DURABLE:
 			topicSubscriber = session.createDurableSubscriber(topic, destinationName, selector, false);
 			if (log.isDebugEnabled()) log.debug("[" + getName() + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
-
-		} else {
+			break;
+		case TRANSIENT:
 			topicSubscriber = session.createSubscriber(topic, selector, false);
 			if (log.isDebugEnabled()) log.debug("[" + getName() + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			break;
+		default:
+			throw new IllegalStateException("Unexpected subscriberType ["+subscriberType+"]");
 		}
-
 		return topicSubscriber;
 	}
 
 	private MessageConsumer getTopicSubscriber(Session session, Topic topic, String selector) throws NamingException, JMSException {
 		MessageConsumer messageConsumer;
-		if (subscriberType.equalsIgnoreCase("DURABLE")) {
+		switch (subscriberType) {
+		case DURABLE:
 			messageConsumer = session.createDurableSubscriber(topic, destinationName, selector, false);
 			if (log.isDebugEnabled()) log.debug("[" + getName()  + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
-		} else {
+			break;
+		case TRANSIENT:
 			messageConsumer = session.createConsumer(topic, selector, false);
 			if (log.isDebugEnabled()) log.debug("[" + getName() + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
+			break;
+		default:
+			throw new IllegalStateException("Unexpected subscriberType ["+subscriberType+"]");
 		}
 		return messageConsumer;
 	}
@@ -716,7 +736,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	        sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
         }
 	//  sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
-        sb.append("[ackMode=" + getAcknowledgeModeAsString(ackMode) + "]");
+        sb.append("[ackMode=" + ackMode + "]");
         sb.append("[persistent=" + getPersistent() + "]");
         sb.append("[transacted=" + transacted + "]");
         return sb.toString();
@@ -738,77 +758,60 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls wether Topic functions are used or Queue functions.
 	 */
-	@IbisDoc({"2", "either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
-	public void setDestinationType(String type) {
-		this.destinationType = type;
-		if (destinationType.equalsIgnoreCase("TOPIC")) {
-			useTopicFunctions = true;
-		} else {
-			useTopicFunctions = false;
+	@IbisDoc({"2", "Either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
+	public void setDestinationType(String destinationType) throws ConfigurationException {
+		try {
+			this.destinationType = DestinationTypeEnum.valueOf(destinationType.toUpperCase());
+		} catch (IllegalArgumentException iae) {
+			throw new ConfigurationException("unknown destinationType ["+destinationType+"]. Must be one of "+ Arrays.asList(DestinationTypeEnum.values()));
 		}
+		useTopicFunctions = this.destinationType==DestinationTypeEnum.TOPIC;
 	}
-	public String getDestinationType() {
+	public void setDestinationTypeEnum(DestinationTypeEnum destinationType) {
+		this.destinationType=destinationType;
+	}
+	public DestinationTypeEnum getDestinationTypeEnum() {
 		return destinationType;
 	}
-    public boolean isUseTopicFunctions() {
-        return useTopicFunctions;
-    }
 
+	public boolean isUseTopicFunctions() {
+		return useTopicFunctions;
+	}
 
 	/**
 	 * Sets the JMS-acknowledge mode. This controls for non transacted listeners the way messages are acknowledged.
 	 * See the jms-documentation.
 	 */
+	@Deprecated
+	@ConfigurationWarning("please use attribute acknowledgeMode instead")
 	public void setAckMode(int ackMode) {
-		this.ackMode = ackMode;
+		for (AcknowledgeModeEnum ackModeEnum : AcknowledgeModeEnum.values()) {
+			if (ackModeEnum.acknowledgeMode == ackMode) {
+				this.ackMode = ackModeEnum;
+				return;
+			}
+		}
+		this.ackMode = AcknowledgeModeEnum.NOT_SET;
 	}
-	public int getAckMode() {
+
+	public AcknowledgeModeEnum getAckModeEnum() {
 		return ackMode;
 	}
 
-	/**
-	 * Convencience function to convert the numeric value of an (@link #setAckMode(int) acknowledgeMode} to a human-readable string.
-	 */
-	public static String getAcknowledgeModeAsString(int ackMode) {
-		String ackString;
-		if (Session.AUTO_ACKNOWLEDGE == ackMode) {
-			ackString = "Auto";
-		} else
-			if (Session.CLIENT_ACKNOWLEDGE == ackMode) {
-				ackString = "Client";
-			} else
-				if (Session.DUPS_OK_ACKNOWLEDGE == ackMode) {
-					ackString = "Dups";
-				} else {
-					ackString = "none";
-				}
-
-		return ackString;
-	}
 
 	/**
 	 * String-version of {@link #setAckMode(int)}
 	 */
 	@IbisDoc({"3", "Acknowledge mode, can be one of ('auto' or 'auto_acknowledge'), ('dups' or 'dups_ok_acknowledge') or ('client' or 'client_acknowledge')", "auto_acknowledge",})
 	public void setAcknowledgeMode(String acknowledgeMode) {
-
-		if (acknowledgeMode.equalsIgnoreCase("auto") || acknowledgeMode.equalsIgnoreCase("AUTO_ACKNOWLEDGE")) {
-			ackMode = Session.AUTO_ACKNOWLEDGE;
-		} else
-			if (acknowledgeMode.equalsIgnoreCase("dups") || acknowledgeMode.equalsIgnoreCase("DUPS_OK_ACKNOWLEDGE")) {
-				ackMode = Session.DUPS_OK_ACKNOWLEDGE;
-			} else
-				if (acknowledgeMode.equalsIgnoreCase("client") || acknowledgeMode.equalsIgnoreCase("CLIENT_ACKNOWLEDGE")) {
-					ackMode = Session.CLIENT_ACKNOWLEDGE;
-				} else {
-					// ignore all ack modes, to test no acking
-					log.warn("["+getName()+"] invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge");
-					ackMode = -1;
-				}
-
-	}
-	public String getAcknowledgeMode() {
-		return getAcknowledgeModeAsString(getAckMode());
+		for (AcknowledgeModeEnum ackModeEnum : AcknowledgeModeEnum.values()) {
+			if (ackModeEnum.shortName.equalsIgnoreCase(acknowledgeMode) || ackModeEnum.name().equalsIgnoreCase(acknowledgeMode)) {
+				this.ackMode = ackModeEnum;
+				return;
+			}
+		}
+		log.warn("["+getName()+"] invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge");
+		ackMode = AcknowledgeModeEnum.NOT_SET;
 	}
 
 	/**
@@ -826,13 +829,14 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	@IbisDoc({"5", "SubscriberType, should <b>DURABLE</b> or <b>TRANSIENT</b>. Only applicable for topics ", "DURABLE"})
-	public void setSubscriberType(String subscriberType) {
-		if ((!subscriberType.equalsIgnoreCase("DURABLE")) && (!subscriberType.equalsIgnoreCase("TRANSIENT"))) {
-			throw new IllegalArgumentException("invalid subscriberType, should be DURABLE or TRANSIENT. " + this.subscriberType + " is assumed");
-		} else
-			this.subscriberType = subscriberType;
+	public void setSubscriberType(String subscriberType) throws ConfigurationException {
+		try {
+			this.subscriberType = SubscriberTypeEnum.valueOf(subscriberType.toUpperCase());
+		} catch (IllegalArgumentException iae) {
+			throw new ConfigurationException("unknown subscriberType ["+subscriberType+"]. Must be one of "+ Arrays.asList(SubscriberTypeEnum.values()));
+		}
 	}
-	public String getSubscriberType() {
+	public SubscriberTypeEnum getSubscriberTypeEnum() {
 		return subscriberType;
 	}
 

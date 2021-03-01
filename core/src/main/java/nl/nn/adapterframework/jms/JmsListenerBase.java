@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jms;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,7 +25,6 @@ import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.commons.lang3.StringUtils;
@@ -57,7 +57,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	private String replyMessageType=null;
 	private long replyMessageTimeToLive=0;
 	private int replyPriority=-1;
-	private String replyDeliveryMode=MODE_NON_PERSISTENT;
+	private DeliveryModeEnum replyDeliveryMode=DeliveryModeEnum.NON_PERSISTENT;
 	private ISender sender;
 	
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
@@ -166,12 +166,12 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	
 	protected String retrieveIdFromMessage(javax.jms.Message message, Map<String, Object> threadContext) throws ListenerException {
 		String cid = "unset";
-		String mode = "unknown";
+		DeliveryModeEnum mode = null;
 		String id = "unset";
 		Date tsSent = null;
 		Destination replyTo=null;
 		try {
-			mode = deliveryModeToString(message.getJMSDeliveryMode());
+			mode = DeliveryModeEnum.parse(message.getJMSDeliveryMode());
 		} catch (JMSException ignore) {
 			log.debug("ignoring JMSException in getJMSDeliveryMode()", ignore);
 		}
@@ -235,7 +235,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		threadContext.put("timestamp",tsSent);
 		threadContext.put("replyTo",replyTo);
 		try {
-			if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
+			if (getAckModeEnum() == AcknowledgeModeEnum.CLIENT_ACKNOWLEDGE) {
 				message.acknowledge();
 				log.debug("Listener on [" + getDestinationName() + "] acknowledged message");
 			}
@@ -405,11 +405,15 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
-	@IbisDoc({"controls mode that reply messages are sent with: either 'persistent' or 'non_persistent'", "not set by application"})
-	public void setReplyDeliveryMode(String string) {
-		replyDeliveryMode = string;
+	@IbisDoc({"Controls mode that reply messages are sent with: either 'PERSISTENT' or 'NON_PERSISTENT'\"", "\"not set by application\""})
+	public void setReplyDeliveryMode(String replyDeliveryMode) throws ConfigurationException {
+		try {
+			this.replyDeliveryMode = DeliveryModeEnum.valueOf(replyDeliveryMode.toUpperCase());
+		} catch (IllegalArgumentException iae) {
+			throw new ConfigurationException("unknown replyDeliveryMode ["+replyDeliveryMode+"]. Must be one of "+ Arrays.asList(DeliveryModeEnum.values()));
+		}
 	}
-	public String getReplyDeliveryMode() {
+	public DeliveryModeEnum getReplyDeliveryModeEnum() {
 		return replyDeliveryMode;
 	}
 
