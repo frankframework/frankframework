@@ -18,7 +18,7 @@ package nl.nn.adapterframework.doc.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +68,7 @@ public abstract class FrankDocGroup {
 
 		Other(String name, Collection<FrankElement> elements) {
 			super(name);
-			this.elements = new HashMap<>();
+			this.elements = new LinkedHashMap<>();
 			for(FrankElement elem: elements) {
 				this.elements.put(elem.getFullName(), elem);
 			}

@@ -65,7 +65,11 @@ public class FrankDocModel {
 	// We want to iterate FrankElement in the order they are created, to be able
 	// to create the ElementRole objects in the right order. 
 	private @Getter Map<String, FrankElement> allElements = new LinkedHashMap<>();
-	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
+
+	// We have a LinkedHashMap because the sequence of the types is relevant. This
+	// sequence determines the sort order of the elements of FrankDocGroup Other.
+	private @Getter Map<String, ElementType> allTypes = new LinkedHashMap<>();
+
 	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
 	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
@@ -512,6 +516,8 @@ public class FrankDocModel {
 				log.trace(String.format("Class [%s] is a Java interface, going to create all member FrankElement", clazz.getName()));
 			}
 			List<SpringBean> springBeans = Utils.getSpringBeans(clazz.getName());
+			// We sort here to make the order deterministic.
+			Collections.sort(springBeans);
 			for(SpringBean b: springBeans) {
 				FrankElement frankElement = findOrCreateFrankElement(b.getClazz());
 				result.addMember(frankElement);
@@ -581,7 +587,6 @@ public class FrankDocModel {
 			log.warn(String.format("Name \"[%s]\" cannot been used for others group because it is the name of an ElementType", OTHER));
 		}
 		else {
-			Collections.sort(membersOfOther);
 			final FrankDocGroup groupOther = FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther);
 			allTypes.values().stream()
 				.filter(et -> ! et.isFromJavaInterface())
