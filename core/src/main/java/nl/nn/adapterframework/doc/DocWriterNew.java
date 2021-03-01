@@ -849,7 +849,7 @@ public class DocWriterNew {
 		}
 		if(log.isTraceEnabled()) {
 			ThreadContext.pop();
-			log.trace("Dpme adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
+			log.trace("Done adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
 		}
 	}
 
