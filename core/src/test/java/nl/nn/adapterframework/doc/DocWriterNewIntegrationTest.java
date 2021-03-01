@@ -126,4 +126,14 @@ public class DocWriterNewIntegrationTest {
 			writer.close();
 		}
 	}
+
+	@Test
+	public void testLoggingWithExtraExceptionArgument() {
+		try {
+			throw new IllegalStateException();
+		} catch(IllegalStateException e) {
+			log.error("This is an error with placehold \"{}\"", "placeholder", e);
+			log.error("It also works with lambdas: {}", () -> "placeholder", () -> e);
+		}
+	}
 }
