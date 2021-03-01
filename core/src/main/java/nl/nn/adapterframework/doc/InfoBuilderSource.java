@@ -275,7 +275,9 @@ class InfoBuilderSource {
 				excludeFilter = excludeFilter.substring(0, excludeFilter.lastIndexOf('.') + 1) + ".*";
 				excludeFilters.add(excludeFilter);
 				addExcludeFilter(scanner, excludeFilter);
-				log.warn(excludeFilter + e.getMessage() + ": " + e.getStackTrace());
+				if(log.isWarnEnabled()) {
+					log.warn(excludeFilter + e.getMessage() + ": " + e.getStackTrace());
+				}
 			}
 		}
 		String[] beans = beanDefinitionRegistry.getBeanDefinitionNames();
@@ -365,7 +367,9 @@ class InfoBuilderSource {
 		try {
 			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL("digester-rules.xml")), digesterRulesParser);
 		} catch (Exception e) {
-			log.error("Could nog parse digester-rules.xml: " + e.getStackTrace());
+			if(log.isErrorEnabled()) {
+				log.error("Could nog parse digester-rules.xml: " + e.getStackTrace());
+			}
 			throw e;
 		}
 		return digesterRulesParser.getChildIbisBeanMappings();

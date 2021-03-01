@@ -115,9 +115,8 @@ public class ElementType {
 			highestCommonInterface = nextCandidate;
 			nextCandidate = highestCommonInterface.getNextCommonInterface(model);
 		}
-		if(log.isTraceEnabled()) {
-			log.trace(String.format("ElementType [%s] has highest common interface [%s]", this.getFullName(), highestCommonInterface.getFullName()));
-		}
+		log.trace("ElementType [{}] has highest common interface [{}]",
+				() -> this.getFullName(), () -> highestCommonInterface.getFullName());
 	}
 
 	private ElementType getNextCommonInterface(FrankDocModel model) {

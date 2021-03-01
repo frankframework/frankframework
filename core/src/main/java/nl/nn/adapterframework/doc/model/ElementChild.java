@@ -103,10 +103,8 @@ public abstract class ElementChild {
 							toString(), matchingChild.toString()));
 				}
 				overriddenFrom = match;
-				if(log.isTraceEnabled()) {
-					log.trace(String.format("%s [%s] of FrankElement [%s] has overriddenFrom = [%s]",
-							getClass().getSimpleName(), toString(), owningElement.getFullName(), overriddenFrom.getFullName()));
-				}
+				log.trace("{} [{}] of FrankElement [{}] has overriddenFrom = [{}]",
+						() -> getClass().getSimpleName(), () -> toString(), () -> owningElement.getFullName(), () -> overriddenFrom.getFullName());
 				return;
 			}
 		}
