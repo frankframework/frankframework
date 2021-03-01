@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jms;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -43,6 +44,7 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageWrapper;
@@ -91,7 +93,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private String destinationType = "QUEUE"; // QUEUE or TOPIC
 
 	protected MessagingSource messagingSource;
-	private Destination destination;
+	private Map<String,Destination> destinations = new ConcurrentHashMap<>();
 
 	private @Setter @Getter IConnectionFactoryFactory connectionFactoryFactory = null;
 	private @Setter @Getter Map<String, String> proxiedDestinationNames;
@@ -236,8 +238,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	public void open() throws Exception {
 		try {
-			getMessagingSource();   // obtain and cache connection, then start it.
-			destination = getDestination();
+			getMessagingSource(); // obtain and cache connection, then start it.
+			if (StringUtils.isNotEmpty(getDestinationName())) {
+				getDestination();
+			}
 		} catch (Exception e) {
 			close();
 			throw e;
@@ -260,7 +264,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			}
 		} finally {
 			// make sure all objects are reset, to be able to restart after IFSA parameters have changed (e.g. at iterative installation time)
-			destination = null;
+			destinations.clear();
 			messagingSource = null;
 		}
 	}
@@ -303,39 +307,40 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	public Destination getDestination() throws NamingException, JMSException, JmsException {
-		if (destination == null) {
-			String destinationName = getDestinationName();
-			if (StringUtils.isEmpty(destinationName)) {
-				throw new NamingException("no destinationName specified");
-			}
-			if (isLookupDestination()) {
-				if (!useTopicFunctions || getPersistent()) {
-					destination = getDestination(destinationName);
-				} else {
-					TopicSession session = null;
-					try {
-						session = (TopicSession) createSession();
-						destination = session.createTopic(destinationName);
-					} finally {
-						closeSession(session);
-					}
-				}
-			} else {
-				destination = getJmsMessagingSource().createDestination(destinationName);
-			}
-			if (destination == null) {
-				throw new NamingException("cannot get Destination from [" + destinationName + "]");
-			}
+		return getDestination(getDestinationName());
+	}
+	
+	public Destination getDestination(String destinationName) throws NamingException, JMSException, JmsException {
+		return destinations.computeIfAbsent(destinationName, name -> computeDestination(name));
+	}
+	
+	@SneakyThrows
+	private Destination computeDestination(String destinationName) {
+		Destination result;
+		if (StringUtils.isEmpty(destinationName)) {
+			throw new NamingException("no destinationName specified");
 		}
-		return destination;
+		if (isLookupDestination()) {
+			if (!useTopicFunctions || getPersistent()) {
+				result = getJmsMessagingSource().lookupDestination(destinationName);
+			} else {
+				TopicSession session = null;
+				try {
+					session = (TopicSession) createSession();
+					result = session.createTopic(destinationName);
+				} finally {
+					closeSession(session);
+				}
+			}
+		} else {
+			result = getJmsMessagingSource().createDestination(destinationName);
+		}
+		if (result == null) {
+			throw new NamingException("cannot get Destination from [" + destinationName + "]");
+		}
+		return result;
 	}
 
-	/**
-	 * Utility function to retrieve a Destination from a jndi.
-	 */
-	public Destination getDestination(String destinationName) throws JmsException, NamingException {
-		return getJmsMessagingSource().lookupDestination(destinationName);
-	}
 
 	/**
 	 * Gets a MessageConsumer object for either Topics or Queues.
