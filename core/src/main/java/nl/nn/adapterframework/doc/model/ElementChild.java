@@ -99,8 +99,7 @@ public abstract class ElementChild {
 			ElementChild matchingChild = match.findElementChildMatch(this);
 			if(matchingChild != null) {
 				if(matchingChild.isDeprecated()) {
-					log.warn(String.format("Element child overrides deprecated ElementChild: descendant [%s], super [%s]",
-							toString(), matchingChild.toString()));
+					log.warn("Element child overrides deprecated ElementChild: descendant [{}], super [{}]", () -> toString(), () -> matchingChild.toString());
 				}
 				overriddenFrom = match;
 				log.trace("{} [{}] of FrankElement [{}] has overriddenFrom = [{}]",
