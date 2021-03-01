@@ -1358,22 +1358,22 @@ public class Misc {
 
 	public static <T> void addToSortedListUnique(List<T> list, T item) {
 		int index = Collections.binarySearch(list, item, null);
-	    if (index < 0) {
-	        list.add(Misc.binarySearchResultToInsertionPoint(index), item);
-	    }
+		if (index < 0) {
+			list.add(Misc.binarySearchResultToInsertionPoint(index), item);
+		}
 	}
 
 	public static <T> void addToSortedListNonUnique(List<T> list, T item) {
 		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(list, item, null));
-	    list.add(index, item);		
+		list.add(index, item);		
 	}
 
 	private static int binarySearchResultToInsertionPoint(int index) {
 		// See https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413
 		// for more information.
-	    if (index < 0) {
-	        index = -index - 1;
-	    }
-	    return index;
+		if (index < 0) {
+			index = -index - 1;
+		}
+		return index;
 	}
 }
