@@ -20,7 +20,6 @@
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
       "isAbstract": true,
       "isDeprecated": false,
-      "parent": "java.lang.Object",
       "elementNames": [],
       "attributes": [{
         "name": "abstractParentOfStartAttribute",
@@ -34,7 +33,6 @@
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
       "isAbstract": false,
       "isDeprecated": false,
-      "parent": "java.lang.Object",
       "elementNames": ["DescribedPossibleISyntax1NameIChild"],
       "attributes": [
         {
@@ -58,7 +56,6 @@
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
       "isAbstract": false,
       "isDeprecated": false,
-      "parent": "java.lang.Object",
       "elementNames": ["NotDescribedPossibleISyntax1NameIChild"],
       "attributes": [
         {
@@ -117,7 +114,6 @@
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.TChild",
       "isAbstract": false,
       "isDeprecated": false,
-      "parent": "java.lang.Object",
       "elementNames": ["Syntax1NameTChild"],
       "attributes": [],
       "children": []

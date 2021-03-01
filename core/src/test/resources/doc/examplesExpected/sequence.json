@@ -27,7 +27,6 @@
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
       "isAbstract": false,
       "isDeprecated": false,
-      "parent": "java.lang.Object",
       "elementNames": ["Master"],
       "attributes": [
         {
@@ -104,7 +103,6 @@
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Opaque",
       "isAbstract": false,
       "isDeprecated": false,
-      "parent": "java.lang.Object",
       "elementNames": ["RoleEpsilon"],
       "attributes": [],
       "children": []

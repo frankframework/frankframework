@@ -107,7 +107,14 @@ public class FrankDocJsonFactory {
 	}
 
 	private static String getParentOrNull(FrankElement frankElement) {
-		return frankElement.getParent() == null? null: frankElement.getParent().getFullName();
+		if(frankElement != null) {
+			FrankElement parent = frankElement.getNextAncestorThatHasChildren(
+					elem -> elem.getAttributes(ElementChild.ALL).isEmpty() && elem.getConfigChildren(ElementChild.ALL).isEmpty());
+			if(parent != null) {
+				return parent.getFullName();
+			}
+		}
+		return null;
 	}
 
 	private JsonArray getAttributes(FrankElement frankElement) throws JsonException {
