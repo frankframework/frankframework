@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.jms;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,7 +45,6 @@ import org.xml.sax.SAXException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageWrapper;
