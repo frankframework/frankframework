@@ -728,7 +728,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 				if (getListener() != null) {
 					result = Message.asMessage(listenerProcessor.getMessage(getListener(), correlationID, session));
-					} else {
+				} else {
 					result = sendResult.getResult(); // is this correct? result was already set at line 634!
 				}
 				if (result == null || result.asObject()==null) {

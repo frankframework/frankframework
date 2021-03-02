@@ -844,8 +844,7 @@ public class WsdlGenerator {
                         w.writeEndElement();
                     }
                     w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "targetAddress"); {
-                        w.writeAttribute("destination",
-                                listener.getDestinationType().toLowerCase());
+                        w.writeAttribute("destination", listener.getDestinationTypeEnum().name().toLowerCase());
                         String queueName = listener.getPhysicalDestinationShortName();
                         if (queueName == null) {
                             queueName = "queueName-for-"

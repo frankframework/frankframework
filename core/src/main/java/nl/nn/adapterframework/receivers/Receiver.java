@@ -17,7 +17,6 @@ package nl.nn.adapterframework.receivers;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -2025,14 +2024,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
-	public void setOnError(String value) throws ConfigurationException {
+	public void setOnError(String value) {
 		if(StringUtils.isNotEmpty(value)) {
-			try {
-				onError = OnError.valueOf(value.toUpperCase());
-			}
-			catch (IllegalArgumentException iae) {
-				throw new ConfigurationException("Unknown onError value ["+value+"]. Must be one of "+ Arrays.asList(OnError.values()));
-			}
+			onError = Misc.parse(OnError.class, "onError", value);
 		}
 	}
 	public void setOnErrorEnum(OnError value) {
