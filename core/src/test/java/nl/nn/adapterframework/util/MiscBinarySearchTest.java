@@ -13,6 +13,11 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+/**
+ * Unit tests of methods {@link Misc#addToSortedListNonUnique(List, Object)} and {@link Misc#addToSortedListUnique(List, Object)}.
+ * @author martijn
+ *
+ */
 @RunWith(Parameterized.class)
 public class MiscBinarySearchTest {
 	@Parameters
