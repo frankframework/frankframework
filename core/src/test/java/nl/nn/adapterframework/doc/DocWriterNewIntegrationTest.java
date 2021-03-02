@@ -127,6 +127,18 @@ public class DocWriterNewIntegrationTest {
 		}
 	}
 
+	/**
+	 * Martijn wrote this test because he wanted to test something about logging.
+	 * He knew that you could add an exception argument e after a log message, like:
+	 * <code>log.error("Some message", e);</code>.
+	 * But he did not know whether an extra exception argument was possible in
+	 * combination with placeholders, like done in this test. In addition, he
+	 * wanted to test this in combination with lambdas.
+	 * <p>
+	 * As it stands, the test does not check the resulting log message automatically.
+	 * To use this test, remove the ignore annotation and run it in Eclipse.
+	 */
+	@Ignore
 	@Test
 	public void testLoggingWithExtraExceptionArgument() {
 		try {
