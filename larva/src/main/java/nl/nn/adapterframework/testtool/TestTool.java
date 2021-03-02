@@ -71,7 +71,7 @@ import nl.nn.adapterframework.http.IbisWebServiceSender;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jms.JMSFacade.DestinationTypeEnum;
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
@@ -1288,7 +1288,7 @@ public class TestTool {
 				JmsSender jmsSender = (JmsSender)ibisContext.createBeanAutowireByName(JmsSender.class);
 				jmsSender.setName("Test Tool JmsSender");
 				jmsSender.setDestinationName(queue);
-				jmsSender.setDestinationTypeEnum(DestinationTypeEnum.QUEUE);
+				jmsSender.setDestinationTypeEnum(DestinationType.QUEUE);
 				jmsSender.setAcknowledgeMode("auto");
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
@@ -1358,7 +1358,7 @@ public class TestTool {
 				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBeanAutowireByName(PullingJmsListener.class);
 				pullingJmsListener.setName("Test Tool JmsListener");
 				pullingJmsListener.setDestinationName(queue);
-				pullingJmsListener.setDestinationTypeEnum(DestinationTypeEnum.QUEUE);
+				pullingJmsListener.setDestinationTypeEnum(DestinationType.QUEUE);
 				pullingJmsListener.setAcknowledgeMode("auto");
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {

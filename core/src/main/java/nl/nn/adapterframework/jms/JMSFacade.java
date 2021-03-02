@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
@@ -78,9 +77,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	private boolean transacted = false;
 	private boolean jmsTransacted = false;
-	private SubscriberTypeEnum subscriberType = SubscriberTypeEnum.DURABLE;
+	private SubscriberType subscriberType = SubscriberType.DURABLE;
 
-	private AcknowledgeModeEnum ackMode = AcknowledgeModeEnum.AUTO_ACKNOWLEDGE;
+	private AcknowledgeMode ackMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
 	private boolean persistent;
 	private long messageTimeToLive = 0;
 	private String destinationName;
@@ -88,7 +87,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private String authAlias;
 	private boolean lookupDestination = true;
 
-	private DestinationTypeEnum destinationType = DestinationTypeEnum.QUEUE; // QUEUE or TOPIC
+	private DestinationType destinationType = DestinationType.QUEUE; // QUEUE or TOPIC
 
 	protected MessagingSource messagingSource;
 	private Map<String,Destination> destinations = new ConcurrentHashMap<>();
@@ -113,46 +112,41 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private String correlationIdToHexPrefix = "ID:";
 	private int correlationIdMaxLength = -1;
 
-	public enum AcknowledgeModeEnum {
+	public enum AcknowledgeMode {
 		NOT_SET(0, ""),
 		AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE, "auto"),
 		CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE, "client"),
 		DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE, "dups");
 		
-		int acknowledgeMode;
-		String shortName;
-		private AcknowledgeModeEnum(int acknowledgeMode, String shortName) {
+		private @Getter int acknowledgeMode;
+		private @Getter String shortName;
+		private AcknowledgeMode(int acknowledgeMode, String shortName) {
 			this.acknowledgeMode = acknowledgeMode;
 			this.shortName=shortName;
 		}
 	}
 	
-	public enum DeliveryModeEnum {
+	public enum DeliveryMode {
 		NOT_SET(0),
-		PERSISTENT(DeliveryMode.PERSISTENT),
-		NON_PERSISTENT(DeliveryMode.NON_PERSISTENT);
+		PERSISTENT(javax.jms.DeliveryMode.PERSISTENT),
+		NON_PERSISTENT(javax.jms.DeliveryMode.NON_PERSISTENT);
 		
-		int deliveryMode;
-		private DeliveryModeEnum(int deliveryMode) {
+		private @Getter int deliveryMode;
+		private DeliveryMode(int deliveryMode) {
 			this.deliveryMode = deliveryMode;
 		}
 		
-		public static DeliveryModeEnum parse(int deliveryMode) {
-			for(DeliveryModeEnum modeEnum:values()) {
-				if (modeEnum.deliveryMode==deliveryMode) {
-					return modeEnum;
-				}
-			}
-			throw new IllegalArgumentException("unknown deliveryMode ["+deliveryMode+"]");
+		public static DeliveryMode parse(int deliveryMode) {
+			return Misc.parseFromField(DeliveryMode.class, deliveryMode, d -> d.getDeliveryMode());
 		}
 	}
 
-	public enum SubscriberTypeEnum {
+	public enum SubscriberType {
 		DURABLE,
 		TRANSIENT;
 	}
 
-	public enum DestinationTypeEnum {
+	public enum DestinationType {
 		QUEUE,
 		TOPIC;
 	}
@@ -759,13 +753,13 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	@IbisDoc({"2", "Either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
 	public void setDestinationType(String destinationType) {
-		this.destinationType = Misc.parse(DestinationTypeEnum.class, "destinationType", destinationType);
-		useTopicFunctions = this.destinationType==DestinationTypeEnum.TOPIC;
+		this.destinationType = Misc.parse(DestinationType.class, "destinationType", destinationType);
+		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
 	}
-	public void setDestinationTypeEnum(DestinationTypeEnum destinationType) {
+	public void setDestinationTypeEnum(DestinationType destinationType) {
 		this.destinationType=destinationType;
 	}
-	public DestinationTypeEnum getDestinationTypeEnum() {
+	public DestinationType getDestinationTypeEnum() {
 		return destinationType;
 	}
 
@@ -780,33 +774,27 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	@Deprecated
 	@ConfigurationWarning("please use attribute acknowledgeMode instead")
 	public void setAckMode(int ackMode) {
-		for (AcknowledgeModeEnum ackModeEnum : AcknowledgeModeEnum.values()) {
-			if (ackModeEnum.acknowledgeMode == ackMode) {
-				this.ackMode = ackModeEnum;
-				return;
-			}
-		}
-		this.ackMode = AcknowledgeModeEnum.NOT_SET;
+		this.ackMode = Misc.parseFromField(AcknowledgeMode.class, "ackMode", ackMode, a -> a.getAcknowledgeMode());
 	}
 
-	public AcknowledgeModeEnum getAckModeEnum() {
+	public AcknowledgeMode getAckModeEnum() {
 		return ackMode;
 	}
 
 
-	/**
-	 * String-version of {@link #setAckMode(int)}
-	 */
 	@IbisDoc({"3", "Acknowledge mode, can be one of ('auto' or 'auto_acknowledge'), ('dups' or 'dups_ok_acknowledge') or ('client' or 'client_acknowledge')", "auto_acknowledge",})
 	public void setAcknowledgeMode(String acknowledgeMode) {
-		for (AcknowledgeModeEnum ackModeEnum : AcknowledgeModeEnum.values()) {
-			if (ackModeEnum.shortName.equalsIgnoreCase(acknowledgeMode) || ackModeEnum.name().equalsIgnoreCase(acknowledgeMode)) {
-				this.ackMode = ackModeEnum;
-				return;
+		try {
+			ackMode = Misc.parseFromField(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode, a -> a.getShortName());
+		} catch (IllegalArgumentException e1) {
+			try {
+				ackMode = Misc.parse(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode);
+			} catch (IllegalArgumentException e2) {
+				e1.addSuppressed(e2);
+				log.warn("["+getName()+"] invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge", e1);
+				ackMode = AcknowledgeMode.NOT_SET;
 			}
 		}
-		log.warn("["+getName()+"] invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge");
-		ackMode = AcknowledgeModeEnum.NOT_SET;
 	}
 
 	/**
@@ -825,9 +813,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	@IbisDoc({"5", "SubscriberType, should <b>DURABLE</b> or <b>TRANSIENT</b>. Only applicable for topics ", "DURABLE"})
 	public void setSubscriberType(String subscriberType) {
-		this.subscriberType = Misc.parse(SubscriberTypeEnum.class, "subscriberType", subscriberType);
+		this.subscriberType = Misc.parse(SubscriberType.class, "subscriberType", subscriberType);
 	}
-	public SubscriberTypeEnum getSubscriberTypeEnum() {
+	public SubscriberType getSubscriberTypeEnum() {
 		return subscriberType;
 	}
 

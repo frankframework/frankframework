@@ -1386,4 +1386,20 @@ public class Misc {
 		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
 	}
 
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, int value, Function<E,Integer> field) {
+		return parseFromField(enumClass, null, value, field);
+	}
+	
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, int value, Function<E,Integer> field) {
+		List<Integer> fieldValues = new ArrayList<>();
+		for (E e:EnumUtils.getEnumList(enumClass)) {
+			int fieldValue = field.apply(e);
+			if (fieldValue==value) {
+				return e;
+			}
+			fieldValues.add(fieldValue);
+		}
+		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
+	}
+
 }

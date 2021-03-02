@@ -57,7 +57,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	private String replyMessageType=null;
 	private long replyMessageTimeToLive=0;
 	private int replyPriority=-1;
-	private DeliveryModeEnum replyDeliveryMode=DeliveryModeEnum.NON_PERSISTENT;
+	private DeliveryMode replyDeliveryMode=DeliveryMode.NON_PERSISTENT;
 	private ISender sender;
 	
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
@@ -166,12 +166,12 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	
 	protected String retrieveIdFromMessage(javax.jms.Message message, Map<String, Object> threadContext) throws ListenerException {
 		String cid = "unset";
-		DeliveryModeEnum mode = null;
+		DeliveryMode mode = null;
 		String id = "unset";
 		Date tsSent = null;
 		Destination replyTo=null;
 		try {
-			mode = DeliveryModeEnum.parse(message.getJMSDeliveryMode());
+			mode = DeliveryMode.parse(message.getJMSDeliveryMode());
 		} catch (JMSException ignore) {
 			log.debug("ignoring JMSException in getJMSDeliveryMode()", ignore);
 		}
@@ -235,7 +235,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		threadContext.put("timestamp",tsSent);
 		threadContext.put("replyTo",replyTo);
 		try {
-			if (getAckModeEnum() == AcknowledgeModeEnum.CLIENT_ACKNOWLEDGE) {
+			if (getAckModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 				message.acknowledge();
 				log.debug("Listener on [" + getDestinationName() + "] acknowledged message");
 			}
@@ -407,9 +407,9 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 	@IbisDoc({"Controls mode that reply messages are sent with: either 'PERSISTENT' or 'NON_PERSISTENT'", "not set by application"})
 	public void setReplyDeliveryMode(String replyDeliveryMode) {
-		this.replyDeliveryMode = Misc.parse(DeliveryModeEnum.class, "replyDeliveryMode", replyDeliveryMode);
+		this.replyDeliveryMode = Misc.parse(DeliveryMode.class, "replyDeliveryMode", replyDeliveryMode);
 	}
-	public DeliveryModeEnum getReplyDeliveryModeEnum() {
+	public DeliveryMode getReplyDeliveryModeEnum() {
 		return replyDeliveryMode;
 	}
 

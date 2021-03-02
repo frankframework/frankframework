@@ -65,7 +65,7 @@ import nl.nn.adapterframework.util.Misc;
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private String replyToName = null;
-	private DeliveryModeEnum deliveryMode = DeliveryModeEnum.NOT_SET;
+	private DeliveryMode deliveryMode = DeliveryMode.NOT_SET;
 	private String messageType = null;
 	private int priority=-1;
 	private boolean synchronous=false;
@@ -184,9 +184,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			if (getMessageType()!=null) {
 				msg.setJMSType(getMessageType());
 			}
-			if (getDeliveryModeEnum()!=DeliveryModeEnum.NOT_SET) {
-				msg.setJMSDeliveryMode(getDeliveryModeEnum().deliveryMode);
-				mp.setDeliveryMode(getDeliveryModeEnum().deliveryMode);
+			if (getDeliveryModeEnum()!=DeliveryMode.NOT_SET) {
+				msg.setJMSDeliveryMode(getDeliveryModeEnum().getDeliveryMode());
+				mp.setDeliveryMode(getDeliveryModeEnum().getDeliveryMode());
 			}
 			if (getPriority()>=0) {
 				msg.setJMSPriority(getPriority());
@@ -375,12 +375,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	@IbisDoc({"5", "Controls mode that messages are sent with: either 'PERSISTENT' or 'NON_PERSISTENT'", "not set by application"})
 	public void setDeliveryMode(String deliveryMode) {
-		this.deliveryMode = Misc.parse(DeliveryModeEnum.class, "deliveryMode", deliveryMode);
+		this.deliveryMode = Misc.parse(DeliveryMode.class, "deliveryMode", deliveryMode);
 	}
-	public void setDeliveryModeEnum(DeliveryModeEnum deliveryMode) {
+	public void setDeliveryModeEnum(DeliveryMode deliveryMode) {
 		this.deliveryMode = deliveryMode;
 	}
-	public DeliveryModeEnum getDeliveryModeEnum() {
+	public DeliveryMode getDeliveryModeEnum() {
 		return deliveryMode;
 	}
 	
