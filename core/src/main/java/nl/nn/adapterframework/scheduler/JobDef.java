@@ -1144,7 +1144,7 @@ public class JobDef extends TransactionAttributes {
 
 	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
 	public void setFunction(String function) {
-		this.function = Misc.fromValue(JobDefFunctions.class, "function", function);
+		this.function = Misc.parseFromField(JobDefFunctions.class, "function", function, e -> e.getName());
 	}
 	public String getFunction() {
 		return function==null?null:function.getName();

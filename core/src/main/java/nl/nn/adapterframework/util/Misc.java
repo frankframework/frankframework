@@ -37,6 +37,7 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
@@ -53,8 +55,8 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -1357,15 +1359,31 @@ public class Misc {
 	}
 	
 	
-	public static <E extends Enum<E>> E fromValue(Class<E> enumClass, String value) {
-		return fromValue(enumClass, null, value);
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
+		return parse(enumClass, null, value);
 	}
-	public static <E extends Enum<E>> E fromValue(Class<E> enumClass, String fieldName, String value) {
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value) {
 		E result = EnumUtils.getEnumIgnoreCase(enumClass, value);
 		if (result==null) {
 			throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ EnumUtils.getEnumList(enumClass));
 		}
 		return result;
 	}
+
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String value, Function<E,String> field) {
+		return parseFromField(enumClass, null, value, field);
+	}
 	
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, String value, Function<E,String> field) {
+		List<String> fieldValues = new ArrayList<>();
+		for (E e:EnumUtils.getEnumList(enumClass)) {
+			String fieldValue = field.apply(e);
+			if (fieldValue.equalsIgnoreCase(value)) {
+				return e;
+			}
+			fieldValues.add(fieldValue);
+		}
+		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
+	}
+
 }

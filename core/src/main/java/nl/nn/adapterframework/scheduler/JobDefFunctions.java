@@ -42,7 +42,7 @@ public enum JobDefFunctions {
 		this.servicejob = servicejob;
 	}
 
-	public String getName() {
+	public String getName() { // Beware: getName() is not the same as name()
 		return name;
 	}
 
@@ -57,19 +57,6 @@ public enum JobDefFunctions {
 				equals = true;
 		}
 		return equals;
-	}
-
-	/**
-	 * Comma separated list of all ENUMs
-	 */
-	public static String getNames() {
-		String returnString = "[";
-		for(JobDefFunctions func : values()) {
-			returnString += func.getName()+", ";
-		}
-
-		//Cut off last comma and append closing bracket
-		return returnString.substring(0, returnString.length()-2) + "]";
 	}
 
 	/**

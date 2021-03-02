@@ -1,5 +1,5 @@
 /*
-Copyright 2019-2020 WeAreFrank!
+Copyright 2019-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public enum MediaTypes {
 		}
 	}
 
-	public static MediaTypes fromValue(String v) {
-		return Misc.fromValue(MediaTypes.class, v);
+	public static MediaTypes fromValue(String contentType) {
+		return Misc.parseFromField(MediaTypes.class, contentType, m -> m.mediaType);
 	}
 }

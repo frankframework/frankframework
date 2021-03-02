@@ -761,7 +761,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	@IbisDoc({"2", "Either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
 	public void setDestinationType(String destinationType) {
-		this.destinationType = Misc.fromValue(DestinationTypeEnum.class, "destinationType", destinationType);
+		this.destinationType = Misc.parse(DestinationTypeEnum.class, "destinationType", destinationType);
 		useTopicFunctions = this.destinationType==DestinationTypeEnum.TOPIC;
 	}
 	public void setDestinationTypeEnum(DestinationTypeEnum destinationType) {
@@ -827,7 +827,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	@IbisDoc({"5", "SubscriberType, should <b>DURABLE</b> or <b>TRANSIENT</b>. Only applicable for topics ", "DURABLE"})
 	public void setSubscriberType(String subscriberType) {
-		this.subscriberType = Misc.fromValue(SubscriberTypeEnum.class, "subscriberType", subscriberType);
+		this.subscriberType = Misc.parse(SubscriberTypeEnum.class, "subscriberType", subscriberType);
 	}
 	public SubscriberTypeEnum getSubscriberTypeEnum() {
 		return subscriberType;

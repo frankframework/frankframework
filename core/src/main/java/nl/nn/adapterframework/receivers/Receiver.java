@@ -2027,7 +2027,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
 	public void setOnError(String value) {
 		if(StringUtils.isNotEmpty(value)) {
-			onError = Misc.fromValue(OnError.class, "onError", value);
+			onError = Misc.parse(OnError.class, "onError", value);
 		}
 	}
 	public void setOnErrorEnum(OnError value) {

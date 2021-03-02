@@ -407,7 +407,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 	@IbisDoc({"Controls mode that reply messages are sent with: either 'PERSISTENT' or 'NON_PERSISTENT'\"", "\"not set by application\""})
 	public void setReplyDeliveryMode(String replyDeliveryMode) {
-		this.replyDeliveryMode = Misc.fromValue(DeliveryModeEnum.class, "replyDeliveryMode", replyDeliveryMode);
+		this.replyDeliveryMode = Misc.parse(DeliveryModeEnum.class, "replyDeliveryMode", replyDeliveryMode);
 	}
 	public DeliveryModeEnum getReplyDeliveryModeEnum() {
 		return replyDeliveryMode;
