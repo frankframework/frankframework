@@ -2,11 +2,8 @@ FROM iaf-as-tomcat AS iaf-test-tomcat
 
 
 # copy additional environment configuration for iaf-test
-# Needs to be root to delete the /tmp file
-USER root
 COPY src/scripts/catalinaAdditionalTest.properties /tmp
 RUN cat /tmp/catalinaAdditionalTest.properties >> /usr/local/tomcat/conf/catalina.properties  && rm -f /tmp/catalinaAdditionalTest.properties
-USER tomcat
 
 # copy any additional drivers
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
