@@ -368,7 +368,7 @@ class InfoBuilderSource {
 			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL("digester-rules.xml")), digesterRulesParser);
 		} catch (Exception e) {
 			if(log.isErrorEnabled()) {
-				log.error("Could nog parse digester-rules.xml: " + e.getStackTrace());
+				log.error("Could nog parse digester-rules.xml", e);
 			}
 			throw e;
 		}

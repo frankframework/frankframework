@@ -226,7 +226,7 @@ public class FrankDocModel {
 	}
 
 	private void checkForTypeConflict(Method setter, Method getter, FrankElement attributeOwner) {
-		log.trace("Checking for type conflict with getter or isser [{}]", getter.getName());
+		log.trace("Checking for type conflict with getter or isser [{}]", () -> getter.getName());
 		String setterType = setter.getParameterTypes()[0].getName();
 		String getterType = getter.getReturnType().getName();
 		if(getter.getName().startsWith("get")) {
