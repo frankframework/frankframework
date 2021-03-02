@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,12 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.xerces.util.XMLChar;
 
 import javanet.staxutils.IndentingXMLStreamWriter;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -36,9 +39,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public abstract class WsdlUtils {
+public abstract class WsdlGeneratorUtils {
 
-    private WsdlUtils() {
+    private WsdlGeneratorUtils() {
         // this class has no instances
     }
 
@@ -119,5 +122,17 @@ public abstract class WsdlUtils {
     static String validUri(String uri) {
         return uri == null ? null : uri.replaceAll(" ", "_");
     }
+
+    //check if the adapter has WebServiceListener with an inputValidator 
+	public static boolean canHaveWsdl(Adapter adapter) {
+		IValidator inputValidator = adapter.getPipeLine().getInputValidator();
+		boolean haveWebServiceListener = false;
+		for (IListener listener : WsdlGeneratorUtils.getListeners(adapter)) {
+			if(listener instanceof WebServiceListener) {
+				haveWebServiceListener = true;
+			}
+		}
+		return inputValidator != null && haveWebServiceListener;
+	}
 
 }

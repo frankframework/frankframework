@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
@@ -42,6 +41,8 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageWrapper;
@@ -49,6 +50,7 @@ import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -66,7 +68,7 @@ import nl.nn.adapterframework.util.DateUtils;
  *
  * @author 	Gerrit van Brakel
  */
-public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEnabled {
+public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled {
 
 	public static final String MODE_PERSISTENT     = "PERSISTENT";
 	public static final String MODE_NON_PERSISTENT = "NON_PERSISTENT";
@@ -91,8 +93,8 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 	protected MessagingSource messagingSource;
 	private Destination destination;
 
-	private Map<String, ConnectionFactory> proxiedConnectionFactories;
-	private Map<String, String> proxiedDestinationNames;
+	private @Setter @Getter IConnectionFactoryFactory connectionFactoryFactory = null;
+	private @Setter @Getter Map<String, String> proxiedDestinationNames;
 
 	// ---------------------------------------------------------------------
 	// Queue fields
@@ -142,21 +144,6 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 		return useJms102;
 	}
 
-	public void setProxiedConnectionFactories(Map<String, ConnectionFactory> proxiedConnectionFactories) {
-		this.proxiedConnectionFactories = proxiedConnectionFactories;
-	}
-
-	public Map<String, ConnectionFactory> getProxiedConnectionFactories() {
-		return proxiedConnectionFactories;
-	}
-
-	public void setProxiedDestinationNames(Map<String, String> proxiedDestinationNames) {
-		this.proxiedDestinationNames = proxiedDestinationNames;
-	}
-
-	public Map<String, String> getProxiedDestinationNames() {
-		return proxiedDestinationNames;
-	}
 
 	public String getConnectionFactoryName() throws JmsException {
 		String result = useTopicFunctions ? getTopicConnectionFactoryName() : getQueueConnectionFactoryName();
@@ -344,7 +331,7 @@ public class JMSFacade extends JNDIBase implements HasPhysicalDestination, IXAEn
 	}
 
 	/**
-	 * Utilitiy function to retrieve a Destination from a jndi.
+	 * Utility function to retrieve a Destination from a jndi.
 	 */
 	public Destination getDestination(String destinationName) throws JmsException, NamingException {
 		return getJmsMessagingSource().lookupDestination(destinationName);

@@ -14,7 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jms;
+package nl.nn.adapterframework.jndi;
 
 import java.io.IOException;
 import java.net.URL;
@@ -29,6 +29,7 @@ import javax.naming.NamingException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -46,7 +47,7 @@ import lombok.Getter;
  * <br/>
  * @author Johan Verrips IOS
  */
-public class JNDIBase implements IConfigurable{
+public class JndiBase implements IConfigurable{
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -88,7 +89,7 @@ public class JNDIBase implements IConfigurable{
 		}
 	}
 
-	protected Properties getJndiEnv() throws NamingException {
+	public Properties getJndiEnv() throws NamingException {
 		Properties jndiEnv = new Properties();
 
 		if (StringUtils.isNotEmpty(getJndiProperties())) {

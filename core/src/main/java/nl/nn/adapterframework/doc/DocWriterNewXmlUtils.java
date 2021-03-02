@@ -53,12 +53,13 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(element);
 	}
 
-	static void addElementRef(XmlBuilder context, String elementName, String minOccurs, String maxOccurs) {
+	static XmlBuilder addElementRef(XmlBuilder context, String elementName, String minOccurs, String maxOccurs) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("ref", elementName);
 		element.addAttribute("minOccurs", minOccurs);
 		element.addAttribute("maxOccurs", maxOccurs);
 		context.addSubElement(element);
+		return element;
 	}
 
 	static void addElementRef(XmlBuilder context, String elementName) {
@@ -114,6 +115,14 @@ class DocWriterNewXmlUtils {
 	static XmlBuilder addChoice(XmlBuilder context) {
 		XmlBuilder choice = new XmlBuilder("choice", "xs", XML_SCHEMA_URI);
 		context.addSubElement(choice);
+		return choice;
+	}
+
+	static XmlBuilder addChoice(XmlBuilder context, String minOccurs, String maxOccurs) {
+		XmlBuilder choice = new XmlBuilder("choice", "xs", XML_SCHEMA_URI);
+		context.addSubElement(choice);
+		choice.addAttribute("minOccurs", minOccurs);
+		choice.addAttribute("maxOccurs", maxOccurs);
 		return choice;
 	}
 
@@ -194,6 +203,7 @@ class DocWriterNewXmlUtils {
 	static XmlBuilder addAnyAttribute(XmlBuilder context) {
 		XmlBuilder attribute = new XmlBuilder("anyAttribute", "xs", XML_SCHEMA_URI);
 		context.addSubElement(attribute);
+		attribute.addAttribute("processContents", "skip");
 		return attribute;
 	}
 
