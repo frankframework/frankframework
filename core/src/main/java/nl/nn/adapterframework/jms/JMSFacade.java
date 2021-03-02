@@ -837,7 +837,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
-	@IbisDoc({"6", "JNDI-name of the queueconnectionfactory, used when <code>destinationtype<code>=</code>queue</code>", ""})
+	@IbisDoc({"6", "JNDI-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code>", ""})
 	public void setQueueConnectionFactoryName(String name) {
 		queueConnectionFactoryName=name;
 	}
@@ -849,7 +849,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
-	@IbisDoc({"7", "jndi-name of the topicconnectionfactory, used when <code>destinationtype<code>=</code>topic</code>", ""})
+	@IbisDoc({"7", "JNDI-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code>", ""})
 	public void setTopicConnectionFactoryName(String topicConnectionFactoryName) {
 		this.topicConnectionFactoryName = topicConnectionFactoryName;
 	}
