@@ -28,7 +28,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsBrowser;
@@ -42,7 +41,12 @@ import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
  */
 public class BrowseQueueExecute extends ActionBase {
 
-	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException, ConfigurationException {
+	public ActionForward executeSub(
+		ActionMapping mapping,
+		ActionForm form,
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws IOException, ServletException {
 
 		// Initialize action
 		initAction(request);

@@ -72,6 +72,7 @@ import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
@@ -1142,13 +1143,8 @@ public class JobDef extends TransactionAttributes {
 	}
 
 	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
-	public void setFunction(String function) throws ConfigurationException {
-		try {
-			this.function = JobDefFunctions.fromValue(function);
-		}
-		catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("jobdef ["+getName()+"] unknown function ["+function+"]. Must be one of "+ JobDefFunctions.getNames());
-		}
+	public void setFunction(String function) {
+		this.function = Misc.fromValue(JobDefFunctions.class, "function", function);
 	}
 	public String getFunction() {
 		return function==null?null:function.getName();

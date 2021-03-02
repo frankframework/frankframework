@@ -46,15 +46,6 @@ public enum JobDefFunctions {
 		return name;
 	}
 
-	public static JobDefFunctions fromValue(String v) {
-		for (JobDefFunctions c : JobDefFunctions.values()) {
-			if (c.name.equalsIgnoreCase(v)) {
-				return c;
-			}
-		}
-		throw new IllegalArgumentException(v);
-	}
-
 	public boolean isNotEqualToAtLeastOneOf(JobDefFunctions... functions) {
 		return !isEqualToAtLeastOneOf(functions);
 	}

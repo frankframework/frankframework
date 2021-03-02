@@ -1306,11 +1306,7 @@ public class TestTool {
 				debugMessage("Property '" + queueName + ".replyToName': " + replyToName, writers);
 				if (deliveryMode != null) {
 					debugMessage("Set deliveryMode to " + deliveryMode, writers);
-					try {
-						jmsSender.setDeliveryMode(deliveryMode);
-					} catch (ConfigurationException e) {
-						throw new RuntimeException(e);
-					}
+					jmsSender.setDeliveryMode(deliveryMode);
 				}
 				if ("true".equals(persistent)) {
 					debugMessage("Set persistent to true", writers);

@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.jms;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,6 +42,7 @@ import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
@@ -406,12 +406,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 
 	@IbisDoc({"Controls mode that reply messages are sent with: either 'PERSISTENT' or 'NON_PERSISTENT'\"", "\"not set by application\""})
-	public void setReplyDeliveryMode(String replyDeliveryMode) throws ConfigurationException {
-		try {
-			this.replyDeliveryMode = DeliveryModeEnum.valueOf(replyDeliveryMode.toUpperCase());
-		} catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("unknown replyDeliveryMode ["+replyDeliveryMode+"]. Must be one of "+ Arrays.asList(DeliveryModeEnum.values()));
-		}
+	public void setReplyDeliveryMode(String replyDeliveryMode) {
+		this.replyDeliveryMode = Misc.fromValue(DeliveryModeEnum.class, "replyDeliveryMode", replyDeliveryMode);
 	}
 	public DeliveryModeEnum getReplyDeliveryModeEnum() {
 		return replyDeliveryMode;

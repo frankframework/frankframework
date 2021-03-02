@@ -59,6 +59,7 @@ import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
 
 
 /**
@@ -759,12 +760,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * that controls wether Topic functions are used or Queue functions.
 	 */
 	@IbisDoc({"2", "Either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
-	public void setDestinationType(String destinationType) throws ConfigurationException {
-		try {
-			this.destinationType = DestinationTypeEnum.valueOf(destinationType.toUpperCase());
-		} catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("unknown destinationType ["+destinationType+"]. Must be one of "+ Arrays.asList(DestinationTypeEnum.values()));
-		}
+	public void setDestinationType(String destinationType) {
+		this.destinationType = Misc.fromValue(DestinationTypeEnum.class, "destinationType", destinationType);
 		useTopicFunctions = this.destinationType==DestinationTypeEnum.TOPIC;
 	}
 	public void setDestinationTypeEnum(DestinationTypeEnum destinationType) {
@@ -829,12 +826,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	@IbisDoc({"5", "SubscriberType, should <b>DURABLE</b> or <b>TRANSIENT</b>. Only applicable for topics ", "DURABLE"})
-	public void setSubscriberType(String subscriberType) throws ConfigurationException {
-		try {
-			this.subscriberType = SubscriberTypeEnum.valueOf(subscriberType.toUpperCase());
-		} catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("unknown subscriberType ["+subscriberType+"]. Must be one of "+ Arrays.asList(SubscriberTypeEnum.values()));
-		}
+	public void setSubscriberType(String subscriberType) {
+		this.subscriberType = Misc.fromValue(SubscriberTypeEnum.class, "subscriberType", subscriberType);
 	}
 	public SubscriberTypeEnum getSubscriberTypeEnum() {
 		return subscriberType;

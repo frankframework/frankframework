@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -1353,6 +1354,18 @@ public class Misc {
 			log.warn(e);
 			return null;
 		}
+	}
+	
+	
+	public static <E extends Enum<E>> E fromValue(Class<E> enumClass, String value) {
+		return fromValue(enumClass, null, value);
+	}
+	public static <E extends Enum<E>> E fromValue(Class<E> enumClass, String fieldName, String value) {
+		E result = EnumUtils.getEnumIgnoreCase(enumClass, value);
+		if (result==null) {
+			throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ EnumUtils.getEnumList(enumClass));
+		}
+		return result;
 	}
 	
 }

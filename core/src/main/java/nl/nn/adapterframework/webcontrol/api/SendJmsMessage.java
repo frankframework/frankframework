@@ -34,7 +34,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -56,7 +55,7 @@ public final class SendJmsMessage extends Base {
 	@Path("jms/message")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response putJmsMessage(MultipartBody inputDataMap) throws ApiException, ConfigurationException {
+	public Response putJmsMessage(MultipartBody inputDataMap) throws ApiException {
 
 		String message = null, fileName = null;
 		InputStream file = null;
@@ -108,7 +107,7 @@ public final class SendJmsMessage extends Base {
 		}
 	}
 
-	private JmsSender jmsBuilder(String realm, String destination, boolean persistent, String type, String replyTo, boolean synchronous) throws ConfigurationException {
+	private JmsSender jmsBuilder(String realm, String destination, boolean persistent, String type, String replyTo, boolean synchronous) {
 		JmsSender qms = new JmsSender();
 		qms.setName("SendJmsMessageAction");
 		qms.setJmsRealm(realm);
