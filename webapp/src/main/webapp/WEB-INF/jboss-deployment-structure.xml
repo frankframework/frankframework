@@ -4,15 +4,18 @@
 	<deployment>
 		<exclusions />
 		<exports />
-		<module-alias name="iaf-example" />
-		<dependencies />
+		<module-alias name="deployment.iaf" />
+		<dependencies>
+			<module name="javax.jws.api" export="true"/>	<!-- java.lang.NoClassDefFoundError: javax/jws/WebService -->
+			<module name="org.codehaus.jackson.jackson-xc" />	<!-- java.lang.NoClassDefFoundError: Could not initialize class org.codehaus.jackson.map.ObjectMapper  -->
+			<module name="org.codehaus.jackson.jackson-mapper-asl" />
+			<module name="module.nl.nn.adapterframework" />
+		</dependencies>
 		<exclude-subsystems>
-			<subsystem name="resteasy" />		<!-- To avoid resteasy conflict -->
-			<subsystem name="jaxrs" />			<!-- To avoid resteasy conflict -->
 			<subsystem name="webservices" />	<!-- To avoid apache CXF conflict -->
 		</exclude-subsystems>
 		<local-last value="true" />
-		<resources />
+		<resources/>
 		<transformers />
 	</deployment>
 </jboss-deployment-structure>
