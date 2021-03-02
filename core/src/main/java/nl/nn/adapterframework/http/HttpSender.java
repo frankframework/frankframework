@@ -509,26 +509,27 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	@Override
-	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
-		int statusCode = responseHandler.getStatusLine().getStatusCode();
-
+	protected boolean validateResponseCode(int statusCode) {
 		boolean ok = false;
 		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
 			ok = true;
 		} else {
-			if (statusCode==HttpServletResponse.SC_OK) {
+			if (statusCode==200 || statusCode==201 || statusCode==202 || statusCode==204 || statusCode==206) {
 				ok = true;
 			} else {
-				if (isIgnoreRedirects()) {
-					if (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT) {
-						ok = true;
-					}
+				if (isIgnoreRedirects() && (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT)) {
+					ok = true;
 				}
 			}
 		}
+		return ok;
+	}
 
-		if (!ok) {
+	@Override
+	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+		int statusCode = responseHandler.getStatusLine().getStatusCode();
+
+		if (!validateResponseCode(statusCode)) {
 			Message responseBody = responseHandler.getResponseMessage();
 			String body = "";
 			if(responseBody != null) {
