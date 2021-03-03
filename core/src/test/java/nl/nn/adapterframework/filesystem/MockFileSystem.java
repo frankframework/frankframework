@@ -151,7 +151,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public boolean exists(MockFile f) throws FileSystemException {
+	public boolean exists(M f) throws FileSystemException {
 		checkOpen();
 		return f.getOwner()!=null 
 				&& (f.getOwner().getFiles().containsKey(f.getName()) 
@@ -212,8 +212,12 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 			destFolder = new MockFolder(destinationFolderName,this);
 			getFolders().put(destinationFolderName,destFolder);
 		}
-		destFolder.getFiles().put(f.getName(), f.getOwner().getFiles().remove(f.getName()));
-		f.setOwner(destFolder);
+		M destFile = (M)new MockFile(f.getName(),destFolder);
+		destFile.setAdditionalProperties(f.getAdditionalProperties());
+		destFile.setContents(f.getContents());
+		destFile.setLastModified(f.getLastModified());
+		destFolder.getFiles().put(f.getName(), destFile);
+		f.getOwner().getFiles().remove(f.getName());
 		return f;
 	}
 
@@ -308,8 +312,5 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	public String getPhysicalDestinationName() {
 		return "Mock!";
 	}
-
-
-
 
 }

@@ -305,7 +305,7 @@ public class TransactionalStorage extends Base {
 			IMessageBrowser<?> store = receiver.getMessageBrowser(currentState);
 			for(int i=0; i < messageIds.length; i++) {
 				try {
-					if(!receiver.changeProcessState(store.browseMessage(messageIds[i]), targetPS, null)) {
+					if (receiver.changeProcessState(store.browseMessage(messageIds[i]), targetPS)==null) {
 						errorMessages.add("could not move message ["+messageIds[i]+"]");
 					}
 				} catch (ListenerException e) {

@@ -173,7 +173,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private class ListenTask implements SchedulingAwareRunnable {
 
-		private boolean useInProcessStatus=false;
+		private IHasProcessState<M> inProcessStateManager=null;
 
 		@Override
 		public boolean isLongLived() {
@@ -189,6 +189,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				threadsRunning.increase();
 				if (receiver.isInRunState(RunStateEnum.STARTED)) {
 					listener = (IPullingListener<M>) receiver.getListener();
+					if (listener instanceof IHasProcessState && ((IHasProcessState<M>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
+						inProcessStateManager = (IHasProcessState<M>)listener;
+					}
 					threadContext = listener.openThread();
 					if (threadContext == null) {
 						threadContext = new HashMap<>();
@@ -228,15 +231,20 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								return;
 							}
 
+							if (inProcessStateManager!=null) {
+								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS))==null) {
+									return;
+								}
+								if (txStatus!=null) {
+									txManager.commit(txStatus);
+									txStatus = txManager.getTransaction(txNew);
+								}
+							}
+
+							// found a message, process it
 							tasksStarted.increase(); 
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
-							// found a message, process it
-							// first check if it needs to be set to 'inProcess'
-							if (listener instanceof IHasProcessState && (useInProcessStatus=((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.INPROCESS, threadContext)) && txStatus!=null) {
-								txManager.commit(txStatus);
-								txStatus = txManager.getTransaction(txNew);
-							}
 						} finally {
 							// release pollToken after message has been moved to inProcess, so it is not seen as 'available' by the next thread
 							pollTokenReleased=true;
@@ -298,9 +306,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			try {
 				txManager.rollback(txStatus);
 			} finally {
-				if (useInProcessStatus) {
+				if (inProcessStateManager!=null) {
 					txStatus = txManager.getTransaction(txNew);
-					((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.AVAILABLE, threadContext);
+					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE);
 					txManager.commit(txStatus);
 				}
 			}

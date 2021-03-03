@@ -288,30 +288,30 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	}
 
 	@Override
-	public boolean changeProcessState(Object rawMessage, ProcessState toState, Map<String,Object> context) throws ListenerException {
+	public Object changeProcessState(Object rawMessage, ProcessState toState) throws ListenerException {
 		if (!knownProcessStates().contains(toState)) {
-			return false;
+			return null;
 		}
 		if (isConnectionsArePooled()) {
 			try (Connection conn = getConnection()) {
-				return changeProcessState(conn, rawMessage, toState, context);
+				return changeProcessState(conn, rawMessage, toState);
 			} catch (JdbcException|SQLException e) {
 				throw new ListenerException(e);
 			}
 		} else {
 			synchronized (connection) {
-				return changeProcessState(connection, rawMessage, toState, context);
+				return changeProcessState(connection, rawMessage, toState);
 			}
 		}
 	}
 
-	public boolean changeProcessState(Connection connection, Object rawMessage, ProcessState toState, Map<String,Object> context) throws ListenerException {
+	public Object changeProcessState(Connection connection, Object rawMessage, ProcessState toState) throws ListenerException {
 		if (!knownProcessStates().contains(toState)) {
-			return false;
+			return null;
 		}
 		String query = getUpdateStatusQuery(toState);
-		String key=getIdFromRawMessage(rawMessage,context);
-		return execute(connection, query, key);
+		String key=getIdFromRawMessage(rawMessage, null);
+		return execute(connection, query, key) ? rawMessage : null;
 	}
 
 	protected boolean execute(Connection conn, String query) throws ListenerException {

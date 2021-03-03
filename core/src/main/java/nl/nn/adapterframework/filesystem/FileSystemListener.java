@@ -219,10 +219,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 						continue;
 					}
 				}
-				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					if (threadContext!=null) threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
-					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
-					return inprocessFile;
+				if (threadContext!=null && StringUtils.isNotEmpty(getInProcessFolder())) {
+					threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
 				}
 				return file;
 			}
@@ -342,12 +340,15 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	public boolean changeProcessState(F message, ProcessState toState, Map<String,Object> context) throws ListenerException {
+	public F changeProcessState(F message, ProcessState toState) throws ListenerException {
 		try {
-			if (knownProcessStates().contains(toState)) {
-				getFileSystem().moveFile(message, getStateFolder(toState), false);
+			if (!fileSystem.exists(message)) {
+				return null;
 			}
-			return false;
+			if (knownProcessStates().contains(toState)) {
+				return getFileSystem().moveFile(message, getStateFolder(toState), false);
+			}
+			return null;
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message)+"]", e);
 		}

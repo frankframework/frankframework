@@ -38,9 +38,9 @@ public interface IHasProcessState<M> {
 	/**
 	 * Change the processState of the message to the specified state, if that state
 	 * is supported. If it is not supported, nothing changes, and <code>false</code>
-	 * is returned. If it returns <code>true</code>, this signals that the process
-	 * state has changed.
+	 * is returned.
+	 * @return the moved message, or null if no message was moved. 
 	 */
-	public boolean changeProcessState(M message, ProcessState toState, Map<String, Object> context) throws ListenerException;
+	public M changeProcessState(M message, ProcessState toState) throws ListenerException;
 
 }
