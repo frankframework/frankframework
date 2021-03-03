@@ -290,7 +290,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	@Override
 	public Object changeProcessState(Object rawMessage, ProcessState toState) throws ListenerException {
 		if (!knownProcessStates().contains(toState)) {
-			return null;
+			return null; // if toState does not exist, the message can/will not be moved to it, so return null.
 		}
 		if (isConnectionsArePooled()) {
 			try (Connection conn = getConnection()) {

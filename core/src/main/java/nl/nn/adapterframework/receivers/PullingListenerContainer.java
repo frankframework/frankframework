@@ -235,6 +235,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS))==null) {
 									return;
 								}
+								// If inProcess-state is used, we'll commit the transaction that set the message state to the inProcess.
+								// This releases the lock on the record being processed.
+								// This is necessary for dbmses like MariaDB, that have no 'SKIP LOCKED' functionality, and for pipelines that do not support roll back
 								if (txStatus!=null) {
 									txManager.commit(txStatus);
 									txStatus = txManager.getTransaction(txNew);
@@ -307,9 +310,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				txManager.rollback(txStatus);
 			} finally {
 				if (inProcessStateManager!=null) {
-					txStatus = txManager.getTransaction(txNew);
+					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
 					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE);
-					txManager.commit(txStatus);
+					txManager.commit(txStatusRevert);
 				}
 			}
 		}

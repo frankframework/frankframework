@@ -342,13 +342,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public F changeProcessState(F message, ProcessState toState) throws ListenerException {
 		try {
-			if (!fileSystem.exists(message)) {
-				return null;
+			if (!fileSystem.exists(message) || !knownProcessStates().contains(toState)) {
+				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
 			}
-			if (knownProcessStates().contains(toState)) {
-				return getFileSystem().moveFile(message, getStateFolder(toState), false);
-			}
-			return null;
+			return getFileSystem().moveFile(message, getStateFolder(toState), false);
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message)+"]", e);
 		}
