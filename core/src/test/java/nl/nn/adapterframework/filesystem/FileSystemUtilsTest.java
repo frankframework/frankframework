@@ -265,6 +265,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 
 					@Override
 					public void close() throws IOException {
+						// nothing needed
 					}
 
 					@Override
