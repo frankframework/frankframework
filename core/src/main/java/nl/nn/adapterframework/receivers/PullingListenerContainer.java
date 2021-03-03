@@ -189,7 +189,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				threadsRunning.increase();
 				if (receiver.isInRunState(RunStateEnum.STARTED)) {
 					listener = (IPullingListener<M>) receiver.getListener();
-					if (listener instanceof IHasProcessState && ((IHasProcessState<M>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
+					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
 						inProcessStateManager = (IHasProcessState<M>)listener;
 					}
 					threadContext = listener.openThread();
@@ -257,7 +257,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							if (txStatus != null) {
 								if (txStatus.isRollbackOnly()) {
 									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-									rollBack(txStatus, listener, rawMessage, threadContext);
+									rollBack(txStatus, rawMessage);
 								} else {
 									txManager.commit(txStatus);
 								}
@@ -265,7 +265,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						} catch (Exception e) {
 							try {
 								if (txStatus != null && !txStatus.isCompleted()) {
-									rollBack(txStatus, listener, rawMessage, threadContext);
+									rollBack(txStatus, rawMessage);
 								}
 							} catch (Exception e2) {
 								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
@@ -279,7 +279,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
-							rollBack(txStatus, listener, rawMessage, threadContext);
+							rollBack(txStatus, rawMessage);
 						}
 					}
 				}
@@ -298,11 +298,11 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						receiver.error("Exception closing listener", e);
 					}
 				}
-				ThreadContext.removeStack(); //Cleanup the MDC stack that was created durring message processing
+				ThreadContext.removeStack(); //Cleanup the MDC stack that was created during message processing
 			}
 		}
 
-		private void rollBack(TransactionStatus txStatus, IPullingListener<M> listener, M rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		private void rollBack(TransactionStatus txStatus, M rawMessage) throws ListenerException {
 			try {
 				txManager.rollback(txStatus);
 			} finally {
