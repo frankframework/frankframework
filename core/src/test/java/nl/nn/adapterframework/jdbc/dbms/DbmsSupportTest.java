@@ -114,8 +114,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 	}
 	@Test
-	@Ignore("This fails on PostgreSQL, precision of setFloat appears to be too low")
 	public void testNumericAsFloat() throws Exception {
+		assumeFalse(dbmsSupport.getDbms()==Dbms.POSTGRESQL); // This fails on PostgreSQL, precision of setFloat appears to be too low"
 		String number = "1234.5677";
 		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP(TKEY, TNUMBER) VALUES (4,?)", "other", null);
 		dbmsSupport.convertQuery(context, "Oracle");
@@ -133,6 +133,25 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 	}
 
+	@Test 
+	// test the alias functionality as used in JdbcTableListener. 
+	// Asserts that columns can be identified with and without alias.
+	public void testSelectWithAlias() throws Exception {
+		String insertQuery = "INSERT INTO TEMP(TKEY, TNUMBER, TVARCHAR) VALUES (5,5,'A')";
+		String selectQuery = "SELECT TNUMBER FROM TEMP t WHERE TKEY=5 AND t.TVARCHAR='A'";
+		System.out.println("executing query ["+insertQuery+"]");
+		try (PreparedStatement stmt = connection.prepareStatement(insertQuery)) {
+			stmt.execute();
+		}
+		
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, "select")) {
+			try (ResultSet resultSet = stmt.executeQuery()) {
+				resultSet.next();
+				assertEquals(5,resultSet.getInt(1));
+			}
+		}
+	}
+	
 	@Test
 	public void testJdbcSetParameter() throws Exception {
 		String number = "1234.5678";

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Dir2Xml;
 import nl.nn.adapterframework.util.FileUtils;
@@ -49,7 +49,6 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 	private String sessionKey = "file";
 	private String propertiesFileName = "wsdl.properties";
-	private static final String WSDL_EXTENSION = ".wsdl";
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
@@ -120,9 +119,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			receiver.setListener(esbJmsListener);
 			adapter.registerReceiver(receiver);
 			pipeLine.setAdapter(adapter);
-			Wsdl wsdl = null;
+			WsdlGenerator wsdl = null;
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
-			wsdl = new Wsdl(pipeLine, generationInfo);
+			wsdl = new WsdlGenerator(pipeLine, generationInfo);
 			wsdl.setIndent(true);
 			wsdl.init();
 			File wsdlDir = FileUtils.createTempDir(tempDir);

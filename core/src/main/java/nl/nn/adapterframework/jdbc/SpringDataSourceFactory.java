@@ -20,10 +20,12 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+
 public class SpringDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override
-	protected DataSource augmentDataSource(CommonDataSource dataSource, String dataSourceName) {
+	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
 		return new LazyConnectionDataSourceProxy((DataSource)dataSource);
 	}
 

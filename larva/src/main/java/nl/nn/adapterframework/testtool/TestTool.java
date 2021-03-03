@@ -71,6 +71,7 @@ import nl.nn.adapterframework.http.IbisWebServiceSender;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
@@ -1287,7 +1288,7 @@ public class TestTool {
 				JmsSender jmsSender = (JmsSender)ibisContext.createBeanAutowireByName(JmsSender.class);
 				jmsSender.setName("Test Tool JmsSender");
 				jmsSender.setDestinationName(queue);
-				jmsSender.setDestinationType("QUEUE");
+				jmsSender.setDestinationTypeEnum(DestinationType.QUEUE);
 				jmsSender.setAcknowledgeMode("auto");
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
@@ -1317,6 +1318,11 @@ public class TestTool {
 				if (replyToName != null) {
 					debugMessage("Set replyToName to " + replyToName, writers);
 					jmsSender.setReplyToName(replyToName);
+				}
+				try {
+					jmsSender.configure();
+				} catch (ConfigurationException e) {
+					throw new RuntimeException(e);
 				}
 				Map<String, Object> jmsSenderInfo = new HashMap<String, Object>();
 				jmsSenderInfo.put("jmsSender", jmsSender);
@@ -1352,7 +1358,7 @@ public class TestTool {
 				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBeanAutowireByName(PullingJmsListener.class);
 				pullingJmsListener.setName("Test Tool JmsListener");
 				pullingJmsListener.setDestinationName(queue);
-				pullingJmsListener.setDestinationType("QUEUE");
+				pullingJmsListener.setDestinationTypeEnum(DestinationType.QUEUE);
 				pullingJmsListener.setAcknowledgeMode("auto");
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
@@ -1379,6 +1385,11 @@ public class TestTool {
 				String setForceMessageIdAsCorrelationId = (String)properties.get(queueName + ".setForceMessageIdAsCorrelationId");
 				if ("true".equals(setForceMessageIdAsCorrelationId)) {
 					pullingJmsListener.setForceMessageIdAsCorrelationId(true);
+				}
+				try {
+					pullingJmsListener.configure();
+				} catch (ConfigurationException e) {
+					throw new RuntimeException(e);
 				}
 				Map<String, Object> jmsListenerInfo = new HashMap<String, Object>();
 				jmsListenerInfo.put("jmsListener", pullingJmsListener);

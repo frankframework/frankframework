@@ -3,6 +3,10 @@
 
 name: Java CI with Maven
 
+env:
+  PROFILES: ibissource,codecoverage
+  FFPR: format('{{{0}{1}}}', ${{ secrets.CI_USER }}, 'x') != "{x}"
+
 on:
   push:
     branches: [master, 7.5-release]
@@ -38,15 +42,21 @@ jobs:
         java-version: 1.8
 
     - name: Create Maven settings.xml file
+      if: ${{ env.FFPR }}
       uses: s4u/maven-settings-action@v2.3.0
       with:
         servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
+
+    - name: Update maven profiles
+      if: ${{ env.FFPR }}
+      run: |
+        echo "PROFILES=ibissource,codecoverage,proprietary" >> $GITHUB_ENV
 
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
-      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -Pibissource,codecoverage,proprietary
+      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -P${{env.PROFILES}}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1

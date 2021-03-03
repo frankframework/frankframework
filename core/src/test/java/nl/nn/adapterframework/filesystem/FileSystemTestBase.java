@@ -34,8 +34,6 @@ public abstract class FileSystemTestBase {
 	 * Checks if a file with the specified name exists.
 	 * @param folder to search in for the file, set to null for root folder. 
 	 * @param filename
-	 * @return
-	 * @throws Exception
 	 */
 	protected abstract boolean _fileExists(String folder, String filename) throws Exception;
 	

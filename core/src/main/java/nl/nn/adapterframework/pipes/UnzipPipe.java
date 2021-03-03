@@ -254,7 +254,7 @@ public class UnzipPipe extends FixedForwardPipe {
 							if (base64Extensions.contains(extension)) {
 								fileContent = new String(Base64.encodeBase64Chunked(fileContentBytes));
 							} else {
-								fileContent = new String(fileContentBytes, Misc.DEFAULT_INPUT_STREAM_ENCODING);
+								fileContent = new String(fileContentBytes, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 								fileContent = XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(fileContent);
 							}
 							entryResults += "<fileContent>" + fileContent + "</fileContent>";

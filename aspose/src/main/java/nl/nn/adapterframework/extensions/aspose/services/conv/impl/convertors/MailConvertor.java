@@ -187,10 +187,6 @@ class MailConvertor extends AbstractConvertor {
 
 	/**
 	 * Converts an email attachment to a pdf via the cisConversionService.
-	 * 
-	 * @param attachment
-	 * @return
-	 * @throws IOException
 	 */
 	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) throws IOException {
 

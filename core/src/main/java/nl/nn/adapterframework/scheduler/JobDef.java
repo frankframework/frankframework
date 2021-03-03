@@ -53,8 +53,8 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jdbc.JndiDataSourceFactory;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -72,6 +72,7 @@ import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
@@ -434,9 +435,13 @@ public class JobDef extends TransactionAttributes {
 	}
 
 	public void configure(Configuration config) throws ConfigurationException {
+		super.configure();
 		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
+		if (StringUtils.isEmpty(getName())) {
+			throw new ConfigurationException("jobdef function ["+getFunction()+"] name must be specified");
+		}
 		if (StringUtils.isEmpty(getFunction())) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
 		}
@@ -1138,13 +1143,8 @@ public class JobDef extends TransactionAttributes {
 	}
 
 	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
-	public void setFunction(String function) throws ConfigurationException {
-		try {
-			this.function = JobDefFunctions.fromValue(function);
-		}
-		catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("jobdef ["+getName()+"] unknown function ["+function+"]. Must be one of "+ JobDefFunctions.getNames());
-		}
+	public void setFunction(String function) {
+		this.function = Misc.parseFromField(JobDefFunctions.class, "function", function, e -> e.getName());
 	}
 	public String getFunction() {
 		return function==null?null:function.getName();

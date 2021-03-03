@@ -145,6 +145,7 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.setTrimSpaces(trimSpaces);
 			qs.setAvoidLocking(avoidLocking);
 			qs.setBlobSmartGet(true);
+			qs.setPrettyPrint(true);
 			qs.configure(true);
 			qs.open();
 			Message message = qs.sendMessage(new Message(query), null);
