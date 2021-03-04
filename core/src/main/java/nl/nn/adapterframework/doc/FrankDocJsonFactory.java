@@ -154,7 +154,7 @@ public class FrankDocJsonFactory {
 		result.add("deprecated", child.isDeprecated());
 		result.add("mandatory", child.isMandatory());
 		result.add("multiple", child.isAllowMultiple());
-		result.add("roleName", child.getElementRole().getSyntax1Name());
+		result.add("roleName", child.getElementRole().getRoleName());
 		result.add("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
 		addIfNotNull(result, "description", child.getDescription());
 		return result.build();
