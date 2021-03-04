@@ -26,8 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.doc.Utils;
-
 public class FrankDocModelGroupsTest {
 	private static final String I_GROUP_CONTAINER = "nl.nn.adapterframework.doc.testtarget.groups.IGroupContainer";
 
