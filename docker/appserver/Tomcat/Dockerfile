@@ -16,7 +16,7 @@ RUN set -eux \
 	&& gosu nobody true \
 	# Add tomcat user
 	&& groupadd -r tomcat -g ${TOMCAT_GROUPID} \
-	&& useradd -u ${TOMCAT_USERID} -g tomcat -d ${CATALINA_HOME} -s /sbin/nologin tomcat \
+	&& useradd -u ${TOMCAT_USERID} -g tomcat -d ${CATALINA_HOME} -s /usr/sbin/nologin tomcat \
 	# create default directory for configurations and properties
 	&& mkdir -p /opt/frank
 
