@@ -57,32 +57,32 @@
       "children": [
         {
           "deprecated": false,
-          "isMandatory": false,
-          "isMultiple": false,
+          "mandatory": false,
+          "multiple": false,
           "roleName": "roleAlpha",
           "group": "Proton",
           "description": ""
         },
         {
           "deprecated": false,
-          "isMandatory": false,
-          "isMultiple": false,
+          "mandatory": false,
+          "multiple": false,
           "roleName": "roleBeta",
           "group": "Mnemonic",
           "description": ""
         },
         {
           "deprecated": false,
-          "isMandatory": false,
-          "isMultiple": false,
+          "mandatory": false,
+          "multiple": false,
           "roleName": "roleEpsilon",
           "group": "Other",
           "description": ""
         },
         {
           "deprecated": false,
-          "isMandatory": false,
-          "isMultiple": false,
+          "mandatory": false,
+          "multiple": false,
           "roleName": "roleDelta",
           "group": "Nemesis",
           "description": ""

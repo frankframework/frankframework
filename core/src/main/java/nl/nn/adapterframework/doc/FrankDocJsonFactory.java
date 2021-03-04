@@ -152,8 +152,8 @@ public class FrankDocJsonFactory {
 	private JsonObject getConfigChild(ConfigChild child) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("deprecated", child.isDeprecated());
-		result.add("isMandatory", child.isMandatory());
-		result.add("isMultiple", child.isAllowMultiple());
+		result.add("mandatory", child.isMandatory());
+		result.add("multiple", child.isAllowMultiple());
 		result.add("roleName", child.getElementRole().getSyntax1Name());
 		result.add("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
 		addIfNotNull(result, "description", child.getDescription());

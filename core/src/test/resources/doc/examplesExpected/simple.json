@@ -95,15 +95,15 @@
       "children": [
         {
           "deprecated": false,
-          "isMandatory": false,
-          "isMultiple": false,
+          "mandatory": false,
+          "multiple": false,
           "roleName": "syntax1NameIChild",
           "group": "Child"
         },
         {
           "deprecated": false,
-          "isMandatory": false,
-          "isMultiple": true,
+          "mandatory": false,
+          "multiple": true,
           "roleName": "syntax1NameTChild",
           "group": "Other"
         }
