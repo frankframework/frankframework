@@ -23,21 +23,24 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import lombok.Setter;
-
 public class ExceptionInsertingFilter extends FullXmlFilter {
 
-	private @Setter SAXException inserted=null;
+	private SAXException insertedException=null;
 	
 	public ExceptionInsertingFilter(ContentHandler handler) {
 		super(handler);
 	}
 
+	public void insertException(SAXException exception) {
+		insertedException = exception;
+	}
+
+
 	private void checkInserted() throws SAXException {
-		if (inserted!=null) {
-			SAXException toThrow = inserted;
-			inserted = null;
-			throw toThrow;
+		if (insertedException!=null) {
+			SAXException exceptionToThrow = insertedException;
+			insertedException = null;
+			throw exceptionToThrow;
 		}
 	}
 	
