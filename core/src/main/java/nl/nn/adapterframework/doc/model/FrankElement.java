@@ -191,9 +191,9 @@ public class FrankElement implements Comparable<FrankElement> {
 		return getXsdElementName(elementRole.getElementType(), elementRole.getRoleName());
 	}
 
-	String getXsdElementName(ElementType elementType, String syntax1Name) {
+	String getXsdElementName(ElementType elementType, String roleName) {
 		if(! elementType.isFromJavaInterface()) {
-			return Utils.toUpperCamelCase(syntax1Name);
+			return Utils.toUpperCamelCase(roleName);
 		}
 		String postfixToRemove = elementType.getSimpleName();
 		if(postfixToRemove.startsWith("I")) {
@@ -203,7 +203,7 @@ public class FrankElement implements Comparable<FrankElement> {
 		if(result.endsWith(postfixToRemove)) {
 			result = result.substring(0, result.lastIndexOf(postfixToRemove));
 		}
-		result = result + Utils.toUpperCamelCase(syntax1Name);
+		result = result + Utils.toUpperCamelCase(roleName);
 		return result;
 	}
 
@@ -211,14 +211,14 @@ public class FrankElement implements Comparable<FrankElement> {
 		configChildSets.put(configChildSet.getRoleName(), configChildSet);
 	}
 
-	public ConfigChildSet getConfigChildSet(String syntax1Name) {
-		return configChildSets.get(syntax1Name);
+	public ConfigChildSet getConfigChildSet(String roleName) {
+		return configChildSets.get(roleName);
 	}
 
 	public List<ConfigChildSet> getCumulativeConfigChildSets() {
 		Map<String, ConfigChildSet> resultAsMap = new HashMap<>();
-		for(String syntax1Name: configChildSets.keySet()) {
-			resultAsMap.put(syntax1Name, configChildSets.get(syntax1Name));
+		for(String roleName: configChildSets.keySet()) {
+			resultAsMap.put(roleName, configChildSets.get(roleName));
 		}
 		if(parent != null) {
 			List<ConfigChildSet> inheritedConfigChildSets = getParent().getCumulativeConfigChildSets();

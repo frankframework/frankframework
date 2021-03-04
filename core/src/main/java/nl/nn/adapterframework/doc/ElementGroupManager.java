@@ -52,13 +52,13 @@ class ElementGroupManager {
 	}
 
 	String addGroup(Set<ElementRole.Key> key) {
-		String syntax1Name = getRoleName(key);
+		String roleName = getRoleName(key);
 		List<Set<ElementRole.Key>> shared = genericGroupKeyToSeq.keySet().stream()
-				.filter(rs -> getRoleName(rs).equals(syntax1Name))
+				.filter(rs -> getRoleName(rs).equals(roleName))
 				.collect(Collectors.toList());
 		int seq = shared.stream().map(genericGroupKeyToSeq::get).collect(Collectors.maxBy(Integer::compare)).orElse(0) + 1;
 		genericGroupKeyToSeq.put(key, seq);
-		return getGroupName(key, syntax1Name);
+		return getGroupName(key, roleName);
 	}
 
 	static String getRoleName(List<ElementRole> roles) {
@@ -70,18 +70,18 @@ class ElementGroupManager {
 	}
 
 	String getGroupName(Set<ElementRole.Key> key) {
-		String syntax1Name = getRoleName(key);
-		return getGroupName(key, syntax1Name);
+		String roleName = getRoleName(key);
+		return getGroupName(key, roleName);
 	}
 
 	String getGroupName(List<ElementRole> roles) {
 		Set<ElementRole.Key> key = ConfigChildSet.getKey(roles);
-		String syntax1Name = roles.iterator().next().getRoleName();
-		return getGroupName(key, syntax1Name);
+		String roleName = roles.iterator().next().getRoleName();
+		return getGroupName(key, roleName);
 	}
 
-	private String getGroupName(Set<ElementRole.Key> key, String syntax1Name) {
-		return Utils.toUpperCamelCase(syntax1Name) + ELEMENT_GROUP + disambiguation(genericGroupKeyToSeq.get(key));
+	private String getGroupName(Set<ElementRole.Key> key, String roleName) {
+		return Utils.toUpperCamelCase(roleName) + ELEMENT_GROUP + disambiguation(genericGroupKeyToSeq.get(key));
 	}
 
 	static String disambiguation(int seq) {
