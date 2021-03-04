@@ -202,6 +202,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		FS fileSystem=getFileSystem();
 		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildCard(), getExcludeWildCard())) {
+			if (ds==null) {
+				return null;
+			}
 			Iterator<F> it = ds.iterator();
 			if (it==null || !it.hasNext()) {
 				return null;
@@ -219,10 +222,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 						continue;
 					}
 				}
-				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					if (threadContext!=null) threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
-					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
-					return inprocessFile;
+				if (threadContext!=null && StringUtils.isNotEmpty(getInProcessFolder())) {
+					threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
 				}
 				return file;
 			}
@@ -342,12 +343,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	public boolean changeProcessState(F message, ProcessState toState, Map<String,Object> context) throws ListenerException {
+	public F changeProcessState(F message, ProcessState toState) throws ListenerException {
 		try {
-			if (knownProcessStates().contains(toState)) {
-				getFileSystem().moveFile(message, getStateFolder(toState), false);
+			if (!fileSystem.exists(message) || !knownProcessStates().contains(toState)) {
+				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
 			}
-			return false;
+			return getFileSystem().moveFile(message, getStateFolder(toState), false);
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message)+"]", e);
 		}

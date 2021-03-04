@@ -80,8 +80,8 @@ public class ConfigChildSet {
 		}
 	}
 
-	public String getSyntax1Name() {
-		return configChildren.get(0).getSyntax1Name();
+	public String getRoleName() {
+		return configChildren.get(0).getRoleName();
 	}
 
 	public List<ElementRole> getFilteredElementRoles(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
@@ -119,7 +119,7 @@ public class ConfigChildSet {
 		return promoteIfConflict(memberChildren.stream()
 				.map(ConfigChild::getElementRole)
 				.distinct()
-				.collect(Collectors.groupingBy(ElementRole::getSyntax1Name)));
+				.collect(Collectors.groupingBy(ElementRole::getRoleName)));
 	}
 
 	/**
@@ -128,12 +128,12 @@ public class ConfigChildSet {
 	 */
 	private static Map<String, List<ElementRole>> promoteIfConflict(Map<String, List<ElementRole>> original) {
 		Map<String, List<ElementRole>> result = new HashMap<>();
-		for(String syntax1Name: original.keySet()) {
-			List<ElementRole> group = original.get(syntax1Name);
+		for(String roleName: original.keySet()) {
+			List<ElementRole> group = original.get(roleName);
 			if(group.size() == 1) {
-				result.put(syntax1Name, group);
+				result.put(roleName, group);
 			} else {
-				result.put(syntax1Name, group.stream().map(ElementRole::getHighestCommonInterface).distinct().collect(Collectors.toList()));
+				result.put(roleName, group.stream().map(ElementRole::getHighestCommonInterface).distinct().collect(Collectors.toList()));
 			}
 		}
 		return result;

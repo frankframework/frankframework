@@ -39,11 +39,11 @@ class ConfigChildSetterDescriptor {
 	private @Getter String methodName;
 	private @Getter boolean mandatory;
 	private @Getter boolean allowMultiple;
-	private @Getter String syntax1Name;
+	private @Getter String roleName;
 
-	ConfigChildSetterDescriptor(String methodName, String syntax1Name) throws SAXException {
+	ConfigChildSetterDescriptor(String methodName, String roleName) throws SAXException {
 		this.methodName = methodName;
-		this.syntax1Name = syntax1Name;
+		this.roleName = roleName;
 		mandatory = false;
 		if(methodName.startsWith("set")) {
 			allowMultiple = false;

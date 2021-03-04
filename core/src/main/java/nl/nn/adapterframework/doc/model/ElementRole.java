@@ -38,11 +38,11 @@ public class ElementRole implements Comparable<ElementRole> {
 	private static Logger log = LogUtil.getLogger(ElementRole.class);
 
 	private static final Comparator<ElementRole> COMPARATOR =
-			Comparator.comparing(ElementRole::getSyntax1Name).thenComparing(role -> role.getElementType().getFullName());
+			Comparator.comparing(ElementRole::getRoleName).thenComparing(role -> role.getElementType().getFullName());
 
 	private final @Getter ElementType elementType;
-	private final @Getter String syntax1Name;
-	private final int syntax1NameSeq;
+	private final @Getter String roleName;
+	private final int roleNameSeq;
 
 	// Used to solve conflicts between members and the element name of the
 	// generic element option, see package-info of this package.
@@ -59,10 +59,10 @@ public class ElementRole implements Comparable<ElementRole> {
 	// Used to solve conflict caused by ElementType interface inheritance.
 	private @Setter(AccessLevel.PACKAGE) ElementRole highestCommonInterface;
 
-	private ElementRole(ElementType elementType, String syntax1Name, int syntax1NameSeq) {
+	private ElementRole(ElementType elementType, String roleName, int roleNameSeq) {
 		this.elementType = elementType;
-		this.syntax1Name = syntax1Name;
-		this.syntax1NameSeq = syntax1NameSeq;
+		this.roleName = roleName;
+		this.roleNameSeq = roleNameSeq;
 		defaultElementOptionConflict = null;
 	}
 
@@ -125,7 +125,7 @@ public class ElementRole implements Comparable<ElementRole> {
 	}
 
 	public String getGenericOptionElementName() {
-		return Utils.toUpperCamelCase(syntax1Name);
+		return Utils.toUpperCamelCase(roleName);
 	}
 
 	List<FrankElement> getRawMembers() {
@@ -153,15 +153,15 @@ public class ElementRole implements Comparable<ElementRole> {
 	}
 
 	private String disambiguation() {
-		if(syntax1NameSeq == 1) {
+		if(roleNameSeq == 1) {
 			return "";
 		} else {
-			return "_" + syntax1NameSeq;
+			return "_" + roleNameSeq;
 		}
 	}
 
 	public Key getKey() {
-		return new Key(elementType.getFullName(), syntax1Name);
+		return new Key(elementType.getFullName(), roleName);
 	}
 
 	@Override
@@ -179,17 +179,17 @@ public class ElementRole implements Comparable<ElementRole> {
 	}
 
 	static class Factory {
-		private final Map<String, Integer> numUsagePerSyntax1Name = new HashMap<>();
+		private final Map<String, Integer> numUsagePerRoleName = new HashMap<>();
 
-		ElementRole create(ElementType elementType, String syntax1Name) {
-			return new ElementRole(elementType, syntax1Name, newSyntax1NameSeq(syntax1Name));
+		ElementRole create(ElementType elementType, String roleName) {
+			return new ElementRole(elementType, roleName, newRoleNameSeq(roleName));
 		}
 
-		private int newSyntax1NameSeq(String syntax1Name) {
-			int maxExistingSyntax1NameSeq = numUsagePerSyntax1Name.getOrDefault(syntax1Name, 0);
-			int syntax1NameSeq = maxExistingSyntax1NameSeq + 1;
-			numUsagePerSyntax1Name.put(syntax1Name, syntax1NameSeq);
-			return syntax1NameSeq;
+		private int newRoleNameSeq(String roleName) {
+			int maxExistingRoleNameSeq = numUsagePerRoleName.getOrDefault(roleName, 0);
+			int roleNameSeq = maxExistingRoleNameSeq + 1;
+			numUsagePerRoleName.put(roleName, roleNameSeq);
+			return roleNameSeq;
 		}
 	}
 
@@ -197,22 +197,22 @@ public class ElementRole implements Comparable<ElementRole> {
 	public static final class Key {
 		private final @Getter String elementTypeName;
 		private final @Getter String elementTypeSimpleName;
-		private final @Getter String syntax1Name;
+		private final @Getter String roleName;
 
-		public Key(String elementTypeName, String syntax1Name) {
+		public Key(String elementTypeName, String roleName) {
 			this.elementTypeName = elementTypeName;
-			this.syntax1Name = syntax1Name;
+			this.roleName = roleName;
 			int index = elementTypeName.lastIndexOf(".");
 			this.elementTypeSimpleName = elementTypeName.substring(index + 1);
 		}
 
 		public Key(ConfigChild configChild) {
-			this(configChild.getElementType().getFullName(), configChild.getSyntax1Name());
+			this(configChild.getElementType().getFullName(), configChild.getRoleName());
 		}
 
 		@Override
 		public String toString() {
-			return "(" + elementTypeSimpleName + ", " + syntax1Name + ")"; 
+			return "(" + elementTypeSimpleName + ", " + roleName + ")"; 
 		}
 
 		public static String describeCollection(Collection<ElementRole.Key> keys) {

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.UUID;
 
 import org.junit.Rule;
@@ -192,6 +193,31 @@ public class ParameterTest {
 		assertTrue(result instanceof InputStream);
 
 		assertEquals(sessionMessage, Message.asMessage(result).asString());
+	}
+
+	@Test
+	public void testParameterValueList() throws Exception {
+		String sessionKey = "mySessionKey";
+
+		Parameter p = new Parameter();
+		p.setName("myParameter");
+		p.setSessionKey(sessionKey);
+		p.setType("list");
+		p.setXpathExpression("items/item");
+		p.configure();
+
+		IPipeLineSession session = new PipeLineSessionBase();
+		session.put(sessionKey, Arrays.asList(new String[] {"fiets", "bel", "appel"}));
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(result instanceof String);
+
+		String stringResult = Message.asMessage(result).asString();
+		System.out.println(stringResult);
+		assertEquals("fiets bel appel", stringResult);
 	}
 
 }

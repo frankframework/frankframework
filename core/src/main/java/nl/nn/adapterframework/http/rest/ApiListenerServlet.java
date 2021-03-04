@@ -138,8 +138,8 @@ public class ApiListenerServlet extends HttpServletBase {
 		 */
 		if(uri.endsWith("openapi.json")) {
 			uri = uri.substring(0, uri.lastIndexOf("/"));
-			List<ApiDispatchConfig> apiConfigs = dispatcher.findMatchingConfigsForUri(uri);
-			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfigs);
+			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig);
 			returnJson(response, 200, jsonSchema);
 			return;
 		}
@@ -345,10 +345,17 @@ public class ApiListenerServlet extends HttpServletBase {
 				Enumeration<String> paramnames = request.getParameterNames();
 				while (paramnames.hasMoreElements()) {
 					String paramname = paramnames.nextElement();
-					String paramvalue = request.getParameter(paramname);
-	
-					if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
-					messageContext.put(paramname, paramvalue);
+					String[] paramList = request.getParameterValues(paramname);
+					if(paramList.length > 1) { // contains multiple items
+						List<String> valueList = Arrays.asList(paramList);
+						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to "+valueList);
+						messageContext.put(paramname, valueList);
+					}
+					else {
+						String paramvalue = request.getParameter(paramname);
+						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
+						messageContext.put(paramname, paramvalue);
+					}
 				}
 	
 				/**
