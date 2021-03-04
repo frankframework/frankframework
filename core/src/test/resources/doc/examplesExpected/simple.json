@@ -18,12 +18,12 @@
     {
       "name": "AbstractParentOfStart",
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
-      "isAbstract": true,
-      "isDeprecated": false,
+      "abstract": true,
+      "deprecated": false,
       "elementNames": [],
       "attributes": [{
         "name": "abstractParentOfStartAttribute",
-        "isDeprecated": false,
+        "deprecated": false,
         "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart"
       }],
       "children": []
@@ -31,20 +31,20 @@
     {
       "name": "DescribedPossibleIChild",
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
-      "isAbstract": false,
-      "isDeprecated": false,
+      "abstract": false,
+      "deprecated": false,
       "elementNames": ["DescribedPossibleISyntax1NameIChild"],
       "attributes": [
         {
           "name": "firstAttribute",
-          "isDeprecated": false,
+          "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
           "description": "First attribute of DescribedPossibleIChild.",
           "default": "this default value"
         },
         {
           "name": "secondAttribute",
-          "isDeprecated": false,
+          "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
           "description": "Second attribute of DescribedPossibleIChild"
         }
@@ -54,18 +54,18 @@
     {
       "name": "NotDescribedPossibleIChild",
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
-      "isAbstract": false,
-      "isDeprecated": false,
+      "abstract": false,
+      "deprecated": false,
       "elementNames": ["NotDescribedPossibleISyntax1NameIChild"],
       "attributes": [
         {
           "name": "firstAttribute",
-          "isDeprecated": false,
+          "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild"
         },
         {
           "name": "secondAttribute",
-          "isDeprecated": false,
+          "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild"
         }
       ],
@@ -74,8 +74,8 @@
     {
       "name": "Object",
       "fullName": "java.lang.Object",
-      "isAbstract": false,
-      "isDeprecated": false,
+      "abstract": false,
+      "deprecated": false,
       "elementNames": [],
       "attributes": [],
       "children": []
@@ -83,25 +83,25 @@
     {
       "name": "Start",
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.Start",
-      "isAbstract": false,
-      "isDeprecated": false,
+      "abstract": false,
+      "deprecated": false,
       "parent": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
       "elementNames": ["Start"],
       "attributes": [{
         "name": "attribute",
-        "isDeprecated": false,
+        "deprecated": false,
         "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.Start"
       }],
       "children": [
         {
-          "isDeprecated": false,
+          "deprecated": false,
           "isMandatory": false,
           "isMultiple": false,
           "roleName": "syntax1NameIChild",
           "group": "Child"
         },
         {
-          "isDeprecated": false,
+          "deprecated": false,
           "isMandatory": false,
           "isMultiple": true,
           "roleName": "syntax1NameTChild",
@@ -112,8 +112,8 @@
     {
       "name": "TChild",
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.TChild",
-      "isAbstract": false,
-      "isDeprecated": false,
+      "abstract": false,
+      "deprecated": false,
       "elementNames": ["Syntax1NameTChild"],
       "attributes": [],
       "children": []

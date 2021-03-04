@@ -25,38 +25,38 @@
     {
       "name": "Master",
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
-      "isAbstract": false,
-      "isDeprecated": false,
+      "abstract": false,
+      "deprecated": false,
       "elementNames": ["Master"],
       "attributes": [
         {
           "name": "clemens",
-          "isDeprecated": false,
+          "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
           "description": ""
         },
         {
           "name": "arnold",
-          "isDeprecated": false,
+          "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
           "description": ""
         },
         {
           "name": "dennis",
-          "isDeprecated": false,
+          "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
           "description": ""
         },
         {
           "name": "bernhard",
-          "isDeprecated": false,
+          "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
           "description": ""
         }
       ],
       "children": [
         {
-          "isDeprecated": false,
+          "deprecated": false,
           "isMandatory": false,
           "isMultiple": false,
           "roleName": "roleAlpha",
@@ -64,7 +64,7 @@
           "description": ""
         },
         {
-          "isDeprecated": false,
+          "deprecated": false,
           "isMandatory": false,
           "isMultiple": false,
           "roleName": "roleBeta",
@@ -72,7 +72,7 @@
           "description": ""
         },
         {
-          "isDeprecated": false,
+          "deprecated": false,
           "isMandatory": false,
           "isMultiple": false,
           "roleName": "roleEpsilon",
@@ -80,7 +80,7 @@
           "description": ""
         },
         {
-          "isDeprecated": false,
+          "deprecated": false,
           "isMandatory": false,
           "isMultiple": false,
           "roleName": "roleDelta",
@@ -92,8 +92,8 @@
     {
       "name": "Object",
       "fullName": "java.lang.Object",
-      "isAbstract": false,
-      "isDeprecated": false,
+      "abstract": false,
+      "deprecated": false,
       "elementNames": [],
       "attributes": [],
       "children": []
@@ -101,8 +101,8 @@
     {
       "name": "Opaque",
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Opaque",
-      "isAbstract": false,
-      "isDeprecated": false,
+      "abstract": false,
+      "deprecated": false,
       "elementNames": ["RoleEpsilon"],
       "attributes": [],
       "children": []

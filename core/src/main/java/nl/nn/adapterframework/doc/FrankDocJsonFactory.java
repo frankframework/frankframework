@@ -95,8 +95,8 @@ public class FrankDocJsonFactory {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", frankElement.getSimpleName());
 		result.add("fullName", frankElement.getFullName());
-		result.add("isAbstract", frankElement.isAbstract());
-		result.add("isDeprecated", frankElement.isDeprecated());
+		result.add("abstract", frankElement.isAbstract());
+		result.add("deprecated", frankElement.isDeprecated());
 		addIfNotNull(result, "parent", getParentOrNull(frankElement));
 		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
 		frankElement.getXmlElementNames().forEach(xmlElementNames::add);
@@ -128,7 +128,7 @@ public class FrankDocJsonFactory {
 	private JsonObject getAttribute(FrankAttribute frankAttribute) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", frankAttribute.getName());
-		result.add("isDeprecated", frankAttribute.isDeprecated());
+		result.add("deprecated", frankAttribute.isDeprecated());
 		result.add("describer", frankAttribute.getDescribingElement().getFullName());
 		addIfNotNull(result, "description", frankAttribute.getDescription());
 		addIfNotNull(result, "default", frankAttribute.getDefaultValue());
@@ -151,7 +151,7 @@ public class FrankDocJsonFactory {
 
 	private JsonObject getConfigChild(ConfigChild child) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
-		result.add("isDeprecated", child.isDeprecated());
+		result.add("deprecated", child.isDeprecated());
 		result.add("isMandatory", child.isMandatory());
 		result.add("isMultiple", child.isAllowMultiple());
 		result.add("roleName", child.getElementRole().getSyntax1Name());
