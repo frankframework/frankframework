@@ -6,23 +6,6 @@
         "version":"0.1.9"
     },
     "paths":{
-        "/path/noValidator":{
-            "get":{
-                "summary":"description4simple-get",
-                "responses":{
-                    "200":{
-                        "description":"OK",
-                        "content":{
-                        }
-                    },
-                    "500":{
-                        "description":"Internal Server Error",
-                        "content":{
-                        }
-                    }
-                }
-            }
-        },
         "/path/validator":{
             "get":{
                 "summary":"description4simple-get",

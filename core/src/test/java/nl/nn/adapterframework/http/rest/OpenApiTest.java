@@ -157,7 +157,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
-		String result = callOpenApi(uri);
+		String result = callOpenApi(uri+"/{pattern}");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
@@ -280,7 +280,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
-		String result = callOpenApi(uri);
+		String result = callOpenApi(uri+"users");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simpleRoot.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
@@ -307,7 +307,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
-		String result = callOpenApi(uri);
+		String result = callOpenApi(uri+"/validator");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/noValidatorForOneEndpoint.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
