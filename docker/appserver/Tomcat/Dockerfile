@@ -11,7 +11,7 @@ ENV SET_PERMISSIONS_ON_STARTUP=TRUE
 # Install gosu for stepping down from root in entrypoint after setting permissions
 RUN set -eux \
 	&& apt-get update \
-	&& apt-get install -y gosu \
+	&& apt-get install -y --no-install-recommends gosu \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& gosu nobody true \
 	# Add tomcat user
