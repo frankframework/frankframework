@@ -110,7 +110,13 @@ public class PipeLineSessionDebugger implements IPipeLineSession {
 	}
 
 	public Object put(String arg0, Object arg1) {
+		Object oldValue = arg1;
 		arg1 = ibisDebugger.storeInSessionKey(getMessageId(), arg0, arg1);
+		if (arg1 != oldValue && arg1 instanceof Message) {
+			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
+			// keep the report in progress (waiting for the stream to be read, captured and closed).
+			((Message)arg1).closeOnCloseOf(this);
+		}
 		return pipeLineSession.put(arg0, arg1);
 	}
 

@@ -15,6 +15,8 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -92,7 +94,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Throwable pipeLineAbort(PipeLine pipeLine, String correlationId, Throwable throwable) {
-		testTool.abortpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), throwable.getMessage());
+		testTool.abortpoint(correlationId, pipeLine.getClass().getName(), "Pipeline " + pipeLine.getOwner().getName(), getThrowableInfo(throwable));
 		return throwable;
 	}
 
@@ -120,7 +122,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	@Override
 	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		testTool.abortpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), throwable.getMessage());
+		testTool.abortpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), getThrowableInfo(throwable));
 		return throwable;
 	}
 
@@ -136,7 +138,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable){
-		testTool.abortpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), throwable.getMessage());
+		testTool.abortpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), getThrowableInfo(throwable));
 		return throwable;
 	}
 
@@ -152,7 +154,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Throwable replyListenerAbort(IListener listener, String correlationId, Throwable throwable){
-		testTool.abortpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), throwable.getMessage());
+		testTool.abortpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), getThrowableInfo(throwable));
 		return throwable;
 	}
 
@@ -173,7 +175,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Throwable abortThread(Object sourceObject, String correlationId, Throwable throwable) {
-		testTool.abortpoint(correlationId, null, getCheckpointNameForThread(), throwable.getMessage());
+		testTool.abortpoint(correlationId, null, getCheckpointNameForThread(), getThrowableInfo(throwable));
 		return throwable;
 	}
 
@@ -367,6 +369,12 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			name = "Thread SimpleAsyncTaskExecutor";
 		}
 		return name;
+	}
+
+	private String getThrowableInfo(Throwable throwable) {
+		StringWriter stringWriter = new StringWriter();
+		throwable.printStackTrace(new PrintWriter(stringWriter));
+		return stringWriter.toString();
 	}
 
 	// Contract for testtool state:

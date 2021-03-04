@@ -49,7 +49,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-public class Message implements Serializable, AutoCloseable {
+public class Message implements Serializable {
 
 	private static final long serialVersionUID = 437863352486501445L;
 
@@ -638,13 +638,6 @@ public class Message implements Serializable, AutoCloseable {
 			return null;
 		}
 		return writer;
-	}
-
-	@Override
-	public void close() throws Exception {
-		if (request instanceof AutoCloseable) {
-			((AutoCloseable)request).close();
-		}
 	}
 
 }

@@ -239,7 +239,7 @@ public class MessageTest {
 		Message adapter = new Message(source);
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
-		adapter.close();
+		adapter.asInputStream().close();
 		
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
@@ -255,7 +255,6 @@ public class MessageTest {
 		
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
-		adapter.close();
 	}
 
 
@@ -369,7 +368,7 @@ public class MessageTest {
 		Message adapter = new Message(source);
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
-		adapter.close();
+		adapter.asReader().close();
 		
 		String captured = writer.toString();
 		assertEquals(testString, captured);
@@ -385,7 +384,6 @@ public class MessageTest {
 		
 		String captured = writer.toString();
 		assertEquals(testString, captured);
-		adapter.close();
 	}
 
 	@Test
@@ -397,7 +395,6 @@ public class MessageTest {
 		
 		String captured = writer.toString();
 		assertEquals("", captured); // input stream is not read, so nothing is captured. Writer could detect that it was not closed, though.
-		adapter.close();
 	}
 
 
@@ -773,7 +770,6 @@ public class MessageTest {
 	public void testMessageSizeReader() throws Exception {
 		Message message = new Message(new StringReader("string"));
 		assertEquals("size differs or could not be determined", -1, message.size());
-		message.close();
 	}
 
 	@Test

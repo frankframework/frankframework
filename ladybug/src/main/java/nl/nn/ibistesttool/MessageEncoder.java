@@ -15,6 +15,7 @@
 */
 package nl.nn.ibistesttool;
 
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageEncoderImpl;
@@ -28,7 +29,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 			Message m = ((Message)message);
 			ToStringResult toStringResult;
 			if (m.requiresStream()) {
-				toStringResult = new ToStringResult("Waiting for stream to be captured and closed...", null,
+				toStringResult = new ToStringResult("Waiting for stream to be read, captured and closed...", null,
 						m.asObject().getClass().getTypeName());
 			} else {
 				toStringResult = super.toString(m.asObject());
@@ -42,6 +43,21 @@ public class MessageEncoder extends MessageEncoderImpl {
 	@Override
 	public Object toObject(Checkpoint checkpoint) {
 		return Message.asMessage(super.toObject(checkpoint));
+	}
+
+	@Override
+	@SneakyThrows
+	@SuppressWarnings("unchecked")
+	public <T> T toObject(Checkpoint originalCheckpoint, T messageToStub) {
+		if (messageToStub instanceof Message) {
+			// In case a stream is stubbed the replaced stream needs to be closed as next pipe will read and close the
+			// stub which would leave the replaced stream unclosed
+			Object object = ((Message)messageToStub).asObject();
+			if (object instanceof AutoCloseable) {
+				((AutoCloseable)object).close();
+			}
+		}
+		return (T)toObject(originalCheckpoint);
 	}
 
 }
