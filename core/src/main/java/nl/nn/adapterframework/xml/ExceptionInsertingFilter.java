@@ -23,6 +23,17 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+/**
+ * XMLFilter to reinsert exceptions into a XMLFilter chain.
+ * Typical use case is in a XMLFilter chain with a streaming XSLT. In that case, the actual processing of the XSLT 
+ * in the tail of the chain is performed internally in a different thread than the provisioning of events from the head of the chain.
+ * Exceptions in the tail of the chain do not reach the head then. 
+ * In such a situation the ExceptionInsertingFilter can be used in the head of the chain, to receive unhandled exceptions of the tail.
+ *
+ * @author Gerrit van Brakel
+ * 
+ * @see TransformerFilter
+ */
 public class ExceptionInsertingFilter extends FullXmlFilter {
 
 	private SAXException insertedException=null;

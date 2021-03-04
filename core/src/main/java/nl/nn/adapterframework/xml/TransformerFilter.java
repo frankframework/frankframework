@@ -49,6 +49,12 @@ public class TransformerFilter extends FullXmlFilter {
 		errorListener = transformerHandler.getTransformer().getErrorListener();
 		ContentHandler inputHandler = transformerHandler;
 		if (expectChildThreads) {
+			/*
+			 * If XSLT processing is done in another thread than the SAX events are provided, which is the 
+			 * case if streaming XSLT is used, then exceptions in the processing part do not travel up
+			 * through the transformerHandler automatically.
+			 * Here we set up a ExceptionInsertingFilter and ErrorListener that provide this.
+			 */
 			ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(inputHandler);
 			inputHandler = exceptionInsertingFilter;
 			transformerHandler.getTransformer().setErrorListener(new ErrorListener() {
