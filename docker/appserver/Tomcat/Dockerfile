@@ -3,6 +3,11 @@ FROM tomcat:${TOMCAT_VERSION} AS iaf-as-tomcat
 ARG TOMCAT_GROUPID=1000
 ARG TOMCAT_USERID=1000
 
+# By default, entrypoint.sh will set the permissions on startup
+# For large numbers of folders and files this will slow down startup, so allow disabling setting permissions on startup
+# This requires the setPermissions.sh to be executed as last step of the build process to make sure the permissions are set correctly
+ENV SET_PERMISSIONS_ON_STARTUP=TRUE
+
 # Install gosu for stepping down from root in entrypoint after setting permissions
 RUN set -eux; \
 	apt-get update; \
@@ -16,7 +21,7 @@ RUN set -eux; \
 	mkdir -p /opt/frank
 
 # Copy entrypoint script
-COPY src/scripts/entrypoint.sh /
+COPY src/scripts/*.sh /
 
 # copy the frank framework
 COPY target/dependencies/ibis-adapterframework-webapp.war /usr/local/tomcat/webapps/iaf.war

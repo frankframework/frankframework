@@ -3,10 +3,11 @@ set -e
 
 if [ "$1" = 'catalina.sh' ]; then
 	# Fix permissions
-	chown -R tomcat:tomcat ${CATALINA_HOME}
-	find ${CATALINA_HOME}/conf/ -type f -print0|xargs -0 chmod 400
-	chown -R tomcat:tomcat /opt/frank
-	chmod -R 700 /opt/frank
+	if [[ "${SET_PERMISSIONS_ON_STARTUP}" != 'FALSE' ]]; then
+		echo Setting permissions on startup
+		echo To improve startup time, run /setPermissions.sh and set environment variable SET_PERMISSIONS_ON_STARTUP to FALSE as last step in the Dockerfile to skip this step 
+		/setPermissions.sh
+	fi
 	
 	exec gosu tomcat "$@"
 fi
