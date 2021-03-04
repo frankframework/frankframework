@@ -33,7 +33,7 @@
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
       "abstract": false,
       "deprecated": false,
-      "elementNames": ["DescribedPossibleISyntax1NameIChild"],
+      "elementNames": ["DescribedPossibleIRoleNameIChild"],
       "attributes": [
         {
           "name": "firstAttribute",
@@ -56,7 +56,7 @@
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
       "abstract": false,
       "deprecated": false,
-      "elementNames": ["NotDescribedPossibleISyntax1NameIChild"],
+      "elementNames": ["NotDescribedPossibleIRoleNameIChild"],
       "attributes": [
         {
           "name": "firstAttribute",
@@ -97,14 +97,14 @@
           "deprecated": false,
           "mandatory": false,
           "multiple": false,
-          "roleName": "syntax1NameIChild",
+          "roleName": "roleNameIChild",
           "group": "Child"
         },
         {
           "deprecated": false,
           "mandatory": false,
           "multiple": true,
-          "roleName": "syntax1NameTChild",
+          "roleName": "roleNameTChild",
           "group": "Other"
         }
       ]
@@ -114,7 +114,7 @@
       "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.TChild",
       "abstract": false,
       "deprecated": false,
-      "elementNames": ["Syntax1NameTChild"],
+      "elementNames": ["RoleNameTChild"],
       "attributes": [],
       "children": []
     }
