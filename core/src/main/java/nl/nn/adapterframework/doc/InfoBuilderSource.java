@@ -276,7 +276,7 @@ class InfoBuilderSource {
 				excludeFilters.add(excludeFilter);
 				addExcludeFilter(scanner, excludeFilter);
 				if(log.isWarnEnabled()) {
-					log.warn(excludeFilter + e.getMessage() + ": " + e.getStackTrace());
+					log.warn(excludeFilter, e);
 				}
 			}
 		}
@@ -367,9 +367,7 @@ class InfoBuilderSource {
 		try {
 			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL("digester-rules.xml")), digesterRulesParser);
 		} catch (Exception e) {
-			if(log.isErrorEnabled()) {
-				log.error("Could nog parse digester-rules.xml", e);
-			}
+			log.error("Could nog parse digester-rules.xml", e);
 			throw e;
 		}
 		return digesterRulesParser.getChildIbisBeanMappings();
