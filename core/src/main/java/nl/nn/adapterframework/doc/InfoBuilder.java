@@ -105,7 +105,7 @@ public class InfoBuilder {
 			classMethods = ibisBean.getClazz().getMethods();
 		} catch (NoClassDefFoundError e) {
 			// TODO Why is it trying to resolve (sub) interfaces?
-			log.warn("Cannot retrieve methods of [" + ibisBean.getName() + "] due to a NoClassDefFoundError");
+			log.warn("Cannot retrieve methods of [{}] due to a NoClassDefFoundError", () -> ibisBean.getName());
 		}
 		Arrays.sort(classMethods, new Comparator<Method>() {
 			@Override
@@ -249,8 +249,7 @@ public class InfoBuilder {
 					try {
 						orderOfIbisDocRef = Integer.parseInt(ibisDocRef.value()[0]);
 					} catch (Throwable t) {
-						log.warn("Could not parse order in @IbisDocRef annotation: "
-								+ Integer.parseInt(ibisDocRef.value()[0]));
+						log.warn("Could not parse order in @IbisDocRef annotation: {}", () -> Integer.parseInt(ibisDocRef.value()[0]));
 					}
 				}
 
@@ -287,7 +286,7 @@ public class InfoBuilder {
 			try {
 				order = Integer.parseInt(ibisDocValues[0]);
 			} catch (NumberFormatException e) {
-				log.warn("Could not parse order in @IbisDoc annotation: " + ibisDocValues[0]);
+				log.warn("Could not parse order in @IbisDoc annotation: {}", () -> ibisDocValues[0]);
 			}
 			if (order == MAX_ORDER) {
 				description = ibisDocValues[0];
@@ -325,7 +324,7 @@ public class InfoBuilder {
 			}
 			return null;
 		} catch (ClassNotFoundException e) {
-			log.warn("Super class [" + e + "] was not found!");
+			log.warn("Super class was not found!", e);
 			return null;
 		}
 	}
