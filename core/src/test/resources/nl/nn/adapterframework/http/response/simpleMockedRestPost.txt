@@ -1,0 +1,8 @@
+<result>
+  <statuscode>200</statuscode>
+  <message>POST / HTTP/1.1&#xD;
+Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1&#xD;
+Content-Type: text/html; charset=UTF-8&#xD;
+&#xD;
+hallo this is my message</message>
+</result>
