@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
 */
 package nl.nn.adapterframework.xml;
 
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
@@ -29,9 +32,10 @@ import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 public class TransformerFilter extends FullXmlFilter {
 
 	private TransformerHandler transformerHandler;
+	private @Getter ErrorListener errorListener;
 	
 	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
-		super(transformerHandler);
+		super();
 		if (expectChildThreads) {
 			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
 		}
@@ -42,6 +46,50 @@ public class TransformerFilter extends FullXmlFilter {
 		}
 		this.transformerHandler=transformerHandler;
 		transformerHandler.setResult(transformedStream);
+		errorListener = transformerHandler.getTransformer().getErrorListener();
+		ContentHandler inputHandler = transformerHandler;
+		if (expectChildThreads) {
+			ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(inputHandler);
+			inputHandler = exceptionInsertingFilter;
+			transformerHandler.getTransformer().setErrorListener(new ErrorListener() {
+				
+				@Override
+				public void error(TransformerException paramTransformerException) throws TransformerException {
+					try {
+						if (errorListener!=null) {
+							errorListener.error(paramTransformerException);
+						}
+					} catch (TransformerException e) {
+						exceptionInsertingFilter.setInserted(new SaxException(e));
+					}
+				}
+
+				@Override
+				public void fatalError(TransformerException paramTransformerException) throws TransformerException {
+					try {
+						if (errorListener!=null) {
+							errorListener.fatalError(paramTransformerException);
+						}
+					} catch (TransformerException e) {
+						exceptionInsertingFilter.setInserted(new SaxException(e));
+					}
+					
+				}
+
+				@Override
+				public void warning(TransformerException paramTransformerException) throws TransformerException {
+					try {
+						if (errorListener!=null) {
+							errorListener.warning(paramTransformerException);
+						}
+					} catch (TransformerException e) {
+						exceptionInsertingFilter.setInserted(new SaxException(e));
+					}
+					
+				}
+			});
+		}
+		setContentHandler(inputHandler);
 	}
 
 

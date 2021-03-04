@@ -34,6 +34,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 
 public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachChildElementPipe> {
@@ -332,7 +333,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
-		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
@@ -352,7 +353,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
-		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
@@ -372,7 +373,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
-		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
@@ -391,7 +392,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS1, actual);
-		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
@@ -410,7 +411,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS2, actual);
-		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
@@ -429,7 +430,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNS1, actual);
-		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	}
 
@@ -447,7 +448,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
-		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
+		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
 	} 
 
