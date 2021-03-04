@@ -35,7 +35,7 @@ limitations under the License.
  * {@code nl.nn.adapterframework.jdbc.DirectQuerySender}, but the first tag uses
  * it as a Sender while the second tag uses it as an ErrorSender. The model expresses a set
  * of allowed child tags by relating a containing {@link nl.nn.adapterframework.doc.model.FrankElement} to an {@link nl.nn.adapterframework.doc.model.ElementRole}.
- * An {@link nl.nn.adapterframework.doc.model.ElementRole} has a property <code>syntax1Name</code> to express the role and references
+ * An {@link nl.nn.adapterframework.doc.model.ElementRole} has a property <code>roleName</code> to express the role and references
  * an {@link nl.nn.adapterframework.doc.model.ElementType} to define what child {@link nl.nn.adapterframework.doc.model.FrankElement} objects can appear. Each
  * {@link nl.nn.adapterframework.doc.model.ElementType} has one or more {@link nl.nn.adapterframework.doc.model.FrankElement} objects as members.
  * <p>

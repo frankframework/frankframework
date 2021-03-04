@@ -188,7 +188,7 @@ public class FrankElement implements Comparable<FrankElement> {
 	}
 
 	public String getXsdElementName(ElementRole elementRole) {
-		return getXsdElementName(elementRole.getElementType(), elementRole.getSyntax1Name());
+		return getXsdElementName(elementRole.getElementType(), elementRole.getRoleName());
 	}
 
 	String getXsdElementName(ElementType elementType, String syntax1Name) {
@@ -208,7 +208,7 @@ public class FrankElement implements Comparable<FrankElement> {
 	}
 
 	void addConfigChildSet(ConfigChildSet configChildSet) {
-		configChildSets.put(configChildSet.getSyntax1Name(), configChildSet);
+		configChildSets.put(configChildSet.getRoleName(), configChildSet);
 	}
 
 	public ConfigChildSet getConfigChildSet(String syntax1Name) {
@@ -223,7 +223,7 @@ public class FrankElement implements Comparable<FrankElement> {
 		if(parent != null) {
 			List<ConfigChildSet> inheritedConfigChildSets = getParent().getCumulativeConfigChildSets();
 			for(ConfigChildSet inherited: inheritedConfigChildSets) {
-				resultAsMap.putIfAbsent(inherited.getSyntax1Name(), inherited);
+				resultAsMap.putIfAbsent(inherited.getRoleName(), inherited);
 			}
 		}
 		List<ConfigChildSet> result = new ArrayList<>();

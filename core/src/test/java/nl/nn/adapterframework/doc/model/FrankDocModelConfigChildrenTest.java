@@ -57,7 +57,7 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void whenConfigChildMethodThenConfigChildProduced() throws Exception {
 		ConfigChild actual = selectChild("syntax1NameChild");
-		assertEquals("syntax1NameChild", actual.getSyntax1Name());
+		assertEquals("syntax1NameChild", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
@@ -71,7 +71,7 @@ public class FrankDocModelConfigChildrenTest {
 
 	private ConfigChild selectChild(String name) {
 		List<ConfigChild> selected = configChildren.stream()
-				.filter(c -> c.getSyntax1Name().equals(name))
+				.filter(c -> c.getRoleName().equals(name))
 				.collect(Collectors.toList());
 		assertEquals(1, selected.size());
 		return selected.get(0);
@@ -80,7 +80,7 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void whenConfigChildMethodDeprecatedThenConfigChildDeprecated() {
 		ConfigChild actual = selectChild("syntax1NameDeprecatedChild");
-		assertEquals("syntax1NameDeprecatedChild", actual.getSyntax1Name());
+		assertEquals("syntax1NameDeprecatedChild", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
@@ -95,7 +95,7 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void whenChildInheritedFromProtectedThenChildAndNotOverriddenButAnnotationsInherited() {
 		ConfigChild actual = selectChild("syntax1NameInheritedChilds");
-		assertEquals("syntax1NameInheritedChilds", actual.getSyntax1Name());
+		assertEquals("syntax1NameInheritedChilds", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChild", actual.getElementType().getSimpleName());
 		assertFalse(actual.isDocumented());
@@ -111,7 +111,7 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void whenIbisDocOnDerivedMethodThenStillOrderFromIbisDoc() {
 		ConfigChild actual = selectChild("syntax1NameInheritedChildDocOnDerived");
-		assertEquals("syntax1NameInheritedChildDocOnDerived", actual.getSyntax1Name());
+		assertEquals("syntax1NameInheritedChildDocOnDerived", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChildDocOnDerived", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
@@ -126,7 +126,7 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void whenIbisDocBothOnParentAndDerivedThenDerivedValueTaken() {
 		ConfigChild actual = selectChild("syntax1NameInheritedChildDocWithOrderOverride");
-		assertEquals("syntax1NameInheritedChildDocWithOrderOverride", actual.getSyntax1Name());
+		assertEquals("syntax1NameInheritedChildDocWithOrderOverride", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChildDocWithOrderOverride", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
@@ -143,7 +143,7 @@ public class FrankDocModelConfigChildrenTest {
 
 	private void checkChildNotPresent(String name) {
 		boolean result = configChildren.stream()
-				.filter(c -> c.getSyntax1Name().equals(name))
+				.filter(c -> c.getRoleName().equals(name))
 				.collect(Collectors.counting())
 				.longValue() == 0;
 		assertTrue(result);
@@ -162,7 +162,7 @@ public class FrankDocModelConfigChildrenTest {
 
 	private ConfigChild checkAndFindGrandChild(final String syntax1Name) {
 		List<ConfigChild> grandChildList = configChildrenOfDerived.stream()
-				.filter(c -> c.getSyntax1Name().equals(syntax1Name))
+				.filter(c -> c.getRoleName().equals(syntax1Name))
 				.collect(Collectors.toList());
 		assertEquals(1, grandChildList.size());
 		return grandChildList.get(0);
@@ -187,7 +187,7 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void whenChildOverridesWithoutDocsThenNotDocumentedButAnnotationsInherited() {
 		ConfigChild actual = selectChild("syntax1NameChildOverriddenOnlyParentAnnotated");
-		assertEquals("syntax1NameChildOverriddenOnlyParentAnnotated", actual.getSyntax1Name());
+		assertEquals("syntax1NameChildOverriddenOnlyParentAnnotated", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("ChildOverriddenOnlyParentAnnotated", actual.getElementType().getSimpleName());
 		assertFalse(actual.isDocumented());
