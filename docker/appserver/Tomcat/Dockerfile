@@ -9,16 +9,16 @@ ARG TOMCAT_USERID=1000
 ENV SET_PERMISSIONS_ON_STARTUP=TRUE
 
 # Install gosu for stepping down from root in entrypoint after setting permissions
-RUN set -eux; \
-	apt-get update; \
-	apt-get install -y gosu; \
-	rm -rf /var/lib/apt/lists/*; \
-	gosu nobody true; \
+RUN set -eux \
+	&& apt-get update \
+	&& apt-get install -y gosu \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& gosu nobody true \
 	# Add tomcat user
-	groupadd -r tomcat -g ${TOMCAT_GROUPID}; \
-	useradd -u ${TOMCAT_USERID} -g tomcat -d ${CATALINA_HOME} -s /sbin/nologin tomcat; \
+	&& groupadd -r tomcat -g ${TOMCAT_GROUPID} \
+	&& useradd -u ${TOMCAT_USERID} -g tomcat -d ${CATALINA_HOME} -s /sbin/nologin tomcat \
 	# create default directory for configurations and properties
-	mkdir -p /opt/frank
+	&& mkdir -p /opt/frank
 
 # Copy entrypoint script
 COPY src/scripts/*.sh /
