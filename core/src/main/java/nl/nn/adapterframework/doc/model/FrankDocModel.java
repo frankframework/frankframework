@@ -130,20 +130,20 @@ public class FrankDocModel {
 		protected void handle(DigesterRule rule) throws SAXException {
 			String pattern = rule.getPattern();
 			StringTokenizer tokenizer = new StringTokenizer(pattern, "/");
-			String syntax1Name = null;
+			String roleName = null;
 			while(tokenizer.hasMoreElements()) {
 				String token = tokenizer.nextToken();
 				if(!"*".equals(token)) {
-					syntax1Name = token;
+					roleName = token;
 				}
 			}
 			if(StringUtils.isNotEmpty(rule.getRegisterMethod())) {
-				add(rule.getRegisterMethod(), syntax1Name);
+				add(rule.getRegisterMethod(), roleName);
 			}			
 		}
 
-		private void add(String registerMethod, String syntax1Name) throws SAXException {
-			ConfigChildSetterDescriptor item = new ConfigChildSetterDescriptor(registerMethod, syntax1Name);
+		private void add(String registerMethod, String roleName) throws SAXException {
+			ConfigChildSetterDescriptor item = new ConfigChildSetterDescriptor(registerMethod, roleName);
 			if(configChildDescriptors.containsKey(item.getMethodName())) {
 				log.warn(String.format("In digester rules [%s], duplicate method name [%s]", path, registerMethod));
 			} else {
@@ -404,8 +404,8 @@ public class FrankDocModel {
 			ConfigChild configChild = new ConfigChild(parent, sortNode);
 			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(sortNode.getName());
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("Have ConfigChildSetterDescriptor, methodName = [%s], syntax1Name = [%s], mandatory = [%b], allowMultiple = [%b]",
-						configChildDescriptor.getMethodName(), configChildDescriptor.getSyntax1Name(), configChildDescriptor.isMandatory(), configChildDescriptor.isAllowMultiple()));
+				log.trace(String.format("Have ConfigChildSetterDescriptor, methodName = [%s], roleName = [%s], mandatory = [%b], allowMultiple = [%b]",
+						configChildDescriptor.getMethodName(), configChildDescriptor.getRoleName(), configChildDescriptor.isMandatory(), configChildDescriptor.isAllowMultiple()));
 			}
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
@@ -413,7 +413,7 @@ public class FrankDocModel {
 				log.trace(String.format("For FrankElement [%s] method [%s], going to search element role", parent.getFullName(), sortNode.getName()));
 			}
 			configChild.setElementRole(findOrCreateElementRole(
-					sortNode.getElementTypeClass(), configChildDescriptor.getSyntax1Name()));
+					sortNode.getElementTypeClass(), configChildDescriptor.getRoleName()));
 			if(log.isTraceEnabled()) {
 				log.trace(String.format("For FrankElement [%s] method [%s], have the element role", parent.getFullName(), sortNode.getName()));
 			}
@@ -452,13 +452,13 @@ public class FrankDocModel {
 		return sortNodes;
 	}
 
-	ElementRole findOrCreateElementRole(Class<?> elementTypeClass, String syntax1Name) throws ReflectiveOperationException {
+	ElementRole findOrCreateElementRole(Class<?> elementTypeClass, String roleName) throws ReflectiveOperationException {
 		if(log.isTraceEnabled()) {
-			log.trace(String.format("ElementRole requested for elementTypeClass [%s] and syntax1Name [%s]", elementTypeClass.getName(), syntax1Name));
+			log.trace(String.format("ElementRole requested for elementTypeClass [%s] and roleName [%s]", elementTypeClass.getName(), roleName));
 			log.trace("Going to get the ElementType");
 		}
 		ElementType elementType = findOrCreateElementType(elementTypeClass);
-		ElementRole.Key key = new ElementRole.Key(elementTypeClass.getName(), syntax1Name);
+		ElementRole.Key key = new ElementRole.Key(elementTypeClass.getName(), roleName);
 		if(allElementRoles.containsKey(key)) {
 			if(log.isTraceEnabled()) {
 				log.trace("ElementRole already present");
@@ -466,10 +466,10 @@ public class FrankDocModel {
 			ElementRole result = allElementRoles.get(key);
 			return result;
 		} else {
-			ElementRole result = elementRoleFactory.create(elementType, syntax1Name);
+			ElementRole result = elementRoleFactory.create(elementType, roleName);
 			allElementRoles.put(key, result);
 			if(log.isTraceEnabled()) {
-				log.trace(String.format("For ElementType [%s] and syntax1Name [%s], created ElementRole [%s]", elementType.getFullName(), syntax1Name, result.createXsdElementName("")));
+				log.trace(String.format("For ElementType [%s] and roleName [%s], created ElementRole [%s]", elementType.getFullName(), roleName, result.createXsdElementName("")));
 			}
 			return result;
 		}
@@ -483,8 +483,8 @@ public class FrankDocModel {
 		return findElementRole(new ElementRole.Key(configChild));
 	}
 
-	ElementRole findElementRole(String fullElementTypeName, String syntax1Name) {
-		return allElementRoles.get(new ElementRole.Key(fullElementTypeName, syntax1Name));
+	ElementRole findElementRole(String fullElementTypeName, String roleName) {
+		return allElementRoles.get(new ElementRole.Key(fullElementTypeName, roleName));
 	}
 
 	ElementType findOrCreateElementType(Class<?> clazz) throws ReflectiveOperationException {
@@ -626,12 +626,12 @@ public class FrankDocModel {
 			log.trace("Doing FrankDocModel.setHighestCommonInterface");
 		}
 		for(ElementRole role: allElementRoles.values()) {
-			String syntax1Name = role.getSyntax1Name();
+			String roleName = role.getRoleName();
 			ElementType et = role.getElementType().getHighestCommonInterface();
-			ElementRole result = findElementRole(new ElementRole.Key(et.getFullName(), syntax1Name));
+			ElementRole result = findElementRole(new ElementRole.Key(et.getFullName(), roleName));
 			if(result == null) {
 				log.warn(String.format("Promoting ElementRole [%s] results in ElementType [%s] and syntax 1 name [%s], but there is no corresponding ElementRole",
-						toString(), et.getFullName(), syntax1Name));
+						toString(), et.getFullName(), roleName));
 				role.setHighestCommonInterface(role);
 			} else {
 				role.setHighestCommonInterface(result);
@@ -668,19 +668,19 @@ public class FrankDocModel {
 		if(log.isTraceEnabled()) {
 			log.trace(String.format("Handling FrankElement [%s]", frankElement.getFullName()));
 		}
-		Map<String, List<ConfigChild>> cumChildrenBySyntax1Name = frankElement.getCumulativeConfigChildren(ElementChild.ALL, ElementChild.NONE).stream()
-				.collect(Collectors.groupingBy(c -> c.getElementRole().getSyntax1Name()));
-		for(String syntax1Name: cumChildrenBySyntax1Name.keySet()) {
-			List<ConfigChild> configChildren = cumChildrenBySyntax1Name.get(syntax1Name);
+		Map<String, List<ConfigChild>> cumChildrenByRoleName = frankElement.getCumulativeConfigChildren(ElementChild.ALL, ElementChild.NONE).stream()
+				.collect(Collectors.groupingBy(c -> c.getElementRole().getRoleName()));
+		for(String roleName: cumChildrenByRoleName.keySet()) {
+			List<ConfigChild> configChildren = cumChildrenByRoleName.get(roleName);
 			if(configChildren.stream().map(ConfigChild::getOwningElement).anyMatch(childOwner -> (childOwner == frankElement))) {
 				if(log.isTraceEnabled()) {
-					log.trace(String.format("Found ConfigChildSet for syntax 1 name [%s]", syntax1Name));
+					log.trace(String.format("Found ConfigChildSet for syntax 1 name [%s]", roleName));
 				}
 				ConfigChildSet configChildSet = new ConfigChildSet(configChildren);
 				frankElement.addConfigChildSet(configChildSet);
 				ElementRoleSet elementRoleSet = findOrCreateElementRoleSet(configChildSet);
 				if(log.isTraceEnabled()) {
-					log.trace(String.format("The config child with syntax 1 name [%s] has ElementRoleSet [%s]", syntax1Name, elementRoleSet.toString()));
+					log.trace(String.format("The config child with syntax 1 name [%s] has ElementRoleSet [%s]", roleName, elementRoleSet.toString()));
 				}
 				configChildSet.setElementRoleSet(elementRoleSet);
 			}
@@ -719,13 +719,13 @@ public class FrankDocModel {
 				.flatMap(role -> role.getRawMembers().stream())
 				.distinct()
 				.collect(Collectors.toList());
-		Map<String, List<ConfigChild>> configChildrenBySyntax1Name = rawMembers.stream()
+		Map<String, List<ConfigChild>> configChildrenByRoleName = rawMembers.stream()
 				.flatMap(element -> element.getConfigChildren(ElementChild.ALL).stream())
-				.collect(Collectors.groupingBy(ConfigChild::getSyntax1Name));
-		List<String> names = new ArrayList<>(configChildrenBySyntax1Name.keySet());
+				.collect(Collectors.groupingBy(ConfigChild::getRoleName));
+		List<String> names = new ArrayList<>(configChildrenByRoleName.keySet());
 		Collections.sort(names);
 		for(String name: names) {
-			List<ConfigChild> configChildren = configChildrenBySyntax1Name.get(name);
+			List<ConfigChild> configChildren = configChildrenByRoleName.get(name);
 			Set<ElementRole> roles = configChildren.stream().map(ConfigChild::getElementRole).collect(Collectors.toSet());
 			Set<ElementRole.Key> key = roles.stream().map(ElementRole::getKey).collect(Collectors.toSet());
 			if(! allElementRoleSets.containsKey(key)) {

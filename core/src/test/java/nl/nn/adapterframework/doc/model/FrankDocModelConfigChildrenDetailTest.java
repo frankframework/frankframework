@@ -41,7 +41,7 @@ public class FrankDocModelConfigChildrenDetailTest {
 		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("setItemSingular");
 		assertNotNull(configChildDescriptor);
 		assertEquals("setItemSingular", configChildDescriptor.getMethodName());
-		assertEquals("syntax1NameItemSingular", configChildDescriptor.getSyntax1Name());
+		assertEquals("roleNameItemSingular", configChildDescriptor.getRoleName());
 		assertFalse(configChildDescriptor.isMandatory());
 		assertFalse(configChildDescriptor.isAllowMultiple());
 	}
@@ -51,7 +51,7 @@ public class FrankDocModelConfigChildrenDetailTest {
 		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("addItemPlural");
 		assertNotNull(configChildDescriptor);
 		assertEquals("addItemPlural", configChildDescriptor.getMethodName());
-		assertEquals("syntax1NameItemPluralAdd", configChildDescriptor.getSyntax1Name());
+		assertEquals("roleNameItemPluralAdd", configChildDescriptor.getRoleName());
 		assertFalse(configChildDescriptor.isMandatory());
 		assertTrue(configChildDescriptor.isAllowMultiple());
 	}
@@ -61,7 +61,7 @@ public class FrankDocModelConfigChildrenDetailTest {
 		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("registerItemPlural");
 		assertNotNull(configChildDescriptor);
 		assertEquals("registerItemPlural", configChildDescriptor.getMethodName());
-		assertEquals("syntax1NameItemPluralRegister", configChildDescriptor.getSyntax1Name());
+		assertEquals("roleNameItemPluralRegister", configChildDescriptor.getRoleName());
 		assertFalse(configChildDescriptor.isMandatory());
 		assertTrue(configChildDescriptor.isAllowMultiple());
 	}

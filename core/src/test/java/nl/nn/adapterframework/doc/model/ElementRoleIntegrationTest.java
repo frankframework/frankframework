@@ -39,11 +39,11 @@ public class ElementRoleIntegrationTest {
 		// numbers and role numbers.
 		ElementRole er = model.findElementRole(PACKAGE + "Interface1", "role2");
 		assertEquals(PACKAGE + "Interface1", er.getElementType().getFullName());
-		assertEquals("role2", er.getSyntax1Name());
+		assertEquals("role2", er.getRoleName());
 		assertEquals("Role2Element", er.createXsdElementName("Element"));
 		er = model.findElementRole(PACKAGE + "Interface2", "role1");
 		assertEquals(PACKAGE + "Interface2", er.getElementType().getFullName());
-		assertEquals("role1", er.getSyntax1Name());
+		assertEquals("role1", er.getRoleName());
 		assertEquals("Role1Element", er.createXsdElementName("Element"));
 		
 		// The element roles from Master are created later. These match
@@ -52,11 +52,11 @@ public class ElementRoleIntegrationTest {
 		er = model.findElementRole(PACKAGE + "Interface1", "role1");
 		assertNotNull(er);
 		assertEquals(PACKAGE + "Interface1", er.getElementType().getFullName());
-		assertEquals("role1", er.getSyntax1Name());
+		assertEquals("role1", er.getRoleName());
 		assertEquals("Role1Element_2", er.createXsdElementName("Element"));
 		er = model.findElementRole(PACKAGE + "Interface2", "role2");
 		assertEquals(PACKAGE + "Interface2", er.getElementType().getFullName());
-		assertEquals("role2", er.getSyntax1Name());
+		assertEquals("role2", er.getRoleName());
 		assertEquals("Role2Element_2", er.createXsdElementName("Element"));
 	}
 }

@@ -619,13 +619,13 @@ public class DocWriterNew {
 	}
 
 	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, ElementRole role) {
-		addAttribute(context, ELEMENT_ROLE, FIXED, role.getSyntax1Name(), PROHIBITED);
+		addAttribute(context, ELEMENT_ROLE, FIXED, role.getRoleName(), PROHIBITED);
 		addClassNameAttribute(context, frankElement);
 	}
 
 	private XmlBuilder addConfigChildWithElementGroup(XmlBuilder context, ConfigChild child) {
 		log.trace("Config child appears as element group reference");
-		ConfigChildSet configChildSet = child.getOwningElement().getConfigChildSet(child.getSyntax1Name());
+		ConfigChildSet configChildSet = child.getOwningElement().getConfigChildSet(child.getRoleName());
 		if(log.isTraceEnabled()) {
 			ThreadContext.push(String.format("Owning element [%s], ConfigChildSet [%s]", child.getOwningElement().getSimpleName(), configChildSet.toString()));
 		}
@@ -727,8 +727,8 @@ public class DocWriterNew {
 
 	private void addElementGroupGenericOption(XmlBuilder context, List<ElementRole> roles) {
 		log.trace("Doing the generic element option, role group [{}]", () -> ElementRole.describeCollection(roles));
-		String syntax1Name = ElementGroupManager.getSyntax1Name(roles);
-		XmlBuilder genericElementOption = addElementWithType(context, Utils.toUpperCamelCase(syntax1Name));
+		String roleName = ElementGroupManager.getRoleName(roles);
+		XmlBuilder genericElementOption = addElementWithType(context, Utils.toUpperCamelCase(roleName));
 		XmlBuilder complexType = addComplexType(genericElementOption);
 		XmlBuilder sequence = addSequence(complexType);
 		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
@@ -746,7 +746,7 @@ public class DocWriterNew {
 	}
 
 	private void addGenericElementOptionAttributes(XmlBuilder complexType, ConfigChildSet configChildSet) {
-		addAttribute(complexType, ELEMENT_ROLE, FIXED, configChildSet.getSyntax1Name(), PROHIBITED);
+		addAttribute(complexType, ELEMENT_ROLE, FIXED, configChildSet.getRoleName(), PROHIBITED);
 		Optional<FrankElement> defaultFrankElement = configChildSet.getGenericElementOptionDefault(version.getElementFilter());
 		if(defaultFrankElement.isPresent()) {
 			addAttribute(complexType, "className", DEFAULT, defaultFrankElement.get().getFullName(), OPTIONAL);
@@ -761,25 +761,25 @@ public class DocWriterNew {
 		log.trace("Setting attributes of leftover nested generic elements");
 		for(GenericOptionAttributeTask task: elementGroupManager.doLeftoverGenericOptionAttributeTasks()) {
 			log.trace("Have to do element group [{}]", () -> task.getRolesKey().toString());
-			addGenericElementOptionAttributes(task.getBuilder(), task.getRolesKey().iterator().next().getSyntax1Name());
+			addGenericElementOptionAttributes(task.getBuilder(), task.getRolesKey().iterator().next().getRoleName());
 		}
 		log.trace("Done setting attributes of leftover nested generic elements");
 	}
 
-	private void addGenericElementOptionAttributes(XmlBuilder complexType, String syntax1Name) {
-		addAttribute(complexType, ELEMENT_ROLE, FIXED, syntax1Name, PROHIBITED);
+	private void addGenericElementOptionAttributes(XmlBuilder complexType, String roleName) {
+		addAttribute(complexType, ELEMENT_ROLE, FIXED, roleName, PROHIBITED);
 		addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
 		// The XSD is invalid if addAnyAttribute is added before attributes elementType and className.
 		addAnyAttribute(complexType);
 	}
 
 	private void fillGenericOption(XmlBuilder context, List<ElementRole> parents) {
-		Map<String, List<ElementRole>> memberChildrenBySyntax1Name = ConfigChildSet.getMemberChildren(
+		Map<String, List<ElementRole>> memberChildrenByRoleName = ConfigChildSet.getMemberChildren(
 				parents, version.getChildSelector(), version.getChildRejector(), version.getElementFilter());
-		List<String> names = new ArrayList<>(memberChildrenBySyntax1Name.keySet());
+		List<String> names = new ArrayList<>(memberChildrenByRoleName.keySet());
 		Collections.sort(names);
 		for(String name: names) {
-			List<ElementRole> childRoles = memberChildrenBySyntax1Name.get(name);
+			List<ElementRole> childRoles = memberChildrenByRoleName.get(name);
 			if((childRoles.size() == 1) && isNoElementTypeNeeded(childRoles.get(0))) {
 				log.trace("A single ElementRole [{}] that appears as element reference", () -> childRoles.get(0).toString());
 				addElementRoleAsElement(context, childRoles.get(0));				
