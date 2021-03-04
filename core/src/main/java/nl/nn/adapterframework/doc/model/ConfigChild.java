@@ -29,7 +29,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
 	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
 			Comparator.comparingInt(ConfigChild::getOrder)
-			.thenComparing(c -> c.getElementRole().getSyntax1Name())
+			.thenComparing(c -> c.getElementRole().getRoleName())
 			.thenComparing(c -> c.getElementRole().getElementType().getFullName());
 
 	static final class SortNode implements Comparable<SortNode> {
@@ -63,13 +63,13 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 
 	@EqualsAndHashCode(callSuper = false)
 	static final class Key extends AbstractKey {
-		private final @Getter String syntax1Name;
+		private final @Getter String roleName;
 		private final @Getter ElementType elementType;
 		private final @Getter boolean mandatory;
 		private final @Getter boolean allowMultiple;
 
 		public Key(ConfigChild configChild) {
-			syntax1Name = configChild.getSyntax1Name();
+			roleName = configChild.getRoleName();
 			elementType = configChild.getElementType();
 			mandatory = configChild.isMandatory();
 			allowMultiple = configChild.isAllowMultiple();
@@ -77,7 +77,7 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 
 		@Override
 		public String toString() {
-			return "(syntax1Name=" + syntax1Name + ", elementType=" + elementType + ", mandatory=" + mandatory
+			return "(roleName=" + roleName + ", elementType=" + elementType + ", mandatory=" + mandatory
 					+ ", allowMultiple=" + allowMultiple + ")";
 		}
 	}
@@ -97,8 +97,8 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 		return new Key(this);
 	}
 
-	public String getSyntax1Name() {
-		return elementRole.getSyntax1Name();
+	public String getRoleName() {
+		return elementRole.getRoleName();
 	}
 
 	public ElementType getElementType() {

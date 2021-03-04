@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -29,6 +30,7 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Starts a Spring Context before all Servlets are initialized. This allows the use of dynamically creating 
@@ -39,6 +41,7 @@ import nl.nn.adapterframework.util.AppConstants;
  *
  */
 public class IbisApplicationInitializer extends ContextLoaderListener {
+	private Logger log = LogUtil.getLogger(this);
 
 	@Override
 	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext) {
@@ -71,10 +74,15 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 	 */
 	@Override
 	public WebApplicationContext initWebApplicationContext(ServletContext servletContext) {
-		WebApplicationContext wac = super.initWebApplicationContext(servletContext);
-		SpringBus bus = (SpringBus) wac.getBean("cxf");
-		servletContext.log("Successfully started IBIS WebApplicationInitializer with SpringBus ["+bus.getId()+"]");
-		return wac;
+		try {
+			WebApplicationContext wac = super.initWebApplicationContext(servletContext);
+			SpringBus bus = (SpringBus) wac.getBean("cxf");
+			servletContext.log("Successfully started IBIS WebApplicationInitializer with SpringBus ["+bus.getId()+"]");
+			return wac;
+		} catch (Exception e) {
+			log.fatal("IBIS ApplicationInitializer failed to initialize", e);
+			throw e;
+		}
 	}
 
 	private void checkAndCorrectLegacyServerTypes(ServletContext servletContext) {

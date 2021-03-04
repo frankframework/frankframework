@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Spliterators;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -269,11 +270,18 @@ public class FileSystemUtils {
 
 	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException, IOException {
 		DirectoryStream<F> ds = fileSystem.listFiles(folder);
+		if (ds==null) {
+			return null;
+		}
+		Iterator<F> it = ds.iterator();
+		if (it==null) {
+			return null;
+		}
 
 		WildCardFilter wildcardfilter =  StringUtils.isEmpty(wildCard) ? null : new WildCardFilter(wildCard);
 		WildCardFilter excludeFilter =  StringUtils.isEmpty(excludeWildCard) ? null : new WildCardFilter(excludeWildCard);
 
-		return StreamSupport.stream(ds.spliterator(),false)
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0),false)
 				.filter(F -> (wildcardfilter==null || wildcardfilter.accept(null, fileSystem.getName((F) F))) 
 						&& (excludeFilter==null || !excludeFilter.accept(null, fileSystem.getName((F) F))))
 				.onClose(() -> {

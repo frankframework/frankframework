@@ -36,7 +36,7 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
-	public void whenNameDoesNotEndWithInterfaceNameThenGroupSyntax1NameAppended() throws Exception {
+	public void whenNameDoesNotEndWithInterfaceNameThenGroupRoleNameAppended() throws Exception {
 		String className = PACKAGE + "ListenerParent";
 		String typeName = PACKAGE + "IListener";
 		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(className));
@@ -46,7 +46,7 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
-	public void whenNameEndsWithInterfaceNameThenRemovedAndGroupSyntax1NameAppended() throws Exception {
+	public void whenNameEndsWithInterfaceNameThenRemovedAndGroupRoleNameAppended() throws Exception {
 		String className = PACKAGE + "ParentListener";
 		String typeName = PACKAGE + "IListener";
 		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(className));
@@ -56,7 +56,7 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
-	public void whenElementTypeIsNotInterfaceThenSyntax1NameBecomesElementName() throws Exception {
+	public void whenElementTypeIsNotInterfaceThenRoleNameBecomesElementName() throws Exception {
 		String classAndTypeName = PACKAGE + "ListenerParent";
 		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(classAndTypeName));
 		ElementType elementType = model.findOrCreateElementType(Utils.getClass(classAndTypeName));

@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.AppConstants;
 
 import javax.jms.Destination;
@@ -297,11 +298,11 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 	}
 
 	@Override
-	public Destination getDestination(IPipeLineSession session) throws JmsException, NamingException, JMSException {
+	public Destination getDestination(IPipeLineSession session, ParameterValueList pvl) throws JmsException, NamingException, JMSException {
 		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
 			return (Destination) session.get("replyTo");
 		} else {
-			return super.getDestination(session);
+			return super.getDestination(session, pvl);
 		}
 	}
 

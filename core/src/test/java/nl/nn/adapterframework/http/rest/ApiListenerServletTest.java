@@ -24,7 +24,9 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +37,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -143,18 +148,30 @@ public class ApiListenerServletTest extends Mockito {
 	private MockHttpServletRequest createRequest(String uriPattern, Methods method, String content, Map<String, String> headers) {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.setMethod(method.name());
+		if(uriPattern == null) return request; // there's no path nor any params, return a blank ServletRequest
 
 		String path = uriPattern;
-		if(uriPattern != null && uriPattern.contains("?")) {
-			int q = uriPattern.indexOf("?");
-			path = uriPattern.substring(0, q);
-			String queryString = uriPattern.substring(q+1);
-
-			for(String param : queryString.split("&")) {
-				String[] a = param.split("=");
-				request.setParameter(a[0], a[1]);
+		URIBuilder uri;
+		try {
+			uri = new URIBuilder(uriPattern);
+			List<NameValuePair> queryParameters = uri.getQueryParams();
+			Map<String, String[]> parameters = new HashMap<>();
+			for (NameValuePair nameValuePair : queryParameters) {
+				String name = nameValuePair.getName();
+				String value = nameValuePair.getValue();
+				if(!parameters.containsKey(name)) {
+					parameters.put(name, new String[] { value });
+				} else {
+					String[] values = parameters.remove(name);
+					parameters.put(name, ArrayUtils.add(values, value));
+				}
 			}
+			request.setParameters(parameters);
+			path = uri.getPath();
+		} catch (URISyntaxException e) {
+			fail("invalid url ["+uriPattern+"] cannot parse");
 		}
+
 		request.setPathInfo(path);
 
 		if(headers != null) {
@@ -374,6 +391,24 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals(200, result.getStatus());
 		assertEquals("JOHN-DOE", session.get("name"));
 		assertEquals("MALE", session.get("GENDER"));
+		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void getRequestWithQueryListParameters() throws Exception {
+		String uri="/queryParamTestWithListsItems";
+		addListener(uri, Methods.GET);
+
+		Map<String, String> headers = new HashMap<String, String>();
+		headers.put("Accept", "application/json");
+		headers.put("content-type", "application/json");
+		Response result = service(createRequest(uri+"?transport=car&transport=bike&transport=moped&maxSpeed=60", Methods.GET, null, headers));
+
+		assertEquals(200, result.getStatus());
+		assertEquals("60", session.get("maxSpeed"));
+		List<String> transportList = Arrays.asList(new String[] {"car","bike","moped"});
+		assertEquals(transportList, session.get("transport"));
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}

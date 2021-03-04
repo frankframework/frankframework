@@ -2,6 +2,7 @@ package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -456,6 +457,18 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		TestAssertions.assertXpathValueEquals(xEnvironment,      		message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
 		TestAssertions.assertXpathValueEquals(xCorrelationId,      		message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
 
+	}
+
+	@Test
+	public void readEmptyFolder() throws Exception {
+		String targetFolder="Empty";
+		mailListener.setCreateFolders(true);
+		configureAndOpen(targetFolder,null);
+		
+		Map<String,Object> threadContext=new HashMap<String,Object>();
+				
+		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
+		assertNull(rawMessage);
 	}
 
 
