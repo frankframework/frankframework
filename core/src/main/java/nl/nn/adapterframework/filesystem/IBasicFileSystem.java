@@ -37,7 +37,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Gerrit van Brakel
  *
- * @param <F> File representation
+ * @param <F> Representation of file and folder. 
  */
 public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 
@@ -55,8 +55,9 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	public DirectoryStream<F> listFiles(String folder) throws FileSystemException;
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException;
 	/**
-	 * Get a string representation of an identification of a file, expected to be in the 'root' folder. 
+	 * Get a string representation of an identification of a file. 
 	 * Must pair up with the implementation of {@link #toFile(String)}.
+	 * Can reflect name a file has in its folder, is not expected to be unique over folders.
 	 */
 	public String getName(F f);
 	/**
@@ -77,6 +78,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	/**
 	 * Moves the file to a another folder.
 	 * Does not need to check for existence of the source or non-existence of the destination.
+	 * Returns the moved file, or null if no file was moved.
 	 */
 	public F moveFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
