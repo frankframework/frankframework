@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Integration Partners
+   Copyright 2018, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
+
 import org.apache.http.Header;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -37,19 +37,21 @@ public class RestSender extends HttpSender {
 		statuscode.setValue(statusCode + "");
 		result.addSubElement(statuscode);
 
-		XmlBuilder headersXml = new XmlBuilder("headers");
 		Header[] headers = responseHandler.getAllHeaders();
-		for (int i = 0; i < headers.length; i++) {
-			Header header = headers[i];
-			String name = header.getName().toLowerCase();
-			XmlBuilder headerXml = new XmlBuilder("header");
-			headerXml.addAttribute("name", name);
-			headerXml.addAttribute("value", header.getValue());
-			headersXml.addSubElement(headerXml);
+		if(headers != null) {
+			XmlBuilder headersXml = new XmlBuilder("headers");
+			for (int i = 0; i < headers.length; i++) {
+				Header header = headers[i];
+				String name = header.getName().toLowerCase();
+				XmlBuilder headerXml = new XmlBuilder("header");
+				headerXml.addAttribute("name", name);
+				headerXml.addAttribute("value", header.getValue());
+				headersXml.addSubElement(headerXml);
+			}
+			result.addSubElement(headersXml);
 		}
-		result.addSubElement(headersXml);
 
-		if (statusCode == HttpURLConnection.HTTP_OK) {
+		if (validateResponseCode(statusCode)) {
 			XmlBuilder message = new XmlBuilder("message");
 			message.setValue(responseString, false);
 			result.addSubElement(message);
