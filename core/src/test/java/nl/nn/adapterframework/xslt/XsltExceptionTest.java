@@ -16,7 +16,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
 
 public class XsltExceptionTest {
 
-	public void testXsltException(boolean expectChildThreads) throws Exception {
+	public void testXsltException(boolean expectChildThreads, int tailCount) throws Exception {
 		
 		String xpathExpression="*/*";
 		int xsltVersion = 1;
@@ -41,7 +41,7 @@ public class XsltExceptionTest {
 			try (SaxDocumentBuilder seb = new SaxDocumentBuilder("root", transformer)) {
 				seb.addElement("elem");
 				seb.addElement("error");
-				for(int i=0; i<2000; i++) {
+				for(int i=0; i<tailCount; i++) {
 					seb.addElement("elem");
 				}
 			}
@@ -53,7 +53,12 @@ public class XsltExceptionTest {
 	}
 	
 	@Test
-	public void testXsltException() throws Exception {
-		testXsltException(XmlUtils.isXsltStreamingByDefault());
+	public void testXsltException2000() throws Exception {
+		testXsltException(XmlUtils.isXsltStreamingByDefault(), 2000);
+	}
+
+	@Test
+	public void testXsltException0() throws Exception {
+		testXsltException(XmlUtils.isXsltStreamingByDefault(), 0);
 	}
 }
