@@ -54,6 +54,13 @@ The image also contains the following files:
 | /usr/local/tomcat/conf/server.xml | mount/copy of your server.xml | Contains the default server.xml of Tomcat, replace to secure your application |
 | /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use [Environment variables](#Environment-variables) or append to the file, see [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
 
+## Permissions
+As this image does not run Tomcat using the root user, file permissions need to be set correctly. By default this is done during startup, to ensure that all files copied to the above locations have the correct permissions. For images with a large number of files in these locations, this can reduce startup performance. It is possible to set the permissions during build and disable the step during startup by adding the following lines at the end of your Dockerfile:
+```
+RUN /setPermissions.sh
+ENV SET_PERMISSIONS_ON_STARTUP=FALSE
+```
+
 Logging
 =======
 
@@ -69,7 +76,7 @@ Considerations
 
 The images are based on Tomcat, all restrictions and considerations that apply to Tomcat also apply to using the provided images.
 
-## HTTPS and security
+## HTTPS and authentication
 
 By default, the image uses the default server.xml of Tomcat which is not configured for inbound HTTPS traffic and user authentication. To secure your application, replace server.xml with a secured version matching your requirements.
 
@@ -77,3 +84,7 @@ Note: The GUI will not load data if accessed via HTTP and `dtap.stage!=LOC`, HTT
 
 ## Secrets
 Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), passwords are stored in plain text. Secrets can be provided via environment variables as `org.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource` is set for our images as explained in the [Tomcat documentation](https://tomcat.apache.org/tomcat-8.5-doc/config/systemprops.html#Property_replacements). These secrets are normally visible on a number of pages in the console, to hide those values `properties.hide` should include the environment variables to hide.
+
+## Non-root
+
+This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=1000` and `GID=1000`. To ensure correct file permissions, by default the root user sets the file permissions on startup after which Tomcat is started using `gosu` to step down to `tomcat`. See [Permissions](#Permissions) to disable this behavior.
