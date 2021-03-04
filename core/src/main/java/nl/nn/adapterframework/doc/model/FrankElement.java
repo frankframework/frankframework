@@ -95,8 +95,8 @@ public class FrankElement implements Comparable<FrankElement> {
 		LinkedHashMap<AbstractKey, C> children = new LinkedHashMap<>();
 		for(C c: inputChildren) {
 			if(children.containsKey(c.getKey())) {
-				log.warn(String.format("Frank element [%s] has multiple attributes / config children with key [%s]",
-						fullName, c.getKey().toString()));
+				log.warn("Frank element [{}] has multiple attributes / config children with key [{}]",
+						() -> fullName, () -> c.getKey().toString());
 			} else {
 				children.put(c.getKey(), c);
 			}

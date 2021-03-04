@@ -119,9 +119,8 @@ public class ElementType {
 			highestCommonInterface = nextCandidate;
 			nextCandidate = highestCommonInterface.getNextCommonInterface(model);
 		}
-		if(log.isTraceEnabled()) {
-			log.trace(String.format("ElementType [%s] has highest common interface [%s]", this.getFullName(), highestCommonInterface.getFullName()));
-		}
+		log.trace("ElementType [{}] has highest common interface [{}]",
+				() -> this.getFullName(), () -> highestCommonInterface.getFullName());
 	}
 
 	private ElementType getNextCommonInterface(FrankDocModel model) {
@@ -137,10 +136,8 @@ public class ElementType {
 		} else {
 			ElementType result = candidates.get(0);
 			if(candidates.size() >= 2) {
-				log.warn(String.format("There are multiple candidates for the next common interface of ElementType [%s], which are [%s]. Chose [%s]",
-						getFullName(),
-						candidates.stream().map(ElementType::getFullName).collect(Collectors.joining(", ")),
-						result.getFullName()));
+				log.warn("There are multiple candidates for the next common interface of ElementType [{}], which are [{}]. Chose [{}]",
+						() -> getFullName(), () -> candidates.stream().map(ElementType::getFullName).collect(Collectors.joining(", ")), () -> result.getFullName());
 			}
 			return result;
 		}
