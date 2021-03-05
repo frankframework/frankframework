@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.doc;
 
+import static nl.nn.adapterframework.testutil.MatchUtils.jsonPretty;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.BufferedWriter;
@@ -23,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 
+import javax.json.JsonObject;
 import javax.xml.XMLConstants;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Schema;
@@ -107,6 +109,24 @@ public class DocWriterNewIntegrationTest {
 			writer.close();
 		}
 		return output.getAbsolutePath();
+	}
+
+	@Ignore
+	@Test
+	public void testJsonForWebsite() throws Exception {
+		FrankDocModel model = FrankDocModel.populate();
+		FrankDocJsonFactory jsonFactory = new FrankDocJsonFactory(model);
+		JsonObject jsonObject = jsonFactory.getJson();
+		String jsonText = jsonPretty(jsonObject.toString());
+		File output = new File("FrankConfig.json");
+		log.info("Output file of test json: " + output.getAbsolutePath());
+		Writer writer = new BufferedWriter(new FileWriter(output));
+		try {
+			writer.append(jsonText);
+		}
+		finally {
+			writer.close();
+		}
 	}
 
 	@Ignore

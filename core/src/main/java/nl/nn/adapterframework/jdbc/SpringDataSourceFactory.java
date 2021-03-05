@@ -20,6 +20,8 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+
 public class SpringDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override

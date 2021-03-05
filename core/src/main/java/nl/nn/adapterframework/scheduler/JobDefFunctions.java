@@ -42,17 +42,8 @@ public enum JobDefFunctions {
 		this.servicejob = servicejob;
 	}
 
-	public String getName() {
+	public String getName() { // Beware: getName() is not the same as name()
 		return name;
-	}
-
-	public static JobDefFunctions fromValue(String v) {
-		for (JobDefFunctions c : JobDefFunctions.values()) {
-			if (c.name.equalsIgnoreCase(v)) {
-				return c;
-			}
-		}
-		throw new IllegalArgumentException(v);
 	}
 
 	public boolean isNotEqualToAtLeastOneOf(JobDefFunctions... functions) {
@@ -66,19 +57,6 @@ public enum JobDefFunctions {
 				equals = true;
 		}
 		return equals;
-	}
-
-	/**
-	 * Comma separated list of all ENUMs
-	 */
-	public static String getNames() {
-		String returnString = "[";
-		for(JobDefFunctions func : values()) {
-			returnString += func.getName()+", ";
-		}
-
-		//Cut off last comma and append closing bracket
-		return returnString.substring(0, returnString.length()-2) + "]";
 	}
 
 	/**

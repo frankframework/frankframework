@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -54,7 +55,8 @@ import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.soap.WsdlGenerator;
+import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 
 /**
  * Shows all monitors.
@@ -95,11 +97,14 @@ public final class Webservices extends Base {
 
 		List<Map<String, Object>> wsdls = new ArrayList<Map<String, Object>>();
 		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
-			Map<String, Object> wsdlMap = new HashMap<String, Object>(2);
+			Map<String, Object> wsdlMap = null;
 			try {
-				Wsdl wsdl = new Wsdl(adapter.getPipeLine());
-				wsdlMap.put("name", wsdl.getName());
-				wsdlMap.put("extension", getWsdlExtension());
+				if(WsdlGeneratorUtils.canHaveWsdl(adapter)) { // check eligibility
+					wsdlMap = new HashMap<String, Object>(2);
+					WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine());
+					wsdlMap.put("name", wsdl.getName());
+					wsdlMap.put("extension", getWsdlExtension());
+				}
 			} catch (Exception e) {
 				wsdlMap.put("name", adapter.getName());
 
@@ -109,12 +114,14 @@ public final class Webservices extends Base {
 					wsdlMap.put("error", e.toString());
 				}
 			}
-			wsdls.add(wsdlMap);
+			if(wsdlMap != null) {
+				wsdls.add(wsdlMap);
+			}
 		}
 		returnMap.put("wsdls", wsdls);
 
 		//ApiListeners
-		List<Map<String, Object>> apiListeners = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> apiListeners = new LinkedList<Map<String, Object>>();
 		SortedMap<String, ApiDispatchConfig> patternClients = ApiServiceDispatcher.getInstance().getPatternClients();
 		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
 			ApiDispatchConfig config = client.getValue();
@@ -180,7 +187,7 @@ public final class Webservices extends Base {
 			// from the adapter itself, or from appconstant wsdl.<adapterName>.location or wsdl.location
 			String servletName = "external address of ibis"; 
 			String generationInfo = "by FrankConsole";
-			Wsdl wsdl = new Wsdl(adapter.getPipeLine(), generationInfo);
+			WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);
 			wsdl.setUseIncludes(useIncludes||zip);
 			wsdl.init();

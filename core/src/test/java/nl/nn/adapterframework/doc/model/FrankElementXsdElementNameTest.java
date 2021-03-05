@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.doc.model;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
@@ -35,7 +36,7 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
-	public void whenNameDoesNotEndWithInterfaceNameThenGroupSyntax1NameAppended() throws Exception {
+	public void whenNameDoesNotEndWithInterfaceNameThenGroupRoleNameAppended() throws Exception {
 		String className = PACKAGE + "ListenerParent";
 		String typeName = PACKAGE + "IListener";
 		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(className));
@@ -45,7 +46,7 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
-	public void whenNameEndsWithInterfaceNameThenRemovedAndGroupSyntax1NameAppended() throws Exception {
+	public void whenNameEndsWithInterfaceNameThenRemovedAndGroupRoleNameAppended() throws Exception {
 		String className = PACKAGE + "ParentListener";
 		String typeName = PACKAGE + "IListener";
 		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(className));
@@ -55,11 +56,21 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
-	public void whenElementTypeIsNotInterfaceThenSyntax1NameBecomesElementName() throws Exception {
+	public void whenElementTypeIsNotInterfaceThenRoleNameBecomesElementName() throws Exception {
 		String classAndTypeName = PACKAGE + "ListenerParent";
 		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(classAndTypeName));
 		ElementType elementType = model.findOrCreateElementType(Utils.getClass(classAndTypeName));
 		String actual = instance.getXsdElementName(elementType, "someName");
 		assertEquals("SomeName", actual);
+	}
+
+	@Test
+	public void frankElementKnowsXmlElementNames() {
+		FrankElement frankElement = model.findFrankElement(PACKAGE + "ListenerParent");
+		assertArrayEquals(new String[] {"ListenerParentTestListener"}, frankElement.getXmlElementNames().toArray());
+		frankElement = model.findFrankElement(PACKAGE + "ParentListener");
+		assertArrayEquals(new String[] {"ParentTestListener"}, frankElement.getXmlElementNames().toArray());
+		frankElement = model.findFrankElement(PACKAGE + "Container");
+		assertArrayEquals(new String[] {"Container"}, frankElement.getXmlElementNames().toArray());
 	}
 }

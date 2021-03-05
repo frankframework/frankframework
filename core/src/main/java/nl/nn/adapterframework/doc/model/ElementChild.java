@@ -99,14 +99,11 @@ public abstract class ElementChild {
 			ElementChild matchingChild = match.findElementChildMatch(this);
 			if(matchingChild != null) {
 				if(matchingChild.isDeprecated()) {
-					log.warn(String.format("Element child overrides deprecated ElementChild: descendant [%s], super [%s]",
-							toString(), matchingChild.toString()));
+					log.warn("Element child overrides deprecated ElementChild: descendant [{}], super [{}]", () -> toString(), () -> matchingChild.toString());
 				}
 				overriddenFrom = match;
-				if(log.isTraceEnabled()) {
-					log.trace(String.format("%s [%s] of FrankElement [%s] has overriddenFrom = [%s]",
-							getClass().getSimpleName(), toString(), owningElement.getFullName(), overriddenFrom.getFullName()));
-				}
+				log.trace("{} [{}] of FrankElement [{}] has overriddenFrom = [{}]",
+						() -> getClass().getSimpleName(), () -> toString(), () -> owningElement.getFullName(), () -> overriddenFrom.getFullName());
 				return;
 			}
 		}
