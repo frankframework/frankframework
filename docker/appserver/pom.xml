@@ -15,9 +15,9 @@
 
 
 	<modules>
-<!-- 		<module>Tomcat</module> -->
-<!-- 		<module>WebSphere</module> -->
-<!-- 		<module>WildFly</module> -->
+		<module>Tomcat</module>
+		<module>WebSphere</module>
+		<module>WildFly</module>
 		<module>Jboss</module>
 	</modules>
 
