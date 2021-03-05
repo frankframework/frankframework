@@ -1,4 +1,4 @@
-FROM iaf-as-wildfly AS iaf-example-wildfly
+FROM iaf-as-wildfly AS iaf-test-wildfly
 
 # copy any additional drivers
 COPY target/dependencies/*.jar /opt/jboss/wildfly/standalone/lib/
