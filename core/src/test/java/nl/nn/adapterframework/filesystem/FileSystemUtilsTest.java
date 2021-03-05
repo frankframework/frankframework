@@ -1,5 +1,12 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.util.Iterator;
+import java.util.stream.Stream;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -250,4 +257,27 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		}
 	}
 
+	@Test
+	public void testEmptyFilteredStream() throws Exception {
+		IBasicFileSystem<?> fs = new MockFileSystem() {
+			public DirectoryStream<?> listFiles(String folder) {
+				return new DirectoryStream() {
+
+					@Override
+					public void close() throws IOException {
+						// nothing needed
+					}
+
+					@Override
+					public Iterator iterator() {
+						return null;
+					}
+					
+				};
+			}
+		};
+		
+		Stream<?> stream = FileSystemUtils.getFilteredStream(fs, null, null, null);
+		assertTrue(stream==null || stream.count()==0);
+	}
 }

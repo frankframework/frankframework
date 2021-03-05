@@ -34,7 +34,7 @@ public class ElementRoleTest {
 	}
 
 	@Test
-	public void whenTwoElementRolesWithSameSyntax1NameCreatedThenDifferentSeqs() {
+	public void whenTwoElementRolesWithSameRoleNameCreatedThenDifferentSeqs() {
 		ElementRole first = factory.create(null, "x");
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
 		ElementRole second = factory.create(null, "x");
@@ -43,7 +43,7 @@ public class ElementRoleTest {
 	}
 
 	@Test
-	public void whenTwoElementRolesWithDifferentSyntax1NameCreatedThenNoSeqsInNames() {
+	public void whenTwoElementRolesWithDifferentRoleNameCreatedThenNoSeqsInNames() {
 		ElementRole first = factory.create(null, "x");
 		assertEquals("XElement", first.createXsdElementName(ELEMENT));
 		ElementRole second = factory.create(null, "y");
@@ -53,9 +53,9 @@ public class ElementRoleTest {
 
 	@Test
 	public void testKeys() {
-		Key first = new Key("type", "syntax1");
-		Key eqFirst = new Key("type", "syntax1");
-		Key second = new Key("otherType", "syntax1");
+		Key first = new Key("type", "role");
+		Key eqFirst = new Key("type", "role");
+		Key second = new Key("otherType", "role");
 		assertEquals(first, eqFirst);
 		assertFalse(first.equals(second));
 	}

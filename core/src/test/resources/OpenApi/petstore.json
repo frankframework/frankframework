@@ -59,43 +59,6 @@
                     }
                 }
             }
-        },
-        "/pets/{petId}":{
-            "get":{
-                "summary":"Info for a specific pet",
-                "parameters":[
-                    {
-                        "name":"petId",
-                        "in":"path",
-                        "required":true,
-                        "schema":{
-                            "type":"string"
-                        }
-                    }
-                ],
-                "responses":{
-                    "200":{
-                        "description":"OK",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/Pet"
-                                }
-                            }
-                        }
-                    },
-                    "500":{
-                        "description":"Internal Server Error",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/Error"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     },
     "components":{

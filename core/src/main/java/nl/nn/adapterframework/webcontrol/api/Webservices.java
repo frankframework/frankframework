@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -120,7 +121,7 @@ public final class Webservices extends Base {
 		returnMap.put("wsdls", wsdls);
 
 		//ApiListeners
-		List<Map<String, Object>> apiListeners = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> apiListeners = new LinkedList<Map<String, Object>>();
 		SortedMap<String, ApiDispatchConfig> patternClients = ApiServiceDispatcher.getInstance().getPatternClients();
 		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
 			ApiDispatchConfig config = client.getValue();

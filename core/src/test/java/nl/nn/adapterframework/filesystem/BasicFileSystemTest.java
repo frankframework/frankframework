@@ -3,6 +3,7 @@ package nl.nn.adapterframework.filesystem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -197,6 +198,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFileDoesNotExist(dstFolder, filename);
 
 		F f = fileSystem.toFile(srcFolder, filename);
+		F f2 = fileSystem.toFile(srcFolder, filename);
 		F movedFile =fileSystem.moveFile(f, dstFolder, false);
 		waitForActionToFinish();
 
@@ -207,6 +209,16 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		//TODO: test that contents of file has remained the same
 		//TODO: test that file timestamp has not changed
 		assertFileDoesNotExist(srcFolder, filename);
+
+		assertFalse("original file should not exist anymore after move", fileSystem.exists(f2));
+
+		try {
+			F movedFile2 =fileSystem.moveFile(f2, dstFolder, false);
+			assertNull("File should not be moveable again", movedFile2);
+		} catch (Exception e) {
+			// an exception will do too, to signal that the file cannot be moved again.
+			log.debug("exception caught after trying to move file: "+e.getMessage());
+		}
 	}
 
 	@Test
@@ -317,6 +329,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 			int numDeleted = 1;
 	
 			waitForActionToFinish();
+
+			assertFalse("file should not exist anymore physically after deletion", _fileExists(folder, "file_0.txt"));
 	
 			try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 				Iterator<F> it = ds.iterator();
@@ -324,6 +338,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 					assertTrue(it.hasNext());
 					F f=it.next();
 					log.debug("found file ["+fileSystem.getName(f)+"]");
+					assertTrue("file found should exist", _fileExists(folder, fileSystem.getName(f)));
 					long modTime=fileSystem.getModificationTime(f).getTime();
 					if (doTimingTests) assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
 					if (doTimingTests) assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);

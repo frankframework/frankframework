@@ -22,7 +22,7 @@
 	<bean
 		id="defaultDataSource"
 		factory-bean="dataSourceFactory"
-		factory-method="addDataSource"
+		factory-method="add"
 		>
 		<constructor-arg ref="dataSourceTxProxy" />
 		<constructor-arg value="${jdbc.datasource.default}" />

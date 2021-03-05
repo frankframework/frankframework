@@ -666,7 +666,7 @@ public final class ShowConfigurationStatus extends Base {
 				jmsBrowser.setName("MessageBrowser_" + jlb.getName());
 				jmsBrowser.setJmsRealm(jlb.getJmsRealmName());
 				jmsBrowser.setDestinationName(jlb.getDestinationName());
-				jmsBrowser.setDestinationType(jlb.getDestinationType());
+				jmsBrowser.setDestinationTypeEnum(jlb.getDestinationTypeEnum());
 				String numMsgs;
 				try {
 					int messageCount = jmsBrowser.getMessageCount();

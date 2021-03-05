@@ -36,6 +36,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 public class FrankElement implements Comparable<FrankElement> {
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
@@ -52,6 +53,7 @@ public class FrankElement implements Comparable<FrankElement> {
 	private @Getter FrankElement parent;
 
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
+	private @Getter List<String> xmlElementNames;
 	private @Getter FrankElementStatistics statistics;
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 
@@ -73,11 +75,16 @@ public class FrankElement implements Comparable<FrankElement> {
 		this.allChildren = new HashMap<>();
 		this.allChildren.put(FrankAttribute.class, new LinkedHashMap<>());
 		this.allChildren.put(ConfigChild.class, new LinkedHashMap<>());
+		this.xmlElementNames = new ArrayList<>();
 	}
 
 	public void setParent(FrankElement parent) {
 		this.parent = parent;
 		this.statistics = new FrankElementStatistics(this);
+	}
+
+	public void addXmlElementName(String elementName) {
+		Misc.addToSortedListUnique(xmlElementNames, elementName);
 	}
 
 	public void setAttributes(List<FrankAttribute> inputAttributes) {
@@ -88,8 +95,8 @@ public class FrankElement implements Comparable<FrankElement> {
 		LinkedHashMap<AbstractKey, C> children = new LinkedHashMap<>();
 		for(C c: inputChildren) {
 			if(children.containsKey(c.getKey())) {
-				log.warn(String.format("Frank element [%s] has multiple attributes / config children with key [%s]",
-						fullName, c.getKey().toString()));
+				log.warn("Frank element [{}] has multiple attributes / config children with key [{}]",
+						() -> fullName, () -> c.getKey().toString());
 			} else {
 				children.put(c.getKey(), c);
 			}
@@ -188,42 +195,39 @@ public class FrankElement implements Comparable<FrankElement> {
 	}
 
 	public String getXsdElementName(ElementRole elementRole) {
-		return getXsdElementName(elementRole.getElementType(), elementRole.getSyntax1Name());
+		return getXsdElementName(elementRole.getElementType(), elementRole.getRoleName());
 	}
 
-	String getXsdElementName(ElementType elementType, String syntax1Name) {
+	String getXsdElementName(ElementType elementType, String roleName) {
 		if(! elementType.isFromJavaInterface()) {
-			return Utils.toUpperCamelCase(syntax1Name);
+			return Utils.toUpperCamelCase(roleName);
 		}
-		String postfixToRemove = elementType.getSimpleName();
-		if(postfixToRemove.startsWith("I")) {
-			postfixToRemove = postfixToRemove.substring(1);
-		}
+		String postfixToRemove = elementType.getGroupName();
 		String result = simpleName;
 		if(result.endsWith(postfixToRemove)) {
 			result = result.substring(0, result.lastIndexOf(postfixToRemove));
 		}
-		result = result + Utils.toUpperCamelCase(syntax1Name);
+		result = result + Utils.toUpperCamelCase(roleName);
 		return result;
 	}
 
 	void addConfigChildSet(ConfigChildSet configChildSet) {
-		configChildSets.put(configChildSet.getSyntax1Name(), configChildSet);
+		configChildSets.put(configChildSet.getRoleName(), configChildSet);
 	}
 
-	public ConfigChildSet getConfigChildSet(String syntax1Name) {
-		return configChildSets.get(syntax1Name);
+	public ConfigChildSet getConfigChildSet(String roleName) {
+		return configChildSets.get(roleName);
 	}
 
 	public List<ConfigChildSet> getCumulativeConfigChildSets() {
 		Map<String, ConfigChildSet> resultAsMap = new HashMap<>();
-		for(String syntax1Name: configChildSets.keySet()) {
-			resultAsMap.put(syntax1Name, configChildSets.get(syntax1Name));
+		for(String roleName: configChildSets.keySet()) {
+			resultAsMap.put(roleName, configChildSets.get(roleName));
 		}
 		if(parent != null) {
 			List<ConfigChildSet> inheritedConfigChildSets = getParent().getCumulativeConfigChildSets();
 			for(ConfigChildSet inherited: inheritedConfigChildSets) {
-				resultAsMap.putIfAbsent(inherited.getSyntax1Name(), inherited);
+				resultAsMap.putIfAbsent(inherited.getRoleName(), inherited);
 			}
 		}
 		List<ConfigChildSet> result = new ArrayList<>();

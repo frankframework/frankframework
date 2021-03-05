@@ -30,6 +30,7 @@ import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends SenderTestBase<S> {
+	private final String BASEDIR = "/nl/nn/adapterframework/http/response/";
 
 	public S getSender() throws Exception {
 		return getSender(true);
@@ -63,7 +64,6 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 		return sender;
 	}
 
-	private final String BASEDIR = "/nl/nn/adapterframework/http/response/";
 	protected String getFile(String file) throws IOException {
 		String content = TestFileUtils.getTestFile(BASEDIR+file);
 		assertNotNull("file ["+BASEDIR+file+"] not found", content);
