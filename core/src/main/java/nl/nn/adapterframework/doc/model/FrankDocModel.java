@@ -56,11 +56,20 @@ public class FrankDocModel {
 	static final String OTHER = "Other";
 
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
+	
+	/**
+	 * Values of the groups map are sorted alphabetically.
+	 */
 	private @Getter LinkedHashMap<String, FrankDocGroup> groups = new LinkedHashMap<>();
+
 	// We want to iterate FrankElement in the order they are created, to be able
 	// to create the ElementRole objects in the right order. 
 	private @Getter Map<String, FrankElement> allElements = new LinkedHashMap<>();
-	private @Getter Map<String, ElementType> allTypes = new HashMap<>();
+
+	// We have a LinkedHashMap because the sequence of the types is relevant. This
+	// sequence determines the sort order of the elements of FrankDocGroup Other.
+	private @Getter Map<String, ElementType> allTypes = new LinkedHashMap<>();
+
 	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
 	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
@@ -84,6 +93,7 @@ public class FrankDocModel {
 			result.setOverriddenFrom();
 			result.setHighestCommonInterface();
 			result.createConfigChildSets();
+			result.setElementNamesOfFrankElements(rootClassName);
 			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -435,6 +445,8 @@ public class FrankDocModel {
 		if(result.isFromJavaInterface()) {
 			log.trace("Class [{}] is a Java interface, going to create all member FrankElement", () -> clazz.getName());
 			List<SpringBean> springBeans = Utils.getSpringBeans(clazz.getName());
+			// We sort here to make the order deterministic.
+			Collections.sort(springBeans);
 			for(SpringBean b: springBeans) {
 				FrankElement frankElement = findOrCreateFrankElement(b.getClazz());
 				result.addMember(frankElement);
@@ -463,10 +475,13 @@ public class FrankDocModel {
 		List<FrankElement> membersOfOther = new ArrayList<>();
 		for(ElementType elementType: getAllTypes().values()) {
 			if(elementType.isFromJavaInterface()) {
-				if(groupsBase.containsKey(elementType.getSimpleName())) {
-					groupsBase.get(elementType.getSimpleName()).add(FrankDocGroup.getInstanceFromElementType(elementType));
+				FrankDocGroup interfaceBasedGroup = FrankDocGroup.getInstanceFromElementType(elementType);
+				elementType.setFrankDocGroup(interfaceBasedGroup);
+				String groupName = elementType.getGroupName();
+				if(groupsBase.containsKey(groupName)) {
+					groupsBase.get(groupName).add(interfaceBasedGroup);
 				} else {
-					groupsBase.put(elementType.getSimpleName(), Arrays.asList(FrankDocGroup.getInstanceFromElementType(elementType)));
+					groupsBase.put(groupName, Arrays.asList(interfaceBasedGroup));
 				}
 				log.trace("Appended group [{}] with candidate element type [{}], which is based on a Java interface", () -> elementType.getSimpleName(), () -> elementType.getFullName());
 			}
@@ -490,7 +505,11 @@ public class FrankDocModel {
 			log.warn("Name \"[{}]\" cannot been used for others group because it is the name of an ElementType", OTHER);
 		}
 		else {
-			groupsBase.put(OTHER, Arrays.asList(FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther)));
+			final FrankDocGroup groupOther = FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther);
+			allTypes.values().stream()
+				.filter(et -> ! et.isFromJavaInterface())
+				.forEach(et -> et.setFrankDocGroup(groupOther));
+			groupsBase.put(OTHER, Arrays.asList(groupOther));
 		}
 		for(String groupName: groupsBase.keySet()) {
 			if(groupsBase.get(groupName).size() != 1) {
@@ -531,6 +550,14 @@ public class FrankDocModel {
 			remainingElements.remove(current.getFullName());
 		}
 		log.trace("Done setting property overriddenFrom");
+	}
+
+	void setElementNamesOfFrankElements(String rootClassName) {
+		FrankElement root = allElements.get(rootClassName);
+		root.addXmlElementName(root.getSimpleName());
+		for(ElementRole role: allElementRoles.values()) {
+			role.getMembers().forEach(frankElement -> frankElement.addXmlElementName(frankElement.getXsdElementName(role)));
+		}
 	}
 
 	void setHighestCommonInterface() {

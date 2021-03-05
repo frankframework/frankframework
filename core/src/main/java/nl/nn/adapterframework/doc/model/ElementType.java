@@ -18,7 +18,6 @@ package nl.nn.adapterframework.doc.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,7 +27,9 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Models a collection of FrankElement. The collection can be characterized by
@@ -44,6 +45,7 @@ public class ElementType {
 	private static Logger log = LogUtil.getLogger(ElementType.class);
 	private @Getter(AccessLevel.PACKAGE) List<FrankElement> members;
 	private @Getter boolean fromJavaInterface;
+	private @Getter @Setter FrankDocGroup frankDocGroup;
 	
 	private static class InterfaceHierarchyItem {
 		private @Getter String fullName;
@@ -91,14 +93,16 @@ public class ElementType {
 		return interfaceHierarchy.getSimpleName();
 	}
 
+	String getGroupName() {
+		String result = getSimpleName();
+		if(result.startsWith("I")) {
+			result = result.substring(1);
+		}
+		return result;
+	}
+
 	void addMember(FrankElement member) {
-	    // See https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413
-		// for an explanation of this algorithm.
-		int index = Collections.binarySearch(members, member, null);
-	    if (index < 0) {
-	        index = -index - 1;
-	    }
-	    members.add(index, member);
+		Misc.addToSortedListNonUnique(members, member);
 	}
 
 	FrankElement getSingletonElement() throws ReflectiveOperationException {
@@ -137,6 +141,16 @@ public class ElementType {
 			}
 			return result;
 		}
+	}
+
+	/**
+	 * Get the members that can be referenced with syntax 2. Only non-abstracts are returned.
+	 */
+	List<FrankElement> getSyntax2Members() {
+		return members.stream()
+				.filter(frankElement -> ! frankElement.getXmlElementNames().isEmpty())
+				.sorted()
+				.collect(Collectors.toList());
 	}
 
 	@Override

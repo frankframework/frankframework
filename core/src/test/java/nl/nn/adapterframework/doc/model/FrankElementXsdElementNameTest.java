@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.doc.model;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
@@ -61,5 +62,15 @@ public class FrankElementXsdElementNameTest {
 		ElementType elementType = model.findOrCreateElementType(Utils.getClass(classAndTypeName));
 		String actual = instance.getXsdElementName(elementType, "someName");
 		assertEquals("SomeName", actual);
+	}
+
+	@Test
+	public void frankElementKnowsXmlElementNames() {
+		FrankElement frankElement = model.findFrankElement(PACKAGE + "ListenerParent");
+		assertArrayEquals(new String[] {"ListenerParentTestListener"}, frankElement.getXmlElementNames().toArray());
+		frankElement = model.findFrankElement(PACKAGE + "ParentListener");
+		assertArrayEquals(new String[] {"ParentTestListener"}, frankElement.getXmlElementNames().toArray());
+		frankElement = model.findFrankElement(PACKAGE + "Container");
+		assertArrayEquals(new String[] {"Container"}, frankElement.getXmlElementNames().toArray());
 	}
 }

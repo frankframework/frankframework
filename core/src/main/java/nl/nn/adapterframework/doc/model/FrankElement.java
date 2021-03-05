@@ -36,6 +36,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 public class FrankElement implements Comparable<FrankElement> {
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
@@ -52,6 +53,7 @@ public class FrankElement implements Comparable<FrankElement> {
 	private @Getter FrankElement parent;
 
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
+	private @Getter List<String> xmlElementNames;
 	private @Getter FrankElementStatistics statistics;
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 
@@ -73,11 +75,16 @@ public class FrankElement implements Comparable<FrankElement> {
 		this.allChildren = new HashMap<>();
 		this.allChildren.put(FrankAttribute.class, new LinkedHashMap<>());
 		this.allChildren.put(ConfigChild.class, new LinkedHashMap<>());
+		this.xmlElementNames = new ArrayList<>();
 	}
 
 	public void setParent(FrankElement parent) {
 		this.parent = parent;
 		this.statistics = new FrankElementStatistics(this);
+	}
+
+	public void addXmlElementName(String elementName) {
+		Misc.addToSortedListUnique(xmlElementNames, elementName);
 	}
 
 	public void setAttributes(List<FrankAttribute> inputAttributes) {
@@ -195,10 +202,7 @@ public class FrankElement implements Comparable<FrankElement> {
 		if(! elementType.isFromJavaInterface()) {
 			return Utils.toUpperCamelCase(roleName);
 		}
-		String postfixToRemove = elementType.getSimpleName();
-		if(postfixToRemove.startsWith("I")) {
-			postfixToRemove = postfixToRemove.substring(1);
-		}
+		String postfixToRemove = elementType.getGroupName();
 		String result = simpleName;
 		if(result.endsWith(postfixToRemove)) {
 			result = result.substring(0, result.lastIndexOf(postfixToRemove));
