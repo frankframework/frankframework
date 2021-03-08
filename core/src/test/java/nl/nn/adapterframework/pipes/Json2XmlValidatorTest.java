@@ -16,7 +16,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.MatchUtils;
+import static nl.nn.adapterframework.testutil.MatchUtils.*;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
@@ -158,7 +158,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		String actualXml = Message.asString(prr.getResult());
 		
-		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
 	@Test
@@ -187,7 +187,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		String actualXml = Message.asString(prr.getResult());
 		
-		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
 	@Test
@@ -209,7 +209,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		String actualXml = Message.asString(prr.getResult());
 		
-		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
 	
@@ -255,7 +255,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		String actualXml = Message.asString(prr.getResult());
 		
-		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
 	@Test
@@ -283,7 +283,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		String actualXml = Message.asString(prr.getResult());
 		
-		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
 	@Test
@@ -309,7 +309,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		String actualXml = Message.asString(prr.getResult());
 		
-		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
 	public void testStoreRootElement(String outputFormat, String inputFile, boolean setRootElement) throws Exception {
