@@ -1,8 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
@@ -187,7 +190,102 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
+	@Test
+	public void testnoParams() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/Options/options.xsd");
+		pipe.setRoot("Options");
+		pipe.setThrowException(true);
+		
 
+		pipe.configure();
+		pipe.start();
+		
+		String input    = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
+		String expected = TestFileUtils.getTestFile("/Align/Options/stringArray.xml");
+		
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	
+	@Test
+	public void testMultivaluedParameters() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/Options/options.xsd");
+		pipe.setRoot("Options");
+		pipe.setThrowException(true);
+		
+		Parameter param1 = new Parameter();
+		param1.setName("singleInt");
+		param1.setValue("33");
+		pipe.addParameter(param1);
+
+		Parameter param2 = new Parameter();
+		param2.setName("singleString");
+		param2.setValue("tja");
+		pipe.addParameter(param2);
+
+		Parameter param3 = new Parameter();
+		param3.setName("stringArray2");
+		List<String> stringValues = Arrays.asList("aa","bb");
+		session.put("StringValueList", stringValues);
+		param3.setSessionKey("StringValueList");
+		pipe.addParameter(param3);
+		
+		Parameter param4 = new Parameter();
+		param4.setName("intArray");
+		List<String> intValues = Arrays.asList("11","22");
+		session.put("IntValueList", intValues);
+		param4.setSessionKey("IntValueList");
+		pipe.addParameter(param4);
+		
+		pipe.configure();
+		pipe.start();
+		
+		String input    = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
+		String expected = TestFileUtils.getTestFile("/Align/Options/allOptions.xml");
+		
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testSingleValueInArrayListParam() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/Options/options.xsd");
+		pipe.setRoot("Options");
+		pipe.setThrowException(true);
+		
+		Parameter param4 = new Parameter();
+		param4.setName("intArray");
+		List<String> intValues = Arrays.asList("44");
+		session.put("IntValueList", intValues);
+		param4.setSessionKey("IntValueList");
+		pipe.addParameter(param4);
+		
+		pipe.configure();
+		pipe.start();
+		
+		String input    = "{  }";
+		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
+		
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+	
 	public void testStoreRootElement(String outputFormat, String inputFile, boolean setRootElement) throws Exception {
 		pipe.setName("testStoreRootElement");
 		pipe.setSchema("/Align/Abc/abc.xsd");
