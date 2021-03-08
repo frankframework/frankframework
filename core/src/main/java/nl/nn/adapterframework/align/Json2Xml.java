@@ -285,6 +285,9 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	@Override
 	protected JsonValue getSubstitutedChild(JsonValue node, String childName) {
 		Object substs = sp.getSubstitutionsFor(getContext(), childName);
+		if (substs==null) {
+			return null;
+		}
 		if (substs instanceof List) {
 			JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
 			for (Object item:(List)substs) {
