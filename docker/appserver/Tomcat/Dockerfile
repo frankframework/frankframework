@@ -33,5 +33,6 @@ RUN cat /tmp/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalina.pr
 # copy JDBC and JMS drivers
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
 
+# entrypoint.sh is used to set file permissions and change user to "tomcat"
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["catalina.sh", "run"]
