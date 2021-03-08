@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
+import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -11,12 +12,10 @@ import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
-import static nl.nn.adapterframework.testutil.MatchUtils.*;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
@@ -39,7 +38,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
 		try {
 			doPipe(pipe, input,session);
 			fail("expected to fail");
@@ -50,8 +48,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 	@Test
 	public void testNoNamespaceXml() throws Exception {
-		XmlValidator pipe = new XmlValidator();
-		
 		pipe.setName("Response_Validator");
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 //		pipe.setRoot("GetPartiesOnAgreement_Response");
@@ -63,7 +59,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
 		try {
 			pipe.doPipe(Message.asMessage(input),session); // cannot use this.doPipe(), because pipe is a XmlValidator, not a Json2XmlValidator
 			fail("expected to fail");
@@ -87,7 +82,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
 		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
 		PipeRunResult prr = doPipe(pipe, input,session);
 
 		assertEquals(expected, prr.getResult().asString());
@@ -122,7 +116,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input="";
 		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
 		session.put("b_key","b_value");
 		// session variable "c_key is not present, so there should be no 'c' element in the result
 		session.put("d_key","");
@@ -152,8 +145,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input="";
 		String expected = TestFileUtils.getTestFile("/Align/NestedValue/nestedValue.xml");
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		
 		PipeRunResult prr = doPipe(pipe, input,session);
 		
 		String actualXml = Message.asString(prr.getResult());
@@ -180,8 +171,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		String input    = TestFileUtils.getTestFile("/Align/DoubleId/Party-Template.json");
 		String expected = TestFileUtils.getTestFile("/Align/DoubleId/Party.xml");
-		
-		PipeLineSessionBase session = new PipeLineSessionBase();
 		
 		PipeRunResult prr = doPipe(pipe, input,session);
 		
@@ -329,15 +318,13 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		String input    = TestFileUtils.getTestFile("/Align/Abc/"+inputFile);
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		
 		PipeRunResult prr = doPipe(pipe, input,session);
 		
 		String expectedForward = "success";
 		String actualForward = prr.getPipeForward().getName();
 		assertEquals(expectedForward, actualForward);
 		
-		assertEquals("a", (String)session.get("rootElement"));
+		assertEquals("a", session.get("rootElement"));
 	}
 
 	@Test
