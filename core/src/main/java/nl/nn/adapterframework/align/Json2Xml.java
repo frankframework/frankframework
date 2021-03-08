@@ -192,6 +192,14 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		}
 	}
 
+	@Override
+	public boolean hasChild(XSElementDeclaration elementDeclaration, JsonValue node, String childName) throws SAXException {
+		if (isParentOfSingleMultipleOccurringChildElement() && (insertElementContainerElements || !strictSyntax)) {
+			// The array element can always considered to be present; if it is not, it will be inserted
+			return true;
+		}
+		return super.hasChild(elementDeclaration, node, childName);
+	}
 	
 	@Override
 	public Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
@@ -206,14 +214,6 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 					return result;
 				}
 
-//				if ((insertElementContainerElements || !strictSyntax)) {
-//					if (log.isTraceEnabled()) log.trace("parentOfSingleMultipleOccurringChildElement, NO JsonArray,(insertElementContainerElements || !strictSyntax)");
-//					Set<String> result = new HashSet<String>();
-//					result.addAll(getMultipleOccurringChildElements());
-//					if (log.isTraceEnabled()) log.trace("isParentOfSingleMultipleOccurringChildElement, result ["+result+"]");
-//					return result;
-//				}
-				
 				if ((insertElementContainerElements && strictSyntax) && !(node instanceof JsonArray)) {
 					throw new SAXException(MSG_FULL_INPUT_IN_STRICT_COMPACTING_MODE);
 				}
@@ -302,15 +302,24 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	protected void processChildElement(JsonValue node, String parentName, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> processedChildren) throws SAXException {
 		String childElementName=childElementDeclaration.getName();
 		if (log.isTraceEnabled()) log.trace("parentName ["+parentName+"] childElementName ["+childElementName+"] node ["+node+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"]");
-		if  (node instanceof JsonArray) {
-			if (log.isTraceEnabled()) log.trace("Json2Xml.processChildElement() node is JsonArray, handling each of the elements as a ["+childElementName+"]");
-			JsonArray ja=(JsonArray)node;
-			for (JsonValue child:ja) {
-				handleElement(childElementDeclaration, child);
+		if (isParentOfSingleMultipleOccurringChildElement()) {
+			if (node instanceof JsonArray) {
+				if (log.isTraceEnabled()) log.trace("array child node is JsonArray, handling each of the elements as a ["+childElementName+"]");
+				JsonArray ja=(JsonArray)node;
+				for (JsonValue child:ja) {
+					handleElement(childElementDeclaration, child);
+				}
+				// mark that we have processed the array elements
+				processedChildren.add(childElementName);
+				return;
 			}
-			// mark that we have processed the arrayElement containers
-			processedChildren.add(childElementName);
-			return;
+			if (node instanceof JsonString) { // support normal (non list) parameters to supply array element values
+				if (log.isTraceEnabled()) log.trace("array child node is JsonString, handling as a ["+childElementName+"]");
+				handleElement(childElementDeclaration, node);
+				// mark that we have processed the array element
+				processedChildren.add(childElementName);
+				return;
+			}
 		}
 		super.processChildElement(node, parentName, childElementDeclaration, mandatory, processedChildren);
 	}

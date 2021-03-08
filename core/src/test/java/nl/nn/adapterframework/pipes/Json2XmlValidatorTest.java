@@ -265,12 +265,12 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setRoot("Options");
 		pipe.setThrowException(true);
 		
-		Parameter param4 = new Parameter();
-		param4.setName("intArray");
+		Parameter param = new Parameter();
+		param.setName("intArray");
 		List<String> intValues = Arrays.asList("44");
 		session.put("IntValueList", intValues);
-		param4.setSessionKey("IntValueList");
-		pipe.addParameter(param4);
+		param.setSessionKey("IntValueList");
+		pipe.addParameter(param);
 		
 		pipe.configure();
 		pipe.start();
@@ -285,7 +285,33 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
-	
+
+	@Test
+	public void testSingleValueInArrayStringParam() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/Options/options.xsd");
+		pipe.setRoot("Options");
+		pipe.setThrowException(true);
+		
+		Parameter param = new Parameter();
+		param.setName("intArray");
+		param.setValue("44");
+		pipe.addParameter(param);
+		
+		pipe.configure();
+		pipe.start();
+		
+		String input    = "{  }";
+		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
+		
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
 	public void testStoreRootElement(String outputFormat, String inputFile, boolean setRootElement) throws Exception {
 		pipe.setName("testStoreRootElement");
 		pipe.setSchema("/Align/Abc/abc.xsd");
