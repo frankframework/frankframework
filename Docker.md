@@ -36,11 +36,13 @@ To run the image, run the following command, adding environment variables and mo
 
 ## Server use
 
-Please read the [Considerations](#Considerations) before using the image on servers, as the default setup might not be secure enough for your uses.
+Please read the [Considerations](#Considerations) before using the image on servers, as the default setup might not be secure enough for your use.
 
 For use on servers, you need to build your own image that includes the required configuration files. To start building your own image, start your Dockerfile with:
 
 `FROM TBD/TBD/iaf-as-tomcat[:<tag>]`
+
+Dockerfiles based on our image use `root` during build. During startup we use `gosu` to step down to a more restricted `tomcat` user.
 
 Filesystem
 ==========
@@ -82,7 +84,7 @@ Generated log files are stored in `/usr/local/tomcat/logs`.
 Environment variables
 =====================
 
-Environment variables can be used to set parameters. Environment variables have the highest precedence and override parameters set in .property files supplied by Tomcat, resources and configurations. 
+Environment variables can be used to set parameters. Environment variables have the highest precedence and override parameters set in .property files supplied by Tomcat, resources and configurations.
 
 As `org.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource` is set in our images, environment variables can also be used to replace parameters in Tomcat configuration files such as server.xml and context.xml.
 
@@ -99,7 +101,7 @@ Note: The GUI will not load data if accessed via HTTP and `dtap.stage!=LOC`, HTT
 
 ## Secrets
 
-Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), passwords are stored in plain text. 
+Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), passwords are stored in plain text.
 
 We provide the following options to include secrets:
 - Via environment variables as described in the [Tomcat documentation](https://tomcat.apache.org/tomcat-8.5-doc/config/systemprops.html#Property_replacements). By default all environment variables and their values are visible on a number of pages in the console and in the log files, to hide those values `properties.hide` should include the environment variables to hide.
@@ -107,4 +109,6 @@ We provide the following options to include secrets:
 
 ## Non-root
 
-This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=1000` and `GID=1000`. To ensure correct file permissions, by default the root user sets the file permissions on startup after which Tomcat is started using `gosu` to step down to `tomcat`. For setups with a large number of files, setting the permissions reduces startup performance, see [Permissions](#Permissions) to set the file permissions during build.
+This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=1000` and `GID=1000`. To ensure correct file permissions, by default the root user sets the file permissions on startup after which Tomcat is started using `gosu` to step down to `tomcat`. For setups with a large number of files, setting the permissions reduces startup performance, see [Permissions](#Permissions) to set the file permissions during build and skip the step during container startup.
+
+These actions are handled by the [/entrypoint.sh](docker/appserver/Tomcat/src/entrypoint.sh) and [/setPermissions.sh](docker/appserver/Tomcat/src/setPermissions.sh) scripts, replacing or modifying these scripts or changing the ENTRYPOINT of the image might result in incorrect file permissions being set or Tomcat running as `root`.
