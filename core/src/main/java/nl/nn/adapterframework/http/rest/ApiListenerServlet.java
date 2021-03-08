@@ -139,9 +139,11 @@ public class ApiListenerServlet extends HttpServletBase {
 		if(uri.endsWith("openapi.json")) {
 			uri = uri.substring(0, uri.lastIndexOf("/"));
 			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
-			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig);
-			returnJson(response, 200, jsonSchema);
-			return;
+			if(apiConfig != null) {
+				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig);
+				returnJson(response, 200, jsonSchema);
+				return;
+			}
 		}
 
 		/**
