@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2020 sp1 (x64) (http://www.altova.com) by  (Nationale Nederlanden) -->
+<xsd:schema xmlns:nn="urn:options" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:options" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:element name="Options">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="singleInt" type="xsd:int" minOccurs="0"/>
+				<xsd:element name="singleString" type="xsd:string" minOccurs="0"/>
+				<xsd:element name="intArray" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="intElem" type="xsd:int" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="stringArray" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="stringElem" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="stringArray2" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="stringElem2" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="stringElem3" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>
