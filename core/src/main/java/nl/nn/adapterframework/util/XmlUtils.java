@@ -1684,6 +1684,10 @@ public class XmlUtils {
 	}
 
 	static public boolean isWellFormed(String input, String root) {
+		return isWellFormed(Message.asMessage(input), root);
+	}
+
+	static public boolean isWellFormed(Message input, String root) {
 		Set<List<String>> rootValidations = null;
 		if (StringUtils.isNotEmpty(root)) {
 			List<String> path = new ArrayList<String>();
@@ -1696,7 +1700,7 @@ public class XmlUtils {
 		xmlHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
 		try {
 			// set ErrorHandler to prevent message in System.err: [Fatal Error] :-1:-1: Premature end of file.
-			parseXml(Message.asInputSource(input), xmlHandler, xmlValidatorErrorHandler);
+			parseXml(input.asInputSource(), xmlHandler, xmlValidatorErrorHandler);
 		} catch (Exception e) {
 			return false;
 		}

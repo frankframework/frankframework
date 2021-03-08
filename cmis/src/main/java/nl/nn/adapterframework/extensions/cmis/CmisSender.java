@@ -23,7 +23,6 @@ import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -212,7 +211,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class CmisSender extends SenderWithParametersBase {
 
-	private String action;
 	private String authAlias;
 	private String userName;
 	private String password;
@@ -226,12 +224,15 @@ public class CmisSender extends SenderWithParametersBase {
 	private boolean useRootFolder = true;
 	private String resultOnNotFound;
 
+	private CmisAction action;
+	private enum CmisAction {
+		CREATE,DELETE,GET,FIND,UPDATE,FETCH,DYNAMIC;
+	}
+
 	private boolean runtimeSession = false;
 	private boolean keepSession = true;
 
 	private Session cmisSession;
-
-	private List<String> actions = Arrays.asList("create", "delete", "get", "find", "update", "fetch", "dynamic");
 
 	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
@@ -241,9 +242,6 @@ public class CmisSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (!actions.contains(getAction())) {
-			throw new ConfigurationException("illegal value for action [" + getAction() + "], must be " + actions.toString());
-		}
 		if (getAction().equals("create")) {
 			if (StringUtils.isEmpty(getFileInputStreamSessionKey())
 					&& StringUtils.isEmpty(getFileContentSessionKey())) {
@@ -338,7 +336,7 @@ public class CmisSender extends SenderWithParametersBase {
 			ParameterValueList pvl=null;
 			if (getParameterList() != null) {
 				try {
-					pvl =getParameterList().getValues(message, session);
+					pvl = getParameterList().getValues(message, session);
 				} catch (ParameterException e) {
 					throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 				}
@@ -346,31 +344,26 @@ public class CmisSender extends SenderWithParametersBase {
 			if(runtimeSession || !isKeepSession()) {
 				cmisSession = createCmisSession(pvl);
 			}
-			String messageString;
-			try {
-				messageString = message.asString();
-			} catch (IOException e) {
-				throw new SenderException(getLogPrefix(),e);
+
+			switch (getActionEnum()) {
+				case GET:
+					return sendMessageForActionGet(message, session, pvl);
+				case CREATE:
+					return sendMessageForActionCreate(message, session);
+				case DELETE:
+					return sendMessageForActionDelete(message, session);
+				case FIND:
+					return sendMessageForActionFind(message);
+				case UPDATE:
+					return sendMessageForActionUpdate(message);
+				case FETCH:
+					return sendMessageForDynamicActions(message, session);
+				case DYNAMIC:
+					return sendMessageForDynamicActions(message, session);
+	
+				default:
+					throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
 			}
-			String result;
-			if (getAction().equalsIgnoreCase("get")) {
-				result = sendMessageForActionGet(messageString, session, pvl);
-			} else if (getAction().equalsIgnoreCase("create")) {
-				result = sendMessageForActionCreate(messageString, session);
-			} else if (getAction().equalsIgnoreCase("delete")) {
-				result = sendMessageForActionDelete(messageString, session);
-			} else if (getAction().equalsIgnoreCase("find")) {
-				result = sendMessageForActionFind(messageString);
-			} else if (getAction().equalsIgnoreCase("update")) {
-				result = sendMessageForActionUpdate(messageString);
-			} else if (getAction().equalsIgnoreCase("fetch")) {
-				result = sendMessageForDynamicActions(messageString, session);
-			} else if (getAction().equalsIgnoreCase("dynamic")) {
-				result = sendMessageForDynamicActions(messageString, session);
-			} else {
-				throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
-			}
-			return new Message(result);
 		} finally {
 			if (cmisSession != null && !isKeepSession()) {
 				cmisSession.clear();
@@ -379,8 +372,8 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForActionGet(String message, IPipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
-		if (StringUtils.isEmpty(message)) {
+	private Message sendMessageForActionGet(Message message, IPipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
+		if (Message.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
 
@@ -390,7 +383,7 @@ public class CmisSender extends SenderWithParametersBase {
 		} catch (CmisObjectNotFoundException e) {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
-				return getResultOnNotFound();
+				return new Message(getResultOnNotFound());
 			} else {
 				throw new SenderException(e);
 			}
@@ -426,7 +419,7 @@ public class CmisSender extends SenderWithParametersBase {
 				Misc.streamToStream(inputStream, outputStream);
 				log.debug(getLogPrefix() + "copied document content input stream [" + inputStream + "] to output stream [" + outputStream + "]");
 
-				return "";
+				return Message.nullMessage();
 			}
 			else if (getProperties) {
 				if(getDocumentContent) {
@@ -452,7 +445,7 @@ public class CmisSender extends SenderWithParametersBase {
 				}
 				cmisXml.addSubElement(propertiesXml);
 
-				return cmisXml.toXML();
+				return new Message(cmisXml.toXML());
 			}
 			else {
 				ContentStream contentStream = document.getContentStream();
@@ -460,24 +453,26 @@ public class CmisSender extends SenderWithParametersBase {
 
 				if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
 					session.put(getFileInputStreamSessionKey(), inputStream);
-					return "";
+					return Message.nullMessage();
 				} else if (StringUtils.isNotEmpty(getFileContentSessionKey())) {
 					byte[] bytes = Misc.streamToBytes(inputStream);
 					if(convert2Base64)
 						session.put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
 					else
 						session.put(getFileContentSessionKey(), bytes);
-					return "";
+					return Message.nullMessage();
 				}
-				else
-					return Misc.streamToString(inputStream, null, false);
+				else {
+					session.put("contentStreamMimeType", contentStream.getMimeType());
+					return new Message(inputStream);
+				}
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
 	}
 
-	private String sendMessageForActionCreate(String message, IPipeLineSession session) throws SenderException, TimeOutException {
+	private Message sendMessageForActionCreate(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		String fileName = (String) session.get(getFileNameSessionKey());
 
 		Object inputFromSessionKey;
@@ -551,11 +546,11 @@ public class CmisSender extends SenderWithParametersBase {
 			Folder folder = cmisSession.getRootFolder();
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
 			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
-			return document.getId();
+			return new Message(document.getId());
 		} else {
 			ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
 			log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
-			return objectId.getId();
+			return new Message(objectId.getId());
 		}
 	}
 
@@ -618,8 +613,8 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForActionDelete(String message, IPipeLineSession session) throws SenderException, TimeOutException {
-		if (StringUtils.isEmpty(message)) {
+	private Message sendMessageForActionDelete(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+		if (Message.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
 		CmisObject object = null;
@@ -628,7 +623,7 @@ public class CmisSender extends SenderWithParametersBase {
 		} catch (CmisObjectNotFoundException e) {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
-				return getResultOnNotFound();
+				return new Message(getResultOnNotFound());
 			} else {
 				throw new SenderException(e);
 			}
@@ -637,14 +632,14 @@ public class CmisSender extends SenderWithParametersBase {
 			Document suppDoc = (Document) object;
 			suppDoc.delete(true);
 			String correlationID = session==null ? null : session.getMessageId();
-			return correlationID;
+			return new Message(correlationID);
 
 		} else {  //// You can't delete
 			throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 		}
 	}
 
-	private String sendMessageForActionFind(String message) throws SenderException, TimeOutException {
+	private Message sendMessageForActionFind(Message message) throws SenderException, TimeOutException {
 		Element queryElement = null;
 		try {
 			if (XmlUtils.isWellFormed(message, "query")) {
@@ -698,10 +693,10 @@ public class CmisSender extends SenderWithParametersBase {
 			cmisXml.addAttribute("totalNumItems", q.getTotalNumItems());
 			cmisXml.addSubElement(rowsetXml);
 		}
-		return cmisXml.toXML();
+		return new Message(cmisXml.toXML());
 	}
 
-	private CmisObject getCmisObject(String message) throws SenderException, CmisObjectNotFoundException {
+	private CmisObject getCmisObject(Message message) throws SenderException, CmisObjectNotFoundException {
 		if (XmlUtils.isWellFormed(message, "cmis")) {
 			try {
 				Element queryElement = XmlUtils.buildElement(message);
@@ -740,7 +735,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private String sendMessageForDynamicActions(String message, IPipeLineSession session) throws SenderException, TimeOutException {
+	private Message sendMessageForDynamicActions(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 
 		XmlBuilder resultXml = new XmlBuilder("cmis");
 		Element requestElement = null;
@@ -924,10 +919,10 @@ public class CmisSender extends SenderWithParametersBase {
 				throw new CmisNotSupportedException("Operation not implemented");
 		}
 
-		return resultXml.toXML();
+		return new Message(resultXml.toXML());
 	}
 
-	private String sendMessageForActionUpdate(String message) throws SenderException, TimeOutException {
+	private Message sendMessageForActionUpdate(Message message) throws SenderException, TimeOutException {
 		String objectId = null;
 		Map<String, Object> props = new HashMap<String, Object>();
 		Element cmisElement;
@@ -954,16 +949,15 @@ public class CmisSender extends SenderWithParametersBase {
 			object = cmisSession.getObject(cmisSession.createObjectId(objectId));
 		} catch (CmisObjectNotFoundException e) {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(getLogPrefix() + "document with id [" + message
-						+ "] not found", e);
-				return getResultOnNotFound();
+				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
+				return new Message(getResultOnNotFound());
 			} else {
 				throw new SenderException(e);
 			}
 
 		}
 		object.updateProperties(props);
-		return object.getId();
+		return new Message(object.getId());
 	}
 
 
@@ -1074,15 +1068,19 @@ public class CmisSender extends SenderWithParametersBase {
 			" * <li><code>update</code>: update the properties of an existing document</li>\n" +
 			" * <li><code>fetch</code>: get the (meta)data of a folder or document</li>\n" +
 			" * </ul>", ""})
-	public void setAction(String string) {
-		action = string;
+	public void setAction(String action) {
+		this.action = Misc.parse(CmisAction.class, "destinationType", action);
 	}
 
 	public String getAction() {
 		if(action != null)
-			return action.toLowerCase();
+			return action.name().toLowerCase();
 
 		return null;
+	}
+
+	public CmisAction getActionEnum() {
+		return action;
 	}
 
 	@IbisDoc({"the maximum number of concurrent connections", "10"})
