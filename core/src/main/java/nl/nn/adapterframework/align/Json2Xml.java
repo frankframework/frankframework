@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.align;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.HashMap;
