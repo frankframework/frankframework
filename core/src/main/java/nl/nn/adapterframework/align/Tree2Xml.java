@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.Set;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang.StringUtils;
-//import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
@@ -33,7 +32,8 @@ import org.xml.sax.SAXException;
  * 
  * @author Gerrit van Brakel
  *
- * @param <N>
+ * @param <C> Container of the root of the tree
+ * @param <N> The tree node type
  */
 public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 
@@ -67,13 +67,22 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		return allChildNames!=null && allChildNames.contains(childName);
 	}
 
+	
+	/**
+	 * Allows subclasses to provide a special way of substituting. 
+	 * This is used by Json2Xml to insert a List of values as a JsonArray.
+	 */
+	protected N getSubstitutedChild(N node, String childName) {
+		return node;
+	}
+	
 	@Override
 	public final Iterable<N> getChildrenByName(N node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String childName=childElementDeclaration.getName();
 		Iterable<N> children = getNodeChildrenByName(node, childElementDeclaration);
 		if (children==null && sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
 			List<N> result=new LinkedList<N>();
-			result.add(node);
+			result.add(getSubstitutedChild(node, childName));
 			return result;
 		}
 		return children;
@@ -83,9 +92,9 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	public final String getText(XSElementDeclaration elementDeclaration, N node) {
 		String nodeName=elementDeclaration.getName();
 		Object text;
-		if (log.isTraceEnabled()) log.trace("getText() node ["+nodeName+"] currently parsed element ["+getContext().getLocalName()+"]");
+		if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] currently parsed element ["+getContext().getLocalName()+"]");
 		if (sp!=null && (text=sp.getOverride(getContext()))!=null) {
-			if (log.isTraceEnabled()) log.trace("getText() node ["+nodeName+"] override found ["+text+"]");
+			if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] override found ["+text+"]");
 			if (text instanceof String) {
 				return (String)text;
 			}
@@ -93,13 +102,13 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		}
 		String result=getNodeText(elementDeclaration, node);
 		if (sp!=null && StringUtils.isEmpty(result) && (text=sp.getDefault(getContext()))!=null) {
-			if (log.isTraceEnabled()) log.trace("getText() node ["+nodeName+"] default found ["+text+"]");
+			if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] default found ["+text+"]");
 			if (text instanceof String) {
 				result = (String)text;
 			}
 			result = text.toString();
 		}
-		if (log.isTraceEnabled()) log.trace("getText() node ["+nodeName+"] returning value ["+result+"]");
+		if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] returning value ["+result+"]");
 		return result;
 	}
 

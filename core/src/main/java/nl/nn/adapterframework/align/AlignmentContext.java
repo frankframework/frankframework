@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import java.util.Set;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.xml.sax.Attributes;
 
+/**
+ * Top of a stack of parsed elements, that represent the current position in the aligned document.
+ */
 public class AlignmentContext {
 
 	private AlignmentContext parent;
