@@ -59,7 +59,8 @@ public class StreamUtil {
 	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
 
 	public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
-	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
+//	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName(); 2021-03-09 Somehow DEFAULT_CHARSET returns null!
+	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 	
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
