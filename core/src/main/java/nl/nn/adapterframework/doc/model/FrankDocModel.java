@@ -244,6 +244,7 @@ public class FrankDocModel {
 	static Map<String, Method> getEnumGettersByAttributeName(Class<?> clazz) {
 		List<Method> methods = Arrays.asList(clazz.getMethods()).stream()
 				.filter(m -> m.getName().endsWith(ENUM))
+				.filter(m -> m.getReturnType().isEnum())
 				.collect(Collectors.toList());
 		Map<String, Method> result = new HashMap<>();
 		for(Method m: methods) {
