@@ -193,10 +193,47 @@
                         <password>sa</password>
                     </security>
                 </datasource>
-                <datasource jndi-name="java:/jdbc/ibis4test-h2" pool-name="h2-datasource" enabled="true" use-java-context="true" jta="false">
+                <datasource jndi-name="java:/jdbc/ibis4test-h2" pool-name="h2-datasource" enabled="true" use-java-context="true">
                     <connection-url>jdbc:h2:file:./ibis4test;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE</connection-url>
                     <driver>h2</driver>
                 </datasource>
+                <xa-datasource jndi-name="java:/jdbc/ibis4test-mssql" pool-name="ibis4test-mssql" enabled="true" use-java-context="true" spy="false" use-ccm="true" statistics-enabled="false">
+                    <xa-datasource-property name="SelectMethod">
+                        direct
+                    </xa-datasource-property>
+                    <xa-datasource-property name="URL">
+                        jdbc:sqlserver://host.docker.internal:1433;database=testiaf
+                    </xa-datasource-property>
+                    <xa-datasource-property name="encrypt">
+                        false
+                    </xa-datasource-property>
+                    <xa-datasource-property name="trustServerCertificate">
+                        true
+                    </xa-datasource-property>
+                    <xa-datasource-class>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</xa-datasource-class>
+                    <driver>mssql-jdbc.jar</driver>
+                    <xa-pool>
+                        <min-pool-size>3</min-pool-size>
+                        <max-pool-size>75</max-pool-size>
+                        <allow-multiple-users>false</allow-multiple-users>
+                        <is-same-rm-override>false</is-same-rm-override>
+                        <interleaving>false</interleaving>
+                        <no-tx-separate-pools>false</no-tx-separate-pools>
+                        <pad-xid>false</pad-xid>
+                        <wrap-xa-resource>true</wrap-xa-resource>
+                    </xa-pool>
+                    <security>
+                        <user-name>testiaf_user</user-name>
+                        <password>testiaf_user00</password>
+                    </security>
+                    <timeout>
+                        <set-tx-query-timeout>false</set-tx-query-timeout>
+                    </timeout>
+                    <statement>
+                        <track-statements>NOWARN</track-statements>
+                        <share-prepared-statements>false</share-prepared-statements>
+                    </statement>
+                </xa-datasource>
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>

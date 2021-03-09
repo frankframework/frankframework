@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-as-jboss</artifactId>
-	<name>Frank!Framework Docker image for Jboss</name>
+	<artifactId>ibis-adapterframework-docker-as-jboss-wildfly</artifactId>
+	<name>Frank!Framework Docker image for jboss-wildfly</name>
 	<packaging>pom</packaging>
 
 	<parent>
@@ -69,6 +69,24 @@
 		<defaultGoal>package</defaultGoal>
 		<plugins>
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<goals>
+							<goal>read-project-properties</goal>
+						</goals>
+						<configuration>
+							<files>
+								<file>./server.properties</file>
+							</files>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>3.1.2</version>
@@ -103,7 +121,11 @@
 								<exec executable="docker">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-as-jboss"/>
+									<arg value="iaf-as-${SERVER_TYPE}"/>
+									<arg value="--build-arg"/>
+									<arg value="DOCKER_REPO=${DOCKER_REPO}"/>
+									<arg value="--build-arg"/>
+									<arg value="IMAGE_VERSION=${IMAGE_VERSION}"/>
 									<arg value="."/>
 								</exec>
 							</target>

@@ -15,6 +15,8 @@
 	In order to properly handle 'Propagation: Supports', set property
 	'transactionSynchronization' to 'Synchronize on actual transaction'.
 	-->
+	
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jndi.JndiDataSourceFactory" />
 	<bean
 		id="txManagerReal"
 		class="org.springframework.transaction.jta.JtaTransactionManager"
