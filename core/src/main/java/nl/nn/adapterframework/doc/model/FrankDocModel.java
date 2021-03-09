@@ -52,6 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class FrankDocModel {
 	private static Logger log = LogUtil.getLogger(FrankDocModel.class);
+	private static String ENUM = "Enum";
 	private static final String DIGESTER_RULES = "digester-rules.xml";
 	static final String OTHER = "Other";
 
@@ -228,11 +229,32 @@ public class FrankDocModel {
 				.collect(Collectors.toList());		
 		Map<String, Method> result = new LinkedHashMap<>();
 		for(Method method: methodList) {
-			String strippedName = method.getName().substring(prefix.length());
-			String attributeName = strippedName.substring(0, 1).toLowerCase() + strippedName.substring(1);
+			String attributeName = attributeOf(method.getName(), prefix);
 			result.put(attributeName, method);
 		}
 		return result;
+	}
+
+	private static String attributeOf(String methodName, String prefix) {
+		String strippedName = methodName.substring(prefix.length());
+		String attributeName = strippedName.substring(0, 1).toLowerCase() + strippedName.substring(1);
+		return attributeName;
+	}
+
+	static Map<String, Method> getEnumGettersByAttributeName(Class<?> clazz) {
+		List<Method> methods = Arrays.asList(clazz.getMethods()).stream()
+				.filter(m -> m.getName().endsWith(ENUM))
+				.collect(Collectors.toList());
+		Map<String, Method> result = new HashMap<>();
+		for(Method m: methods) {
+			result.put(enumAttributeOf(m), m);
+		}
+		return result;
+	}
+
+	private static String enumAttributeOf(Method method) {
+		String nameWithoutEnum = method.getName().substring(0, method.getName().length() - ENUM.length());
+		return attributeOf(nameWithoutEnum, "get");
 	}
 
 	private void checkForTypeConflict(Method setter, Method getter, FrankElement attributeOwner) {
