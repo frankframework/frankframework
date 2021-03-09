@@ -24,6 +24,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,6 +75,7 @@ public class FrankDocModel {
 	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
 	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
+	private Map<String, AttributeValuesList> allAttributeValuesLists = new LinkedHashMap<>();
 
 	/**
 	 * Get the FrankDocModel needed in production. This is just a first draft. The
@@ -171,7 +173,7 @@ public class FrankDocModel {
 		Class<?> superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass);
 		current.setParent(parent);
-		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current));
+		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current, getEnumGettersByAttributeName(clazz)));
 		current.setConfigChildren(createConfigChildren(clazz.getDeclaredMethods(), current));
 		log.trace("Done creating FrankElement for class name [{}]", () -> clazz.getName());
 		return current;
@@ -181,7 +183,7 @@ public class FrankDocModel {
 		return allElements.get(fullName);
 	}
 
-	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner) throws ReflectiveOperationException {
+	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner, Map<String, Method> enumGettersByAttributeName) throws ReflectiveOperationException {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
 		Map<String, Method> setterAttributes = getAttributeToMethodMap(methods, "set");
 		Map<String, Method> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
@@ -195,6 +197,11 @@ public class FrankDocModel {
 			}
 			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
 			documentAttribute(attribute, method, attributeOwner);
+			if(enumGettersByAttributeName.containsKey(attributeName)) {
+				@SuppressWarnings("unchecked")
+				Class<? extends Enum<?>> restrictClass = (Class<? extends Enum<?>>) enumGettersByAttributeName.get(attributeName).getReturnType();
+				attribute.setAttributeValuesList(findOrCreateAttributeValuesList(restrictClass));
+			}
 			result.add(attribute);
 			log.trace("Attribute [{}] done", attributeName);
 		}
@@ -226,7 +233,9 @@ public class FrankDocModel {
 				.filter(m -> Modifier.isPublic(m.getModifiers()))
 				.filter(Utils::isAttributeGetterOrSetter)
 				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
-				.collect(Collectors.toList());		
+				.collect(Collectors.toList());
+		// The sort order determines the creation order of AttributeValuesList.
+		Collections.sort(methodList, Comparator.comparing(Method::getName));
 		Map<String, Method> result = new LinkedHashMap<>();
 		for(Method method: methodList) {
 			String attributeName = attributeOf(method.getName(), prefix);
@@ -683,5 +692,18 @@ public class FrankDocModel {
 			}
 		}
 		log.trace("Leave for roles [{}] and recursion depth [{}]", () -> ElementRole.describeCollection(roleGroup), () -> recursionDepth);
+	}
+
+	AttributeValuesList findOrCreateAttributeValuesList(Class<? extends Enum<?>> clazz) {
+		if(allAttributeValuesLists.containsKey(clazz.getName())) {
+			return allAttributeValuesLists.get(clazz.getName());
+		}
+		AttributeValuesList result = new AttributeValuesList(clazz);
+		allAttributeValuesLists.put(clazz.getName(), result);
+		return result;
+	}
+
+	public AttributeValuesList findAttributeValuesList(String enumTypeFullName) {
+		return allAttributeValuesLists.get(enumTypeFullName);
 	}
 }

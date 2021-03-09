@@ -38,8 +38,11 @@ public class FrankAttribute extends ElementChild implements Comparable<FrankAttr
 	}
 
 	private @Getter String name;
-	
 	private @Getter @Setter FrankElement describingElement;
+	/**
+	 * Null if there is no restriction to the allowed attribute values.
+	 */
+	private @Getter @Setter AttributeValuesList attributeValuesList;
 
 	public FrankAttribute(String name, FrankElement attributeOwner) {
 		super(attributeOwner);

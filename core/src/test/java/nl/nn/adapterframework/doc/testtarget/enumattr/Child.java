@@ -1,6 +1,9 @@
 package nl.nn.adapterframework.doc.testtarget.enumattr;
 
 public class Child extends Parent {
+	public void setChildAttribute(String value) {
+	}
+
 	public MyEnum getChildAttributeEnum() {
 		return MyEnum.TWO;
 	}
