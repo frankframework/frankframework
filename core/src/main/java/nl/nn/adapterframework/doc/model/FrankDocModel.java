@@ -75,7 +75,7 @@ public class FrankDocModel {
 	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
 	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
-	private Map<String, AttributeValuesList> allAttributeValuesLists = new LinkedHashMap<>();
+	private AttributeValuesListFactory attributeValuesListFactory = new AttributeValuesListFactory();
 
 	/**
 	 * Get the FrankDocModel needed in production. This is just a first draft. The
@@ -695,15 +695,10 @@ public class FrankDocModel {
 	}
 
 	AttributeValuesList findOrCreateAttributeValuesList(Class<? extends Enum<?>> clazz) {
-		if(allAttributeValuesLists.containsKey(clazz.getName())) {
-			return allAttributeValuesLists.get(clazz.getName());
-		}
-		AttributeValuesList result = new AttributeValuesList(clazz);
-		allAttributeValuesLists.put(clazz.getName(), result);
-		return result;
+		return attributeValuesListFactory.findOrCreateAttributeValuesList(clazz);
 	}
 
 	public AttributeValuesList findAttributeValuesList(String enumTypeFullName) {
-		return allAttributeValuesLists.get(enumTypeFullName);
+		return attributeValuesListFactory.findAttributeValuesList(enumTypeFullName);
 	}
 }

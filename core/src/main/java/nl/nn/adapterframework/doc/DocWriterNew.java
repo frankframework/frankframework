@@ -16,6 +16,8 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addEnumeration;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addRestriction;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAnyAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
@@ -30,6 +32,7 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createAttributeGro
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createElementWithType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createGroup;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createSimpleType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.OPTIONAL;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.PROHIBITED;
@@ -52,6 +55,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 
+import nl.nn.adapterframework.doc.model.AttributeValuesList;
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.doc.model.ConfigChildSet;
 import nl.nn.adapterframework.doc.model.ElementChild;
@@ -303,7 +307,8 @@ public class DocWriterNew {
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 	private static final String ELEMENT_ROLE = "elementRole";
 	private static final String ELEMENT_GROUP_BASE = "ElementGroupBase";
-	
+	private static final String ATTRIBUTE_VALUES_TYPE = "AttributeValuesType";
+
 	private FrankDocModel model;
 	private String startClassName;
 	private XsdVersion version;
@@ -312,6 +317,7 @@ public class DocWriterNew {
 	private Set<String> namesCreatedFrankElements = new HashSet<>();
 	private Set<ElementRole.Key> idsCreatedElementGroups = new HashSet<>();
 	private ElementGroupManager elementGroupManager;
+	private Set<String> definedAttributeValuesLists = new HashSet<>();
 
 	public DocWriterNew(FrankDocModel model) {
 		this.model = model;
@@ -923,15 +929,30 @@ public class DocWriterNew {
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> frankAttributes) {
 		for(FrankAttribute frankAttribute: frankAttributes) {
 			log.trace("Adding attribute [{}]", () -> frankAttribute.getName());
-			// The default value in the model is a *description* of the default value.
-			// Therefore, it should be added to the description in the xs:attribute.
-			// The "default" attribute of the xs:attribute should not be set.
-			XmlBuilder attribute = addAttribute(context, frankAttribute.getName(), DEFAULT, null, OPTIONAL);
+			XmlBuilder attribute = null;
+			if(frankAttribute.getAttributeValuesList() == null) {
+				// The default value in the model is a *description* of the default value.
+				// Therefore, it should be added to the description in the xs:attribute.
+				// The "default" attribute of the xs:attribute should not be set.
+				attribute = addAttribute(context, frankAttribute.getName(), DEFAULT, null, OPTIONAL);
+			} else {
+				attribute = addRestrictedAttribute(context, frankAttribute);
+			}
 			if(needsDocumentation(frankAttribute)) {
 				log.trace("Attribute has documentation");
 				addDocumentation(attribute, getDocumentationText(frankAttribute));
 			}
 		}		
+	}
+
+	private XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
+		AttributeValuesList attributeValuesList = attribute.getAttributeValuesList();
+		XmlBuilder result = addAttribute(context, attribute.getName(), attributeValuesList.getUniqueName(ATTRIBUTE_VALUES_TYPE));
+		if(! definedAttributeValuesLists.contains(attributeValuesList.getFullName())) {
+			definedAttributeValuesLists.add(attributeValuesList.getFullName());
+			addAttributeValuesType(attributeValuesList);
+		}
+		return result;
 	}
 
 	private boolean needsDocumentation(ElementChild elementChild) {
@@ -951,6 +972,13 @@ public class DocWriterNew {
 			result.append(elementChild.getDefaultValue());
 		}
 		return result.toString();
+	}
+
+	private void addAttributeValuesType(AttributeValuesList attributeValuesList) {
+		XmlBuilder simpleType = createSimpleType(attributeValuesList.getUniqueName(ATTRIBUTE_VALUES_TYPE));
+		xsdComplexItems.add(simpleType);
+		final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
+		attributeValuesList.getValues().forEach(v -> addEnumeration(restriction, v));
 	}
 
 	private String xsdElementType(FrankElement frankElement) {

@@ -104,6 +104,12 @@ class DocWriterNewXmlUtils {
 		return complexType;		
 	}
 
+	static XmlBuilder createSimpleType(String name) {
+		XmlBuilder simpleType = new XmlBuilder("simpleType", "xs", XML_SCHEMA_URI);
+		simpleType.addAttribute("name", name);
+		return simpleType;		
+	}
+
 	static XmlBuilder addComplexType(XmlBuilder schema, String name) {
 		XmlBuilder complexType;
 		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
@@ -200,6 +206,14 @@ class DocWriterNewXmlUtils {
 		}
 	}
 
+	static XmlBuilder addAttribute(XmlBuilder context, String name, String typeName) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("name", name);
+		attribute.addAttribute("type", typeName);
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
 	static XmlBuilder addAnyAttribute(XmlBuilder context) {
 		XmlBuilder attribute = new XmlBuilder("anyAttribute", "xs", XML_SCHEMA_URI);
 		context.addSubElement(attribute);
@@ -275,5 +289,19 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(extension);
 		extension.addAttribute("base", base);
 		return extension;
+	}
+
+	static XmlBuilder addRestriction(XmlBuilder context, String base) {
+		XmlBuilder restriction = new XmlBuilder("restriction", "xs", XML_SCHEMA_URI);
+		context.addSubElement(restriction);
+		restriction.addAttribute("base", base);
+		return restriction;
+	}
+
+	static XmlBuilder addEnumeration(XmlBuilder context, String item) {
+		XmlBuilder enumeration = new XmlBuilder("enumeration", "xs", XML_SCHEMA_URI);
+		context.addSubElement(enumeration);
+		enumeration.addAttribute("value", item);
+		return enumeration;
 	}
 }

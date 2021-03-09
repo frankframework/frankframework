@@ -76,7 +76,13 @@
     <xs:attributeGroup ref="NotDescribedPossibleIChildDeclaredAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="NotDescribedPossibleIChildDeclaredAttributeGroup">
-    <xs:attribute name="firstAttribute" type="xs:string" />
+    <xs:attribute name="firstAttribute" type="MyEnumAttributeValuesType" />
     <xs:attribute name="secondAttribute" type="xs:string" />
   </xs:attributeGroup>
+  <xs:simpleType name="MyEnumAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ONE" />
+      <xs:enumeration value="TWO" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>
