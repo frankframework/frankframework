@@ -701,4 +701,8 @@ public class FrankDocModel {
 	public AttributeValuesList findAttributeValuesList(String enumTypeFullName) {
 		return attributeValuesListFactory.findAttributeValuesList(enumTypeFullName);
 	}
+
+	public List<AttributeValuesList> getAllAttributeValuesLists() {
+		return attributeValuesListFactory.getAll();
+	}
 }

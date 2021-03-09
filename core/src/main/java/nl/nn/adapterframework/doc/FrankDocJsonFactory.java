@@ -30,6 +30,7 @@ import javax.json.JsonObjectBuilder;
 
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.doc.model.AttributeValuesList;
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
@@ -54,6 +55,7 @@ public class FrankDocJsonFactory {
 			JsonObjectBuilder result = bf.createObjectBuilder();
 			result.add("groups", getGroups());
 			result.add("elements", getElements());
+			result.add("types", getTypes());
 			return result.build();
 		} catch(JsonException e) {
 			log.warn("Error producing JSON", e);
@@ -132,6 +134,9 @@ public class FrankDocJsonFactory {
 		result.add("describer", frankAttribute.getDescribingElement().getFullName());
 		addIfNotNull(result, "description", frankAttribute.getDescription());
 		addIfNotNull(result, "default", frankAttribute.getDefaultValue());
+		if(frankAttribute.getAttributeValuesList() != null) {
+			result.add("restrictingType", frankAttribute.getAttributeValuesList().getFullName());
+		}
 		return result.build();
 	}
 
@@ -157,6 +162,23 @@ public class FrankDocJsonFactory {
 		result.add("roleName", child.getElementRole().getRoleName());
 		result.add("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
 		addIfNotNull(result, "description", child.getDescription());
+		return result.build();
+	}
+
+	private JsonArray getTypes() {
+		JsonArrayBuilder result = bf.createArrayBuilder();
+		for(AttributeValuesList vl: model.getAllAttributeValuesLists()) {
+			result.add(getType(vl));
+		}
+		return result.build();
+	}
+
+	private JsonObject getType(AttributeValuesList vl) {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("fullName", vl.getFullName());
+		final JsonArrayBuilder valuesBuilder = bf.createArrayBuilder();
+		vl.getValues().forEach(value -> valuesBuilder.add(value));
+		result.add("values", valuesBuilder.build());
 		return result.build();
 	}
 }

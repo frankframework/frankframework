@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.doc.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,6 +33,10 @@ class AttributeValuesListFactory {
 
 	AttributeValuesList findAttributeValuesList(String enumTypeFullName) {
 		return allAttributeValuesLists.get(enumTypeFullName);
+	}
+
+	List<AttributeValuesList> getAll() {
+		return new ArrayList<>(allAttributeValuesLists.values());
 	}
 
 	int size() {
