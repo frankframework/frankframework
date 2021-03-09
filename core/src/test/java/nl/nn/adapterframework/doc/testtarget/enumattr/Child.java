@@ -8,4 +8,11 @@ public class Child extends Parent {
 	public String getNotForAttributeBecauseNoEnumReturnedEnum() {
 		return null;
 	}
+
+	public void getNotForAttributeBecauseReturnsVoidEnum() {
+	}
+
+	public MyEnum getNotForAttributeBecauseHasArgumentEnum(int value) {
+		return MyEnum.TWO;
+	}
 }

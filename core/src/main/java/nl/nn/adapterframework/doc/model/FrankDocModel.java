@@ -242,9 +242,14 @@ public class FrankDocModel {
 	}
 
 	static Map<String, Method> getEnumGettersByAttributeName(Class<?> clazz) {
-		List<Method> methods = Arrays.asList(clazz.getMethods()).stream()
+		Method[] rawMethods = clazz.getMethods();
+		List<Method> methods = Arrays.asList(rawMethods).stream()
 				.filter(m -> m.getName().endsWith(ENUM))
 				.filter(m -> m.getReturnType().isEnum())
+				.filter(m -> m.getParameterCount() == 0)
+				// This filter cannot be covered with tests, because getMethods
+				// does not include a non-public method in the test classes.
+				.filter(m -> m.getModifiers() == Modifier.PUBLIC)
 				.collect(Collectors.toList());
 		Map<String, Method> result = new HashMap<>();
 		for(Method m: methods) {
