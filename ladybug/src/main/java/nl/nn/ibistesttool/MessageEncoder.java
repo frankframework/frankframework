@@ -23,20 +23,20 @@ import nl.nn.testtool.MessageEncoderImpl;
 public class MessageEncoder extends MessageEncoderImpl {
 
 	@Override
-	public ToStringResult toString(Object message) {
+	public ToStringResult toString(Object message, String charset) {
 		if (message instanceof Message) {
 			// Hide/remove the Message class/object
 			Message m = ((Message)message);
 			ToStringResult toStringResult;
 			if (m.requiresStream()) {
-				toStringResult = new ToStringResult("Waiting for stream to be read, captured and closed...", null,
+				toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null,
 						m.asObject().getClass().getTypeName());
 			} else {
-				toStringResult = super.toString(m.asObject());
+				toStringResult = super.toString(m.asObject(), charset);
 			}
 			return toStringResult;
 		} else {
-			return super.toString(message);
+			return super.toString(message, charset);
 		}
 	}
 

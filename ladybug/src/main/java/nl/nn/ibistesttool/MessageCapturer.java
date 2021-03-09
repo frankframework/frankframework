@@ -17,6 +17,7 @@ package nl.nn.ibistesttool;
 
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.function.Consumer;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -48,7 +49,7 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 	}
 
 	@Override
-	public <T> T toOutputStream(T message, OutputStream outputStream) {
+	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier) {
 		((Message)message).captureBinaryStream(testTool.getMaxMessageLength(), outputStream);
 		return message;
 	}
