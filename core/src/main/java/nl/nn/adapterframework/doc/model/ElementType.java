@@ -18,8 +18,6 @@ package nl.nn.adapterframework.doc.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -27,8 +25,11 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Models a collection of FrankElement. The collection can be characterized by
@@ -42,11 +43,10 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class ElementType {
 	private static Logger log = LogUtil.getLogger(ElementType.class);
-	private @Getter Map<String, FrankElement> members;
+	private @Getter(AccessLevel.PACKAGE) List<FrankElement> members;
 	private @Getter boolean fromJavaInterface;
+	private @Getter @Setter FrankDocGroup frankDocGroup;
 	
-	private @Getter LinkedHashSet<ElementRole> elementRoles = new LinkedHashSet<>();
-
 	private static class InterfaceHierarchyItem {
 		private @Getter String fullName;
 		private @Getter String simpleName;
@@ -81,7 +81,7 @@ public class ElementType {
 
 	ElementType(Class<?> clazz) {
 		interfaceHierarchy = new InterfaceHierarchyItem(clazz);
-		members = new HashMap<>();
+		members = new ArrayList<>();
 		this.fromJavaInterface = clazz.isInterface();
 	}
 
@@ -93,19 +93,23 @@ public class ElementType {
 		return interfaceHierarchy.getSimpleName();
 	}
 
+	String getGroupName() {
+		String result = getSimpleName();
+		if(result.startsWith("I")) {
+			result = result.substring(1);
+		}
+		return result;
+	}
+
 	void addMember(FrankElement member) {
-		members.put(member.getFullName(), member);
+		Misc.addToSortedListNonUnique(members, member);
 	}
 
 	FrankElement getSingletonElement() throws ReflectiveOperationException {
 		if(members.size() != 1) {
 			throw new ReflectiveOperationException(String.format("Expected that ElementType [%s] contains exactly one element", getFullName()));
 		}
-		return members.values().iterator().next();
-	}
-
-	void registerElementRole(ElementRole elementRole) {
-		elementRoles.add(elementRole);
+		return members.iterator().next();
 	}
 
 	void calculateHighestCommonInterface(FrankDocModel model) {
@@ -115,9 +119,8 @@ public class ElementType {
 			highestCommonInterface = nextCandidate;
 			nextCandidate = highestCommonInterface.getNextCommonInterface(model);
 		}
-		if(log.isTraceEnabled()) {
-			log.trace(String.format("ElementType [%s] has highest common interface [%s]", this.getFullName(), highestCommonInterface.getFullName()));
-		}
+		log.trace("ElementType [{}] has highest common interface [{}]",
+				() -> this.getFullName(), () -> highestCommonInterface.getFullName());
 	}
 
 	private ElementType getNextCommonInterface(FrankDocModel model) {
@@ -133,13 +136,21 @@ public class ElementType {
 		} else {
 			ElementType result = candidates.get(0);
 			if(candidates.size() >= 2) {
-				log.warn(String.format("There are multiple candidates for the next common interface of ElementType [%s], which are [%s]. Chose [%s]",
-						getFullName(),
-						candidates.stream().map(ElementType::getFullName).collect(Collectors.joining(", ")),
-						result.getFullName()));
+				log.warn("There are multiple candidates for the next common interface of ElementType [{}], which are [{}]. Chose [{}]",
+						() -> getFullName(), () -> candidates.stream().map(ElementType::getFullName).collect(Collectors.joining(", ")), () -> result.getFullName());
 			}
 			return result;
 		}
+	}
+
+	/**
+	 * Get the members that can be referenced with syntax 2. Only non-abstracts are returned.
+	 */
+	List<FrankElement> getSyntax2Members() {
+		return members.stream()
+				.filter(frankElement -> ! frankElement.getXmlElementNames().isEmpty())
+				.sorted()
+				.collect(Collectors.toList());
 	}
 
 	@Override

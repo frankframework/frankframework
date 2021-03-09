@@ -5,7 +5,7 @@ name: Java CI with Maven
 
 env:
   PROFILES: ibissource,codecoverage
-  FFPR: ${{ secrets.CI_USER }} != 0
+  FFPR: format('{{{0}{1}}}', ${{ secrets.CI_USER }}, 'x') != "{x}"
 
 on:
   push:

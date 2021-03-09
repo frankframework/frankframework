@@ -127,7 +127,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		/**
 		 * Generate an OpenApi json file
 		 */
-		if(uri.equalsIgnoreCase("openapi.json")) {
+		if(uri.equalsIgnoreCase("/openapi.json")) {
 			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema();
 			returnJson(response, 200, jsonSchema);
 			return;
@@ -136,12 +136,14 @@ public class ApiListenerServlet extends HttpServletBase {
 		/**
 		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
 		 */
-		if(uri.endsWith("/openapi.json")) {
-			uri = uri.substring(0, uri.length()-"/openapi.json".length());
-			List<ApiDispatchConfig> apiConfigs = dispatcher.findMatchingConfigsForUri(uri);
-			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfigs);
-			returnJson(response, 200, jsonSchema);
-			return;
+		if(uri.endsWith("openapi.json")) {
+			uri = uri.substring(0, uri.lastIndexOf("/"));
+			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+			if(apiConfig != null) {
+				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig);
+				returnJson(response, 200, jsonSchema);
+				return;
+			}
 		}
 
 		/**
@@ -345,10 +347,17 @@ public class ApiListenerServlet extends HttpServletBase {
 				Enumeration<String> paramnames = request.getParameterNames();
 				while (paramnames.hasMoreElements()) {
 					String paramname = paramnames.nextElement();
-					String paramvalue = request.getParameter(paramname);
-	
-					if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
-					messageContext.put(paramname, paramvalue);
+					String[] paramList = request.getParameterValues(paramname);
+					if(paramList.length > 1) { // contains multiple items
+						List<String> valueList = Arrays.asList(paramList);
+						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to "+valueList);
+						messageContext.put(paramname, valueList);
+					}
+					else {
+						String paramvalue = request.getParameter(paramname);
+						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
+						messageContext.put(paramname, paramvalue);
+					}
 				}
 	
 				/**

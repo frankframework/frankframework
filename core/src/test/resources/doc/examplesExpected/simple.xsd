@@ -3,55 +3,59 @@
   <xs:element name="Start">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="Syntax1NameTChild" minOccurs="0" maxOccurs="unbounded" />
-        <xs:group ref="Syntax1NameIChildElementGroup" minOccurs="0" maxOccurs="1" />
+        <xs:group ref="RoleNameIChildElementGroup" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="RoleNameTChild" minOccurs="0" maxOccurs="unbounded" />
       </xs:sequence>
       <xs:attribute name="attribute" type="xs:string" />
       <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.Start" use="prohibited" />
     </xs:complexType>
   </xs:element>
-  <xs:element name="Syntax1NameTChild">
+  <xs:element name="RoleNameTChild">
     <xs:complexType>
       <xs:sequence />
-      <xs:attribute name="elementRole" type="xs:string" fixed="syntax1NameTChild" use="prohibited" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="roleNameTChild" use="prohibited" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" use="prohibited" />
     </xs:complexType>
   </xs:element>
-  <xs:group name="Syntax1NameIChildElementGroup">
+  <xs:group name="RoleNameIChildElementGroup">
     <xs:choice>
-      <xs:element name="Syntax1NameIChild">
+      <xs:element name="RoleNameIChild">
         <xs:complexType>
-          <xs:group ref="IChildMemberChildGroup" minOccurs="0" maxOccurs="unbounded" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded" />
+          </xs:sequence>
+          <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
-          <xs:anyAttribute />
+          <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
-      <xs:element name="DescribedPossibleISyntax1NameIChild">
+      <xs:group ref="RoleNameIChildElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="RoleNameIChildElementGroupBase">
+    <xs:choice>
+      <xs:element name="DescribedPossibleIRoleNameIChild">
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="DescribedPossibleIChildType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" use="prohibited" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="NotDescribedPossibleISyntax1NameIChild">
+      <xs:element name="NotDescribedPossibleIRoleNameIChild">
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="NotDescribedPossibleIChildType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="syntax1NameIChild" use="prohibited" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" use="prohibited" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
     </xs:choice>
-  </xs:group>
-  <xs:group name="IChildMemberChildGroup">
-    <xs:choice />
   </xs:group>
   <xs:complexType name="DescribedPossibleIChildType">
     <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />

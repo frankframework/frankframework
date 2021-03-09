@@ -89,9 +89,12 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		}
 		assertTrue(fileSystem.folderExists(folderName2));
 
+		F destFile1copy = fileSystem.toFile(folderName, fileSystem.getName(destFile1));
+		assertTrue(fileSystem.exists(destFile1copy));
+		
 		F destFile2 = fileSystem.moveFile(destFile1, folderName2, false);
 		assertTrue(fileSystem.exists(sourceFile));
-		//assertFalse("moved file should not exist in source folder anymore", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(destFile1)));
+		assertFalse("moved file should not exist in source folder anymore", fileSystem.exists(destFile1copy));
 		assertTrue(fileSystem.exists(destFile2));
 
 		fileSystem.deleteFile(destFile2);

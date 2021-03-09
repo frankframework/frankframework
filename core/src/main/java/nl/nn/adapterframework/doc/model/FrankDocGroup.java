@@ -18,7 +18,7 @@ package nl.nn.adapterframework.doc.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,8 +59,8 @@ public abstract class FrankDocGroup {
 		this.name = name;
 	}
 
-	public abstract boolean hasElement(String elementFullName);
 	public abstract List<FrankElement> getElements();
+	public abstract String getCategory();
 	public abstract boolean isFromElementType();
 
 	private static class Other extends FrankDocGroup {
@@ -68,15 +68,10 @@ public abstract class FrankDocGroup {
 
 		Other(String name, Collection<FrankElement> elements) {
 			super(name);
-			this.elements = new HashMap<>();
+			this.elements = new LinkedHashMap<>();
 			for(FrankElement elem: elements) {
 				this.elements.put(elem.getFullName(), elem);
 			}
-		}
-
-		@Override
-		public boolean hasElement(String elementFullName) {
-			return elements.containsKey(elementFullName);
 		}
 
 		@Override
@@ -88,29 +83,35 @@ public abstract class FrankDocGroup {
 		public boolean isFromElementType() {
 			return false;
 		}
+
+		@Override
+		public String getCategory() {
+			return getName();
+		}
 	}
 
 	private static class FromType extends FrankDocGroup {
 		private ElementType elementType;
 
 		FromType(ElementType elementType) {
-			super(elementType.getSimpleName());
+			super(elementType.getGroupName());
 			this.elementType = elementType;
 		}
 
 		@Override
-		public boolean hasElement(String elementFullName) {
-			return elementType.getMembers().containsKey(elementFullName);
-		}
-
-		@Override
 		public List<FrankElement> getElements() {
-			return new ArrayList<>(elementType.getMembers().values());
+			return new ArrayList<>(elementType.getSyntax2Members());
 		}
 		
 		@Override
 		public boolean isFromElementType() {
 			return true;
+		}
+
+		@Override
+		public String getCategory() {
+			ElementType highestCommonInterface = elementType.getHighestCommonInterface();
+			return highestCommonInterface.getGroupName();
 		}
 	}
 }

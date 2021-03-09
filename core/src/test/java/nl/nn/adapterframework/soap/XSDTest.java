@@ -55,7 +55,7 @@ public class XSDTest {
 		xsd.initNamespace("http://test", scopeProvider, "XSDTest/test.xsd");
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		XMLStreamWriter writer = WsdlUtils.getWriter(out, false);
+		XMLStreamWriter writer = WsdlGeneratorUtils.getWriter(out, false);
 		SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
 
 		DocumentBuilder dbuilder = WsdlTest.createDocumentBuilder();

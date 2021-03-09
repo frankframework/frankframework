@@ -44,6 +44,7 @@
 	
 	<!-- All receivers are disabled except those with listeners in the list below -->
 	<xsl:template match="receiver[listener[@className='nl.nn.adapterframework.jdbc.JdbcQueryListener'
+										or @className='nl.nn.adapterframework.jdbc.JdbcTableListener'
 										or @className='nl.nn.adapterframework.receivers.DirectoryListener'
 										or @className='nl.nn.adapterframework.receivers.JavaListener'
 										or @className='nl.nn.adapterframework.http.WebServiceListener'
@@ -91,10 +92,34 @@
 					<xsl:attribute name="throwException">false</xsl:attribute>
 				</xsl:if>
 			</xsl:element>
-			<xsl:copy-of select="errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			<xsl:call-template name="stubNameForStorage">
+				<xsl:with-param name="store" select="errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			</xsl:call-template>
 			<xsl:copy-of select="errorSender[@className='nl.nn.adapterframework.senders.IbisLocalSender']"/>
-			<xsl:copy-of select="messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			<xsl:call-template name="stubNameForStorage">
+				<xsl:with-param name="store" select="messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			</xsl:call-template>
 		</xsl:element>
+	</xsl:template>
+
+	<xsl:template name="stubNameForStorage">
+		<xsl:param name="store"/>
+		
+		<xsl:if test="not(empty($store))">
+			<xsl:variable name="elementName" select="name($store)"/>
+			<xsl:element name="{$elementName}">
+				<xsl:for-each select="$store/@*">
+					<xsl:choose>
+						<xsl:when test="name()='slotId'">
+							<xsl:attribute name="{name()}"><xsl:value-of select="concat('stubbed-',.)"/></xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:for-each>
+			</xsl:element>
+		</xsl:if>
 	</xsl:template>
 	
 	<!-- All senders are stubbed except those in the list below -->

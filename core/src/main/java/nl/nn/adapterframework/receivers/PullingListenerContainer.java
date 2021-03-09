@@ -173,7 +173,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private class ListenTask implements SchedulingAwareRunnable {
 
-		private boolean useInProcessStatus=false;
+		private IHasProcessState<M> inProcessStateManager=null;
 
 		@Override
 		public boolean isLongLived() {
@@ -189,6 +189,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				threadsRunning.increase();
 				if (receiver.isInRunState(RunStateEnum.STARTED)) {
 					listener = (IPullingListener<M>) receiver.getListener();
+					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
+						inProcessStateManager = (IHasProcessState<M>)listener;
+					}
 					threadContext = listener.openThread();
 					if (threadContext == null) {
 						threadContext = new HashMap<>();
@@ -228,15 +231,23 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								return;
 							}
 
+							if (inProcessStateManager!=null) {
+								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS))==null) {
+									return;
+								}
+								// If inProcess-state is used, we'll commit the transaction that set the message state to the inProcess.
+								// This releases the lock on the record being processed.
+								// This is necessary for dbmses like MariaDB, that have no 'SKIP LOCKED' functionality, and for pipelines that do not support roll back
+								if (txStatus!=null) {
+									txManager.commit(txStatus);
+									txStatus = txManager.getTransaction(txNew);
+								}
+							}
+
+							// found a message, process it
 							tasksStarted.increase(); 
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
-							// found a message, process it
-							// first check if it needs to be set to 'inProcess'
-							if (listener instanceof IHasProcessState && (useInProcessStatus=((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.INPROCESS, threadContext)) && txStatus!=null) {
-								txManager.commit(txStatus);
-								txStatus = txManager.getTransaction(txNew);
-							}
 						} finally {
 							// release pollToken after message has been moved to inProcess, so it is not seen as 'available' by the next thread
 							pollTokenReleased=true;
@@ -249,7 +260,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							if (txStatus != null) {
 								if (txStatus.isRollbackOnly()) {
 									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-									rollBack(txStatus, listener, rawMessage, threadContext);
+									rollBack(txStatus, rawMessage);
 								} else {
 									txManager.commit(txStatus);
 								}
@@ -257,7 +268,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						} catch (Exception e) {
 							try {
 								if (txStatus != null && !txStatus.isCompleted()) {
-									rollBack(txStatus, listener, rawMessage, threadContext);
+									rollBack(txStatus, rawMessage);
 								}
 							} catch (Exception e2) {
 								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
@@ -271,7 +282,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
-							rollBack(txStatus, listener, rawMessage, threadContext);
+							rollBack(txStatus, rawMessage);
 						}
 					}
 				}
@@ -290,18 +301,18 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						receiver.error("Exception closing listener", e);
 					}
 				}
-				ThreadContext.removeStack(); //Cleanup the MDC stack that was created durring message processing
+				ThreadContext.removeStack(); //Cleanup the MDC stack that was created during message processing
 			}
 		}
 
-		private void rollBack(TransactionStatus txStatus, IPullingListener<M> listener, M rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		private void rollBack(TransactionStatus txStatus, M rawMessage) throws ListenerException {
 			try {
 				txManager.rollback(txStatus);
 			} finally {
-				if (useInProcessStatus) {
-					txStatus = txManager.getTransaction(txNew);
-					((IHasProcessState<M>)listener).changeProcessState(rawMessage, ProcessState.AVAILABLE, threadContext);
-					txManager.commit(txStatus);
+				if (inProcessStateManager!=null) {
+					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
+					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE);
+					txManager.commit(txStatusRevert);
 				}
 			}
 		}

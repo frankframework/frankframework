@@ -1,19 +1,21 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
+import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
@@ -36,7 +38,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
 		try {
 			doPipe(pipe, input,session);
 			fail("expected to fail");
@@ -47,8 +48,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 	@Test
 	public void testNoNamespaceXml() throws Exception {
-		XmlValidator pipe = new XmlValidator();
-		
 		pipe.setName("Response_Validator");
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 //		pipe.setRoot("GetPartiesOnAgreement_Response");
@@ -60,7 +59,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
 		try {
 			pipe.doPipe(Message.asMessage(input),session); // cannot use this.doPipe(), because pipe is a XmlValidator, not a Json2XmlValidator
 			fail("expected to fail");
@@ -84,7 +82,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
 		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
 		PipeRunResult prr = doPipe(pipe, input,session);
 
 		assertEquals(expected, prr.getResult().asString());
@@ -119,7 +116,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input="";
 		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
 		session.put("b_key","b_value");
 		// session variable "c_key is not present, so there should be no 'c' element in the result
 		session.put("d_key","");
@@ -149,13 +145,11 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input="";
 		String expected = TestFileUtils.getTestFile("/Align/NestedValue/nestedValue.xml");
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		
 		PipeRunResult prr = doPipe(pipe, input,session);
 		
 		String actualXml = Message.asString(prr.getResult());
 		
-		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
 	@Test
@@ -178,15 +172,134 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input    = TestFileUtils.getTestFile("/Align/DoubleId/Party-Template.json");
 		String expected = TestFileUtils.getTestFile("/Align/DoubleId/Party.xml");
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		
 		PipeRunResult prr = doPipe(pipe, input,session);
 		
 		String actualXml = Message.asString(prr.getResult());
 		
-		MatchUtils.assertXmlEquals("converted XML does not match", expected, actualXml, true);
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
+	@Test
+	public void testnoParams() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/Options/options.xsd");
+		pipe.setRoot("Options");
+		pipe.setThrowException(true);
+		
+
+		pipe.configure();
+		pipe.start();
+		
+		String input    = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
+		String expected = TestFileUtils.getTestFile("/Align/Options/stringArray.xml");
+		
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	
+	@Test
+	public void testMultivaluedParameters() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/Options/options.xsd");
+		pipe.setRoot("Options");
+		pipe.setThrowException(true);
+		
+		Parameter param1 = new Parameter();
+		param1.setName("singleInt");
+		param1.setValue("33");
+		pipe.addParameter(param1);
+
+		Parameter param2 = new Parameter();
+		param2.setName("singleString");
+		param2.setValue("tja");
+		pipe.addParameter(param2);
+
+		Parameter param3 = new Parameter();
+		param3.setName("stringArray2");
+		List<String> stringValues = Arrays.asList("aa","bb");
+		session.put("StringValueList", stringValues);
+		param3.setSessionKey("StringValueList");
+		pipe.addParameter(param3);
+		
+		Parameter param4 = new Parameter();
+		param4.setName("intArray");
+		List<String> intValues = Arrays.asList("11","22");
+		session.put("IntValueList", intValues);
+		param4.setSessionKey("IntValueList");
+		pipe.addParameter(param4);
+		
+		pipe.configure();
+		pipe.start();
+		
+		String input    = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
+		String expected = TestFileUtils.getTestFile("/Align/Options/allOptions.xml");
+		
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testSingleValueInArrayListParam() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/Options/options.xsd");
+		pipe.setRoot("Options");
+		pipe.setThrowException(true);
+		
+		Parameter param = new Parameter();
+		param.setName("intArray");
+		List<String> intValues = Arrays.asList("44");
+		session.put("IntValueList", intValues);
+		param.setSessionKey("IntValueList");
+		pipe.addParameter(param);
+		
+		pipe.configure();
+		pipe.start();
+		
+		String input    = "{  }";
+		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
+		
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testSingleValueInArrayStringParam() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/Options/options.xsd");
+		pipe.setRoot("Options");
+		pipe.setThrowException(true);
+		
+		Parameter param = new Parameter();
+		param.setName("intArray");
+		param.setValue("44");
+		pipe.addParameter(param);
+		
+		pipe.configure();
+		pipe.start();
+		
+		String input    = "{  }";
+		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
+		
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
 
 	public void testStoreRootElement(String outputFormat, String inputFile, boolean setRootElement) throws Exception {
 		pipe.setName("testStoreRootElement");
@@ -205,15 +318,13 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		String input    = TestFileUtils.getTestFile("/Align/Abc/"+inputFile);
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		
 		PipeRunResult prr = doPipe(pipe, input,session);
 		
 		String expectedForward = "success";
 		String actualForward = prr.getPipeForward().getName();
 		assertEquals(expectedForward, actualForward);
 		
-		assertEquals("a", (String)session.get("rootElement"));
+		assertEquals("a", session.get("rootElement"));
 	}
 
 	@Test
