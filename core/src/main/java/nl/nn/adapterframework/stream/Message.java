@@ -41,6 +41,7 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -55,7 +56,7 @@ public class Message implements Serializable {
 
 	private Object request;
 	private Object wrappedRequest;
-	private String charset; // representing a charset of byte typed requests
+	private @Getter String charset; // representing a charset of byte typed requests
 
 	private Message(Object request, String charset) {
 		if (request instanceof Message) {

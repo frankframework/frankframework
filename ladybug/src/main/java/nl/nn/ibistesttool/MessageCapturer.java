@@ -58,6 +58,7 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 	@Override
 	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier) {
 		if (message instanceof Message) {
+			charsetNotifier.accept(((Message)message).getCharset());
 			((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
 		} else {
 			if (message instanceof MessageOutputStream) {
