@@ -246,6 +246,24 @@
 						<no-tx-separate-pools/>
 					</xa-pool>
 				</xa-datasource>
+<!-- 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mysql" pool-name="ibis4test-mysql"> -->
+<!-- 					<driver>mysql-connector-java.jar</driver> -->
+<!-- 					<xa-datasource-property name="URL">jdbc:mysql://host.docker.internal:3307/testiaf</xa-datasource-property> -->
+<!-- 					<xa-datasource-class>com.mysql.cj.jdbc.MysqlXADataSource</xa-datasource-class> -->
+<!-- 					<security> -->
+<!-- 						<user-name>testiaf_user</user-name> -->
+<!-- 						<password>testiaf_user00</password> -->
+<!-- 					</security> -->
+<!-- 				</xa-datasource> -->
+<!-- 				<xa-datasource jndi-name="java:/jdbc/ibis4test-postgres" pool-name="ibis4test-postgres"> -->
+<!-- 					<driver>postgresql.jar</driver> -->
+<!-- 					<xa-datasource-property name="URL">jdbc:postgresql://host.docker.internal:5432/testiaf</xa-datasource-property> -->
+<!-- 					<xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class> -->
+<!-- 					<security> -->
+<!-- 						<user-name>testiaf_user</user-name> -->
+<!-- 						<password>testiaf_user00</password> -->
+<!-- 					</security> -->
+<!-- 				</xa-datasource> -->				
 				<drivers>
 					<driver name="h2" module="com.h2database.h2">
 						<xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
