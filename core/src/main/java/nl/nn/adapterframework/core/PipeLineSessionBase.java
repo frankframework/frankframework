@@ -68,7 +68,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	//Shouldn't this be `id` ? See {#setListenerParameters(...)};
 	@Override
 	public String getMessageId() {
-		return (String) Message.asObject(get(messageIdKey));
+		return (String) Message.asObject(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
 	}
 
 	/**

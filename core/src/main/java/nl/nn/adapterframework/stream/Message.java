@@ -19,8 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilterInputStream;
-import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -353,9 +351,8 @@ public class Message implements Serializable {
 		}
 		if (wrappedRequest == null) {
 			return super.toString()+": "+request.getClass().getTypeName()+": "+request.toString();
-		} else {
-			return super.toString()+": "+wrappedRequest.getClass().getTypeName()+": "+wrappedRequest.toString();
-		}
+		} 
+		return super.toString()+": "+wrappedRequest.getClass().getTypeName()+": "+wrappedRequest.toString();
 	}
 
 	public static Message asMessage(Object object) {
@@ -511,64 +508,24 @@ public class Message implements Serializable {
 	 * message, after the stream has been closed. Primarily for debugging purposes.
 	 */
 	public ByteArrayOutputStream captureBinaryStream() {
-		return captureBinaryStream(new ByteArrayOutputStream());
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		captureBinaryStream(result);
+		return result;
 	}
-	public <O extends OutputStream> O captureBinaryStream(O outputStream) {
-		return captureBinaryStream(10000, outputStream);
+	public void captureBinaryStream(OutputStream outputStream) {
+		captureBinaryStream(outputStream, 10000);
 	}
-	public <O extends OutputStream> O captureBinaryStream(int maxSize, O outputStream) {
+	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
 		if (!requiresStream()) {
-			return null;
+			return;
 		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
 		try {
 			wrappedRequest = request;
-			request = new FilterInputStream(asInputStream()) {
-				
-				int pos;
-				
-				@Override
-				public int read() throws IOException {
-					if (log.isTraceEnabled()) log.trace("FilterInputStream.read");
-					int result = super.read();
-					if (result>=0 && pos++<maxSize) {
-						outputStream.write((byte)result);
-						if (log.isTraceEnabled()) log.trace("captured byte ["+result+"]");
-					}
-					return result;
-				}
-
-				@Override
-				public int read(byte[] b, int off, int len) throws IOException {
-					if (log.isTraceEnabled()) log.trace("FilterInputStream.read");
-					int result = super.read(b, off, len);
-					if (result>=0 && pos<maxSize) {
-						pos+=result;
-						outputStream.write(b, off, result);
-						if (log.isTraceEnabled()) log.trace("captured ["+result+"] bytes");
-					}
-					return result;
-				}
-
-				@Override
-				public void close() throws IOException {
-					if (log.isTraceEnabled()) log.trace("FilterInputStream.close");
-					if (available()>0) {
-						// Make the bytes available for debugger even when the stream was not used (might be because the
-						// pipe or sender that normally consumes the stream is stubbed by the debugger)
-						int len = read(new byte[maxSize]);
-						if (log.isTraceEnabled()) log.trace(len+" bytes available at close");
-					}
-					super.close();
-					outputStream.close();
-				}
-
-			};
+			request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
 		} catch (IOException e) {
 			log.warn("Cannot capture stream", e);
-			return null;
 		}
-		return outputStream;
 	}
 	
 	/**
@@ -579,65 +536,24 @@ public class Message implements Serializable {
 	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
 	 */
 	public StringWriter captureCharacterStream() {
-		return captureCharacterStream(new StringWriter());
+		StringWriter result = new StringWriter();
+		captureCharacterStream(result);
+		return result;
 	}
-	public <W extends Writer> W captureCharacterStream(W writer) {
-		return captureCharacterStream(10000, writer);
+	public void captureCharacterStream(Writer writer) {
+		captureCharacterStream(writer, 10000);
 	}
-	public <W extends Writer> W captureCharacterStream(int maxSize, W writer) {
+	public void captureCharacterStream(Writer writer, int maxSize) {
 		if (!requiresStream()) {
-			return null;
+			return;
 		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
 		try {
 			wrappedRequest = request;
-			request = new FilterReader(asReader()) {
-
-				int pos;
-				
-				@Override
-				public int read() throws IOException {
-					if (log.isTraceEnabled()) log.trace("FilterReader.read");
-					int result = super.read();
-					if (result>=0 && pos++<maxSize) {
-						writer.write((char)result);
-					}
-					return result;
-				}
-
-				@Override
-				public int read(char[] cbuf, int off, int len) throws IOException {
-					if (log.isTraceEnabled()) log.trace("FilterReader.read");
-					int result = super.read(cbuf, off, len);
-					if (result>=0 && pos<maxSize) {
-						pos+=result;
-						writer.write(cbuf, off, result);
-					}
-					return result;
-				}
-
-				@Override
-				public void close() throws IOException {
-					if (log.isTraceEnabled()) log.trace("FilterReader.close");
-					try {
-						// Make the characters available for debugger even when the stream was not used (might be
-						// because the pipe or sender that normally consumes the stream is stubbed by the debugger)
-						int len = read(new char[maxSize]);
-						if (len>0) {
-							if (log.isTraceEnabled()) log.trace(len+" characters available at close");
-						}
-					} catch (Exception e) {
-						log.warn("Caught exception while trying to read more characters at close()", e);
-					}
-					super.close();
-					writer.close();
-				}
-			};
+			request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
 		} catch (IOException e) {
 			log.warn("Cannot capture reader", e);
-			return null;
 		}
-		return writer;
 	}
 
 }

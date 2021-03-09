@@ -22,8 +22,6 @@ import java.io.Writer;
 import java.security.Principal;
 import java.util.Map;
 
-import nl.nn.adapterframework.stream.Message;
-
 
 /**
  * The <code>PipeLineSession</code> is an object similar to

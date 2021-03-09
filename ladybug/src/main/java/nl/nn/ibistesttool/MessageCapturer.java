@@ -21,6 +21,7 @@ import java.io.Writer;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.testtool.TestTool;
 
 public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
@@ -31,11 +32,11 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 		if (message instanceof Message) {
 			Message m = (Message)message;
 			if (m.requiresStream()) {
-				if (m.isBinary()) {
-					return StreamingType.BYTE_STREAM;
-				} else {
-					return StreamingType.CHARACTER_STREAM;
-				}
+				return m.isBinary() ? StreamingType.BYTE_STREAM : StreamingType.CHARACTER_STREAM;
+			}
+		} else {
+			if (message instanceof MessageOutputStream) {
+				return ((MessageOutputStream)message).isBinary() ? StreamingType.BYTE_STREAM : StreamingType.CHARACTER_STREAM;
 			}
 		}
 		return StreamingType.NONE;
@@ -43,13 +44,25 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 
 	@Override
 	public <T> T toWriter(T message, Writer writer) {
-		((Message)message).captureCharacterStream(testTool.getMaxMessageLength(), writer);
+		if (message instanceof Message) {
+			((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
+		} else {
+			if (message instanceof MessageOutputStream) {
+				((MessageOutputStream)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
+			}
+		}
 		return message;
 	}
 
 	@Override
 	public <T> T toOutputStream(T message, OutputStream outputStream) {
-		((Message)message).captureBinaryStream(testTool.getMaxMessageLength(), outputStream);
+		if (message instanceof Message) {
+			((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
+		} else {
+			if (message instanceof MessageOutputStream) {
+				((MessageOutputStream)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
+			}
+		}
 		return message;
 	}
 

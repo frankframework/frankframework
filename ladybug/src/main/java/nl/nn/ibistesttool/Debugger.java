@@ -49,9 +49,9 @@ import nl.nn.testtool.run.ReportRunner;
  * @author Jaco de Groot
  */
 public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent>, ApplicationEventPublisherAware {
-	private static final String STUB_STRATEY_STUB_ALL_SENDERS = "Stub all senders";
-	protected static final String STUB_STRATEY_NEVER = "Never";
-	private static final String STUB_STRATEY_ALWAYS = "Always";
+	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
+	protected static final String STUB_STRATEGY_NEVER = "Never";
+	private static final String STUB_STRATEGY_ALWAYS = "Always";
 
 	private TestTool testTool;
 	protected IbisManager ibisManager;
@@ -99,9 +99,9 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Message pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, Message input) {
+	public <T> T pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, T input) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		Message result = testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input);
+		T result = testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input);
 		if (pipeDescription.getDescription() != null) {
 			testTool.infopoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), pipeDescription.getDescription());
 			Iterator<String> iterator = pipeDescription.getResourceNames().iterator();
@@ -114,7 +114,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 	
 	@Override
-	public Message pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, Message output) {
+	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
 		return testTool.endpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), output);
 	}
@@ -127,12 +127,12 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Message senderInput(ISender sender, String correlationId, Message input) {
+	public <T> T senderInput(ISender sender, String correlationId, T input) {
 		return testTool.startpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), input);
 	}
 
 	@Override
-	public Message senderOutput(ISender sender, String correlationId, Message output) {
+	public <T> T senderOutput(ISender sender, String correlationId, T output) {
 		return testTool.endpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), output);
 	}
 
@@ -203,7 +203,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value);
 	}
 	@Override
-	public Object storeInSessionKey(String correlationId, Object sessionKey, Object result) {
+	public Object storeInSessionKey(String correlationId, String sessionKey, Object result) {
 		return testTool.outputpoint(correlationId, null, "SessionKey " + sessionKey, result);
 	}
 
@@ -267,15 +267,15 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	@Override
 	public List<String> getStubStrategies() {
 		List<String> stubStrategies = new ArrayList<String>();
-		stubStrategies.add(STUB_STRATEY_STUB_ALL_SENDERS);
-		stubStrategies.add(STUB_STRATEY_NEVER);
-		stubStrategies.add(STUB_STRATEY_ALWAYS);
+		stubStrategies.add(STUB_STRATEGY_STUB_ALL_SENDERS);
+		stubStrategies.add(STUB_STRATEGY_NEVER);
+		stubStrategies.add(STUB_STRATEGY_ALWAYS);
 		return stubStrategies;
 	}
 
 	@Override
 	public String getDefaultStubStrategy() {
-		return STUB_STRATEY_STUB_ALL_SENDERS;
+		return STUB_STRATEGY_STUB_ALL_SENDERS;
 	}
 
 	// Called by TestTool
@@ -328,7 +328,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		if (stubStrategy == null) {
 			stubStrategy = getDefaultStubStrategy();
 		}
-		if (STUB_STRATEY_STUB_ALL_SENDERS.equals(stubStrategy)) {
+		if (STUB_STRATEGY_STUB_ALL_SENDERS.equals(stubStrategy)) {
 			// A listener will be a reply listener because it's the only type of
 			// listener handled by this class. A reply listener is always linked
 			// to a sender, so stub when senders should be stubbed.
@@ -338,7 +338,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			} else {
 				return false;
 			}
-		} else if (STUB_STRATEY_ALWAYS.equals(stubStrategy)
+		} else if (STUB_STRATEGY_ALWAYS.equals(stubStrategy)
 				// Don't stub messageId as IbisDebuggerAdvice will read it as correlationId from IPipeLineSession and
 				// use it as correlationId parameter for checkpoints, hence these checkpoint will not be correlated to
 				// the report with the correlationId used by the rerun method

@@ -132,7 +132,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 				Message result = pipeRunResult.getResult();
-				pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
+				pipeLineSession.put(pe.getStoreResultInSessionKey(),result.asObject());
 			}
 			if (pe.isPreserveInput()) {
 				pipeRunResult.getResult().closeOnCloseOf(pipeLineSession);

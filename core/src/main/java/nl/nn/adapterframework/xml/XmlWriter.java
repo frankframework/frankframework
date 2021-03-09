@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 - 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@ package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
@@ -73,11 +72,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	public XmlWriter(OutputStream stream) {
-		try {
-			this.writer=new OutputStreamWriter(stream,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			log.error(e);
-		}
+		this.writer=new XmlStreamWriter(stream);
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 */
 package nl.nn.adapterframework.stream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
@@ -31,8 +33,11 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.XmlTee;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream implements AutoCloseable {
@@ -132,6 +137,9 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 	}
 
+	public boolean isBinary() {
+		return requestStream instanceof OutputStream;
+	}
 
 	public Object asNative() {
 		return requestStream;
@@ -203,6 +211,56 @@ public class MessageOutputStream implements AutoCloseable {
 
 	}
 
+	public StringWriter captureCharacterStream() {
+		StringWriter result = new StringWriter();
+		captureCharacterStream(result);
+		return result;
+	}
+	public void captureCharacterStream(Writer writer) {
+		captureCharacterStream(writer, 10000);
+	}
+	@SuppressWarnings("resource")
+	public void captureCharacterStream(Writer writer, int maxSize) {
+		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
+		if (requestStream instanceof Writer) {
+			requestStream = StreamUtil.captureWriter((Writer)requestStream, writer, maxSize);
+			return;
+		}
+		if (requestStream instanceof ContentHandler) {
+			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(writer, maxSize))));
+			return;
+		}
+		if (requestStream instanceof OutputStream) {
+			requestStream = StreamUtil.captureOutputStream((OutputStream)requestStream, new WriterOutputStream(writer,StreamUtil.DEFAULT_CHARSET), maxSize);
+			return;
+		}
+	}
+	
+	public ByteArrayOutputStream captureBinaryStream() {
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		captureBinaryStream(result);
+		return result;
+	}
+	public void captureBinaryStream(OutputStream outputStream) {
+		captureBinaryStream(outputStream, 10000);
+	}
+	@SuppressWarnings("resource")
+	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
+		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
+		if (requestStream instanceof OutputStream) {
+			requestStream = StreamUtil.captureOutputStream((OutputStream)requestStream, outputStream, maxSize);
+			return;
+		}
+		if (requestStream instanceof ContentHandler) {
+			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(outputStream, maxSize))));
+			return;
+		}
+		if (requestStream instanceof Writer) {
+			requestStream = StreamUtil.captureWriter((Writer)requestStream, new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize);
+			return;
+		}
+	}
+	
 	/**
 	 * Response message, e.g. the filename, of the {IOutputStreamTarget target}
 	 * after processing the stream. It is the responsability of the

@@ -252,23 +252,20 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		// TODO: provide proper debug entry in Debugger interface.
 		if (proceedingJoinPoint.getTarget() instanceof ISender) {
 			ISender sender = (ISender)proceedingJoinPoint.getTarget();
-			ibisDebugger.senderInput(sender, correlationId, new Message("--> provide outputstream"));
+			ibisDebugger.senderInput(sender, correlationId, "--> provide outputstream");
 			//System.out.println("--> provide outputstream of sender ["+sender.getName()+"]");
 			MessageOutputStream result = (MessageOutputStream)proceedingJoinPoint.proceed();
 			//System.out.println("<-- provide outputstream of sender ["+sender.getName()+"]: ["+result+"]");
-			ibisDebugger.senderOutput(sender, correlationId, new Message(result==null?null:result.toString()));
-			return result;
-		} else {
-			if (proceedingJoinPoint.getTarget() instanceof IPipe) {
-				IPipe pipe = (IPipe)proceedingJoinPoint.getTarget();
-				//System.out.println("--> provide outputstream of pipe ["+pipe.getName()+"]");
-				PipeLine pipeLine = pipe instanceof AbstractPipe ? ((AbstractPipe)pipe).getPipeLine() : new PipeLine();
-				ibisDebugger.pipeInput(pipeLine, pipe, correlationId, new Message("--> provide outputstream"));
-				MessageOutputStream result = (MessageOutputStream)proceedingJoinPoint.proceed();
-				//System.out.println("<-- provide outputstream of pipe ["+pipe.getName()+"]: ["+result+"]");
-				ibisDebugger.pipeOutput(pipeLine, pipe, correlationId, new Message(result==null?null:result.toString()));
-				return result;
-			}
+			return ibisDebugger.senderOutput(sender, correlationId, result);
+		}
+		if (proceedingJoinPoint.getTarget() instanceof IPipe) {
+			IPipe pipe = (IPipe)proceedingJoinPoint.getTarget();
+			//System.out.println("--> provide outputstream of pipe ["+pipe.getName()+"]");
+			PipeLine pipeLine = pipe instanceof AbstractPipe ? ((AbstractPipe)pipe).getPipeLine() : new PipeLine();
+			ibisDebugger.pipeInput(pipeLine, pipe, correlationId, new Message("--> provide outputstream"));
+			MessageOutputStream result = (MessageOutputStream)proceedingJoinPoint.proceed();
+			//System.out.println("<-- provide outputstream of pipe ["+pipe.getName()+"]: ["+result+"]");
+			return ibisDebugger.pipeOutput(pipeLine, pipe, correlationId, result);
 		}
 		log.warn("Could not identify outputstream provider ["+proceedingJoinPoint.getTarget().getClass().getName()+"] as pipe or sender");
 		return (MessageOutputStream)proceedingJoinPoint.proceed();

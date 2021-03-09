@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.function.Function;
 import java.util.zip.ZipOutputStream;
@@ -37,7 +38,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
+import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.io.input.TeeInputStream;
+import org.apache.commons.io.input.TeeReader;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.io.output.TeeOutputStream;
+import org.apache.commons.io.output.TeeWriter;
+import org.apache.commons.io.output.ThresholdingOutputStream;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import lombok.SneakyThrows;
 
@@ -47,6 +56,8 @@ import lombok.SneakyThrows;
  * @author  Gerrit van Brakel
  */
 public class StreamUtil {
+	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
+
 	public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
 	
@@ -387,6 +398,153 @@ public class StreamUtil {
 		};
 
 		return new WatchedInputStream(stream);
+	}
+
+	public static OutputStream limitSize(OutputStream stream, int maxSize) {
+		return new ThresholdingOutputStream(maxSize) {
+			
+			@Override
+			protected void thresholdReached() throws IOException {
+				stream.close();
+			}
+			
+			@Override
+			protected OutputStream getStream() throws IOException {
+				if (isThresholdExceeded()) {
+					return NullOutputStream.NULL_OUTPUT_STREAM;
+				}
+				return stream;
+			}
+
+		};
+	}
+
+	public static Writer limitSize(Writer writer, int maxSize) {
+		return new Writer() {
+			
+			private long written;
+
+			@Override
+			public void write(char[] buffer, int offset, int length) throws IOException {
+				if (written<maxSize) {
+					writer.write(buffer, offset, length);
+					if ((written+=length)>=maxSize) {
+						writer.close();
+					}
+				}
+			}
+
+			@Override
+			public void flush() throws IOException {
+				writer.flush();
+			}
+
+			@Override
+			public void close() throws IOException {
+				if (written<maxSize) {
+					writer.close();
+				}
+			}
+		};
+	}
+
+
+	public static InputStream captureInputStream(InputStream in, OutputStream capture) {
+		return captureInputStream(in, capture, 10000, true);
+	}
+	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize, boolean captureRemainingOnClose) {
+		
+		CountingInputStream counter = new CountingInputStream(in);
+		return new TeeInputStream(counter, limitSize(capture, maxSize), true) {
+			
+			@Override
+			public void close() throws IOException {
+				try {
+					if (counter.getByteCount()<maxSize && available()>0) {
+						// Make the bytes available for debugger even when the stream was not used (might be because the
+						// pipe or sender that normally consumes the stream is stubbed by the debugger)
+						int len = read(new byte[maxSize]);
+						if (log.isTraceEnabled()) log.trace(len+" bytes available at close");
+					}
+				} finally {
+					super.close();
+				}
+			}
+
+		};
+		
+	}
+
+	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture) {
+		return captureOutputStream(stream, capture, 10000);
+	}
+	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture, int maxSize) {
+		return new TeeOutputStream(stream, limitSize(capture,maxSize));
+	}
+	
+	private static interface ReadMethod {
+		int read() throws IOException;
+	}
+
+	public static Reader captureReader(Reader in, Writer capture) {
+		return captureReader(in, capture, 10000, true);
+	}
+	public static Reader captureReader(Reader in, Writer capture, int maxSize, boolean captureRemainingOnClose) {
+		return new TeeReader(in, limitSize(capture, maxSize), true) {
+			
+			private int charsRead;
+			
+			
+			private int readCounted(ReadMethod reader) throws IOException {
+				int len = reader.read();
+				if (len>0) {
+					charsRead+=len;
+				}
+				return len;
+			}
+			
+			@Override
+			public int read() throws IOException {
+				return readCounted(() -> super.read());
+			}
+
+			@Override
+			public int read(char[] chr) throws IOException {
+				return readCounted(() -> super.read(chr));
+			}
+
+			@Override
+			public int read(char[] chr, int st, int end) throws IOException {
+				return readCounted(() -> super.read(chr, st, end));
+			}
+
+			@Override
+			public int read(CharBuffer target) throws IOException {
+				return readCounted(() -> super.read(target));
+			}
+
+			@Override
+			public void close() throws IOException {
+				try {
+					if (charsRead<maxSize && ready()) {
+						// Make the bytes available for debugger even when the stream was not used (might be because the
+						// pipe or sender that normally consumes the stream is stubbed by the debugger)
+						int len = read(new char[maxSize]);
+						if (log.isTraceEnabled()) log.trace(len+" chararacters available at close");
+					}
+				} finally {
+					super.close();
+				}
+			}
+
+		};
+	}
+
+	public static Writer captureWriter(Writer writer, Writer capture) {
+		return captureWriter(writer, capture, 10000);
+	}
+	public static Writer captureWriter(Writer writer, Writer capture, int maxSize) {
+		return new TeeWriter(writer, limitSize(capture,maxSize));
 	}
 
 
