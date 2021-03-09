@@ -482,7 +482,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(messageContext.get("updateEtag", true)) {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
-					if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) { // && !result.isBinary()
+					if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) {
 						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asObject().hashCode());
 						log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
 						cache.put(etagCacheKey, eTag);

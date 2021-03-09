@@ -1149,12 +1149,12 @@ public class CmisSender extends SenderWithParametersBase {
 		return fileNameSessionKey;
 	}
 
-	@IbisDoc({"(only used when <code>action=create</code>) the session key that contains the name of the file to use. if not set, the value of the property <code>filename</code> from the input message is used", ""})
+	@IbisDoc({"If <code>action=create</code> the session key that contains the name of the file to use. If not set, the value of the property <code>filename</code> from the input message is used", ""})
 	public void setFileNameSessionKey(String string) {
 		fileNameSessionKey = string;
 	}
 
-	@IbisDoc({"When <code>action=create</code>: the session key that contains the input stream of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the input stream of the document is stored", ""})
+	@IbisDoc({"If <code>action=create</code> the session key that contains the input stream of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the input stream of the document is stored", ""})
 	public void setFileInputStreamSessionKey(String string) {
 		fileInputStreamSessionKey = string;
 	}
@@ -1163,7 +1163,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return fileInputStreamSessionKey;
 	}
 
-	@IbisDoc({"when <code>action=create</code>: the session key that contains the base64 encoded content of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the base64 encoded content of the document is stored", ""})
+	@IbisDoc({"If <code>action=create</code> the session key that contains the base64 encoded content of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the base64 encoded content of the document is stored", ""})
 	//TODO @Deprecated when action=get
 	public void setFileContentSessionKey(String string) {
 		fileContentStreamSessionKey = string;
@@ -1173,7 +1173,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return fileContentStreamSessionKey;
 	}
 
-	@IbisDoc({"(only used when <code>action=create</code>) the mime type used to store the document when it's not set in the input message by a property", "'application/octet-stream'"})
+	@IbisDoc({"If <code>action=create</code> the mime type used to store the document when it's not set in the input message by a property", "'application/octet-stream'"})
 	public void setDefaultMediaType(String string) {
 		defaultMediaType = string;
 	}
@@ -1211,7 +1211,7 @@ public class CmisSender extends SenderWithParametersBase {
 		this.getDocumentContent = getDocumentContent;
 	}
 
-	@IbisDoc({"(Only used when <code>action=create</code>) if true, the document is created in the root folder of the repository. Otherwise the document is created in the repository", "true"})
+	@IbisDoc({"(Only used when <code>action=create</code>). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository", "true"})
 	public void setUseRootFolder(boolean b) {
 		useRootFolder = b;
 	}
@@ -1220,7 +1220,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return useRootFolder;
 	}
 
-	@IbisDoc({"(only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). if empty an exception is thrown", ""})
+	@IbisDoc({"(Only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). if empty an exception is thrown", ""})
 	public void setResultOnNotFound(String string) {
 		resultOnNotFound = string;
 	}
@@ -1229,7 +1229,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return resultOnNotFound;
 	}
 
-	@IbisDoc({"if true, the session is not closed at the end and it will be used in the next call", "true"})
+	@IbisDoc({"If true, the session is not closed at the end and it will be used in the next call", "true"})
 	public void setKeepSession(boolean keepSession) {
 		this.keepSession = keepSession;
 	}
