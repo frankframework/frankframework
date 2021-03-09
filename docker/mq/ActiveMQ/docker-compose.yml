@@ -1,0 +1,7 @@
+version: "3.1"
+services:
+  postgresql:
+    image: iaf-test-mq-activemq
+    restart: unless-stopped
+    ports:
+      - 61616:61616
