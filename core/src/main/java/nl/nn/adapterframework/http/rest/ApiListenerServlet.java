@@ -475,59 +475,60 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 				PipeLineSessionBase.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
 				Message result = listener.processRequest(null, body, messageContext);
-	
+
 				/**
 				 * Calculate an eTag over the processed result and store in cache
 				 */
-//				if(messageContext.get("updateEtag", true)) {
-//					log.debug("calculating etags over processed result");
-//					String cleanPattern = listener.getCleanPattern();
-//					if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) {
-//						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asString().hashCode());
-//						log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
-//						cache.put(etagCacheKey, eTag);
-//						response.addHeader("etag", eTag);
-//					}
-//					else {
-//						log.debug("removing etag with key["+etagCacheKey+"]");
-//						cache.remove(etagCacheKey);
-//	
-//						// Not only remove the eTag for the selected resources but also the collection
-//						String key = ApiCacheManager.getParentCacheKey(listener, uri);
-//						if(key != null) {
-//							log.debug("removing parent etag with key["+key+"]");
-//							cache.remove(key);
-//						}
-//					}
-//				}
-	
+				if(messageContext.get("updateEtag", true)) {
+					log.debug("calculating etags over processed result");
+					String cleanPattern = listener.getCleanPattern();
+					if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) { // && !result.isBinary()
+						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asObject().hashCode());
+						log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
+						cache.put(etagCacheKey, eTag);
+						response.addHeader("etag", eTag);
+					}
+					else {
+						log.debug("removing etag with key["+etagCacheKey+"]");
+						cache.remove(etagCacheKey);
+
+						// Not only remove the eTag for the selected resources but also the collection
+						String key = ApiCacheManager.getParentCacheKey(listener, uri);
+						if(key != null) {
+							log.debug("removing parent etag with key["+key+"]");
+							cache.remove(key);
+						}
+					}
+				}
+
 				/**
 				 * Add headers
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
-	
+
 				String contentType = listener.getContentType();
 				if(listener.getProducesEnum().equals(MediaTypes.ANY)) {
 					contentType = messageContext.get("contentType", contentType);
 				}
 				response.setHeader("Content-Type", contentType);
-//				response.setCharacterEncoding("UTF-8");
-//				response.setContentType(contentType);
-				response.setHeader("Content-Disposition", "inline; filename=test.pdf");
-	
+
 				/**
 				 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
 				 */
 				int statusCode = messageContext.get("exitcode", 0);
-				if(statusCode > 0)
+				if(statusCode > 0) {
 					response.setStatus(statusCode);
-	
+				}
+
 				/**
 				 * Finalize the pipeline and write the result to the response
 				 */
 				if(!Message.isEmpty(result)) {
-					StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 4000);
-//					StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4000, false, false);
+					if(result.isBinary()) {
+						StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 4096);
+					} else {
+						StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4096, false, false);
+					}
 				}
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
 			}

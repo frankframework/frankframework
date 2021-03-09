@@ -61,6 +61,7 @@ import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -236,6 +237,7 @@ public class CmisSender extends SenderWithParametersBase {
 
 	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
+	//TODO remove this when fileContentSessionKey gets removed
 	private boolean convert2Base64 = AppConstants.getInstance().getBoolean("CmisSender.Base64FileContent", true);
 
 	@Override
@@ -243,8 +245,7 @@ public class CmisSender extends SenderWithParametersBase {
 		super.configure();
 
 		if (getAction().equals("create")) {
-			if (StringUtils.isEmpty(getFileInputStreamSessionKey())
-					&& StringUtils.isEmpty(getFileContentSessionKey())) {
+			if (StringUtils.isEmpty(getFileInputStreamSessionKey()) && StringUtils.isEmpty(getFileContentSessionKey())) {
 				throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
 			}
 		}
@@ -253,6 +254,9 @@ public class CmisSender extends SenderWithParametersBase {
 				if (StringUtils.isEmpty(getFileInputStreamSessionKey()) && StringUtils.isEmpty(getFileContentSessionKey())) {
 					throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
 				}
+			}
+			if(StringUtils.isNotEmpty(getFileContentSessionKey())) {
+				ConfigurationWarnings.add(this, log, "Property [fileContentSessionKey] is deprecated. Please use fileInputStreamSessionKey instead.");
 			}
 		}
 
@@ -425,7 +429,7 @@ public class CmisSender extends SenderWithParametersBase {
 				if(getDocumentContent) {
 					ContentStream contentStream = document.getContentStream();
 					InputStream inputStream = contentStream.getStream();
-					if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
+					if (StringUtils.isNotEmpty(getFileInputStreamSessionKey())) {
 						session.put(getFileInputStreamSessionKey(), inputStream);
 					} else {
 						byte[] bytes = Misc.streamToBytes(inputStream);
@@ -440,7 +444,7 @@ public class CmisSender extends SenderWithParametersBase {
 				XmlBuilder cmisXml = new XmlBuilder("cmis");
 				XmlBuilder propertiesXml = new XmlBuilder("properties");
 				for (Iterator<Property<?>> it = document.getProperties().iterator(); it.hasNext();) {
-					Property<?> property = (Property<?>) it.next();
+					Property<?> property = it.next();
 					propertiesXml.addSubElement(CmisUtils.getPropertyXml(property));
 				}
 				cmisXml.addSubElement(propertiesXml);
@@ -451,7 +455,7 @@ public class CmisSender extends SenderWithParametersBase {
 				ContentStream contentStream = document.getContentStream();
 				InputStream inputStream = contentStream.getStream();
 
-				if (StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
+				if (StringUtils.isNotEmpty(getFileInputStreamSessionKey())) {
 					session.put(getFileInputStreamSessionKey(), inputStream);
 					return Message.nullMessage();
 				} else if (StringUtils.isNotEmpty(getFileContentSessionKey())) {
@@ -463,7 +467,8 @@ public class CmisSender extends SenderWithParametersBase {
 					return Message.nullMessage();
 				}
 				else {
-					session.put("contentStreamMimeType", contentStream.getMimeType());
+					session.put("contentStream:MimeType", contentStream.getMimeType());
+					session.put("contentStream:Filename", contentStream.getFileName());
 					return new Message(inputStream);
 				}
 			}
@@ -476,7 +481,7 @@ public class CmisSender extends SenderWithParametersBase {
 		String fileName = (String) session.get(getFileNameSessionKey());
 
 		Object inputFromSessionKey;
-		if(StringUtils.isNotEmpty(fileInputStreamSessionKey)) {
+		if(StringUtils.isNotEmpty(getFileInputStreamSessionKey())) {
 			inputFromSessionKey = session.get(getFileInputStreamSessionKey());
 		}
 		else {
@@ -1149,7 +1154,7 @@ public class CmisSender extends SenderWithParametersBase {
 		fileNameSessionKey = string;
 	}
 
-	@IbisDoc({"when <code>action=create</code>: the session key that contains the input stream of the file to use. when <code>action=get</code> and <code>getproperties=true</code>: the session key in which the input stream of the document is stored", ""})
+	@IbisDoc({"When <code>action=create</code>: the session key that contains the input stream of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the input stream of the document is stored", ""})
 	public void setFileInputStreamSessionKey(String string) {
 		fileInputStreamSessionKey = string;
 	}
@@ -1158,7 +1163,8 @@ public class CmisSender extends SenderWithParametersBase {
 		return fileInputStreamSessionKey;
 	}
 
-	@IbisDoc({"when <code>action=create</code>: the session key that contains the base64 encoded content of the file to use. when <code>action=get</code> and <code>getproperties=true</code>: the session key in which the base64 encoded content of the document is stored", ""})
+	@IbisDoc({"when <code>action=create</code>: the session key that contains the base64 encoded content of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the base64 encoded content of the document is stored", ""})
+	//TODO @Deprecated when action=get
 	public void setFileContentSessionKey(String string) {
 		fileContentStreamSessionKey = string;
 	}
@@ -1176,7 +1182,9 @@ public class CmisSender extends SenderWithParametersBase {
 		return defaultMediaType;
 	}
 
-	@IbisDoc({"(only used when <code>action=get</code>) if true, the content of the document is streamed to the httpservletresponse object of the restservicedispatcher (instead of passed as a string)", "false"})
+	@Deprecated
+	@ConfigurationWarning("Please return document content (as sender output) to the listener")
+	@IbisDoc({"(Only used when <code>action=get</code>). If true, the content of the document is streamed to the HttpServletResponse object of the restservicedispatcher", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -1185,7 +1193,7 @@ public class CmisSender extends SenderWithParametersBase {
 		return streamResultToServlet;
 	}
 
-	@IbisDoc({"(only used when <code>action=get</code>) if true, the content of the document is streamed to <code>fileinputstreamsessionkey</code> and all document properties are put in the result as a xml string", "false"})
+	@IbisDoc({"(Only used when <code>action=get</code>). If true, the content of the document is streamed to <code>fileInputStreamSessionKey</code> and all document properties are put in the result as a xml string", "false"})
 	public void setGetProperties(boolean b) {
 		getProperties = b;
 	}
@@ -1198,12 +1206,12 @@ public class CmisSender extends SenderWithParametersBase {
 		return getDocumentContent;
 	}
 
-	@IbisDoc({"(only used when <code>action=get</code>) if true, the attachment for the document is streamed to <code>fileInputStreamSessionKey</code> otherwise only the properties are returned", "true"})
+	@IbisDoc({"(Only used when <code>action=get</code>). If true, the attachment for the document is the sender result or, if set, stored in <code>fileInputStreamSessionKey</code>. If false, only the properties are returned", "true"})
 	public void setGetDocumentContent(boolean getDocumentContent) {
 		this.getDocumentContent = getDocumentContent;
 	}
 
-	@IbisDoc({"(only used when <code>action=create</code>) if true, the document is created in the root folder of the repository. otherwise the document is created in the repository", "true"})
+	@IbisDoc({"(Only used when <code>action=create</code>) if true, the document is created in the root folder of the repository. Otherwise the document is created in the repository", "true"})
 	public void setUseRootFolder(boolean b) {
 		useRootFolder = b;
 	}
