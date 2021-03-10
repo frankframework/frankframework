@@ -12,11 +12,11 @@ import nl.nn.adapterframework.core.PipeRunResult;
  *
  * @author Gerrit van Brakel
  */
-public class ArrangeSMSMessagePipeTest extends PipeTestBase<ArrangeSMSMessagePipe> {
+public class TextSplitterPipeTest extends PipeTestBase<TextSplitterPipe> {
 
 	@Override
-	public ArrangeSMSMessagePipe createPipe() {
-		return new ArrangeSMSMessagePipe();
+	public TextSplitterPipe createPipe() {
+		return new TextSplitterPipe();
 	}
 
 
@@ -37,8 +37,8 @@ public class ArrangeSMSMessagePipeTest extends PipeTestBase<ArrangeSMSMessagePip
 	}
 
 	@Test
-	public void testLongMessageSoft() throws Exception {
-		pipe.setIsSoft(true);
+	public void testLongMessageSoftSplit() throws Exception {
+		pipe.setSoftSplit(true);
 		pipe.configure();
 		pipe.start();
 		
@@ -51,7 +51,7 @@ public class ArrangeSMSMessagePipeTest extends PipeTestBase<ArrangeSMSMessagePip
 	}
 
 	@Test
-	public void testLongMessageHard() throws Exception {
+	public void testLongMessageHardSplit() throws Exception {
 		pipe.configure();
 		pipe.start();
 		
