@@ -31,7 +31,7 @@ public class TextSplitterPipeTest extends PipeTestBase<TextSplitterPipe> {
 		pipe.start();
 		
 		String message ="This is a short message that can be sent in a single SMS message";
-		String expected = "<rootTag><result>This is a short message that can be sent in a single SMS message</result></rootTag>";
+		String expected = "<text><block>This is a short message that can be sent in a single SMS message</block></text>";
 		PipeRunResult prr = doPipe(message);
 		assertEquals(expected, prr.getResult().asString());
 	}
@@ -45,7 +45,7 @@ public class TextSplitterPipeTest extends PipeTestBase<TextSplitterPipe> {
 		String messagepart1 ="This is a long message that that will be split up one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen";
 		String messagepart2 ="eighteen nineteen twenty";
 		String message= messagepart1+ " " +messagepart2;
-		String expected = "<rootTag><result>"+messagepart1+"</result><result>"+messagepart2+"</result></rootTag>";
+		String expected = "<text><block>"+messagepart1+"</block><block>"+messagepart2+"</block></text>";
 		PipeRunResult prr = doPipe(message);
 		assertEquals(expected, prr.getResult().asString());
 	}
@@ -58,7 +58,7 @@ public class TextSplitterPipeTest extends PipeTestBase<TextSplitterPipe> {
 		String messagepart1 ="This is a long message that that will be split up one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eig";
 		String messagepart2 ="hteen nineteen twenty";
 		String message= messagepart1 +messagepart2;
-		String expected = "<rootTag><result>"+messagepart1+"</result><result>"+messagepart2+"</result></rootTag>";
+		String expected = "<text><block>"+messagepart1+"</block><block>"+messagepart2+"</block></text>";
 		PipeRunResult prr = doPipe(message);
 		assertEquals(expected, prr.getResult().asString());
 	}
