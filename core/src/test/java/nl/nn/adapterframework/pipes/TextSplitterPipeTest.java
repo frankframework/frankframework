@@ -8,7 +8,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 
 
 /**
- * ArrangeSMSMessagePipe Tester.
+ * TextSplitterPipe Tester.
  *
  * @author Gerrit van Brakel
  */
