@@ -3,19 +3,19 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-as-wildfly-iaf-example</artifactId>
-	<name>Frank!Framework Docker image WildFly/iaf-example</name>
+	<artifactId>ibis-adapterframework-docker-as-jboss-wildfly-iaf-example</artifactId>
+	<name>Frank!Framework Docker image jboss-wildfly/iaf-example</name>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-docker-as-wildfly</artifactId>
+		<artifactId>ibis-adapterframework-docker-as-jboss-wildfly</artifactId>
 		<version>7.6-SNAPSHOT</version>
 	</parent>
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-docker-as-wildfly</artifactId>
+			<artifactId>ibis-adapterframework-docker-as-jboss-wildfly</artifactId>
 			<version>${iaf.version}</version>
 			<type>pom</type>
 		</dependency>
@@ -42,6 +42,24 @@
 	<build>
 		<defaultGoal>package</defaultGoal>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<goals>
+							<goal>read-project-properties</goal>
+						</goals>
+						<configuration>
+							<files>
+								<file>${project.parent.basedir}/server.properties</file>
+							</files>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -120,7 +138,11 @@
 								<exec executable="docker">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-example-wildfly"/>
+									<arg value="iaf-example-${SERVER_TYPE}"/>
+									<arg value="--build-arg"/>
+									<arg value="SERVER_TYPE=${SERVER_TYPE}"/>
+									<arg value="--build-arg"/>
+									<arg value="STANDALONE_VERSION=${STANDALONE_VERSION}"/>
 									<arg value="."/>
 								</exec>
 							</target>
