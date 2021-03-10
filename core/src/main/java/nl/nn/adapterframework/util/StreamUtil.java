@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,11 +56,12 @@ import lombok.SneakyThrows;
  * @author  Gerrit van Brakel
  */
 public class StreamUtil {
-	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
 
 	public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
-//	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName(); 2021-03-09 Somehow DEFAULT_CHARSET returns null!
-	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
+	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
+
+	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null
+	protected static Logger log = LogUtil.getLogger(StreamUtil.class); // 
 	
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
