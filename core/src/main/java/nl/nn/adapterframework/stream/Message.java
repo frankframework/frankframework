@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -36,6 +37,7 @@ import java.nio.file.Path;
 import javax.xml.transform.Source;
 
 import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -70,7 +72,7 @@ public class Message implements Serializable {
 	}
 
 	public Message(String request) {
-		this((Object)request, null);
+		this(request, null);
 	}
 
 	public Message(byte[] request, String charset) {
@@ -81,7 +83,7 @@ public class Message implements Serializable {
 	}
 
 	public Message(Reader request) {
-		this((Object)request, null);
+		this(request, null);
 	}
 
 	public Message(InputStream request, String charset) {
@@ -159,6 +161,9 @@ public class Message implements Serializable {
 		return request instanceof String || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
 	}
 	
+	/**
+	 * If true, the Message should preferably be read using a streaming method, i.e. asReader() or asInputStream(), to avoid copying it into memory.
+	 */
 	public boolean requiresStream() {
 		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof Reader;
 	}
@@ -514,16 +519,20 @@ public class Message implements Serializable {
 		return result;
 	}
 	public void captureBinaryStream(OutputStream outputStream) {
-		captureBinaryStream(outputStream, 10000);
+		captureBinaryStream(outputStream, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
-		if (!requiresStream()) {
-			return;
-		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
 		try {
+			if (isRepeatable()) {
+				log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
+			}
 			wrappedRequest = request;
-			request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
+			if (isBinary()) {
+				request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
+			} else {
+				request = StreamUtil.captureReader(asReader(), new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize, true);
+			}
 		} catch (IOException e) {
 			log.warn("Cannot capture stream", e);
 		}
@@ -542,16 +551,20 @@ public class Message implements Serializable {
 		return result;
 	}
 	public void captureCharacterStream(Writer writer) {
-		captureCharacterStream(writer, 10000);
+		captureCharacterStream(writer, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 	public void captureCharacterStream(Writer writer, int maxSize) {
-		if (!requiresStream()) {
-			return;
-		}
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
 		try {
+			if (isRepeatable()) {
+				log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
+			}
 			wrappedRequest = request;
-			request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
+			if (!isBinary()) {
+				request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
+			} else {
+				request = StreamUtil.captureInputStream(asInputStream(), new WriterOutputStream(writer, getCharset()), maxSize, true);
+			}
 		} catch (IOException e) {
 			log.warn("Cannot capture reader", e);
 		}

@@ -15,17 +15,28 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.function.Consumer;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.io.input.BoundedReader;
+import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.testtool.TestTool;
 
 public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
+	private Logger log = LogUtil.getLogger(this);
+	
 	private @Setter @Getter TestTool testTool;
 
 	@Override
@@ -46,7 +57,17 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 	@Override
 	public <T> T toWriter(T message, Writer writer) {
 		if (message instanceof Message) {
-			((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
+			Message m = (Message)message;
+			if (m.isRepeatable()) {
+				// if the message is repeatable, then avoid losing its repeatability by wrapping it in a non repeatable Reader
+				try (Reader reader = m.asReader()){
+					IOUtils.copy(new BoundedReader(reader, testTool.getMaxMessageLength()), writer);
+				} catch (IOException e) {
+					log.warn("Could not capture message", e);
+				}
+			} else {
+				m.captureCharacterStream(writer, testTool.getMaxMessageLength());
+			}
 		} else {
 			if (message instanceof MessageOutputStream) {
 				((MessageOutputStream)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
@@ -58,8 +79,18 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 	@Override
 	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier) {
 		if (message instanceof Message) {
-			charsetNotifier.accept(((Message)message).getCharset());
-			((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
+			Message m = (Message)message;
+			charsetNotifier.accept(m.getCharset());
+			if (m.isRepeatable()) {
+				// if the message is repeatable, then avoid losing its repeatability by wrapping it in a non repeatable InputStream
+				try (InputStream inputStream = m.asInputStream()) {
+					IOUtils.copy(new BoundedInputStream(inputStream, testTool.getMaxMessageLength()), outputStream, testTool.getMaxMessageLength());
+				} catch (IOException e) {
+					log.warn("Could not capture message", e);
+				}
+			} else {
+				((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
+			}
 		} else {
 			if (message instanceof MessageOutputStream) {
 				((MessageOutputStream)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());

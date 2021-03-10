@@ -59,9 +59,10 @@ public class StreamUtil {
 
 	public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
+	public static final int DEFAULT_STREAM_CAPTURE_LIMIT=10000;
 
-	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null
-	protected static Logger log = LogUtil.getLogger(StreamUtil.class); // 
+	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
+	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
 	
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
@@ -478,7 +479,7 @@ public class StreamUtil {
 	}
 
 	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture) {
-		return captureOutputStream(stream, capture, 10000);
+		return captureOutputStream(stream, capture, DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture, int maxSize) {
 		return new TeeOutputStream(stream, limitSize(capture,maxSize));
@@ -543,7 +544,7 @@ public class StreamUtil {
 	}
 
 	public static Writer captureWriter(Writer writer, Writer capture) {
-		return captureWriter(writer, capture, 10000);
+		return captureWriter(writer, capture, DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 	public static Writer captureWriter(Writer writer, Writer capture, int maxSize) {
 		return new TeeWriter(writer, limitSize(capture,maxSize));

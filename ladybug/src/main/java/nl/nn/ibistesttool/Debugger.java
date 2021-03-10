@@ -332,21 +332,16 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			// A listener will be a reply listener because it's the only type of
 			// listener handled by this class. A reply listener is always linked
 			// to a sender, so stub when senders should be stubbed.
-			if ((checkpointName.startsWith("Sender ") || checkpointName.startsWith("Listener "))
-					&& isEndpoint) {
-				return true;
-			} else {
-				return false;
-			}
-		} else if (STUB_STRATEGY_ALWAYS.equals(stubStrategy)
-				// Don't stub messageId as IbisDebuggerAdvice will read it as correlationId from IPipeLineSession and
-				// use it as correlationId parameter for checkpoints, hence these checkpoint will not be correlated to
-				// the report with the correlationId used by the rerun method
-				&& !"SessionKey messageId".equals(checkpointName)) {
+			return (checkpointName.startsWith("Sender ") || checkpointName.startsWith("Listener ")) && isEndpoint;
+		} 
+		if (STUB_STRATEGY_ALWAYS.equals(stubStrategy)
+			// Don't stub messageId as IbisDebuggerAdvice will read it as correlationId from IPipeLineSession and
+			// use it as correlationId parameter for checkpoints, hence these checkpoint will not be correlated to
+			// the report with the correlationId used by the rerun method
+			&& !"SessionKey messageId".equals(checkpointName)) {
 			return true;
-		} else {
-			return false;
-		}
+		} 
+		return false;
 	}
 
 	private static String getCheckpointNameForINamedObject(String checkpointNamePrefix, INamedObject object) {

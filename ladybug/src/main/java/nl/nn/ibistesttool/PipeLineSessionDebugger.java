@@ -137,7 +137,9 @@ public class PipeLineSessionDebugger implements IPipeLineSession {
 
 	@Override
 	public void putAll(Map<? extends String,? extends Object> entries) {
-		pipeLineSession.putAll(entries);
+		for(Entry<? extends String,? extends Object> entry: entries.entrySet()) {
+			put(entry.getKey(),entry.getValue());
+		}
 	}
 
 	@Override

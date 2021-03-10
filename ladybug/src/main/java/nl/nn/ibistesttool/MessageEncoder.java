@@ -29,15 +29,13 @@ public class MessageEncoder extends MessageEncoderImpl {
 			Message m = ((Message)message);
 			ToStringResult toStringResult;
 			if (m.requiresStream()) {
-				toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null,
-						m.asObject().getClass().getTypeName());
+				toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.asObject().getClass().getTypeName());
 			} else {
 				toStringResult = super.toString(m.asObject(), charset);
 			}
 			return toStringResult;
-		} else {
-			return super.toString(message, charset);
-		}
+		} 
+		return super.toString(message, charset);
 	}
 
 	@Override
