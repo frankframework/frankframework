@@ -15,44 +15,26 @@ limitations under the License.
 */
 package nl.nn.adapterframework.doc.model;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("Test takes a long time to run, and gives little information")
+import nl.nn.adapterframework.testutil.TestAssertions;
+
 public class FrankDocModelPopulateTest {
 	private FrankDocModel instance;
-	private Set<String> actualTypeSimpleNames;
-	private Set<String> actualElementSimpleNames;
 
-	@Before
-	public void setUp() {
-		instance = FrankDocModel.populate();
-		actualTypeSimpleNames = instance.getAllTypes().values().stream()
-				.map(ElementType::getSimpleName).collect(Collectors.toSet());
-		actualElementSimpleNames = instance.getAllElements().values().stream()
-				.map(FrankElement::getSimpleName).collect(Collectors.toSet());		
-	}
-
-	@Test
-	public void testTypeIAdapterCreated() {
-		assertTrue(actualTypeSimpleNames.contains("IAdapter"));
-	}
-
-	@Test
-	public void testElementReceiverCreated() {
-		assertTrue(actualElementSimpleNames.contains("Receiver"));
-	}
-
+	/**
+	 * Test that the model gets class-level Javadoc comments. This is achieved using project Therapi. That
+	 * project uses an annotation processor. The test will only succeed after a successful Maven build, not
+	 * when this test is executed for the first time in Eclipse.
+	 */
 	@Test
 	public void testJavadocsCaptured() {
+		assumeTrue(TestAssertions.isTestRunningOnCI());
+		instance = FrankDocModel.populate();
 		FrankElement configuration = instance.findFrankElement("nl.nn.adapterframework.configuration.Configuration");
-		assertFalse(configuration.getClassLevelDoc().isEmpty());
+		assertTrue(configuration.getClassLevelDoc().startsWith("The Configuration is placeholder of all configuration objects."));
 	}
 }
