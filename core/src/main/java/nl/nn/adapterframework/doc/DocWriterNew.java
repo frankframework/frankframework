@@ -934,7 +934,7 @@ public class DocWriterNew {
 				// The default value in the model is a *description* of the default value.
 				// Therefore, it should be added to the description in the xs:attribute.
 				// The "default" attribute of the xs:attribute should not be set.
-				attribute = addAttribute(context, frankAttribute.getName(), DEFAULT, null, OPTIONAL);
+				attribute = addAttribute(context, frankAttribute.getName(), frankAttribute.getAttributeType());
 			} else {
 				attribute = addRestrictedAttribute(context, frankAttribute);
 			}

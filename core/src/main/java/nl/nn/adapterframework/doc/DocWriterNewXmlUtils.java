@@ -19,6 +19,7 @@ package nl.nn.adapterframework.doc;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+import nl.nn.adapterframework.doc.model.AttributeType;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -209,6 +210,26 @@ class DocWriterNewXmlUtils {
 	static XmlBuilder addAttribute(XmlBuilder context, String name, String typeName) {
 		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
 		attribute.addAttribute("name", name);
+		attribute.addAttribute("type", typeName);
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
+	static XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("name", name);
+		String typeName = "xs:";
+		switch(modelAttributeType) {
+		case BOOL:
+			typeName += "boolean";
+			break;
+		case INT:
+			typeName += "integer";
+			break;
+		case STRING:
+			typeName += "string";
+			break;
+		}
 		attribute.addAttribute("type", typeName);
 		context.addSubElement(attribute);
 		return attribute;
