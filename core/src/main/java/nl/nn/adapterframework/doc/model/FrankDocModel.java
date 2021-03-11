@@ -198,6 +198,7 @@ public class FrankDocModel {
 				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
 			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
+			attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
 			documentAttribute(attribute, method, attributeOwner);
 			if(enumGettersByAttributeName.containsKey(attributeName)) {
 				@SuppressWarnings("unchecked")

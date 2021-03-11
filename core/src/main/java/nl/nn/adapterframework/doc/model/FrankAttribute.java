@@ -39,8 +39,11 @@ public class FrankAttribute extends ElementChild implements Comparable<FrankAttr
 
 	private @Getter String name;
 	private @Getter @Setter FrankElement describingElement;
+
+	private @Getter @Setter AttributeType attributeType;
+
 	/**
-	 * Null if there is no restriction to the allowed attribute values.
+	 * Null if there is no restriction to the allowed attribute values. Should only be set if attributeType == {@link AttributeType#STRING}.
 	 */
 	private @Getter @Setter AttributeValues attributeValues;
 
