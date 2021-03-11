@@ -15,12 +15,32 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringWriter;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.io.input.BoundedReader;
+import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageEncoderImpl;
+import nl.nn.testtool.TestTool;
 
 public class MessageEncoder extends MessageEncoderImpl {
+	private Logger log = LogUtil.getLogger(this);
+
+	private @Setter @Getter TestTool testTool;
 
 	@Override
 	public ToStringResult toString(Object message, String charset) {
@@ -29,7 +49,27 @@ public class MessageEncoder extends MessageEncoderImpl {
 			Message m = ((Message)message);
 			ToStringResult toStringResult;
 			if (m.requiresStream()) {
-				toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.asObject().getClass().getTypeName());
+				if (m.isRepeatable()) {
+					StringWriter writer = new StringWriter();
+					if (m.isBinary()) {
+						try (InputStream inputStream = m.asInputStream()) {
+							String charsetToUse = StringUtils.isNotEmpty(m.getCharset()) ? m.getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+							IOUtils.copy(new BoundedInputStream(inputStream, testTool.getMaxMessageLength()), new WriterOutputStream(writer, charsetToUse), testTool.getMaxMessageLength());
+						} catch (IOException e) {
+							log.warn("Could not capture message", e);
+						}
+					} else {
+						try (Reader reader = m.asReader()){
+							IOUtils.copy(new BoundedReader(reader, testTool.getMaxMessageLength()), writer);
+						} catch (IOException e) {
+							log.warn("Could not capture message", e);
+						}
+					}
+					toStringResult = new ToStringResult(writer.toString(), charset, m.asObject().getClass().getTypeName());
+							
+				} else {
+					toStringResult = new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.asObject().getClass().getTypeName());
+				}
 			} else {
 				toStringResult = super.toString(m.asObject(), charset);
 			}
