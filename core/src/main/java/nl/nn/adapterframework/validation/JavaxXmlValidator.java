@@ -77,16 +77,14 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		}
 		super.configure(logPrefix);
 	}
-	
+
 	@Override
-	protected void init() throws ConfigurationException {
-		if (needsInit) {
-			super.init();
-			String schemasId = null;
-			schemasId = schemasProvider.getSchemasId();
-			if (schemasId != null) {
-				getSchemaObject(schemasId, schemasProvider.getSchemas());
-			}
+	public void start() throws ConfigurationException {
+		super.start();
+		String schemasId = null;
+		schemasId = schemasProvider.getSchemasId();
+		if (schemasId != null) {
+			getSchemaObject(schemasId, schemasProvider.getSchemas());
 		}
 	}
 
@@ -100,7 +98,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		Set<String> namespaceSet=new HashSet<String>();
 		List<XSModel> xsModels=null;
 
-		init();
+		start();
 		schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
 			schemasId = schemasProvider.getSchemasId(session);

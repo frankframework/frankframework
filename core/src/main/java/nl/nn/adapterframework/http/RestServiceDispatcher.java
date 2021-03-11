@@ -170,9 +170,6 @@ public class RestServiceDispatcher  {
 		if (methodConfig==null) {
 			throw new ListenerException("No REST listener specified for uri ["+uri+"] method ["+method+"]");
 		}
-		if (context==null) {
-			context=new PipeLineSessionBase();
-		}
 		context.put("restPath", restPath);
 		context.put("uri", uri);
 		context.put("method", method);
@@ -284,7 +281,7 @@ public class RestServiceDispatcher  {
 			//Caching: check for etags
 			if(uri.startsWith("/")) uri = uri.substring(1);
 			if(uri.indexOf("?") > -1) {
-				uri = uri.split("?")[0];
+				uri = uri.split("\\?")[0];
 			}
 			String etagCacheKey = restPath+"_"+uri;
 
@@ -305,8 +302,12 @@ public class RestServiceDispatcher  {
 				}
 			}
 
-			String result=listener.processRequest(null, request, context);
-
+			String result;
+			try {
+				result=listener.processRequest(null, new Message(request), context).asString();
+			} catch (IOException e) {
+				throw new ListenerException(e);
+			}
 			//Caching: pipeline has been processed, save etag
 			if(result != null && cache != null && context.containsKey("etag")) { //In case the eTag has manually been set and the pipeline exited in error state...
 				cache.put(etagCacheKey, context.get("etag"));
@@ -325,7 +326,7 @@ public class RestServiceDispatcher  {
 
 	private void noImageAvailable(HttpServletResponse httpServletResponse)
 			throws ListenerException {
-		URL svgSource = ClassUtils.getResourceURL(this, SVG_FILE_NO_IMAGE_AVAILABLE);
+		URL svgSource = ClassUtils.getResourceURL(SVG_FILE_NO_IMAGE_AVAILABLE);
 		if (svgSource == null) {
 			throw new ListenerException("cannot find resource ["
 					+ SVG_FILE_NO_IMAGE_AVAILABLE + "]");
@@ -347,8 +348,7 @@ public class RestServiceDispatcher  {
 		}
 	}
 
-	public String retrieveNoIbisContext(HttpServletRequest httpServletRequest,
-			ServletContext servletContext) throws ListenerException {
+	public String retrieveNoIbisContext(HttpServletRequest httpServletRequest, ServletContext servletContext) throws ListenerException {
 		try {
 			CreateRestViewPipe pipe = new CreateRestViewPipe();
 			pipe.setStyleSheetName("xml/xsl/web/noIbisContext.xsl");

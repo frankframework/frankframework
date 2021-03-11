@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,14 +49,14 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.soap.WsdlGenerator;
+import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 
 /**
  * Shows all monitors.
@@ -79,22 +79,16 @@ public final class Webservices extends Base {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
 		List<Map<String, Object>> webServices = new ArrayList<Map<String, Object>>();
-		for (IAdapter a : getIbisManager().getRegisteredAdapters()) {
-			Adapter adapter = (Adapter) a;
-			Iterator<IReceiver> recIt = adapter.getReceiverIterator();
-			while (recIt.hasNext()) {
-				IReceiver receiver = recIt.next();
-				if (receiver instanceof ReceiverBase) {
-					ReceiverBase rb = (ReceiverBase) receiver;
-					IListener listener = rb.getListener();
-					if (listener instanceof RestListener) {
-						RestListener rl = (RestListener) listener;
-						if (rl.isView()) {
-							Map<String, Object> service = new HashMap<String, Object>(2);
-							service.put("name", rb.getName());
-							service.put("uriPattern", rl.getUriPattern());
-							webServices.add(service);
-						}
+		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
+			for (Receiver receiver: adapter.getReceivers()) {
+				IListener listener = receiver.getListener();
+				if (listener instanceof RestListener) {
+					RestListener rl = (RestListener) listener;
+					if (rl.getView()) {
+						Map<String, Object> service = new HashMap<String, Object>(2);
+						service.put("name", adapter.getName() + " "+  receiver.getName());
+						service.put("uriPattern", rl.getUriPattern());
+						webServices.add(service);
 					}
 				}
 			}
@@ -102,15 +96,17 @@ public final class Webservices extends Base {
 		returnMap.put("services", webServices);
 
 		List<Map<String, Object>> wsdls = new ArrayList<Map<String, Object>>();
-		for (IAdapter a : getIbisManager().getRegisteredAdapters()) {
-			Map<String, Object> wsdlMap = new HashMap<String, Object>(2);
+		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
+			Map<String, Object> wsdlMap = null;
 			try {
-				Adapter adapter = (Adapter) a;
-				Wsdl wsdl = new Wsdl(adapter.getPipeLine());
-				wsdlMap.put("name", wsdl.getName());
-				wsdlMap.put("extension", getWsdlExtension());
+				if(WsdlGeneratorUtils.canHaveWsdl(adapter)) { // check eligibility
+					wsdlMap = new HashMap<String, Object>(2);
+					WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine());
+					wsdlMap.put("name", wsdl.getName());
+					wsdlMap.put("extension", getWsdlExtension());
+				}
 			} catch (Exception e) {
-				wsdlMap.put("name", a.getName());
+				wsdlMap.put("name", adapter.getName());
 
 				if (e.getMessage() != null) {
 					wsdlMap.put("error", e.getMessage());
@@ -118,12 +114,14 @@ public final class Webservices extends Base {
 					wsdlMap.put("error", e.toString());
 				}
 			}
-			wsdls.add(wsdlMap);
+			if(wsdlMap != null) {
+				wsdls.add(wsdlMap);
+			}
 		}
 		returnMap.put("wsdls", wsdls);
 
 		//ApiListeners
-		List<Map<String, Object>> apiListeners = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> apiListeners = new LinkedList<Map<String, Object>>();
 		SortedMap<String, ApiDispatchConfig> patternClients = ApiServiceDispatcher.getInstance().getPatternClients();
 		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
 			ApiDispatchConfig config = client.getValue();
@@ -131,18 +129,21 @@ public final class Webservices extends Base {
 			Set<String> methods = config.getMethods();
 			for (String method : methods) {
 				ApiListener listener = config.getApiListener(method);
-				IReceiver receiver = listener.getReceiver();
+				Receiver receiver = listener.getReceiver();
 				IAdapter adapter = receiver == null? null : receiver.getAdapter();
 				Map<String, Object> endpoint = new HashMap<>();
-				endpoint.put("uriPattern", config.getUriPattern());
+				String uriPattern = listener.getUriPattern();
+				endpoint.put("uriPattern", uriPattern);
 				endpoint.put("method", method);
-				endpoint.put("adapter", adapter.getName());
-				endpoint.put("receiver", receiver.getName());
+				if (adapter!=null) endpoint.put("adapter", adapter.getName());
+				if (receiver!=null) endpoint.put("receiver", receiver.getName());
 				PipeLine pipeline = adapter.getPipeLine();
-				if (pipeline.getInputValidator()==null && pipeline.getOutputValidator()==null) {
-					endpoint.put("error","pipeline has no validator");
+				if (ApiServiceDispatcher.getJsonValidator(pipeline)!=null || pipeline.getOutputValidator()!=null) {
+					String schemaResource = uriPattern.substring(1).replace("/", "_")+"_"+method+"_"+"openapi.json";
+					// N.B. OpenAPI 3.0 generation via ApiServiceDispatcher.mapResponses() is currently not based on explicit outputValidator. 
+					endpoint.put("schemaResource",schemaResource);
 				} else {
-					endpoint.put("schemaResource","openapi.json");
+					endpoint.put("error","Pipeline has no validator. Content in the response mappings will be empty in the generated schema.");
 				}
 				apiListeners.add(endpoint);
 			}
@@ -186,7 +187,7 @@ public final class Webservices extends Base {
 			// from the adapter itself, or from appconstant wsdl.<adapterName>.location or wsdl.location
 			String servletName = "external address of ibis"; 
 			String generationInfo = "by FrankConsole";
-			Wsdl wsdl = new Wsdl(adapter.getPipeLine(), generationInfo);
+			WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);
 			wsdl.setUseIncludes(useIncludes||zip);
 			wsdl.init();

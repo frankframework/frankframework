@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2015, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -43,32 +43,35 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "parsedatetime('" + formattedDate + "', 'yyyy-MM-dd HH:mm:ss')";
+	}
+
+	@Override
 	public String getTimestampAsDate(String columnName) {
 		return "formatdatetime("+columnName+",'yyyy-MM-dd')";
 	}
 
 	@Override
-	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
-		Clob clob=rs.getStatement().getConnection().createClob();
-		return clob;
+	public Object getClobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		return rs.getStatement().getConnection().createClob();
 	}
 
 	@Override
-	public Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
-		Clob clob=rs.getStatement().getConnection().createClob();
-		return clob;
+	public Object getClobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		return rs.getStatement().getConnection().createClob();
 	}
 
 	
 	@Override
-	public Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
-		Blob blob=rs.getStatement().getConnection().createBlob();
-		return blob;
+	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		return rs.getStatement().getConnection().createBlob();
 	}
 	@Override
-	public Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
-		Blob blob=rs.getStatement().getConnection().createBlob();
-		return blob;
+	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		return rs.getStatement().getConnection().createBlob();
 	}
 
 //	@Override

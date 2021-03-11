@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ import nl.nn.coolgen.proxy.XmlProxyException;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setProxyClassName(String) proxyClassName}</td><td>classname of proxy-class to be used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setClientId(String) clientId}</td><td>CICS userId of account perform operation</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setClientPassword(String) clientPassword}</td><td>password corresponding with userId</td><td>&nbsp;</td></tr>
@@ -130,72 +129,43 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         if (preProcStylesheetName != null) {
             try {
 
-                URL preprocUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), preProcStylesheetName);
+                URL preprocUrl = ClassUtils.getResourceURL(this, preProcStylesheetName);
 
                 if (preprocUrl == null)
-                    throw new ConfigurationException(
-                            getLogPrefix(null)+"cannot find resource for preProcTransformer, URL-String ["
-                                    + preProcStylesheetName
-                                    + "]");
+                    throw new ConfigurationException("cannot find resource for preProcTransformer, URL-String [" + preProcStylesheetName + "]");
 
-                log.debug(getLogPrefix(null)+"creating preprocTransformer from URL ["
-                        + preprocUrl.toString()
-                        + "]");
+                log.debug(getLogPrefix(null)+"creating preprocTransformer from URL [" + preprocUrl.toString() + "]");
                 preProcTransformer = XmlUtils.createTransformer(preprocUrl);
             } catch (IOException e) {
-                throw new ConfigurationException(
-                        getLogPrefix(null)+"cannot retrieve [" + preProcStylesheetName + "]",
-                        e);
+                throw new ConfigurationException("cannot retrieve [" + preProcStylesheetName + "]", e);
             } catch (javax.xml.transform.TransformerConfigurationException te) {
-                throw new ConfigurationException(
-                        getLogPrefix(null)+"got error creating transformer from file ["
-                                + preProcStylesheetName
-                                + "]",
-                        te);
+                throw new ConfigurationException("got error creating transformer from file [" + preProcStylesheetName + "]", te);
             }
         }
         if (postProcStylesheetName != null) {
             try {
 
-                URL postprocUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), postProcStylesheetName);
+                URL postprocUrl = ClassUtils.getResourceURL(this, postProcStylesheetName);
                 if (postprocUrl == null)
-                    throw new ConfigurationException(
-                            getLogPrefix(null)+"cannot find resource for postProcTransformer, URL-String ["
-                                    + postProcStylesheetName
-                                    + "]");
+                    throw new ConfigurationException("cannot find resource for postProcTransformer, URL-String [" + postProcStylesheetName + "]");
 
-                log.debug(
-                        getLogPrefix(null)+"creating postprocTransformer from URL ["
-                                + postprocUrl.toString()
-                                + "]");
+                log.debug(getLogPrefix(null)+"creating postprocTransformer from URL [" + postprocUrl.toString() + "]");
                 postProcTransformer = XmlUtils.createTransformer(postprocUrl);
             } catch (IOException e) {
-                throw new ConfigurationException(
-                        getLogPrefix(null)+"cannot retrieve [" + postProcStylesheetName + "]",
-                        e);
+                throw new ConfigurationException("cannot retrieve [" + postProcStylesheetName + "]", e);
             } catch (javax.xml.transform.TransformerConfigurationException te) {
-                throw new ConfigurationException(
-                        getLogPrefix(null)+"got error creating transformer from file ["
-                                + postProcStylesheetName
-                                + "]",
-                        te);
+                throw new ConfigurationException("got error creating transformer from file [" + postProcStylesheetName + "]", te);
             }
         }
 
         if (proxyInputSchema != null) {
             String stylesheet;
-            URL schemaUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), proxyInputSchema);
+            URL schemaUrl = ClassUtils.getResourceURL(this, proxyInputSchema);
 
             if (schemaUrl == null)
-                throw new ConfigurationException(
-                        getLogPrefix(null)+"cannot find resource for proxyInputSchema, URL-String ["
-                                + proxyInputSchema
-                                + "]");
+                throw new ConfigurationException("cannot find resource for proxyInputSchema, URL-String [" + proxyInputSchema + "]");
 
-            log.debug(
-                    getLogPrefix(null)+"creating CoolGenInputViewSchema from URL ["
-                            + schemaUrl.toString()
-                            + "]");
+            log.debug(getLogPrefix(null)+"creating CoolGenInputViewSchema from URL [" + schemaUrl.toString() + "]");
 
             // construct a xslt-stylesheet to perform validation to supplied schema
             stylesheet =
@@ -218,11 +188,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
             try {
                 proxyInputFixTransformer = XmlUtils.createTransformer(stylesheet);
             } catch (javax.xml.transform.TransformerConfigurationException te) {
-                throw new ConfigurationException(
-                        getLogPrefix(null)+"got error creating transformer from string ["
-                                + stylesheet
-                    + "]",
-                        te);
+                throw new ConfigurationException("got error creating transformer from string [" + stylesheet + "]", te);
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,9 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -39,11 +41,17 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	protected static final String WITH_UPDLOCK_ROWLOCK = "WITH (UPDLOCK, ROWLOCK)";
 	protected static final String GET_DATE = "GETDATE()";
 	protected static final String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
-	
+
+	private final int CLOB_SIZE_TRESHOLD=10000000; // larger than this is considered a CLOB, smaller a string
 
 	@Override
 	public Dbms getDbms() {
 		return Dbms.MSSQL;
+	}
+
+	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
 	}
 
 	@Override
@@ -97,6 +105,20 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getBlobFieldType() {
 		return "VARBINARY(MAX)";
 	}
+	@Override
+	public String emptyBlobValue() {
+		return "0x";
+	}
+
+	@Override
+	public String getClobFieldType() {
+		return "VARCHAR(MAX)";
+	}
+	@Override
+	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
+		return (rsmeta.getColumnType(colNum)==Types.VARCHAR || rsmeta.getColumnType(colNum)==Types.NVARCHAR) && rsmeta.getPrecision(colNum)>CLOB_SIZE_TRESHOLD;
+	}
+	
 
 	@Override
 	public String getTextFieldType() {
@@ -144,7 +166,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	} 
 
 	@Override
-	public String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException {
+	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
@@ -165,17 +187,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getSchema(Connection conn) throws JdbcException {
-		return JdbcUtil.executeStringQuery(conn, "SELECT DB_NAME()");
-	}
-
-	@Override
-	public boolean isUniqueConstraintViolation(SQLException e) {
-		if (e.getErrorCode()==2627) {
-			// Violation of %ls constraint '%.*ls'. Cannot insert duplicate key in object '%.*ls'.
-			return true;
-		} else {
-			return false;
-		}
+		return JdbcUtil.executeStringQuery(conn, "SELECT SCHEMA_NAME()");
 	}
 
 	@Override
@@ -246,4 +258,15 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 			return false;
 		}
 	}
+	
+	@Override
+	public String getBooleanFieldType() {
+		return "BIT";
+	}
+	
+	@Override
+	public String getBooleanValue(boolean value) {
+		return value? "1":"0";
+	}
+
 }

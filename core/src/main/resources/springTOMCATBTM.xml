@@ -4,11 +4,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		"
 	>
 
 	<import resource="springTOMCAT.xml"/>
+	<import resource="springJms.xml"/>
 
 	<bean
 		name="txManagerReal"
@@ -36,26 +37,7 @@
 			<property name="logPart2Filename" value="${log.dir}/${instance.name.lc}-btm2.tlog" />
 	</bean>
 
-	<bean
-		name="defaultDataSource"
-		class="bitronix.tm.resource.jdbc.PoolingDataSource"
-		init-method="init"
-		destroy-method="close"
-		>
-		<property name="uniqueName" value="${instance.name.lc}.defaultDataSource"/>
-		<property name="maxPoolSize" value="100"/>
-		<property name="allowLocalTransactions" value="true"/>
-		<property name="XaDataSource">
-			<ref bean="jndiDataSource"/>
-		</property>
-	</bean>
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.BtmDataSourceFactory" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jms.BtmConnectionFactoryFactory" />
 
-	<bean
-		name="jndiDataSource"
-		class="org.springframework.jndi.JndiObjectFactoryBean"
-		>
-		<property name="lookupOnStartup" value="${jdbc.required}"/>
-		<property name="ProxyInterface" value="javax.sql.XADataSource"/>
-		<property name="jndiName" value="${jndiContextPrefix}${jdbc.datasource.default}"/>
-	</bean>
 </beans>

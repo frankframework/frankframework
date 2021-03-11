@@ -24,7 +24,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 /**
  * The <code>ITransactionalStorage</code> is responsible for storing and 
  * retrieving-back messages under transaction control.
- * @see nl.nn.adapterframework.receivers.ReceiverBase
+ * @see nl.nn.adapterframework.receivers.Receiver
  * @author  Gerrit van Brakel
  * @since   4.1
 */
@@ -44,7 +44,7 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	public void configure() throws ConfigurationException;
 
 	/**
-	 * Store the message, returns new messageId.
+	 * Store the message, returns storageKey.
 	 * 
 	 * The messageId should be unique.
 	 */
@@ -53,18 +53,18 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	/**
 	 * Retrieves and deletes the message.
 	 */
-	public S getMessage(String messageId) throws ListenerException;
+	public S getMessage(String storageKey) throws ListenerException;
 
 
 	/**
 	 *  slotId allows using component to define a kind of 'subsection'.
 	 */	
-	@IbisDoc({"Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes", ""})
-	public String getSlotId();
+	@IbisDoc({"1", "Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes", ""})
 	public void setSlotId(String string);
+	public String getSlotId();
 
 
-	@IbisDoc({"Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). ReceiverBase will always set type to E for errorStorage and always set type to A for messageLog. GenericMessageSendingPipe will set type to L for messageLog (when type isn't specified). See {@link MessagestoreSender} for type M", "E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe"})
+	@IbisDoc({"2", "Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). Receiver will always set type to E for errorStorage and always set type to A for messageLog. SenderPipe will set type to L for messageLog (when type isn't specified). See {@link MessagestoreSender} for type M", "E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe"})
 	public void setType(String string);
 	public String getType();
 	

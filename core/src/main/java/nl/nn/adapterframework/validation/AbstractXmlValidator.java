@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -54,14 +56,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-public abstract class AbstractXmlValidator {
+public abstract class AbstractXmlValidator implements IScopeProvider {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private boolean throwException = false;
 	private boolean fullSchemaChecking = false;
@@ -71,8 +73,6 @@ public abstract class AbstractXmlValidator {
 	private boolean validateFile = false;
 	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	protected boolean warn = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.warn", true);
-	protected boolean needsInit = true;
-	protected boolean lazyInit = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.lazyInit", false);
 
 	protected String logPrefix = "";
 	protected boolean addNamespaceToSchema = false;
@@ -84,6 +84,8 @@ public abstract class AbstractXmlValidator {
 	private String xmlSchemaVersion=null;
 	
 	protected SchemasProvider schemasProvider;
+
+	private boolean started = false;
 
 	/**
 	 * Configure the XmlValidator
@@ -97,20 +99,19 @@ public abstract class AbstractXmlValidator {
 	 */
 	public void configure(String logPrefix) throws ConfigurationException {
 		this.logPrefix = logPrefix;
-		if (!lazyInit) {
-			init();
-		}
 	}
 
-	protected void init() throws ConfigurationException {
-		if (needsInit) {
-			needsInit = false;
+	public void start() throws ConfigurationException {
+		if(isStarted()) {
+			log.info("already started " + ClassUtils.nameOf(this));
 		}
+
+		started = true;
 	}
 
-	public void reset() {
-		if (!needsInit) {
-			needsInit = true;
+	public void stop() {
+		if(started) {
+			started = false;
 		}
 	}
 
@@ -356,7 +357,7 @@ public abstract class AbstractXmlValidator {
 	public Boolean getIgnoreUnknownNamespaces() {
 		return ignoreUnknownNamespaces;
 	}
-	public void setIgnoreUnknownNamespaces(boolean b) {
+	public void setIgnoreUnknownNamespaces(Boolean b) {
 		this.ignoreUnknownNamespaces = b;
 	}
 
@@ -366,14 +367,6 @@ public abstract class AbstractXmlValidator {
 	}
 	public boolean isIgnoreCaching() {
 		return ignoreCaching;
-	}
-
-	@IbisDoc({"If set, the value in appconstants is overwritten (for this validator only)", "<code>application default (false)</code>"})
-	public void setLazyInit(boolean lazyInit) {
-		this.lazyInit = lazyInit;
-	}
-	public boolean isLazyInit() {
-		return lazyInit;
 	}
 
 	@IbisDoc({"If set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property. ", "<code>1.1</code>"})
@@ -387,10 +380,7 @@ public abstract class AbstractXmlValidator {
 		return getXmlSchemaVersion()==null || "1.0".equals(getXmlSchemaVersion());
 	}
 
-	/**
-	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
-	 */
-	public ClassLoader getConfigurationClassLoader() {
-		return configurationClassLoader;
+	public boolean isStarted() {
+		return started;
 	}
 }

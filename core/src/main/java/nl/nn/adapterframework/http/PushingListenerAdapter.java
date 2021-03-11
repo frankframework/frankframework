@@ -15,12 +15,12 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
@@ -33,19 +33,19 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
+ * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
  * to receive messages from Servlets.
  * </table>
  * @author  Gerrit van Brakel 
  * @since   4.12
  */
-public class PushingListenerAdapter<M extends String> implements IPushingListener<M>, ServiceClient {
+public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	private IMessageHandler<M> handler;
+	private IMessageHandler<Message> handler;
 	private String name;
 	private boolean applicationFaultsAsExceptions=true;
-//	private IbisExceptionListener exceptionListener;
 	private boolean running;
 
 	/**
@@ -69,12 +69,12 @@ public class PushingListenerAdapter<M extends String> implements IPushingListene
 
 
 	@Override
-	public String getIdFromRawMessage(M rawMessage, Map<String, Object> threadContext) {
+	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) {
 		return null;
 	}
 	@Override
-	public Message extractMessage(M rawMessage, Map<String, Object> threadContext) {
-		return Message.asMessage(rawMessage);
+	public Message extractMessage(Message rawMessage, Map<String, Object> threadContext) {
+		return rawMessage;
 	}
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
@@ -82,15 +82,11 @@ public class PushingListenerAdapter<M extends String> implements IPushingListene
 	}
 
 	@Override
-	public String processRequest(String correlationId, String rawMessage, Map<String, Object> requestContext) throws ListenerException {
-		Message message = extractMessage((M)rawMessage, requestContext);
+	public Message processRequest(String correlationId, Message rawMessage, Map<String, Object> requestContext) throws ListenerException {
+		Message message = extractMessage(rawMessage, requestContext);
 		try {
 			log.debug("PushingListenerAdapter.processRequerawMmessagest() for correlationId ["+correlationId+"]");
-			try {
-				return handler.processRequest(this, correlationId, (M)rawMessage, message, requestContext).asString();
-			} catch (IOException e) {
-				throw new ListenerException(e);
-			} 
+			return handler.processRequest(this, correlationId, rawMessage, message, requestContext);
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
@@ -119,7 +115,7 @@ public class PushingListenerAdapter<M extends String> implements IPushingListene
 	}
 
 	@Override
-	public void setHandler(IMessageHandler<M> handler) {
+	public void setHandler(IMessageHandler<Message> handler) {
 		this.handler=handler;
 	}
 	@Override
@@ -140,5 +136,4 @@ public class PushingListenerAdapter<M extends String> implements IPushingListene
 	public void setRunning(boolean running) {
 		this.running = running;
 	}
-
 }

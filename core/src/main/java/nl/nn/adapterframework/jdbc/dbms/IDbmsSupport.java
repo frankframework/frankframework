@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,14 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +44,8 @@ public interface IDbmsSupport {
 	Dbms getDbms(); 
 	String getDbmsName();
 	
+	boolean isParameterTypeMatchRequired();
+	boolean hasSkipLockedFunctionality();
 	/**
 	 * SQL String returning current date and time of dbms.
 	 */
@@ -64,26 +70,47 @@ public interface IDbmsSupport {
 	String getTimestampAsDate(String columnName);
 
 	String getClobFieldType();
+	boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 	boolean mustInsertEmptyClobBeforeData();
 	String emptyClobValue();
+	Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException;
+	Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException;
+	
+	// CLOB update methods, to support updating ResultSets using SELECT ... FOR UPDATE statements
 	String getUpdateClobQuery(String table, String clobField, String keyField);
-	Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException;
-	Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException;
-	Writer getClobWriter(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException;
-	Writer getClobWriter(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException;
-	void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException;
-	void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException;
+	Object getClobHandle(ResultSet rs, int column) throws SQLException, JdbcException;
+	Object getClobHandle(ResultSet rs, String column) throws SQLException, JdbcException;
+	Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException;
+	Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException;
+	void updateClob(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException;
+	void updateClob(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException;
+	
+	// CLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements 
+	Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException;
+	Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException;
+	void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException;
+	
 
 	String getBlobFieldType();
+	boolean isBlobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 	boolean mustInsertEmptyBlobBeforeData();
 	String emptyBlobValue();
+	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException;
+	InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException;
+
+	// BLOB update methods, to support updating ResultSets using SELECT ... FOR UPDATE statements
 	String getUpdateBlobQuery(String table, String clobField, String keyField);
-	Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException;
-	Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException;
-	OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException;
-	OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
-	void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException;
-	void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException;
+	Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException;
+	Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException;
+	OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobHandle) throws SQLException, JdbcException;
+	OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobHandle) throws SQLException, JdbcException;
+	void updateBlob(ResultSet rs, int column, Object blobHandle) throws SQLException, JdbcException;
+	void updateBlob(ResultSet rs, String column, Object blobHandle) throws SQLException, JdbcException;
+
+	// BLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements 
+	Object getBlobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException;
+	OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException;
+	void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException;
 
 	String getTextFieldType();
 
@@ -96,14 +123,15 @@ public interface IDbmsSupport {
 	/**
 	 * Modify the provided selectQuery in such a way that the resulting query will not be blocked by locks, and will avoid placing locks itself as much as possible.
 	 * Will always be executed together with {@link #prepareSessionForNonLockingRead(Connection)}.
+	 * Preferably, the effective isolation level is READ_COMMITTED (commited rows of other transactions may be read), but if placing locks can be avoid by an isolation level similar to READ_UNCOMMITTED, that is allowed too.
 	 * Should return the query unmodified if no special action is required.
-	 * For an example, see {@link MsSqlServerDbmsSupport#prepareQueryTextForDirtyRead(String)}
+	 * For an example, see {@link MsSqlServerDbmsSupport#prepareQueryTextForNonLockingRead(String)}
 	 */
-	String prepareQueryTextForDirtyRead(String selectQuery) throws JdbcException;
+	String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException;
 	/**
-	 * Modify the connection in such a way that it when select queries, prepared by {@link #prepareQueryTextForDirtyRead(String)} or by {@link #prepareQueryTextForWorkQueuePeeking(int,String)}, 
+	 * Modify the connection in such a way that it when select queries, prepared by {@link #prepareQueryTextForNonLockingRead(String)} or by {@link #prepareQueryTextForWorkQueuePeeking(int,String)}, 
 	 * are executed, they will not be blocked by locks, and will avoid placing locks itself as much as possible.
-	 * Preferably isolation is READ_COMMITTED (commited rows of other transactions may be read), but if placing locks can be avoid by an isolation level similar to READ_UNCOMMITTED, that is allowed too.
+	 * Preferably isolation level is READ_COMMITTED (commited rows of other transactions may be read), but if placing locks can be avoid by an isolation level similar to READ_UNCOMMITTED, that is allowed too.
 	 * After the query is executed, jdbcSession.close() will be called, to return the connection to its normal state (which is expected to be REPEATABLE_READ).
 	 * Should return null if no preparation of the connection is required.
 	 * For an example, see {@link MySqlDbmsSupport#prepareSessionForNonLockingRead(Connection)}
@@ -130,7 +158,7 @@ public interface IDbmsSupport {
 	boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns);
 	String getSchemaOwner(Connection conn) throws SQLException, JdbcException;
 
-	boolean isUniqueConstraintViolation(SQLException e);
+	boolean isConstraintViolation(SQLException e);
 
 	String getRowNumber(String order, String sort);
 	String getRowNumberShortName();

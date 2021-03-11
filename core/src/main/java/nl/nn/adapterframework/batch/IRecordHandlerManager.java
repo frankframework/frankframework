@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * Interface for handling a transformed record.
@@ -38,6 +39,7 @@ public interface IRecordHandlerManager extends INamedObject {
 	/**
 	 * @param flow New flow to be added to the managed flow elements
 	 */
+	@IbisDoc({"10", "Flow to be added to the managed flow elements"})
 	void addHandler(RecordHandlingFlow flow);
 	
 	/**
@@ -51,8 +53,9 @@ public interface IRecordHandlerManager extends INamedObject {
 	IRecordHandlerManager getRecordFactoryUsingFilename(IPipeLineSession session, String filename);
 	
 	/**
-	 * @param initialFactory inidicates if this manager is the initial manager
+	 * @param initialFactory indicates if this manager is the initial manager
 	 */
+	@IbisDoc("indicates if this manager is the initial manager")
 	void setInitial(boolean initialFactory);
 	boolean isInitial();
 }

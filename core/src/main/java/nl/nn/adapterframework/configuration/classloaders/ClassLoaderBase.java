@@ -141,7 +141,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			this.reportLevel = ReportLevel.valueOf(level.toUpperCase());
 		}
 		catch (IllegalArgumentException e) {
-			ConfigurationWarnings.add(log, "invalid reportLevel ["+level+"], using default [ERROR]");
+			ConfigurationWarnings.addGlobalWarning(log, "invalid reportLevel ["+level+"], using default [ERROR]");
 		}
 	}
 
@@ -160,6 +160,11 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	 */
 	@Override
 	public final URL getResource(String name) {
+		if (name == null || name.startsWith("/")) { // Resources retrieved from ClassLoaders should never start with a leading slash
+			log.warn(new IllegalStateException("resources retrieved from ClassLoaders should not use an absolute path ["+name+"]")); // Use an exception so we can 'trace the stack'
+			return null;
+		}
+
 		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent classloader
 		if(name.startsWith("META-INF/")) {
 			return getParent().getResource(name);
@@ -188,6 +193,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	public URL getResource(String name, boolean useParent) {
 		URL url = null;
 		String normalizedFilename = FilenameUtils.normalize(name, true);
+		if(normalizedFilename == null) {
+			return null; //if the path after normalization equals null, return null
+		}
+
 		url = getLocalResource(normalizedFilename);
 		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
 
@@ -225,6 +234,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	@Override
 	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+		if(name == null) {
+			throw new IllegalArgumentException("classname to load may not be null");
+		}
+
 		Throwable throwable = null;
 		try {
 			return getParent().loadClass(name); // First try to load the class natively

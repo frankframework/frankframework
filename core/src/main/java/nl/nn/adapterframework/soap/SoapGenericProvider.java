@@ -50,8 +50,8 @@ public class SoapGenericProvider implements Provider {
 	private ServiceDispatcher sd=null;
 	//private SoapWrapper soapWrapper=null;
 
-	public void locate(DeploymentDescriptor dd, Envelope env, Call call, String methodName, String targetObjectURI, SOAPContext reqContext)
-		throws SOAPException {
+	@Override
+	public void locate(DeploymentDescriptor dd, Envelope env, Call call, String methodName, String targetObjectURI, SOAPContext reqContext) throws SOAPException {
 		if (log.isDebugEnabled()){
 			log.debug("Locate: dd=["+dd+"]+ targetObjectURI=[" +targetObjectURI+"]");
 			try {
@@ -83,10 +83,11 @@ public class SoapGenericProvider implements Provider {
 		reqContext.setProperty(TARGET_OBJECT_URI_KEY, targetObjectURI);
 	}
 	
+	@Override
 	public void invoke(SOAPContext reqContext, SOAPContext resContext) throws SOAPException {
 
-		 try {
-		 	String targetObjectURI = (String) reqContext.getProperty(TARGET_OBJECT_URI_KEY);
+		try {
+			String targetObjectURI = (String) reqContext.getProperty(TARGET_OBJECT_URI_KEY);
 			if (log.isDebugEnabled()){
 				log.debug("Invoking service for targetObjectURI=[" +targetObjectURI+"]");
 			}
@@ -95,7 +96,7 @@ public class SoapGenericProvider implements Provider {
 			HttpServletRequest httpRequest=(HttpServletRequest) reqContext.getProperty(Constants.BAG_HTTPSERVLETREQUEST);
 			HttpServletResponse httpResponse=(HttpServletResponse) reqContext.getProperty(Constants.BAG_HTTPSERVLETRESPONSE);
 			ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
-			Map messageContext= new HashMap();
+			Map<String,Object> messageContext= new HashMap<>();
 			messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
 			messageContext.put("httpListenerServletRequest", httpRequest);
 			messageContext.put("httpListenerServletResponse", httpResponse);
@@ -103,16 +104,15 @@ public class SoapGenericProvider implements Provider {
 			//resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);
 			resContext.setRootPart( result, Constants.HEADERVAL_CONTENT_TYPE_UTF8);
 				
-		 }
-		 catch( Exception e ) {
-		 	//log.warn("GenericSoapProvider caught exception:",e);
+		} catch (Exception e) {
+			//log.warn("GenericSoapProvider caught exception:",e);
 			if ( e instanceof SOAPException ) {
 				throw (SOAPException ) e;
 			} 
 			SOAPException se=new SOAPException( Constants.FAULT_CODE_SERVER, "GenericSoapProvider caught exception");
 			se.initCause(e);
 			throw se;
-		 }
+		}
 	}
 	
 }

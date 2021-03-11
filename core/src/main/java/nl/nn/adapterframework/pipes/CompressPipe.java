@@ -30,6 +30,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.StringUtils;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -66,7 +67,16 @@ public class CompressPipe extends FixedForwardPipe {
 	private boolean compress;
 	private boolean convert2String;
 	private String fileFormat;
-	
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+
+		if(!resultIsContent && !messageIsContent && outputDirectory == null) {
+			throw new ConfigurationException("outputDirectory must be set");
+		}
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
 		try {
@@ -165,8 +175,7 @@ public class CompressPipe extends FixedForwardPipe {
 			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
 			if (exceptionForward!=null) {
 				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
-				String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0);
-				return new PipeRunResult(exceptionForward,resultmsg);
+				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0));
 			}
 			throw new PipeRunException(this, getLogPrefix(session) + "Unexpected exception during compression", e);
 		}

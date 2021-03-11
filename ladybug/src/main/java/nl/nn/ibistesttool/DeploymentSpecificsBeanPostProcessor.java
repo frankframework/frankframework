@@ -15,19 +15,19 @@
 */
 package nl.nn.ibistesttool;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.filter.View;
-import nl.nn.testtool.filter.Views;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.helpers.OptionConverter;
+import org.apache.logging.log4j.core.util.OptionConverter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.filter.View;
+import nl.nn.testtool.filter.Views;
 
 /**
  * @author Jaco de Groot

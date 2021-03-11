@@ -39,6 +39,9 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.statistics.StatisticsUtil;
 import nl.nn.adapterframework.statistics.parser.StatisticsParser;
 import nl.nn.adapterframework.util.AppConstants;
@@ -48,10 +51,8 @@ import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Shows a textfile either as HTML or as Text.
@@ -112,7 +113,7 @@ public class FileViewerServlet extends HttpServlet  {
 	public static void transformReader(Reader reader, String filename, Map parameters, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException { 
 		PrintWriter out = response.getWriter();
 		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix, true);
-		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
+		URL xsltSource = ClassUtils.getResourceURL(stylesheetUrl);
 		if (xsltSource!=null) {
 			Transformer transformer = XmlUtils.createTransformer(xsltSource);
 			if (parameters!=null) {
@@ -127,7 +128,7 @@ public class FileViewerServlet extends HttpServlet  {
 
 	public static void transformSource(Source source, String filename, Map parameters, HttpServletResponse response, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException { 
 		PrintWriter out = response.getWriter();
-		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
+		URL xsltSource = ClassUtils.getResourceURL(stylesheetUrl);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters!=null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);
@@ -290,12 +291,12 @@ public class FileViewerServlet extends HttpServlet  {
 					}
 					//log.debug(extract);
 					if ("xml".equals(request.getParameter("output"))) {
-						response.setContentType("text/xml;charset=UTF-8");
+						response.setContentType("text/xml;charset="+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 						PrintWriter pw = response.getWriter();
 						pw.write(extract);
 						pw.close();
 					} else {
-						response.setContentType("text/html");
+						response.setContentType("text/html;charset="+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 						Source s= XmlUtils.stringToSourceForSingleUse(extract);
 						String stylesheetUrl=stats_html_xslt;
 						transformSource(s,fileName,parameters,response,stylesheetUrl,fileName);

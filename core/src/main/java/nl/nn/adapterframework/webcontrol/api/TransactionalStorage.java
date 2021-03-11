@@ -1,5 +1,5 @@
 /*
-Copyright 2018-2020 WeAreFrank!
+Copyright 2018-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -50,11 +52,11 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CalendarParserException;
@@ -68,75 +70,71 @@ public class TransactionalStorage extends Base {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/{storageType:messagelog|errorstorage}/{messageId}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}/message/{messageId}")
 	public Response browseReceiverMessage(
 				@PathParam("adapterName") String adapterName,
 				@PathParam("receiverName") String receiverName,
-				@PathParam("storageType") String storageType,
+				@PathParam("processState") String processState,
 				@PathParam("messageId") String messageId
 			) throws ApiException {
 
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		//StorageType
-		IMessageBrowser storage;
-		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageLogBrowser();
-		else
-			storage = receiver.getErrorStorageBrowser();
+		IMessageBrowser<?> storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		return getMessage(storage, receiver.getListener(), messageId);
 	}
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/{storageType:messagelog|errorstorage}/{messageId}/download")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}/message/{messageId}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadMessage(
 			@PathParam("adapterName") String adapterName,
 			@PathParam("receiverName") String receiverName,
-			@PathParam("storageType") String storageType,
+			@PathParam("processState") String processState,
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		//StorageType
-		IMessageBrowser storage;
-		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageLogBrowser();
-		else
-			storage = receiver.getErrorStorageBrowser();
+		IMessageBrowser<?> storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		return getMessage(storage, receiver.getListener(), messageId);
 	}
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/{storageType:messagelog|errorstorage}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response browseReceiverMessages(
 				@PathParam("adapterName") String adapterName,
 				@PathParam("receiverName") String receiverName,
-				@PathParam("storageType") String storageType,
+				@PathParam("processState") String processState,
 				@QueryParam("type") String type,
 				@QueryParam("host") String host,
 				@QueryParam("id") String id,
@@ -152,23 +150,21 @@ public class TransactionalStorage extends Base {
 				@QueryParam("max") int maxMessages
 			) throws ApiException {
 
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
 		//StorageType
-		IMessageBrowser storage;
-		if(storageType.equals("messagelog"))
-			storage = receiver.getMessageLogBrowser();
-		else
-			storage = receiver.getErrorStorageBrowser();
+		ProcessState state = ProcessState.getProcessStateFromName(processState); 
+		IMessageBrowser<?> storage = receiver.getMessageBrowser(state);
+		Map<ProcessState, Map<String, String>> targetPSInfo = getTargetProcessStateInfo(receiver.targetProcessStates().get(state));
 
 		if(storage == null) {
 			throw new ApiException("no IMessageBrowser found");
@@ -186,18 +182,21 @@ public class TransactionalStorage extends Base {
 		filter.setLabelMask(label);
 		filter.setStartDateMask(startDateStr);
 		filter.setEndDateMask(endDateStr);
-	
+
 		if("desc".equalsIgnoreCase(sort))
 			filter.setSortOrder(SortOrder.DESC);
 		if("asc".equalsIgnoreCase(sort))
 			filter.setSortOrder(SortOrder.ASC);
-
-		return Response.status(Response.Status.OK).entity(getMessages(storage, filter)).build();
+		Map<String, Object> resultObj = getMessages(storage, filter);
+		if(targetPSInfo != null && targetPSInfo.size()>0) {
+			resultObj.put("targetStates", targetPSInfo);
+		}
+		return Response.status(Response.Status.OK).entity(resultObj).build();
 	}
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage/{messageId}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error/message/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response resendReceiverMessage(
@@ -206,16 +205,19 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		resendMessage(receiver, messageId);
 
@@ -224,7 +226,7 @@ public class TransactionalStorage extends Base {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -234,13 +236,13 @@ public class TransactionalStorage extends Base {
 			MultipartBody input
 		) throws ApiException {
 
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -268,9 +270,61 @@ public class TransactionalStorage extends Base {
 		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
 	}
 
+	@POST
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/{processState}/move/{targetState}")
+	@Relation("pipeline")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response changeProcessState(
+			@PathParam("adapterName") String adapterName,
+			@PathParam("receiverName") String receiverName,
+			@PathParam("processState") String processState,
+			@PathParam("targetState") String targetState,
+			MultipartBody input
+		) throws ApiException {
+
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new ApiException("Adapter not found!");
+		}
+
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+		if(receiver == null) {
+			throw new ApiException("Receiver ["+receiverName+"] not found!");
+		}
+		String[] messageIds = getMessages(input);
+
+		ProcessState currentState = ProcessState.getProcessStateFromName(processState);
+		Set<ProcessState> targetProcessStates = receiver.targetProcessStates().get(currentState);
+		ProcessState targetPS = ProcessState.getProcessStateFromName(targetState);
+
+		List<String> errorMessages = new ArrayList<String>();
+		if(targetProcessStates != null && targetProcessStates.contains(targetPS)) {
+			IMessageBrowser<?> store = receiver.getMessageBrowser(currentState);
+			for(int i=0; i < messageIds.length; i++) {
+				try {
+					if (receiver.changeProcessState(store.browseMessage(messageIds[i]), targetPS)==null) {
+						errorMessages.add("could not move message ["+messageIds[i]+"]");
+					}
+				} catch (ListenerException e) {
+					errorMessages.add(e.getMessage());
+				}
+			}
+		} else {
+			throw new ApiException("It is not allowed to move messages from ["+processState+"] " + "to ["+targetState+"]");
+		}
+
+		if(errorMessages.size() == 0)
+			return Response.status(Response.Status.OK).build();
+
+		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
+	}
+
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage/{messageId}")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error/message/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteReceiverMessage(
@@ -279,25 +333,28 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
 
-		deleteMessage(receiver.getErrorStorageBrowser(), messageId);
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
+
+		deleteMessage(receiver.getMessageBrowser(ProcessState.ERROR), messageId);
 
 		return Response.status(Response.Status.OK).build();
 	}
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/errorstorage")
+	@Path("/adapters/{adapterName}/receivers/{receiverName}/store/Error")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -307,13 +364,13 @@ public class TransactionalStorage extends Base {
 			MultipartBody input
 		) throws ApiException {
 
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
 		}
 
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -323,7 +380,7 @@ public class TransactionalStorage extends Base {
 		List<String> errorMessages = new ArrayList<String>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
-				deleteMessage(receiver.getErrorStorageBrowser(), messageIds[i]);
+				deleteMessage(receiver.getMessageBrowser(ProcessState.ERROR), messageIds[i]);
 			}
 			catch(Exception e) {
 				if(e instanceof ApiException) {
@@ -351,7 +408,7 @@ public class TransactionalStorage extends Base {
 				@PathParam("messageId") String messageId
 			) throws ApiException {
 
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -361,6 +418,9 @@ public class TransactionalStorage extends Base {
 		if(pipe == null) {
 			throw new ApiException("Pipe ["+pipeName+"] not found!");
 		}
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		return getMessage(pipe.getMessageLog(), messageId);
 	}
@@ -375,7 +435,7 @@ public class TransactionalStorage extends Base {
 			@PathParam("messageId") String messageId
 		) throws ApiException {
 
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -385,6 +445,9 @@ public class TransactionalStorage extends Base {
 		if(pipe == null) {
 			throw new ApiException("Pipe ["+pipeName+"] not found!");
 		}
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
 
 		return getMessage(pipe.getMessageLog(), messageId);
 	}
@@ -411,7 +474,7 @@ public class TransactionalStorage extends Base {
 				@QueryParam("max") int maxMessages
 			) throws ApiException {
 
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -422,7 +485,7 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Pipe ["+pipeName+"] not found!");
 		}
 
-		IMessageBrowser storage = pipe.getMessageLog();
+		IMessageBrowser<?> storage = pipe.getMessageLog();
 
 		//Apply filters
 		MessageBrowsingFilter filter = new MessageBrowsingFilter(maxMessages, skipMessages);
@@ -450,21 +513,23 @@ public class TransactionalStorage extends Base {
 		return messageIds.split(",");
 	}
 
-	private void deleteMessage(IMessageBrowser storage, String messageId) {
+	private void deleteMessage(IMessageBrowser<?> storage, String messageId) {
 		PlatformTransactionManager transactionManager = getIbisManager().getTransactionManager();
 		TransactionStatus txStatus = null;
 		try {
 			txStatus = transactionManager.getTransaction(TXNEW);
 			storage.deleteMessage(messageId);
 		} catch (Exception e) {
-			txStatus.setRollbackOnly();
+			if (txStatus!=null) {
+				txStatus.setRollbackOnly();
+			}
 			throw new ApiException(e);
 		} finally { 
 			transactionManager.commit(txStatus);
 		}
 	}
 
-	private void resendMessage(ReceiverBase receiver, String messageId) {
+	private void resendMessage(Receiver<?> receiver, String messageId) {
 		try {
 			receiver.retryMessage(messageId);
 		} catch (ListenerException e) {
@@ -472,15 +537,15 @@ public class TransactionalStorage extends Base {
 		}
 	}
 
-	private Response getMessage(IMessageBrowser messageBrowser, String messageId) {
+	private Response getMessage(IMessageBrowser<?> messageBrowser, String messageId) {
 		return getMessage(messageBrowser, null, messageId);
 	}
 
-	private Response getMessage(IMessageBrowser messageBrowser, IListener listener, String messageId) {
+	private Response getMessage(IMessageBrowser<?> messageBrowser, IListener <?> listener, String messageId) {
 		return buildResponse(getRawMessage(messageBrowser, listener, messageId), messageId);
 	}
 
-	private String getRawMessage(IMessageBrowser messageBrowser, IListener listener, String messageId) {
+	private String getRawMessage(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) {
 		Object rawmsg = null;
 		try {
 			rawmsg = messageBrowser.browseMessage(messageId);
@@ -493,7 +558,7 @@ public class TransactionalStorage extends Base {
 		if (rawmsg != null) {
 			if(rawmsg instanceof MessageWrapper) {
 				try {
-					MessageWrapper msgsgs = (MessageWrapper) rawmsg;
+					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
 					msg = msgsgs.getMessage().asString();
 				} catch (IOException e) {
 					throw new ApiException(e, 500);
@@ -547,10 +612,10 @@ public class TransactionalStorage extends Base {
 				.build();
 	}
 
-	private Map<String, Object> getMessages(IMessageBrowser transactionalStorage, MessageBrowsingFilter filter) {
+	private Map<String, Object> getMessages(IMessageBrowser<?> transactionalStorage, MessageBrowsingFilter filter) {
 		int messageCount = 0;
 		try {
-			messageCount = ((ITransactionalStorage) transactionalStorage).getMessageCount();
+			messageCount = transactionalStorage.getMessageCount();
 		} catch (Exception e) {
 			log.warn(e);
 			messageCount = -1;
@@ -568,8 +633,7 @@ public class TransactionalStorage extends Base {
 			List<Object> messages = new LinkedList<Object>();
 			
 			for (count=0; iterator.hasNext(); ) {
-				IMessageBrowsingIteratorItem iterItem = iterator.next();
-				try {
+				try (IMessageBrowsingIteratorItem iterItem = iterator.next()) {
 					if(!filter.matchAny(iterItem))
 						continue;
 
@@ -594,8 +658,6 @@ public class TransactionalStorage extends Base {
 						log.warn("stopped iterating messages after ["+count+"]: limit reached");
 						break;
 					}
-				} finally {
-					iterItem.release();
 				}
 			}
 			returnObj.put("messages", messages);
@@ -604,6 +666,19 @@ public class TransactionalStorage extends Base {
 		}
 
 		return returnObj;
+	}
+	
+	public Map<ProcessState, Map<String, String>> getTargetProcessStateInfo(Set<ProcessState> targetProcessStates) {
+		if(targetProcessStates == null) {
+			return null;
+		}
+		Map<ProcessState, Map<String, String>> result = new LinkedHashMap<ProcessState, Map<String,String>>();
+		for (ProcessState ps : targetProcessStates) {
+			Map<String, String> psInfo = new HashMap<String, String>();
+			psInfo.put("name", ps.getName());
+			result.put(ps, psInfo);
+		}
+		return result;
 	}
 
 	public class MessageBrowsingFilter {
@@ -622,7 +697,7 @@ public class TransactionalStorage extends Base {
 		private int skipMessages = 0;
 
 		private SortOrder sortOrder = SortOrder.NONE;
-		private IMessageBrowser storage = null;
+		private IMessageBrowser<?> storage = null;
 		private IListener listener = null;
 
 		public MessageBrowsingFilter() {
@@ -679,7 +754,7 @@ public class TransactionalStorage extends Base {
 			}
 			if(startDate == null && endDate != null) {
 				count++;
-				matches += iterItem.getInsertDate().before(startDate) ? 1 : 0;
+				matches += iterItem.getInsertDate().before(endDate) ? 1 : 0;
 			}
 			if(startDate != null && endDate != null) {
 				count++;
@@ -739,11 +814,11 @@ public class TransactionalStorage extends Base {
 			return true;
 		}
 
-		public void setMessageMask(String messageMask, IMessageBrowser storage) {
+		public void setMessageMask(String messageMask, IMessageBrowser<?> storage) {
 			setMessageMask(messageMask, storage, null);
 		}
 
-		public void setMessageMask(String messageMask, IMessageBrowser storage, IListener listener) {
+		public void setMessageMask(String messageMask, IMessageBrowser<?> storage, IListener <?> listener) {
 			if(StringUtils.isNotEmpty(messageMask)) {
 				this.message = messageMask;
 				this.storage = storage;
@@ -790,6 +865,7 @@ public class TransactionalStorage extends Base {
 			return maxMessages;
 		}
 
+		@Override
 		public String toString() {
 			return ToStringBuilder.reflectionToString(this);
 //			return (new ReflectionToStringBuilder(this) {

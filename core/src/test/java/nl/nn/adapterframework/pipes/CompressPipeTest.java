@@ -1,188 +1,184 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunException;
 
-public class CompressPipeTest extends PipeTestBase<CompressPipe>{
+public class CompressPipeTest extends PipeTestBase<CompressPipe> {
+	private String dummyString = "dummyString";
+	private String dummyStringSemiColon = dummyString + ";";
 
-    private IPipeLineSession session = new PipeLineSessionBase();
+	@Override
+	public CompressPipe createPipe() {
+		return new CompressPipe();
+	}
 
-    @Override
-    public CompressPipe createPipe() {
-        return new CompressPipe();
-    }
+	@Test
+	public void testGetterSetterMessageIsContent() {
+		pipe.setMessageIsContent(true);
+		boolean checkBoolean = pipe.isMessageIsContent();
+		assertEquals(true, checkBoolean);
 
-    @Test
-    public void testGetterSetterMessageIsContent() {
-        pipe.setMessageIsContent(true);
-        boolean checkBoolean = pipe.isMessageIsContent();
-        assertEquals(true, checkBoolean);
+		pipe.setMessageIsContent(false);
+		checkBoolean = pipe.isMessageIsContent();
+		assertEquals(false, checkBoolean);
+	}
 
-        pipe.setMessageIsContent(false);
-        checkBoolean = pipe.isMessageIsContent();
-        assertEquals(false, checkBoolean);
-    }
+	@Test
+	public void testGetterSetterResultIsContent() {
+		pipe.setResultIsContent(true);
+		boolean checkBoolean = pipe.isResultIsContent();
+		assertEquals(true, checkBoolean);
 
-    @Test
-    public void testGetterSetterResultIsContent() {
-        pipe.setResultIsContent(true);
-        boolean checkBoolean = pipe.isResultIsContent();
-        assertEquals(true, checkBoolean);
+		pipe.setResultIsContent(false);
+		checkBoolean = pipe.isResultIsContent();
+		assertEquals(false, checkBoolean);
+	}
 
-        pipe.setResultIsContent(false);
-        checkBoolean = pipe.isResultIsContent();
-        assertEquals(false, checkBoolean);
-    }
+	@Test
+	public void testGetterSetterOuputDirectory() {
+		pipe.setOutputDirectory(dummyString);
+		String otherString = pipe.getOutputDirectory();
+		assertEquals(dummyString, otherString);
+	}
 
-    @Test
-    public void testGetterSetterOuputDirectory() {
-        String dummyString =  "dummyString";
-        pipe.setOutputDirectory(dummyString);
-        String otherString = pipe.getOutputDirectory();
-        assertEquals(dummyString, otherString);
-    }
+	@Test
+	public void testGetterSetterFilenamePattern() {
+		pipe.setFilenamePattern(dummyString);
+		String otherString = pipe.getFilenamePattern();
+		assertEquals(dummyString, otherString);
+	}
 
-    @Test
-    public void testGetterSetterFilenamePattern() {
-        String dummyString = "dummyString";
-        pipe.setFilenamePattern(dummyString);
-        String otherString = pipe.getFilenamePattern();
-        assertEquals(dummyString, otherString);
-    }
+	@Test
+	public void testGetterSetterZipEntryPattern() {
+		pipe.setZipEntryPattern(dummyString);
+		String otherString = pipe.getZipEntryPattern();
+		assertEquals(dummyString, otherString);
+	}
 
-    @Test
-    public void testGetterSetterZipEntryPattern() {
-        String dummyString = "dummyString";
-        pipe.setZipEntryPattern(dummyString);
-        String otherString = pipe.getZipEntryPattern();
-        assertEquals(dummyString, otherString);
-    }
+	@Test
+	public void testGetterSetterCompress() {
+		pipe.setCompress(true);
+		boolean checkBoolean = pipe.isCompress();
+		assertEquals(true, checkBoolean);
 
-    @Test
-    public void testGetterSetterCompress() {
-        pipe.setCompress(true);
-        boolean checkBoolean = pipe.isCompress();
-        assertEquals(true, checkBoolean);
+		pipe.setCompress(false);
+		checkBoolean = pipe.isCompress();
+		assertEquals(false, checkBoolean);
+	}
 
-        pipe.setCompress(false);
-        checkBoolean = pipe.isCompress();
-        assertEquals(false, checkBoolean);
-    }
+	@Test
+	public void testGetterSetterConvert2String() {
+		pipe.setConvert2String(true);
+		boolean checkBoolean = pipe.isConvert2String();
+		assertEquals(true, checkBoolean);
 
-    @Test
-    public void testGetterSetterConvert2String() {
-        pipe.setConvert2String(true);
-        boolean checkBoolean = pipe.isConvert2String();
-        assertEquals(true, checkBoolean);
+		pipe.setConvert2String(false);
+		checkBoolean = pipe.isConvert2String();
+		assertEquals(false, checkBoolean);
+	}
 
-        pipe.setConvert2String(false);
-        checkBoolean = pipe.isConvert2String();
-        assertEquals(false, checkBoolean);
-    }
+	@Test(expected = ConfigurationException.class)
+	public void testCaptureFakeFilePath() throws Exception {
+		pipe.setMessageIsContent(false);
+		pipe.setCompress(true);
 
-    // TODO : There is no getter for file format
-//    @Test
-//    public void testGetterSetterFileFormat() {
-//        String dummyString = "dummyString";
-//        pipe.setFileFormat(dummyString);
-//        String otherString = pipe.file
-//        assertEquals(dummyString, otherString);
-//    }
+		configureAndStartPipe();
+		doPipe(pipe, dummyStringSemiColon, session);
+	}
 
-    @Test(expected = PipeRunException.class)
-    public void testCaptureFakeFilePath() throws PipeRunException {
-        Object input = "dummyString;";
-        pipe.setMessageIsContent(false);
-        pipe.setCompress(true);
+	@Test(expected = ConfigurationException.class)
+	public void testCaptureUncompressedLegitimateFilePath() throws Exception {
+		pipe.setMessageIsContent(false);
+		pipe.setCompress(false);
+		pipe.setFileFormat("gz");
 
-        doPipe(pipe,input, session);
-    }
+		configureAndStartPipe();
+		doPipe(pipe, dummyStringSemiColon, session);
+	}
 
-    @Test(expected = PipeRunException.class)
-    public void testCaptureUncompressedLegitimateFilePath() throws PipeRunException {
-        Object input = "dummyString;";
-        pipe.setMessageIsContent(false);
-        pipe.setCompress(false);
-        pipe.setFileFormat("gz");
+	@Test(expected = PipeRunException.class)
+	public void testResultIsContent() throws Exception {
+		pipe.setMessageIsContent(true);
+		pipe.setResultIsContent(true);
 
-        doPipe(pipe,input, session);
-    }
+		configureAndStartPipe();
+		doPipe(pipe, dummyStringSemiColon, session);
+	}
 
-    @Test(expected = PipeRunException.class)
-    public void testResultIsContent() throws PipeRunException {
-        Object input = "dummyString;";
-        pipe.setMessageIsContent(true);
-        pipe.setResultIsContent(true);
-        doPipe(pipe,input, session);
-    }
+	@Test
+	public void testCompressWithLegitimateFileFormat() throws Exception {
+		pipe.setFileFormat("gz");
+		pipe.setMessageIsContent(true);
+		pipe.setResultIsContent(true);
+		pipe.setCompress(true);
 
-    @Test
-    public void testCompressWithLegitimateFileFormat() throws PipeRunException {
-        Object input = "dummyString;";
-        pipe.setFileFormat("gz");
-        pipe.setMessageIsContent(true);
-        pipe.setResultIsContent(true);
-        pipe.setCompress(true);
-        assertNotNull(doPipe(pipe,input, session));
-    }
+		configureAndStartPipe();
+		assertNotNull(doPipe(pipe, dummyStringSemiColon, session));
+	}
 
-    @Test
-    public void testCompressWithIllegimitateFileFormat() throws PipeRunException {
-        Object input = "dummyString;";
-        pipe.setFileFormat("notNull");
-        pipe.setMessageIsContent(true);
-        pipe.setResultIsContent(true);
-        pipe.setCompress(true);
-        assertTrue(doPipe(pipe,input, session) !=  null); // TODO should assert proper return value
-    }
+	@Test
+	public void testCompressWithIllegimitateFileFormat() throws Exception {
+		pipe.setFileFormat("notNull");
+		pipe.setMessageIsContent(true);
+		pipe.setResultIsContent(true);
+		pipe.setCompress(true);
 
+		configureAndStartPipe();
+		assertNotNull(doPipe(pipe, dummyStringSemiColon, session)); // TODO should assert proper return value
+	}
 
-    @Test
-    public void testUncompressedWithIlligimitateFileFormat() throws PipeRunException {
-        Object input = "dummyString;";
-        pipe.setFileFormat("notNull");
-        pipe.setMessageIsContent(true);
-        pipe.setResultIsContent(true);
-        pipe.setCompress(false);
-        assertTrue(doPipe(pipe,input, session) !=  null); // TODO should assert proper return value
-    }
+	@Test
+	public void testUncompressedWithIlligimitateFileFormat() throws Exception {
+		pipe.setFileFormat("notNull");
+		pipe.setMessageIsContent(true);
+		pipe.setResultIsContent(true);
+		pipe.setCompress(false);
 
-    @Test
-    public void testConvertByteToStringForResultMsg() throws PipeRunException {
-        Object input = "dummyString;";
-        pipe.setFileFormat("notNull");
-        pipe.setMessageIsContent(true);
-        pipe.setResultIsContent(true);
-        pipe.setCompress(false);
-        pipe.setConvert2String(true);
-        assertTrue(doPipe(pipe,input, session) !=  null); // TODO should assert proper return value
-    }
+		configureAndStartPipe();
+		assertNotNull(doPipe(pipe, dummyStringSemiColon, session)); // TODO should assert proper return value
+	}
 
-    @Test(expected = PipeRunException.class)
-    public void testCaptureIllegitimateFilePath() throws PipeRunException {
-        Object input = "dummyString";
-        pipe.setMessageIsContent(false);
-        pipe.setCompress(true);
+	@Test
+	public void testConvertByteToStringForResultMsg() throws Exception {
+		pipe.setFileFormat("notNull");
+		pipe.setMessageIsContent(true);
+		pipe.setResultIsContent(true);
+		pipe.setCompress(false);
+		pipe.setConvert2String(true);
 
-        doPipe(pipe,input, session);
-    }
+		configureAndStartPipe();
+		assertNotNull(doPipe(pipe, dummyStringSemiColon, session)); // TODO should assert proper return value
+	}
 
-    @Test(expected = PipeRunException.class)
-    public void testCaptureIllegitimateByteArray() throws PipeRunException {
-        Object input = "dummyString".getBytes();
-        pipe.setMessageIsContent(true);
-        doPipe(pipe,input, session);
-    }
+	@Test(expected = ConfigurationException.class)
+	public void testCaptureIllegitimateFilePath() throws Exception {
+		pipe.setMessageIsContent(false);
+		pipe.setCompress(true);
 
-    @Test(expected = PipeRunException.class)
-    public void testCaptureUnconvertableArray() throws PipeRunException {
-        Object input = "dummyString";
-        pipe.setMessageIsContent(true);
-        doPipe(pipe,input, session);
-    }
+		configureAndStartPipe();
+		doPipe(pipe, dummyStringSemiColon, session);
+	}
 
+	@Test(expected = PipeRunException.class)
+	public void testCaptureIllegitimateByteArray() throws Exception {
+		Object input = dummyString.getBytes();
+		pipe.setMessageIsContent(true);
+
+		configureAndStartPipe();
+		doPipe(pipe, input, session);
+	}
+
+	@Test(expected = PipeRunException.class)
+	public void testCaptureUnconvertableArray() throws Exception {
+		Object input = dummyString;
+		pipe.setMessageIsContent(true);
+
+		configureAndStartPipe();
+		doPipe(pipe, input, session);
+	}
 }

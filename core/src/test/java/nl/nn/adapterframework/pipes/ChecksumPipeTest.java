@@ -8,8 +8,6 @@ import java.security.NoSuchAlgorithmException;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.pipes.ChecksumPipe.ChecksumGenerator;
 import nl.nn.adapterframework.stream.Message;
@@ -22,7 +20,6 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	public static final String CHECKSUM_SHA="SHA";
 	public static final String CHECKSUM_CRC32="CRC32";
 	public static final String CHECKSUM_ADLER32="Adler32";
-	private IPipeLineSession session = new PipeLineSessionBase();
 
 	@Override
 	public ChecksumPipe createPipe() {

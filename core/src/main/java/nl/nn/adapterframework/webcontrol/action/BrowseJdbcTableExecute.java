@@ -175,7 +175,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 										+ fielddefinition
 										+ "<maxColumnSize>1000</maxColumnSize>"
 										+ "</browseJdbcTableExecuteREQ>";
-								URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
+								URL url = ClassUtils.getResourceURL(DB2XML_XSLT);
 								if (url != null) {
 									Transformer t = XmlUtils.createTransformer(url);
 									query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);

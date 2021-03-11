@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,14 +49,14 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -104,7 +104,7 @@ public class ConfigurationUtils {
 	}
 
 	public static String transformConfiguration(Configuration configuration, String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
-		URL xsltSource = ClassUtils.getResourceURL(configuration.getClassLoader(), xslt);
+		URL xsltSource = ClassUtils.getResourceURL(configuration, xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + xslt + "]");
 		}
@@ -180,14 +180,10 @@ public class ConfigurationUtils {
 		return getConfigFromDatabase(ibisContext, name, jmsRealm, null);
 	}
 
-	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				log.warn("no JMSRealm found");
-				return null;
-			}
+	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String dataSourceName, String version) throws ConfigurationException {
+		String workdataSourceName = dataSourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 		if (StringUtils.isEmpty(version)) {
 			version = null; //Make sure this is null when empty!
@@ -196,7 +192,7 @@ public class ConfigurationUtils {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -243,9 +239,16 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static boolean addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
-		ConfigurationValidator configDefails = new ConfigurationValidator(file);
-		return addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, configDefails.getName(), configDefails.getVersion(), fileName, configDefails.getJar(), ruser);
+	/**
+	 * @return name of the configuration if successful SQL update
+	 * @throws ConfigurationException when SQL error occurs or filename validation fails
+	 */
+	public static String addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
+		ConfigurationValidator configDetails = new ConfigurationValidator(file);
+		if(addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
+			return configDetails.getName() +": "+ configDetails.getVersion();
+		}
+		return null;
 	}
 
 	/**
@@ -296,7 +299,7 @@ public class ConfigurationUtils {
 				}
 			}
 			if(!isBuildInfoPresent) {
-				throw new ConfigurationException("no ["+buildInfoFilename+"] persent in configuration");
+				throw new ConfigurationException("no ["+buildInfoFilename+"] present in configuration");
 			}
 		}
 
@@ -318,44 +321,36 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static String processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
-		String result = "";
+	public static Map<String, String> processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
+		Map<String, String> result = new LinkedHashMap<String, String>();
 		if (file.available() > 0) {
 			try (ZipInputStream zipInputStream = new ZipInputStream(file)) {
-				int counter = 1;
 				ZipEntry zipEntry;
 				while ((zipEntry = zipInputStream.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
-
-					String fileName = "file_zipentry" + counter;
-					if (StringUtils.isNotEmpty(result)) {
-						result += "\n";
+					try {
+						String configName = ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
+						result.put(configName, "loaded");
+					} catch (ConfigurationException e) {
+						log.error("an error occured while trying to store new configuration using datasource ["+datasource+"]", e);
+						result.put(entryName, e.getMessage());
 					}
-
-					result += entryName + ":" + 
-					ConfigurationUtils.addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, fileName, zipInputStream, ruser);
-	
-					counter++;
 				}
 			}
 		}
 		return result;
 	}
 
-	public static boolean addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
-		if (StringUtils.isEmpty(datasource)) {
-			String workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				return false;
-			}
-			JmsRealm jmsRealm = JmsRealmFactory.getInstance().getJmsRealm(workJmsRealm);
-			datasource = jmsRealm.getDatasourceName();
+	public static boolean addConfigToDatabase(IbisContext ibisContext, String dataSourceName, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
+		String workdataSourceName = dataSourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setDatasourceName(datasource);
+		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -405,18 +400,10 @@ public class ConfigurationUtils {
 	}
 
 	public static void removeConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				throw new ConfigurationException("no JmsRealm found");
-			}
-		}
-
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -444,19 +431,16 @@ public class ConfigurationUtils {
 	 * Set the all ACTIVECONFIG to false and specified version to true
 	 * @param value 
 	 */
-	public static boolean activateConfig(IbisContext ibisContext, String name, String version, boolean value, String jmsRealm) throws SenderException, ConfigurationException, JdbcException, SQLException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				return false;
-			}
+	public static boolean activateConfig(IbisContext ibisContext, String name, String version, boolean value, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+		String workdataSourceName = dataSourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		String booleanValueFalse = qs.getDbmsSupport().getBooleanValue(false);
@@ -497,19 +481,16 @@ public class ConfigurationUtils {
 	/**
 	 * Toggle AUTORELOAD
 	 */
-	public static boolean autoReloadConfig(IbisContext ibisContext, String name, String version, boolean booleanValue, String jmsRealm) throws SenderException, ConfigurationException, JdbcException, SQLException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				return false;
-			}
+	public static boolean autoReloadConfig(IbisContext ibisContext, String name, String version, boolean booleanValue, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+		String workdataSourceName = dataSourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 
@@ -602,18 +583,10 @@ public class ConfigurationUtils {
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm, boolean onlyAutoReload) throws ConfigurationException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				return null;
-			}
-		}
-
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {

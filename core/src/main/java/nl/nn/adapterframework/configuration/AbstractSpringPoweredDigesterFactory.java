@@ -16,10 +16,9 @@
 package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.digester.AbstractObjectCreationFactory;
+import org.apache.commons.digester3.AbstractObjectCreationFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -58,13 +57,11 @@ import java.util.Map;
  * @since   4.8
  *
  */
-public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory {
+public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> {
 	protected Logger log = LogUtil.getLogger(this);
 
     private static IbisContext ibisContext;
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-	private boolean suppressDefaultValueWarnings = AppConstants.getInstance().getBoolean("warnings.suppress.defaultvalue", false);
-	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean("warnings.suppress.deprecated", false);
 
     public AbstractSpringPoweredDigesterFactory() {
         super();
@@ -168,7 +165,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * Make sure you get the raw (un-proxied) class and check for deprecation annotations.
 	 */
 	private void checkDeprecation(Object currObj) {
-		if(!suppressDeprecationWarnings) {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEPRECATION_SUPPRESS_KEY, null, classLoader)) {
 			Class<?> clazz = ClassUtils.getUserClass(currObj);
 			ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
 			if(warning != null) {
@@ -180,7 +178,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 					msg += ": " + warning.value();
 				}
 				//Only print it once per deprecated class
-				ConfigurationWarnings.add(log, msg);
+				ConfigurationWarnings.addGlobalWarning(log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, classLoader);
 			}
 		}
 	}
@@ -194,8 +192,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		}
 	}
 
-	protected void checkAttribute(Object currObj, String beanName,
-			String attributeName, String value, Map<String, String> attrs) throws Exception {
+	protected void checkAttribute(Object currObj, String beanName, String attributeName, String value, Map<String, String> attrs) throws Exception {
 		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(currObj, attributeName);
 		if (pd!=null) {
 			Method rm = PropertyUtils.getReadMethod(pd);
@@ -268,7 +265,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	private void addSetToDefaultConfigWarning(Object currObj, String name, String key, String value) {
-		if(!suppressDefaultValueWarnings) {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, null, classLoader)) {
 			String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
 			if (!configWarnings.containsDefaultValueException(mergedKey)) {
 				addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]");
@@ -277,9 +275,14 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	private void addConfigWarning(Object currObj, String name, String message) {
-		Locator loc = digester.getDocumentLocator();
-		String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
-		ConfigurationWarnings.add(null, log, msg);
+		Locator loc = getDigester().getDocumentLocator();
+		if(currObj instanceof INamedObject && ((INamedObject) currObj).getName() != null) { //name setting may not have been called yet
+			String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+message;
+			ConfigurationWarnings.add((INamedObject) currObj, log, msg);
+		} else { 
+			String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
+			ConfigurationWarnings.add(null, log, msg);
+		}
 	}
 
     /**
@@ -365,9 +368,9 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	protected Map<String, String> copyAttrsToMap(Attributes attrs) {
-		Map<String, String> map = new HashMap<String, String>(attrs.getLength());
+		Map<String, String> map = new HashMap<>(attrs.getLength());
 		for (int i = 0; i < attrs.getLength(); ++i) {
-            String value = attrs.getValue(i);
+			String value = attrs.getValue(i);
 			map.put(attrs.getQName(i), value);
 		}
 		return map;

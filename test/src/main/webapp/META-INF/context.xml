@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
-	<!-- please make sure number of allowed database connections is at least 50, for iaf-test -->
+
+	<!-- 
+		Support for XA using BTM requires JDBC datasources to be configured via
+		factory="org.apache.naming.factory.BeanFactory" and a proper XADataSource classname.
+		Configuration via driverClassName only works for the standard transaction manager.
+	-->
+
 
 	<Resource
 		name="jdbc/ibis4test-h2"
@@ -10,22 +16,21 @@
 	/>
 
 	<Resource
-		name="jdbc/ibis4test-oracle"
+		name="jdbc/ibis4test-oracle-xe"
 		type="javax.sql.DataSource"
-		username="testiaf_user"
-		password="testiaf_user"
 		driverClassName="oracle.jdbc.driver.OracleDriver"
 		url="jdbc:oracle:thin:@localhost:1521:xe"
-		maxActive="50"
-		maxIdle="2"
-		maxWait="30000"
+		username="testiaf_user"
+		password="testiaf_user"
+		maxTotal="10"
+		maxWaitMillis="5000"
 	/>
 
 	<Resource
-		name="jdbc/ibis4test-oracle-docker"
+		name="jdbc/ibis4test-oracle"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
+		URL="jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB"
 		user="testiaf_user"
 		password="testiaf_user00"
 	/>
@@ -35,7 +40,7 @@
 		auth="Container" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
-		URL="jdbc:sqlserver://localhost:1433;database=testiaf"
+		URL="jdbc:sqlserver://host.docker.internal:1433;database=testiaf"
 		user="testiaf_user"
 		password="testiaf_user00"
 		sendStringParametersAsUnicode="false"
@@ -52,36 +57,67 @@
 		applicationIntent="readwrite"
 	/>
 
+
 	<Resource
 		name="jdbc/ibis4test-mysql"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
+		url="jdbc:mysql://host.docker.internal:3307/testiaf"
 		user="testiaf_user"
 		password="testiaf_user00"
-		url="jdbc:mysql://localhost:3306/testiaf"
 		sslMode="DISABLED"
 		allowPublicKeyRetrieval="true"
-		socketTimeout="100000"
+		pinGlobalTxToPhysicalConnection="true"
+		socketTimeout="5000"
 	/>
 
+ 	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
+
+	<!-- Use MySQL driver for MariaDB for proper XA support. -->
+	<Resource
+		name="jdbc/ibis4test-mariadb"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.mysql.cj.jdbc.MysqlXADataSource"
+		url="jdbc:mysql://host.docker.internal:3306/testiaf"
+		user="testiaf_user"
+		password="testiaf_user00"
+		sslMode="DISABLED"
+		allowPublicKeyRetrieval="true"
+		pinGlobalTxToPhysicalConnection="true"
+		socketTimeout="5000"
+	/>
+<!-- 
 	<Resource
 		name="jdbc/ibis4test-mariadb"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.mariadb.jdbc.MariaDbDataSource"
 		user="testiaf_user"
 		password="testiaf_user00"
-		url="jdbc:mariadb://localhost:3306/testiaf"
+		url="jdbc:mariadb://${databaseHost}:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
 	/>
+ -->
+ 	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
 	
+
 	<Resource 
-		name="jdbc/ibis4test-postgres" 
+		name="jdbc/ibis4test-postgres-xa" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.postgresql.xa.PGXADataSource" 
-		url="jdbc:postgresql://localhost:5432/testiaf"
+		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
 		user="testiaf_user" 
 		password="testiaf_user00" 
 	/>
-	
+
+ 	<Resource name="jdbc/ibis4test-postgres" auth="Container"
+		type="javax.sql.DataSource" 
+		driverClassName="org.postgresql.Driver"
+		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
+		username="testiaf_user"
+		password="testiaf_user00" 
+		maxTotal="10"
+		maxWaitMillis="5000"
+	/>	
+		
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="org.apache.naming.factory.BeanFactory"
@@ -107,6 +143,13 @@
 		SSLEnableVerifyHostName="false"
 		SSLTrace="false"
 		SSLDebugTrace="false"
+	/>
+
+	<Resource
+		name="jms/qcf-activemq"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.apache.activemq.ActiveMQXAConnectionFactory"
+		brokerURL="vm://localhost"
 	/>
 	
 </Context>

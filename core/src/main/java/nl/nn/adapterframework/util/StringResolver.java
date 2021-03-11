@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2020 Nationale-Nederlanden
+   Copyright 2013, 2014 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ public class StringResolver {
 	// Not allowed to use a static reference to the logger in this class.
 	// Log4j2 uses StringResolver during instantiation.
 
-	private static final String DELIM_START = "${";
-	private static final char DELIM_STOP = '}';
+	public static final String DELIM_START = "${";
+	public static final char DELIM_STOP = '}';
 	private static final int DELIM_START_LEN = 2;
 	private static final int DELIM_STOP_LEN = 1;
 
@@ -51,6 +51,14 @@ public class StringResolver {
 	 * @since 1.1
 	 */
 	public static String getSystemProperty(String key, String def) {
+		try {
+			String result = System.getenv().get(key);
+			if (result!=null) {
+				return result;
+			}
+		} catch (Throwable e) {
+			LogUtil.getLogger(StringResolver.class).warn("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
+		}
 		try {
 			return System.getProperty(key, def);
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
@@ -138,7 +146,7 @@ public class StringResolver {
 						// the where the properties are
 						// x1=${x2}
 						// x2=p2
-						if (!replacement.equals(expression)) {
+						if (!replacement.equals(expression) && !replacement.contains(DELIM_START + key + DELIM_STOP)) {
 							String recursiveReplacement = substVars(replacement, props1, props2);
 							sbuf.append(recursiveReplacement);
 						} else {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,29 +15,32 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.JtaUtil;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * JdbcListener base class.
@@ -45,46 +48,47 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class JdbcListener extends JdbcFacade implements IPeekableListener<Object> {
+public class JdbcListener extends JdbcFacade implements IPeekableListener<Object>, IHasProcessState<Object> {
 
-	private String startLocalTransactionQuery;
-	private String commitLocalTransactionQuery;
 	private String selectQuery;
 	private String peekQuery;
-	private String updateStatusToProcessedQuery;
-	private String updateStatusToErrorQuery;
 
 	private String keyField;
 	private String messageField;
 	private String messageFieldType="String";
 
-	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String blobCharset = null;
 	private boolean blobsCompressed=true;
 	private boolean blobSmartGet=false;
 	
+	private boolean trace=false;
+	private boolean peekUntransacted=true;
+
+	private Map<ProcessState, String> updateStatusQueries = new HashMap<>();
+	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
+
 	protected Connection connection=null;
 
 	private String preparedSelectQuery;
 	private String preparedPeekQuery;
 
-	private boolean trace=false;
-	private boolean peekUntransacted=true;
-
 	@Override
 	public void configure() throws ConfigurationException {
-		try {
-			if (getDatasource()==null) {
-				throw new ConfigurationException(getLogPrefix()+"has no datasource");
-			}
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		}
+		super.configure();
 		try {
 			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, getSelectQuery());
 			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? getPeekQuery() : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, getSelectQuery());
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		}
+		Map<ProcessState, String> orderedUpdateStatusQueries = new LinkedHashMap<>();
+		for (ProcessState state : ProcessState.values()) {
+			if(updateStatusQueries.containsKey(state)) {
+				orderedUpdateStatusQueries.put(state, updateStatusQueries.get(state));
+			}
+		}
+		updateStatusQueries=orderedUpdateStatusQueries;
+		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates());
 	}
 
 	@Override
@@ -93,6 +97,12 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 			try {
 				connection = getConnection();
 			} catch (JdbcException e) {
+				throw new ListenerException(e);
+			}
+		} else {
+			try (Connection c = getConnection()) {
+				//do nothing, eat a connection from the pool to validate connectivity
+			} catch (JdbcException|SQLException e) {
 				throw new ListenerException(e);
 			}
 		}
@@ -119,6 +129,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 
 	@Override
 	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+		// nothing special
 	}
 
 	@Override
@@ -164,60 +175,57 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 	}
 
 	protected Object getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
-		boolean inTransaction=false;
-		
-		try {
-			inTransaction=JtaUtil.inTransaction();
-		} catch (Exception e) {
-			log.warn(getLogPrefix()+"could not determing XA transaction status, assuming not in XA transaction: "+ e.getMessage());
-			inTransaction=false;
-		}
-		try {
-			if (!inTransaction) {
-				execute(conn,getStartLocalTransactionQuery());
-			}
-
-			String query=preparedSelectQuery;
-			try (Statement stmt= conn.createStatement()) {
-				stmt.setFetchSize(1);
-				if (trace && log.isDebugEnabled()) log.debug("executing query for ["+query+"]");
-				try (ResultSet rs=stmt.executeQuery(query)) {
-					if (!rs.next()) {
-						return null;
-					}
-					Object result;
-					String key=rs.getString(getKeyField());
-					
-					if (StringUtils.isNotEmpty(getMessageField())) {
-						Message message;
-						if ("clob".equalsIgnoreCase(getMessageFieldType())) {
-							message=new Message(JdbcUtil.getClobAsString(rs,getMessageField(),false));
-						} else {
-							if ("blob".equalsIgnoreCase(getMessageFieldType())) {
-								message=new Message(JdbcUtil.getBlobAsString(rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false)); // TODO: should not convert Blob to String, but keep as byte array
-							} else {
-								message=new Message(rs.getString(getMessageField()));
-							}
-						}
-						// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
-						MessageWrapper mw = new MessageWrapper();
-						mw.setId(key);
-						mw.setMessage(message);
-						result=mw;
-					} else {
-						result = key;
-					}
-					return result;
+		String query=preparedSelectQuery;
+		try (Statement stmt= conn.createStatement()) {
+			stmt.setFetchSize(1);
+			if (trace && log.isDebugEnabled()) log.debug("executing query for ["+query+"]");
+			try (ResultSet rs=stmt.executeQuery(query)) {
+				if (!rs.next()) {
+					return null;
 				}
-			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query ["+query+"]", e);
+				Object result;
+				String key=rs.getString(getKeyField());
+
+				if (StringUtils.isNotEmpty(getMessageField())) {
+					Message message;
+					if ("clob".equalsIgnoreCase(getMessageFieldType())) {
+						message=new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
+					} else {
+						if ("blob".equalsIgnoreCase(getMessageFieldType())) {
+							if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) {
+								message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),isBlobsCompressed(),isBlobSmartGet(),false));
+							} else {
+								try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
+									message=new Message(blobStream);
+									message.preserve();
+								}
+							}
+						} else {
+							message=new Message(rs.getString(getMessageField()));
+						}
+					}
+					// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
+					MessageWrapper<?> mw = new MessageWrapper<Object>();
+					mw.setId(key);
+					mw.setMessage(message);
+					result=mw;
+				} else {
+					result = key;
+				}
+				return result;
+			} catch (SQLException e) {
+				if (!getDbmsSupport().hasSkipLockedFunctionality()) {
+					String errorMessage = e.getMessage();
+					if (errorMessage.toLowerCase().contains("timeout") && errorMessage.toLowerCase().contains("lock")) {
+						log.debug(getLogPrefix()+"caught lock timeout exception, returning null: ("+e.getClass().getName()+")"+e.getMessage());
+						return null; // resolve locking conflict for dbmses that do not support SKIP LOCKED
+					}
+				}
+				throw e;
 			}
-		} finally {
-			if (!inTransaction) {
-				execute(conn,getCommitLocalTransactionQuery());
-			}
+		} catch (Exception e) {
+			throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query ["+query+"]", e);
 		}
-		
 	}
 
 	@Override
@@ -228,7 +236,9 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		} else {
 			id = (String)rawMessage;
 		}
-		PipeLineSessionBase.setListenerParameters(context, id, id, null, null);
+		if (context!=null) {
+			PipeLineSessionBase.setListenerParameters(context, id, id, null, null);
+		}
 		return id;
 	}
 
@@ -243,11 +253,11 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return message;
 	}
 
-	protected void afterMessageProcessed(Connection c, PipeLineResult processResult, String key, Map<String,Object> context) throws ListenerException {
-		if (processResult==null || "success".equals(processResult.getState()) || StringUtils.isEmpty(getUpdateStatusToErrorQuery())) {
-			execute(c,getUpdateStatusToProcessedQuery(),key);
+	protected void afterMessageProcessed(Connection conn, PipeLineResult processResult, String key, Map<String,Object> context) throws ListenerException {
+		if (processResult.isSuccessful() || StringUtils.isEmpty(getUpdateStatusQuery(ProcessState.ERROR))) {
+			execute(conn, getUpdateStatusQuery(ProcessState.DONE), key);
 		} else {
-			execute(c,getUpdateStatusToErrorQuery(),key);
+			execute(conn, getUpdateStatusQuery(ProcessState.ERROR), key);
 		}
 	}
 
@@ -266,27 +276,75 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 			}
 		}
 	}
-	
 
-	protected void execute(Connection conn, String query) throws ListenerException {
-		execute(conn,query,null);
+	@Override
+	public Set<ProcessState> knownProcessStates() {
+		return updateStatusQueries.keySet();
 	}
 
-	protected void execute(Connection conn, String query, String parameter) throws ListenerException {
+	@Override
+	public Map<ProcessState,Set<ProcessState>> targetProcessStates() {
+		return targetProcessStates;
+	}
+
+	@Override
+	public Object changeProcessState(Object rawMessage, ProcessState toState) throws ListenerException {
+		if (!knownProcessStates().contains(toState)) {
+			return null; // if toState does not exist, the message can/will not be moved to it, so return null.
+		}
+		if (isConnectionsArePooled()) {
+			try (Connection conn = getConnection()) {
+				return changeProcessState(conn, rawMessage, toState);
+			} catch (JdbcException|SQLException e) {
+				throw new ListenerException(e);
+			}
+		} else {
+			synchronized (connection) {
+				return changeProcessState(connection, rawMessage, toState);
+			}
+		}
+	}
+
+	public Object changeProcessState(Connection connection, Object rawMessage, ProcessState toState) throws ListenerException {
+		if (!knownProcessStates().contains(toState)) {
+			return null;
+		}
+		String query = getUpdateStatusQuery(toState);
+		String key=getIdFromRawMessage(rawMessage, null);
+		return execute(connection, query, key) ? rawMessage : null;
+	}
+
+	protected boolean execute(Connection conn, String query) throws ListenerException {
+		return execute(conn,query,null);
+	}
+
+	protected boolean execute(Connection conn, String query, String parameter) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
 			if (trace && log.isDebugEnabled()) log.debug("executing statement ["+query+"]");
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
 				stmt.clearParameters();
 				if (StringUtils.isNotEmpty(parameter)) {
 					log.debug("setting parameter 1 to ["+parameter+"]");
-					stmt.setString(1,parameter);
+					JdbcUtil.setParameter(stmt, 1, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}
-				stmt.execute();
-				
+
+				return stmt.executeUpdate() > 0;
 			} catch (SQLException e) {
 				throw new ListenerException(getLogPrefix()+"exception executing statement ["+query+"]",e);
 			}
 		}
+		return false;
+	}
+
+	protected void setUpdateStatusQuery(ProcessState state, String query) {
+		if (StringUtils.isNotEmpty(query)) {
+			updateStatusQueries.put(state, query);
+		} else {
+			updateStatusQueries.remove(state);
+		}
+	}
+	public String getUpdateStatusQuery(ProcessState state) {
+		return updateStatusQueries.get(state);
 	}
 
 	protected void setSelectQuery(String string) {
@@ -313,51 +371,24 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return peekQuery;
 	}
 
-	protected void setUpdateStatusToErrorQuery(String string) {
-		updateStatusToErrorQuery = string;
-	}
-	public String getUpdateStatusToErrorQuery() {
-		return updateStatusToErrorQuery;
-	}
 
-	protected void setUpdateStatusToProcessedQuery(String string) {
-		updateStatusToProcessedQuery = string;
-	}
-	public String getUpdateStatusToProcessedQuery() {
-		return updateStatusToProcessedQuery;
-	}
-
-	@IbisDoc({"primary key field of the table, used to identify messages", ""})
-	protected void setKeyField(String fieldname) {
+	@IbisDoc({"1", "Primary key field of the table, used to identify messages", ""})
+	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
 	public String getKeyField() {
 		return keyField;
 	}
 
-	@IbisDoc({"(optional) field containing the message data", "<i>same as keyfield</i>"})
-	protected void setMessageField(String fieldname) {
+	@IbisDoc({"2", "(Optional) field containing the message data", "<i>same as keyField</i>"})
+	public void setMessageField(String fieldname) {
 		messageField = fieldname;
 	}
 	public String getMessageField() {
 		return messageField;
 	}
 
-	public void setStartLocalTransactionQuery(String string) {
-		startLocalTransactionQuery = string;
-	}
-	public String getStartLocalTransactionQuery() {
-		return startLocalTransactionQuery;
-	}
-
-	public void setCommitLocalTransactionQuery(String string) {
-		commitLocalTransactionQuery = string;
-	}
-	public String getCommitLocalTransactionQuery() {
-		return commitLocalTransactionQuery;
-	}
-
-	@IbisDoc({"type of the field containing the message data: either string, clob or blob", "<i>string</i>"})
+	@IbisDoc({"3", "Type of the field containing the message data: either String, clob or blob", "<i>String</i>"})
 	public void setMessageFieldType(String string) {
 		messageFieldType = string;
 	}
@@ -365,15 +396,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return messageFieldType;
 	}
 
-	@IbisDoc({"charset used to read blobs", "utf-8"})
-	public void setBlobCharset(String string) {
-		blobCharset = string;
-	}
-	public String getBlobCharset() {
-		return blobCharset;
-	}
-
-	@IbisDoc({"controls whether blobdata is considered stored compressed in the database", "true"})
+	@IbisDoc({"4", "Controls whether BLOB is considered stored compressed in the database", "true"})
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
@@ -381,7 +404,16 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 		return blobsCompressed;
 	}
 
-	@IbisDoc({"controls automatically whether blobdata is stored compressed and/or serialized in the database", "false"})
+	@IbisDoc({"5", "Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
+	@Deprecated
+	public void setBlobCharset(String string) {
+		blobCharset = string;
+	}
+	public String getBlobCharset() {
+		return blobCharset;
+	}
+
+	@IbisDoc({"6", "Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string", "false"})
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}

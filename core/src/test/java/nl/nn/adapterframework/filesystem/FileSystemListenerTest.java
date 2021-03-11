@@ -15,11 +15,10 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 
@@ -31,9 +30,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 	protected FileSystemListener<F,FS> fileSystemListener;
 	protected Map<String,Object> threadContext;
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	
 	public abstract FileSystemListener<F,FS> createFileSystemListener();
@@ -171,9 +167,12 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull("raw message must be not null when a file is available",rawMessage);
 		
+		
 		F secondMessage=fileSystemListener.getRawMessage(threadContext);
 		if (inProcessFolder!=null) {
-			assertNull("raw message must have been moved to inProcessFolder",secondMessage);			
+			boolean movedFirst = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS)!=null;
+			boolean movedSecond = fileSystemListener.changeProcessState(secondMessage, ProcessState.INPROCESS)!=null;
+			assertFalse("raw message not have been moved by both threads",movedFirst && movedSecond);			
 		} else {
 			assertNotNull("raw message must still be available when no inProcessFolder is configured",secondMessage);			
 		}
@@ -188,7 +187,6 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	@Test
 	public void fileListenerTestGetRawMessageWithInProcess() throws Exception {
 		String folderName = "inProcessFolder";
-		_createFolder(folderName);
 		fileListenerTestGetRawMessage(null,folderName);
 	}
 

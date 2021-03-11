@@ -74,7 +74,7 @@ public class MatchUtils {
 			XmlUtils.parseXml(xml, contentHandler);
 			return xmlWriter.toString();
 		} catch (IOException | SAXException e) {
-			return "ERROR: could not prettyfy: ("+e.getClass().getName()+") "+e.getMessage();
+			throw new RuntimeException("ERROR: could not prettify ["+xml+"]",e);
 		}
 	}
 
@@ -114,10 +114,7 @@ public class MatchUtils {
 	}
 
 	public static void assertJsonEqual(String description, String jsonExp, String jsonAct) {
-		JsonStructure jExp=string2Json(jsonExp);
-		JsonStructure jAct=string2Json(jsonAct);
-		assertEquals(description,jExp.toString(),jAct.toString());
-		//assertEquals(description,inputJson,jsonOut);
+		assertEquals(description, jsonPretty(jsonExp), jsonPretty(jsonAct));
 	}
 
 	public static void assertTestFileEquals(String file1, URL url) throws IOException {

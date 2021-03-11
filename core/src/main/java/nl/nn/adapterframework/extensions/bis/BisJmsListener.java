@@ -188,10 +188,10 @@ public class BisJmsListener extends JmsListener {
 	}
 
 	@Override
-	public String extractMessageBody(String rawMessageText, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
-		context.put(MESSAGETEXT_KEY, rawMessageText);
-		log.debug("extract messageBody from message [" + rawMessageText + "]");
-		String messageBody = requestTp.transform(rawMessageText, null, true);
+	public Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
+		context.put(MESSAGETEXT_KEY, message);
+		log.debug("extract messageBody from message [" + message + "]");
+		String messageBody = requestTp.transform(message.asSource());
 		if (isLayByNamespace()) {
 			String messageBodyNamespace = XmlUtils.getRootNamespace(messageBody);
 			if (messageBodyNamespace != null) {
@@ -201,7 +201,7 @@ public class BisJmsListener extends JmsListener {
 				messageBody = XmlUtils.removeNamespaces(messageBody);
 			}
 		}
-		return messageBody;
+		return new Message(messageBody);
 	}
 
 	@Override

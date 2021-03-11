@@ -17,12 +17,11 @@ package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -31,16 +30,14 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
+import nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
@@ -60,33 +57,30 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  * @since 4.8
  */
 public class IbisContext extends IbisApplicationContext {
-	private final static Logger LOG = LogUtil.getLogger(IbisContext.class);
+	private static final Logger LOG = LogUtil.getLogger(IbisContext.class);
 
-	private final static Logger secLog = LogUtil.getLogger("SEC");
+	private static final Logger secLog = LogUtil.getLogger("SEC");
+	private static final String ALL_CONFIGS_KEY = "*ALL*";
 
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
-	private static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
-	private static final long UPTIME = System.currentTimeMillis();
 
 	static {
 		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
-			ConfigurationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
+			ConfigurationWarnings.addGlobalWarning(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
 		String loadFileSuffix = AppConstants.getInstance().getProperty("ADDITIONAL.PROPERTIES.FILE.SUFFIX");
 		if (StringUtils.isNotEmpty(loadFileSuffix))
-			ConfigurationWarnings.add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
+			ConfigurationWarnings.addGlobalWarning(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
 	}
 
 	private IbisManager ibisManager;
-	private Map<String, MessageKeeper> messageKeepers = new HashMap<String, MessageKeeper>();
+	private Map<String, MessageKeeper> messageKeepers = new HashMap<>();
 	private int messageKeeperSize = 10;
 	private FlowDiagramManager flowDiagramManager;
 	private ClassLoaderManager classLoaderManager = null;
-	private static List<String> loadingConfigs = new ArrayList<String>();
+	private static List<String> loadingConfigs = new ArrayList<>();
 
-	public static String getApplicationServerType() {
-		return AppConstants.getInstance().getResolvedProperty(APPLICATION_SERVER_TYPE_PROPERTY);
-	}
+	private Thread ibisContextReconnectThread = null;
 
 	/**
 	 * Creates the Spring context, and load the configuration. Optionally  with
@@ -94,7 +88,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * method to load configuration and related resources from a different
 	 * location from the standard classpath. 
 	 * 
-	 * @see ClassUtils#getResourceURL(ClassLoader, String)
+	 * @see ClassUtils#getResourceURL(IScopeProvider, String)
 	 * @see AppConstants#getInstance(ClassLoader)
 	 */
 	public void init() {
@@ -107,7 +101,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * method to load configuration and related resources from a different
 	 * location from the standard classpath. 
 	 * 
-	 * @see ClassUtils#getResourceURL(ClassLoader, String)
+	 * @see ClassUtils#getResourceURL(IScopeProvider, String)
 	 * @see AppConstants#getInstance(ClassLoader)
 	 *
 	 * @param reconnect retry startup when failures occur
@@ -121,19 +115,19 @@ public class IbisContext extends IbisApplicationContext {
 			createApplicationContext();
 			LOG.debug("Created Ibis Application Context");
 
-			ibisManager = (IbisManager) getBean("ibisManager");
+			ibisManager = getBean("ibisManager", IbisManager.class);
 			ibisManager.setIbisContext(this);
 			LOG.debug("Loaded IbisManager Bean");
 
 			MessageKeeper messageKeeper = new MessageKeeper();
-			messageKeepers.put("*ALL*", messageKeeper);
+			messageKeepers.put(ALL_CONFIGS_KEY, messageKeeper);
 
 			classLoaderManager = new ClassLoaderManager(this);
 
 			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 
 			try {
-				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialise.
+				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialize.
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 				log(null, null, "failed to initalize FlowDiagramManager", MessageKeeperLevel.ERROR, e, true);
 			}
@@ -149,7 +143,7 @@ public class IbisContext extends IbisApplicationContext {
 				LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
 
 				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
-				ibisContextReconnectThread.setName("ibisContextReconnectThread");
+				ibisContextReconnectThread.setName("IbisContext-ReconnectThread"); //Give the thread a somewhat descriptive name
 				ibisContextReconnectThread.start();
 			}
 			else {
@@ -159,8 +153,6 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	Thread ibisContextReconnectThread = null;
-
 	/**
 	 * Shuts down the IbisContext, and therefore the Spring context
 	 * 
@@ -168,11 +160,17 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	public synchronized void destroy() {
 		long start = System.currentTimeMillis();
-		if(ibisManager != null)
+
+		if(ibisManager != null) {
 			ibisManager.shutdown();
-		if(ibisContextReconnectThread != null)
+		}
+		if(ibisContextReconnectThread != null) { //If the ibis failed to initialize, and is trying to shutdown
 			ibisContextReconnectThread.interrupt();
-		classLoaderManager.shutdown();
+		}
+		if(classLoaderManager != null) {
+			classLoaderManager.shutdown();
+		}
+
 		destroyApplicationContext();
 		log("shutdown in " + (System.currentTimeMillis() - start) + " ms");
 	}
@@ -217,7 +215,6 @@ public class IbisContext extends IbisApplicationContext {
 		} else {
 			log("Configuration [" + configurationName + "] to unload not found", MessageKeeperLevel.WARN);
 		}
-		JdbcUtil.resetJdbcProperties();
 	}
 
 	/**
@@ -241,11 +238,6 @@ public class IbisContext extends IbisApplicationContext {
 		if (uriPatterns.size() > 0) {
 			log("Not all rest listeners are unregistered: " + uriPatterns, MessageKeeperLevel.ERROR);
 		}
-		Set mbeans = JmxMbeanHelper.getMBeans();
-		if (mbeans != null && mbeans.size() > 0) {
-			log("Not all JMX MBeans are unregistered: " + mbeans, MessageKeeperLevel.ERROR);
-		}
-		JdbcUtil.resetJdbcProperties();
 
 		init();
 	}
@@ -255,11 +247,19 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see #load(String)
 	 */
 	private void load() {
+		if(AppConstants.getInstance().getBoolean(AppConstants.JDBC_PROPERTIES_KEY, false)) {
+			JdbcPropertySourceFactory propertySourceFactory = getBean("jdbcPropertySourceFactory", JdbcPropertySourceFactory.class);
+			Properties properties = propertySourceFactory.createPropertySource(getApplicationName()+"-DatabaseProperties");
+			if(properties != null) {
+				AppConstants.getInstance().putAll(properties);
+			}
+		}
+
 		try {
-			loadingConfigs.add("*ALL*");
+			loadingConfigs.add(ALL_CONFIGS_KEY);
 			load(null);
 		} finally {
-			loadingConfigs.remove("*ALL*");
+			loadingConfigs.remove(ALL_CONFIGS_KEY);
 		}
 	}
 
@@ -307,6 +307,8 @@ public class IbisContext extends IbisApplicationContext {
 				try {
 					loadingConfigs.add(currentConfigurationName);
 					digestClassLoaderConfiguration(classLoader, configurationDigester, currentConfigurationName, customClassLoaderConfigurationException);
+				} catch (Exception e) {
+					LOG.error("an unhandled exception occurred while digesting configuration ["+currentConfigurationName+"]", e);
 				} finally {
 					loadingConfigs.remove(currentConfigurationName);
 				}
@@ -322,10 +324,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	private void digestClassLoaderConfiguration(ClassLoader classLoader, 
-			ConfigurationDigester configurationDigester, 
-			String currentConfigurationName, 
-			ConfigurationException customClassLoaderConfigurationException) {
+	private void digestClassLoaderConfiguration(ClassLoader classLoader, ConfigurationDigester configurationDigester, String currentConfigurationName, ConfigurationException customClassLoaderConfigurationException) {
 
 		long start = System.currentTimeMillis();
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
@@ -343,9 +342,9 @@ public class IbisContext extends IbisApplicationContext {
 
 		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion ["+currentConfigurationVersion+"]");
 
-		Configuration configuration = null;
+		//TODO autowire the entire configuration in it's own context.
+		Configuration configuration = createBeanAutowireByName(Configuration.class);
 		try {
-			configuration = new Configuration(new BasicAdapterServiceImpl());
 			configuration.setName(currentConfigurationName);
 			configuration.setVersion(currentConfigurationVersion);
 			configuration.setIbisManager(ibisManager);
@@ -355,14 +354,11 @@ public class IbisContext extends IbisApplicationContext {
 				ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
 				if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
-					try {
-						Migrator databaseMigrator = (Migrator) getBean("jdbcMigrator");
+					try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
 						databaseMigrator.setIbisContext(this);
-						databaseMigrator.configure(currentConfigurationName, classLoader);
+						databaseMigrator.configure(configuration);
 						databaseMigrator.update();
-						databaseMigrator.close();
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperLevel.ERROR);
 					}
 				}
@@ -388,7 +384,6 @@ public class IbisContext extends IbisApplicationContext {
 				}
 				log(currentConfigurationName, currentConfigurationVersion, msg);
 				secLog.info("Configuration [" + currentConfigurationName + "] [" + currentConfigurationVersion+"] " + msg);
-				generateFlows(configuration, currentConfigurationName, currentConfigurationVersion);
 			} else {
 				throw customClassLoaderConfigurationException;
 			}
@@ -403,42 +398,22 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	private void generateFlows(Configuration configuration, String currentConfigurationName, String currentConfigurationVersion) {
-		if (flowDiagramManager != null) {
-			List<IAdapter> registeredAdapters = configuration.getRegisteredAdapters();
-			for (Iterator<IAdapter> adapterIt = registeredAdapters.iterator(); adapterIt.hasNext();) {
-				Adapter adapter = (Adapter) adapterIt.next();
-				try {
-					flowDiagramManager.generate(adapter);
-				} catch (IOException e) {
-					log(currentConfigurationName, currentConfigurationVersion, "error generating flow diagram for adapter ["+adapter.getName()+"]", MessageKeeperLevel.WARN, e);
-				}
-			}
-
-			try {
-				flowDiagramManager.generate(configuration);
-			} catch (IOException e) {
-				log(currentConfigurationName, currentConfigurationVersion, "error generating flow diagram for configuration ["+configuration.getName()+"]", MessageKeeperLevel.WARN, e);
-			}
-		}
-	}
-
-	private void generateFlow() {
+	private void generateFlow() { //Generate big flow diagram file for all configurations
 		if (flowDiagramManager != null) {
 			List<Configuration> configurations = ibisManager.getConfigurations();
 			try {
 				flowDiagramManager.generate(configurations);
 			} catch (IOException e) {
-				log("*ALL*", null, "error generating flow diagram", MessageKeeperLevel.WARN, e);
+				log(ALL_CONFIGS_KEY, null, "error generating flow diagram", MessageKeeperLevel.WARN, e);
 			}
 		}
 	}
 
-	public void log(String message) {
+	private void log(String message) {
 		log(null, null, message, MessageKeeperLevel.INFO, null, true);
 	}
 
-	public void log(String message, MessageKeeperLevel level) {
+	private void log(String message, MessageKeeperLevel level) {
 		log(null, null, message, level, null, true);
 	}
 
@@ -446,7 +421,7 @@ public class IbisContext extends IbisApplicationContext {
 		log(configurationName, configurationVersion, message, MessageKeeperLevel.INFO);
 	}
 
-	public void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level) {
+	private void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level) {
 		log(configurationName, configurationVersion, message, level, null, false);
 	}
 
@@ -457,7 +432,7 @@ public class IbisContext extends IbisApplicationContext {
 	private void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level, Exception e, boolean allOnly) {
 		String key;
 		if (allOnly || configurationName == null) {
-			key = "*ALL*";
+			key = ALL_CONFIGS_KEY;
 		} else {
 			key = configurationName;
 		}
@@ -480,7 +455,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 		m = m + message;
 		if (MessageKeeperLevel.ERROR.equals(level)) {
-			LOG.info(m, e);
+			LOG.error(m, e);
 		} else if (MessageKeeperLevel.WARN.equals(level)) {
 			LOG.warn(m, e);
 		} else {
@@ -502,7 +477,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * @return MessageKeeper for '*ALL*' configurations
 	 */
 	public MessageKeeper getMessageKeeper() {
-		return getMessageKeeper("*ALL*");
+		return getMessageKeeper(ALL_CONFIGS_KEY);
 	}
 
 	/**
@@ -526,18 +501,6 @@ public class IbisContext extends IbisApplicationContext {
 
 	private String getApplicationVersion() {
 		return ConfigurationUtils.getApplicationVersion();
-	}
-
-	public Date getUptimeDate() {
-		return new Date(UPTIME);
-	}
-	
-	public String getUptime() {
-		return getUptime(DateUtils.FORMAT_GENERICDATETIME);
-	}
-	
-	public String getUptime(String dateFormat) {
-		return DateUtils.format(getUptimeDate(), dateFormat);
 	}
 
 	public boolean isLoadingConfigs() {

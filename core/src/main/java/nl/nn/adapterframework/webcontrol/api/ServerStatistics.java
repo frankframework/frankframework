@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 WeAreFrank!
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +39,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -50,11 +51,12 @@ import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -73,7 +75,8 @@ import nl.nn.adapterframework.util.RunStateEnum;
 @Path("/")
 public class ServerStatistics extends Base {
 
-	@Context Request request;
+	@Context private SecurityContext securityContext;
+	@Context private Request rsRequest;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
 	@GET
@@ -138,6 +141,11 @@ public class ServerStatistics extends Base {
 		String dtapSide = appConstants.getProperty("dtap.side");
 		returnMap.put("dtap.side", dtapSide);
 
+		Principal userPrincipal = securityContext.getUserPrincipal();
+		if(userPrincipal != null) {
+			returnMap.put("userName", userPrincipal.getName());
+		}
+
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
 		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
@@ -148,7 +156,8 @@ public class ServerStatistics extends Base {
 		Date date = new Date();
 		returnMap.put("serverTime", date.getTime());
 		returnMap.put("machineName" , Misc.getHostname());
-		returnMap.put("uptime", getIbisContext().getUptimeDate());
+		ApplicationMetrics metrics = getIbisContext().getBean("metrics", ApplicationMetrics.class);
+		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
@@ -179,10 +188,9 @@ public class ServerStatistics extends Base {
 			//ErrorStore count
 			if (showCountErrorStore) {
 				long esr = 0;
-				for (IAdapter adapter : configuration.getAdapterService().getAdapters().values()) {
-					for(Iterator<?> receiverIt = adapter.getReceiverIterator(); receiverIt.hasNext();) {
-						ReceiverBase receiver = (ReceiverBase) receiverIt.next();
-						IMessageBrowser errorStorage = receiver.getErrorStorageBrowser();
+				for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
+					for (Receiver<?> receiver: adapter.getReceivers()) {
+						IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
 						if (errorStorage != null) {
 							try {
 								esr += errorStorage.getMessageCount();
@@ -241,7 +249,7 @@ public class ServerStatistics extends Base {
 		EntityTag etag = new EntityTag(returnMap.hashCode() + "");
 
 		//Verify if it matched with etag available in http request
-		response = request.evaluatePreconditions(etag);
+		response = rsRequest.evaluatePreconditions(etag);
 
 		//If ETag matches the response will be non-null; 
 		if (response != null) {
@@ -294,11 +302,11 @@ public class ServerStatistics extends Base {
 	}
 
 	@PUT
-	@RolesAllowed({"IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/server/log")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) {
 
 		Boolean logIntermediaryResults = null;
 		int maxMessageLength = IbisMaskingLayout.getMaxLength();
@@ -312,8 +320,9 @@ public class ServerStatistics extends Base {
 				Level loglevel = Level.toLevel(""+value, null);
 				Logger rootLogger = LogUtil.getRootLogger();
 				if(loglevel != null && rootLogger.getLevel() != loglevel) {
+					String changmsg = "LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]";
 					Configurator.setLevel(rootLogger.getName(), loglevel);
-					msg.append("LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]");
+					msg.append(changmsg);
 				}
 			}
 			else if(key.equalsIgnoreCase("logIntermediaryResults")) {
@@ -355,6 +364,10 @@ public class ServerStatistics extends Base {
 				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
 				if (applicationEventPublisher!=null) {
 					log.info("setting debugger enabled ["+enableDebugger+"]");
+					if(msg.length() > 0)
+						msg.append(", enableDebugger from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
+					else
+						msg.append("enableDebugger changed from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
 					applicationEventPublisher.publishEvent(event);
 				} else {
 					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
@@ -374,33 +387,30 @@ public class ServerStatistics extends Base {
 	@PermitAll
 	@Path("/server/health")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getIbisHealth() throws ApiException {
+	public Response getIbisHealth() {
 
-		Map<String, Object> response = new HashMap<String, Object>();
+		Map<String, Object> response = new HashMap<>();
 
 		try {
 			getIbisManager();
 		}
-		catch(ApiException e) {
+		catch(Exception e) {
 			Throwable c = e.getCause();
 			response.put("status", Response.Status.INTERNAL_SERVER_ERROR);
 			response.put("error", c.getMessage());
-			response.put("stacktrace", c.getStackTrace());
+			response.put("stackTrace", c.getStackTrace());
 
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
 		}
 
-		List<IAdapter> adapters = getIbisManager().getRegisteredAdapters();
-		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
-		List<String> errors = new ArrayList<String>();
+		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
+		List<String> errors = new ArrayList<>();
 
-		for (IAdapter adapter : adapters) {
+		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state.equals(RunStateEnum.STARTED)) {
-				Iterator<IReceiver> receiverIterator = adapter.getReceiverIterator();
-				while (receiverIterator.hasNext()) {
-					IReceiver receiver = receiverIterator.next();
+				for (Receiver<?> receiver: adapter.getReceivers()) {
 					RunStateEnum rState = receiver.getRunState();
 	
 					if(!rState.equals(RunStateEnum.STARTED)) {
@@ -427,8 +437,9 @@ public class ServerStatistics extends Base {
 		if(stateCount.containsKey(RunStateEnum.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
-		if(errors.size() > 0)
+		if(!errors.isEmpty()) {
 			response.put("errors", errors);
+		}
 		response.put("status", status);
 
 		return Response.status(status).entity(response).build();

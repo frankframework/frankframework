@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,11 +17,15 @@ package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.StringUtils;
@@ -125,13 +129,10 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 		MailSession mail = new MailSession();
 		try {
-			if (paramList !=null) {
-				pvl=paramList.getValues(input, session);
-			}
+			pvl = paramList.getValues(input, session);
 			pv = pvl.getParameterValue("from");
 			if (pv != null) {
-				from = new EMail();
-				from.setAddress(pv.asStringValue(null));
+				from = new EMail(pv.asStringValue(null));
 				log.debug("MailSender [" + getName() + "] retrieved from-parameter [" + from + "]");
 				mail.setFrom(from);
 			}
@@ -205,10 +206,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 					if (StringUtils.isNotEmpty(value)) {
 						String name = recipientElement.getAttribute("name");
 						String type = recipientElement.getAttribute("type");
-						EMail recipient = new EMail();
-						recipient.setAddress(value);
-						recipient.setType(type);
-						recipient.setName(name);
+						EMail recipient = new EMail(value, name, StringUtils.isNotEmpty(type)?type:"to");
 						recipients.add(recipient);
 					} else {
 						log.debug("empty recipient found, ignoring");
@@ -329,8 +327,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		String bounceAddress = XmlUtils.getChildTagAsString(emailElement, "bounceAddress");
 		mailSession.setBounceAddress(bounceAddress);
 
-		EMail emailFrom = getFrom(from);
-		mailSession.setFrom(emailFrom);
+		mailSession.setFrom(getEmailAddress(from, "from"));
 		mailSession.setSubject(subject);
 		mailSession.setThreadTopic(threadTopic);
 		mailSession.setMessage(message);
@@ -338,8 +335,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		mailSession.setMessageBase64(messageBase64);
 		mailSession.setCharSet(charset);
 		mailSession.setHeaders(headers);
-		EMail replyto = getReplyTo(replyTo);
-		mailSession.setReplyto(replyto);
+		mailSession.setReplyto(getEmailAddress(replyTo,"replyTo"));
 
 		List<EMail> recipients = retrieveRecipients(recipientList);
 		mailSession.setRecipientList(recipients);
@@ -351,31 +347,17 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return mailSession;
 	}
 
-	private EMail getFrom(Element fromElement) {
-		String value = XmlUtils.getStringValue(fromElement);
+	private EMail getEmailAddress(Element element, String type) throws SenderException {
+		if (element == null) {
+			return null;
+		}
+		String value = XmlUtils.getStringValue(element);
 		if (StringUtils.isNotEmpty(value)) {
-			EMail from = new EMail();
-			from.setAddress(value);
-			from.setName(fromElement.getAttribute("name"));
-			from.setType("from");
-			return from;
+			return new EMail(value, element.getAttribute("name"), type);
 		}
 		return null;
 	}
 
-	private EMail getReplyTo(Element replyToElement) {
-		if (replyToElement != null) {
-			String value = XmlUtils.getStringValue(replyToElement);
-			if (StringUtils.isNotEmpty(value)) {
-				EMail reply = new EMail();
-				reply.setAddress(value);
-				reply.setName(replyToElement.getAttribute("name"));
-				reply.setType("replyTo");
-				return reply;
-			}
-		}
-		return null;
-	}
 
 	@Override
 	public boolean isSynchronous() {
@@ -435,9 +417,6 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		this.cf = cf;
 	}
 
-	public String getDefaultSubject() {
-		return defaultSubject;
-	}
 
 	/**
 	 * Set the default for Subject>
@@ -446,9 +425,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	public void setDefaultSubject(String defaultSubject) {
 		this.defaultSubject = defaultSubject;
 	}
-
-	public String getDefaultFrom() {
-		return defaultFrom;
+	public String getDefaultSubject() {
+		return defaultSubject;
 	}
 
 	/**
@@ -458,18 +436,16 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	public void setDefaultFrom(String defaultFrom) {
 		this.defaultFrom = defaultFrom;
 	}
-
-	public int getTimeout() {
-		return timeout;
+	public String getDefaultFrom() {
+		return defaultFrom;
 	}
 
 	@IbisDoc({ "timeout (in milliseconds). used for socket connection timeout and socket i/o timeout", "20000" })
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
-
-	public String getDefaultAttachmentName() {
-		return defaultAttachmentName;
+	public int getTimeout() {
+		return timeout;
 	}
 
 	@IbisDoc({ "when this name is used, it will be followed by a number which is equal to the node's position",
@@ -477,14 +453,16 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	public void setDefaultAttachmentName(String defaultAttachmentName) {
 		this.defaultAttachmentName = defaultAttachmentName;
 	}
-
-	public String getDefaultMessageType() {
-		return defaultMessageType;
+	public String getDefaultAttachmentName() {
+		return defaultAttachmentName;
 	}
 
 	@IbisDoc({ "when messageType is not specified defaultMessageType will be used", "text/plain" })
 	public void setDefaultMessageType(String defaultMessageType) {
 		this.defaultMessageType = defaultMessageType;
+	}
+	public String getDefaultMessageType() {
+		return defaultMessageType;
 	}
 
 	@IbisDoc({ "when messageBase64 is not specified defaultMessageBase64 will be used", "false" })
@@ -506,7 +484,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	/**
 	 * Generic email class
 	 */
-	protected class MailSession {
+	public class MailSession {
 		private EMail from = null;
 		private EMail replyto = null;
 		private List<EMail> recipients = new ArrayList<EMail>();
@@ -520,9 +498,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private Collection<Node> headers;
 		private String bounceAddress = getBounceAddress();
 
-		public MailSession() {
-			from = new EMail();
-			from.setAddress(getDefaultFrom());
+		public MailSession() throws SenderException {
+			from = new EMail(getDefaultFrom(),"from");
 		}
 
 		public EMail getFrom() {
@@ -673,38 +650,57 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	 * @author alisihab
 	 *
 	 */
-	protected class EMail {
-		private String address;
-		private String name;
+	public class EMail {
+		private InternetAddress emailAddress;
 		private String type; //"cc", "to", "from", "bcc" 
 
-		public String getAddress() {
-			return address;
+		public EMail(String address, String name, String type) throws SenderException {
+			try {
+				if (StringUtils.isNotEmpty(address)) {
+					InternetAddress ia[] = InternetAddress.parseHeader(address, true);
+					if (ia.length==0) {
+						throw new AddressException("No address found in ["+address+"]");
+					}
+					emailAddress = ia[0];
+				} else {
+					emailAddress = new InternetAddress();
+				}
+				if (StringUtils.isNotEmpty(name)) {
+					emailAddress.setPersonal(name);
+				}
+				this.type = type;
+			} catch (AddressException | UnsupportedEncodingException e) {
+				throw new SenderException("cannot parse email address from ["+address+"] ["+name+"]", e);
+			}
 		}
 
-		public void setAddress(String address) {
-			this.address = address;
+		public EMail(String address, String type) throws SenderException {
+			this(address, null, type);
+		}
+
+		public EMail(String address) throws SenderException {
+			this(address, null, null);
+		}
+
+		public InternetAddress getInternetAddress() {
+			return emailAddress;
+		}
+
+		public String getAddress() {
+			return emailAddress.getAddress();
 		}
 
 		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
+			return emailAddress.getPersonal();
 		}
 
 		public String getType() {
 			return type;
 		}
 
-		public void setType(String type) {
-			this.type = type;
-		}
-
 		@Override
 		public String toString() {
-			return "address ["+address+"] name ["+name+"] type ["+type+"]";
+			return "address ["+emailAddress.toUnicodeString()+"] type ["+type+"]";
 		}
 	}
 

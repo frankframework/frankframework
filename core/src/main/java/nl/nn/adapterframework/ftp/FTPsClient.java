@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,9 @@ import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryBase;
+import lombok.Getter;
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactory;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -49,16 +51,16 @@ import nl.nn.adapterframework.util.StreamUtil;
  * 
  * @author John Dekker
  */
-public class FTPsClient extends FTPClient {
+public class FTPsClient extends FTPClient implements IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-	
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+
 	public final String FTP_CLIENT_CHARSET="ISO-8859-1";
 
 	private FtpSession session;
-	private AuthSSLProtocolSocketFactoryBase socketFactory;
+	private AuthSSLProtocolSocketFactory socketFactory;
 	private Socket orgSocket = null;
-	
+
 	FTPsClient(FtpSession session) throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
 		this.session = session;
 		
@@ -70,7 +72,7 @@ public class FTPsClient extends FTPClient {
 		// if implicit ftps, use SSL from the beginning
 		if (this.session.getFtpType() == FtpSession.FTPS_IMPLICIT) {
 			// instruct the FTPClient to use this SSLSocketFactory
-			socketFactory.initSSLContext();
+			socketFactory.getSSLContext();
 			setSocketFactory(socketFactory);
 		}
 	}
@@ -85,6 +87,7 @@ public class FTPsClient extends FTPClient {
 	// FTPsClient did hang when positive completion was send without 
 	// preliminary positive. Therefore completePendingCommand is 
 	// overriden. 2006-01-18 GvB
+	@Override
 	public boolean completePendingCommand() throws IOException
 	{
 		if (FTPReply.isPositiveCompletion(getReplyCode())) {
@@ -95,6 +98,7 @@ public class FTPsClient extends FTPClient {
 
 		
 	
+	@Override
 	protected void _connectAction_() throws IOException {
 		// if explicit FTPS, the socket connection is establisch unsecure
 		if (session.getFtpType() == FtpSession.FTPS_EXPLICIT_SSL ||
@@ -113,7 +117,7 @@ public class FTPsClient extends FTPClient {
 			
 			// replace the normal socket with the secure one 
 			try {
-				socketFactory.initSSLContext();
+				socketFactory.getSSLContext();
 				_socket_ = socketFactory.createSocket(orgSocket, orgSocket.getInetAddress().getHostAddress(), orgSocket.getPort(), true);
 
 				// send a dummy command over the secure connection without reading 
@@ -136,6 +140,7 @@ public class FTPsClient extends FTPClient {
 		}
 	}
 	
+	@Override
 	protected Socket _openDataConnection_(int cmdNr, String param) throws IOException {
 		// if explicit FTPS, the socket connection is establisch unsecure
 		if (session.getFtpType() == FtpSession.FTPS_EXPLICIT_SSL || session.getFtpType() == FtpSession.FTPS_EXPLICIT_TLS) {
@@ -201,26 +206,26 @@ public class FTPsClient extends FTPClient {
 			return null;
 		}
 	}
-	private AuthSSLProtocolSocketFactoryBase createSocketFactory() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
+	private AuthSSLProtocolSocketFactory createSocketFactory() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
 		URL certificateUrl = null;
 		URL truststoreUrl = null;
 
 		if (!StringUtils.isEmpty(session.getCertificate())) {
-			certificateUrl = ClassUtils.getResourceURL(classLoader, session.getCertificate());
+			certificateUrl = ClassUtils.getResourceURL(this, session.getCertificate());
 			if (certificateUrl == null) {
 				throw new IOException("Cannot find URL for certificate resource [" + session.getCertificate() + "]");
 			}
 			log.debug("resolved certificate-URL to [" + certificateUrl.toString() + "]");
 		}
 		if (!StringUtils.isEmpty(session.getTruststore())) {
-			truststoreUrl = ClassUtils.getResourceURL(classLoader, session.getTruststore());
+			truststoreUrl = ClassUtils.getResourceURL(this, session.getTruststore());
 			if (truststoreUrl == null) {
 				throw new IOException("cannot find URL for truststore resource [" + session.getTruststore() + "]");
 			}
 			log.debug("resolved truststore-URL to [" + truststoreUrl.toString() + "]");
 		}
 
-		AuthSSLProtocolSocketFactoryBase factory = AuthSSLProtocolSocketFactoryBase.createSocketFactory(
+		AuthSSLProtocolSocketFactory factory = AuthSSLProtocolSocketFactory.createSocketFactory(
 			certificateUrl,
 			session.getCertificateAuthAlias(),
 			session.getCertificatePassword(),
@@ -233,8 +238,7 @@ public class FTPsClient extends FTPClient {
 			session.getTrustManagerAlgorithm(),
 			session.isAllowSelfSignedCertificates(),
 			session.isVerifyHostname(),
-			false,
-			session.isJdk13Compatibility());
+			false);
 			
 		factory.setProtocol(getProtocol());
 

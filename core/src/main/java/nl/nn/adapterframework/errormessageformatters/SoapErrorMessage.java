@@ -27,7 +27,7 @@ import nl.nn.adapterframework.stream.Message;
 public class SoapErrorMessage extends ErrorMessageFormatter {
 
 	@Override
-	public String format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 
 		try {
 			return SoapWrapper.getInstance().createSoapFaultMessage(getErrorMessage(errorMessage, t));

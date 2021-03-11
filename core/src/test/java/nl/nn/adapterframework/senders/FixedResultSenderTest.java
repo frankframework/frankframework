@@ -21,7 +21,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		sender.open();
 		Message input = new Message("<dummy/>");
 		String result = sender.sendMessage(input, session).asString();
-		assertEquals(input, result);
+		assertEquals(input.asString(), result);
 	}
 	
 	@Test

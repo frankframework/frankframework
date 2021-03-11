@@ -93,7 +93,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	public void doPipeHttpRequestCheckAntiVirusFailedTest() throws Exception {
 		pipe.setCheckAntiVirus(true);
 		PipeForward pipeAntiVirusFailedForward = new PipeForward();
-		pipeAntiVirusFailedForward.setName(pipe.ANTIVIRUS_FAILED_FORWARD);
+		pipeAntiVirusFailedForward.setName(StreamPipe.ANTIVIRUS_FAILED_FORWARD);
 		pipe.registerForward(pipeAntiVirusFailedForward);
 		MockMultipartHttpServletRequest request = createMultipartHttpRequest(pipe, true, true);
 		pipe.addParameter(createHttpRequestParameter(request, session));
@@ -128,7 +128,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		String string = "<hello>test</hello>";
 		StringPart stringPart = new StringPart("string1", string);
 		parts.add(stringPart);
-		URL url = ClassUtils.getResourceURL(this, "/Documents/doc001.pdf");
+		URL url = ClassUtils.getResourceURL("/Documents/doc001.pdf");
 		File file = new File(url.toURI());
 		FilePart filePart = new FilePart("file1", file.getName(), file);
 		parts.add(filePart);
@@ -138,7 +138,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 					pipe.getAntiVirusPassedMessage());
 			parts.add(antiVirusPassedPart);
 		}
-		URL url2 = ClassUtils.getResourceURL(this, "/Documents/doc002.pdf");
+		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
 		File file2 = new File(url2.toURI());
 		FilePart filePart2 = new FilePart("file2", file2.getName(), file2);
 		parts.add(filePart2);

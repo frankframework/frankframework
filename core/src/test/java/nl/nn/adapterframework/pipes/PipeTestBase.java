@@ -4,8 +4,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mock;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -47,11 +45,11 @@ public abstract class PipeTestBase<P extends IPipe> {
 		exit.setState("success");
 		pipeline.registerPipeLineExit(exit);
 		adapter = new Adapter();
-		adapter.registerPipeLine(pipeline);
+		adapter.setPipeLine(pipeline);
 	}
 
 	/**
-	 * Configure and start the pipe
+	 * Configure the pipe
 	 */
 	protected void configurePipe() throws ConfigurationException, PipeStartException {
 		if (pipe instanceof IExtendedPipe) {
@@ -59,7 +57,13 @@ public abstract class PipeTestBase<P extends IPipe> {
 		} else {
 			pipe.configure();
 		}
+	}
 
+	/**
+	 * Configure and start the pipe
+	 */
+	protected void configureAndStartPipe() throws ConfigurationException, PipeStartException {
+		configurePipe();
 		pipe.start();
 	}
 
@@ -71,9 +75,12 @@ public abstract class PipeTestBase<P extends IPipe> {
 	}
 
 	/*
-	 * use this method to execute pipe, instead of calling pipe.doPipe directly. This allows for 
+	 * use these methods to execute pipe, instead of calling pipe.doPipe directly. This allows for 
 	 * integrated testing of streaming.
 	 */
+	protected PipeRunResult doPipe(String input) throws PipeRunException {
+		return doPipe(pipe, new Message(input), session);
+	}
 	protected PipeRunResult doPipe(Message input) throws PipeRunException {
 		return doPipe(pipe, input, session);
 	}

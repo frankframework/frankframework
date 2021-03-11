@@ -1,6 +1,8 @@
 <!DOCTYPE configuration [
 	<!ENTITY JdbcListener SYSTEM "./ConfigurationJdbcListener.xml">
+	<!ENTITY JdbcSenders SYSTEM "./ConfigurationJdbcSenders.xml">
 ]>
 <configuration name="JDBC">
 	&JdbcListener;
+	&JdbcSenders;
 </configuration>

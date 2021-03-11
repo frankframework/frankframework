@@ -52,10 +52,10 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 				URL webXml = servletContext.getResource(web);
 				if(webXml != null) {
 					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
-						ConfigurationWarnings.add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
+						ConfigurationWarnings.addGlobalWarning(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
 				}
 			} catch (Exception e) {
-				ConfigurationWarnings.add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
+				ConfigurationWarnings.addGlobalWarning(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
 			}
 		}
 	}

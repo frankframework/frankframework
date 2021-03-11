@@ -11,10 +11,18 @@
 				<div class="ibox-content">
 					<div class="col-md-12">
 						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>&nbsp;</th>
+									<th>Name</th>
+									<th>UriPattern</th>
+								</tr>
+							</thead>
 							<tbody>
 								<tr ng-repeat="service in services">
 									<td>{{::$index}}</td>
-									<td><a target="_blank" href="{{::rootURL}}{{::service.uriPattern}}">{{::service.name}}</a></td>
+									<td>{{::service.name}}</a></td>
+									<td><a target="_blank" href="{{::rootURL}}rest/{{::service.uriPattern}}">{{::service.uriPattern}}</a></td>
 								</tr>
 							</tbody>
 						</table>
@@ -27,6 +35,7 @@
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">
 				<div class="ibox-title">
+					<a target="_blank" href="{{::rootURL}}api/openapi.json" class="btn btn-info btn-xs pull-right" type="button"><i class="fa fa-external-link aria-hidden="true"></i> <span>Full OpenAPI 3.0</span></a>
 					<h4>Available ApiListeners</h4>
 				</div>
 				<div class="ibox-content">
@@ -39,7 +48,7 @@
 									<td>{{::apiListener.method}}</td>
 									<td ng-if="::apiListener.error">{{::apiListener.error}}</td>
 									<td ng-if="::apiListener.schemaResource" class="hideBtn1170">
-										<a target="_blank" href="{{::rootURL}}api/{{::apiListener.uriPattern}}/{{::apiListener.schemaResource}}" class="btn btn-xs pull-right default" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>OpenAPI 3.0</span></a>
+										<a target="_blank" href="{{::rootURL}}api{{::apiListener.uriPattern}}/{{::apiListener.schemaResource}}" class="btn btn-xs pull-right default" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>OpenAPI 3.0</span></a>
 									</td>
 								</tr>
 							</tbody>
@@ -64,9 +73,9 @@
 									<td>{{::wsdl.name}}</td>
 									<td ng-if="::wsdl.error">{{::wsdl.error}}</td>
 									<td ng-if="::wsdl.extension" class="hideBtn1170">
-										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}{{::wsdl.extension}}" class="btn btn-xs pull-right default" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>Download</span></a>
-										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}{{::wsdl.extension}}?useIncludes=true" class="btn btn-xs pull-right default" type="button"><i class="fa fa-file-code-o aria-hidden="true"></i> <span>Using Includes</span></a>
-										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}.zip" class="btn btn-xs pull-right default" type="button"><i class="fa fa-file-archive-o aria-hidden="true"></i> <span>Zip</span></a>
+										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}.zip" class="btn btn-xs pull-right default" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>Download</span></a>
+										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}{{::wsdl.extension}}" class="btn btn-xs pull-right default" type="button"><i class="fa fa-file-archive-o aria-hidden="true"></i> <span>WSDL including dependencies</span></a>
+										<a target="_blank" href="{{::rootURL}}iaf/api/webservices/{{::wsdl.name}}{{::wsdl.extension}}?useIncludes=true" class="btn btn-xs pull-right default" type="button"><i class="fa fa-file-code-o aria-hidden="true"></i> <span>WSDL</span></a>
 									</td>
 								</tr>
 							</tbody>

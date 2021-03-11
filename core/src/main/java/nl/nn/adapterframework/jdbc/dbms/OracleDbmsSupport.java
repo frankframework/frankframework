@@ -36,6 +36,11 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
+	}
+
+	@Override
 	public String getSysDate() {
 		return "SYSDATE";
 	}
@@ -123,10 +128,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
-	@Override
-	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
-		return selectQuery; // In Oracle, writers do not block readers
-	}
 	
 	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
@@ -169,16 +170,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL");
-	}
-
-	@Override
-	public boolean isUniqueConstraintViolation(SQLException e) {
-		if (e.getErrorCode()==1) {
-			// ORA-00001: unique constraint violated (<schema>.<constraint>)
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	@Override

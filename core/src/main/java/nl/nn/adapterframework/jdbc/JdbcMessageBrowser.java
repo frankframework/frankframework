@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,11 +25,10 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
@@ -49,33 +48,28 @@ import nl.nn.adapterframework.util.Misc;
  */
 public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser<M> {
 
-	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
-	
-	private String keyField=null;
-	private String idField=null;
-	private String correlationIdField=null;
-	private String dateField=null;
-	private String commentField=null;
-	private String messageField=null;
-	protected String slotIdField=null;
-	private String expiryDateField=null;
-	private String labelField=null;
-	protected String slotId=null;
-	protected String typeField=null;
-	private String type = "";
-	protected String hostField=null;
+	private @Getter String keyField=null;
+	private @Getter String idField=null;
+	private @Getter String correlationIdField=null;
+	private @Getter String dateField=null;
+	private @Getter String commentField=null;
+	private @Getter String messageField=null;
+	private @Getter String slotIdField=null;
+	private @Getter String expiryDateField=null;
+	private @Getter String labelField=null;
+	private @Getter String prefix="";
+	private @Getter String slotId=null;
+	private @Getter String type = "";
+	private @Getter String typeField=null;
+	private @Getter String hostField=null;
 
-	private String prefix="";
+	private @Getter @Setter String hideRegex = null;
+	private @Getter @Setter String hideMethod = "all";
 
-	private String hideRegex = null;
-	private String hideMethod = "all";
-	
-	private String order;
-	private String messagesOrder=AppConstants.getInstance().getString("browse.messages.order","DESC");
-	private String errorsOrder=AppConstants.getInstance().getString("browse.errors.order","ASC");
+	private SortOrder sortOrder = null;
+	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
+	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
-
-	protected PlatformTransactionManager txManager;
 
 	protected String deleteQuery;
 	protected String selectContextQuery;
@@ -130,9 +124,6 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	
 	@Override
-	/**
-	 * Creates a connection, checks if the table is existing and creates it when necessary
-	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
 		setOperationControls();
@@ -178,7 +169,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 	protected int applyStandardParameters(PreparedStatement stmt, String paramValue, boolean primaryKeyIsPartOfClause) throws SQLException {
 		int position=applyStandardParameters(stmt,true,primaryKeyIsPartOfClause);
-		stmt.setString(position++,paramValue);
+		JdbcUtil.setParameter(stmt, position++, paramValue, getDbmsSupport().isParameterTypeMatchRequired());
 		return position;
 	}
 
@@ -289,10 +280,10 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	
 
 	@Override
-	public void deleteMessage(String messageId) throws ListenerException {
+	public void deleteMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
-				applyStandardParameters(stmt, messageId, true);
+				applyStandardParameters(stmt, storageKey, true);
 				stmt.execute();
 			}
 		} catch (Exception e) {
@@ -301,7 +292,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	protected M retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
-		return (M)rs.getString(columnIndex);
+		return (M)rs.getString(columnIndex); //TODO shouldn't this be getObject(columnIndex, M)?
 	}
 
 	@Override
@@ -353,14 +344,14 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	@Override
-	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
+	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectContextQuery)) {
-				applyStandardParameters(stmt, messageId, true);
+				applyStandardParameters(stmt, storageKey, true);
 				try (ResultSet rs =  stmt.executeQuery()) {
 	
 					if (!rs.next()) {
-						throw new ListenerException("could not retrieve context for messageid ["+ messageId+"]");
+						throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
 					}
 					return new JdbcMessageBrowserIteratorItem(conn, rs,true);
 				}
@@ -371,14 +362,14 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	@Override
-	public M browseMessage(String messageId) throws ListenerException {
+	public M browseMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
-				applyStandardParameters(stmt, messageId, true);
+				applyStandardParameters(stmt, storageKey, true);
 				try (ResultSet rs =  stmt.executeQuery()) {
 	
 					if (!rs.next()) {
-						throw new ListenerException("could not retrieve message for messageid ["+ messageId+"]");
+						throw new ListenerException("could not retrieve message for storageKey ["+ storageKey+"]");
 					}
 					return retrieveObject(rs,1);
 				}
@@ -459,7 +450,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		}
 
 		@Override
-		public void release() {
+		public void close() {
 			if (closeOnRelease) {
 				JdbcUtil.fullClose(conn, rs);
 			}
@@ -469,156 +460,91 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 
-
-
-
-	/**
-	 * Sets the name of the column messageids are stored in.
-	 */
-	@IbisDoc({"the name of the column messageids are stored in", "messageid"})
-	public void setIdField(String idField) {
-		this.idField = idField;
-	}
-	public String getIdField() {
-		return idField;
-	}
-
-	/**
-	 * Sets the name of the column message themselves are stored in.
-	 */
-	@IbisDoc({"the name of the column message themselves are stored in", "message"})
-	public void setMessageField(String messageField) {
-		this.messageField = messageField;
-	}
-	public String getMessageField() {
-		return messageField;
-	}
-
-	public String getCommentField() {
-		return commentField;
-	}
-
-	public String getDateField() {
-		return dateField;
-	}
-
-	public String getExpiryDateField() {
-		return expiryDateField;
-	}
-
-	public String getLabelField() {
-		return labelField;
-	}
-
-	@IbisDoc({"the name of the column comments are stored in", "comments"})
-	public void setCommentField(String string) {
-		commentField = string;
-	}
-
-	@IbisDoc({"the name of the column the timestamp is stored in", "messagedate"})
-	public void setDateField(String string) {
-		dateField = string;
-	}
-
-	@IbisDoc({"the name of the column the timestamp for expiry is stored in", "expirydate"})
-	public void setExpiryDateField(String string) {
-		expiryDateField = string;
-	}
-
-	@IbisDoc({"the name of the column labels are stored in", "label"})
-	public void setLabelField(String string) {
-		labelField = string;
-	}
-
-	public String getCorrelationIdField() {
-		return correlationIdField;
-	}
-
-	@IbisDoc({"the name of the column correlation-ids are stored in", "correlationid"})
-	public void setCorrelationIdField(String string) {
-		correlationIdField = string;
-	}
-
-
-	public String getKeyField() {
-		return keyField;
-	}
-
-	@IbisDoc({"the name of the column that contains the primary key of the table", "messagekey"})
+	@IbisDoc({"1", "The name of the column that contains the primary key of the table", "messagekey"})
 	public void setKeyField(String string) {
 		keyField = string;
 	}
 
-
-	protected String getSlotId() {
-		return slotId;
-	}
-	protected String getSlotIdField() {
-		return slotIdField;
-	}
-	protected void setType(String type) {
-		this.type = type;
-	}
-	protected String getType() {
-		return type;
-	}
-	public String getTypeField() {
-		return typeField;
-	}
-	protected String getHostField() {
-		return hostField;
+	@IbisDoc({"2", "The name of the column message themselves are stored in", "message"})
+	public void setMessageField(String messageField) {
+		this.messageField = messageField;
 	}
 
-
-	public void setOrder(String string) {
-		order = string;
-	}
-	public String getOrder() {
-		if (StringUtils.isNotEmpty(order)) {
-			return order;
-		} else {
-			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
-				return errorsOrder; //Defaults to ASC
-			} else {
-				return messagesOrder; //Defaults to DESC
-			}
-		}
+	@IbisDoc({"3", "The name of the column messageIds are stored in", "messageid"})
+	public void setIdField(String idField) {
+		this.idField = idField;
 	}
 
-
-	public void setTxManager(PlatformTransactionManager manager) {
-		txManager = manager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
+	@IbisDoc({"4", "The name of the column correlation-ids are stored in", "correlationid"})
+	public void setCorrelationIdField(String string) {
+		correlationIdField = string;
 	}
 
-	@IbisDoc({"prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different oracle schema", ""})
+	@IbisDoc({"5", "The name of the column comments are stored in", "comments"})
+	public void setCommentField(String string) {
+		commentField = string;
+	}
+
+	@IbisDoc({"6", "The name of the column the timestamp is stored in", "messagedate"})
+	public void setDateField(String string) {
+		dateField = string;
+	}
+
+	@IbisDoc({"7", "The name of the column the timestamp for expiry is stored in", "expirydate"})
+	public void setExpiryDateField(String string) {
+		expiryDateField = string;
+	}
+
+	@IbisDoc({"8", "The name of the column labels are stored in", "label"})
+	public void setLabelField(String string) {
+		labelField = string;
+	}
+
+	protected void setSlotIdField(String string) {
+		slotIdField = string;
+	}
+	protected void setTypeField(String typeField) {
+		this.typeField = typeField;
+	}
+
+	protected void setHostField(String hostField) {
+		this.hostField = hostField;
+	}
+
+	@IbisDoc({"9", "prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different oracle schema", ""})
 	public void setPrefix(String string) {
 		prefix = string;
 	}
-	public String getPrefix() {
-		return prefix;
+
+	protected void setSlotId(String string) {
+		slotId = string;
+	}
+
+	protected void setType(String type) {
+		this.type = type;
 	}
 
 
 
-	@Override
-	public void setHideRegex(String hideRegex) {
-		this.hideRegex = hideRegex;
+
+	public void setOrder(String string) {
+		if(StringUtils.isNotEmpty(string)) {
+			sortOrder = SortOrder.valueOf(string.trim());
+		}
 	}
-	@Override
-	public String getHideRegex() {
-		return hideRegex;
+	public String getOrder() {
+		return getOrderEnum().name();
 	}
 
-	@Override
-	public void setHideMethod(String hideMethod) {
-		this.hideMethod = hideMethod;
-	}
-	@Override
-	public String getHideMethod() {
-		return hideMethod;
+	public SortOrder getOrderEnum() {
+		if(sortOrder == null) {
+			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
+				setOrder(errorsOrder); //Defaults to ASC
+			} else {
+				setOrder(messagesOrder); //Defaults to DESC
+			}
+		}
+		return sortOrder;
 	}
 
 }

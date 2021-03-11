@@ -15,18 +15,17 @@
 */
 package nl.nn.adapterframework.extensions.graphviz;
 
-import nl.nn.adapterframework.extensions.javascript.J2V8;
+import java.io.IOException;
+import java.net.URL;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
-import nl.nn.adapterframework.extensions.javascript.Nashorn;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.net.URL;
 
 //TODO: consider moving this to a separate module
 /**
@@ -39,6 +38,8 @@ public class GraphvizEngine {
 	protected Logger log = LogUtil.getLogger(this);
 	private Engine engine;
 	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
+	// Available JS Engines. Lower index has priority.
+	private static String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8,nl.nn.adapterframework.extensions.javascript.Nashorn").split(",");
 
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
@@ -108,10 +109,10 @@ public class GraphvizEngine {
 	}
 
 	private String getVizJsSource(String version) throws IOException {
-		URL api = ClassUtils.getResourceURL(this.getClass().getClassLoader(), "js/viz-" + version + ".js");
-		URL engine = ClassUtils.getResourceURL(this.getClass().getClassLoader(), "js/viz-full.render-" + version + ".js");
+		URL api = ClassUtils.getResourceURL("/js/viz-" + version + ".js");
+		URL engine = ClassUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
 		if(api == null || engine == null)
-			throw new IOException("failed to open vizjs file for version["+version+"]");
+			throw new IOException("failed to open vizjs file for version ["+version+"]");
 		return Misc.streamToString(api.openStream()) + Misc.streamToString(engine.openStream());
 	}
 
@@ -155,22 +156,21 @@ public class GraphvizEngine {
 		private ResultHandler resultHandler;
 
 		Engine(String initScript, String graphvisJsLibrary) {
-			// Available JS Engines. Lower index has priority.
-			Class<?>[] engines = new Class[]{J2V8.class, Nashorn.class};
 
 			for (int i = 0; i < engines.length && jsEngine == null; i++) {
 				try {
-					log.debug("Trying Javascript engine [" + engines[i].getName() + "] for Graphviz.");
-					JavascriptEngine<?> engine = ((JavascriptEngine<?>) engines[i].newInstance());
+					Class<?> clazz = Class.forName(engines[i]);
+					log.debug("Trying Javascript engine [" + engines[i] + "] for Graphviz.");
+					JavascriptEngine<?> engine = ((JavascriptEngine<?>) clazz.newInstance());
 					ResultHandler resultHandler = new ResultHandler();
 
 					startEngine(engine, resultHandler, initScript, graphvisJsLibrary);
 
-					log.info("Using Javascript engine [" + engines[i].getName() + "] for Graphviz.");
+					log.info("Using Javascript engine [" + engines[i] + "] for Graphviz.");
 					jsEngine = engine;
 					this.resultHandler = resultHandler;
 				} catch (Exception e) {
-					log.error("Javascript engine [" + engines[i].getName() + "] could not be initialized.", e);
+					log.error("Javascript engine [" + engines[i] + "] could not be initialized.", e);
 				}
 			}
 

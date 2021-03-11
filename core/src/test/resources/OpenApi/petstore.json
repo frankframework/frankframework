@@ -9,19 +9,33 @@
         "/pets":{
             "post":{
                 "summary":"Create a pet",
-                "operationId":"createPets",
+                "requestBody":{
+                    "content":{
+                        "*/*":{
+                            "schema":{
+                                "$ref":"#/components/schemas/Pet"
+                            }
+                        }
+                    }
+                },
                 "responses":{
                     "201":{
                         "description":"Created"
                     },
                     "500":{
-                        "description":"Internal Server Error"
+                        "description":"Internal Server Error",
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/Error"
+                                }
+                            }
+                        }
                     }
                 }
             },
             "get":{
                 "summary":"List all pets",
-                "operationId":"listPets",
                 "responses":{
                     "200":{
                         "description":"OK",
@@ -34,28 +48,14 @@
                         }
                     },
                     "500":{
-                        "description":"Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/pets/*":{
-            "get":{
-                "summary":"Info for a specific pet",
-                "operationId":"showPetById",
-                "responses":{
-                    "200":{
-                        "description":"OK",
+                        "description":"Internal Server Error",
                         "content":{
                             "application/json":{
                                 "schema":{
-                                    "$ref":"#/components/schemas/Pet"
+                                    "$ref":"#/components/schemas/Error"
                                 }
                             }
                         }
-                    },
-                    "500":{
-                        "description":"Internal Server Error"
                     }
                 }
             }
@@ -71,6 +71,18 @@
                 "items":{
                     "$ref":"#/components/schemas/petType"
                 }
+            },
+            "Error":{
+                "type":"object",
+                "additionalProperties":false,
+                "properties":{
+                    "message":{
+                        "type":"string"
+                    }
+                },
+                "required":[
+                    "message"
+                ]
             },
             "petType":{
                 "type":"object",

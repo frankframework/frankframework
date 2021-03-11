@@ -67,6 +67,9 @@
 				</sender>
 			</pipe>
 			<pipe name="prepareClobResultSessionKey" className="nl.nn.adapterframework.pipes.FixedResult" storeResultInSessionKey="clobResult" returnString="${testdata.dir}/clobresult.txt" />
+			<pipe name="cleanupClobResult" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="delete" filename="${testdata.dir}/clobresult.txt" >
+				<forward name="exception" path="readClobViaSessionKey" />
+			</pipe>
 			<pipe name="readClobViaSessionKey" getInputFromSessionKey="dummyInput" >
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true"
 					clobSessionKey="clobResult">
@@ -135,6 +138,10 @@
 				</sender>
 			</pipe>
 			<pipe name="prepareBlobResultSessionKey" className="nl.nn.adapterframework.pipes.FixedResult" storeResultInSessionKey="blobResult" returnString="${testdata.dir}/blobresult1.txt" />
+			<pipe name="cleanupBlobResult" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="delete" filename="${testdata.dir}/blobresult1.txt" >
+				<forward name="exception" path="readBlobViaSessionKey" />
+			</pipe>
+
 			<pipe name="readBlobViaSessionKey" getInputFromSessionKey="dummyInput" >
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true"
 					blobSessionKey="blobResult">
@@ -188,14 +195,11 @@
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
-			<pipe name="prepareBlobResultSessionKey2" className="nl.nn.adapterframework.pipes.FixedResult" storeResultInSessionKey="blobResult" returnString="${testdata.dir}/blobresult2.txt" />
 			<pipe name="readBlobViaSessionKeyNotCompressed" getInputFromSessionKey="dummyInput">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" jmsRealm="jdbc" scalar="true" 
-					blobSessionKey="blobResult" blobsCompressed="false" >
+					blobsCompressed="false" >
 					<param name="key" sessionKey="blobKey"/>
 				</sender>
-			</pipe>
-			<pipe name="renderBlob2" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" fileName="${testdata.dir}/blobresult2.txt">
 				<forward name="success" path="EXIT" />
 			</pipe>
 

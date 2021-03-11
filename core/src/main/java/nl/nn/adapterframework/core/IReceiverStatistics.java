@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.Iterator;
-
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 /**
  * Methods for Receivers to supply statistics to a maintenance clients. Receivers indicate 
@@ -30,11 +28,11 @@ public interface IReceiverStatistics  {
 	 * @return an iterator of {@link nl.nn.adapterframework.statistics.StatisticsKeeper}s describing the durations of time that
 	 * the receiver has been waiting between messages.
 	 */
-	Iterator<StatisticsKeeper> getIdleStatisticsIterator();
+	Iterable<StatisticsKeeper> getIdleStatistics();
 	
 	/**
 	 * @return an iterator of {@link nl.nn.adapterframework.statistics.StatisticsKeeper}s describing the durations of time that
 	 * the receiver has been waiting for the adapter to process messages.
 	 */
-	Iterator<StatisticsKeeper> getProcessStatisticsIterator();
+	Iterable<StatisticsKeeper> getProcessStatistics();
 }

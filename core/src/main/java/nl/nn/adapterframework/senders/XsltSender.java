@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SkipEmptyTagsFilter;
 import nl.nn.adapterframework.xml.TransformerFilter;
+import nl.nn.adapterframework.xml.XmlTap;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
@@ -80,6 +81,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private boolean skipEmptyTags=false;
 	private int xsltVersion=0; // set to 0 for auto detect.
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
+	private boolean debugInput = false;
 	
 	private TransformerPool transformerPool;
 	
@@ -98,7 +100,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		
-		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("xslt.streaming.default", false);
+		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
 		
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
@@ -109,7 +111,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			if (omitXmlDeclaration==null) {
 				omitXmlDeclaration=true;
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
 			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
@@ -187,7 +189,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				String styleSheetNameToUse = session.get(styleSheetNameSessionKey).toString();
 			
 				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
-					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getConfigurationClassLoader(), null, null, styleSheetNameToUse, null, true, getParameterList()));
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameToUse, null, true, getParameterList()));
 					poolToUse.open();
 				} else {
 					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
@@ -281,8 +283,17 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		try {
 			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
 				ContentHandler handler = createHandler(message, session, target);
-				InputSource source = message.asInputSource();
+				if (isDebugInput() && log.isDebugEnabled()) {
+					handler = new XmlTap(handler) {
+						@Override
+						public void endDocument() throws SAXException {
+							super.endDocument();
+							log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
+						}
+					};
+				}
 				XMLReader reader = getXmlReader(handler);
+				InputSource source = message.asInputSource();
 				reader.parse(source);
 				return target.getPipeRunResult();
 			}
@@ -330,7 +341,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	@IbisDoc({"5", "omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
-	public void setOmitXmlDeclaration(boolean b) {
+	public void setOmitXmlDeclaration(Boolean b) {
 		omitXmlDeclaration = b;
 	}
 	public Boolean getOmitXmlDeclaration() { // can return null too
@@ -354,7 +365,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
-	public void setIndentXml(boolean b) {
+	public void setIndentXml(Boolean b) {
 		indentXml = b;
 	}
 	public Boolean getIndentXml() { // can return null too
@@ -393,7 +404,15 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return namespaceAware;
 	}
 
-	@IbisDoc({"13", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	@IbisDoc({"13", "when set <code>true</code> the input is written to the log file, at DEBUG level", "false"})
+	public void setDebugInput(boolean debugInput) {
+		this.debugInput = debugInput;
+	}
+	public boolean isDebugInput() {
+		return debugInput;
+	}
+
+	@IbisDoc({"14", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */

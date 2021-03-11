@@ -4,9 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -18,9 +16,6 @@ import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 
 public class J2V8CallbackTest extends SenderTestBase<JavascriptSender> {
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 
 	@Override
 	public JavascriptSender createSender() {

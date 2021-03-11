@@ -17,6 +17,8 @@ package nl.nn.adapterframework.webcontrol.pipes;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -24,8 +26,7 @@ import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.FileUtils;
-
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * ShowFlowDiagram.
@@ -63,9 +64,7 @@ public class ShowFlowDiagram extends TimeoutGuardPipe {
 		}
 		File flowFile;
 		if (StringUtils.isNotEmpty(adapterName)) {
-			String adapterFileName = FileUtils
-					.encodeFileName(java.net.URLDecoder.decode(adapterName))
-					+ ".svg";
+			String adapterFileName = FileUtils.encodeFileName(Misc.urlDecode(adapterName))+ ".svg";
 			flowFile = new File(adapterFlowDir, adapterFileName);
 		} else {
 			String configurationName = (String) session.get("configuration");
@@ -74,10 +73,7 @@ public class ShowFlowDiagram extends TimeoutGuardPipe {
 				String configFileName = "_ALL_.svg";
 				flowFile = new File(configFlowDir, configFileName);
 			} else {
-				String configFileName = FileUtils
-						.encodeFileName(java.net.URLDecoder
-								.decode(configurationName))
-						+ ".svg";
+				String configFileName = FileUtils.encodeFileName(Misc.urlDecode(configurationName))+ ".svg";
 				flowFile = new File(configFlowDir, configFileName);
 			}
 		}

@@ -1,17 +1,20 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M> {
@@ -60,9 +63,18 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		
 	}
 
+	@Override
+	public boolean isOpen() {
+		return opened;
+	}
+
+
 	private void checkOpenAndExists(MockFile f) throws FileSystemException {
 		checkOpen();
 		MockFolder folder = f.getOwner();
+		if (folder==null) {
+			throw new FileSystemException("file ["+f.getName()+"] has no owner");
+		}
 		String folderName = folder instanceof MockFileSystem ? null : folder.getName();
 		checkOpenAndExists(folderName, f);
 	}
@@ -84,6 +96,10 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public M toFile(String filename) throws FileSystemException {
 		checkOpen();
+		int slashPos = filename.lastIndexOf('/');
+		if (slashPos>=0) {
+			return toFile(filename.substring(0,slashPos),filename.substring(slashPos+1));
+		}
 		M result = (M)getFiles().get(filename);
 		if (result!=null) {
 			return result;
@@ -94,7 +110,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public M toFile(String folderName, String filename) throws FileSystemException {
 		checkOpen();
-		MockFolder destFolder= folderName==null?this:getFolders().get(folderName);
+		MockFolder destFolder= folderName==null || folderName.equals("MOCKFILESYSTEM")?this:getFolders().get(folderName);
 		if (destFolder==null) {
 			throw new FileSystemException("folder ["+folderName+"] does not exist");
 		}
@@ -106,7 +122,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public Iterator<M> listFiles(String folderName) throws FileSystemException {
+	public int getNumberOfFilesInFolder(String folderName) throws FileSystemException {
 		checkOpen();
 		MockFolder folder=folderName==null?this:getFolders().get(folderName);
 		if (folder==null) {
@@ -116,11 +132,26 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		if (files==null) {
 			throw new FileSystemException("files in folder ["+folderName+"] is null");
 		}
-		return (Iterator<M>)files.values().iterator();
+		return files.size();
+	}
+	@Override
+	public DirectoryStream<M> listFiles(String folderName) throws FileSystemException {
+		checkOpen();
+		MockFolder folder=folderName==null?this:getFolders().get(folderName);
+		if (folder==null) {
+			throw new FileSystemException("folder ["+folderName+"] is null");
+		}
+		Map<String,MockFile>files = folder.getFiles();
+		if (files==null) {
+			throw new FileSystemException("files in folder ["+folderName+"] is null");
+		}
+		List<M> fileList = new ArrayList<M>();
+		fileList.addAll((Collection<? extends M>) files.values());
+		return FileSystemUtils.getDirectoryStream(fileList.iterator());
 	}
 
 	@Override
-	public boolean exists(MockFile f) throws FileSystemException {
+	public boolean exists(M f) throws FileSystemException {
 		checkOpen();
 		return f.getOwner()!=null 
 				&& (f.getOwner().getFiles().containsKey(f.getName()) 
@@ -148,28 +179,26 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public InputStream readFile(MockFile f) throws FileSystemException, IOException {
+	public Message readFile(MockFile f) throws FileSystemException, IOException {
 		checkOpenAndExists(f);
-		return f.getInputStream();
+		return new Message(f.getInputStream());
 	}
 
 	@Override
 	public void deleteFile(MockFile f) throws FileSystemException {
 		checkOpenAndExists(f);
 		f.getOwner().getFiles().remove(f.getName());
-		f.setOwner(null);
 	}
 
 	@Override
-	public M renameFile(M f, String newName, boolean force) throws FileSystemException {
-		checkOpenAndExists(f);
-		if (f.getOwner().getFiles().containsKey(newName)) {
-			throw new FileSystemException("Cannot rename file. Destination file already exists.");
-		}
-		
-		f.getOwner().getFiles().put(newName,f.getOwner().getFiles().remove(f.getName()));
-		f.setName(newName);
-		return f;
+	public M renameFile(M source, M destination) throws FileSystemException {
+		checkOpenAndExists(source);
+		String sourceName = source.getName();
+		String destinationName = destination.getName();
+		source.getOwner().getFiles().remove(sourceName);
+		destination.getOwner().getFiles().put(destinationName,destination);
+		destination.setContents(source.getContents());
+		return destination;
 	}
 
 	@Override
@@ -183,8 +212,12 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 			destFolder = new MockFolder(destinationFolderName,this);
 			getFolders().put(destinationFolderName,destFolder);
 		}
-		destFolder.getFiles().put(f.getName(), f.getOwner().getFiles().remove(f.getName()));
-		f.setOwner(destFolder);
+		M destFile = (M)new MockFile(f.getName(),destFolder);
+		destFile.setAdditionalProperties(f.getAdditionalProperties());
+		destFile.setContents(f.getContents());
+		destFile.setLastModified(f.getLastModified());
+		destFolder.getFiles().put(f.getName(), destFile);
+		f.getOwner().getFiles().remove(f.getName());
 		return f;
 	}
 
@@ -228,7 +261,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public String getCanonicalName(M f) throws FileSystemException {
 		//checkOpenAndExists(null,f); // cannot check this anymore, canonical name is now used in error messages
-		return f.getName();
+		return f.getOwner().getName()+"/"+f.getName();
 	}
 
 	@Override
@@ -279,7 +312,5 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	public String getPhysicalDestinationName() {
 		return "Mock!";
 	}
-
-
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	public void configure() throws ConfigurationException {
 		super.configure();
 			if (StringUtils.isEmpty(getContentsSessionKey())) {
-				throw new ConfigurationException(getLogPrefix(null)+"attribute contentsKey must be specified");
+				throw new ConfigurationException("attribute contentsKey must be specified");
 			}
 	}
 	
@@ -129,15 +129,15 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 				String filename=current.getName();
 				if (isStreamingContents()) {
 					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing stream to contents of zip entries under session key ["+getContentsSessionKey()+"]");
-					session.put(getContentsSessionKey(),source); // do this each time, to allow reuse of the session key when an item is optionally encoded
+					session.put(getContentsSessionKey(),StreamUtil.dontClose(source)); // do this each time, to allow reuse of the session key when an item is optionally encoded
 				} else { 
 					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing contents of zip entry under session key ["+getContentsSessionKey()+"]");
 					String content;
 					if (isSkipBOM()) {
-						byte contentBytes[] = StreamUtil.streamToByteArray(source, true);
+						byte contentBytes[] = StreamUtil.streamToByteArray(StreamUtil.dontClose(source), true);
 						content = Misc.byteArrayToString(contentBytes, null, false);
 					} else {
-						content = StreamUtil.streamToString(source,null,getCharset());
+						content = StreamUtil.streamToString(StreamUtil.dontClose(source),null,getCharset());
 					}
 					session.put(getContentsSessionKey(),content);
 				}

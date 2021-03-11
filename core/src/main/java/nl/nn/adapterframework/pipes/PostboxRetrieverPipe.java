@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ import nl.nn.adapterframework.stream.Message;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when the message was successfully sent</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * </table>
  * </p>
   * 
@@ -64,7 +63,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		super.configure();
 
 		if (getListener() == null) {
-				throw new ConfigurationException(getLogPrefix(null) + "no sender defined ");
+				throw new ConfigurationException("no sender defined ");
 		}
 	}
 

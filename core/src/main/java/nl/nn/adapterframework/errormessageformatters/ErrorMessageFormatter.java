@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,16 +18,18 @@ package nl.nn.adapterframework.errormessageformatters;
 import java.io.IOException;
 import java.util.Date;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
 import nl.nn.adapterframework.core.IErrorMessageFormatter;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.logging.log4j.Logger;
 /**
  * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
  *
@@ -49,9 +51,9 @@ import org.apache.logging.log4j.Logger;
  * 
  * @author  Gerrit van Brakel
  */
-public class ErrorMessageFormatter implements IErrorMessageFormatter {
+public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProvider {
     protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	/**
 	 * Format the available parameters into a XML-message.
@@ -59,7 +61,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 	 * Override this method in descender-classes to obtain the required behaviour.
 	 */
 	@Override
-	public String format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 	
 		String details = null;
 		errorMessage = getErrorMessage(errorMessage, t);
@@ -102,7 +104,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 		}
 		errorXml.addSubElement(originalMessageXml);
 
-		return errorXml.toXML();
+		return new Message(errorXml.toXML());
 	}
 
 	protected String getErrorMessage(String message, Throwable t) {
@@ -114,13 +116,5 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 			}
 		}
 		return message;
-	}
-
-	/**
-	 * Get ClassLoader to resolve files
-	 * @return runtime ClassLoader of the loaded configuration
-	 */
-	protected ClassLoader getClassLoader() {
-		return this.classLoader;
 	}
 }

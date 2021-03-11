@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
@@ -34,24 +36,19 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.receivers.GenericReceiver;
-import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Dir2Xml;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
-
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 	private String sessionKey = "file";
 	private String propertiesFileName = "wsdl.properties";
-	private static final String WSDL_EXTENSION = ".wsdl";
 
 	@Override
 	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
@@ -64,8 +61,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		String fileName;
 		
 		try {
-			tempDir = FileUtils.createTempDir(null, "WEB-INF" + File.separator
-					+ "classes");
+			tempDir = FileUtils.createTempDir(null, "WEB-INF" + File.separator + "classes");
 			fileName = (String) session.get("fileName");
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
 				FileUtils.unzipStream(inputStream, tempDir);
@@ -75,8 +71,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				file.deleteOnExit();
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ " Exception on uploading and unzipping/writing file", e);
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on uploading and unzipping/writing file", e);
 		}
 
 		File propertiesFile = new File(tempDir, getPropertiesFileName());
@@ -100,8 +95,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				pipeLine = createPipeLineFromXsdFile(xsdFile);
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ " Exception on generating wsdl", e);
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on generating wsdl", e);
 		} finally {
 			if (originalClassLoader != null) {
 				Thread.currentThread().setContextClassLoader(originalClassLoader);
@@ -113,23 +107,21 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		OutputStream fullWsdlOut = null;
 		try {
 			Adapter adapter = new Adapter();
-			Configuration configuration = new Configuration(null);
+			Configuration configuration = new Configuration();
 			configuration.setClassLoader(getConfigurationClassLoader());
 			adapter.setConfiguration(configuration);
-			String fileBaseName = FileUtils.getBaseName(fileName).replaceAll(
-					" ", "_");
+			String fileBaseName = FileUtils.getBaseName(fileName).replaceAll(" ", "_");
 			adapter.setName(fileBaseName);
-			GenericReceiver genericReceiver = new GenericReceiver();
+			Receiver receiver = new Receiver();
 			EsbJmsListener esbJmsListener = new EsbJmsListener();
-			esbJmsListener.setQueueConnectionFactoryName("jms/qcf_"
-					+ fileBaseName);
+			esbJmsListener.setQueueConnectionFactoryName("jms/qcf_" + fileBaseName);
 			esbJmsListener.setDestinationName("jms/dest_" + fileBaseName);
-			genericReceiver.setListener(esbJmsListener);
-			adapter.registerReceiver(genericReceiver);
+			receiver.setListener(esbJmsListener);
+			adapter.registerReceiver(receiver);
 			pipeLine.setAdapter(adapter);
-			Wsdl wsdl = null;
+			WsdlGenerator wsdl = null;
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
-			wsdl = new Wsdl(pipeLine, generationInfo);
+			wsdl = new WsdlGenerator(pipeLine, generationInfo);
 			wsdl.setIndent(true);
 			wsdl.init();
 			File wsdlDir = FileUtils.createTempDir(tempDir);
@@ -140,8 +132,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			wsdl.setUseIncludes(true);
 			wsdl.zip(zipOut, null);
 			// full wsdl (without includes)
-			File fullWsdlOutFile = new File(wsdlDir, wsdl.getFilename()
-					+ ".wsdl");
+			File fullWsdlOutFile = new File(wsdlDir, wsdl.getFilename() + ".wsdl");
 			fullWsdlOutFile.deleteOnExit();
 			fullWsdlOut = new FileOutputStream(fullWsdlOutFile);
 			wsdl.setUseIncludes(false);
@@ -210,8 +201,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			} else {
 				rootPosition = 1;
 			}
-			EsbSoapValidator outputValidator = createValidator(outputXsdFile,
-					outputNamespace, outputRoot, rootPosition, outputCmh);
+			EsbSoapValidator outputValidator = createValidator(outputXsdFile, outputNamespace, outputRoot, rootPosition, outputCmh);
 			pipeLine.setOutputValidator(outputValidator);
 		}
 		return pipeLine;
@@ -227,14 +217,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		String countRoot = null;
 		try {
 			String countRootXPath = "count(*/*[local-name()='element'])";
-			TransformerPool tp = TransformerPool.getInstance(
-					XmlUtils.createXPathEvaluatorSource(countRootXPath, "text"));
-			countRoot = tp
-					.transform(Misc.fileToString(xsdFile.getPath()), null);
+			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(countRootXPath, "text"));
+			countRoot = tp.transform(Misc.fileToString(xsdFile.getPath()), null);
 			if (StringUtils.isNotEmpty(countRoot)) {
-				log.debug("counted [" + countRoot
-						+ "] root elements in xsd file [" + xsdFile.getName()
-						+ "]");
+				log.debug("counted [" + countRoot + "] root elements in xsd file [" + xsdFile.getName() + "]");
 				int cr = Integer.parseInt(countRoot);
 				if (cr > 1) {
 					EsbSoapValidator outputValidator;
@@ -258,23 +244,16 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			if (StringUtils.isEmpty(namespace)) {
 				String xsdTargetNamespace = null;
 				try {
-					TransformerPool tp = TransformerPool.getInstance(
-							XmlUtils.createXPathEvaluatorSource(
-									"*/@targetNamespace", "text"));
+					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("*/@targetNamespace", "text"));
 					xsdTargetNamespace = tp.transform(
 							Misc.fileToString(xsdFile.getPath()), null);
 					if (StringUtils.isNotEmpty(xsdTargetNamespace)) {
-						log.debug("found target namespace ["
-								+ xsdTargetNamespace + "] in xsd file ["
-								+ xsdFile.getName() + "]");
+						log.debug("found target namespace [" + xsdTargetNamespace + "] in xsd file [" + xsdFile.getName() + "]");
 					} else {
 						// default namespace to prevent
 						// "(IllegalArgumentException) The schema attribute isn't supported"
 						xsdTargetNamespace = "urn:wsdlGenerator";
-						log.warn("could not find target namespace in xsd file ["
-								+ xsdFile.getName()
-								+ "], assuming namespace ["
-								+ xsdTargetNamespace + "]");
+						log.warn("could not find target namespace in xsd file [" + xsdFile.getName() + "], assuming namespace [" + xsdTargetNamespace + "]");
 					}
 				} catch (Exception e) {
 					throw new ConfigurationException(e);
@@ -295,16 +274,11 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			if (StringUtils.isEmpty(root)) {
 				String xsdRoot = null;
 				try {
-					String rootXPath = "*/*[local-name()='element']["
-							+ rootPosition + "]/@name";
-					TransformerPool tp = TransformerPool.getInstance(
-							XmlUtils.createXPathEvaluatorSource(rootXPath,
-									"text"));
-					xsdRoot = tp.transform(
-							Misc.fileToString(xsdFile.getPath()), null);
+					String rootXPath = "*/*[local-name()='element'][" + rootPosition + "]/@name";
+					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(rootXPath, "text"));
+					xsdRoot = tp.transform(Misc.fileToString(xsdFile.getPath()), null);
 					if (StringUtils.isNotEmpty(xsdRoot)) {
-						log.debug("found root element [" + xsdRoot
-								+ "] in xsd file [" + xsdFile.getName() + "]");
+						log.debug("found root element [" + xsdRoot + "] in xsd file [" + xsdFile.getName() + "]");
 						esbSoapValidator.setSoapBody(xsdRoot);
 					}
 				} catch (Exception e) {
@@ -322,16 +296,6 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			return esbSoapValidator;
 		}
 		return null;
-	}
-
-	private String getWsdlDocumentation(String filename) {
-		return "Generated as "
-				+ filename
-				+ WSDL_EXTENSION
-				+ " by "
-				+ AppConstants.getInstance()
-						.getProperty("instance.name", "IAF") + " on "
-				+ DateUtils.getIsoTimeStamp() + ".";
 	}
 
 	public String getSessionKey() {

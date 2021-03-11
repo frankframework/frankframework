@@ -23,9 +23,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
-import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -68,9 +66,6 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getDatasourceName())) {
-			throw new ConfigurationException(getLogPrefix()+"has no datasource");
-		}
 		if (paramList!=null) {
 			paramList.configure();
 		}
@@ -119,12 +114,6 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 		} finally {
 			closeBlock(blockHandle, session);
 		}
-	}
-
-	@Override
-	// implements IStreamingSender.sendMessage(), currently without support for streaming the results to the next outputstream provider.
-	public final PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
-		return new PipeRunResult(null, sendMessage(message, session));
 	}
 
 	@Override

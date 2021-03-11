@@ -47,6 +47,7 @@
 		<property name="maxMemoryUsage"><ref bean="maxMemoryUsage"/></property>
 		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
 		<property name="regexFilter"><ref bean="regexFilter"/></property>
+		<property name="securityLoggerName" value="SEC"/>
 	</bean>
 
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
@@ -57,8 +58,7 @@
 		</property>
 	</bean>
 
-	<!-- TODO rename to debugStorage? -->
-	<bean name="logStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
+	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
 		<property name="name" value="Logging"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
@@ -77,13 +77,12 @@
 		</property>
 	</bean>
 
-	<!-- TODO rename to testStorage? -->
-	<bean name="runStorage,runStoragexxx,runStorageLOC" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
+	<bean name="testStorage,testStoragexxx,testStorageLOC" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
-		<property name="metadataFile" value="${ibistesttool.directory}/metadata.xml"/>
+		<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
 		<property name="reportsFolder" value="${ibistesttool.directory}"/>
 	</bean>
-	<bean name="runStorageDEV,runStorageTST,runStorageACC,runStoragePRD" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
+	<bean name="testStorageDEV,testStorageTST,testStorageACC,testStoragePRD" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
@@ -116,7 +115,7 @@
 	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" scope="prototype">
 		<property name="name" value="White box"/>
 		<property name="storage">
-			<ref bean="logStorage"/>
+			<ref bean="debugStorage"/>
 		</property>
 		<property name="metadataNames">
 			<ref bean="whiteBoxViewMetadataNames"/>
@@ -190,8 +189,8 @@
 		<property name="testTool">
 			<ref bean="testTool"/>
 		</property>
-		<property name="runStorage">
-			<ref bean="runStorage${dtap.stage}"/>
+		<property name="testStorage">
+			<ref bean="testStorage${dtap.stage}"/>
 		</property>
 		<property name="reportsComponent">
 			<ref bean="reportsComponent"/>
@@ -204,26 +203,26 @@
 		</property>
 	</bean>
 
-	<bean name="runPane" class="nl.nn.testtool.echo2.RunPane" init-method="initBean" scope="prototype">
+	<bean name="testPane" class="nl.nn.testtool.echo2.TestPane" init-method="initBean" scope="prototype">
 		<property name="treePane">
-			<bean class="nl.nn.testtool.echo2.run.TreePane" autowire="byName" init-method="initBean" >
+			<bean class="nl.nn.testtool.echo2.test.TreePane" autowire="byName" init-method="initBean" >
 				<property name="storage">
-					<ref bean="runStorage${dtap.stage}"/>
+					<ref bean="testStorage${dtap.stage}"/>
 				</property>
 			</bean>
 		</property>
 		<property name="infoPane">
-			<bean class="nl.nn.testtool.echo2.run.InfoPane" init-method="initBean">
-				<property name="runComponent">
-					<bean class="nl.nn.testtool.echo2.run.RunComponent" init-method="initBean">
+			<bean class="nl.nn.testtool.echo2.test.InfoPane" init-method="initBean">
+				<property name="testComponent">
+					<bean class="nl.nn.testtool.echo2.test.TestComponent" init-method="initBean">
 						<property name="testTool">
 							<ref bean="testTool"/>
 						</property>
 						<property name="debugStorage">
-							<ref bean="logStorage"/>
+							<ref bean="debugStorage"/>
 						</property>
-						<property name="runStorage">
-							<ref bean="runStorage${dtap.stage}"/>
+						<property name="testStorage">
+							<ref bean="testStorage${dtap.stage}"/>
 						</property>
 						<property name="reportXmlTransformer">
 							<ref bean="reportXmlTransformer"/>
@@ -241,8 +240,8 @@
 		<property name="testTool">
 			<ref bean="testTool"/>
 		</property>
-		<property name="runStorage">
-			<ref bean="runStorage${dtap.stage}"/>
+		<property name="testStorage">
+			<ref bean="testStorage${dtap.stage}"/>
 		</property>
 		<property name="reportsComponent1">
 			<bean parent="reportsComponent">
@@ -273,7 +272,7 @@
 		<property name="tabs">
 			<list>
 				<ref bean="debugPane"/>
-				<ref bean="runPane"/>
+				<ref bean="testPane"/>
 				<ref bean="comparePane"/>
 			</list>
 		</property>

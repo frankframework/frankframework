@@ -1,16 +1,13 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 
 public class DelayPipeTest extends PipeTestBase<DelayPipe> {
-
-	private IPipeLineSession session = new PipeLineSessionBase();
 
 	@Override
 	public DelayPipe createPipe() {

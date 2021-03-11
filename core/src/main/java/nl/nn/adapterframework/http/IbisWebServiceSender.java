@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ import org.apache.soap.SOAPException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.ServiceDispatcher_ServiceProxy;
+import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -39,9 +39,8 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
+public class IbisWebServiceSender extends SenderBase implements HasPhysicalDestination {
 
-	private String name;
 	private String ibisHost = "localhost";
 	private String ibisInstance = null;
 	private String serviceName = "serviceListener";
@@ -93,17 +92,6 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 		return getEndPoint()+" - "+getServiceName();
 	}
 
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@IbisDoc({"name of the sender", ""})
-	@Override
-	public void setName(String name) {
-		this.name=name;
-	}
-	
 	public String getIbisHost() {
 		return ibisHost;
 	}

@@ -24,8 +24,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -39,6 +43,7 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -154,7 +159,7 @@ public class ApiServiceDispatcher {
 		List<ApiDispatchConfig> clientList = Arrays.asList(client);
 		return generateOpenApiJsonSchema(clientList);
 	}
-		
+
 	protected JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients) {
 
 		JsonObjectBuilder root = Json.createObjectBuilder();
@@ -171,24 +176,33 @@ public class ApiServiceDispatcher {
 
 		for (ApiDispatchConfig config : clients) {
 			JsonObjectBuilder methods = Json.createObjectBuilder();
+			ApiListener listener = null;
 			for (String method : config.getMethods()) {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
-				ApiListener listener = config.getApiListener(method);
+				listener = config.getApiListener(method);
 				if(listener != null && listener.getReceiver() != null) {
 					IAdapter adapter = listener.getReceiver().getAdapter();
 					if (StringUtils.isNotEmpty(adapter.getDescription())) {
 						methodBuilder.add("summary", adapter.getDescription());
 					}
-					methodBuilder.add("operationId", adapter.getName());
+					if(StringUtils.isNotEmpty(listener.getOperationId())) {
+						methodBuilder.add("operationId", listener.getOperationId());
+					}
+					// GET and DELETE methods cannot have a requestBody according to the specs.
+					if(!method.equals("GET") && !method.equals("DELETE")) {
+						mapRequest(adapter, listener.getConsumesEnum(), methodBuilder);
+					}
+					mapParamsInRequest(adapter, listener, methodBuilder);
 
 					//ContentType may have more parameters such as charset and formdata-boundry
-					MediaTypes produces = MediaTypes.valueOf(listener.getProduces());
+					MediaTypes produces = listener.getProducesEnum();
 					methodBuilder.add("responses", mapResponses(adapter, produces, schemas));
 				}
-
 				methods.add(method.toLowerCase(), methodBuilder);
 			}
-			paths.add("/"+config.getUriPattern(), methods);
+			if(listener != null) {
+				paths.add(listener.getUriPattern(), methods);
+			}
 		}
 		root.add("paths", paths.build());
 		root.add("components", Json.createObjectBuilder().add("schemas", schemas));
@@ -196,7 +210,7 @@ public class ApiServiceDispatcher {
 		return root.build();
 	}
 
-	private Json2XmlValidator getJsonValidator(PipeLine pipeline) {
+	public static Json2XmlValidator getJsonValidator(PipeLine pipeline) {
 		IPipe validator = pipeline.getInputValidator();
 		if(validator == null) {
 			validator = pipeline.getPipe(pipeline.getFirstPipe());
@@ -207,21 +221,66 @@ public class ApiServiceDispatcher {
 		return null;
 	}
 
+	private void mapParamsInRequest(IAdapter adapter, ApiListener listener, JsonObjectBuilder methodBuilder) {
+		String uriPattern = listener.getUriPattern();
+		JsonArrayBuilder paramBuilder = Json.createArrayBuilder();
+		if(uriPattern.contains("{")) {
+			Pattern p = Pattern.compile("[^{/}]+(?=})");
+			Matcher m = p.matcher(uriPattern);
+			while(m.find()) {
+				JsonObjectBuilder param = Json.createObjectBuilder();
+				param.add("name", m.group());
+				param.add("in", "path");
+				param.add("required", true);
+				param.add("schema", Json.createObjectBuilder().add("type", "string"));
+				paramBuilder.add(param);
+			}
+		}
+		Json2XmlValidator validator = getJsonValidator(adapter.getPipeLine());
+		if(validator != null && !validator.getParameterList().isEmpty()) {
+			for (Parameter parameter : validator.getParameterList()) {
+				if(StringUtils.isNotEmpty(parameter.getSessionKey())) {
+					JsonObjectBuilder param = Json.createObjectBuilder();
+					param.add("name", parameter.getSessionKey());
+					param.add("in", "query");
+					String parameterType = parameter.getType() != null ? parameter.getType() : "string";
+					param.add("schema", Json.createObjectBuilder().add("type", parameterType));
+					paramBuilder.add(param);
+				}
+			}
+		}
+		JsonArray paramBuilderArray = paramBuilder.build();
+		if(!paramBuilderArray.isEmpty()) {
+			methodBuilder.add("parameters", paramBuilderArray);
+		}
+	}
+
+	private void mapRequest(IAdapter adapter, MediaTypes consumes, JsonObjectBuilder methodBuilder) {
+		PipeLine pipeline = adapter.getPipeLine();
+		Json2XmlValidator validator = getJsonValidator(pipeline);
+		if(validator != null && StringUtils.isNotEmpty(validator.getRoot())) {
+			JsonObjectBuilder requestBodyContent = Json.createObjectBuilder();
+			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder().add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+validator.getRoot()));
+			requestBodyContent.add("content", Json.createObjectBuilder().add(consumes.getContentType(), schemaBuilder));
+			methodBuilder.add("requestBody", requestBodyContent);
+		}
+	}
+
 	private JsonObjectBuilder mapResponses(IAdapter adapter, MediaTypes contentType, JsonObjectBuilder schemas) {
 		JsonObjectBuilder responses = Json.createObjectBuilder();
 
 		PipeLine pipeline = adapter.getPipeLine();
 		Json2XmlValidator validator = getJsonValidator(pipeline);
 		JsonObjectBuilder schema = null;
+		String ref = null;
 		if(validator != null) {
 			JsonObject jsonSchema = validator.createJsonSchemaDefinitions("#/components/schemas/");
 			if(jsonSchema != null) {
 				for (Entry<String,JsonValue> entry: jsonSchema.entrySet()) {
 					schemas.add(entry.getKey(), entry.getValue());
 				}
-				String ref = validator.getMessageRoot(true);
+				ref = validator.getMessageRoot(true);
 				schema = Json.createObjectBuilder();
-				schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+ref));
 			}
 		}
 
@@ -239,9 +298,20 @@ public class ApiServiceDispatcher {
 			exit.add("description", status.getReasonPhrase());
 			if(!ple.getEmptyResult()) {
 				JsonObjectBuilder content = Json.createObjectBuilder();
-				if(schema == null) {
-					content.addNull(contentType.getContentType());
-				} else {
+				if(StringUtils.isNotEmpty(ref)){
+					String reference = null;
+					if(StringUtils.isNotEmpty(ple.getResponseRoot())) {
+						reference = ple.getResponseRoot();
+					} else {
+						List<String> references = Arrays.asList(ref.split(","));
+						if(ple.getState().equals("success")) {
+							reference = references.get(0);
+						} else {
+							reference = references.get(references.size()-1);
+						}
+					}
+					// JsonObjectBuilder add method consumes the schema
+					schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+reference));
 					content.add(contentType.getContentType(), schema);
 				}
 				exit.add("content", content);

@@ -85,6 +85,7 @@ public class SoapValidator extends Json2XmlValidator {
 		return StringUtils.isNotEmpty(getOutputSoapBody());
 	}
 
+	@Deprecated
 	@Override
 	public void setSchema(String schema) {
 		throw new IllegalArgumentException("The schema attribute isn't supported");

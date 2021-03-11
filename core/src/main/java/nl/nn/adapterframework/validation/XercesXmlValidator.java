@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2017 Nationale-Nederlanden
+   Copyright 2013-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -70,7 +70,6 @@ import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link nl.nn.adapterframework.pipes.XmlValidator#setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
  * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
  * <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
  * <tr><td>"notValid"</td><td>if a validation error occurred</td></tr>
@@ -129,11 +128,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			cache.setEternal(true);
 			try {
 				cache.configure("XercesXmlValidator");
+				cache.open();
 			} catch (ConfigurationException e) {
 				cache = null;
-				ConfigurationWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
+				ConfigurationWarnings.addGlobalWarning(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
 			}
-			cache.open();
 		}
 	}
 
@@ -153,18 +152,16 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	protected void init() throws ConfigurationException {
-		if (needsInit) {
-			super.init();
-			if (schemasProvider == null) throw new IllegalStateException("No schema provider");
-			String schemasId = schemasProvider.getSchemasId();
-			if (schemasId != null) {
-				PreparseResult preparseResult = preparse(schemasId, schemasProvider.getSchemas());
-				if (cache == null || isIgnoreCaching()) {
-					this.preparseResult = preparseResult;
-				} else {
-					cache.put(preparseResultId, preparseResult);
-				}
+	public void start() throws ConfigurationException {
+		super.start();
+		if (schemasProvider == null) throw new IllegalStateException("No schema provider");
+		String schemasId = schemasProvider.getSchemasId();
+		if (schemasId != null) {
+			PreparseResult preparseResult = preparse(schemasId, schemasProvider.getSchemas());
+			if (cache == null || isIgnoreCaching()) {
+				this.preparseResult = preparseResult;
+			} else {
+				cache.put(preparseResultId, preparseResult);
 			}
 		}
 	}
@@ -189,7 +186,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
 		Set<String> namespaceSet = new HashSet<String>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
-		preparser.setEntityResolver(new ClassLoaderXmlEntityResolver(getConfigurationClassLoader()));
+		preparser.setEntityResolver(new ClassLoaderXmlEntityResolver(this));
 		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
 		preparser.setProperty(GRAMMAR_POOL, grammarPool);
 		preparser.setFeature(NAMESPACES_FEATURE_ID, true);
@@ -199,7 +196,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		try {
 			preparser.setProperty(XML_SCHEMA_VERSION_PROPERTY, isXmlSchema1_0() ? Constants.W3C_XML_SCHEMA10EX_NS_URI : Constants.W3C_XML_SCHEMA11_NS_URI);
 		} catch (NoSuchFieldError e) {
-			String msg="Cannot set property ["+XML_SCHEMA_VERSION_PROPERTY+"], requested xmlSchemaVersion ["+getXmlSchemaVersion()+"] xercesVersion ("+org.apache.xerces.impl.Version.getVersion()+"]";
+			String msg="Cannot set property ["+XML_SCHEMA_VERSION_PROPERTY+"], requested xmlSchemaVersion ["+getXmlSchemaVersion()+"] xercesVersion ["+org.apache.xerces.impl.Version.getVersion()+"]";
 			if (isXmlSchema1_0()) {
 				log.warn(msg+", assuming XML-Schema version 1.0 will be supported", e);
 			} else {
@@ -254,7 +251,6 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			if (cache == null || isIgnoreCaching()) {
 				preparseResult = this.preparseResult;
 				if (preparseResult == null) {
-					init();
 					preparseResult = this.preparseResult;
 				}
 			} else {

@@ -1,2 +1,5 @@
 /secrets.properties
 /CmisSender.properties
+
+/ExchangeMailListener.properties
+/ExchangeMail.properties

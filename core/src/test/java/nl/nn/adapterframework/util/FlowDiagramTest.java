@@ -19,6 +19,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 import nl.nn.adapterframework.util.flow.IFlowGenerator;
 import nl.nn.adapterframework.util.flow.V8FlowGenerator;
@@ -30,11 +32,15 @@ public class FlowDiagramTest {
 		IFlowGenerator generator = new V8FlowGenerator();
 		generator.afterPropertiesSet();
 
-		FlowDiagramManager flow = new FlowDiagramManager();
-		flow.setFlowGenerator(generator);
-		flow.afterPropertiesSet();
+		FlowDiagramManager flow = new FlowDiagramManager() {
+			@Override
+			protected IFlowGenerator createFlowGenerator() {
+				return generator;
+			}
+		};
 
 		assertNotNull(flow);
+		flow.afterPropertiesSet();
 	}
 
 	@Test
@@ -43,11 +49,15 @@ public class FlowDiagramTest {
 		generator.setFileExtension("svG");
 		generator.afterPropertiesSet();
 
-		FlowDiagramManager flow = new FlowDiagramManager();
-		flow.setFlowGenerator(generator);
-		flow.afterPropertiesSet();
+		FlowDiagramManager flow = new FlowDiagramManager() {
+			@Override
+			protected IFlowGenerator createFlowGenerator() {
+				return generator;
+			}
+		};
 
 		assertNotNull(flow);
+		flow.afterPropertiesSet();
 		assertEquals("svg", generator.getFileExtension());
 	}
 
@@ -57,10 +67,39 @@ public class FlowDiagramTest {
 		generator.setFileExtension("application/pdf");
 		generator.afterPropertiesSet();
 
-		FlowDiagramManager flow = new FlowDiagramManager();
-		flow.setFlowGenerator(generator);
-		flow.afterPropertiesSet();
+		FlowDiagramManager flow = new FlowDiagramManager() {
+			@Override
+			protected IFlowGenerator createFlowGenerator() {
+				return generator;
+			}
+		};
 
 		assertNotNull(flow);
+		flow.afterPropertiesSet();
 	}
+
+	@Test
+	public void testAdapter2DotXslWithoutFirstPipe() throws Exception {
+		TransformerPool.clearTransformerPools();
+		Resource resource = Resource.getResource("xsl/adapter2dot.xsl");
+		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
+		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.xml");
+		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
+		String result = transformerPool.transform(adapter, null);
+
+		assertEquals(dot, result);
+	}
+
+	@Test
+	public void testAdapter2DotXslExitInMiddle() throws Exception {
+		TransformerPool.clearTransformerPools();
+		Resource resource = Resource.getResource("xsl/adapter2dot.xsl");
+		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
+		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineExitInTheMiddle.xml");
+		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
+		String result = transformerPool.transform(adapter, null);
+
+		assertEquals(dot, result);
+	}
+
 }

@@ -11,14 +11,12 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.Date;
 
-import org.hamcrest.core.IsInstanceOf;
 import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.core.INamedObject;
@@ -31,7 +29,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.util.Misc;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -41,9 +38,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	protected FS fileSystem;
 	protected INamedObject owner;
 	private IPipeLineSession session;
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 
 	protected abstract FS createFileSystem();
@@ -87,9 +81,89 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureNoAction() throws Exception {
-		thrown.expectMessage("action must be specified");
+		thrown.expectMessage("either attribute [action] or parameter [action] must be specified");
 		thrown.expectMessage("fake owner of FileSystemActor");
 		actor.configure(fileSystem,null,owner);
+	}
+
+	@Test
+	public void fileSystemActorEmptyParameterAction() throws Exception {
+		thrown.expectMessage("unable to resolve the value of parameter");
+		String filename = "emptyParameterAction" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("action");
+		p.setValue("");
+		params.add(p);
+		params.configure();
+
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message= new Message(filename);
+		ParameterValueList pvl = params.getValues(new Message(""), session);
+
+		actor.doAction(message, pvl, session);
+	}
+
+	@Test
+	public void fileSystemActorEmptyParameterActionWillBeOverridenByConfiguredAction() throws Exception {
+		String filename = "overwriteEmptyParameter" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("action");
+		p.setValue(null);
+		params.add(p);
+		params.configure();
+		actor.setAction("read");
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message= new Message(filename);
+		ParameterValueList pvl = params.getValues(null, session);
+
+		Message result = (Message)actor.doAction(message, pvl, session);
+		assertEquals(contents, result.asString());
+	}
+
+	@Test
+	public void fileSystemActorParameterActionAndAttributeActionConfigured() throws Exception {
+		String filename = "actionParamAndAttr" + FILE1;
+		String contents = "Text to read";
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		ParameterList params = new ParameterList();
+		Parameter pAction = new Parameter();
+		pAction.setName("action");
+		pAction.setValue("read");
+		params.add(pAction);
+		Parameter pFilename = new Parameter();
+		pFilename.setName("filename");
+		pFilename.setValue(filename);
+		params.add(pFilename);
+		params.configure();
+
+		actor.setAction("write");
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message= new Message(filename);
+		ParameterValueList pvl = params.getValues(null, session);
+
+		Message result = (Message)actor.doAction(message, pvl, session);
+		assertEquals(contents, result.asString());
 	}
 
 	@Test
@@ -158,7 +232,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 	}
 	
-	public void fileSystemActorListActionTest(String inputFolder, int numberOfFiles) throws Exception {
+	public void fileSystemActorListActionTest(String inputFolder, int numberOfFiles, int expectedNumberOfFiles) throws Exception {
 
 		
 		for (int i=0; i<numberOfFiles; i++) {
@@ -201,33 +275,133 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		int resultCount = Integer.valueOf(stringResult.substring(posCount+anchor.length(), posQuote));
 		// test
-		assertEquals("count mismatch",numberOfFiles, resultCount);
-		assertEquals("mismatch in number of files",numberOfFiles, resultCount);
+		assertEquals("count mismatch",expectedNumberOfFiles, resultCount);
+		assertEquals("mismatch in number of files",expectedNumberOfFiles, resultCount);
 	}
 
 	@Test
 	public void fileSystemActorListActionTestInRootNoFiles() throws Exception {
-		fileSystemActorListActionTest(null,0);
+		fileSystemActorListActionTest(null,0,0);
 	}
 	@Test
 	public void fileSystemActorListActionTestInRoot() throws Exception {
-		fileSystemActorListActionTest(null,2);
+		fileSystemActorListActionTest(null,2,2);
 	}
 
 	@Test
 	public void fileSystemActorListActionTestInFolderNoFiles() throws Exception {
 		_createFolder("folder");
-		fileSystemActorListActionTest("folder",0);
+		fileSystemActorListActionTest("folder",0,0);
 	}
 
 	@Test
 	public void fileSystemActorListActionTestInFolder() throws Exception {
 		_createFolder("folder");
-		fileSystemActorListActionTest("folder",2);
+		fileSystemActorListActionTest("folder",2,2);
+	}
+
+	@Test
+	public void fileSystemActorListActionTestInFolderWithWildCard() throws Exception {
+		actor.setWildCard("*d0*");
+		_createFolder("folder");
+		fileSystemActorListActionTest("folder",5,1);
+	}
+
+	@Test
+	public void fileSystemActorListActionTestInFolderWithExcludeWildCard() throws Exception {
+		actor.setExcludeWildCard("*d0*");
+		_createFolder("folder");
+		fileSystemActorListActionTest("folder",5,4);
+	}
+
+	@Test
+	public void fileSystemActorListActionTestInFolderWithBothWildCardAndExcludeWildCard() throws Exception {
+		actor.setWildCard("*.txt");
+		actor.setExcludeWildCard("*ted1*");
+		_createFolder("folder");
+		fileSystemActorListActionTest("folder",5,4);
+	}
+	@Test
+	public void migrated_localFileSystemTestListWildcard() throws Exception {
+		String filename = "create" + FILE1;
+		String filename1 = filename+".bak";
+		String filename2 = filename+".xml";
+		String contents = "regeltje tekst";
+
+		actor.setWildCard("*.xml");
+		actor.setAction("list");
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+
+		createFile(null, filename1, contents);
+		createFile(null, filename2, contents);
+		waitForActionToFinish();
+
+		Message message = new Message("");
+		IPipeLineSession session = new PipeLineSessionBase();
+		ParameterValueList pvl = null;
+		Object result = actor.doAction(message, pvl, session);
+		String stringResult=(String)result;
+		assertTrue(stringResult.contains(filename2));
+		assertFalse(stringResult.contains(filename1));
 	}
 	
+	@Test
+	public void migrated_localFileSystemTestListExcludeWildcard() throws Exception {
+		String filename = "create" + FILE1;
+		String filename1 = filename+".bak";
+		String filename2 = filename+".xml";
+		String contents = "regeltje tekst";
+		
+		actor.setExcludeWildCard("*.bak");
+		actor.setAction("list");
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+
+		createFile(null, filename1, contents);
+		createFile(null, filename2, contents);
+		waitForActionToFinish();
+		
+		Message message = new Message("");
+		IPipeLineSession session = new PipeLineSessionBase();
+		ParameterValueList pvl = null;
+		Object result = actor.doAction(message, pvl, session);
+		String stringResult=(String)result;
+		
+		assertTrue(stringResult.contains(filename2));
+		assertFalse(stringResult.contains(filename1));
+	}
 
 
+
+	@Test
+	public void migrated_localFileSystemTestListIncludeExcludeWildcard() throws Exception {
+		String filename = "create" + FILE1;
+		String filename1 = filename+".oud.xml";
+		String filename2 = filename+".xml";
+		String contents = "regeltje tekst";
+		
+		actor.setWildCard("*.xml");
+		actor.setExcludeWildCard("*.oud.xml");
+		actor.setAction("list");
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+
+		createFile(null, filename1, contents);
+		createFile(null, filename2, contents);
+		waitForActionToFinish();
+
+		Message message = new Message("");
+		IPipeLineSession session = new PipeLineSessionBase();
+		ParameterValueList pvl = null;
+		Object result = actor.doAction(message, pvl, session);
+		String stringResult=(String)result;
+
+		assertTrue(stringResult.contains(filename2));
+		assertFalse(stringResult.contains(filename1));
+	}
+
+	
 	@Test
 	public void fileSystemActorListActionTestWithInputFolderAsParameter() throws Exception {
 		String filename = FILE1;
@@ -321,6 +495,31 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		fileSystemActorInfoActionTest(true);
 	}
 
+	@Test
+	public void fileSystemActorReadActionFromParameterTest() throws Exception {
+		String filename = "parameterAction" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("action");
+		p.setValue("read");
+		params.add(p);
+		params.configure();
+		
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message= new Message(filename);
+		ParameterValueList pvl = params.getValues(message, session);
+
+		Message result = (Message)actor.doAction(message, pvl, session);
+		assertEquals(contents, result.asString());
+		assertTrue(_fileExists(filename));
+	}
 
 	public void fileSystemActorReadActionTest(String action, boolean fileViaAttribute, boolean fileShouldStillExistAfterwards) throws Exception {
 		String filename = "sender" + FILE1;
@@ -338,10 +537,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		Message message= new Message(fileViaAttribute?null:filename);
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
-		assertThat(result, IsInstanceOf.instanceOf(InputStream.class));
-		String actualContents = Misc.streamToString((InputStream)result);
-		assertEquals(contents, actualContents);
+
+		Message result = Message.asMessage(actor.doAction(message, pvl, session));
+		assertEquals(contents, result.asString());
 		assertEquals(fileShouldStillExistAfterwards, _fileExists(filename));
 	}
 
@@ -526,7 +724,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorWriteActionWithBackup() throws Exception {
-		String filename = "uploadedwithString" + FILE1;
+		String filename = "writeAndBackupTest.txt";
 		String contents = "text content:";
 		int numOfBackups=3;
 		int numOfWrites=5;
@@ -540,7 +738,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
 		p.setName("contents");
-		p.setSessionKey("uploadActionTargetwString");
+		p.setSessionKey("fileSystemActorWriteActionWithBackupKey");
 
 		params.add(p);
 		actor.setAction("write");
@@ -551,7 +749,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message= new Message(filename);
 		for (int i=0;i<numOfWrites;i++) {
-			session.put("uploadActionTargetwString", contents+i);
+			session.put("fileSystemActorWriteActionWithBackupKey", contents+i);
 			ParameterValueList pvl= params.getValues(message, session);
 			Object result = actor.doAction(message, pvl, null);
 
@@ -560,13 +758,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		waitForActionToFinish();
 		
-		
-		String actualContents = readFile(null, filename);
-		assertEquals(contents.trim()+(numOfWrites-1), actualContents.trim());
+		assertFileExistsWithContents(null, filename, contents.trim()+(numOfWrites-1));
 		
 		for (int i=1;i<=numOfBackups;i++) {
-			String actualContentsi = readFile(null, filename+"."+i);
-			assertEquals(contents.trim()+(numOfWrites-1-i), actualContentsi.trim());
+			assertFileExistsWithContents(null, filename+"."+i, contents.trim()+(numOfWrites-1-i));
+//			String actualContentsi = readFile(null, filename+"."+i);
+//			assertEquals(contents.trim()+(numOfWrites-1-i), actualContentsi.trim());
 		}
 	}
 
@@ -581,7 +778,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		if(_fileExists(filename)) {
 			_deleteFile(null, filename);
 		}
-		createFile(null, filename, "thanos car ");
+		createFile(null, filename, contents);
 		
 		PipeLineSessionBase session = new PipeLineSessionBase();
 		ParameterList params = new ParameterList();
@@ -607,13 +804,105 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
 		}
 
-		assertTrue(fileSystem.exists(fileSystem.toFile(filename+"."+(numOfWrites<numOfBackups?numOfWrites:numOfBackups))));
+		int lastSavedBackup=numOfWrites<numOfBackups ? numOfWrites : numOfBackups;
+		assertTrue("last backup with no "+lastSavedBackup+" does not exist",fileSystem.exists(fileSystem.toFile(filename+"."+lastSavedBackup)));
 		for (int i=1;i<=numOfBackups;i++) {
 			String actualContentsi = readFile(null, filename+"."+i);
-			assertEquals((contents+(numOfWrites-1-i)).trim(), actualContentsi.trim());
+			assertEquals("contents of backup no "+i+" is not correct",(contents+(numOfWrites-1-i)).trim(), actualContentsi.trim());
 		}
 	}
-	
+
+	@Test
+	public void fileSystemActorMoveActionTestWithWildCard() throws Exception {
+		String srcFolderName = "src" + new Date().getTime();
+		_createFolder(srcFolderName);
+		String destFolderName = "dest" + new Date().getTime();
+		for (int i=0; i < 3; i++) {
+			String filename = "tobemoved"+i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "tostay"+i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+		waitForActionToFinish();
+		
+		actor.setAction("move");
+		actor.setWildCard("tobemoved*");
+		actor.setInputFolder(srcFolderName);
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("destination");
+		p.setValue(destFolderName);
+		params.add(p);
+		actor.setCreateFolder(true);
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+		
+		Message m = new Message("");
+		ParameterValueList pvl = params.getValues(m, session);
+		Object result = actor.doAction(m, pvl, session);
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "tobemoved"+i + FILE1;
+			assertTrue(_fileExists(destFolderName, filename));
+			assertFalse(_fileExists(srcFolderName, filename));
+		}
+	}
+
+	@Test
+	public void fileSystemActorMoveActionTestWithExcludeWildCard() throws Exception {
+		String srcFolderName = "src" + new Date().getTime();
+		_createFolder(srcFolderName);
+		String destFolderName = "dest" + new Date().getTime();
+		for (int i=0; i < 3; i++) {
+			String filename = "tobemoved"+i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "tostay"+i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+		waitForActionToFinish();
+		
+		actor.setAction("move");
+		actor.setExcludeWildCard("tobemoved*");
+		actor.setInputFolder(srcFolderName);
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("destination");
+		p.setValue(destFolderName);
+		params.add(p);
+		actor.setCreateFolder(true);
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+		
+		Message m = new Message("");
+		ParameterValueList pvl = params.getValues(m, session);
+		Object result = actor.doAction(m, pvl, session);
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "tostay"+i + FILE1;
+			assertTrue(_fileExists(destFolderName, filename));
+			assertFalse(_fileExists(srcFolderName, filename));
+		}
+	}
 	
 	@Test()
 	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
@@ -622,17 +911,17 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,null,owner);
 	}
 	
-	public void fileSystemActorMoveActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
+	public void fileSystemActorMoveActionTest(String srcFolder, String destFolder, boolean createDestFolder, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 		
-		if (folder1!=null) {
-			_createFolder(folder1);
+		if (srcFolder!=null) {
+			_createFolder(srcFolder);
 		}
-		if (folderExists && folder2!=null) {
-			_createFolder(folder2);
+		if (createDestFolder && destFolder!=null) {
+			_createFolder(destFolder);
 		}
-		createFile(folder1, filename, contents);
+		createFile(srcFolder, filename, contents);
 //		deleteFile(folder2, filename);
 		waitForActionToFinish();
 
@@ -640,7 +929,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
 		p.setName("destination");
-		p.setValue(folder2);
+		p.setValue(destFolder);
 		params.add(p);
 		if (setCreateFolderAttribute) {
 			actor.setCreateFolder(true);
@@ -661,7 +950,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// TODO: contents of result should be contents of original file
 		
 		// assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename)); // does not have to be this way. filename may have changed.
-		assertFalse("file should not exist anymore in original folder ["+folder1+"]", _fileExists(folder1, filename));
+		assertFalse("file should not exist anymore in original folder ["+srcFolder+"]", _fileExists(srcFolder, filename));
 	}
 
 
@@ -691,6 +980,98 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //	public void fileSystemSenderMoveActionTestFolderToFolder() throws Exception {
 //		fileSystemSenderMoveActionTest("folder1","folder2");
 //	}
+
+	@Test
+	public void fileSystemActorCopyActionTestWithWildCard() throws Exception {
+		String srcFolderName = "src" + new Date().getTime();
+		_createFolder(srcFolderName);
+		String destFolderName = "dest" + new Date().getTime();
+		for (int i=0; i < 3; i++) {
+			String filename = "tobemoved"+i + FILE1;
+
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+
+		for (int i=0; i < 3; i++) {
+			String filename = "tostay"+i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+		waitForActionToFinish();
+		
+		actor.setAction("copy");
+		actor.setWildCard("tobemoved*");
+		actor.setInputFolder(srcFolderName);
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("destination");
+		p.setValue(destFolderName);
+		params.add(p);
+		actor.setCreateFolder(true);
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+		
+		Message m = new Message("");
+		ParameterValueList pvl = params.getValues(m, session);
+		Object result = actor.doAction(m, pvl, session);
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "tobemoved"+i + FILE1;
+			assertTrue(_fileExists(destFolderName, filename));
+			assertTrue(_fileExists(srcFolderName, filename));
+		}
+	}
+
+	@Test
+	public void fileSystemActorCopyActionTestWithExcludeWildCard() throws Exception {
+		String srcFolderName = "src" + new Date().getTime();
+		_createFolder(srcFolderName);
+		String destFolderName = "dest" + new Date().getTime();
+		for (int i=0; i < 3; i++) {
+			String filename = "tobemoved"+i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "tostay"+i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+		waitForActionToFinish();
+		
+		actor.setAction("copy");
+		actor.setExcludeWildCard("tobemoved*");
+		actor.setInputFolder(srcFolderName);
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("destination");
+		p.setValue(destFolderName);
+		params.add(p);
+		actor.setCreateFolder(true);
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+		
+		Message m = new Message("");
+		ParameterValueList pvl = params.getValues(m, session);
+		Object result = actor.doAction(m, pvl, session);
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "tostay"+i + FILE1;
+			assertTrue(_fileExists(destFolderName, filename));
+			assertTrue(_fileExists(srcFolderName, filename));
+		}
+	}
 
 	public void fileSystemActorCopyActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
@@ -811,9 +1192,85 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
 	}
 
+	@Test
+	public void fileSystemActorDeleteActionTestWithWildCard() throws Exception {
+		String srcFolderName = "src" + new Date().getTime();
+		_createFolder(srcFolderName);
+
+		for (int i=0; i < 3; i++) {
+			String filename = "tobedeleted"+i + FILE1;
+
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+
+			filename = "tostay"+i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+
+		waitForActionToFinish();
+		
+		actor.setAction("delete");
+		actor.setWildCard("tobedeleted*");
+		actor.setInputFolder(srcFolderName);
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message m = new Message("");
+		Object result = actor.doAction(m, null, session);
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "tobemoved"+i + FILE1;
+			assertFalse(_fileExists(srcFolderName, filename));
+			filename = "tostay"+i + FILE1;
+			assertTrue(_fileExists(srcFolderName, filename));
+		}
+	}
+
+	@Test
+	public void fileSystemActorDeleteActionTestWithExcludeWildCard() throws Exception {
+		String srcFolderName = "src" + new Date().getTime();
+		_createFolder(srcFolderName);
+
+		for (int i=0; i < 3; i++) {
+			String filename = "tobedeleted"+i + FILE1;
+
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+
+			filename = "tostay"+i + FILE1;
+			
+			if (!_fileExists(filename)) {
+				createFile(srcFolderName, filename, "is not empty");
+			}
+		}
+		
+		waitForActionToFinish();
+		
+		actor.setAction("delete");
+		actor.setExcludeWildCard("tostay*");
+		actor.setInputFolder(srcFolderName);
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message m = new Message("");
+		Object result = actor.doAction(m, null, session);
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "tobemoved"+i + FILE1;
+			assertFalse(_fileExists(srcFolderName, filename));
+			filename = "tostay"+i + FILE1;
+			assertTrue(_fileExists(srcFolderName, filename));
+		}
+	}
+
 	public void fileSystemActorRenameActionTest(boolean destinationExists) throws Exception {
-		String filename = "toberenamed" + FILE1;
-		String dest = "renamed" + FILE1;
+		String filename = "toberenamed.txt";
+		String dest = "renamed.txt";
 		
 		if (!_fileExists(filename)) {
 			createFile(null, filename, "is not empty");

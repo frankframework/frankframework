@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,12 +27,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Lombok;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -57,15 +61,15 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * 
  * <table align="top" border="1">
  * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
- * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
+ * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td></tr>
  * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
  * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>readDelete</td><td>like read, but deletes the file after it has been read</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
  * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <tr><td>copy</td><td>copy a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <tr><td>delete</td><td>delete a file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
+ * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
  * <tr><td>write</td><td>write contents to a file<td>
  *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
  *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
@@ -81,13 +85,14 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *  For streaming operation, the parameter <code>filename</code> must be specified.
  *  </td><td>&nbsp;</td></tr>
  * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
+ * <tr><td>forward</td><td>(for MailFileSystems only:) forward an existing file to an email address</td><td>filename: taken from parameter <code>filename</code> or input message<br/>destination (an email address in this case): taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <table>
  * 
  * @author Gerrit van Brakel
  */
 public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutputStreamingSupport {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	public final String ACTION_LIST="list";
 	public final String ACTION_INFO="info";
 	public final String ACTION_READ1="read";
@@ -102,7 +107,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String ACTION_WRITE2="upload";
 	public final String ACTION_APPEND="append";
 	public final String ACTION_RENAME="rename";
-	
+	public final String ACTION_FORWARD="forward";
+
+	public final String PARAMETER_ACTION="action";
 	public final String PARAMETER_CONTENTS1="contents";
 	public final String PARAMETER_CONTENTS2="file";
 	public final String PARAMETER_FILENAME="filename";
@@ -114,6 +121,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	
 	public final String[] ACTIONS_BASIC= {ACTION_LIST, ACTION_INFO, ACTION_READ1, ACTION_READ2, ACTION_READ_DELETE, ACTION_MOVE, ACTION_COPY, ACTION_DELETE, ACTION_MKDIR, ACTION_RMDIR};
 	public final String[] ACTIONS_WRITABLE_FS= {ACTION_WRITE1, ACTION_WRITE2, ACTION_APPEND, ACTION_RENAME};
+	public final String[] ACTIONS_MAIL_FS= {ACTION_FORWARD};
 
 	private String action;
 	private String filename;
@@ -124,8 +132,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private String base64;
 	private int rotateDays=0;
 	private int rotateSize=0;
+	private boolean overwrite=false;
 	private int numberOfBackups=0;
-	
+	private String wildCard=null;
+	private String excludeWildCard=null;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
@@ -138,42 +148,41 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
+
 		if (fileSystem instanceof IWritableFileSystem) {
 			actions.addAll(Arrays.asList(ACTIONS_WRITABLE_FS));
 		}
+		if (fileSystem instanceof IMailFileSystem) {
+			actions.addAll(Arrays.asList(ACTIONS_MAIL_FS));
+		}
 
-		if (getAction() == null)
-			throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: action must be specified");
-		if (!actions.contains(getAction()))
-			throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: unknown or invalid action [" + getAction() + "] supported actions are " + actions.toString() + "");
-
-		if (getAction().equals(ACTION_READ2)) {
-			ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
-			setAction(ACTION_READ1);
-		}
-		if (getAction().equals(ACTION_WRITE2)) {
-			ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
-			setAction(ACTION_WRITE1);
-		}
-		
-		if (StringUtils.isNotEmpty(getBase64()) && !(getBase64().equals(BASE64_ENCODE) || getBase64().equals(BASE64_DECODE))) {
-			throw new ConfigurationException("attribute 'base64' can have value '"+BASE64_ENCODE+"' or '"+BASE64_DECODE+"' or can be left empty");
-		}
-		
 		if (parameterList!=null && parameterList.findParameter(PARAMETER_CONTENTS2) != null && parameterList.findParameter(PARAMETER_CONTENTS1) == null) {
 			ConfigurationWarnings.add(owner, log, "parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]");
 			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);
 		}
-		
-		//Check if necessarily parameters are available
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, ACTION_WRITE1, PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, ACTION_MOVE,   PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, ACTION_COPY,   PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, ACTION_RENAME, PARAMETER_DESTINATION, null, "destination", getDestination());
-		
+
+		if (StringUtils.isNotEmpty(getAction())) {
+			if (getAction().equals(ACTION_READ2)) {
+				ConfigurationWarnings.add(owner, log, "action ["+ACTION_READ2+"] has been replaced with ["+ACTION_READ1+"]");
+				setAction(ACTION_READ1);
+			}
+			if (getAction().equals(ACTION_WRITE2)) {
+				ConfigurationWarnings.add(owner, log, "action ["+ACTION_WRITE2+"] has been replaced with ["+ACTION_WRITE1+"]");
+				setAction(ACTION_WRITE1);
+			}
+			checkConfiguration(getAction());
+		} else if (parameterList == null || parameterList.findParameter(PARAMETER_ACTION) == null) {
+			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
+		}
+
+		if (StringUtils.isNotEmpty(getBase64()) && !(getBase64().equals(BASE64_ENCODE) || getBase64().equals(BASE64_DECODE))) {
+			throw new ConfigurationException("attribute 'base64' can have value '"+BASE64_ENCODE+"' or '"+BASE64_DECODE+"' or can be left empty");
+		}
+
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
 			ConfigurationWarnings.add(owner, log, "inputFolder configured via attribute [inputFolder] as well as via parameter ["+PARAMETER_INPUTFOLDER+"], parameter will be ignored");
 		}
+
 		if (!(fileSystem instanceof IWritableFileSystem)) {
 			if (getNumberOfBackups()>0) {
 				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'numberOfBackups'");
@@ -183,28 +192,39 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 		}
 	}
+
+	private void checkConfiguration(String action) throws ConfigurationException {
+		if (!actions.contains(action))
+			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: unknown or invalid action [" + action + "] supported actions are " + actions.toString() + "");
+
+		//Check if necessary parameters are available
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_WRITE1,  PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_MOVE,    PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_COPY,    PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_RENAME,  PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, ACTION_FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
+	}
 	
-	
-	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
+//	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
 //		if (getAction().equals(action) && (parameterList == null || parameterList.findParameter(parameter) == null)) {
 //			throw new ConfigurationException("the "+action+" action requires the parameter ["+parameter+"] to be present");
 //		}
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, parameter, null, null, null);
-	}
+//		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, parameter, null, null, null);
+//	}
 
-	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, String action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
-		if (getAction().equals(action)) {
+	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, String configuredAction, String action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
+		if (configuredAction.equals(action)) {
 			boolean parameter1Set = parameterList != null && parameterList.findParameter(parameter1) != null;
 			boolean parameter2Set = parameterList != null && parameterList.findParameter(parameter2) != null;
 			boolean attributeSet  = StringUtils.isNotEmpty(attributeValue);
 			if (!parameter1Set && !parameter2Set && !attributeSet) {
-				throw new ConfigurationException(owner.getClass().getSimpleName()+" ["+owner.getName()+"]: the "+action+" action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");
+				throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: the "+action+" action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");
 			}
 		}
 	}
 
 	public void open() throws FileSystemException {
-		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder())) {
+		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && !ACTION_MKDIR.equals(getAction())) {
 			if (isCreateFolder()) {
 				log.debug("creating inputFolder ["+getInputFolder()+"]");
 				fileSystem.createFolder(getInputFolder());
@@ -242,14 +262,18 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 
-	private String determineDestination(ParameterValueList pvl) {
+	private String determineDestination(ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getDestination())) {
 			return getDestination();
 		}
 		if (pvl!=null && pvl.containsKey(PARAMETER_DESTINATION)) {
-			return pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue(null);
+			String destination = pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue(null);
+			if (StringUtils.isEmpty(destination)) {
+				throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] does not specify destination");
+			}
+			return destination;
 		}
-		return null;
+		throw new FileSystemException("no destination specified");
 	}
 
 	private F getFile(Message input, ParameterValueList pvl) throws FileSystemException {
@@ -276,26 +300,37 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	
 	public Object doAction(Message input, ParameterValueList pvl, IPipeLineSession session) throws FileSystemException, TimeOutException {
 		try {
+			if(input != null) {
+				input.closeOnCloseOf(session); // don't know if the input will be used
+			}
+
+			String action;
+			if (pvl != null && pvl.containsKey(PARAMETER_ACTION)) {
+				action = pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getAction());
+				if(StringUtils.isEmpty(action)) {
+					throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
+				}
+				checkConfiguration(action);
+			} else {
+				action = getAction();
+			}
+
 			if (action.equalsIgnoreCase(ACTION_DELETE)) {
-				F file=getFile(input, pvl);
-				fileSystem.deleteFile(file);
-				return fileSystem.getName(file);
+				return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
 			} else if (action.equalsIgnoreCase(ACTION_INFO)) {
 				F file=getFile(input, pvl);
-				if (!fileSystem.exists(file)) {
-					throw new FileNotFoundException("file ["+fileSystem.getName(file)+"], canonical name ["+fileSystem.getCanonicalName(file)+"], does not exist");
-				}
+				FileSystemUtils.checkSource(fileSystem, file, "inspect");
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {
 				F file=getFile(input, pvl);
-				InputStream in = fileSystem.readFile(file);
+				Message in = fileSystem.readFile(file);
 				if (StringUtils.isNotEmpty(getBase64())) {
-					in = new Base64InputStream(in, getBase64().equals(BASE64_ENCODE));
+					return new Base64InputStream(in.asInputStream(), getBase64().equals(BASE64_ENCODE));
 				}
 				return in;
 			} else if (action.equalsIgnoreCase(ACTION_READ_DELETE)) {
 				F file=getFile(input, pvl);
-				InputStream in = new FilterInputStream(fileSystem.readFile(file)) {
+				InputStream in = new FilterInputStream(fileSystem.readFile(file).asInputStream()) {
 
 					@Override
 					public void close() throws IOException {
@@ -323,34 +358,24 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				}
 				return in;
 			} else if (action.equalsIgnoreCase(ACTION_LIST)) {
-				String folder = determineInputFoldername(input, pvl);
-				if (folder!=null && !folder.equals(getInputFolder()) && !fileSystem.folderExists(folder)) {
-					if (isCreateFolder()) {
-						fileSystem.createFolder(folder);
-					} else {
-						F file = fileSystem.toFile(folder);
-						if (file!=null && fileSystem.exists(file)) {
-							throw new FileNotFoundException("folder ["+folder+"], does not exist as a folder, but is a file");
-						} else {
-							throw new FileNotFoundException("folder ["+folder+"], does not exist");
-						}
-					}
-				}
-				Iterator<F> fileList = fileSystem.listFiles(folder);
-				int count = 0;
+				String folder = arrangeFolder(determineInputFoldername(input, pvl));
 				XmlBuilder dirXml = new XmlBuilder("directory");
-				while (fileList.hasNext()) {
-					F fileObject = fileList.next();
-					dirXml.addSubElement(getFileAsXmlBuilder(fileObject, "file"));
-					count++;
+				try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
+					int count = 0;
+					Iterator<F> it = stream.iterator();
+					while(it.hasNext()) {
+						F file = it.next();
+						dirXml.addSubElement(getFileAsXmlBuilder(file, "file"));
+						count++;
+					}
+					dirXml.addAttribute("count", count);
 				}
-				dirXml.addAttribute("count", count);
-
 				return dirXml.toXML();
+
 			} else if (action.equalsIgnoreCase(ACTION_WRITE1)) {
 				F file=getFile(input, pvl);
-				if (getNumberOfBackups()>0 && fileSystem.exists(file)) {
-					FileSystemUtils.rolloverByNumber((IWritableFileSystem<F>)fileSystem, file, getNumberOfBackups());
+				if (fileSystem.exists(file)) {
+					FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), ACTION_WRITE1);
 					file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 				}
 				try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
@@ -380,29 +405,31 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				fileSystem.removeFolder(folder);
 				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RENAME)) {
-				F file=getFile(input, pvl);
-				String destination = determineDestination(pvl);
-				if (destination == null) {
-					throw new FileSystemException("unknown destination [" + destination + "]");
+				F source=getFile(input, pvl);
+				String destinationName = determineDestination(pvl);
+				F destination;
+				if (destinationName.contains("/") || destinationName.contains("\\")) {
+					destination = fileSystem.toFile(destinationName);
+				} else {
+					String sourceName = fileSystem.getCanonicalName(source);
+					File sourceAsFile = new File(sourceName);
+					String folderPath = sourceAsFile.getParent();
+					destination = fileSystem.toFile(folderPath,destinationName);
 				}
-				((IWritableFileSystem<F>)fileSystem).renameFile(file, destination, false);
-				return destination;
+				F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
+				return fileSystem.getName(renamed);
 			} else if (action.equalsIgnoreCase(ACTION_MOVE)) {
-				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
-				if (destinationFolder == null) {
-					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
-				}
-				F moved = FileSystemUtils.moveFile(fileSystem, file, destinationFolder, false, getNumberOfBackups(), isCreateFolder());
-				return fileSystem.getName(moved);
+				return processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder()));
 			} else if (action.equalsIgnoreCase(ACTION_COPY)) {
-				F file=getFile(input, pvl);
 				String destinationFolder = determineDestination(pvl);
-				if (destinationFolder == null) {
-					throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] for destination folder does not specify destination");
-				}
-				F copied = FileSystemUtils.copyFile(fileSystem, file, destinationFolder, false, getNumberOfBackups(), isCreateFolder());
-				return fileSystem.getName(copied);
+				return processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder()));
+			} else if (action.equalsIgnoreCase(ACTION_FORWARD)) {
+				F file=getFile(input, pvl);
+				FileSystemUtils.checkSource(fileSystem, file, "forward");
+				String destinationAddress = determineDestination(pvl);
+				((IMailFileSystem<F,?>)fileSystem).forwardMail(file, destinationAddress);
+				return null;
 			}
 		} catch (Exception e) {
 			throw new FileSystemException("unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]", e);
@@ -410,7 +437,52 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 		return input;
 	}
+
 	
+	private interface FileAction<F> {
+		public F execute(F f) throws FileSystemException;
+	}
+	/**
+	 * Helper method to process delete, move and copy actions.
+	 * @throws FileSystemException 
+	 * @throws IOException 
+	 */
+	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException {
+		if(StringUtils.isNotEmpty(getWildCard()) || StringUtils.isNotEmpty(getExcludeWildCard())) { 
+			String folder = arrangeFolder(determineInputFoldername(input, pvl));
+			XmlBuilder dirXml = new XmlBuilder(getAction()+"FilesList");
+			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
+				Iterator<F> it = stream.iterator();
+				while(it.hasNext()) {
+					F file = it.next();
+					XmlBuilder item = getFileAsXmlBuilder(file, "file");
+					if(action.execute(file) != null) {
+						dirXml.addSubElement(item);
+					}
+				}
+			}
+			return dirXml.toXML();
+		} else {
+			F file=getFile(input, pvl);
+			return fileSystem.getName(action.execute(file));
+		}
+	}
+
+	private String arrangeFolder(String determinedFolderName) throws FileSystemException {
+		if (determinedFolderName!=null && !determinedFolderName.equals(getInputFolder()) && !fileSystem.folderExists(determinedFolderName)) {
+			if (isCreateFolder()) {
+				fileSystem.createFolder(determinedFolderName);
+			} else {
+				F file = fileSystem.toFile(determinedFolderName);
+				if (file!=null && fileSystem.exists(file)) {
+					throw new FileNotFoundException("folder ["+determinedFolderName+"], does not exist as a folder, but is a file");
+				} else {
+					throw new FileNotFoundException("folder ["+determinedFolderName+"], does not exist");
+				}
+			}
+		}
+		return determinedFolderName;
+	}
 
 	private void writeContentsToFile(OutputStream out, Message input, ParameterValueList pvl) throws IOException, FileSystemException {
 		Object contents;
@@ -423,9 +495,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			out = new Base64OutputStream(out, getBase64().equals(BASE64_ENCODE));
 		}
 		if (contents instanceof Message) {
-			Misc.streamToStream(((Message)contents).asInputStream(), out, true);
+			Misc.streamToStream(((Message)contents).asInputStream(), out);
 		} else if (contents instanceof InputStream) {
-			Misc.streamToStream((InputStream)contents, out, true);
+			Misc.streamToStream((InputStream)contents, out);
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {
@@ -522,7 +594,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		actions.addAll(specificActions);
 	}
 
-	@IbisDoc({"1", "Possible values: "+ACTION_LIST+", "+ACTION_INFO+", "+ACTION_READ1+", "+ACTION_READ_DELETE+", "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+", "+ACTION_MKDIR+", "+ACTION_RMDIR+", "+ACTION_WRITE1+", "+ACTION_APPEND+", "+ACTION_RENAME, "" })
+	@IbisDoc({"1", "Possible values: "+ACTION_LIST+", "+ACTION_INFO+", "+ACTION_READ1+", "+ACTION_READ_DELETE+", "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+", "+ACTION_MKDIR+", "+ACTION_RMDIR+", "+ACTION_WRITE1+", "+ACTION_APPEND+", "+ACTION_RENAME+". If parameter ["+PARAMETER_ACTION+"] is set, then the attribute action value will be overridden with the value of the parameter.", "" })
 	public void setAction(String action) {
 		this.action = action;
 	}
@@ -538,7 +610,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return inputFolder;
 	}
 
-	@IbisDoc({"3", "when set to <code>true</code>, the folder to move to is created if it does not exist", "false"})
+	@IbisDoc({"3", "when set to <code>true</code>, the folder to move or copy to is created if it does not exist", "false"})
 	public void setCreateFolder(boolean createFolder) {
 		this.createFolder = createFolder;
 	}
@@ -546,20 +618,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return createFolder;
 	}
 
-//	@IbisDoc({"3", "If <code>true</code> for action=move: the destination folder(part) is created when it does not exist; for action=rename: the file is overwritten if it exists, ", "false"})
-//	public void setForce(boolean force) {
-//		this.force = force;
-//	}
-//	public boolean isForce() {
-//		return force;
-//	}
-
-	@IbisDoc({"4", "Can be set to 'encode' or 'decode' for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
-	public void setBase64(String base64) {
-		this.base64 = base64;
+	@IbisDoc({"4", "when set to <code>true</code>, for actions "+ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+", the destination file is overwritten if it already exists", "false"})
+	public void setOverwrite(boolean overwrite) {
+		this.overwrite = overwrite;
 	}
-	public String getBase64() {
-		return base64;
+	public boolean isOverwrite() {
+		return overwrite;
 	}
 
 	@IbisDoc({"5", "filename to operate on. When not set, the parameter "+PARAMETER_FILENAME+" is used. When that is not set either, the input is used", ""})
@@ -579,7 +643,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 
-	@IbisDoc({"6", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated each day, and this number of files is kept", "0"})
+	@IbisDoc({"6", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides", "0"})
 	public void setRotateDays(int rotateDays) {
 		this.rotateDays = rotateDays;
 	}
@@ -587,7 +651,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateDays;
 	}
 
-	@IbisDoc({"7", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept", "0"})
+	@IbisDoc({"7", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides", "0"})
 	public void setRotateSize(int rotateSize) {
 		this.rotateSize = rotateSize;
 	}
@@ -595,7 +659,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return rotateSize;
 	}
 
-	@IbisDoc({"8", "for action="+ACTION_WRITE1+", and for action="+ACTION_APPEND+" with rotateSize>0: the number of backup files that is kept", "0"})
+	@IbisDoc({"8", "for action="+ACTION_WRITE1+", and for action="+ACTION_APPEND+" with rotateSize>0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides", "0"})
 	public void setNumberOfBackups(int numberOfBackups) {
 		this.numberOfBackups = numberOfBackups;
 	}
@@ -603,4 +667,28 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return numberOfBackups;
 	}
 
+	@IbisDoc({"9", "Can be set to 'encode' or 'decode' for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
+	@Deprecated
+	public void setBase64(String base64) {
+		this.base64 = base64;
+	}
+	public String getBase64() {
+		return base64;
+	}
+
+	@IbisDoc({"10", "Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, ""})
+	public void setWildCard(String wildCard) {
+		this.wildCard = wildCard;
+	}
+	public String getWildCard() {
+		return wildCard;
+	}
+
+	@IbisDoc({"11", "Filter of files to be excluded when looking in inputFolder. Works with actions "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, ""})
+	public void setExcludeWildCard(String excludeWildCard) {
+		this.excludeWildCard = excludeWildCard;
+	}
+	public String getExcludeWildCard() {
+		return excludeWildCard;
+	}
 }

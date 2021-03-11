@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -38,7 +37,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
@@ -90,7 +89,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	private String cacheMode;
 	private IListenerConnector<javax.jms.Message> jmsConnector;
 	private IMessageHandler<javax.jms.Message> handler;
-	private IReceiver<javax.jms.Message> receiver;
+	private Receiver<javax.jms.Message> receiver;
 	private IbisExceptionListener exceptionListener;
 	private long pollGuardInterval = Long.MIN_VALUE;
 
@@ -126,7 +125,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 		try {
 			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), credentialFactory,
-					destination, getExceptionListener(), getCacheMode(), getAckMode(),
+					destination, getExceptionListener(), getCacheMode(), getAckModeEnum().getAcknowledgeMode(),
 					isJmsTransacted(), getMessageSelector(), getTimeOut(), getPollGuardInterval());
 		} catch (JmsException e) {
 			throw new ConfigurationException(e);
@@ -187,7 +186,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 					}
 				}
 				Map<String, Object> properties = getMessageProperties(threadContext);
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext).asString(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");
@@ -283,20 +282,12 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 	@Override
-	public void setReceiver(IReceiver<javax.jms.Message> receiver) {
+	public void setReceiver(Receiver<javax.jms.Message> receiver) {
 		this.receiver = receiver;
 	}
 	@Override
-	public IReceiver<javax.jms.Message> getReceiver() {
+	public Receiver<javax.jms.Message> getReceiver() {
 		return receiver;
-	}
-
-	public ReceiverBase<javax.jms.Message> getReceiverBase() {
-		if (receiver instanceof ReceiverBase) {
-			ReceiverBase<javax.jms.Message> rb = (ReceiverBase<javax.jms.Message>) receiver;
-			return rb;
-		}
-		return null;
 	}
 
 	public void setCacheMode(String string) {

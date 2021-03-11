@@ -1,10 +1,12 @@
 package nl.nn.adapterframework.extensions.cmis;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public class CmisSenderTest extends SenderBase<CmisSender> {
 
@@ -115,7 +117,7 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 	@Test
 	public void getterSetterProxyUserName() {
 		String dummyString = "dummyString";
-		sender.setProxyUserName(dummyString);
+		sender.setProxyUsername(dummyString);
 	}
 
 	@Test
@@ -126,7 +128,7 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 
 	@Test
 	public void getterSetterAction() {
-		String dummyString = "dummyString";
+		String dummyString = "CREATE";
 		sender.setAction(dummyString);
 
 		assertEquals(dummyString.toLowerCase(), sender.getAction());
@@ -288,7 +290,7 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 		sender.configure();
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testWrongAction() throws ConfigurationException {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);

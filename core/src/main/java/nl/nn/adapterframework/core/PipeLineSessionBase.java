@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,24 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-
-import nl.nn.adapterframework.util.DateUtils;
+import java.util.Optional;
+import java.util.function.BiFunction;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 
 /**
@@ -32,9 +42,12 @@ import org.apache.commons.lang.NotImplementedException;
  * @since   version 3.2.2
  */
 public class PipeLineSessionBase extends HashMap<String,Object> implements IPipeLineSession {
+	private Logger log = LogUtil.getLogger(this);
 
 	private ISecurityHandler securityHandler = null;
-
+	
+	// Map that maps resources to wrapped versions of them. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
+	private Map<AutoCloseable,AutoCloseable> closeables = new HashMap<>(); 
 	public PipeLineSessionBase() {
 		super();
 	}
@@ -67,7 +80,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	 */
 	public static void setListenerParameters(Map<String, Object> map, String messageId, String technicalCorrelationId, Date tsReceived, Date tsSent) {
 		if (messageId!=null) {
-			map.put("id", messageId);
+			map.put(originalMessageIdKey, messageId);
 		}
 		if (technicalCorrelationId!=null) {
 			map.put(technicalCorrelationIdKey, technicalCorrelationId);
@@ -187,7 +200,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return double
 	 */
-	 public double get(String key, double defaultValue) {
+	public double get(String key, double defaultValue) {
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
@@ -195,5 +208,69 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 			return (Double) ob;
 		else
 			return Double.parseDouble(this.getString(key));
-	 }
+	}
+	
+	@Override
+	public InputStream scheduleCloseOnSessionExit(InputStream stream) {
+		return scheduleCloseOnSessionExit(stream, StreamUtil::onClose );
+	}
+		
+	@Override
+	public OutputStream scheduleCloseOnSessionExit(OutputStream stream) {
+		return scheduleCloseOnSessionExit(stream, StreamUtil::onClose );
+	}
+
+	@Override
+	public Reader scheduleCloseOnSessionExit(Reader reader) {
+		return scheduleCloseOnSessionExit(reader, StreamUtil::onClose );
+	}
+		
+	@Override
+	public Writer scheduleCloseOnSessionExit(Writer writer) {
+		return scheduleCloseOnSessionExit(writer, StreamUtil::onClose );
+	}
+
+	/**
+	 * Ensure that the resource will be closed when the PipeLineSession is closed.
+	 * @param resource 	the resource to be closed on exit
+	 * @param onClose	a method that will make sure that a task is executed when the resource is closed. 
+	 * 					This is used to unschedule the resource when it is closed.
+	 */
+	@SuppressWarnings("unchecked")
+	private <R extends AutoCloseable> R scheduleCloseOnSessionExit(R resource, BiFunction<R, Runnable, R> onClose) {
+		if (closeables.values().contains(resource)) {
+			return resource; // resource is already a wrapped resource scheduled for closing at pipeline exit
+		}
+		return (R)closeables.computeIfAbsent(resource, k -> {
+				if (log.isDebugEnabled()) log.debug("registering resource ["+resource+"] for close on exit");
+				return onClose.apply(resource, () -> {
+					if (log.isDebugEnabled()) log.debug("closed and unregistering resource ["+resource+"] from close on exit");
+					closeables.remove(resource);
+				});
+			});
+	}
+
+
+	@Override
+	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
+		Optional<Entry<AutoCloseable, AutoCloseable>> entry = closeables.entrySet().stream().filter(e -> resource == e.getValue()).findFirst();
+		if (entry.isPresent()) {
+			closeables.remove(entry.get().getKey());
+		}
+	}
+	
+	@Override
+	public void close() {
+		log.debug("Closing PipeLineSession");
+		while (!closeables.isEmpty()) {
+			try {
+				Iterator<Entry<AutoCloseable, AutoCloseable>>  it = closeables.entrySet().iterator();
+				Entry<AutoCloseable, AutoCloseable> entry = it.next();
+				log.warn("messageId ["+getMessageId()+"] auto closing resource ["+entry.getKey()+"]");
+				entry.getValue().close();
+			} catch (Exception e) {
+				log.warn("Exception closing resource", e);
+			}
+		}
+	}
 }

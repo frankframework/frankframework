@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.security.Principal;
 import java.util.Map;
 
@@ -33,8 +37,9 @@ import java.util.Map;
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public interface IPipeLineSession extends Map<String,Object> {
+public interface IPipeLineSession extends Map<String,Object>, AutoCloseable {
 	public static final String originalMessageKey="originalMessage";
+	public static final String originalMessageIdKey="id";
 	public static final String messageIdKey="messageId";
 	public static final String businessCorrelationIdKey="cid";
 	public static final String technicalCorrelationIdKey="tcid";
@@ -47,6 +52,8 @@ public interface IPipeLineSession extends Map<String,Object> {
 	public static final String SERVLET_CONTEXT_KEY = "restListenerServletContext";
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
+	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
+	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
 	/**
 	 * @return the messageId that was passed to the <code>PipeLine</code> which
@@ -72,4 +79,13 @@ public interface IPipeLineSession extends Map<String,Object> {
 
 	public Principal getPrincipal();
 
+	
+	public InputStream scheduleCloseOnSessionExit(InputStream stream);
+	public OutputStream scheduleCloseOnSessionExit(OutputStream stream);
+	public Reader scheduleCloseOnSessionExit(Reader reader);
+	public Writer scheduleCloseOnSessionExit(Writer writer);
+	public void unscheduleCloseOnSessionExit(AutoCloseable resource);
+	
+	@Override // to remove throws clause
+	public void close();
 }

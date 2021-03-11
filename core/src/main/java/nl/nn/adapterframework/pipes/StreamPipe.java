@@ -64,7 +64,6 @@ import nl.nn.adapterframework.util.Misc;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * <tr><td>"antiVirusFailed"</td><td>if <code>checkAntiVirus=true</code> and an antivirus part is present of which the value differs from <code>antiVirusPassedMessage</code>. If not specified, a PipeRunException is thrown in that situation</td></tr>
  * </table>
  * </p>
@@ -239,7 +238,7 @@ public class StreamPipe extends FixedForwardPipe {
 								throw new PipeRunException(this, errorMessage);
 							} else {
 								if (antiVirusFailureAsSoapFault) {
-									errorMessage = createSoapFaultMessage(errorMessage);
+									errorMessage = createSoapFaultMessage(errorMessage).asString();
 								}
 								if (StringUtils.isEmpty(getAntiVirusFailureReasonSessionKey())) {
 									return new PipeRunResult(antiVirusFailedForward, errorMessage);
@@ -270,7 +269,7 @@ public class StreamPipe extends FixedForwardPipe {
 		}
 	}
 
-	private String createSoapFaultMessage(String errorMessage) throws PipeRunException {
+	private Message createSoapFaultMessage(String errorMessage) throws PipeRunException {
 		try {
 			return SoapWrapper.getInstance().createSoapFaultMessage(errorMessage);
 		} catch (ConfigurationException e) {

@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import nl.nn.adapterframework.stream.Message;
 
 public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAttachments> implements IWithAttachments<MockFileWithAttachments, MockAttachment> {
 
@@ -21,18 +21,8 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 	}
 
 	@Override
-	public MockAttachment getAttachmentByName(MockFileWithAttachments f, String name) throws FileSystemException {
-		for (MockAttachment a:f.getAttachments()) {
-			if (a.getName().equals(name)) {
-				return a;
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public InputStream readAttachment(MockAttachment a) throws FileSystemException, IOException {
-		return a.getContents()==null?null:new ByteArrayInputStream(a.getContents());
+	public Message readAttachment(MockAttachment a) throws FileSystemException, IOException {
+		return a.getContents()==null?null:new Message(a.getContents());
 	}
 
 	@Override
@@ -53,6 +43,11 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 	@Override
 	public Map<String, Object> getAdditionalAttachmentProperties(MockAttachment a) throws FileSystemException {
 		return a.getContents()==null?null:a.getAdditionalProperties();
+	}
+
+	@Override
+	public MockFileWithAttachments getFileFromAttachment(MockAttachment a) throws FileSystemException {
+		return null;
 	}
 
 }

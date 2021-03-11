@@ -212,12 +212,12 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				if (session==null) { 
 					try {
 						session=getSession(threadContext);
-						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext).asString(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException);
+						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException);
 					} finally {
 						releaseSession(session);
 					}
 				} else {
-					send(session, replyTo, cid, plr.getResult().asString(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException); 
+					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException); 
 				}
 			} else {
 				if (getSender()==null) {
@@ -240,13 +240,13 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					// the following if transacted using transacted sessions, instead of XA-enabled sessions.
 					Session session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 					if (session == null) {
-						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] has no session to commit or rollback");
+						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(IPipeLineSession.originalMessageIdKey) +"] has no session to commit or rollback");
 					} else {
 						String successState = getCommitOnState();
-						if (successState!=null && successState.equals(plr.getState())) {
+						if (successState!=null && successState.equalsIgnoreCase(plr.getState())) {
 							session.commit();
 						} else {
-							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] not committed nor rolled back either");
+							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(IPipeLineSession.originalMessageIdKey) +"] not committed nor rolled back either");
 							//TODO: enable rollback, or remove support for JmsTransacted altogether (XA-transactions should do it all)
 							// session.rollback();
 						}
@@ -257,7 +257,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					}
 				} else {
 					// TODO: dit weghalen. Het hoort hier niet, en zit ook al in getIdFromRawMessage. Daar hoort het ook niet, overigens...
-					if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
+					if (getAckModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 						log.debug("["+getName()+"] acknowledges message with id ["+cid+"]");
 						((TextMessage)rawMessageOrWrapper).acknowledge();
 					}
