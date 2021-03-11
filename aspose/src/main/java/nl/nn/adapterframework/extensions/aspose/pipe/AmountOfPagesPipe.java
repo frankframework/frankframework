@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,21 +42,14 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-	}
-
-	@Override
 	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
 		int result = 0;
 
 		try (InputStream binaryInputStream = input.asInputStream(getCharset())){
 			Document doc = new Document(binaryInputStream);
 			result = doc.getPages().size();
-			binaryInputStream.close();
-		} catch (IOException e1) {
-			throw new PipeRunException(this,
-						getLogPrefix(session) + "cannot encode message using charset [" + getCharset() + "]", e1);
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session) + "cannot encode message using charset [" + getCharset() + "]", e);
 		} catch (InvalidPasswordException ip) {
 			return new PipeRunResult(findForward("passwordProtected"), "File is password protected." );
 		}
@@ -64,11 +57,10 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), Integer.toString(result) );
 	}
 
-	@IbisDoc({ "charset to be used to encode the given input string ", "ISO-8859-1" })
+	@IbisDoc({ "charset to be used to encode the given input string ", "UTF-8" })
 	public void setCharset(String charset){
 		this.charset = charset;
 	}
-
 	public String getCharset(){
 		return charset;
 	}
