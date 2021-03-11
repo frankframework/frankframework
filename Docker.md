@@ -14,6 +14,7 @@ Docker images are provided, suitable both for local and server use. Images are p
   - [Permissions](#Permissions)
 - [Logging](#Logging)
 - [Environment variables](#Environment-variables)
+- [Health and readiness](#Health-and-readiness)
 - [Considerations](#Considerations)
   - [HTTPS and security](#HTTPS-and-security)
   - [Secrets](#Secrets)
@@ -87,6 +88,11 @@ Environment variables
 Environment variables can be used to set parameters. Environment variables have the highest precedence and override parameters set in .property files supplied by Tomcat, resources and configurations.
 
 As `org.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource` is set in our images, environment variables can also be used to replace parameters in Tomcat configuration files such as server.xml and context.xml.
+
+Health and readiness
+====================
+
+The health and readiness of the container can be monitored by polling the `/iaf/api/server/health` API endpoint. This will return a HTTP statuscode of 200 if all adapters are running and a HTTP statuscode of 503 if there are adapters in a non-running state.
 
 Considerations
 ==============
