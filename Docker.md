@@ -16,7 +16,7 @@ Docker images are provided, suitable both for local and server use. Images are p
 - [Environment variables](#Environment-variables)
 - [Health and readiness](#Health-and-readiness)
 - [Considerations](#Considerations)
-  - [HTTPS and security](#HTTPS-and-security)
+  - [HTTPS and authentication](#HTTPS-and-authentication)
   - [Secrets](#Secrets)
   - [Non-root](#Non-root)
 
