@@ -32,6 +32,9 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import com.github.therapi.runtimejavadoc.CommentFormatter;
+import com.github.therapi.runtimejavadoc.RuntimeJavadoc;
+
 import lombok.Getter;
 import nl.nn.adapterframework.doc.Utils;
 import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
@@ -40,6 +43,7 @@ import nl.nn.adapterframework.util.Misc;
 
 public class FrankElement implements Comparable<FrankElement> {
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
+	private static final CommentFormatter THERAPI_JAVADOC_FORMATTER = new CommentFormatter();
 
 	private static final Comparator<FrankElement> COMPARATOR =
 			Comparator.comparing(FrankElement::getSimpleName).thenComparing(FrankElement::getFullName);
@@ -56,10 +60,12 @@ public class FrankElement implements Comparable<FrankElement> {
 	private @Getter List<String> xmlElementNames;
 	private @Getter FrankElementStatistics statistics;
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
+	private @Getter String classLevelDoc;
 
 	FrankElement(Class<?> clazz) {
 		this(clazz.getName(), clazz.getSimpleName(), Modifier.isAbstract(clazz.getModifiers()));
 		isDeprecated = clazz.getAnnotation(Deprecated.class) != null;
+		classLevelDoc = THERAPI_JAVADOC_FORMATTER.format(RuntimeJavadoc.getJavadoc(clazz.getName()).getComment());
 		configChildSets = new LinkedHashMap<>();
 	}
 

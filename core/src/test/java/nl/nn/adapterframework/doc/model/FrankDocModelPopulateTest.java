@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.doc.model;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
@@ -47,5 +48,11 @@ public class FrankDocModelPopulateTest {
 	@Test
 	public void testElementReceiverCreated() {
 		assertTrue(actualElementSimpleNames.contains("Receiver"));
+	}
+
+	@Test
+	public void testJavadocsCaptured() {
+		FrankElement configuration = instance.findFrankElement("nl.nn.adapterframework.configuration.Configuration");
+		assertFalse(configuration.getClassLevelDoc().isEmpty());
 	}
 }

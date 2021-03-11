@@ -9,6 +9,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.13.1</log4j2.version>
+		<therapi.version>0.12.0</therapi.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -247,6 +248,17 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<!-- Library that makes Javadoc comments available at run-time.
+	Every subproject should use this dependency, because we the Javadocs of every Java class inside the Frank!Doc -->
+	<dependencies>
+		<dependency>
+			<groupId>com.github.therapi</groupId>
+			<artifactId>therapi-runtime-javadoc-scribe</artifactId>
+			<version>${therapi.version}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<defaultGoal>install</defaultGoal>
