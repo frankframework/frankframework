@@ -71,11 +71,11 @@ class InfoBuilderSource {
 	private static final Set<String> JAVA_BOXED = new HashSet<String>(Arrays.asList(new String[] {
 			JAVA_STRING, JAVA_INTEGER, JAVA_BOOLEAN, JAVA_LONG, JAVA_BYTE, JAVA_SHORT}));
 
+	// All types that are accepted by method isGetterOrSetter() 
 	static final Set<String> ALLOWED_SETTER_TYPES = new HashSet<>();
 	static {
-		ALLOWED_SETTER_TYPES.add(JAVA_STRING);
 		ALLOWED_SETTER_TYPES.addAll(primitiveToBoxed.keySet());
-		ALLOWED_SETTER_TYPES.addAll(primitiveToBoxed.values());
+		ALLOWED_SETTER_TYPES.addAll(JAVA_BOXED);
 	}
 
 	private static Logger log = LogUtil.getLogger(InfoBuilderSource.class);
