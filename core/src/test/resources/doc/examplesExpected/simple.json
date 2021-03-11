@@ -62,7 +62,10 @@
           "name": "firstAttribute",
           "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
-          "restrictingType": "nl.nn.adapterframework.doc.testtarget.examples.simple.MyEnum"
+          "values": [
+            "ONE",
+            "TWO"
+          ]
         },
         {
           "name": "secondAttribute",
@@ -118,15 +121,6 @@
       "elementNames": ["RoleNameTChild"],
       "attributes": [],
       "children": []
-    }
-  ],
-  "types": [
-    {
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.MyEnum",
-      "values": [
-        "ONE",
-        "TWO"
-      ]
     }
   ]
 }

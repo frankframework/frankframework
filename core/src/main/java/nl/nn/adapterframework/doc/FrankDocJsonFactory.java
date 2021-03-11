@@ -55,7 +55,6 @@ public class FrankDocJsonFactory {
 			JsonObjectBuilder result = bf.createObjectBuilder();
 			result.add("groups", getGroups());
 			result.add("elements", getElements());
-			result.add("types", getTypes());
 			return result.build();
 		} catch(JsonException e) {
 			log.warn("Error producing JSON", e);
@@ -135,7 +134,7 @@ public class FrankDocJsonFactory {
 		addIfNotNull(result, "description", frankAttribute.getDescription());
 		addIfNotNull(result, "default", frankAttribute.getDefaultValue());
 		if(frankAttribute.getAttributeValues() != null) {
-			result.add("restrictingType", frankAttribute.getAttributeValues().getFullName());
+			result.add("values", getValues(frankAttribute.getAttributeValues()));
 		}
 		return result.build();
 	}
@@ -144,6 +143,12 @@ public class FrankDocJsonFactory {
 		if(value != null) {
 			builder.add(field, value);
 		}
+	}
+
+	private JsonArray getValues(AttributeValues vl) {
+		final JsonArrayBuilder result = bf.createArrayBuilder();
+		vl.getValues().forEach(value -> result.add(value));
+		return result.build();
 	}
 
 	private JsonArray getConfigChildren(FrankElement frankElement) throws JsonException {
@@ -162,23 +167,6 @@ public class FrankDocJsonFactory {
 		result.add("roleName", child.getElementRole().getRoleName());
 		result.add("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
 		addIfNotNull(result, "description", child.getDescription());
-		return result.build();
-	}
-
-	private JsonArray getTypes() {
-		JsonArrayBuilder result = bf.createArrayBuilder();
-		for(AttributeValues vl: model.getAllAttributeValuesInstances()) {
-			result.add(getType(vl));
-		}
-		return result.build();
-	}
-
-	private JsonObject getType(AttributeValues vl) {
-		JsonObjectBuilder result = bf.createObjectBuilder();
-		result.add("fullName", vl.getFullName());
-		final JsonArrayBuilder valuesBuilder = bf.createArrayBuilder();
-		vl.getValues().forEach(value -> valuesBuilder.add(value));
-		result.add("values", valuesBuilder.build());
 		return result.build();
 	}
 }
