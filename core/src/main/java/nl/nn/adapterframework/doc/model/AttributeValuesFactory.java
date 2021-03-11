@@ -24,38 +24,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-class AttributeValuesListFactory {
-	private Map<String, AttributeValuesList> allAttributeValuesLists = new LinkedHashMap<>();
+class AttributeValuesFactory {
+	private Map<String, AttributeValues> allAttributeValuesInstances = new LinkedHashMap<>();
 	private Map<String, Integer> lastAssignedSeq = new HashMap<>();
 
-	AttributeValuesList findOrCreateAttributeValuesList(Class<? extends Enum<?>> clazz) {
+	AttributeValues findOrCreateAttributeValues(Class<? extends Enum<?>> clazz) {
 		List<String> values = Arrays.asList(clazz.getEnumConstants()).stream()
 				.map(c -> c.name())
 				.collect(Collectors.toList());
-		return findOrCreateAttributeValuesList(clazz.getName(), clazz.getSimpleName(), values);
+		return findOrCreateAttributeValues(clazz.getName(), clazz.getSimpleName(), values);
 	}
 
-	AttributeValuesList findOrCreateAttributeValuesList(String fullName, String simpleName, List<String> values) {
-		if(allAttributeValuesLists.containsKey(fullName)) {
-			return allAttributeValuesLists.get(fullName);
+	AttributeValues findOrCreateAttributeValues(String fullName, String simpleName, List<String> values) {
+		if(allAttributeValuesInstances.containsKey(fullName)) {
+			return allAttributeValuesInstances.get(fullName);
 		}
 		int seq = lastAssignedSeq.getOrDefault(simpleName, 0);
 		seq++;
-		AttributeValuesList result = new AttributeValuesList(fullName, simpleName, values, seq);
+		AttributeValues result = new AttributeValues(fullName, simpleName, values, seq);
 		lastAssignedSeq.put(simpleName, seq);
-		allAttributeValuesLists.put(fullName, result);
+		allAttributeValuesInstances.put(fullName, result);
 		return result;
 	}
 
-	AttributeValuesList findAttributeValuesList(String enumTypeFullName) {
-		return allAttributeValuesLists.get(enumTypeFullName);
+	AttributeValues findAttributeValues(String enumTypeFullName) {
+		return allAttributeValuesInstances.get(enumTypeFullName);
 	}
 
-	List<AttributeValuesList> getAll() {
-		return new ArrayList<>(allAttributeValuesLists.values());
+	List<AttributeValues> getAll() {
+		return new ArrayList<>(allAttributeValuesInstances.values());
 	}
 
 	int size() {
-		return allAttributeValuesLists.size();
+		return allAttributeValuesInstances.size();
 	}
 }

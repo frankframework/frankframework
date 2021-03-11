@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -221,7 +220,7 @@ public class FrankDocModelTest {
 	 */
 	private Map<String, FrankAttribute> getAttributesOfClass(final String className) throws ReflectiveOperationException {
 		fakeAttributeOwner = new FrankElement("dummy.Dummy", "Dummy", false);
-		final List<FrankAttribute> attributes = instance.createAttributes(Utils.getClass(className).getDeclaredMethods(), fakeAttributeOwner, new LinkedHashMap<>());
+		final List<FrankAttribute> attributes = instance.createAttributes(Utils.getClass(className), fakeAttributeOwner);
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}
 

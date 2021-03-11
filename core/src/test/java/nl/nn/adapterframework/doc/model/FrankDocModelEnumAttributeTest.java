@@ -29,11 +29,11 @@ public class FrankDocModelEnumAttributeTest {
 		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", CHILD);
 		FrankElement child = model.findFrankElement(CHILD);
 		assertNotNull(child);
-		AttributeValuesList myEnum = model.findAttributeValuesList(MY_ENUM);
+		AttributeValues myEnum = model.findAttributeValues(MY_ENUM);
 		assertEquals(MY_ENUM, myEnum.getFullName());
 		assertArrayEquals(new String[] {"ONE", "TWO", "THREE"}, myEnum.getValues().toArray());
 		FrankAttribute childAttribute = child.getAttributes(ElementChild.ALL).get(0);
 		assertEquals("childAttribute", childAttribute.getName());
-		assertEquals(myEnum, childAttribute.getAttributeValuesList());
+		assertEquals(myEnum, childAttribute.getAttributeValues());
 	}
 }

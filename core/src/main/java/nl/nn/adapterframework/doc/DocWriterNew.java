@@ -55,7 +55,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 
-import nl.nn.adapterframework.doc.model.AttributeValuesList;
+import nl.nn.adapterframework.doc.model.AttributeValues;
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.doc.model.ConfigChildSet;
 import nl.nn.adapterframework.doc.model.ElementChild;
@@ -317,7 +317,7 @@ public class DocWriterNew {
 	private Set<String> namesCreatedFrankElements = new HashSet<>();
 	private Set<ElementRole.Key> idsCreatedElementGroups = new HashSet<>();
 	private ElementGroupManager elementGroupManager;
-	private Set<String> definedAttributeValuesLists = new HashSet<>();
+	private Set<String> definedAttributeValuesInstances = new HashSet<>();
 
 	public DocWriterNew(FrankDocModel model) {
 		this.model = model;
@@ -930,7 +930,7 @@ public class DocWriterNew {
 		for(FrankAttribute frankAttribute: frankAttributes) {
 			log.trace("Adding attribute [{}]", () -> frankAttribute.getName());
 			XmlBuilder attribute = null;
-			if(frankAttribute.getAttributeValuesList() == null) {
+			if(frankAttribute.getAttributeValues() == null) {
 				// The default value in the model is a *description* of the default value.
 				// Therefore, it should be added to the description in the xs:attribute.
 				// The "default" attribute of the xs:attribute should not be set.
@@ -946,11 +946,11 @@ public class DocWriterNew {
 	}
 
 	private XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
-		AttributeValuesList attributeValuesList = attribute.getAttributeValuesList();
-		XmlBuilder result = addAttribute(context, attribute.getName(), attributeValuesList.getUniqueName(ATTRIBUTE_VALUES_TYPE));
-		if(! definedAttributeValuesLists.contains(attributeValuesList.getFullName())) {
-			definedAttributeValuesLists.add(attributeValuesList.getFullName());
-			addAttributeValuesType(attributeValuesList);
+		AttributeValues attributeValues = attribute.getAttributeValues();
+		XmlBuilder result = addAttribute(context, attribute.getName(), attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE));
+		if(! definedAttributeValuesInstances.contains(attributeValues.getFullName())) {
+			definedAttributeValuesInstances.add(attributeValues.getFullName());
+			addAttributeValuesType(attributeValues);
 		}
 		return result;
 	}
@@ -974,11 +974,11 @@ public class DocWriterNew {
 		return result.toString();
 	}
 
-	private void addAttributeValuesType(AttributeValuesList attributeValuesList) {
-		XmlBuilder simpleType = createSimpleType(attributeValuesList.getUniqueName(ATTRIBUTE_VALUES_TYPE));
+	private void addAttributeValuesType(AttributeValues attributeValues) {
+		XmlBuilder simpleType = createSimpleType(attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE));
 		xsdComplexItems.add(simpleType);
 		final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
-		attributeValuesList.getValues().forEach(v -> addEnumeration(restriction, v));
+		attributeValues.getValues().forEach(v -> addEnumeration(restriction, v));
 	}
 
 	private String xsdElementType(FrankElement frankElement) {

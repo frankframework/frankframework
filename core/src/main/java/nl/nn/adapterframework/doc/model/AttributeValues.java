@@ -20,13 +20,13 @@ import java.util.List;
 
 import lombok.Getter;
 
-public class AttributeValuesList {
+public class AttributeValues {
 	private @Getter String fullName;
 	private String simpleName;
 	private @Getter List<String> values;
 	private int seq;
 
-	AttributeValuesList(String fullName, String simpleName, List<String> values, int seq) {
+	AttributeValues(String fullName, String simpleName, List<String> values, int seq) {
 		this.fullName = fullName;
 		this.values = values;
 		this.simpleName = simpleName;

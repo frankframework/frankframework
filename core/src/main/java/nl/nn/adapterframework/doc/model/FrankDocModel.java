@@ -75,7 +75,7 @@ public class FrankDocModel {
 	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
 	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
-	private AttributeValuesListFactory attributeValuesListFactory = new AttributeValuesListFactory();
+	private AttributeValuesFactory attributeValuesFactory = new AttributeValuesFactory();
 
 	/**
 	 * Get the FrankDocModel needed in production. This is just a first draft. The
@@ -173,7 +173,7 @@ public class FrankDocModel {
 		Class<?> superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass);
 		current.setParent(parent);
-		current.setAttributes(createAttributes(clazz.getDeclaredMethods(), current, getEnumGettersByAttributeName(clazz)));
+		current.setAttributes(createAttributes(clazz, current));
 		current.setConfigChildren(createConfigChildren(clazz.getDeclaredMethods(), current));
 		log.trace("Done creating FrankElement for class name [{}]", () -> clazz.getName());
 		return current;
@@ -183,8 +183,10 @@ public class FrankDocModel {
 		return allElements.get(fullName);
 	}
 
-	List<FrankAttribute> createAttributes(Method[] methods, FrankElement attributeOwner, Map<String, Method> enumGettersByAttributeName) throws ReflectiveOperationException {
+	List<FrankAttribute> createAttributes(Class<?> clazz, FrankElement attributeOwner) throws ReflectiveOperationException {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
+		Method[] methods = clazz.getDeclaredMethods();
+		Map<String, Method> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
 		Map<String, Method> setterAttributes = getAttributeToMethodMap(methods, "set");
 		Map<String, Method> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
 		List<FrankAttribute> result = new ArrayList<>();
@@ -200,7 +202,7 @@ public class FrankDocModel {
 			if(enumGettersByAttributeName.containsKey(attributeName)) {
 				@SuppressWarnings("unchecked")
 				Class<? extends Enum<?>> restrictClass = (Class<? extends Enum<?>>) enumGettersByAttributeName.get(attributeName).getReturnType();
-				attribute.setAttributeValuesList(findOrCreateAttributeValuesList(restrictClass));
+				attribute.setAttributeValues(findOrCreateAttributeValues(restrictClass));
 			}
 			result.add(attribute);
 			log.trace("Attribute [{}] done", attributeName);
@@ -234,7 +236,7 @@ public class FrankDocModel {
 				.filter(Utils::isAttributeGetterOrSetter)
 				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
 				.collect(Collectors.toList());
-		// The sort order determines the creation order of AttributeValuesList.
+		// The sort order determines the creation order of AttributeValues instances.
 		Collections.sort(methodList, Comparator.comparing(Method::getName));
 		Map<String, Method> result = new LinkedHashMap<>();
 		for(Method method: methodList) {
@@ -694,15 +696,15 @@ public class FrankDocModel {
 		log.trace("Leave for roles [{}] and recursion depth [{}]", () -> ElementRole.describeCollection(roleGroup), () -> recursionDepth);
 	}
 
-	AttributeValuesList findOrCreateAttributeValuesList(Class<? extends Enum<?>> clazz) {
-		return attributeValuesListFactory.findOrCreateAttributeValuesList(clazz);
+	AttributeValues findOrCreateAttributeValues(Class<? extends Enum<?>> clazz) {
+		return attributeValuesFactory.findOrCreateAttributeValues(clazz);
 	}
 
-	public AttributeValuesList findAttributeValuesList(String enumTypeFullName) {
-		return attributeValuesListFactory.findAttributeValuesList(enumTypeFullName);
+	public AttributeValues findAttributeValues(String enumTypeFullName) {
+		return attributeValuesFactory.findAttributeValues(enumTypeFullName);
 	}
 
-	public List<AttributeValuesList> getAllAttributeValuesLists() {
-		return attributeValuesListFactory.getAll();
+	public List<AttributeValues> getAllAttributeValuesInstances() {
+		return attributeValuesFactory.getAll();
 	}
 }
