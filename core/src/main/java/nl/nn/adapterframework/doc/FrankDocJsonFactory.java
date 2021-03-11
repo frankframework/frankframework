@@ -30,6 +30,7 @@ import javax.json.JsonObjectBuilder;
 
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.doc.model.AttributeValues;
 import nl.nn.adapterframework.doc.model.ConfigChild;
 import nl.nn.adapterframework.doc.model.ElementChild;
 import nl.nn.adapterframework.doc.model.FrankAttribute;
@@ -132,6 +133,9 @@ public class FrankDocJsonFactory {
 		result.add("describer", frankAttribute.getDescribingElement().getFullName());
 		addIfNotNull(result, "description", frankAttribute.getDescription());
 		addIfNotNull(result, "default", frankAttribute.getDefaultValue());
+		if(frankAttribute.getAttributeValues() != null) {
+			result.add("values", getValues(frankAttribute.getAttributeValues()));
+		}
 		return result.build();
 	}
 
@@ -139,6 +143,12 @@ public class FrankDocJsonFactory {
 		if(value != null) {
 			builder.add(field, value);
 		}
+	}
+
+	private JsonArray getValues(AttributeValues vl) {
+		final JsonArrayBuilder result = bf.createArrayBuilder();
+		vl.getValues().forEach(value -> result.add(value));
+		return result.build();
 	}
 
 	private JsonArray getConfigChildren(FrankElement frankElement) throws JsonException {

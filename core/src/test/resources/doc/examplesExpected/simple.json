@@ -61,7 +61,11 @@
         {
           "name": "firstAttribute",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild"
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
+          "values": [
+            "ONE",
+            "TWO"
+          ]
         },
         {
           "name": "secondAttribute",
