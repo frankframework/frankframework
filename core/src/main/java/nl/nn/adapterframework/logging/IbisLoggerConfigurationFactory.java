@@ -15,10 +15,12 @@
 */
 package nl.nn.adapterframework.logging;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
@@ -35,7 +37,7 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
-import nl.nn.adapterframework.util.StreamUtil;
+
 import nl.nn.adapterframework.util.StringResolver;
 
 /**
@@ -154,7 +156,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		char[] buff = new char[1024];
 		Writer stringWriter = new StringWriter();
 		try {
-			BufferedReader reader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(stream));
+			Reader reader = new InputStreamReader(new BufferedInputStream(stream));
 			int n;
 			boolean checkVersionOnlyFirst1024Characters = true;
 			while ((n = reader.read(buff))!=-1) {

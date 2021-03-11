@@ -46,6 +46,7 @@ import java.util.zip.ZipException;
 
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -275,7 +276,7 @@ public class JdbcUtil {
 			}
 			return;
 		}
-		Writer writer = StreamUtil.getWriter(target);
+		Writer writer = getWriter(target);
 		if (writer !=null) {
 			Reader reader = JdbcUtil.getBlobReader(blobIntputStream, charset);
 			StreamUtil.copyReaderToWriter(reader, writer, 50000, false, false);
@@ -287,11 +288,21 @@ public class JdbcUtil {
 		throw new IOException("cannot stream Blob to ["+target.getClass().getName()+"]");
 	}
 
+	private static Writer getWriter(Object target) throws IOException {
+		if (target instanceof Writer) {
+			return (Writer)target;
+		}
+		if (target instanceof HttpServletResponse) {
+			return ((HttpServletResponse)target).getWriter();
+		}
+		return null;
+	}
+
 	public static void streamClob(final IDbmsSupport dbmsSupport, ResultSet rs, int column, Object target, boolean close) throws JdbcException, SQLException, IOException {
 		if (target==null) {
 			throw new NullPointerException("cannot stream Clob to null object");
 		}
-		Writer writer = StreamUtil.getWriter(target);
+		Writer writer = getWriter(target);
 		if (writer !=null) {
 			Reader reader = dbmsSupport.getClobReader(rs, column);
 			StreamUtil.copyReaderToWriter(reader, writer, 50000, false, false);

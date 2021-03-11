@@ -70,16 +70,6 @@ public class StreamUtil {
 		return null;
 	}
 
-	public static Writer getWriter(Object target) throws IOException {
-		if (target instanceof HttpServletResponse) {
-			return ((HttpServletResponse)target).getWriter();
-		}
-		if (target instanceof Writer) {
-			return (Writer)target;
-		}
-		return null;
-	}
-	
 	public static InputStream dontClose(InputStream stream) {
 		class NonClosingInputStreamFilter extends FilterInputStream {
 			public NonClosingInputStreamFilter(InputStream in) {

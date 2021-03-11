@@ -618,6 +618,39 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<phase>prepare-package</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<includeProjectDependencies>true</includeProjectDependencies>
+					<includePluginDependencies>true</includePluginDependencies>
+					<mainClass>nl.nn.adapterframework.cmdline.GenerateFrankDoc</mainClass>
+					<arguments>
+						<argument>STRICT,COMPATIBILITY</argument>
+					</arguments>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>javax.servlet</groupId>
+						<artifactId>javax.servlet-api</artifactId>
+						<version>3.0.1</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.geronimo.specs</groupId>
+						<artifactId>geronimo-jms_1.1_spec</artifactId>
+						<version>1.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
