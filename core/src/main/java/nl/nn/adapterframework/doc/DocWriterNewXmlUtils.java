@@ -16,6 +16,9 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -108,6 +111,13 @@ class DocWriterNewXmlUtils {
 		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
 		complexType.addAttribute("name", name);
 		return complexType;		
+	}
+
+	static XmlBuilder addSimpleType(XmlBuilder schema) {
+		XmlBuilder complexType;
+		complexType = new XmlBuilder("simpleType", "xs", XML_SCHEMA_URI);
+		schema.addSubElement(complexType);
+		return complexType;
 	}
 
 	static XmlBuilder createSimpleType(String name) {
@@ -251,6 +261,13 @@ class DocWriterNewXmlUtils {
 		return attribute;
 	}
 
+	static XmlBuilder addAttributeWithType(XmlBuilder context, String name) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("name", name);
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
 	static void addDocumentation(XmlBuilder context, String description) {
 		XmlBuilder annotation = new XmlBuilder("annotation", "xs", XML_SCHEMA_URI);
 		context.addSubElement(annotation);
@@ -335,12 +352,23 @@ class DocWriterNewXmlUtils {
 		return enumeration;
 	}
 
+	static void addUnion(XmlBuilder context, String ...combinedTypes) {
+		XmlBuilder union = new XmlBuilder("union", "xs", XML_SCHEMA_URI);
+		context.addSubElement(union);
+		String memberTypes = Arrays.asList(combinedTypes).stream().collect(Collectors.joining(" "));
+		union.addAttribute("memberTypes", memberTypes);
+	}
+
 	static XmlBuilder createTypeFrankBoolean() {
 		return createStringRestriction(FRANK_BOOLEAN, PATTERN_FRANK_BOOLEAN);
 	}
 
 	static XmlBuilder createTypeFrankInteger() {
 		return createStringRestriction(FRANK_INT, PATTERN_FRANK_INT);
+	}
+
+	static XmlBuilder createTypeVariableReference(String name) {
+		return createStringRestriction(name, PATTERN_REF);
 	}
 
 	private static XmlBuilder createStringRestriction(String name, String pattern) {
@@ -353,11 +381,5 @@ class DocWriterNewXmlUtils {
 		restriction.addSubElement(patternElement);
 		patternElement.addAttribute("value", pattern);
 		return simpleType;
-	}
-
-	static void addReferencePattern(XmlBuilder builder) {
-		XmlBuilder patternElement = new XmlBuilder("pattern", "xs", XML_SCHEMA_URI);
-		builder.addSubElement(patternElement);
-		patternElement.addAttribute("value", PATTERN_REF);
 	}
 }

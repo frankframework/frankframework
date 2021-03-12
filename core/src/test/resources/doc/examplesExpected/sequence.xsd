@@ -86,4 +86,9 @@
       <xs:pattern value="((\+|-)?[0-9]+)|(\$\{[^\}]+\})" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="variableRef">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\$\{[^\}]+\}" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

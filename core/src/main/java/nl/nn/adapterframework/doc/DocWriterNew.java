@@ -16,8 +16,10 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addUnion;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAnyAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttributeWithType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexContent;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
@@ -26,9 +28,9 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementWithType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addEnumeration;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addExtension;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addReferencePattern;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addRestriction;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSimpleType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createAttributeGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createElementWithType;
@@ -36,6 +38,7 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createSimpleType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeFrankBoolean;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeFrankInteger;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeVariableReference;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.OPTIONAL;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.PROHIBITED;
@@ -311,6 +314,7 @@ public class DocWriterNew {
 	private static final String ELEMENT_ROLE = "elementRole";
 	private static final String ELEMENT_GROUP_BASE = "ElementGroupBase";
 	private static final String ATTRIBUTE_VALUES_TYPE = "AttributeValuesType";
+	private static final String VARIABLE_REFERENCE = "variableRef";
 
 	private FrankDocModel model;
 	private String startClassName;
@@ -355,6 +359,8 @@ public class DocWriterNew {
 		log.trace("Adding helper types for boolean and integer attributes, allowing ${...} references");
 		xsdComplexItems.add(createTypeFrankBoolean());
 		xsdComplexItems.add(createTypeFrankInteger());
+		// Helper type for allowing a variable reference instead of an enum value
+		xsdComplexItems.add(createTypeVariableReference(VARIABLE_REFERENCE));
 		log.trace("Have the XmlBuilder objects. Going to add them in the right order to the schema root builder");
 		xsdElements.forEach(xsdRoot::addSubElement);
 		xsdComplexItems.forEach(xsdRoot::addSubElement);
@@ -953,12 +959,14 @@ public class DocWriterNew {
 
 	private XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
 		AttributeValues attributeValues = attribute.getAttributeValues();
-		XmlBuilder result = addAttribute(context, attribute.getName(), attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE));
+		XmlBuilder attributeBuilder = addAttributeWithType(context, attribute.getName());
+		XmlBuilder simpleType = addSimpleType(attributeBuilder);
+		addUnion(simpleType, attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE), VARIABLE_REFERENCE);
 		if(! definedAttributeValuesInstances.contains(attributeValues.getFullName())) {
 			definedAttributeValuesInstances.add(attributeValues.getFullName());
 			addAttributeValuesType(attributeValues);
 		}
-		return result;
+		return attributeBuilder;
 	}
 
 	private boolean needsDocumentation(ElementChild elementChild) {
@@ -985,7 +993,6 @@ public class DocWriterNew {
 		xsdComplexItems.add(simpleType);
 		final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
 		attributeValues.getValues().forEach(v -> addEnumeration(restriction, v));
-		addReferencePattern(restriction);
 	}
 
 	private String xsdElementType(FrankElement frankElement) {
