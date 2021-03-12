@@ -16,11 +16,6 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeFrankBoolean;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeFrankInteger;
-
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addEnumeration;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addRestriction;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAnyAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
@@ -29,13 +24,18 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementWithType;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addEnumeration;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addExtension;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addReferencePattern;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addRestriction;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createAttributeGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createElementWithType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createSimpleType;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeFrankBoolean;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeFrankInteger;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.OPTIONAL;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.AttributeUse.PROHIBITED;
@@ -985,6 +985,7 @@ public class DocWriterNew {
 		xsdComplexItems.add(simpleType);
 		final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
 		attributeValues.getValues().forEach(v -> addEnumeration(restriction, v));
+		addReferencePattern(restriction);
 	}
 
 	private String xsdElementType(FrankElement frankElement) {

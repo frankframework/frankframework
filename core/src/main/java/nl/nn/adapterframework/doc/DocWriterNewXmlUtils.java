@@ -354,4 +354,10 @@ class DocWriterNewXmlUtils {
 		patternElement.addAttribute("value", pattern);
 		return simpleType;
 	}
+
+	static void addReferencePattern(XmlBuilder builder) {
+		XmlBuilder patternElement = new XmlBuilder("pattern", "xs", XML_SCHEMA_URI);
+		builder.addSubElement(patternElement);
+		patternElement.addAttribute("value", PATTERN_REF);
+	}
 }
