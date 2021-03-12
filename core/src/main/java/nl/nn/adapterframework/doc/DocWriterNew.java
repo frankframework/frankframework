@@ -961,12 +961,12 @@ public class DocWriterNew {
 		AttributeValues attributeValues = attribute.getAttributeValues();
 		XmlBuilder attributeBuilder = addAttributeWithType(context, attribute.getName());
 		XmlBuilder simpleType = addSimpleType(attributeBuilder);
-		addUnion(simpleType, attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE), VARIABLE_REFERENCE);
+		XmlBuilder union = addUnion(simpleType, attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE), VARIABLE_REFERENCE);
 		if(! definedAttributeValuesInstances.contains(attributeValues.getFullName())) {
 			definedAttributeValuesInstances.add(attributeValues.getFullName());
 			addAttributeValuesType(attributeValues);
 		}
-		return attributeBuilder;
+		return union;
 	}
 
 	private boolean needsDocumentation(ElementChild elementChild) {

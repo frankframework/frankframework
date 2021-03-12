@@ -352,11 +352,12 @@ class DocWriterNewXmlUtils {
 		return enumeration;
 	}
 
-	static void addUnion(XmlBuilder context, String ...combinedTypes) {
+	static XmlBuilder addUnion(XmlBuilder context, String ...combinedTypes) {
 		XmlBuilder union = new XmlBuilder("union", "xs", XML_SCHEMA_URI);
 		context.addSubElement(union);
 		String memberTypes = Arrays.asList(combinedTypes).stream().collect(Collectors.joining(" "));
 		union.addAttribute("memberTypes", memberTypes);
+		return union;
 	}
 
 	static XmlBuilder createTypeFrankBoolean() {
