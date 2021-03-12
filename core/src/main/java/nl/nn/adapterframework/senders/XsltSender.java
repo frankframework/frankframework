@@ -100,7 +100,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		
-		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("xslt.streaming.default", false);
+		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
 		
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {

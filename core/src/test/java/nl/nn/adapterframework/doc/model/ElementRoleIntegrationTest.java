@@ -1,13 +1,22 @@
+/* 
+Copyright 2021 WeAreFrank! 
+
+Licensed under the Apache License, Version 2.0 (the "License"); 
+you may not use this file except in compliance with the License. 
+You may obtain a copy of the License at 
+
+    http://www.apache.org/licenses/LICENSE-2.0 
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS, 
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+See the License for the specific language governing permissions and 
+limitations under the License. 
+*/
 package nl.nn.adapterframework.doc.model;
 
-import static java.util.Arrays.asList;
-import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
-import static nl.nn.adapterframework.doc.model.ElementChild.NONE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,11 +39,11 @@ public class ElementRoleIntegrationTest {
 		// numbers and role numbers.
 		ElementRole er = model.findElementRole(PACKAGE + "Interface1", "role2");
 		assertEquals(PACKAGE + "Interface1", er.getElementType().getFullName());
-		assertEquals("role2", er.getSyntax1Name());
+		assertEquals("role2", er.getRoleName());
 		assertEquals("Role2Element", er.createXsdElementName("Element"));
 		er = model.findElementRole(PACKAGE + "Interface2", "role1");
 		assertEquals(PACKAGE + "Interface2", er.getElementType().getFullName());
-		assertEquals("role1", er.getSyntax1Name());
+		assertEquals("role1", er.getRoleName());
 		assertEquals("Role1Element", er.createXsdElementName("Element"));
 		
 		// The element roles from Master are created later. These match
@@ -43,27 +52,11 @@ public class ElementRoleIntegrationTest {
 		er = model.findElementRole(PACKAGE + "Interface1", "role1");
 		assertNotNull(er);
 		assertEquals(PACKAGE + "Interface1", er.getElementType().getFullName());
-		assertEquals("role1", er.getSyntax1Name());
+		assertEquals("role1", er.getRoleName());
 		assertEquals("Role1Element_2", er.createXsdElementName("Element"));
 		er = model.findElementRole(PACKAGE + "Interface2", "role2");
 		assertEquals(PACKAGE + "Interface2", er.getElementType().getFullName());
-		assertEquals("role2", er.getSyntax1Name());
+		assertEquals("role2", er.getRoleName());
 		assertEquals("Role2Element_2", er.createXsdElementName("Element"));
-	}
-
-	@Test
-	public void testGetElementTypeMemberChildRoles() {
-		ElementRole i1r2 = model.findElementRole(PACKAGE + "Interface1", "role2");
-		ElementRole i2r1 = model.findElementRole(PACKAGE + "Interface2", "role1");
-		checkElementRolesAre("Interface1", asList(i2r1, i1r2));
-	}
-
-	private void checkElementRolesAre(String elementTypeSimpleName, List<ElementRole> expected) {
-		ElementType elementType = model.findElementType(PACKAGE + elementTypeSimpleName);
-		List<ElementRole> actual = model.getElementTypeMemberChildRoles(elementType, ALL, NONE, f -> true);
-		assertEquals(expected.size(), actual.size());
-		for(int i = 0; i < expected.size(); i++) {
-			assertSame(expected.get(i), actual.get(i));
-		}
 	}
 }

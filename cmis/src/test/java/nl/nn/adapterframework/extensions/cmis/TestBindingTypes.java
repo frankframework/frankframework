@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.extensions.cmis;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -185,8 +185,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 		configure();
 
-		String actualResult = sender.sendMessage(input, session).asString();
-		assertEquals("", actualResult);
+		assertTrue(Message.isEmpty(sender.sendMessage(input, session)));
 		String base64 = (String) session.get("fileContent");
 		assertEqualsIgnoreRN(Base64.encodeBase64String(expectedResult.getBytes()), base64);
 	}

@@ -104,6 +104,8 @@
 	        	actions="delete"
 	        	fileName="test.txt"
 	        	directory="${testdata.dir}"
+	        	createDirectory="true"
+	        	testExists="false"
 	        	deleteEmptyDirectory="true">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
@@ -134,6 +136,7 @@
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="delete"
 	        	fileName="none_existing_file.txt"
+	        	testExists="false"
 	        	directory="${testdata.dir}">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
@@ -144,6 +147,7 @@
 	        	className="nl.nn.adapterframework.pipes.FilePipe"
 	        	actions="list"
 	        	fileName="dummy*.txt"
+	        	testExists="false"
 	        	directory="${testdata.dir}">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>

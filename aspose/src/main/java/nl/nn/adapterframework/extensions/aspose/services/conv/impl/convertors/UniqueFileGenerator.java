@@ -38,9 +38,7 @@ class UniqueFileGenerator {
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
 	 * 
-	 * @param extension
-	 *            is allowed to be null.
-	 * @return
+	 * @param extension  is allowed to be null.
 	 */
 	public static File getUniqueFile(String directory, String prefix, String extension) {
 

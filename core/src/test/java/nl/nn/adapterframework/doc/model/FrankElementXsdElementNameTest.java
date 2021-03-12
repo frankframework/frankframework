@@ -1,10 +1,22 @@
+/* 
+Copyright 2021 WeAreFrank! 
+
+Licensed under the Apache License, Version 2.0 (the "License"); 
+you may not use this file except in compliance with the License. 
+You may obtain a copy of the License at 
+
+    http://www.apache.org/licenses/LICENSE-2.0 
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS, 
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+See the License for the specific language governing permissions and 
+limitations under the License. 
+*/
 package nl.nn.adapterframework.doc.model;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +36,7 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
-	public void whenNameDoesNotEndWithInterfaceNameThenGroupSyntax1NameAppended() throws Exception {
+	public void whenNameDoesNotEndWithInterfaceNameThenGroupRoleNameAppended() throws Exception {
 		String className = PACKAGE + "ListenerParent";
 		String typeName = PACKAGE + "IListener";
 		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(className));
@@ -34,7 +46,7 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
-	public void whenNameEndsWithInterfaceNameThenRemovedAndGroupSyntax1NameAppended() throws Exception {
+	public void whenNameEndsWithInterfaceNameThenRemovedAndGroupRoleNameAppended() throws Exception {
 		String className = PACKAGE + "ParentListener";
 		String typeName = PACKAGE + "IListener";
 		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(className));
@@ -44,7 +56,7 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
-	public void whenElementTypeIsNotInterfaceThenSyntax1NameBecomesElementName() throws Exception {
+	public void whenElementTypeIsNotInterfaceThenRoleNameBecomesElementName() throws Exception {
 		String classAndTypeName = PACKAGE + "ListenerParent";
 		FrankElement instance = model.findOrCreateFrankElement(Utils.getClass(classAndTypeName));
 		ElementType elementType = model.findOrCreateElementType(Utils.getClass(classAndTypeName));
@@ -53,15 +65,12 @@ public class FrankElementXsdElementNameTest {
 	}
 
 	@Test
-	public void whenConfigChildInXsdThenItsSyntax1NameRegisteredWithElementType() throws Exception {
-		String typeName = PACKAGE + "IListener";
-		ElementType elementType = model.findOrCreateElementType(Utils.getClass(typeName));
-		// The syntax 1 name corresponding to setter Container.setTestListener.
-		assertTrue(getSyntax1NamesOf(elementType).contains("testListener"));
-	}
-
-	private Set<String> getSyntax1NamesOf(ElementType elementType) {
-		return elementType.getElementRoles().stream()
-				.map(ElementRole::getSyntax1Name).collect(Collectors.toSet());
+	public void frankElementKnowsXmlElementNames() {
+		FrankElement frankElement = model.findFrankElement(PACKAGE + "ListenerParent");
+		assertArrayEquals(new String[] {"ListenerParentTestListener"}, frankElement.getXmlElementNames().toArray());
+		frankElement = model.findFrankElement(PACKAGE + "ParentListener");
+		assertArrayEquals(new String[] {"ParentTestListener"}, frankElement.getXmlElementNames().toArray());
+		frankElement = model.findFrankElement(PACKAGE + "Container");
+		assertArrayEquals(new String[] {"Container"}, frankElement.getXmlElementNames().toArray());
 	}
 }

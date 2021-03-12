@@ -428,7 +428,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
+			<version>3.11</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mozilla</groupId>
@@ -448,7 +448,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>3.5.3</version>
+			<version>3.5.3</version><!-- beware, Liquibase checksum generation is not consistent over liquibase versions, see https://liquibase.jira.com/browse/CORE-3204 -->
 		</dependency>
 
 		<dependency>

@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.security.PermitAll;
@@ -95,7 +96,6 @@ public final class ShowConfigurationStatus extends Base {
 	@Context Request request;
 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
-	private boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
 
 	private Adapter getAdapter(String adapterName) {
 		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
@@ -629,50 +629,25 @@ public final class ShowConfigurationStatus extends Base {
 			if (listener instanceof HasSender) {
 				sender = ((HasSender)listener).getSender();
 			}
-			//receiverInfo.put("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-			IMessageBrowser<?> ts = receiver.getMessageBrowser(ProcessState.ERROR);
 
-			receiverInfo.put("hasErrorStorage", (ts!=null));
-			if (ts!=null) {
-				try {
-					if (showCountErrorStore) {
-						receiverInfo.put("errorStorageCount", ts.getMessageCount());
-					} else {
-						receiverInfo.put("errorStorageCount", "?");
+			Set<ProcessState> knownStates = receiver.knownProcessStates();
+			Map<ProcessState, Object> tsInfo = new LinkedHashMap<ProcessState, Object>();
+			for (ProcessState state : knownStates) {
+				IMessageBrowser<?> ts = receiver.getMessageBrowser(state);
+				if(ts != null) {
+					Map<String, Object> info = new HashMap<>();
+					try {
+						info.put("numberOfMessages", ts.getMessageCount());
+					} catch (Exception e) {
+						log.warn("Cannot determine number of messages in process state ["+state+"]", e);
+						info.put("numberOfMessages", "error");
 					}
-				} catch (Exception e) {
-					log.warn("Cannot determine number of messages in errorstore", e);
-					receiverInfo.put("errorStorageCount", "error");
+					info.put("name", state.getName());
+					tsInfo.put(state, info);
 				}
 			}
-			ts=receiver.getMessageBrowser(ProcessState.DONE);
-			receiverInfo.put("hasMessageLog", (ts!=null));
-			if (ts!=null) {
-				try {
-					if (showCountMessageLog) {
-						receiverInfo.put("messageLogCount", ts.getMessageCount());
-					} else {
-						receiverInfo.put("messageLogCount", "?");
-					}
-				} catch (Exception e) {
-					log.warn("Cannot determine number of messages in messageLog", e);
-					receiverInfo.put("messageLogCount", "error");
-				}
-			}
-			ts=receiver.getMessageBrowser(ProcessState.INPROCESS);
-			receiverInfo.put("hasInProcessLog", (ts!=null));
-			if (ts!=null) {
-				try {
-					if (showCountMessageLog) {
-						receiverInfo.put("inProcessLogCount", ts.getMessageCount());
-					} else {
-						receiverInfo.put("inProcessLogCount", "?");
-					}
-				} catch (Exception e) {
-					log.warn("Cannot determine number of messages in inProcessLog", e);
-					receiverInfo.put("inProcessLogCount", "error");
-				}
-			}
+			receiverInfo.put("transactionalStores", tsInfo);
+
 			boolean isRestListener = (listener instanceof RestListener);
 			listenerInfo.put("isRestListener", isRestListener);
 			if (isRestListener) {
@@ -691,7 +666,7 @@ public final class ShowConfigurationStatus extends Base {
 				jmsBrowser.setName("MessageBrowser_" + jlb.getName());
 				jmsBrowser.setJmsRealm(jlb.getJmsRealmName());
 				jmsBrowser.setDestinationName(jlb.getDestinationName());
-				jmsBrowser.setDestinationType(jlb.getDestinationType());
+				jmsBrowser.setDestinationTypeEnum(jlb.getDestinationTypeEnum());
 				String numMsgs;
 				try {
 					int messageCount = jmsBrowser.getMessageCount();

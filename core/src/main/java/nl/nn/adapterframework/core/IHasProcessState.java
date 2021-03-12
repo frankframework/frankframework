@@ -19,15 +19,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Interface that can be implemented by Listeners that provide their own management of
- * messages processed and in error.
- * If the status 'inProcess' is specified, it will be used when messages are processed. In case of a rollback of the executing
- * transaction, the status of the message will be reverted to 'available', so that it can be retried. 
- * 
- * The method to revert to 'available' is called in a fresh transaction, and only when the original transaction, that hosted
- * the main processing of the message and the call to afterMessageProcessed(), has failed, and only
- * when {{@link #changeProcessState(Object, ProcessState, Map)} to INPROCESS returned true.
- * 
+ * Interface that can be implemented by Listeners that provide their own management of messages processed and in error. 
+ * If the status 'inProcess' is specified, it will be used when messages are processed. In case of a rollback
+ * of the executing transaction, the status of the message will be reverted to 'available', so that it can be retried.
  */
 public interface IHasProcessState<M> {
 
@@ -35,16 +29,18 @@ public interface IHasProcessState<M> {
 	 * Provides the set of ProcessStates used by this listener.
 	 */
 	public Set<ProcessState> knownProcessStates();
-	
+
 	/**
 	 * Provides the set of ProcessStates that a message in the specified state can be moved to, e.g. from a MessageBrowser for that state.
 	 */
-	public Map<ProcessState,Set<ProcessState>> targetProcessStates();
+	public Map<ProcessState, Set<ProcessState>> targetProcessStates();
 
 	/**
-	 * Change the processState of the message to the specified state, if that state is supported. If it is not supported, nothing changes, and <code>false</code> is returned.
-	 * If it returns <code>true</code>, this signals that the active transaction must be committed to make other threads aware of the state change.
+	 * Change the processState of the message to the specified state, if that state
+	 * is supported. If it is not supported, nothing changes, and <code>false</code>
+	 * is returned.
+	 * @return the moved message, or null if no message was moved. 
 	 */
-	public boolean changeProcessState(M message, ProcessState toState, Map<String,Object> context) throws ListenerException;
+	public M changeProcessState(M message, ProcessState toState) throws ListenerException;
 
 }

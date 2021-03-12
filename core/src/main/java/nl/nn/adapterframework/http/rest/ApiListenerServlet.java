@@ -127,7 +127,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		/**
 		 * Generate an OpenApi json file
 		 */
-		if(uri.equalsIgnoreCase("openapi.json")) {
+		if(uri.equalsIgnoreCase("/openapi.json")) {
 			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema();
 			returnJson(response, 200, jsonSchema);
 			return;
@@ -136,12 +136,14 @@ public class ApiListenerServlet extends HttpServletBase {
 		/**
 		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
 		 */
-		if(uri.endsWith("/openapi.json")) {
-			uri = uri.substring(0, uri.length()-"/openapi.json".length());
-			List<ApiDispatchConfig> apiConfigs = dispatcher.findMatchingConfigsForUri(uri);
-			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfigs);
-			returnJson(response, 200, jsonSchema);
-			return;
+		if(uri.endsWith("openapi.json")) {
+			uri = uri.substring(0, uri.lastIndexOf("/"));
+			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+			if(apiConfig != null) {
+				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig);
+				returnJson(response, 200, jsonSchema);
+				return;
+			}
 		}
 
 		/**
@@ -345,10 +347,17 @@ public class ApiListenerServlet extends HttpServletBase {
 				Enumeration<String> paramnames = request.getParameterNames();
 				while (paramnames.hasMoreElements()) {
 					String paramname = paramnames.nextElement();
-					String paramvalue = request.getParameter(paramname);
-	
-					if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
-					messageContext.put(paramname, paramvalue);
+					String[] paramList = request.getParameterValues(paramname);
+					if(paramList.length > 1) { // contains multiple items
+						List<String> valueList = Arrays.asList(paramList);
+						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to "+valueList);
+						messageContext.put(paramname, valueList);
+					}
+					else {
+						String paramvalue = request.getParameter(paramname);
+						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
+						messageContext.put(paramname, paramvalue);
+					}
 				}
 	
 				/**
@@ -468,15 +477,15 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 				PipeLineSessionBase.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
 				Message result = listener.processRequest(null, body, messageContext);
-	
+
 				/**
 				 * Calculate an eTag over the processed result and store in cache
 				 */
 				if(messageContext.get("updateEtag", true)) {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
-					if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) {
-						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asString().hashCode());
+					if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) { //If the data has changed, generate a new eTag
+						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asObject().hashCode()); //The eTag has nothing to do with the content and can be a random string.
 						log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
 						cache.put(etagCacheKey, eTag);
 						response.addHeader("etag", eTag);
@@ -484,7 +493,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					else {
 						log.debug("removing etag with key["+etagCacheKey+"]");
 						cache.remove(etagCacheKey);
-	
+
 						// Not only remove the eTag for the selected resources but also the collection
 						String key = ApiCacheManager.getParentCacheKey(listener, uri);
 						if(key != null) {
@@ -493,30 +502,35 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
-	
+
 				/**
 				 * Add headers
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
-	
+
 				String contentType = listener.getContentType();
 				if(listener.getProducesEnum().equals(MediaTypes.ANY)) {
 					contentType = messageContext.get("contentType", contentType);
 				}
 				response.setHeader("Content-Type", contentType);
-	
+
 				/**
 				 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
 				 */
 				int statusCode = messageContext.get("exitcode", 0);
-				if(statusCode > 0)
+				if(statusCode > 0) {
 					response.setStatus(statusCode);
-	
+				}
+
 				/**
 				 * Finalize the pipeline and write the result to the response
 				 */
 				if(!Message.isEmpty(result)) {
-					StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4000, false, false);
+					if(result.isBinary()) {
+						StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 4096);
+					} else {
+						StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4096, false, false);
+					}
 				}
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
 			}

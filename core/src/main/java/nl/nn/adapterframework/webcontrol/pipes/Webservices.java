@@ -39,7 +39,7 @@ import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -69,14 +69,14 @@ public class Webservices extends TimeoutGuardPipe {
 		String indent = (String) session.get("indent");
 		String useIncludes = (String) session.get("useIncludes");
 
-		if (StringUtils.isNotEmpty(uri) && (uri.endsWith(Wsdl.WSDL_EXTENSION) || uri.endsWith(".zip"))) {
+		if (StringUtils.isNotEmpty(uri) && (uri.endsWith(WsdlGenerator.WSDL_EXTENSION) || uri.endsWith(".zip"))) {
 			String adapterName = StringUtils.substringBeforeLast(StringUtils.substringAfterLast(uri, "/"), ".");
 			Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
 			if (adapter == null) {
 				throw new PipeRunException(this, getLogPrefix(session) + "adapter [" + adapterName + "] doesn't exist");
 			}
 			try {
-				if (uri.endsWith(Wsdl.WSDL_EXTENSION)) {
+				if (uri.endsWith(WsdlGenerator.WSDL_EXTENSION)) {
 					RestListenerUtils.setResponseContentType(session, "application/xml");
 					wsdl(adapter, session, indent, useIncludes);
 				} else {
@@ -119,9 +119,9 @@ public class Webservices extends TimeoutGuardPipe {
 		for (Adapter adapter : ibisManager.getRegisteredAdapters()) {
 			XmlBuilder wsdlXML = new XmlBuilder("wsdl");
 			try {
-				Wsdl wsdl = new Wsdl(adapter.getPipeLine(), retrieveGenerationInfo(session));
+				WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), retrieveGenerationInfo(session));
 				wsdlXML.addAttribute("name", wsdl.getName());
-				wsdlXML.addAttribute("extension", Wsdl.WSDL_EXTENSION);
+				wsdlXML.addAttribute("extension", WsdlGenerator.WSDL_EXTENSION);
 			} catch (Exception e) {
 				wsdlXML.addAttribute("name", adapter.getName());
 				XmlBuilder errorXML = new XmlBuilder("error");
@@ -169,7 +169,7 @@ public class Webservices extends TimeoutGuardPipe {
 	}
 	
 	private void wsdl(Adapter adapter, IPipeLineSession session, String indent, String useIncludes) throws ConfigurationException, XMLStreamException, IOException, NamingException {
-		Wsdl wsdl = new Wsdl(adapter.getPipeLine(), retrieveGenerationInfo(session));
+		WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), retrieveGenerationInfo(session));
 		if (indent != null) {
 			wsdl.setIndent(StringUtils.equalsIgnoreCase(indent, "true"));
 		}
@@ -181,7 +181,7 @@ public class Webservices extends TimeoutGuardPipe {
 	}
 
 	private void zip(Adapter adapter, IPipeLineSession session) throws ConfigurationException, XMLStreamException, IOException, NamingException {
-		Wsdl wsdl = new Wsdl(adapter.getPipeLine(), retrieveGenerationInfo(session));
+		WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), retrieveGenerationInfo(session));
 		wsdl.setUseIncludes(true);
 		wsdl.init();
 		wsdl.zip(RestListenerUtils.retrieveServletOutputStream(session), RestListenerUtils.retrieveSOAPRequestURL(session));

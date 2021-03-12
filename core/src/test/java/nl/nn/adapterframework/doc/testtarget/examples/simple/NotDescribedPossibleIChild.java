@@ -6,4 +6,8 @@ public class NotDescribedPossibleIChild implements IChild {
 
 	public void setFirstAttribute(String value) {
 	}
+
+	public MyEnum getFirstAttributeEnum() {
+		return MyEnum.ONE;
+	}
 }

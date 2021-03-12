@@ -63,9 +63,14 @@ public abstract class SenderBase<S extends ISender> extends Mockito {
 	}
 
 	protected void assertEqualsIgnoreRN(String a, String b) {
-		assertEquals(a.replaceAll("\r\n", ""), b.replaceAll("\r\n", ""));
+		assertEquals(removeRegexCharactersFromInput(a, "\r\n"), removeRegexCharactersFromInput(b, "\r\n"));
 	}
 	protected void assertEqualsIgnoreRNTSpace(String a, String b) {
-		assertEquals(a.replaceAll("[\\n\\t\\r ]", ""), b.replaceAll("[\\n\\t\\r ]", ""));
+		assertEquals(removeRegexCharactersFromInput(a, "[\\n\\t\\r ]"), removeRegexCharactersFromInput(b, "[\\n\\t\\r ]"));
+	}
+
+	private String removeRegexCharactersFromInput(String input, String regex) {
+		if(input == null) return null;
+		return input.replaceAll(regex, "");
 	}
 }

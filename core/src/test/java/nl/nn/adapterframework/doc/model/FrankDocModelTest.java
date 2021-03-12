@@ -1,3 +1,18 @@
+/* 
+Copyright 2021 WeAreFrank! 
+
+Licensed under the Apache License, Version 2.0 (the "License"); 
+you may not use this file except in compliance with the License. 
+You may obtain a copy of the License at 
+
+    http://www.apache.org/licenses/LICENSE-2.0 
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS, 
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+See the License for the specific language governing permissions and 
+limitations under the License. 
+*/
 package nl.nn.adapterframework.doc.model;
 
 import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
@@ -64,22 +79,35 @@ public class FrankDocModelTest {
 		assertTrue(instance.hasType(actualChild.getFullName()));
 		assertSame(instance.getAllTypes().get(LISTENER), actualListener);
 		assertSame(instance.getAllTypes().get(SIMPLE_CHILD), actualChild);
-		Assert.assertSame(instance.getAllElements().get(SIMPLE_CHILD), actualChild.getMembers().get(SIMPLE_CHILD));
+		assertSame(instance.getAllElements().get(SIMPLE_CHILD), getMember(actualChild.getMembers(), SIMPLE_CHILD));
 		Assert.assertTrue(instance.getAllElements().containsKey(SIMPLE_PARENT));
 		Assert.assertTrue(instance.getAllElements().containsKey(FOR_XSD_ELEMENT_NAME_TEST));
-		Map<String, FrankElement> listenerMembers = actualListener.getMembers();
+		List<FrankElement> listenerMembers = actualListener.getMembers();
 		// Tests that AbstractGrandParent is omitted.
 		assertEquals(4, listenerMembers.size());
-		assertTrue(listenerMembers.containsKey(SIMPLE_PARENT));
-		assertTrue(listenerMembers.containsKey(SIMPLE_CHILD));
-		assertTrue(listenerMembers.containsKey(SIMPLE_GRNAD_CHILD));
-		Map<String, FrankElement> childMembers = actualChild.getMembers();
+		assertTrue(membersContain(listenerMembers, SIMPLE_PARENT));
+		assertTrue(membersContain(listenerMembers, SIMPLE_CHILD));
+		assertTrue(membersContain(listenerMembers, SIMPLE_GRNAD_CHILD));
+		List<FrankElement> childMembers = actualChild.getMembers();
 		assertEquals(1, childMembers.size());
-		assertTrue(childMembers.containsKey(SIMPLE_CHILD));
+		assertTrue(membersContain(childMembers, SIMPLE_CHILD));
 		assertEquals(LISTENER, actualListener.getFullName());
 		assertEquals("IListener", actualListener.getSimpleName());
 		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
 		assertEquals("ListenerChild", actualChild.getSimpleName());
+	}
+
+	private boolean membersContain(List<FrankElement> elements, String fullName) {
+		return elements.stream().anyMatch(elem -> elem.getFullName().equals(fullName));
+	}
+
+	private FrankElement getMember(List<FrankElement> elements, String fullName) {
+		for(FrankElement element: elements) {
+			if(element.getFullName().equals(fullName)) {
+				return element;
+			}
+		}
+		return null;
 	}
 
 	@Test
@@ -192,7 +220,7 @@ public class FrankDocModelTest {
 	 */
 	private Map<String, FrankAttribute> getAttributesOfClass(final String className) throws ReflectiveOperationException {
 		fakeAttributeOwner = new FrankElement("dummy.Dummy", "Dummy", false);
-		final List<FrankAttribute> attributes = instance.createAttributes(Utils.getClass(className).getDeclaredMethods(), fakeAttributeOwner);
+		final List<FrankAttribute> attributes = instance.createAttributes(Utils.getClass(className), fakeAttributeOwner);
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}
 

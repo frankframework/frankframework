@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -113,8 +114,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 	}
 	@Test
-	@Ignore("This fails on PostgreSQL, precision of setFloat appears to be too low")
 	public void testNumericAsFloat() throws Exception {
+		assumeFalse(dbmsSupport.getDbms()==Dbms.POSTGRESQL); // This fails on PostgreSQL, precision of setFloat appears to be too low"
 		String number = "1234.5677";
 		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP(TKEY, TNUMBER) VALUES (4,?)", "other", null);
 		dbmsSupport.convertQuery(context, "Oracle");
@@ -132,6 +133,25 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 	}
 
+	@Test 
+	// test the alias functionality as used in JdbcTableListener. 
+	// Asserts that columns can be identified with and without alias.
+	public void testSelectWithAlias() throws Exception {
+		String insertQuery = "INSERT INTO TEMP(TKEY, TNUMBER, TVARCHAR) VALUES (5,5,'A')";
+		String selectQuery = "SELECT TNUMBER FROM TEMP t WHERE TKEY=5 AND t.TVARCHAR='A'";
+		System.out.println("executing query ["+insertQuery+"]");
+		try (PreparedStatement stmt = connection.prepareStatement(insertQuery)) {
+			stmt.execute();
+		}
+		
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, "select")) {
+			try (ResultSet resultSet = stmt.executeQuery()) {
+				resultSet.next();
+				assertEquals(5,resultSet.getInt(1));
+			}
+		}
+	}
+	
 	@Test
 	public void testJdbcSetParameter() throws Exception {
 		String number = "1234.5678";
@@ -469,7 +489,68 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 	}
 	
+	@Test
+	public void testIsBlobType() throws SQLException {
+		try (Connection connection=getConnection()) {
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TINT, TVARCHAR, TNUMBER, TDATE, TDATETIME, TBOOLEAN, TBLOB, TCLOB FROM TEMP")) {
+				try (ResultSet rs=stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = rs.getMetaData();
+					for (int i=1;i<=9;i++) {
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==8, dbmsSupport.isBlobType(rsmeta, i));
+					}
+				}
+				
+			}
+		}
+	}
 	
 	
+	
+	@Test
+	public void testIsClobType() throws SQLException {
+		try (Connection connection=getConnection()) {
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TINT, TVARCHAR, TNUMBER, TDATE, TDATETIME, TBOOLEAN, TBLOB, TCLOB FROM TEMP")) {
+				try (ResultSet rs=stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = rs.getMetaData();
+					for (int i=1;i<=9;i++) {
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==9, dbmsSupport.isClobType(rsmeta, i));
+					}
+				}
+				
+			}
+		}
+	}
+
+	@Test
+	public void testIsBlobTypeIbisTemp() throws Exception {
+		try (Connection connection=getConnection()) {
+			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB1, TCLOB FROM IBISTEMP")) {
+				try (ResultSet rs=stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = rs.getMetaData();
+					for (int i=1;i<=7;i++) {
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==6, dbmsSupport.isBlobType(rsmeta, i));
+					}
+				}
+				
+			}
+		}
+	}
+	
+	@Test
+	public void testIsClobTypeIbisTemp() throws Exception {
+		try (Connection connection=getConnection()) {
+			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB1, TCLOB FROM IBISTEMP")) {
+				try (ResultSet rs=stmt.executeQuery()) {
+					ResultSetMetaData rsmeta = rs.getMetaData();
+					for (int i=1;i<=7;i++) {
+						assertEquals("column type name ["+rsmeta.getColumnTypeName(i)+"] precision ["+rsmeta.getPrecision(i)+"] column type ["+rsmeta.getColumnType(i)+"]", i==7, dbmsSupport.isClobType(rsmeta, i));
+					}
+				}
+				
+			}
+		}
+	}
 
 }
