@@ -75,6 +75,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		// target is the original string
 		// from   is the string to be replaced
 		// to     is the string which will used to replace
+		if (target == null) return target;
 		int start = target.indexOf(from);
 		if (start == -1)
 			return target;

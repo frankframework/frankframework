@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
-
-import org.apache.commons.lang.NotImplementedException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Wrapper class for PipeLineSession to be able to debug storing values in
@@ -50,85 +51,108 @@ public class PipeLineSessionDebugger implements IPipeLineSession {
 
 	// Methods implementing IPipeLineSession
 
+	@Override
 	public String getMessageId() {
 		return pipeLineSession.getMessageId();
 	}
 
-	public String getOriginalMessage() {
-		return pipeLineSession.getOriginalMessage();
-	}
-
+	@Override
 	public void setSecurityHandler(ISecurityHandler handler) {
 		pipeLineSession.setSecurityHandler(handler);
 	}
 
+	@Override
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		return pipeLineSession.getSecurityHandler();
 	}
 
+	@Override
 	public boolean isUserInRole(String role) throws NotImplementedException {
 		return pipeLineSession.isUserInRole(role);
 	}
 
+	@Override
 	public Principal getPrincipal() throws NotImplementedException {
 		return pipeLineSession.getPrincipal();
 	}
 
 	// Methods implementing Map
 
+	@Override
 	public void clear() {
 		pipeLineSession.clear();
 	}
 
-	public boolean containsKey(Object arg0) {
-		return pipeLineSession.containsKey(arg0);
+	@Override
+	public boolean containsKey(Object key) {
+		return pipeLineSession.containsKey(key);
 	}
 
-	public boolean containsValue(Object arg0) {
-		return pipeLineSession.containsValue(arg0);
+	@Override
+	public boolean containsValue(Object value) {
+		return pipeLineSession.containsValue(value);
 	}
 
+	@Override
 	public Set<java.util.Map.Entry<String, Object>> entrySet() {
 		return pipeLineSession.entrySet();
 	}
 
-	public boolean equals(Object arg0) {
-		return pipeLineSession.equals(arg0);
+	@Override
+	public boolean equals(Object other) {
+		return pipeLineSession.equals(other);
 	}
 
-	public Object get(Object arg0) {
-		return pipeLineSession.get(arg0);
+	@Override
+	public Object get(Object key) {
+		return pipeLineSession.get(key);
 	}
 
+	@Override
 	public int hashCode() {
 		return pipeLineSession.hashCode();
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return pipeLineSession.isEmpty();
 	}
 
-	public Set keySet() {
+	@Override
+	public Set<String> keySet() {
 		return pipeLineSession.keySet();
 	}
 
-	public Object put(String arg0, Object arg1) {
-		arg1 = ibisDebugger.storeInSessionKey(getMessageId(), arg0, arg1);
-		return pipeLineSession.put(arg0, arg1);
+	@Override
+	public Object put(String name, Object value) {
+		Object oldValue = value;
+		value = ibisDebugger.storeInSessionKey(getMessageId(), name, value);
+		if (value != oldValue && value instanceof Message) {
+			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
+			// keep the report in progress (waiting for the stream to be read, captured and closed).
+			((Message)value).closeOnCloseOf(this);
+		}
+		return pipeLineSession.put(name, value);
 	}
 
-	public void putAll(Map arg0) {
-		pipeLineSession.putAll(arg0);
+	@Override
+	public void putAll(Map<? extends String,? extends Object> entries) {
+		for(Entry<? extends String,? extends Object> entry: entries.entrySet()) {
+			put(entry.getKey(),entry.getValue());
+		}
 	}
 
-	public Object remove(Object arg0) {
-		return pipeLineSession.remove(arg0);
+	@Override
+	public Object remove(Object key) {
+		return pipeLineSession.remove(key);
 	}
 
+	@Override
 	public int size() {
 		return pipeLineSession.size();
 	}
 
+	@Override
 	public Collection<Object> values() {
 		return pipeLineSession.values();
 	}
@@ -165,6 +189,7 @@ public class PipeLineSessionDebugger implements IPipeLineSession {
 
 	// Remaining methods
 
+	@Override
 	public String toString() {
 		return pipeLineSession.toString();
 	}

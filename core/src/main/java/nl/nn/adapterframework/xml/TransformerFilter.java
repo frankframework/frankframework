@@ -67,6 +67,7 @@ public class TransformerFilter extends FullXmlFilter {
 						}
 					} catch (TransformerException e) {
 						exceptionInsertingFilter.insertException(new SaxException(e));
+						throw e;
 					}
 				}
 
@@ -78,6 +79,7 @@ public class TransformerFilter extends FullXmlFilter {
 						}
 					} catch (TransformerException e) {
 						exceptionInsertingFilter.insertException(new SaxException(e));
+						throw e;
 					}
 					
 				}
@@ -90,6 +92,7 @@ public class TransformerFilter extends FullXmlFilter {
 						}
 					} catch (TransformerException e) {
 						exceptionInsertingFilter.insertException(new SaxException(e));
+						throw e;
 					}
 					
 				}

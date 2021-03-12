@@ -118,6 +118,10 @@
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
 		<!-- Requirement for Jboss 7.5 -->
 		<dependency>
 			<groupId>commons-validator</groupId>

@@ -30,6 +30,7 @@ import java.util.function.BiFunction;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -67,12 +68,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	//Shouldn't this be `id` ? See {#setListenerParameters(...)};
 	@Override
 	public String getMessageId() {
-		return (String) get(messageIdKey);
-	}
-
-	@Override
-	public String getOriginalMessage() {
-		return (String) get(originalMessageKey);
+		return (String) Message.asObject(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
 	}
 
 	/**

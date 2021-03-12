@@ -655,20 +655,22 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
 			}
 			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()), next) {
+				BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
+				return new MessageOutputStream(this, blobOutputStream, next) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
-						log.warn(getLogPrefix()+"warnings: "+((BlobOutputStream)requestStream).getWarnings().toXML());
+						log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
 					}
 				};
 			}
 			if ("updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()), next) {
+				ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
+				return new MessageOutputStream(this, clobWriter, next) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
-						log.warn(getLogPrefix()+"warnings: "+((ClobWriter)requestStream).getWarnings().toXML());
+						log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
 					}
 				};
 			} 
