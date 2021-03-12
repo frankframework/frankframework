@@ -56,10 +56,8 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
-import nl.nn.adapterframework.stream.WriterPlaceHolder;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
 /**
@@ -242,28 +240,20 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		// TODO: provide proper debug entry in Debugger interface.
 		if (proceedingJoinPoint.getTarget() instanceof ISender) {
 			ISender sender = (ISender)proceedingJoinPoint.getTarget();
-			WriterPlaceHolder writerPlaceHolder = ibisDebugger.senderInput(sender, correlationId, new WriterPlaceHolder());
+			ibisDebugger.senderInput(sender, correlationId, "--> provide outputstream");
 			//System.out.println("--> provide outputstream of sender ["+sender.getName()+"]");
 			MessageOutputStream result = (MessageOutputStream)proceedingJoinPoint.proceed();
-			if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
-				int sizeLimit = writerPlaceHolder.getSizeLimit()!=0 ? writerPlaceHolder.getSizeLimit() : StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT;
-				result.captureCharacterStream(writerPlaceHolder.getWriter(), sizeLimit);
-			}
-			ibisDebugger.senderOutput(sender, correlationId, "<-- provided outputstream");
-			return result;
+			//System.out.println("<-- provide outputstream of sender ["+sender.getName()+"]: ["+result+"]");
+			return ibisDebugger.senderOutput(sender, correlationId, result);
 		}
 		if (proceedingJoinPoint.getTarget() instanceof IPipe) {
 			IPipe pipe = (IPipe)proceedingJoinPoint.getTarget();
 			//System.out.println("--> provide outputstream of pipe ["+pipe.getName()+"]");
 			PipeLine pipeLine = pipe instanceof AbstractPipe ? ((AbstractPipe)pipe).getPipeLine() : new PipeLine();
-			WriterPlaceHolder writerPlaceHolder = ibisDebugger.pipeInput(pipeLine, pipe, correlationId, new WriterPlaceHolder());
+			ibisDebugger.pipeInput(pipeLine, pipe, correlationId, "--> provide outputstream");
 			MessageOutputStream result = (MessageOutputStream)proceedingJoinPoint.proceed();
-			if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
-				int sizeLimit = writerPlaceHolder.getSizeLimit()!=0 ? writerPlaceHolder.getSizeLimit() : StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT;
-				result.captureCharacterStream(writerPlaceHolder.getWriter(), sizeLimit);
-			}
-			ibisDebugger.pipeOutput(pipeLine, pipe, correlationId, "<-- provided outputstream");
-			return result;
+			//System.out.println("<-- provide outputstream of pipe ["+pipe.getName()+"]: ["+result+"]");
+			return ibisDebugger.pipeOutput(pipeLine, pipe, correlationId, result);
 		}
 		log.warn("Could not identify outputstream provider ["+proceedingJoinPoint.getTarget().getClass().getName()+"] as pipe or sender");
 		return (MessageOutputStream)proceedingJoinPoint.proceed();
