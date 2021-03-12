@@ -16,6 +16,9 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeFrankBoolean;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeFrankInteger;
+
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addEnumeration;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addRestriction;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAnyAttribute;
@@ -349,6 +352,9 @@ public class DocWriterNew {
 		// element options that do not correspond to a ConfigChildSet, then
 		// they are finished by this call.
 		finishLeftoverGenericOptionsAttributes();
+		log.trace("Adding helper types for boolean and integer attributes, allowing ${...} references");
+		xsdComplexItems.add(createTypeFrankBoolean());
+		xsdComplexItems.add(createTypeFrankInteger());
 		log.trace("Have the XmlBuilder objects. Going to add them in the right order to the schema root builder");
 		xsdElements.forEach(xsdRoot::addSubElement);
 		xsdComplexItems.forEach(xsdRoot::addSubElement);

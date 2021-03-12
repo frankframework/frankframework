@@ -27,6 +27,11 @@ class DocWriterNewXmlUtils {
 	private static Logger log = LogUtil.getLogger(DocWriterNewXmlUtils.class);
 
 	private static final String XML_SCHEMA_URI = "http://www.w3.org/2001/XMLSchema";
+	private static final String PATTERN_REF = "\\$\\{[^\\}]+\\}";
+	private static final String FRANK_BOOLEAN = "frankBoolean";
+	private static final String FRANK_INT = "frankInt";
+	private static final String PATTERN_FRANK_BOOLEAN = String.format("(true|false)|(%s)", PATTERN_REF);
+	private static final String PATTERN_FRANK_INT = String.format("((\\+|-)?[0-9]+)|(%s)", PATTERN_REF);
 
 	private DocWriterNewXmlUtils() {
 	}
@@ -215,19 +220,23 @@ class DocWriterNewXmlUtils {
 		return attribute;
 	}
 
+	// This method ensures that references are still allowed for integer and boolean attributes.
+	// For example, an integer attribute can still be set like "${someIdentifier}".
+	// This method expects that methods createTypeFrankBoolean() and createTypeFrankInteger()
+	// are used to define the referenced XSD types.
 	static XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType) {
 		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
 		attribute.addAttribute("name", name);
-		String typeName = "xs:";
+		String typeName = null;
 		switch(modelAttributeType) {
 		case BOOL:
-			typeName += "boolean";
+			typeName = FRANK_BOOLEAN;
 			break;
 		case INT:
-			typeName += "integer";
+			typeName = FRANK_INT;
 			break;
 		case STRING:
-			typeName += "string";
+			typeName = "xs:string";
 			break;
 		}
 		attribute.addAttribute("type", typeName);
@@ -324,5 +333,25 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(enumeration);
 		enumeration.addAttribute("value", item);
 		return enumeration;
+	}
+
+	static XmlBuilder createTypeFrankBoolean() {
+		return createStringRestriction(FRANK_BOOLEAN, PATTERN_FRANK_BOOLEAN);
+	}
+
+	static XmlBuilder createTypeFrankInteger() {
+		return createStringRestriction(FRANK_INT, PATTERN_FRANK_INT);
+	}
+
+	private static XmlBuilder createStringRestriction(String name, String pattern) {
+		XmlBuilder simpleType = new XmlBuilder("simpleType", "xs", XML_SCHEMA_URI);
+		simpleType.addAttribute("name", name);
+		XmlBuilder restriction = new XmlBuilder("restriction", "xs", XML_SCHEMA_URI);
+		simpleType.addSubElement(restriction);
+		restriction.addAttribute("base", "xs:string");
+		XmlBuilder patternElement = new XmlBuilder("pattern", "xs", XML_SCHEMA_URI);
+		restriction.addSubElement(patternElement);
+		patternElement.addAttribute("value", pattern);
+		return simpleType;
 	}
 }

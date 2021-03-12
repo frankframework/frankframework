@@ -76,4 +76,14 @@
   <xs:group name="RoleDeltaElementGroupBase">
     <xs:choice />
   </xs:group>
+  <xs:simpleType name="frankBoolean">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(true|false)|(\$\{[^\}]+\})" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="frankInt">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="((\+|-)?[0-9]+)|(\$\{[^\}]+\})" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>
