@@ -201,7 +201,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 			// processed with streaming.auto=true)
 			PipeRunResult prr = result!=null ? (PipeRunResult)result : new PipeRunResult();
 			prr.setResult(ibisDebugger.senderOutput(sender, messageId, prr.getResult()));
-			return result;
+			return (M)prr;
 		}
 		return (M)ibisDebugger.senderOutput(sender, messageId, Message.asMessage(result));
 	}
