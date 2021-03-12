@@ -563,7 +563,8 @@ public class Message implements Serializable {
 			if (!isBinary()) {
 				request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
 			} else {
-				request = StreamUtil.captureInputStream(asInputStream(), new WriterOutputStream(writer, getCharset()), maxSize, true);
+				String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+				request = StreamUtil.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
 			}
 		} catch (IOException e) {
 			log.warn("Cannot capture reader", e);
