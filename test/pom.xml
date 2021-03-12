@@ -128,7 +128,6 @@
 				<configuration>
 					<packagingExcludes>.gitignore</packagingExcludes>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
-					<filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
 
 					<archive>
 						<manifestEntries>
@@ -157,7 +156,7 @@
 							<targetPath>testtool</targetPath>
 						</resource>
 						<webResource>
-							<directory>src/main/webapp/META-INF</directory>
+							<directory>src/main/webapp/META-INF-unfiltered</directory>
 							<targetPath>META-INF</targetPath>
 							<filtering>true</filtering>
 						</webResource>
