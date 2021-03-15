@@ -103,6 +103,6 @@ public class Dir2Map {
 	}
 
 	private String normalizePath(File file) {
-		return FilenameUtils.normalize(file.getPath(), true);
+		return FilenameUtils.normalize(file.getPath(), true); // Do not use canonical path which causes access permission problem for mounted directories
 	}
 }
