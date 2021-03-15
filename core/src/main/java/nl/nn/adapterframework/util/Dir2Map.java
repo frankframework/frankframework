@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -104,13 +103,6 @@ public class Dir2Map {
 	}
 
 	private String normalizePath(File file) {
-		String path = null;
-		try {
-			path = file.getCanonicalPath();
-		}
-		catch (IOException e) {
-			path = file.getPath();
-		}
-		return FilenameUtils.normalize(path, true);
+		return FilenameUtils.normalize(file.getPath(), true); // Do not use canonical path which causes access permission problem for mounted directories
 	}
 }
