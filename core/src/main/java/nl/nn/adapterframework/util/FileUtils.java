@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -356,7 +356,7 @@ public class FileUtils {
 	}
 
 	public static File getWeeklyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, "yyyy'W'ww", filenameSuffix, retentionDays);
+		return getRollingFile(directory, filenamePrefix, "YYYY'W'ww", filenameSuffix, retentionDays);
 	}
 	
 	public static File getDailyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
@@ -375,11 +375,7 @@ public class FileUtils {
 		String filename=filenamePrefix+DateUtils.format(now,dateformat)+filenameSuffix;
 		File result = new File(directory+"/"+filename);
 		if (!result.exists()) {
-			int year=now.getYear();
-			int month=now.getMonth();
-			int date=now.getDate();
-		
-			long thisMorning = new Date(year, month, date).getTime();
+			long thisMorning = now.getTime();
 
 			long deleteBefore = thisMorning - retentionDays * millisPerDay;
 
