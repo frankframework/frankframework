@@ -289,15 +289,31 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testWeeklyRollingFilenameForLastWeekOfOldYear() throws Exception {
+	public void testWeeklyRollingFilenameForTheLastWeekOfOldYear() throws Exception {
 		// The Last week of old year
 		assertEquals("2020W53",getRollingFile("", 2020, 11, 31).getName());
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForTheWeekBeforeTheLastWeekOfOldYear() throws Exception {
 		// The week before the last week of old year
 		assertEquals("2020W52",getRollingFile("", 2020, 11, 25).getName());
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForTheLastDayOfTheWeekBeforeTheLastWeekOfOldYear() throws Exception {
 		// The last day of the week before the last week of old year
 		assertEquals("2020W52",getRollingFile("", 2020, 11, 27).getName());
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForFewDaysOfTheNewYearFromTheLastWeekOfOldYear() throws Exception {
 		// Few days of the new year which are also in the last week of the old year
 		assertEquals("2020W53",getRollingFile("", 2021, 0, 3).getName());
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForTheFirstDayOfTheNewYear() throws Exception {
 		// The first day of the first week of the new year
 		assertEquals("2021W01",getRollingFile("", 2021, 0, 4).getName());
 	}
