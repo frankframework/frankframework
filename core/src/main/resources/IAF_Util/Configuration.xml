@@ -5,6 +5,7 @@
 	<!ENTITY StatScheduler SYSTEM "./ConfigurationStatScheduler.xml">
 	<!ENTITY Monitoring SYSTEM "./ConfigurationMonitoring.xml">
 	<!ENTITY CleanupDatabase SYSTEM "./ConfigurationCleanupDatabase.xml">
+	<!ENTITY CleanupLock SYSTEM "./ConfigurationCleanupLock.xml">
 	<!ENTITY CleanupFileSystem SYSTEM "./ConfigurationCleanupFileSystem.xml">
 	<!ENTITY RecoverAdapters SYSTEM "./ConfigurationRecoverAdapters.xml">
 	<!ENTITY IbisDoc SYSTEM "./ConfigurationIbisDoc.xml">
@@ -19,6 +20,7 @@
 	&LoadDatabaseSchedules;
 	&Monitoring;
 	&CleanupDatabase;
+	&CleanupLock;
 	&CleanupFileSystem;
 	&RecoverAdapters;
 	&IbisDoc;

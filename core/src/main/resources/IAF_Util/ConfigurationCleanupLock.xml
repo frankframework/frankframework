@@ -1,14 +1,14 @@
 <module>
 	<scheduler>
 		<job
-			name="cleanup Database (IbisStore)"
-			cronExpression="${cleanup.database.cron}"
+			name="Cleanup the database (IbisLock)"
+			cronExpression="${cleanup.lock.cron}"
 			description="Cleanup the database (IbisStore)"
-			function="cleanupDatabase"
+			function="cleanupLock"
 		>
 			<locker
 				datasourceName="${jdbc.datasource.default}"
-				objectId="CleanupDatabase"
+				objectId="CleanupLock"
 				ignoreTableNotExist="true"
 			/>
 		</job>

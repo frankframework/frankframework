@@ -572,6 +572,9 @@ public class JobDef extends TransactionAttributes {
 		case CLEANUPDB:
 			cleanupDatabase(ibisManager);
 			break;
+		case CLEANUPLOCK:
+			cleanupLock(ibisManager);
+			break;
 		case CLEANUPFS:
 			cleanupFileSystem(ibisManager);
 			break;
@@ -678,40 +681,6 @@ public class JobDef extends TransactionAttributes {
 		Date date = new Date();
 
 		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);
-		
-		List<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
-
-		for (Iterator<String> iter = datasourceNames.iterator(); iter.hasNext();) {
-			String datasourceName = iter.next();
-			FixedQuerySender qs = null;
-			try {
-				qs = ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-				qs.setDatasourceName(datasourceName);
-				qs.setName("cleanupDatabase-IBISLOCK");
-				qs.setQueryType("other");
-				qs.setTimeout(getQueryTimeout());
-				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
-				qs.setQuery(query);
-				Parameter param = new Parameter();
-				param.setName("now");
-				param.setType(Parameter.TYPE_TIMESTAMP);
-				param.setValue(DateUtils.format(date));
-				qs.addParameter(param);
-				qs.configure();
-				qs.open();
-
-				Message result = qs.sendMessage(Message.nullMessage(), null);
-				log.info("result [" + result + "]");
-			} catch (Exception e) {
-				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
-				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error(getLogPrefix()+msg);
-			} finally {
-				if(qs != null) {
-					qs.close();
-				}
-			}
-		}
 
 		List<MessageLogObject> messageLogs = getAllMessageLogs(ibisManager);
 
@@ -750,6 +719,44 @@ public class JobDef extends TransactionAttributes {
 				log.info("result [" + result + "]");
 			} catch (Exception e) {
 				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
+				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+				log.error(getLogPrefix()+msg);
+			} finally {
+				if(qs != null) {
+					qs.close();
+				}
+			}
+		}
+	}
+	
+	private void cleanupLock(IbisManager ibisManager) {
+		Date date = new Date();
+		
+		List<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
+
+		for (Iterator<String> iter = datasourceNames.iterator(); iter.hasNext();) {
+			String datasourceName = iter.next();
+			FixedQuerySender qs = null;
+			try {
+				qs = ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+				qs.setDatasourceName(datasourceName);
+				qs.setName("cleanupDatabase-IBISLOCK");
+				qs.setQueryType("other");
+				qs.setTimeout(getQueryTimeout());
+				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
+				qs.setQuery(query);
+				Parameter param = new Parameter();
+				param.setName("now");
+				param.setType(Parameter.TYPE_TIMESTAMP);
+				param.setValue(DateUtils.format(date));
+				qs.addParameter(param);
+				qs.configure();
+				qs.open();
+
+				Message result = qs.sendMessage(Message.nullMessage(), null);
+				log.info("result [" + result + "]");
+			} catch (Exception e) {
+				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 				log.error(getLogPrefix()+msg);
 			} finally {

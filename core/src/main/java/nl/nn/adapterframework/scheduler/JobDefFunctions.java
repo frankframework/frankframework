@@ -25,6 +25,7 @@ public enum JobDefFunctions {
 	DUMPSTATS("dumpStatistics", true),
 	DUMPSTATSFULL("dumpStatisticsFull", true),
 	CLEANUPDB("cleanupDatabase", true),
+	CLEANUPLOCK("cleanupLock", true),
 	CLEANUPFS("cleanupFileSystem", true),
 	RECOVER_ADAPTERS("recoverAdapters", true),
 	CHECK_RELOAD("checkReload", true), 
