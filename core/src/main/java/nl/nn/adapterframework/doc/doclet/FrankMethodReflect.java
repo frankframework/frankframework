@@ -1,0 +1,96 @@
+package nl.nn.adapterframework.doc.doclet;
+
+import org.springframework.core.annotation.AnnotationUtils;
+
+import nl.nn.adapterframework.doc.Utils;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+class FrankMethodReflect implements FrankMethod {
+	private final Method method;
+	private final Map<String, FrankAnnotation> annotations;
+
+	FrankMethodReflect(Method method) {
+		this.method = method;
+		annotations = new HashMap<>();
+		for(Annotation r: method.getAnnotations()) {
+			FrankAnnotation frankAnnotation = new FrankAnnotationReflect(r);
+			annotations.put(frankAnnotation.getName(), frankAnnotation);
+		}
+	}
+
+	@Override
+	public String getName() {
+		return method.getName();
+	}
+
+	@Override
+	public boolean isPublic() {
+		return Modifier.isPublic(method.getModifiers());
+	}
+
+	@Override
+	public FrankType getReturnType() {
+		return typeOf(method.getReturnType());
+	}
+
+	private FrankType typeOf(Class<?> clazz) {
+		if(clazz.isPrimitive()) {
+			return new FrankPrimitiveType(clazz.getName());
+		} else {
+			return new FrankClassReflect(clazz);
+		}
+	}
+
+	@Override
+	public int getParameterCount() {
+		return method.getParameterCount();
+	}
+
+	@Override
+	public FrankType[] getParameterTypes() {
+		FrankType[] result = new FrankType[method.getParameterCount()];
+		for(int i = 0; i < method.getParameterCount(); ++i) {
+			result[i] = typeOf(method.getParameterTypes()[i]);
+		}
+		return result;
+	}
+
+	@Override
+	public FrankAnnotation[] getAnnotations() {
+		List<FrankAnnotation> annotationList = new ArrayList<>(annotations.values());
+		FrankAnnotation[] result = new FrankAnnotation[annotationList.size()];
+		for(int i = 0; i < annotationList.size(); ++i) {
+			result[i] = annotationList.get(i);
+		}
+		return result;
+	}
+
+	@Override
+	public FrankAnnotation getAnnotation(String name) {
+		return annotations.get(name);
+	}
+
+	@Override
+	public FrankAnnotation getAnnotationInludingInherited(String name) throws DocletReflectiveOperationException {
+		Annotation rawAnnotation = null;
+		try {
+			@SuppressWarnings("unchecked")
+			Class<? extends Annotation> annotationClass = (Class<? extends Annotation>) Utils.getClass(name);
+			rawAnnotation = AnnotationUtils.findAnnotation(method, annotationClass);
+		} catch(Exception e) {
+			throw new DocletReflectiveOperationException(String.format("Could not get annotation [%s] including inherited", name), e);
+		}
+		if(rawAnnotation == null) {
+			return null;
+		} else {
+			return new FrankAnnotationReflect(rawAnnotation);
+		}
+	}
+}
