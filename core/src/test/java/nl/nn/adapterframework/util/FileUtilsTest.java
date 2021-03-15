@@ -11,7 +11,11 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -279,4 +283,55 @@ public class FileUtilsTest {
 		assertFalse(FileUtils.isFileBinaryEqual(file1, file2));
 	}
 
+	public File getRollingFile(String dir, int year, int month, int day) {
+		Date date = new GregorianCalendar(year, month, day).getTime();
+		return FileUtils.getRollingFile(dir, "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMAT, "", 0, date);
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForLastWeekOfOldYear() throws Exception {
+		// The Last week of old year
+		assertEquals("2020W53",getRollingFile("", 2020, 11, 31).getName());
+		// The week before the last week of old year
+		assertEquals("2020W52",getRollingFile("", 2020, 11, 25).getName());
+		// The last day of the week before the last week of old year
+		assertEquals("2020W52",getRollingFile("", 2020, 11, 27).getName());
+		// Few days of the new year which are also in the last week of the old year
+		assertEquals("2020W53",getRollingFile("", 2021, 0, 3).getName());
+		// The first day of the first week of the new year
+		assertEquals("2021W01",getRollingFile("", 2021, 0, 4).getName());
+	}
+
+	@Test
+	public void testGetRollingFileDeleteExisting() throws IOException {
+		File tempDir = FileUtils.createTempDir();
+
+		// get rolling file 2020W52
+		File test = getRollingFile(tempDir.getAbsolutePath(), 2020, 11, 25);
+		Files.createFile(Paths.get(test.getAbsolutePath()));
+		assertEquals(1, tempDir.listFiles().length); // test number of files
+
+		test.setLastModified(new GregorianCalendar(2020, 11, 25).getTime().getTime()); // change the last modified date for the file to be deleted.
+		test = FileUtils.getRollingFile(tempDir.getAbsolutePath(), "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMAT, "", 7, null);
+		Files.createFile(Paths.get(test.getAbsolutePath()));
+		assertEquals(1, tempDir.listFiles().length); // test number of files 
+	}
+
+	@Test
+	public void testGetRollingFileTheSamefile() throws IOException {
+		File tempDir = FileUtils.createTempDir();
+
+		// get rolling file 2020W52
+		File test = getRollingFile(tempDir.getAbsolutePath(), 2020, 11, 25);
+		Files.createFile(Paths.get(test.getAbsolutePath()));
+		assertEquals(1, tempDir.listFiles().length); // test number of files
+
+		test = getRollingFile(tempDir.getAbsolutePath(), 2020, 11, 25);
+		try {
+			Files.createFile(Paths.get(test.getAbsolutePath()));
+		} catch (Exception e) {
+			assertEquals(FileAlreadyExistsException.class, e.getClass());
+		}
+		assertEquals(1, tempDir.listFiles().length); // test number of files 
+	}
 }
