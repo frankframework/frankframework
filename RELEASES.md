@@ -24,14 +24,43 @@ Upcoming
 
 - Change HashPipe attribute encoding into charset. Its default has changed from ISO8859-1 into UTF-8
 
+7.6-RC1
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.5...v7.6-RC1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.6)](https://travis-ci.org/ibissource/iaf)
+
+- Debug streaming messages
+- Add TextSplitterPipe
+- Docker images for application servers Tomcat, WebSphere and JBoss
+- Docker images for various dbmses for iaf-test
+- Support multivalued parameters in json2xml
+- Unify listeners for generic file systems and database tables, support 'Move to Available'
+- Introduce DataSourceFactory and ConnectionFactoryFactory
+- Set datasourcename by default
+- Add SignaturePipe
+- Support automatic closing of streams
+- Support generation of SQL update script from Liquibase
+- Rework Locker 
+- Full DBMS support for H2, Oracle, MSSql, MySql, MariaDB and PostgreSQL
+- Use Message as primary input-output object for, e.g. for Pipes and Senders
+- Introduce RetryFlag, set as session variable if a message is retried
+- Introduce ImapFileSystem
+- Ability to generate OpenAPI 3.0 schemas
+- Handle BLOBs as bytes instead of characters
+- Configurable suppression of configuration warnings
+- Inline errorstorage and messagelog browsers
+- Introduce PeekUntransacted, to avoid excessive XA transactions
+- Support automatic translation of SQL dialects
+- Introduce optional OutputStreaming
+- Introduce block enabled senders, and support for it in Iterating Pipes
+- Fix adapter statistics by the hour
+- Support for optional request parameters in Json2XmlValidator
+- Add PgpPipe
+- Upgrade to Java 8
 
 
 7.5-RC1
 --------
-
-[Commits](https://github.com/ibissource/iaf/compare/v7.4...v7.5-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC1)](https://travis-ci.org/ibissource/iaf)
-
 
 - Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
   is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
