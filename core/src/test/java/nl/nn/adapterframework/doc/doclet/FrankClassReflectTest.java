@@ -15,22 +15,27 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.junit.Before;
 import org.junit.Test;
-
-import nl.nn.adapterframework.doc.Utils;
 
 public class FrankClassReflectTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.doclet.";
-	private static final String DEPRECATED = "java.lang.Deprecated";
 	private static final String OBJECT = "java.lang.Object";
 
+	private FrankClassRepository classRepository;
+
+	@Before
+	public void setUp() {
+		classRepository = FrankClassRepository.getReflectInstance();
+	}
+
 	@Test
-	public void testChildClass() {
-		FrankClass instance = new FrankClassReflect(Utils.getClass(PACKAGE + "Child"));
+	public void testChildClass() throws DocletReflectiveOperationException {
+		FrankClass instance = classRepository.findClass(PACKAGE + "Child");
 		assertEquals(PACKAGE + "Child", instance.getName());
 		assertTrue(instance.isPublic());
 		assertEquals(0, instance.getAnnotations().length);
-		assertNull(instance.getAnnotation(DEPRECATED));
+		assertNull(instance.getAnnotation(FrankDocletConstants.DEPRECATED));
 		assertFalse(instance.isAbstract());
 		assertEquals("Child", instance.getSimpleName());
 		assertEquals("Parent", instance.getSuperclass().getSimpleName());
@@ -38,32 +43,32 @@ public class FrankClassReflectTest {
 	}
 
 	@Test
-	public void whenClassIsPackagePrivateThenNotPublic() {
-		FrankClass instance = new FrankClassReflect(Utils.getClass(PACKAGE + "PackagePrivateClass"));
+	public void whenClassIsPackagePrivateThenNotPublic() throws DocletReflectiveOperationException {
+		FrankClass instance = classRepository.findClass(PACKAGE + "PackagePrivateClass");
 		assertFalse(instance.isPublic());
 	}
 
 	@Test
-	public void testClassAnnotations() {
-		FrankClass instance = new FrankClassReflect(Utils.getClass(PACKAGE + "DeprecatedChild"));
+	public void testClassAnnotations() throws DocletReflectiveOperationException {
+		FrankClass instance = classRepository.findClass(PACKAGE + "DeprecatedChild");
 		FrankAnnotation[] annotations = instance.getAnnotations();
 		assertEquals(1, annotations.length);
 		FrankAnnotation annotation = annotations[0];
-		assertEquals(DEPRECATED, annotation.getName());
-		annotation = instance.getAnnotation(DEPRECATED);
+		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
+		annotation = instance.getAnnotation(FrankDocletConstants.DEPRECATED);
 		assertNotNull(annotation);
-		assertEquals(DEPRECATED, annotation.getName());
+		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}
 
 	@Test
-	public void classObjectHasSuperclassNull() {
-		FrankClass instance = new FrankClassReflect(Utils.getClass(OBJECT));
+	public void classObjectHasSuperclassNull() throws DocletReflectiveOperationException {
+		FrankClass instance = classRepository.findClass(OBJECT);
 		assertNull(instance.getSuperclass());
 	}
 
 	@Test
 	public void interfaceCanGiveItsImplementations() throws DocletReflectiveOperationException {
-		FrankClass instance = new FrankClassReflect(Utils.getClass(PACKAGE + "MyInterface"));
+		FrankClass instance = classRepository.findClass(PACKAGE + "MyInterface");
 		List<FrankClass> implementations = instance.getInterfaceImplementations();
 		assertEquals(1, implementations.size());
 		assertEquals("Child", implementations.get(0).getSimpleName());
@@ -71,13 +76,13 @@ public class FrankClassReflectTest {
 
 	@Test(expected = DocletReflectiveOperationException.class)
 	public void nonInterfaceCannotGiveItsImplementations() throws DocletReflectiveOperationException {
-		FrankClass instance = new FrankClassReflect(Utils.getClass(PACKAGE + "Child"));
+		FrankClass instance = classRepository.findClass(PACKAGE + "Child");
 		instance.getInterfaceImplementations();
 	}
 
 	@Test
-	public void getDeclaredMethodsDoesNotIncludeInheritedMethods() {
-		FrankClass instance = new FrankClassReflect(Utils.getClass(PACKAGE + "Child"));
+	public void getDeclaredMethodsDoesNotIncludeInheritedMethods() throws DocletReflectiveOperationException {
+		FrankClass instance = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod[] declaredMethods = instance.getDeclaredMethods();
 		final Set<String> actualMethodNames = new TreeSet<>();
 		Arrays.asList(declaredMethods).forEach(m -> actualMethodNames.add(m.getName()));
@@ -95,8 +100,8 @@ public class FrankClassReflectTest {
 	 * </ul>
 	 */
 	@Test
-	public void testGetDeclaredAndInheritedMethods() {
-		FrankClass instance = new FrankClassReflect(Utils.getClass(PACKAGE + "Child"));
+	public void testGetDeclaredAndInheritedMethods() throws DocletReflectiveOperationException {
+		FrankClass instance = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod[] methods = instance.getDeclaredAndInheritedMethods();
 		final Set<String> methodNames = new TreeSet<>();
 		Arrays.asList(methods).stream()

@@ -16,17 +16,23 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
-import java.lang.reflect.Method;
 import java.util.Comparator;
 
-import org.springframework.core.annotation.AnnotationUtils;
+import org.apache.logging.log4j.Logger;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.doclet.DocletReflectiveOperationException;
+import nl.nn.adapterframework.doc.doclet.FrankAnnotation;
+import nl.nn.adapterframework.doc.doclet.FrankDocletConstants;
+import nl.nn.adapterframework.doc.doclet.FrankMethod;
+import nl.nn.adapterframework.doc.doclet.FrankType;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
+	private static Logger log = LogUtil.getLogger(ConfigChild.class);
+
 	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
 			Comparator.comparingInt(ConfigChild::getOrder)
 			.thenComparing(c -> c.getElementRole().getRoleName())
@@ -39,19 +45,23 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 		private @Getter String name;
 		private @Getter boolean documented;
 		private @Getter boolean deprecated;
-		private @Getter Class<?> elementTypeClass;
-		private @Getter IbisDoc ibisDoc;
+		private @Getter FrankType elementTypeClass;
+		private @Getter FrankAnnotation ibisDoc;
 
-		SortNode(Method method) {
+		SortNode(FrankMethod method) {
 			this.name = method.getName();
-			this.documented = (method.getAnnotation(IbisDoc.class) != null);
+			this.documented = (method.getAnnotation(FrankDocletConstants.IBISDOC) != null);
 			this.deprecated = isDeprecated(method);
 			this.elementTypeClass = method.getParameterTypes()[0];
-			this.ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+			try {
+				this.ibisDoc = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
+			} catch(DocletReflectiveOperationException e) {
+				log.warn("Could not @IbisDoc annotation");
+			}
 		}
 
-		private static boolean isDeprecated(Method m) {
-			Deprecated deprecated = m.getAnnotation(Deprecated.class);
+		private static boolean isDeprecated(FrankMethod m) {
+			FrankAnnotation deprecated = m.getAnnotation(FrankDocletConstants.DEPRECATED);
 			return (deprecated != null);
 		}
 

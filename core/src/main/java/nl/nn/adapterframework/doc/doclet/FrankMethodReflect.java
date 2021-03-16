@@ -16,10 +16,6 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.doclet;
 
-import org.springframework.core.annotation.AnnotationUtils;
-
-import nl.nn.adapterframework.doc.Utils;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -28,12 +24,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.annotation.AnnotationUtils;
+
 class FrankMethodReflect implements FrankMethod {
 	private final Method method;
+	private final FrankClass declaringClass;
 	private final Map<String, FrankAnnotation> annotations;
 
-	FrankMethodReflect(Method method) {
+	FrankMethodReflect(Method method, FrankClass declaringClass) {
 		this.method = method;
+		this.declaringClass = declaringClass;
 		annotations = new HashMap<>();
 		for(Annotation r: method.getAnnotations()) {
 			FrankAnnotation frankAnnotation = new FrankAnnotationReflect(r);
@@ -44,6 +44,11 @@ class FrankMethodReflect implements FrankMethod {
 	@Override
 	public String getName() {
 		return method.getName();
+	}
+
+	@Override
+	public FrankClass getDeclaringClass() {
+		return declaringClass;
 	}
 
 	@Override
@@ -98,7 +103,7 @@ class FrankMethodReflect implements FrankMethod {
 		Annotation rawAnnotation = null;
 		try {
 			@SuppressWarnings("unchecked")
-			Class<? extends Annotation> annotationClass = (Class<? extends Annotation>) Utils.getClass(name);
+			Class<? extends Annotation> annotationClass = (Class<? extends Annotation>) Class.forName(name);
 			rawAnnotation = AnnotationUtils.findAnnotation(method, annotationClass);
 		} catch(Exception e) {
 			throw new DocletReflectiveOperationException(String.format("Could not get annotation [%s] including inherited", name), e);

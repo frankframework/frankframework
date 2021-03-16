@@ -27,12 +27,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
+
 public class FrankDocModelConfigChildrenDetailTest {
 	private FrankDocModel instance;
 
 	@Before
 	public void setUp() throws SAXException, IOException {
-		instance = new FrankDocModel();
+		instance = new FrankDocModel(FrankClassRepository.getReflectInstance());
 		instance.createConfigChildDescriptorsFrom("doc/fake-digester-rules.xml");
 	}
 

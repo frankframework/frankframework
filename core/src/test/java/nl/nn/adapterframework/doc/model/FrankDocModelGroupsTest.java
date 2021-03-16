@@ -26,6 +26,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
+
 public class FrankDocModelGroupsTest {
 	private static final String I_GROUP_CONTAINER = "nl.nn.adapterframework.doc.testtarget.groups.IGroupContainer";
 
@@ -33,7 +35,8 @@ public class FrankDocModelGroupsTest {
 	
 	@Before
 	public void setUp() throws SAXException, IOException, ReflectiveOperationException {
-		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.groups.GroupContainer");
+		FrankClassRepository r = FrankClassRepository.getReflectInstance();
+		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.groups.GroupContainer", r);
 	}
 
 	@Test

@@ -17,5 +17,9 @@ limitations under the License.
 package nl.nn.adapterframework.doc.doclet;
 
 public interface FrankClassRepository {
+	static FrankClassRepository getReflectInstance() {
+		return new FrankClassRepositoryReflect();
+	}
+
 	FrankClass findClass(String fullName) throws DocletReflectiveOperationException;
 }

@@ -16,45 +16,11 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.doclet;
 
-public class FrankPrimitiveType implements FrankType {
-	private final String name;
+public class FrankDocletConstants {
+	public static final String DEPRECATED = "java.lang.Deprecated";
+	public static final String IBISDOC = "nl.nn.adapterframework.doc.IbisDoc";
+	public static final String IBISDOCREF = "nl.nn.adapterframework.doc.IbisDocRef";
 
-	FrankPrimitiveType(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public boolean isPublic() {
-		return true;
-	}
-
-	@Override
-	public boolean isPrimitive() {
-		return true;
-	}
-
-	@Override
-	public boolean isAnnotation() {
-		return false;
-	}
-
-	@Override
-	public FrankAnnotation[] getAnnotations() {
-		return new FrankAnnotation[] {};
-	}
-
-	@Override
-	public FrankAnnotation getAnnotation(String name) {
-		return null;
-	}
-
-	@Override
-	public boolean isEnum() {
-		return false;
+	private FrankDocletConstants() {
 	}
 }

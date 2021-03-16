@@ -17,6 +17,7 @@ limitations under the License.
 package nl.nn.adapterframework.doc.doclet;
 
 public interface FrankMethod extends FrankProgramElement {
+	FrankClass getDeclaringClass();
 	/**
 	 * If the return type is void, return a {@link FrankPrimitiveType} wrapping "void".
 	 */

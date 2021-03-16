@@ -31,6 +31,7 @@ public interface FrankClass extends FrankType {
 
 	String getSimpleName();
 	FrankClass getSuperclass();
+	FrankClass[] getInterfaces();
 	boolean isAbstract();
 	boolean isInterface();
 	boolean isPublic();
@@ -42,4 +43,6 @@ public interface FrankClass extends FrankType {
 
 	FrankMethod[] getDeclaredMethods();
 	FrankMethod[] getDeclaredAndInheritedMethods();
+
+	String[] getEnumConstants();
 }

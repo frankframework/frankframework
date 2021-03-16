@@ -21,6 +21,8 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
+
 public class ElementRoleIntegrationTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.role.";
 
@@ -28,7 +30,7 @@ public class ElementRoleIntegrationTest {
 
 	@Before
 	public void setUp() {
-		model = FrankDocModel.populate("doc/role-digester-rules.xml", PACKAGE + "Master");
+		model = FrankDocModel.populate("doc/role-digester-rules.xml", PACKAGE + "Master", FrankClassRepository.getReflectInstance());
 	}
 
 	@Test

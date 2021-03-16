@@ -31,7 +31,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.doc.Utils;
+import nl.nn.adapterframework.doc.doclet.DocletReflectiveOperationException;
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
 
 public class FrankDocModelConfigChildrenTest {
 	private static String CONTAINER = "nl.nn.adapterframework.doc.testtarget.children.Container";
@@ -39,16 +40,18 @@ public class FrankDocModelConfigChildrenTest {
 	private static String CONTAINER_OTHER = "nl.nn.adapterframework.doc.testtarget.children.ContainerOther";
 	
 	private FrankDocModel instance;
+	private FrankClassRepository classRepository;
 	private List<ConfigChild> configChildren;
 	private List<ConfigChild> configChildrenOfDerived;
 
 	@Before
-	public void setUp() throws SAXException, IOException, ReflectiveOperationException {
-		instance = new FrankDocModel();
+	public void setUp() throws SAXException, IOException, DocletReflectiveOperationException {
+		classRepository = FrankClassRepository.getReflectInstance();
+		instance = new FrankDocModel(classRepository);
 		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");
-		instance.findOrCreateElementType(Utils.getClass(CONTAINER));
-		instance.findOrCreateElementType(Utils.getClass(CONTAINER_DERIVED));
-		instance.findOrCreateElementType(Utils.getClass(CONTAINER_OTHER));
+		instance.findOrCreateElementType(classRepository.findClass(CONTAINER));
+		instance.findOrCreateElementType(classRepository.findClass(CONTAINER_DERIVED));
+		instance.findOrCreateElementType(classRepository.findClass(CONTAINER_OTHER));
 		instance.setOverriddenFrom();
 		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren(ALL);
 		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren(ALL);
@@ -200,7 +203,7 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void whenInheritedConfigChildNotDeprecatedInheritedFromDeprecatedThenNotDeprecated() throws Exception {
-		ConfigChild theConfigChild = instance.findOrCreateFrankElement(Utils.getClass(CONTAINER_OTHER))
+		ConfigChild theConfigChild = instance.findOrCreateFrankElement(CONTAINER_OTHER)
 				.getConfigChildren(c -> ((ConfigChild)c).getOrder() == 110).get(0);
 		assertFalse(theConfigChild.isDeprecated());
 	}

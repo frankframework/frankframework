@@ -24,6 +24,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
+
 @Ignore("Test takes a long time to run, and gives little information")
 public class FrankDocModelPopulateTest {
 	private FrankDocModel instance;
@@ -32,7 +34,7 @@ public class FrankDocModelPopulateTest {
 
 	@Before
 	public void setUp() {
-		instance = FrankDocModel.populate();
+		instance = FrankDocModel.populate(FrankClassRepository.getReflectInstance());
 		actualTypeSimpleNames = instance.getAllTypes().values().stream()
 				.map(ElementType::getSimpleName).collect(Collectors.toSet());
 		actualElementSimpleNames = instance.getAllElements().values().stream()
