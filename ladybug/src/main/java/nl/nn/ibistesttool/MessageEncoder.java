@@ -29,6 +29,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.WriterPlaceHolder;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.TestTool;
@@ -68,6 +69,9 @@ public class MessageEncoder extends MessageEncoderImpl {
 				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.asObject().getClass().getTypeName());
 			}
 			return super.toString(m.asObject(), charset);
+		}
+		if (message instanceof WriterPlaceHolder) {
+			return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, "request to provide outputstream");
 		}
 		return super.toString(message, charset);
 	}
