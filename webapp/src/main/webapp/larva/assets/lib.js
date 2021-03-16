@@ -198,8 +198,8 @@ function showDiffs(elementId, elementIdResult, elementIdExpected) {
 			// show result line
 			value = value + "<SPAN ID=\"styleLineResult\">" + escapeChars(lineResult) + "</SPAN><BR/>";
 			// show expected line
-			value = value + "<SPAN ID=\"styleLineExpected\"><FONT STYLE=\"color: green\">" ;
-
+			value = value + "<SPAN ID=\"styleLineExpected\"><FONT STYLE=\"color: green\">";
+			
 			// check each character and color it when it differs.
 			var minLength;
 			if (lineResult.length < lineExpected.length) {
@@ -263,6 +263,9 @@ function escapeChars(lineInput) {
 			break;
 		case "\n":
 			line += "";
+			break;
+		case ('&') :
+			line += "&amp;";
 			break;
 		default:
 			line += lineInput.charAt(i);
