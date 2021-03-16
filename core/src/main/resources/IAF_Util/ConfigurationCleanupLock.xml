@@ -3,7 +3,7 @@
 		<job
 			name="Cleanup the database (IbisLock)"
 			cronExpression="${cleanup.lock.cron}"
-			description="Cleanup the database (IbisStore)"
+			description="Cleanup the database (IbisLock)"
 			function="cleanupLock"
 		>
 			<locker
