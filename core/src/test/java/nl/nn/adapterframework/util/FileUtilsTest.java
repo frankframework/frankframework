@@ -334,34 +334,39 @@ public class FileUtilsTest {
 
 	@Test
 	public void testGetRollingFileDeleteExisting() throws IOException {
-		File tempDir = FileUtils.createTempDir();
-
+		TemporaryFolder tempDir = new TemporaryFolder();
+		tempDir.create();
+		File tempDirRoot = tempDir.getRoot();
 		// get rolling file 2020W52
-		File test = getRollingFile(tempDir.getAbsolutePath(), 2020, 11, 25);
+		File test = getRollingFile(tempDirRoot.getAbsolutePath(), 2020, 11, 25);
 		Files.createFile(Paths.get(test.getAbsolutePath()));
-		assertEquals(1, tempDir.listFiles().length); // test number of files
+		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
 
-		test.setLastModified(new GregorianCalendar(2020, 11, 25).getTime().getTime()); // change the last modified date for the file to be deleted.
-		test = FileUtils.getRollingFile(tempDir.getAbsolutePath(), "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMAT, "", 7, null);
+		test.setLastModified(new GregorianCalendar(2020, 11, 25).getTime().getTime()); // change the last modified date
+																						// for the file to be deleted.
+		test = FileUtils.getRollingFile(tempDirRoot.getAbsolutePath(), "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMAT,
+				"", 7, null);
 		Files.createFile(Paths.get(test.getAbsolutePath()));
-		assertEquals(1, tempDir.listFiles().length); // test number of files 
+		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
 	}
 
 	@Test
 	public void testGetRollingFileTheSamefile() throws IOException {
-		File tempDir = FileUtils.createTempDir();
+		TemporaryFolder tempDir = new TemporaryFolder();
+		tempDir.create();
+		File tempDirRoot = tempDir.getRoot();
 
 		// get rolling file 2020W52
-		File test = getRollingFile(tempDir.getAbsolutePath(), 2020, 11, 25);
+		File test = getRollingFile(tempDirRoot.getAbsolutePath(), 2020, 11, 25);
 		Files.createFile(Paths.get(test.getAbsolutePath()));
-		assertEquals(1, tempDir.listFiles().length); // test number of files
+		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
 
-		test = getRollingFile(tempDir.getAbsolutePath(), 2020, 11, 25);
+		test = getRollingFile(tempDirRoot.getAbsolutePath(), 2020, 11, 25);
 		try {
 			Files.createFile(Paths.get(test.getAbsolutePath()));
 		} catch (Exception e) {
 			assertEquals(FileAlreadyExistsException.class, e.getClass());
 		}
-		assertEquals(1, tempDir.listFiles().length); // test number of files 
+		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
 	}
 }
