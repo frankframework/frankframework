@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -83,5 +84,32 @@ public class FrankClassReflectTest {
 		List<String> sortedActualMethodNames = new ArrayList<>(actualMethodNames);
 		sortedActualMethodNames = sortedActualMethodNames.stream().filter(name -> ! name.contains("jacoco")).collect(Collectors.toList());
 		assertArrayEquals(new String[] {"packagePrivateMethod", "setInherited"}, sortedActualMethodNames.toArray());
+	}
+
+	/**
+	 * The following is tested:
+	 * <ul>
+	 * <li> Inherited methods are included.
+	 * <li> Overridden methods are not duplicated.
+	 * <li> Only public methods are included.
+	 * </ul>
+	 */
+	@Test
+	public void testGetDeclaredAndInheritedMethods() {
+		FrankClass instance = new FrankClassReflect(Utils.getClass(PACKAGE + "Child"));
+		FrankMethod[] methods = instance.getDeclaredAndInheritedMethods();
+		final Set<String> methodNames = new TreeSet<>();
+		Arrays.asList(methods).stream()
+			.map(FrankMethod::getName)
+			.filter(name -> ! name.contains("jacoco"))
+			.forEach(name -> methodNames.add(name));
+		assertArrayEquals(new String[] {"equals", "getClass", "getInherited", "hashCode", "notify", "notifyAll", "setInherited", "toString", "wait"}, new ArrayList<>(methodNames).toArray());
+		// Test we have no duplicates
+		Map<String, List<FrankMethod>> methodsByName = Arrays.asList(methods).stream()
+				.filter(m -> methodNames.contains(m.getName()))
+				.collect(Collectors.groupingBy(FrankMethod::getName));
+		for(String name: new String[] {"getInherited", "setInherited"}) {
+			assertEquals(String.format("Duplicate method name [%s]", name), 1, methodsByName.get(name).size());
+		}
 	}
 }

@@ -16,9 +16,13 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.doclet;
 
-public interface FrankProgramElement {
-	String getName();
-	boolean isPublic();
-	FrankAnnotation[] getAnnotations();
-	FrankAnnotation getAnnotation(String name);
+class FrankClassRepositoryReflect implements FrankClassRepository {
+	@Override
+	public FrankClass findClass(String fullName) throws DocletReflectiveOperationException {
+		try {
+			return new FrankClassReflect(Class.forName(fullName));
+		} catch(ClassNotFoundException e) {
+			throw new DocletReflectiveOperationException(String.format("Could not find class [%s]", fullName), e);
+		}
+	}
 }
