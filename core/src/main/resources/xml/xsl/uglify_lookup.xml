@@ -735,6 +735,11 @@
     <ClassName>nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe</ClassName>
   </Element>
   <Element>
+    <Name>LdapIsMemberOfPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.ldap.LdapIsMemberOfPipe</ClassName>
+  </Element>
+  <Element>
     <Name>LdapFindMemberPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.ldap.LdapFindMemberPipe</ClassName>
