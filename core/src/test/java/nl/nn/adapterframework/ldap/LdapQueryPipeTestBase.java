@@ -11,7 +11,7 @@
    limitations under the License.
 */
 
-package test.java.nl.nn.adapterframework.ldap;
+package nl.nn.adapterframework.ldap;
 
 import java.io.IOException;
 import java.net.URL;

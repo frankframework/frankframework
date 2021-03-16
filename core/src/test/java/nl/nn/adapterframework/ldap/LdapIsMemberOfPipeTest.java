@@ -10,17 +10,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package test.java.nl.nn.adapterframework.ldap;
+package nl.nn.adapterframework.ldap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.net.URL;
-
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -31,8 +27,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.ldap.LdapIsMemberOfPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
 
 public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOfPipe> {
 	private String thenForwardName = "then";

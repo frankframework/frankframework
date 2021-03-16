@@ -16,11 +16,8 @@
 package nl.nn.adapterframework.ldap;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -30,7 +27,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Selects an exitState, based on if the input DN is a member of another DN
