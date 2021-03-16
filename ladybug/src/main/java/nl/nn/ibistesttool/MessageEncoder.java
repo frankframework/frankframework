@@ -29,7 +29,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.WriterPlaceHolder;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageEncoderImpl;
 import nl.nn.testtool.TestTool;

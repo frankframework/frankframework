@@ -22,7 +22,6 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.WriterPlaceHolder;
 import nl.nn.testtool.TestTool;
 
 public class MessageCapturer implements nl.nn.testtool.MessageCapturer {

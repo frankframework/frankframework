@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.stream;
+package nl.nn.ibistesttool;
 
 import java.io.Writer;
 
