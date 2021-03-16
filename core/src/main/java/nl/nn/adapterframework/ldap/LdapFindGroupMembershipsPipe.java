@@ -16,11 +16,8 @@
 package nl.nn.adapterframework.ldap;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
