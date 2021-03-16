@@ -28,6 +28,7 @@ import javax.naming.ldap.InitialLdapContext;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -45,6 +46,8 @@ import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
  * 
  * @author Peter Leeuwenburgh
  */
+@Deprecated
+@ConfigurationWarning("Please replace with LdapIsMemberOfPipe to determine if one DN is a member of another DN. Configure LdapIsMemberOfPipe with (parameter) memberOfDN='dnSearchIn' and input='dnFind'.")
 public class LdapFindMemberPipe extends LdapQueryPipeBase {
 	private String dnSearchIn;
 	private String dnFind;
