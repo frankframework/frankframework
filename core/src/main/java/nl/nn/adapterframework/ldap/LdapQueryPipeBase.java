@@ -33,7 +33,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.ldap.LdapClient;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -55,11 +54,9 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe implements ICac
 	private String userName;
 	private String password;
 
-	private String notFoundForwardName = "notFound";
 	private String exceptionForwardName = null;
 
 	protected CredentialFactory cf;
-	protected PipeForward notFoundForward;
 	protected PipeForward exceptionForward;
 	
 	protected LdapClient ldapClient;
@@ -78,9 +75,6 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe implements ICac
 			}
 		}
 		cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
-		if (StringUtils.isNotEmpty(getNotFoundForwardName())) {
-			notFoundForward = findForward(getNotFoundForwardName());
-		}
 		if (StringUtils.isNotEmpty(getExceptionForwardName())) {
 			exceptionForward = findForward(getExceptionForwardName());
 		}
@@ -220,16 +214,6 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe implements ICac
 	public String getPassword() {
 		return password;
 	}
-
-
-
-	public void setNotFoundForwardName(String string) {
-		notFoundForwardName = string;
-	}
-	public String getNotFoundForwardName() {
-		return notFoundForwardName;
-	}
-
 
 	@IbisDoc({"9", "PipeForward used when an exception is caught", ""})
 	public void setExceptionForwardName(String string) {

@@ -27,12 +27,15 @@ import javax.naming.ldap.InitialLdapContext;
 
 import org.apache.commons.lang.StringUtils;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
 
@@ -47,7 +50,17 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 	private String dnFind;
 	private boolean recursiveSearch = true;
 
+	private String notFoundForwardName = "notFound";
+	protected PipeForward notFoundForward;
 
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (StringUtils.isNotEmpty(getNotFoundForwardName())) {
+			notFoundForward = findForward(getNotFoundForwardName());
+		}
+	}
+	
 	@Override
 	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {
 		String dnSearchIn_work;
@@ -162,6 +175,13 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 	}
 	public boolean isRecursiveSearch() {
 		return recursiveSearch;
+	}
+
+	public void setNotFoundForwardName(String string) {
+		notFoundForwardName = string;
+	}
+	public String getNotFoundForwardName() {
+		return notFoundForwardName;
 	}
 
 }
