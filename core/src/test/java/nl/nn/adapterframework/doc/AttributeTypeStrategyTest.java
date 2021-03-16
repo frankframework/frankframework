@@ -1,10 +1,7 @@
 package nl.nn.adapterframework.doc;
 
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementWithType;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeFrankBoolean;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createTypeFrankInteger;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.getXmlSchema;
 
 import java.io.StringReader;
@@ -22,7 +19,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.doc.model.AttributeType;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-public class DocWriterNewXmlUtilsTest {
+public class AttributeTypeStrategyTest {
 	private String schemaString = getXsd();
 
 	@Test
@@ -84,12 +81,9 @@ public class DocWriterNewXmlUtilsTest {
 		XmlBuilder schema = getXmlSchema();
 		XmlBuilder element = addElementWithType(schema, "myElement");
 		XmlBuilder complexType = addComplexType(element);
-		addAttribute(complexType, "boolAttr", AttributeType.BOOL);
-		addAttribute(complexType, "intAttr", AttributeType.INT);
-		XmlBuilder boolType = createTypeFrankBoolean();
-		XmlBuilder intType = createTypeFrankInteger();
-		schema.addSubElement(boolType);
-		schema.addSubElement(intType);
+		AttributeTypeStrategy.ALLOW_PROPERTY_REF.addAttribute(complexType, "boolAttr", AttributeType.BOOL);
+		AttributeTypeStrategy.ALLOW_PROPERTY_REF.addAttribute(complexType, "intAttr", AttributeType.INT);
+		AttributeTypeStrategy.ALLOW_PROPERTY_REF.createHelperTypes().forEach(h -> schema.addSubElement(h));
 		return schema.toXML(true);
 	}
 
