@@ -1,6 +1,6 @@
 /*
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.util.StringUtils;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
@@ -327,8 +328,12 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 //			context.close();
 //		}
 //    }
-  
+    
     public Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute) throws NamingException {
+    	return searchRecursivelyViaAttributes(uid, baseDn, attribute, null);
+    }
+    
+    public Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute, String stopCondition) throws NamingException {
     	Set<String> results=new LinkedHashSet<String>();
     	Set<String> toBeSearched=new LinkedHashSet<String>();
        	Set<String> searched=new LinkedHashSet<String>();
@@ -339,7 +344,8 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 			if (log.isDebugEnabled()) log.debug("primary lookup of attribute ["+attribute+"] of ["+uid+"]");
 			results=searchObjectForMultiValuedAttribute(context, uid, baseDn, attribute);
 			toBeSearched.addAll(results);
-			while (!toBeSearched.isEmpty()) {
+
+			while (!toBeSearched.isEmpty() && (StringUtils.isEmpty(stopCondition) || !results.contains(stopCondition))) {
 		       	Set<String> searchingNow=toBeSearched;
 		       	toBeSearched=new LinkedHashSet<String>();
 		       	nestingLevel++;

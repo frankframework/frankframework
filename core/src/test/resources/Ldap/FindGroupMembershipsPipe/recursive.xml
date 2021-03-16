@@ -1,0 +1,9 @@
+<ldap>
+	<entryName>cn=L4user,ou=people,ou=development,dc=ibissource,dc=org</entryName>
+	<attributes>
+		<attribute attrID="memberOf">ou=L4Group,ou=groups,ou=development,dc=ibissource,dc=org</attribute>
+		<attribute attrID="memberOf">ou=L3Group,ou=groups,ou=development,dc=ibissource,dc=org</attribute>
+		<attribute attrID="memberOf">ou=L2Group,ou=groups,ou=development,dc=ibissource,dc=org</attribute>
+		<attribute attrID="memberOf">ou=L1Group,ou=groups,ou=development,dc=ibissource,dc=org</attribute>
+	</attributes>
+</ldap> 

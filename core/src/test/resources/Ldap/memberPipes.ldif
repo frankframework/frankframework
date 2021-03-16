@@ -1,0 +1,83 @@
+version: 1
+
+dn: dc=ibissource,dc=org
+objectClass: domain
+objectClass: top
+dc: ibissource
+
+dn: ou=development,dc=ibissource,dc=org
+objectClass: organizationalUnit
+ou: development
+
+
+dn: ou=people,ou=development,dc=ibissource,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: people
+
+dn: cn=L1user,ou=people,ou=development,dc=ibissource,dc=org
+objectClass: person
+objectClass: top
+cn: L1user
+sn: L1user
+memberOf: ou=L1Group,ou=groups,ou=development,dc=ibissource,dc=org
+
+dn: cn=L2user,ou=people,ou=development,dc=ibissource,dc=org
+objectClass: person
+objectClass: top
+cn: L2user
+sn: L2user
+memberOf: ou=L2Group,ou=groups,ou=development,dc=ibissource,dc=org
+
+dn: cn=L3user,ou=people,ou=development,dc=ibissource,dc=org
+objectClass: person
+objectClass: top
+cn: L3user
+sn: L3user
+memberOf: ou=L3Group,ou=groups,ou=development,dc=ibissource,dc=org
+
+dn: cn=L4user,ou=people,ou=development,dc=ibissource,dc=org
+objectClass: person
+objectClass: top
+cn: L4user
+sn: L4user
+memberOf: ou=L4Group,ou=groups,ou=development,dc=ibissource,dc=org
+
+dn: ou=groups,ou=development,dc=ibissource,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: groups
+
+dn: ou=L4Group,ou=groups,ou=development,dc=ibissource,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: L4Group
+member: cn=L4user,ou=people,ou=development,dc=ibissource,dc=org
+ou: L4Group
+memberOf: ou=L3Group,ou=groups,ou=development,dc=ibissource,dc=org
+
+dn: ou=L3Group,ou=groups,ou=development,dc=ibissource,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: L3Group
+member: cn=L3user,ou=people,ou=development,dc=ibissource,dc=org
+member: ou=L4Group,ou=groups,ou=development,dc=ibissource,dc=org
+ou: L3Group
+memberOf: ou=L2Group,ou=groups,ou=development,dc=ibissource,dc=org
+
+dn: ou=L2Group,ou=groups,ou=development,dc=ibissource,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: L3Group
+member: cn=L2user,ou=people,ou=development,dc=ibissource,dc=org
+member: ou=L3Group,ou=groups,ou=development,dc=ibissource,dc=org
+ou: L2Group
+memberOf: ou=L1Group,ou=groups,ou=development,dc=ibissource,dc=org
+
+dn: ou=L1Group,ou=groups,ou=development,dc=ibissource,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: L3Group
+member: cn=L1user,ou=people,ou=development,dc=ibissource,dc=org
+member: ou=L2Group,ou=groups,ou=development,dc=ibissource,dc=org
+ou: L1Group
