@@ -290,6 +290,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *     <td><code>ElementGroupBase</code></td>
  *     <td>Lists all choices that are allowed for a child tag, excluding the generic element option.</td>
  *   </tr>
+ *   <tr>
+ *     <td><code>xs:simpleType</code></td>
+ *     <td><code>AttributeValuesType</code></td>
+ *     <td>For attributes constrained by a Java enum, list all allowed values</td>
+ *   </tr>
  * </table>
  *
  * @author martijn
