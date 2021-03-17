@@ -122,6 +122,11 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.8</version>
+		</dependency>
 		<!-- Requirement for Jboss 7.5 -->
 		<dependency>
 			<groupId>commons-validator</groupId>
