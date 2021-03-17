@@ -9,9 +9,76 @@ Ibis AdapterFramework release notes
 Upcoming
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC3...7.5-release)
+[Commits](https://github.com/ibissource/iaf/compare/v7.5.1...7.5-release)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=7.5-release)](https://travis-ci.org/ibissource/iaf)
 
+
+7.5.1
+-----
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.5...v7.5.1)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5.1)](https://travis-ci.org/ibissource/iaf)
+
+- Avoid NPE in IbisJobDetail compare
+- Fix ParallelSenders concurrency limits
+- Remove name and version options from gui upload configuration form
+
+
+
+7.5
+--------
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC4...v7.5)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5)](https://travis-ci.org/ibissource/iaf)
+
+- Sync testtool enable/disable buttons (#1036)
+- Fix #1029 handling absolute paths in LocalFileSystem (#1046)
+- Fix #1028 ShowIbisstoreSummary (#1047)
+- Add configuration name to adapter info + Fix uptime calculator (#1109)
+- Fix #1151 use original message id when resending (#1160)
+- Remove GTag and GDPR Cookie notification (#1184)
+- Change sap sncQop getter to int (#1182)
+- Fix #1098 Copy pipe parameters to sender in configure() (#1203)
+- Fix #1201 Correct ExchangeMailListeners handling of embedded CDATA (#1206)
+- Fix test-pipeline zip handling when unable to determine zip entry size (#1259)
+
+
+
+7.5-RC4
+--------
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC3...v7.5-RC4)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC4)](https://travis-ci.org/ibissource/iaf)
+
+- Set receiver color to red when in error (#761)
+- Set property to disable SecurityManager (#746)
+- Update login view and make it more usable (#786)
+- Multiple GUI fixes (#818)
+  - version of Frank (ear) does not show in info screen of the new GUI (#784)
+  - test-pipeline does not work with file upload (#798)
+  - Fix errorStorage deleteSelected (#810)
+  - Webservices page, ibisdoc link missing "/rest" part in the url (#795)
+  - Improve hover over message status
+  - Add jdbc query cookie and update manual url's
+  - Add errorstorage select messages
+- Fix auto choose sql querytype (select or other) (#821)
+- Fix maxThreadCount + cleanup old adapters in GUI 3.0 (#845)
+- Remove authentication for the base url and redirect to status (#847)
+- Add ability to change message encoding (#735)
+- Fix style on errorStorage page (subset of #584)
+- Fix NPEs while coverting rawMessage result to String
+- Make Jms afterMessageProcessed resilient to other message types (#861)
+- Fix GUI page names (#919)
+- Make GUI3 follow AdapterStatistics interface (#910)
+- Sort scheduler jobs by name (#886)
+- Fix GUI3.0 browse JMS queue (#951)
+- Fix #622 false alarm in PullingListenerContainers (#876)
+- Fix handling of unprocessesable messages + fix transacted tests #957
+- Fix Browse Queue in GUI 3.0 (#967)
+- Add ability to log out of the GUI 3.0 (#962)
+- Cleanup and correct RestListener ibisdoc (#1012)
+- Fix enddate copy paste typo (#1024)
+- Add gui notification when connection drops (#979)
 
 
 
