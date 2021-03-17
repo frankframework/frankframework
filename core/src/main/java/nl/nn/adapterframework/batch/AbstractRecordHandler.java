@@ -1,5 +1,5 @@
 /*
-    Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+    Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,14 +47,14 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	private String name;
-	private String inputSeparator;
-	private boolean trim=false;
+	private @Getter String name;
+	private @Getter String inputSeparator;
+	private @Getter boolean trim=false;
 	
 	private List<InputField> inputFields=new LinkedList<>(); 
 	private List<Integer> recordIdentifyingFields=new LinkedList<>();
 	
-	protected ParameterList paramList = null;
+	protected @Getter ParameterList paramList = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -257,18 +257,13 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return paramList;
 	}
 
-	@IbisDoc({"name of the recordhandler", ""})
+	@IbisDoc({"1", "Name of the recordhandler", ""})
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
-	@Override
-	public String getName() {
-		return name;
-	}
 
-
-	@IbisDoc({"comma separated specification of fieldlengths. if neither this attribute nor <code>inputseparator</code> is specified then the entire record is parsed", ""})
+	@IbisDoc({"2", "Comma separated specification of field lengths. if neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed", ""})
 	public void setInputFields(String fieldLengths) {
 		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
 		while (st.hasMoreTokens()) {
@@ -277,20 +272,14 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 	}
 
-	@IbisDoc({"separator that separated the fields in the input record. if neither this attribute nor <code>inputfields</code> is specified then the entire record is parsed", ""})
+	@IbisDoc({"4", "Separator that separates the fields in the input record. If neither this attribute nor <code>inputFields</code> is specified then the entire record is parsed", ""})
 	public void setInputSeparator(String string) {
 		inputSeparator = string;
 	}
-	public String getInputSeparator() {
-		return inputSeparator;
-	}
 
-	@IbisDoc({"when set <code>true</code>, trailing spaces are removed from each field", "false"})
+	@IbisDoc({"4", "If set <code>true</code>, trailing spaces are removed from each field", "false"})
 	public void setTrim(boolean b) {
 		trim = b;
-	}
-	public boolean isTrim() {
-		return trim;
 	}
 
 }
