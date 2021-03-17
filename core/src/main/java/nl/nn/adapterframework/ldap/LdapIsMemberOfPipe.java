@@ -35,16 +35,17 @@ import nl.nn.adapterframework.stream.Message;
  * @author Ricardo van Holst
  */
 public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
-	
+		
 	private boolean recursiveSearch = true;
-	private String memberOfDN;
+	private String groupDN;
+	private final static String PARAM_TARGET_GROUP_DN = "groupDN";
 	
 	private String thenForwardName = "then";
 	private String elseForwardName = "else";
 	
 	@Override
 	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {		
-		String memberOfDN_work;
+		String groupDN_work;
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
 			try {
@@ -53,9 +54,9 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 			}
 		}
-		memberOfDN_work = getParameterValue(pvl, "memberOfDN");
-		if (memberOfDN_work == null) {
-			memberOfDN_work = getMemberOfDN();
+		groupDN_work = getParameterValue(pvl, PARAM_TARGET_GROUP_DN);
+		if (groupDN_work == null) {
+			groupDN_work = getGroupDN();
 		}
 		
 		if (message==null) {
@@ -72,12 +73,12 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 		Set<String> memberships;
 		try {
 			if (isRecursiveSearch()) {
-				memberships= ldapClient.searchRecursivelyViaAttributes(searchedDN, getBaseDN(), "memberOf", memberOfDN_work);
+				memberships= ldapClient.searchRecursivelyViaAttributes(searchedDN, getBaseDN(), "memberOf", groupDN_work);
 			} else {
 				memberships= ldapClient.searchObjectForMultiValuedAttribute(searchedDN, getBaseDN(), "memberOf");
 			}
 			
-			if (memberships.contains(memberOfDN_work)) {
+			if (memberships.contains(groupDN_work)) {
 				return new PipeRunResult(findForward(getThenForwardName()), message);
 			}
 			return new PipeRunResult(findForward(getElseForwardName()), message);
@@ -86,15 +87,15 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 		}
 	}
 	
-	@IbisDoc({"1", "The dn of the membership to search for when the parameter memberOfDN is not set", ""})
-	public void setMemberOfDN(String string) {
-		memberOfDN = string;
+	@IbisDoc({"1", "The dn of the membership to search for when the parameter '" + PARAM_TARGET_GROUP_DN + "' is not set", ""})
+	public void setGroupDN(String string) {
+		groupDN = string;
 	}
-	public String getMemberOfDN() {
-		return memberOfDN;
+	public String getGroupDN() {
+		return groupDN;
 	}
 	
-	@IbisDoc({"2", "when <code>true</code>, the memberOf attribute is also searched in all the found memberships", "true"})
+	@IbisDoc({"2", "If <code>true</code>, the memberOf attribute is also searched in all the found memberships", "true"})
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}
@@ -102,7 +103,7 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 		return recursiveSearch;
 	}
 
-	@IbisDoc({"3","forward returned when <code>'true'</code>", "then"})
+	@IbisDoc({"3","Forward returned when <code>'true'</code>", "then"})
 	public void setThenForwardName(String thenForwardName){
 		this.thenForwardName = thenForwardName;
 	}
@@ -110,7 +111,7 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 		return thenForwardName;
 	}
 
-	@IbisDoc({"4","forward returned when 'false'", "else"})
+	@IbisDoc({"4","Forward returned when 'false'", "else"})
 	public void setElseForwardName(String elseForwardName){
 		this.elseForwardName = elseForwardName;
 	}

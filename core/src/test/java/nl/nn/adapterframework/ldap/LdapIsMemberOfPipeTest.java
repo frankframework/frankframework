@@ -51,7 +51,7 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 	@Test
 	public void recursiveIsMemberOf() throws ConfigurationException, PipeStartException, IOException, PipeRunException, SAXException {
 		pipe.setRecursiveSearch(true);
-		pipe.setMemberOfDN(dnL1Group);
+		pipe.setGroupDN(dnL1Group);
 		configurePipe();
 		pipe.start();
 
@@ -69,7 +69,7 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 	@Test
 	public void nonRecursiveIsMemberOf() throws ConfigurationException, PipeStartException, IOException, PipeRunException, SAXException {
 		pipe.setRecursiveSearch(false);
-		pipe.setMemberOfDN(dnL4Group);
+		pipe.setGroupDN(dnL4Group);
 		configurePipe();
 		pipe.start();
 
@@ -88,7 +88,7 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 	@Test
 	public void isNotMemberOf() throws ConfigurationException, PipeStartException, IOException, PipeRunException, SAXException {
 		pipe.setRecursiveSearch(false);
-		pipe.setMemberOfDN(dnL1Group);
+		pipe.setGroupDN(dnL1Group);
 		configurePipe();
 		pipe.start();
 
@@ -106,7 +106,7 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 	@Test
 	public void nonRecursiveIsRecursiveMemberOf() throws ConfigurationException, PipeStartException, IOException, PipeRunException, SAXException {
 		pipe.setRecursiveSearch(false);
-		pipe.setMemberOfDN(dnL1Group);
+		pipe.setGroupDN(dnL1Group);
 		configurePipe();
 		pipe.start();
 
