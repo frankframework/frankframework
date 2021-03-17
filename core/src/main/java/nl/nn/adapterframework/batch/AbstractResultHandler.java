@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,12 +42,12 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	private String name;
-	private String prefix;
-	private String suffix;
+	private @Getter String name;
+	private @Getter String prefix;
+	private @Getter String suffix;
 	private boolean defaultResultHandler;
-	private boolean blockByRecordType=true;
-	private AbstractPipe pipe;
+	private @Getter boolean blockByRecordType=true;
+	private @Getter AbstractPipe pipe;
 	
 	protected ParameterList paramList = null;
 
@@ -87,22 +87,21 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return paramList;
 	}
 
-	@IbisDoc({"name of the resulthandler", ""})
+	@Override
+	public void setPipe(AbstractPipe pipe) {
+		this.pipe = pipe;
+	}
+
+	@IbisDoc({"1", "name of the resulthandler", ""})
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
-	@Override
-	public String getName() {
-		return name;
-	}
 
 	@IbisDoc({"<i>deprecated</i> prefix that has to be written before record, if the record is in another block than the previous record", ""})
+	@Deprecated
 	public void setPrefix(String string) {
 		prefix = string;
-	}
-	public String getPrefix() {
-		return prefix;
 	}
 	@Override
 	public boolean hasPrefix() {
@@ -110,14 +109,12 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	@IbisDoc({"<i>deprecated</i> suffix that has to be written after the record, if the record is in another block than the next record. <br/>n.b. if a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close", ""})
+	@Deprecated
 	public void setSuffix(String string) {
 		suffix = string;
 	}
-	public String getSuffix() {
-		return suffix;
-	}
 
-	@IbisDoc({"if set <code>true</code>, this resulthandler is the default for all {@link recordhandlingflow flow}s that do not have a handler specified", "false"})
+	@IbisDoc({"2", "if set <code>true</code>, this resulthandler is the default for all {@link recordhandlingflow flow}s that do not have a handler specified", "false"})
 	@Override
 	public void setDefault(boolean isDefault) {
 		this.defaultResultHandler = isDefault;
@@ -130,17 +127,5 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	@IbisDoc({"when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType(IPipeLineSession, boolean, List, List) RecordHandler.newRecordType} is handled as a block.", "true"})
 	public void setBlockByRecordType(boolean b) {
 		blockByRecordType = b;
-	}
-	@Override
-	public boolean isBlockByRecordType() {
-		return blockByRecordType;
-	}
-
-	@Override
-	public void setPipe(AbstractPipe pipe) {
-		this.pipe = pipe;
-	}
-	public AbstractPipe getPipe() {
-		return pipe;
 	}
 }

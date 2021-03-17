@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -57,15 +58,15 @@ import nl.nn.adapterframework.util.FileUtils;
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
-	private String move2dirAfterTransform;
-	private String move2dirAfterError;
-	private int numberOfBackups = 5;
-	private boolean overwrite = false;
-	private boolean delete = false;
+	private @Getter String move2dirAfterTransform;
+	private @Getter String move2dirAfterError;
+	private @Getter int numberOfBackups = 5;
+	private @Getter boolean overwrite = false;
+	private @Getter boolean delete = false;
 
 	@Override
-	protected String getStreamId(Message input, IPipeLineSession session) throws PipeRunException {
-		String filename	= (String)input.asObject();
+	protected String getStreamId(Message input, IPipeLineSession session) {
+		String filename = (String)input.asObject();
 		File file = new File(filename);
 		return file.getName();
 	}
@@ -120,50 +121,29 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	}
 
 	
-	/**
-	 * @param readyDir directory where input file is moved to in case of a succesful transformation
-	 */
-	@IbisDoc({"directory in which the transformed file(s) is stored", ""})
+	@IbisDoc({"1", "Directory in which the transformed file(s) is stored", ""})
 	public void setMove2dirAfterTransform(String readyDir) {
 		move2dirAfterTransform = readyDir;
 	}
-	public String getMove2dirAfterTransform() {
-		return move2dirAfterTransform;
-	}
 
-	/**
-	 * @param errorDir directory where input file is moved to in case of an error
-	 */
-	@IbisDoc({"directory to which the inputfile is moved in case an error occurs", ""})
+	@IbisDoc({"2", "Directory to which the inputfile is moved in case an error occurs", ""})
 	public void setMove2dirAfterError(String errorDir) {
 		move2dirAfterError = errorDir;
 	}
-	public String getMove2dirAfterError() {
-		return move2dirAfterError;
-	}
 
 
-	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
+	@IbisDoc({"3", "Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "5"})
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
 	}
-	public int getNumberOfBackups() {
-		return numberOfBackups;
-	}
 
-	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+	@IbisDoc({"4", "If set <code>true</code>, the destination file will be deleted if it already exists", "false"})
 	public void setOverwrite(boolean b) {
 		overwrite = b;
 	}
-	public boolean isOverwrite() {
-		return overwrite;
-	}
 
-	@IbisDoc({"when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
+	@IbisDoc({"5", "If set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {
 		delete = b;
-	}
-	public boolean isDelete() {
-		return delete;
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -114,11 +114,11 @@ public class RecordTransformer extends AbstractRecordHandler {
 		outputFields.clear();
 	}
 	
-	public void addOutputInput(int inputFieldIndex) throws ConfigurationException {
+	public void addOutputInput(int inputFieldIndex) {
 		addOutputField(new OutputInput(inputFieldIndex-1));
 	}
 
-	public void addAlignedInput(int inputFieldIndex, int lenght, boolean leftAlign, char fillCharacter) throws ConfigurationException {
+	public void addAlignedInput(int inputFieldIndex, int lenght, boolean leftAlign, char fillCharacter) {
 		addOutputField(new OutputAlignedInput(inputFieldIndex-1, lenght, leftAlign, fillCharacter));
 	}
 
@@ -134,15 +134,15 @@ public class RecordTransformer extends AbstractRecordHandler {
 		addOutputField(new FixedAlignedOutput(fixedValue, lenght, leftAlign, fillCharacter));
 	} 
 	
-	public void addDateOutput(String outformat) throws ConfigurationException {
+	public void addDateOutput(String outformat) {
 		addOutputField(new FixedDateOutput(outformat, null, -1));
 	}
 
-	public void addDateOutput(int inputFieldIndex, String informat, String outformat) throws ConfigurationException {
+	public void addDateOutput(int inputFieldIndex, String informat, String outformat) {
 		addOutputField(new FixedDateOutput(outformat, informat, inputFieldIndex-1));
 	}
 	
-	public void addLookup(int inputFieldIndex, Map<String,String> lookupValues) throws ConfigurationException {
+	public void addLookup(int inputFieldIndex, Map<String,String> lookupValues) {
 		addOutputField(new Lookup(inputFieldIndex-1, lookupValues));
 	}
 	
@@ -163,7 +163,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		addIf(inputFieldIndex, comparator, compareValue);
 	}
 
-	public void addEndIf() throws ConfigurationException {
+	public void addEndIf() {
 		addOutputField(new EndIfCondition());
 	}
 	
@@ -385,7 +385,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		private char fillchar;
 		private boolean leftAlign;
 		
-		OutputAlignedInput(int inputFieldIndex, int length, boolean leftAlign, char fill) throws ConfigurationException {
+		OutputAlignedInput(int inputFieldIndex, int length, boolean leftAlign, char fill) {
 			super(inputFieldIndex);
 			this.fillchar = fill;
 			this.length = length;
@@ -613,17 +613,16 @@ public class RecordTransformer extends AbstractRecordHandler {
 					default: // ne
 						return ! v.contains(val);
 				}
-			} else {
-				switch(comparator) {
-					case 1: // eq
-						return val.equals(compareValue);
-					case 3: // sw
-						return val.startsWith(compareValue);
-					case 4: // ns
-						return ! val.startsWith(compareValue);
-					default: // ne
-						return ! val.equals(compareValue);
-				}
+			} 
+			switch(comparator) {
+				case 1: // eq
+					return val.equals(compareValue);
+				case 3: // sw
+					return val.startsWith(compareValue);
+				case 4: // ns
+					return ! val.startsWith(compareValue);
+				default: // ne
+					return ! val.equals(compareValue);
 			}
 		}
 		
@@ -663,8 +662,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 			
 			this.params = params;
 			try {
-				Class delegateClass = Class.forName(delegateName);
-				Constructor constructor = delegateClass.getConstructor(new Class[0]);
+				Class<?> delegateClass = Class.forName(delegateName);
+				Constructor<?> constructor = delegateClass.getConstructor(new Class[0]);
 				delegate = (IOutputDelegate)constructor.newInstance(new Object[0]);
 			}
 			catch(Exception e) {

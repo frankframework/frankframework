@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.FileUtils;
@@ -37,9 +38,9 @@ import nl.nn.adapterframework.util.FileUtils;
  */
 public class Result2Filewriter extends ResultWriter {
 	
-	private String outputDirectory;
-	private String move2dirAfterFinalize;
-	private String filenamePattern;
+	private @Getter String outputDirectory;
+	private @Getter String move2dirAfterFinalize;
+	private @Getter String filenamePattern;
 	
 	private Map<String,File> openFiles = Collections.synchronizedMap(new HashMap<>());
 	
@@ -80,42 +81,32 @@ public class Result2Filewriter extends ResultWriter {
 			file.delete();
 			return null;
 		}
-		else {
-			if (!StringUtils.isEmpty(getMove2dirAfterFinalize())) {
-				File movedFile = new File(getMove2dirAfterFinalize(), file.getName());
-				if (movedFile.exists()) {
-					log.warn("File [" + movedFile.getAbsolutePath() + "] exists, file gets overwritten");
-					movedFile.delete();
-				}
-				file.renameTo(movedFile);
-				return movedFile.getAbsolutePath();
+		if (!StringUtils.isEmpty(getMove2dirAfterFinalize())) {
+			File movedFile = new File(getMove2dirAfterFinalize(), file.getName());
+			if (movedFile.exists()) {
+				log.warn("File [" + movedFile.getAbsolutePath() + "] exists, file gets overwritten");
+				movedFile.delete();
 			}
-			return file.getAbsolutePath();
+			file.renameTo(movedFile);
+			return movedFile.getAbsolutePath();
 		}
+		return file.getAbsolutePath();
 	}
 
 	
-	@IbisDoc({"directory to which the created file must be moved after finalization (is optional)", ""})
-	public void setMove2dirAfterFinalize(String string) {
-		move2dirAfterFinalize = string;
-	}
-	public String getMove2dirAfterFinalize() {
-		return move2dirAfterFinalize;
-	}
-
-	@IbisDoc({"name of the file is created using the messageformat. params: 1=inputfilename, 2=extension of file, 3=current date", ""})
-	public void setFilenamePattern(String string) {
-		filenamePattern = string;
-	}
-	public String getFilenamePattern() {
-		return filenamePattern;
-	}
-
-	@IbisDoc({"directory in which the resultfile must be stored", ""})
+	@IbisDoc({"1", "Directory in which the resultfile must be stored", ""})
 	public void setOutputDirectory(String string) {
 		outputDirectory = string;
 	}
-	public String getOutputDirectory() {
-		return outputDirectory;
+
+	@IbisDoc({"2", "Directory to which the created file must be moved after finalization (is optional)", ""})
+	public void setMove2dirAfterFinalize(String string) {
+		move2dirAfterFinalize = string;
 	}
+
+	@IbisDoc({"3", "Name of the file is created using the messageformat. Params: 1=inputfilename, 2=extension of file, 3=current date", ""})
+	public void setFilenamePattern(String string) {
+		filenamePattern = string;
+	}
+
 }
