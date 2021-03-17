@@ -15,22 +15,20 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import java.io.StringWriter;
-
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
-
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 
 /**
  * Breaks up the text input in blocks of a maximum length. 
  * By default the maximum block length is 160 characters, to enable them to be send as SMS messages.
  */
-public class TextSplitterPipe extends FixedForwardPipe {
+public class TextSplitterPipe extends StreamingPipe {
 
 	private int maxBlockLength=160;
 	private boolean softSplit = false;
@@ -77,26 +75,14 @@ public class TextSplitterPipe extends FixedForwardPipe {
 				}
 			}
 	
-			try (StringWriter stringWriter = new StringWriter()) {
-				XMLOutputFactory xMLOutputFactory = XMLOutputFactory.newInstance();
-		
-				XMLStreamWriter xMLStreamWriter = xMLOutputFactory.createXMLStreamWriter(stringWriter);
-				xMLStreamWriter.writeStartElement("text");
-				int counter = 0;
-				while (result[counter] != null) {
-					xMLStreamWriter.writeStartElement("block");
-					xMLStreamWriter.writeCharacters(result[counter]);
-					xMLStreamWriter.writeEndElement();
-					counter++;
-	
+			try (MessageOutputStream target=getTargetStream(session)) {
+				try (SaxDocumentBuilder saxBuilder = new SaxDocumentBuilder("text", target.asContentHandler())) {
+					for(int counter = 0; result[counter] != null; counter++) {
+						saxBuilder.addElement("block", result[counter]);
+					}
 				}
-				xMLStreamWriter.writeEndElement();
-				xMLStreamWriter.flush();
-				xMLStreamWriter.close();
-				message = new Message(stringWriter.getBuffer().toString());
+				return target.getPipeRunResult();
 			}
-
-			return new PipeRunResult(getForward(), message);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Cannot create text blocks", e);
 		}
