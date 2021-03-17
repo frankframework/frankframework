@@ -13,7 +13,31 @@ Upcoming
 [![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=7.5-release)](https://travis-ci.org/ibissource/iaf)
 
 
+7.5.1
+-----
+- Avoid NPE in IbisJobDetail compare
+- Fix ParallelSenders concurrency limits
+- Remove name and version options from gui upload configuration form
 
+
+7.5
+---
+- Fix test-a-pipeline zip handling
+- Correct ExchangeMailListeners handling of embedded CDATA
+- Copy pipe parameters to sender in configure()
+- Remove GDPR Cookie notification
+- Use original messageid when resending
+- Fix ShowIbisstoreSummary
+- Fix Handling of absolute paths in LocalFileSystem
+- Sync testtool enable and disable buttons
+
+
+7.5-RC4
+--------
+- Add GUI Notification when connection drops
+- GUI fixes
+- Fix handling of unprocessable messages
+- Auto choose SQL query type
 
 
 7.5-RC3
