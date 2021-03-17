@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
+import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -41,10 +42,10 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public static final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
 
 	private Writer writer;
-	private boolean includeXmlDeclaration=false;
-	private boolean newlineAfterXmlDeclaration=false;
-	private boolean includeComments=true;
-	private boolean textMode=false;
+	private @Setter boolean includeXmlDeclaration=false;
+	private @Setter boolean newlineAfterXmlDeclaration=false;
+	private @Setter boolean includeComments=true;
+	private @Setter boolean textMode=false;
 
 	private boolean outputEscaping=true;
 	private int elementLevel=0;
@@ -273,22 +274,6 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public String toString() {
 		return writer.toString();
-	}
-
-	public void setIncludeXmlDeclaration(boolean includeXmlDeclaration) {
-		this.includeXmlDeclaration = includeXmlDeclaration;
-	}
-
-	public void setNewlineAfterXmlDeclaration(boolean newlineAfterXmlDeclaration) {
-		this.newlineAfterXmlDeclaration = newlineAfterXmlDeclaration;
-	}
-
-	public void setIncludeComments(boolean includeComments) {
-		this.includeComments = includeComments;
-	}
-
-	public void setTextMode(boolean textMode) {
-		this.textMode = textMode;
 	}
 
 }
