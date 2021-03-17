@@ -18,7 +18,7 @@ Upcoming
 7.6-RC1
 --------
 [Commits](https://github.com/ibissource/iaf/compare/v7.5...v7.6-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.6-RC1)](https://travis-ci.org/ibissource/iaf)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?tag=v7.6-RC1)](https://travis-ci.org/ibissource/iaf)
 
 - Debug streaming messages
 - Add TextSplitterPipe
