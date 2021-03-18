@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -189,15 +189,41 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public void removeFolder(String folder) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyDirectory) throws FileSystemException {
 		if(!folderExists(folder)) {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 		try {
-			ftpClient.removeDirectory(folder);
+			if(removeNonEmptyDirectory) {
+				removeDirectoryContent(folder);
+			} else {
+				ftpClient.removeDirectory(folder);
+			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
+	}
+
+	/**
+	 * Recursively remove directory
+	 * @param folder
+	 * @throws IOException
+	 * @throws FileSystemException
+	 */
+	private void removeDirectoryContent(String folder) throws IOException, FileSystemException {
+		FTPFile[] files = ftpClient.listFiles(folder);
+		for (FTPFile ftpFile : files) {
+			String fileName=ftpFile.getName();
+			if (fileName.equals(".") || fileName.equals("..")) {
+				continue;
+			}
+			if(ftpFile.isDirectory()) {
+				removeDirectoryContent(folder+"/"+fileName);
+			} else {
+				deleteFile(ftpFile);
+			}
+		}
+		ftpClient.removeDirectory(folder);
 	}
 
 	@Override

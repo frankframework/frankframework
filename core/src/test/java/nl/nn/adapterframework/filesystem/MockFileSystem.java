@@ -290,7 +290,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public void removeFolder(String folder) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyDirectory) throws FileSystemException {
 		checkOpen();
 		MockFolder cur = getFolders().get(folder);
 		if (cur==null) {

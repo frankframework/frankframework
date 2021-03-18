@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -306,14 +306,14 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public void removeFolder(String folderName) throws FileSystemException {
+	public void removeFolder(String folderName, boolean removeNonEmptyDirectory) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		try {
 			IMAPFolder folder = getFolder(baseFolder, folderName);
 			if (folder == null) {
 				throw new FileSystemException("Could not find folder object [" + folderName + "]");
 			}
-			if (!folder.delete(false)) {
+			if (!folder.delete(removeNonEmptyDirectory)) {
 				throw new FileSystemException("Could not delete folder [" + folderName + "]");
 			}
 		} catch (MessagingException e) {

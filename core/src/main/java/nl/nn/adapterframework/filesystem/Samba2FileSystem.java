@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -376,11 +376,15 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public void removeFolder(String folder) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyDirectory) throws FileSystemException {
 		if (!folderExists(folder)) {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		} else {
-			diskShare.rmdir(folder, true);
+			try {
+				diskShare.rmdir(folder, removeNonEmptyDirectory);
+			} catch(SMBApiException e) {
+				new FileSystemException("Remove directory for [" + folder + "] has failed.", e);
+			}
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -230,5 +230,10 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@IbisDocRef({"11", FILESYSTEMACTOR})
 	public void setExcludeWildCard(String excludeWildCard) {
 		actor.setExcludeWildCard(excludeWildCard);
+	}
+
+	@IbisDocRef({"12", FILESYSTEMACTOR})
+	public void setRemoveNonEmptyDirectory(boolean removeNonEmptyDirectory) {
+		actor.setRemoveNonEmptyDirectory(removeNonEmptyDirectory);
 	}
 }
