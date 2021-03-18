@@ -17,7 +17,7 @@
 	<modules>
 		<module>Tomcat</module>
 		<module>WebSphere</module>
-		<module>WildFly</module>
+		<module>Jboss-WildFly</module>
 	</modules>
 
 

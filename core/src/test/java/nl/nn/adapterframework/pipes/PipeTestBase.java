@@ -51,7 +51,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	/**
 	 * Configure the pipe
 	 */
-	protected void configurePipe() throws ConfigurationException, PipeStartException {
+	protected void configurePipe() throws ConfigurationException {
 		if (pipe instanceof IExtendedPipe) {
 			((IExtendedPipe) pipe).configure(pipeline);
 		} else {
@@ -75,9 +75,12 @@ public abstract class PipeTestBase<P extends IPipe> {
 	}
 
 	/*
-	 * use this method to execute pipe, instead of calling pipe.doPipe directly. This allows for 
+	 * use these methods to execute pipe, instead of calling pipe.doPipe directly. This allows for 
 	 * integrated testing of streaming.
 	 */
+	protected PipeRunResult doPipe(String input) throws PipeRunException {
+		return doPipe(pipe, new Message(input), session);
+	}
 	protected PipeRunResult doPipe(Message input) throws PipeRunException {
 		return doPipe(pipe, input, session);
 	}

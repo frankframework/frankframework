@@ -566,9 +566,16 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, IPipeLineSession session, String name) throws ParameterException {
 		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
-		  
+
 		if (substitutionValue == null) {
 			substitutionValue = session.get(name);
+		}
+		if (substitutionValue instanceof Message) {
+			try {
+				substitutionValue = ((Message)substitutionValue).asString();
+			} catch (IOException e) {
+				throw new ParameterException("Cannot get substitution value", e);
+			}
 		}
 		if (substitutionValue == null) {
 			String namelc=name.toLowerCase();
