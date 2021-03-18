@@ -64,6 +64,18 @@ public abstract class ElementChild {
 	private @Getter FrankElement overriddenFrom;
 
 	/**
+	 * This property is used to omit "technical overrides" from the XSDs. Sometimes
+	 * the Java code of the F!F overrides a method without a change of meaning of
+	 * the corresponding attribute or config child. Such technical overrides should
+	 * not be used to add attributes or config children to the XSDs.
+	 * <p>
+	 * The property is a bit different for attributes and config children, but we
+	 * define it here because it is used the same way for both attributes and
+	 * config children.
+	 */
+	private @Getter @Setter boolean technicalOverride = false;
+
+	/**
 	 * Different {@link ElementChild} of the same FrankElement are allowed to have the same order.
 	 */
 	private @Getter @Setter int order = Integer.MAX_VALUE;
@@ -72,10 +84,10 @@ public abstract class ElementChild {
 
 	public static Predicate<ElementChild> IN_XSD = c ->
 		(! c.isDeprecated())
-		&& (c.isDocumented() || (c.getOverriddenFrom() == null));
+		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
 	public static Predicate<ElementChild> IN_COMPATIBILITY_XSD = c ->
-		c.isDocumented() || (c.getOverriddenFrom() == null);
+		c.isDocumented() || (! c.isTechnicalOverride());
 
 	public static Predicate<ElementChild> DEPRECATED = c -> c.isDeprecated();
 	public static Predicate<ElementChild> ALL = c -> true;
@@ -102,12 +114,17 @@ public abstract class ElementChild {
 					log.warn("Element child overrides deprecated ElementChild: descendant [{}], super [{}]", () -> toString(), () -> matchingChild.toString());
 				}
 				overriddenFrom = match;
+				if(! checkOverrideMeaningful(matchingChild)) {
+					technicalOverride = true;
+				}
 				log.trace("{} [{}] of FrankElement [{}] has overriddenFrom = [{}]",
 						() -> getClass().getSimpleName(), () -> toString(), () -> owningElement.getFullName(), () -> overriddenFrom.getFullName());
 				return;
 			}
 		}
 	}
+
+	abstract boolean checkOverrideMeaningful(ElementChild overriddenFrom);
 
 	boolean parseIbisDocAnnotation(IbisDoc ibisDoc) {
 		String[] ibisDocValues = ibisDoc.value();

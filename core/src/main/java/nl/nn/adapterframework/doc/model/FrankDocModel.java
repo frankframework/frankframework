@@ -423,6 +423,7 @@ public class FrankDocModel {
 			result.add(configChild);
 			log.trace("Done creating ConfigChild for SortNode [{}], order = [{}]", () -> sortNode.getName(), () -> configChild.getOrder());
 		}
+		result = ConfigChild.removeDuplicates(result);
 		Collections.sort(result);
 		log.trace("Done creating config children of FrankElement [{}]", () -> parent.getFullName());
 		return result;

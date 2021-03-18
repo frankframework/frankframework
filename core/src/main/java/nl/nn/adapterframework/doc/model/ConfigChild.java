@@ -17,10 +17,15 @@ limitations under the License.
 package nl.nn.adapterframework.doc.model;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotationUtils;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +36,12 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 			Comparator.comparingInt(ConfigChild::getOrder)
 			.thenComparing(c -> c.getElementRole().getRoleName())
 			.thenComparing(c -> c.getElementRole().getElementType().getFullName());
+
+	private static final Comparator<ConfigChild> INVERSE_ALLOW_MULTIPLE =
+			Comparator.comparing(c -> ! c.isAllowMultiple());
+
+	private static final Comparator<ConfigChild> REMOVE_DUPLICATES_COMPARATOR =
+			INVERSE_ALLOW_MULTIPLE.thenComparing(c -> ! c.isMandatory());
 
 	static final class SortNode implements Comparable<SortNode> {
 		private static final Comparator<SortNode> SORT_NODE_COMPARATOR =
@@ -65,20 +76,15 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	static final class Key extends AbstractKey {
 		private final @Getter String roleName;
 		private final @Getter ElementType elementType;
-		private final @Getter boolean mandatory;
-		private final @Getter boolean allowMultiple;
 
 		public Key(ConfigChild configChild) {
 			roleName = configChild.getRoleName();
 			elementType = configChild.getElementType();
-			mandatory = configChild.isMandatory();
-			allowMultiple = configChild.isAllowMultiple();
 		}
 
 		@Override
 		public String toString() {
-			return "(roleName=" + roleName + ", elementType=" + elementType + ", mandatory=" + mandatory
-					+ ", allowMultiple=" + allowMultiple + ")";
+			return "(roleName=" + roleName + ", elementType=" + elementType + ")";
 		}
 	}
 
@@ -108,5 +114,35 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	@Override
 	public int compareTo(ConfigChild other) {
 		return CONFIG_CHILD_COMPARATOR.compare(this, other);
+	}
+
+	/**
+	 * Removes duplicate config children. As input this method expects a list of config children
+	 * found from the declared methods of a Java class. The isMandatory() and isAllowMultiple()
+	 * properties of a config child follow from the name of the Java method. Therefore, the
+	 * input config children are unique by the combination of role name, ElementType,
+	 * isAllowMultiple() and isMandatory().
+	 * <p>
+	 * Now consider Java class {@link nl.nn.adapterframework.senders.SenderSeries}. It both has methods
+	 * setSender() and registerSender(), which would cause a duplicate config child. If both would be
+	 * included, the XSDs would define multiple times that a SenderSeries can have a sender as child.
+	 * This method makes the config children unique by role name and element type, which means
+	 * unique by {@link nl.nn.adapterframework.doc.model.ElementRole}.
+	 */
+	static List<ConfigChild> removeDuplicates(List<ConfigChild> orig) {
+		Map<Key, List<ConfigChild>> byKey = orig.stream().collect(Collectors.groupingBy(Key::new));
+		List<ConfigChild> result = new ArrayList<>();
+		for(Key key: byKey.keySet()) {
+			List<ConfigChild> bucket = new ArrayList<>(byKey.get(key));
+			Collections.sort(bucket, REMOVE_DUPLICATES_COMPARATOR);
+			result.add(bucket.get(0));
+		}
+		return result;
+	}
+
+	@Override
+	boolean checkOverrideMeaningful(ElementChild overriddenFrom) {
+		ConfigChild match = (ConfigChild) overriddenFrom;
+		return (allowMultiple != match.allowMultiple) || (mandatory != match.mandatory);
 	}
 }
