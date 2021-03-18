@@ -111,7 +111,7 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 		return thenForwardName;
 	}
 
-	@IbisDoc({"4","Forward returned when 'false'", "else"})
+	@IbisDoc({"4","Forward returned when <code>'false'</code>", "else"})
 	public void setElseForwardName(String elseForwardName){
 		this.elseForwardName = elseForwardName;
 	}
