@@ -24,14 +24,14 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
@@ -54,10 +54,8 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.Adapter
  */
-public class Configuration implements INamedObject, IScopeProvider, ApplicationContextAware {
+public class Configuration extends ClassPathXmlApplicationContext implements INamedObject, ApplicationContextAware, IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = null;
-	private @Setter ApplicationContext applicationContext;
 
 	private Boolean autoStart = null;
 
@@ -70,7 +68,6 @@ public class Configuration implements INamedObject, IScopeProvider, ApplicationC
 	private final Map<String, JobDef> jobTable = new LinkedHashMap<>(); // TODO useless synchronization ?
 	private final List<JobDef> scheduledJobs = new ArrayList<>();
 
-	private String name;
 	private String version;
 	private IbisManager ibisManager;
 	private String originalConfiguration;
@@ -136,10 +133,31 @@ public class Configuration implements INamedObject, IScopeProvider, ApplicationC
 	}
 
 	public Configuration() {
+		setConfigLocation("FrankFrameworkConfigurationContext.xml");
 	}
 
-	public Configuration(IAdapterService adapterService) {
-		this.adapterService = adapterService;
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		setParent(applicationContext);
+	}
+
+	@Override
+	public void afterPropertiesSet() {
+		if(!(getClassLoader() instanceof IConfigurationClassLoader)) {
+			throw new IllegalStateException("No IConfigurationClassLoader set");
+		}
+		if(ibisManager == null) {
+			throw new IllegalStateException("No IbisManager set");
+		}
+
+		setVersion(ConfigurationUtils.getConfigurationVersion(getClassLoader()));
+		if(StringUtils.isEmpty(getVersion())) {
+			log.info("unable to determine [configuration.version] for configuration [{}]", ()-> getName());
+		} else {
+			log.debug("configuration [{}] found currentConfigurationVersion [{}]", ()-> getName(), ()-> getVersion());
+		}
+
+		super.afterPropertiesSet(); //Triggers a context refresh
 	}
 
 	public void setAutoStart(boolean autoStart) {
@@ -263,7 +281,7 @@ public class Configuration implements INamedObject, IScopeProvider, ApplicationC
 			log.error("error configuring adapter ["+adapter.getName()+"]", e);
 		}
 
-		log.debug("Configuration [" + name + "] registered adapter [" + adapter.toString() + "]");
+		log.debug("Configuration [" + getName() + "] registered adapter [" + adapter.toString() + "]");
 	}
 
 	/**
@@ -291,11 +309,12 @@ public class Configuration implements INamedObject, IScopeProvider, ApplicationC
 
 	@Override
 	public void setName(String name) {
-		this.name = name;
+		setId(name);
 	}
+
 	@Override
 	public String getName() {
-		return name;
+		return getId();
 	}
 
 	public void setVersion(String version) {
@@ -308,20 +327,13 @@ public class Configuration implements INamedObject, IScopeProvider, ApplicationC
 		return version;
 	}
 
-	public void setClassLoader(ClassLoader classLoader) {
-		this.configurationClassLoader = classLoader;
-	}
-	public ClassLoader getClassLoader() {
-		return configurationClassLoader;
-	}
-
 	/**
 	 * If no ClassLoader has been set it tries to fall back on the `configurations.xxx.classLoaderType` property.
 	 * Because of this, it may not always represent the correct or accurate type.
 	 */
 	public String getClassLoaderType() {
-		if(configurationClassLoader == null) { //Configuration has not been loaded yet
-			String type = AppConstants.getInstance().getProperty("configurations."+name+".classLoaderType");
+		if(!(getClassLoader() instanceof IConfigurationClassLoader)) { //Configuration has not been loaded yet
+			String type = AppConstants.getInstance().getProperty("configurations."+getName()+".classLoaderType");
 			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
 				return type;
 			} else {
@@ -329,10 +341,12 @@ public class Configuration implements INamedObject, IScopeProvider, ApplicationC
 			}
 		}
 
-		return configurationClassLoader.getClass().getSimpleName();
+		return getClassLoader().getClass().getSimpleName();
 	}
 
+	@Autowired
 	public void setIbisManager(IbisManager ibisManager) {
+		ibisManager.addConfiguration(this);
 		this.ibisManager = ibisManager;
 	}
 
@@ -381,10 +395,8 @@ public class Configuration implements INamedObject, IScopeProvider, ApplicationC
 		return configurationWarnings;
 	}
 
-	public void close() {
-		if(applicationContext instanceof ConfigurableApplicationContext) {
-			System.out.println("CLOSING " + applicationContext.getDisplayName());
-			((ConfigurableApplicationContext) applicationContext).close();
-		}
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return getClassLoader();
 	}
 }

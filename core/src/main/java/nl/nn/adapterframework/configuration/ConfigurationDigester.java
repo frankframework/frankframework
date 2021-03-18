@@ -161,6 +161,14 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		return digester;
 	}
 
+	public void digestConfiguration() throws ConfigurationException {
+		if(applicationContext instanceof Configuration) {
+			digestConfiguration((Configuration)applicationContext);
+		} else {
+			throw new IllegalStateException("no suitable Configuration found");
+		}
+	}
+
 	public void digestConfiguration(Configuration configuration) throws ConfigurationException {
 		String configurationFile = ConfigurationUtils.getConfigurationFile(configuration.getClassLoader(), configuration.getName());
 		Digester digester = null;

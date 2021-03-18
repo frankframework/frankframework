@@ -10,14 +10,6 @@
 		scope="singleton"
 	/>
 
-	<bean
-		name="configuration"
-		class="nl.nn.adapterframework.configuration.Configuration"
-		autowire="byName"
-		scope="singleton"
-	/>
-
-
 	<!--
 	Beans created from Configuration.xml, but prototyped here for
 	extra dependencies which cannot be created otherwise.

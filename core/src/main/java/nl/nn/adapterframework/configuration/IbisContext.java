@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
@@ -321,38 +321,30 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
+	private Configuration createConfiguration(String name, ClassLoader classLoader) {
+		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		bean.setClassLoader(classLoader);
+		return (Configuration) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
+	}
+
 	private void digestClassLoaderConfiguration(ClassLoader classLoader, String currentConfigurationName, ConfigurationException customClassLoaderConfigurationException) {
 
 		long start = System.currentTimeMillis();
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
 
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		String currentConfigurationVersion = null;
 
 		if (classLoader != null) {
 			Thread.currentThread().setContextClassLoader(classLoader);
-			currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
-			if(StringUtils.isEmpty(currentConfigurationVersion)) {
-				LOG.info("unable to determine [configuration.version] for configuration ["+currentConfigurationName+"]");
-			}
 		}
 
-		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion ["+currentConfigurationVersion+"]");
+		Configuration configuration = createConfiguration(currentConfigurationName, classLoader);
+		if(!configuration.getName().equals(currentConfigurationName)) { //Pre-digest validation to make sure no extra Spring magic happened.
+			throw new IllegalStateException("ConfigurationName mismatch");
+		}
+		String currentConfigurationVersion = configuration.getVersion();
 
-		ClassPathXmlApplicationContext cxap = new ClassPathXmlApplicationContext(); // closed in Configuration.close(), triggered by DefaultIbisManager
-		cxap.setClassLoader(classLoader);
-		cxap.setDisplayName(currentConfigurationName);
-		cxap.setParent(getApplicationContext());
-		cxap.setConfigLocation("FrankFrameworkConfigurationContext.xml");
-		cxap.refresh();
-
-		Configuration configuration = cxap.getBean(Configuration.class);
 		try {
-			configuration.setName(currentConfigurationName);
-			configuration.setVersion(currentConfigurationVersion);
-			configuration.setIbisManager(ibisManager);
-			configuration.setClassLoader(classLoader);
-			ibisManager.addConfiguration(configuration);
 			if (customClassLoaderConfigurationException == null) {
 				ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
@@ -366,10 +358,10 @@ public class IbisContext extends IbisApplicationContext {
 					}
 				}
 
-				ConfigurationDigester configurationDigester = cxap.getBean(ConfigurationDigester.class);
-				configurationDigester.digestConfiguration(configuration); //TODO: Auto-magic this
+				ConfigurationDigester configurationDigester = configuration.getBean(ConfigurationDigester.class);
+				configurationDigester.digestConfiguration();
 				if (currentConfigurationVersion == null) {
-					currentConfigurationVersion = configuration.getVersion();
+					currentConfigurationVersion = configuration.getVersion(); //Digested configuration version
 				} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {
 					log(currentConfigurationName, currentConfigurationVersion, "configuration version doesn't match Configuration version attribute: " + configuration.getVersion(), MessageKeeperLevel.WARN);
 				}
