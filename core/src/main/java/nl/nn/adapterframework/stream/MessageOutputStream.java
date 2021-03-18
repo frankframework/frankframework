@@ -234,6 +234,7 @@ public class MessageOutputStream implements AutoCloseable {
 			requestStream = StreamUtil.captureOutputStream((OutputStream)requestStream, new WriterOutputStream(writer,StreamUtil.DEFAULT_CHARSET), maxSize);
 			return;
 		}
+		log.warn("captureCharacterStream() called before stream is installed.");
 	}
 	
 	public ByteArrayOutputStream captureBinaryStream() {
@@ -259,6 +260,7 @@ public class MessageOutputStream implements AutoCloseable {
 			requestStream = StreamUtil.captureWriter((Writer)requestStream, new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize);
 			return;
 		}
+		log.warn("captureBinaryStream() called before stream is installed.");
 	}
 	
 	/**
@@ -279,8 +281,7 @@ public class MessageOutputStream implements AutoCloseable {
 
 
 	public PipeRunResult getPipeRunResult() {
-		Object response = tail.getResponse();
-		return new PipeRunResult(getForward(), response);
+		return new PipeRunResult(getForward(), tail.getResponse());
 	}
 
 	public PipeForward getForward() {

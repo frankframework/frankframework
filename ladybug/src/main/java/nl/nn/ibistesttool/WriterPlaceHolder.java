@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,16 +13,15 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.batch;
+package nl.nn.ibistesttool;
+
+import java.io.Writer;
 
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * @author John Dekker
- */
-public class OutputfieldsPart {
-	private @Getter @Setter String value;
-	private @Getter @Setter String description;
-	
+public class WriterPlaceHolder {
+
+	private @Getter @Setter Writer writer;
+	private @Getter @Setter int sizeLimit;
 }

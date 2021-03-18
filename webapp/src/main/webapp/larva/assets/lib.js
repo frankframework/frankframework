@@ -264,6 +264,9 @@ function escapeChars(lineInput) {
 		case "\n":
 			line += "";
 			break;
+		case ('&') :
+			line += "&amp;";
+			break;
 		default:
 			line += lineInput.charAt(i);
 		}			
