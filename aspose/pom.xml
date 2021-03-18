@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.5.1-SNAPSHOT</version>
+		<version>7.5.1</version>
 	</parent>
 	<artifactId>ibis-adapterframework-aspose</artifactId>
 	<name>Ibis AdapterFramework support for Aspose</name>
