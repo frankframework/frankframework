@@ -861,7 +861,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@IbisDocRef({ABSTRACTXMLVALIDATOR})
-	public void setIgnoreUnknownNamespaces(boolean ignoreUnknownNamespaces) {
+	public void setIgnoreUnknownNamespaces(Boolean ignoreUnknownNamespaces) {
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
 	public Boolean getIgnoreUnknownNamespaces() {

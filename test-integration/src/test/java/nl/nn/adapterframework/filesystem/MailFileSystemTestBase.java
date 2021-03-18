@@ -14,6 +14,20 @@ import nl.nn.adapterframework.testutil.PropertyUtil;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
+/**
+ * Performs a number of test for MailFileSystems.
+ * 
+ * Runs on 'IAF Integration Tests 1' base folder.
+ * Subfolders:
+ * 	AttachedMessage
+ * 	FromAddressProblem
+ * 	RaceFolder1
+ * 	RaceFolder2
+ * 	XmlProblem
+ * 	XmlProblem2
+ * 
+ * creates a number of fs_test... folders
+ */
 public abstract class MailFileSystemTestBase<M,A,FS> extends SelfContainedBasicFileSystemTest<M, IMailFileSystem<M,A>>{
 
 	protected String PROPERTY_FILE = "ExchangeMail.properties";

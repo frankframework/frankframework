@@ -5,8 +5,8 @@
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
-		http://www.springframework.org/schema/util classpath:xml/xsd/spring-util-3.2.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 		"
 	>
 
@@ -38,6 +38,4 @@
 		<constructor-arg value="${jdbc.datasource.default}" />
 	</bean>
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.SpringDataSourceFactory" />
-	
 </beans>

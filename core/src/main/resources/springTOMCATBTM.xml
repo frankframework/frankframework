@@ -4,11 +4,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		"
 	>
 
 	<import resource="springTOMCAT.xml"/>
+	<import resource="springJms.xml"/>
 
 	<bean
 		name="txManagerReal"
@@ -36,6 +37,7 @@
 			<property name="logPart2Filename" value="${log.dir}/${instance.name.lc}-btm2.tlog" />
 	</bean>
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.BtmDataSourceFactory" destroy-method="shutdown" />
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.BtmDataSourceFactory" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jms.BtmConnectionFactoryFactory" />
 
 </beans>

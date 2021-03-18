@@ -19,13 +19,19 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Spliterators;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Lombok;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.WildCardFilter;
 
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);
@@ -260,6 +266,31 @@ public class FileSystemUtils {
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
+	}
+
+	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException, IOException {
+		DirectoryStream<F> ds = fileSystem.listFiles(folder);
+		if (ds==null) {
+			return null;
+		}
+		Iterator<F> it = ds.iterator();
+		if (it==null) {
+			return null;
+		}
+
+		WildCardFilter wildcardfilter =  StringUtils.isEmpty(wildCard) ? null : new WildCardFilter(wildCard);
+		WildCardFilter excludeFilter =  StringUtils.isEmpty(excludeWildCard) ? null : new WildCardFilter(excludeWildCard);
+
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0),false)
+				.filter(F -> (wildcardfilter==null || wildcardfilter.accept(null, fileSystem.getName((F) F))) 
+						&& (excludeFilter==null || !excludeFilter.accept(null, fileSystem.getName((F) F))))
+				.onClose(() -> {
+					try {
+						ds.close();
+					} catch (IOException e) {
+						Lombok.sneakyThrow(e);
+					}
+				});
 	}
 
 }

@@ -3,7 +3,6 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.SQLException;
 
 import javax.naming.NamingException;
-import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -19,22 +18,18 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	public final String DEFAULT_DATASOURCE_NAME="testDataSource";
 
 	protected ResourceTransactionManager txManager;
-	protected IDataSourceFactory dataSourceFactory;
+	protected SpringDataSourceFactory dataSourceFactory;
 	protected DataSource txManagedDataSource;
 
 	public TransactionManagerTestBase(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException, NamingException {
 		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
 		
 		// setup a DataSourceFactory like in springTOMCAT.xml
-		dataSourceFactory = new SpringDataSourceFactory() { 
-				@Override
-				protected CommonDataSource lookupDataSource(String jndiName) throws NamingException {
-					return targetDataSource;
-				}
-			};
+		dataSourceFactory = new SpringDataSourceFactory();
+		dataSourceFactory.add(targetDataSource, DEFAULT_DATASOURCE_NAME);
 			
 		// setup a defaultDataSource, produced by dataSourceFactory, like in springTOMCAT.xml
-		DataSource defaultDataSource = dataSourceFactory.getDataSource(DEFAULT_DATASOURCE_NAME);	
+		DataSource defaultDataSource = dataSourceFactory.getDataSource(DEFAULT_DATASOURCE_NAME);
 			
 		// setup a TransactionManager like in springTOMCAT.xml
 		DataSourceTransactionManager dataSourceTransactionManager;

@@ -2,12 +2,13 @@ package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
@@ -16,11 +17,11 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTestBase{
 
 	protected String mailaddress;
+	protected String mailaddress_fancy;
 	protected String accessToken;
 	protected String username;
 	protected String password;
@@ -54,6 +55,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		Properties properties=new Properties();
 		properties.load(ClassUtils.getResourceURL(testProperties).openStream());
 		mailaddress = properties.getProperty("mailaddress");
+		mailaddress_fancy = properties.getProperty("mailaddress.fancy");
 		accessToken = properties.getProperty("accessToken");
 		username = properties.getProperty("username");
 		password = properties.getProperty("password");
@@ -72,6 +74,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setUsername(username);
 		mailListener.setPassword(password);
 		mailListener.setUrl(baseurl);
+		mailListener.setBaseFolder(basefolder2);
 	}
 	
 	@Override
@@ -247,38 +250,11 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //		return null;
 //	}
 //
-	@Test
-	public void readFileBasicFromSubfolderOfInbox() throws Exception {
-		String targetFolder=basefolder1;
-//		String subfolder="Basic";
-//		String filename = "readFile";
-//		String contents = "Tekst om te lezen";
-		
-		
-		configureAndOpen(targetFolder,null);
-		
-//		if (!folderContainsMessages(subfolder)) {
-//			createFile(null, filename, contents);
-//			waitForActionToFinish();
-//		}
-		
-		Map<String,Object> threadContext=new HashMap<String,Object>();
-		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
-		assertNotNull(rawMessage);
-		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
-		
-		System.out.println("message ["+message+"]");
-		//assertEquals("name","x",fileSystem.getName(file));
-
-		assertTrue(XmlUtils.isWellFormed(message,"email"));
-		TestAssertions.assertXpathValueEquals("gerrit@integrationpartners.nl", message, "/email/recipients/recipient[@type='to']");
-		TestAssertions.assertXpathValueEquals(senderUserId, message, "/email/from");
-		TestAssertions.assertXpathValueEquals("testmail 1", message, "/email/subject");
-	}
 
 	@Test
+	@Ignore("skip NDR filter for now")
 	public void readFileBounce1() throws Exception {
-		String targetFolder=basefolder1;
+		String targetFolder="Onbestelbaar 1";
 		String originalRecipient="onbestelbaar@weetikwaarwelniet.nl";
 		String originalFrom="gerrit@integrationpartners.nl";
 		String originalSubject="onbestelbaar met attachments";
@@ -323,6 +299,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 	
 	@Test
+	@Ignore("skip NDR filter for now")
 	public void readFileBounce2() throws Exception {
 		String targetFolder="Bounce 2";
 		String originalRecipient="annet.de.vries1@nn.nl";
@@ -375,6 +352,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Test
+	@Ignore("skip NDR filter for now")
 	public void readFileBounce3WithAttachmentInOriginalMail() throws Exception {
 		String targetFolder="Bounce 3";
 		String originalRecipient="marcel.zentveld@stevik.nl";
@@ -428,6 +406,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Test
+	@Ignore("skip NDR filter for now")
 	public void readFileBounce4() throws Exception {
 		String targetFolder="Bounce 4";
 		String originalRecipient="jouri.kock23@nn-group.com";
@@ -478,6 +457,18 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		TestAssertions.assertXpathValueEquals(xEnvironment,      		message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
 		TestAssertions.assertXpathValueEquals(xCorrelationId,      		message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
 
+	}
+
+	@Test
+	public void readEmptyFolder() throws Exception {
+		String targetFolder="Empty";
+		mailListener.setCreateFolders(true);
+		configureAndOpen(targetFolder,null);
+		
+		Map<String,Object> threadContext=new HashMap<String,Object>();
+				
+		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
+		assertNull(rawMessage);
 	}
 
 

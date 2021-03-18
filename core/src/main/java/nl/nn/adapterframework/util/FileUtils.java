@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,6 +52,8 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  */
 public class FileUtils {
 	static Logger log = LogUtil.getLogger(FileUtils.class);
+	protected static final String WEEKLY_ROLLING_FILENAME_DATE_FORMAT = "YYYY'W'ww";
+	protected static final String DAILY_ROLLING_FILENAME_DATE_FORMAT = "yyyy-MM-dd";
 
 	/**
 	 * Construct a filename from a pattern and session variables. 
@@ -356,30 +358,31 @@ public class FileUtils {
 	}
 
 	public static File getWeeklyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, "yyyy'W'ww", filenameSuffix, retentionDays);
+		return getRollingFile(directory, filenamePrefix, WEEKLY_ROLLING_FILENAME_DATE_FORMAT, filenameSuffix, retentionDays);
 	}
-	
+
 	public static File getDailyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, "yyyy-MM-dd", filenameSuffix, retentionDays);
+		return getRollingFile(directory, filenamePrefix, DAILY_ROLLING_FILENAME_DATE_FORMAT, filenameSuffix, retentionDays);
 	}
-	
-	public static File getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays) {
-		
+
+	private static File getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays) {
+		return getRollingFile(directory, filenamePrefix, dateformat, filenameSuffix, retentionDays, null);
+	}
+
+	protected static File getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays, Date date) {
+
 		final long millisPerDay=24*60*60*1000;
 
 		if (directory==null) {
 			return null;
 		}
-		Date now=new Date();
 
-		String filename=filenamePrefix+DateUtils.format(now,dateformat)+filenameSuffix;
+		Date dateInFileName = date != null ? date : new Date();
+
+		String filename=filenamePrefix+DateUtils.format(dateInFileName,dateformat)+filenameSuffix;
 		File result = new File(directory+"/"+filename);
 		if (!result.exists()) {
-			int year=now.getYear();
-			int month=now.getMonth();
-			int date=now.getDate();
-		
-			long thisMorning = new Date(year, month, date).getTime();
+			long thisMorning = dateInFileName.getTime();
 
 			long deleteBefore = thisMorning - retentionDays * millisPerDay;
 
@@ -398,9 +401,7 @@ public class FileUtils {
 				}
 			}
 		}
-		
 		return result;
-
 	}
 
 	public static File[] getFiles(String directory, String wildcard, String excludeWildcard, long minStability) {

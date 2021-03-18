@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,10 @@ import nl.nn.adapterframework.core.INamedObject;
 
 public class MessageOutputStreamCap extends MessageOutputStream {
 
+	private Object responseBuffer;
+	private Object captureStream;
+	private int caputureSize;
+	
 	public MessageOutputStreamCap(INamedObject owner, IForwardTarget next) {
 		super(owner, next);
 	}
@@ -65,14 +69,44 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	@Override
 	public Object getResponse() {
-		Object buffer = super.asNative();
-		if (buffer==null) {
+		if (responseBuffer==null) {
 			return null;
-		} else if (buffer instanceof ByteArrayOutputStream) {
-			return ((ByteArrayOutputStream)buffer).toByteArray();
+		} else if (responseBuffer instanceof ByteArrayOutputStream) {
+			return ((ByteArrayOutputStream)responseBuffer).toByteArray();
 		} else {
-			return buffer.toString();
+			return responseBuffer.toString();
 		}
+	}
+
+	@Override
+	protected void setRequestStream(Object requestStream) {
+		super.setRequestStream(requestStream);
+		responseBuffer = requestStream;
+		installCapture();
+	}
+
+	private void installCapture() {
+		if (captureStream instanceof Writer) {
+			super.captureCharacterStream((Writer)captureStream, caputureSize);
+			return;
+		}
+		if (captureStream instanceof OutputStream) {
+			super.captureBinaryStream((OutputStream)captureStream, caputureSize);
+			return;
+		}
+	}
+	
+	
+	@Override
+	public void captureCharacterStream(Writer writer, int maxSize) {
+		captureStream = writer;
+		caputureSize = maxSize;
+	}
+
+	@Override
+	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
+		captureStream = outputStream;
+		caputureSize = maxSize;
 	}
 	
 }

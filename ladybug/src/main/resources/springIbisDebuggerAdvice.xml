@@ -5,8 +5,8 @@
 	xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
-		http://www.springframework.org/schema/aop classpath:xml/xsd/spring-aop-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
 		"
 	>
 
@@ -106,6 +106,37 @@
 			<aop:around
 				pointcut=
 					"
+	 				execution(
+	 					*
+	 					nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
+	 						nl.nn.adapterframework.core.IPipeLineSession, 
+	 						..
+	 					)
+	 				)
+	 				and
+	 				args(session, ..)
+	 				"
+				method="debugProvideOutputStream"
+				arg-names="session"
+			/>
+			<aop:around
+				pointcut=
+					"
+	 				execution(
+	 					*
+	 					nl.nn.adapterframework.stream.StreamingPipe.provideOutputStream(
+	 						nl.nn.adapterframework.core.IPipeLineSession
+	 					)
+	 				)
+	 				and
+	 				args(session)
+	 				"
+				method="debugProvideOutputStream"
+				arg-names="session"
+			/>
+			<aop:around
+				pointcut=
+					"
 					execution(
 						*
 						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
@@ -119,22 +150,6 @@
 					"
 				method="debugStreamingSenderInputOutputAbort"
 				arg-names="blockHandle, message, session, next"
-			/>
-			<aop:around
-				pointcut=
-					"
-	 				execution(
-	 					*
-	 					nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
-	 						nl.nn.adapterframework.core.IPipeLineSession, 
-	 						..
-	 					)
-	 				)
-	 				and
-	 				args(session, ..)
-	 				"
-				method="debugProvideOutputStream"
-				arg-names="session"
 			/>
 			<aop:around
 				pointcut=

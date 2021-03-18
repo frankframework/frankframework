@@ -222,4 +222,13 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		actor.setBase64(base64);
 	}
 
+	@IbisDocRef({"10", FILESYSTEMACTOR})
+	public void setWildCard(String wildCard) {
+		actor.setWildCard(wildCard);
+	}
+
+	@IbisDocRef({"11", FILESYSTEMACTOR})
+	public void setExcludeWildCard(String excludeWildCard) {
+		actor.setExcludeWildCard(excludeWildCard);
+	}
 }

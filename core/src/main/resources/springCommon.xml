@@ -3,7 +3,7 @@
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	default-autowire="byName"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
 	>
 
 	<bean
@@ -20,13 +20,17 @@
 	/>
 
 	<bean
-		name="jndiContextPrefixPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
-		autowire="byName"
-		>
-		<property name="propertyName" value="jndiContextPrefix"/>
-		<property name="propertyValue" value=""/>
-	</bean>
+		id="jndiContextPrefix"
+		factory-bean="jndiContextPrefixFactory"
+		factory-method="getContextPrefix"
+	/>
+
+	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
+
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.SpringDataSourceFactory" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory" />
+
+	<bean id="jdbcPropertySourceFactory" class="nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory" />
 
 	<bean
 		name="hostnamePropertyPlaceholderConfigurer"
@@ -53,7 +57,7 @@
 		autowire="byName"
 		scope="prototype"
 		>
-		<property name="jndiContextPrefix" value="${jndiContextPrefix}"/>
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
 	<bean

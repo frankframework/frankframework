@@ -38,13 +38,13 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 	@Override
 	public List<String> getStubStrategies() {
 		List<String> stubStrategies = new ArrayList<>();
-		stubStrategies.add(STUB_STRATEY_NEVER);
+		stubStrategies.add(STUB_STRATEGY_NEVER);
 		return stubStrategies;
 	}
 
 	@Override
 	public String getDefaultStubStrategy() {
-		return STUB_STRATEY_NEVER;
+		return STUB_STRATEGY_NEVER;
 	}
 
 	@Override

@@ -277,7 +277,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 	private void addConfigWarning(Object currObj, String name, String message) {
 		Locator loc = getDigester().getDocumentLocator();
-		if(currObj instanceof INamedObject) {
+		if(currObj instanceof INamedObject && ((INamedObject) currObj).getName() != null) { //name setting may not have been called yet
 			String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+message;
 			ConfigurationWarnings.add((INamedObject) currObj, log, msg);
 		} else { 

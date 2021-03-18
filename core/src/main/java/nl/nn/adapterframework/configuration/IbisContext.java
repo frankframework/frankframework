@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -32,12 +33,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
+import nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
@@ -213,7 +214,6 @@ public class IbisContext extends IbisApplicationContext {
 		} else {
 			log("Configuration [" + configurationName + "] to unload not found", MessageKeeperLevel.WARN);
 		}
-		JdbcUtil.resetJdbcProperties();
 	}
 
 	/**
@@ -237,7 +237,6 @@ public class IbisContext extends IbisApplicationContext {
 		if (uriPatterns.size() > 0) {
 			log("Not all rest listeners are unregistered: " + uriPatterns, MessageKeeperLevel.ERROR);
 		}
-		JdbcUtil.resetJdbcProperties();
 
 		init();
 	}
@@ -247,6 +246,14 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see #load(String)
 	 */
 	private void load() {
+		if(AppConstants.getInstance().getBoolean(AppConstants.JDBC_PROPERTIES_KEY, false)) {
+			JdbcPropertySourceFactory propertySourceFactory = getBean("jdbcPropertySourceFactory", JdbcPropertySourceFactory.class);
+			Properties properties = propertySourceFactory.createPropertySource(getApplicationName()+"-DatabaseProperties");
+			if(properties != null) {
+				AppConstants.getInstance().putAll(properties);
+			}
+		}
+
 		try {
 			loadingConfigs.add(ALL_CONFIGS_KEY);
 			load(null);
@@ -350,12 +357,10 @@ public class IbisContext extends IbisApplicationContext {
 				ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
 				if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
-					try {
-						Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class);
+					try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
 						databaseMigrator.setIbisContext(this);
 						databaseMigrator.configure(configuration);
 						databaseMigrator.update();
-						databaseMigrator.close();
 					} catch (Exception e) {
 						log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperLevel.ERROR);
 					}

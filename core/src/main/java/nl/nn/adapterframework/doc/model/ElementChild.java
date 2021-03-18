@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.DocWriterNew;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -62,9 +63,19 @@ public abstract class ElementChild {
 	private @Getter @Setter boolean documented;
 	private @Getter FrankElement overriddenFrom;
 
+	/**
+	 * Different {@link ElementChild} of the same FrankElement are allowed to have the same order.
+	 */
+	private @Getter @Setter int order = Integer.MAX_VALUE;
+	private @Getter String description;
+	private @Getter String defaultValue;
+
 	public static Predicate<ElementChild> IN_XSD = c ->
 		(! c.isDeprecated())
 		&& (c.isDocumented() || (c.getOverriddenFrom() == null));
+
+	public static Predicate<ElementChild> IN_COMPATIBILITY_XSD = c ->
+		c.isDocumented() || (c.getOverriddenFrom() == null);
 
 	public static Predicate<ElementChild> DEPRECATED = c -> c.isDeprecated();
 	public static Predicate<ElementChild> ALL = c -> true;
@@ -88,17 +99,40 @@ public abstract class ElementChild {
 			ElementChild matchingChild = match.findElementChildMatch(this);
 			if(matchingChild != null) {
 				if(matchingChild.isDeprecated()) {
-					log.warn(String.format("Element child overrides deprecated ElementChild: descendant [%s], super [%s]",
-							toString(), matchingChild.toString()));
+					log.warn("Element child overrides deprecated ElementChild: descendant [{}], super [{}]", () -> toString(), () -> matchingChild.toString());
 				}
 				overriddenFrom = match;
-				if(log.isTraceEnabled()) {
-					log.trace(String.format("%s [%s] of FrankElement [%s] has overriddenFrom = [%s]",
-							getClass().getSimpleName(), toString(), owningElement.getFullName(), overriddenFrom.getFullName()));
-				}
+				log.trace("{} [{}] of FrankElement [{}] has overriddenFrom = [{}]",
+						() -> getClass().getSimpleName(), () -> toString(), () -> owningElement.getFullName(), () -> overriddenFrom.getFullName());
 				return;
 			}
 		}
+	}
+
+	boolean parseIbisDocAnnotation(IbisDoc ibisDoc) {
+		String[] ibisDocValues = ibisDoc.value();
+		boolean isIbisDocHasOrder = false;
+		description = "";
+		try {
+			order = Integer.parseInt(ibisDocValues[0]);
+			isIbisDocHasOrder = true;
+		} catch (NumberFormatException e) {
+			isIbisDocHasOrder = false;
+		}
+		if (isIbisDocHasOrder) {
+			if(ibisDocValues.length > 1) {
+				description = ibisDocValues[1];
+			}
+			if (ibisDocValues.length > 2) {
+				defaultValue = ibisDocValues[2]; 
+			}
+		} else {
+			description = ibisDocValues[0];	
+			if (ibisDocValues.length > 1) {
+				defaultValue = ibisDocValues[1];
+			}
+		}
+		return isIbisDocHasOrder;
 	}
 
 	@Override

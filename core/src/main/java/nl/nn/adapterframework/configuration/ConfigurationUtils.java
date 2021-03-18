@@ -49,8 +49,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -181,14 +180,10 @@ public class ConfigurationUtils {
 		return getConfigFromDatabase(ibisContext, name, jmsRealm, null);
 	}
 
-	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				log.warn("no JMSRealm found");
-				return null;
-			}
+	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String dataSourceName, String version) throws ConfigurationException {
+		String workdataSourceName = dataSourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 		if (StringUtils.isEmpty(version)) {
 			version = null; //Make sure this is null when empty!
@@ -197,7 +192,7 @@ public class ConfigurationUtils {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -346,20 +341,16 @@ public class ConfigurationUtils {
 		return result;
 	}
 
-	public static boolean addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
-		if (StringUtils.isEmpty(datasource)) {
-			String workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				return false;
-			}
-			JmsRealm jmsRealm = JmsRealmFactory.getInstance().getJmsRealm(workJmsRealm);
-			datasource = jmsRealm.getDatasourceName();
+	public static boolean addConfigToDatabase(IbisContext ibisContext, String dataSourceName, boolean activate_config, boolean automatic_reload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
+		String workdataSourceName = dataSourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setDatasourceName(datasource);
+		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -409,18 +400,10 @@ public class ConfigurationUtils {
 	}
 
 	public static void removeConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm, String version) throws ConfigurationException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				throw new ConfigurationException("no JmsRealm found");
-			}
-		}
-
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {
@@ -448,19 +431,16 @@ public class ConfigurationUtils {
 	 * Set the all ACTIVECONFIG to false and specified version to true
 	 * @param value 
 	 */
-	public static boolean activateConfig(IbisContext ibisContext, String name, String version, boolean value, String jmsRealm) throws SenderException, ConfigurationException, JdbcException, SQLException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				return false;
-			}
+	public static boolean activateConfig(IbisContext ibisContext, String name, String version, boolean value, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+		String workdataSourceName = dataSourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		String booleanValueFalse = qs.getDbmsSupport().getBooleanValue(false);
@@ -501,19 +481,16 @@ public class ConfigurationUtils {
 	/**
 	 * Toggle AUTORELOAD
 	 */
-	public static boolean autoReloadConfig(IbisContext ibisContext, String name, String version, boolean booleanValue, String jmsRealm) throws SenderException, ConfigurationException, JdbcException, SQLException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				return false;
-			}
+	public static boolean autoReloadConfig(IbisContext ibisContext, String name, String version, boolean booleanValue, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
+		String workdataSourceName = dataSourceName;
+		if (StringUtils.isEmpty(workdataSourceName)) {
+			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 
@@ -606,18 +583,10 @@ public class ConfigurationUtils {
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm, boolean onlyAutoReload) throws ConfigurationException {
-		String workJmsRealm = jmsRealm;
-		if (StringUtils.isEmpty(workJmsRealm)) {
-			workJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(workJmsRealm)) {
-				return null;
-			}
-		}
-
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(workJmsRealm);
+		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 		try {

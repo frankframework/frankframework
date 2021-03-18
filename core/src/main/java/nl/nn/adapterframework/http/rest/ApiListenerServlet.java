@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2020 WeAreFrank!
+Copyright 2017-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -59,17 +60,19 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 @IbisInitializer
 public class ApiListenerServlet extends HttpServletBase {
-
+	protected Logger log = LogUtil.getLogger(this);
 	private static final long serialVersionUID = 1L;
+
+	public static final String AUTHENTICATION_COOKIE_NAME = "authenticationToken";
 
 	private List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
 
-	protected Logger log = LogUtil.getLogger(this);
-	private ApiServiceDispatcher dispatcher = null;
-	private IApiCache cache = null;
 	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
 	private String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+
+	private ApiServiceDispatcher dispatcher = null;
+	private IApiCache cache = null;
 
 	@Override
 	public void init() throws ServletException {
@@ -106,20 +109,25 @@ public class ApiListenerServlet extends HttpServletBase {
 
 		String uri = request.getPathInfo();
 		String method = request.getMethod().toUpperCase();
-		log.trace("ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]");
+		String remoteUser = request.getRemoteUser();
+
+		if(log.isInfoEnabled()) {
+			String infoMessage = "ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]" + (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : "");
+			log.info(infoMessage);
+		}
 
 		if (uri==null) {
 			response.setStatus(400);
-			log.warn("Aborting request with status [400], empty uri");
+			log.warn(createAbortingMessage(remoteUser,400) + "empty uri");
 			return;
 		}
 		if(uri.endsWith("/"))
 			uri = uri.substring(0, uri.length()-1);
-
+		
 		/**
 		 * Generate an OpenApi json file
 		 */
-		if(uri.equalsIgnoreCase("openapi.json")) {
+		if(uri.equalsIgnoreCase("/openapi.json")) {
 			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema();
 			returnJson(response, 200, jsonSchema);
 			return;
@@ -128,12 +136,14 @@ public class ApiListenerServlet extends HttpServletBase {
 		/**
 		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
 		 */
-		if(uri.endsWith("/openapi.json")) {
-			uri = uri.substring(0, uri.length()-"/openapi.json".length());
-			List<ApiDispatchConfig> apiConfigs = dispatcher.findMatchingConfigsForUri(uri);
-			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfigs);
-			returnJson(response, 200, jsonSchema);
-			return;
+		if(uri.endsWith("openapi.json")) {
+			uri = uri.substring(0, uri.lastIndexOf("/"));
+			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+			if(apiConfig != null) {
+				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig);
+				returnJson(response, 200, jsonSchema);
+				return;
+			}
 		}
 
 		/**
@@ -149,7 +159,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 				if(config == null) {
 					response.setStatus(404);
-					if(log.isTraceEnabled()) log.trace("Aborting request with status [404], no ApiListener configured for ["+uri+"]");
+					log.warn(createAbortingMessage(remoteUser,404) + "no ApiListener configured for ["+uri+"]");
 					return;
 				}
 	
@@ -186,7 +196,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				ApiListener listener = config.getApiListener(method);
 				if(listener == null) {
 					response.setStatus(405);
-					if(log.isTraceEnabled()) log.trace("Aborting request with status [405], method ["+method+"] not allowed");
+					log.warn(createAbortingMessage(remoteUser,405) + "method ["+method+"] not allowed");
 					return;
 				}
 	
@@ -203,15 +213,10 @@ public class ApiListenerServlet extends HttpServletBase {
 	
 					switch (listener.getAuthenticationMethodEnum()) {
 					case COOKIE:
-						Cookie[] cookies = request.getCookies();
-						if(cookies != null) {
-							for (Cookie cookie : cookies) {
-								if("authenticationToken".equals(cookie.getName())) {
-									authorizationToken = cookie.getValue();
-									authorizationCookie = cookie;
-									authorizationCookie.setPath("/");
-								}
-							}
+						authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
+						if(authorizationCookie != null) {
+							authorizationToken = authorizationCookie.getValue();
+							authorizationCookie.setPath("/");
 						}
 						break;
 					case HEADER:
@@ -238,18 +243,16 @@ public class ApiListenerServlet extends HttpServletBase {
 					if(userPrincipal == null || !userPrincipal.isLoggedIn()) {
 						cache.remove(authorizationToken);
 						if(authorizationCookie != null) {
-							authorizationCookie.setMaxAge(0);
-							response.addCookie(authorizationCookie);
+							CookieUtil.addCookie(request, response, authorizationCookie, 0);
 						}
 	
 						response.setStatus(401);
-						if(log.isTraceEnabled()) log.trace("Aborting request with status [401], no (valid) credentials supplied");
+						log.warn(createAbortingMessage(remoteUser,401) + "no (valid) credentials supplied");
 						return;
 					}
 	
 					if(authorizationCookie != null) {
-						authorizationCookie.setMaxAge(authTTL);
-						response.addCookie(authorizationCookie);
+						CookieUtil.addCookie(request, response, authorizationCookie, authTTL);
 					}
 	
 					if(authorizationToken != null) {
@@ -273,14 +276,14 @@ public class ApiListenerServlet extends HttpServletBase {
 					if(!listener.accepts(acceptHeader)) {
 						response.setStatus(406);
 						response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-						if(log.isTraceEnabled()) log.trace("Aborting request with status [406], client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
+						log.warn(createAbortingMessage(remoteUser,406) + "client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
 						return;
 					}
 				}
 	
 				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
-					if(log.isTraceEnabled()) log.trace("Aborting request with status [415], did not match consumes ["+listener.getConsumesEnum()+"] got ["+request.getContentType()+"] instead");
+					log.warn(createAbortingMessage(remoteUser,415) + "did not match consumes ["+listener.getConsumesEnum()+"] got ["+request.getContentType()+"] instead");
 					return;
 				}
 	
@@ -294,7 +297,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						String ifNoneMatch = request.getHeader("If-None-Match");
 						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 							response.setStatus(304);
-							if(log.isTraceEnabled()) log.trace("Aborting request with status [304], matched if-none-match ["+ifNoneMatch+"]");
+							if (log.isDebugEnabled()) log.debug(createAbortingMessage(remoteUser,304) + "matched if-none-match ["+ifNoneMatch+"]");
 							return;
 						}
 					}
@@ -302,7 +305,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						String ifMatch = request.getHeader("If-Match");
 						if(ifMatch != null && !ifMatch.equals(cachedEtag)) {
 							response.setStatus(412);
-							if(log.isTraceEnabled()) log.trace("Aborting request with status [412], matched if-match ["+ifMatch+"] method ["+method+"]");
+							log.warn(createAbortingMessage(remoteUser,412) + "matched if-match ["+ifMatch+"] method ["+method+"]");
 							return;
 						}
 					}
@@ -344,10 +347,17 @@ public class ApiListenerServlet extends HttpServletBase {
 				Enumeration<String> paramnames = request.getParameterNames();
 				while (paramnames.hasMoreElements()) {
 					String paramname = paramnames.nextElement();
-					String paramvalue = request.getParameter(paramname);
-	
-					if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
-					messageContext.put(paramname, paramvalue);
+					String[] paramList = request.getParameterValues(paramname);
+					if(paramList.length > 1) { // contains multiple items
+						List<String> valueList = Arrays.asList(paramList);
+						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to "+valueList);
+						messageContext.put(paramname, valueList);
+					}
+					else {
+						String paramvalue = request.getParameter(paramname);
+						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
+						messageContext.put(paramname, paramvalue);
+					}
 				}
 	
 				/**
@@ -467,15 +477,15 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 				PipeLineSessionBase.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
 				Message result = listener.processRequest(null, body, messageContext);
-	
+
 				/**
 				 * Calculate an eTag over the processed result and store in cache
 				 */
 				if(messageContext.get("updateEtag", true)) {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
-					if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) {
-						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asString().hashCode());
+					if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) { //If the data has changed, generate a new eTag
+						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asObject().hashCode()); //The eTag has nothing to do with the content and can be a random string.
 						log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
 						cache.put(etagCacheKey, eTag);
 						response.addHeader("etag", eTag);
@@ -483,7 +493,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					else {
 						log.debug("removing etag with key["+etagCacheKey+"]");
 						cache.remove(etagCacheKey);
-	
+
 						// Not only remove the eTag for the selected resources but also the collection
 						String key = ApiCacheManager.getParentCacheKey(listener, uri);
 						if(key != null) {
@@ -492,30 +502,35 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
-	
+
 				/**
 				 * Add headers
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
-	
+
 				String contentType = listener.getContentType();
 				if(listener.getProducesEnum().equals(MediaTypes.ANY)) {
 					contentType = messageContext.get("contentType", contentType);
 				}
 				response.setHeader("Content-Type", contentType);
-	
+
 				/**
 				 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
 				 */
 				int statusCode = messageContext.get("exitcode", 0);
-				if(statusCode > 0)
+				if(statusCode > 0) {
 					response.setStatus(statusCode);
-	
+				}
+
 				/**
 				 * Finalize the pipeline and write the result to the response
 				 */
 				if(!Message.isEmpty(result)) {
-					StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4000, false, false);
+					if(result.isBinary()) {
+						StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 4096);
+					} else {
+						StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4096, false, false);
+					}
 				}
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
 			}
@@ -536,5 +551,15 @@ public class ApiListenerServlet extends HttpServletBase {
 	@Override
 	public String getUrlMapping() {
 		return "/api/*";
+	}
+
+	private String createAbortingMessage(String remoteUser, int statusCode) {
+		StringBuilder message = new StringBuilder("");
+		message.append("Aborting request ");
+		if(StringUtils.isNotEmpty(remoteUser)) {
+			message.append("issued by ["+remoteUser+"] ");
+		}
+		message.append("with status code ["+statusCode+"], ");
+		return message.toString();
 	}
 }

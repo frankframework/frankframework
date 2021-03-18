@@ -23,6 +23,12 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${iaf.version}</version>
+			<classifier>context</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-test</artifactId>
+			<version>${iaf.version}</version>
 			<classifier>resources</classifier>
 		</dependency>
 		<dependency>
@@ -92,6 +98,24 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>unpack-context</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>context</classifier>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/frank/context</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
 						<id>unpack-tests</id>
 						<phase>package</phase>
 						<goals>
@@ -125,7 +149,7 @@
 								<exec executable="docker">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-test-tomcat:${project.version}"/>
+									<arg value="iaf-test-tomcat"/>
 									<arg value="."/>
 								</exec>
 							</target>

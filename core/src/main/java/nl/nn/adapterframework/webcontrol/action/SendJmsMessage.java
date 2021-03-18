@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.StringTagger;
 
 import org.apache.struts.action.ActionForm;
@@ -53,26 +54,19 @@ public final class SendJmsMessage extends ActionBase {
 	
 	    DynaActionForm sendJmsMessageForm = getPersistentForm(mapping, form, request);
 	
-	    Cookie[] cookies = request.getCookies();
+	    Cookie cookie = CookieUtil.getCookie(request, AppConstants.getInstance().getProperty("WEB_JMSCOOKIE_NAME"));
+		if (null != cookie) {
+			StringTagger cs = new StringTagger(cookie.getValue());
 	
-	    if (null != cookies) {
-	        for (int i = 0; i < cookies.length; i++) {
-	            Cookie aCookie = cookies[i];
-	
-	            if (aCookie.getName().equals(AppConstants.getInstance().getProperty("WEB_JMSCOOKIE_NAME"))) {
-	                StringTagger cs = new StringTagger(aCookie.getValue());
-	
-	                log.debug("restoring values from cookie: " + cs.toString());
-	                try {
-	                    sendJmsMessageForm.set("jmsRealm", cs.Value("jmsRealm"));
-	                    sendJmsMessageForm.set("destinationName", cs.Value("destinationName"));
-	                    sendJmsMessageForm.set("destinationType", cs.Value("destinationType"));
-	                } catch (Exception e) {
-	                    log.warn("could not restore Cookie value's");
-	                }
-	            }
-	        }
-	    }
+            log.debug("restoring values from cookie: " + cs.toString());
+            try {
+                sendJmsMessageForm.set("jmsRealm", cs.Value("jmsRealm"));
+                sendJmsMessageForm.set("destinationName", cs.Value("destinationName"));
+                sendJmsMessageForm.set("destinationType", cs.Value("destinationType"));
+            } catch (Exception e) {
+                log.warn("could not restore Cookie value's");
+            }
+        }
 	
 	    List jmsRealms=JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 	    if (jmsRealms.size()==0) jmsRealms.add("no realms defined");

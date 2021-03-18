@@ -1,0 +1,14 @@
+<results>
+	<result item="1">
+[line 1
+line 2]
+</result>
+	<result item="2">
+[BOL line 3
+line 4]
+</result>
+	<result item="3">
+[BOL line 5
+line 6]
+</result>
+</results>

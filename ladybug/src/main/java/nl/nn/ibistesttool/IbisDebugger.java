@@ -36,12 +36,12 @@ public interface IbisDebugger {
 
 	public Object pipeLineSessionKey(String correlationId, String sessionKey, Object sessionValue);
 
-	public Message pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, Message input);
-	public Message pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, Message output);
+	public <T> T pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, T input);
+	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output);
 	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable);
 
-	public Message senderInput(ISender sender, String correlationId, Message input);
-	public Message senderOutput(ISender sender, String correlationId, Message output);
+	public <T> T senderInput(ISender sender, String correlationId, T input);
+	public <T> T senderOutput(ISender sender, String correlationId, T output);
 	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable);
 
 	public String replyListenerInput(IListener<?> listener, String messageId, String correlationId);
@@ -56,7 +56,7 @@ public interface IbisDebugger {
 	public Object getInputFromSessionKey(String correlationId, String sessionKey, Object sessionValue);
 	public Object getInputFromFixedValue(String correlationId, Object fixedValue);
 	public Object getEmptyInputReplacement(String correlationId, Object replacementValue);
-	public Object storeInSessionKey(String correlationId, Object sessionKey, Object result);
+	public Object storeInSessionKey(String correlationId, String sessionKey, Object result);
 	public Message preserveInput(String correlationId, Message input);
 
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value);

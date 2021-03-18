@@ -19,12 +19,15 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import bitronix.tm.resource.jdbc.PoolingDataSource;
+import org.springframework.beans.factory.DisposableBean;
 
-public class BtmDataSourceFactory extends JndiDataSourceFactory {
+import bitronix.tm.resource.jdbc.PoolingDataSource;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+
+public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
 
 	@Override
-	protected DataSource augmentDataSource(CommonDataSource dataSource, String dataSourceName) {
+	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
 		PoolingDataSource result = new PoolingDataSource();
 		result.setUniqueName(dataSourceName);
 		result.setMaxPoolSize(100);
@@ -34,7 +37,8 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory {
 		return result;
 	}
 
-	public void shutdown() {
-		dataSources.values().forEach(ds -> ((PoolingDataSource)ds).close());
+	@Override
+	public void destroy() throws Exception {
+		objects.values().forEach(ds -> ((PoolingDataSource)ds).close());
 	}
 }

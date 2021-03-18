@@ -54,7 +54,7 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -72,6 +72,7 @@ import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
@@ -434,9 +435,13 @@ public class JobDef extends TransactionAttributes {
 	}
 
 	public void configure(Configuration config) throws ConfigurationException {
+		super.configure();
 		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
+		if (StringUtils.isEmpty(getName())) {
+			throw new ConfigurationException("jobdef function ["+getFunction()+"] name must be specified");
+		}
 		if (StringUtils.isEmpty(getFunction())) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
 		}
@@ -500,7 +505,7 @@ public class JobDef extends TransactionAttributes {
 					try {
 						objectId = getLocker().acquire(getMessageKeeper());
 					} catch (Exception e) {
-						messageKeeper.add(e.getMessage(), MessageKeeperLevel.ERROR);
+						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
 						log.error(getLogPrefix()+e.getMessage());
 					}
 					if (objectId!=null) {
@@ -523,6 +528,8 @@ public class JobDef extends TransactionAttributes {
 							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
 							log.warn(getLogPrefix()+msg);
 						}
+					} else {
+						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
 					}
 				} else {
 					runJob(ibisManager);
@@ -553,6 +560,7 @@ public class JobDef extends TransactionAttributes {
 
 	protected void runJob(IbisManager ibisManager) {
 		long startTime = System.currentTimeMillis();
+		getMessageKeeper().add("starting to run the job");
 
 		switch(function) {
 		case DUMPSTATS:
@@ -589,7 +597,9 @@ public class JobDef extends TransactionAttributes {
 		}
 
 		long endTime = System.currentTimeMillis();
-		statsKeeper.addValue(endTime - startTime);
+		long duration = endTime - startTime;
+		statsKeeper.addValue(duration);
+		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
 	}
 
 	/**
@@ -763,73 +773,71 @@ public class JobDef extends TransactionAttributes {
 			log.info(getLogPrefix() + msg);
 			return;
 		}
-		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 
-		if (StringUtils.isNotEmpty(configJmsRealm)) {
-			List<String> configNames = new ArrayList<String>();
-			List<String> configsToReload = new ArrayList<String>();
+		String dataSource = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+		List<String> configNames = new ArrayList<String>();
+		List<String> configsToReload = new ArrayList<String>();
 
-			FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-			qs.setJmsRealm(configJmsRealm);
-			qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
-			String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
-			String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = '"+booleanValueTrue+"' and AUTORELOAD = '"+booleanValueTrue+"'";
-			try {
-				qs.configure();
-				qs.open();
-				try (Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
-					for (Configuration configuration : ibisManager.getConfigurations()) {
-						String configName = configuration.getName();
-						configNames.add(configName);
-						if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
-							stmt.setString(1, configName);
-							try (ResultSet rs = stmt.executeQuery()) {
-								if (rs.next()) {
-									String ibisConfigVersion = rs.getString(1);
-									String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
-									if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
-										log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
-									}
-									else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
-										log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
-										configsToReload.add(configName);
-									}
+		FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+		qs.setDatasourceName(dataSource);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
+		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = '"+booleanValueTrue+"' and AUTORELOAD = '"+booleanValueTrue+"'";
+		try {
+			qs.configure();
+			qs.open();
+			try (Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
+				for (Configuration configuration : ibisManager.getConfigurations()) {
+					String configName = configuration.getName();
+					configNames.add(configName);
+					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+						stmt.setString(1, configName);
+						try (ResultSet rs = stmt.executeQuery()) {
+							if (rs.next()) {
+								String ibisConfigVersion = rs.getString(1);
+								String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
+									log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
+								}
+								else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+									log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
+									configsToReload.add(configName);
 								}
 							}
 						}
 					}
 				}
-			} catch (Exception e) {
-				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
-			} finally {
-				qs.close();
 			}
+		} catch (Exception e) {
+			getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
+		} finally {
+			qs.close();
+		}
 
-			if (!configsToReload.isEmpty()) {
-				for (String configToReload : configsToReload) {
-					ibisManager.getIbisContext().reload(configToReload);
-				}
+		if (!configsToReload.isEmpty()) {
+			for (String configToReload : configsToReload) {
+				ibisManager.getIbisContext().reload(configToReload);
 			}
-			
-			if (CONFIG_AUTO_DB_CLASSLOADER) {
-				// load new (activated) configs
-				List<String> dbConfigNames = null;
-				try {
-					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, true);
-				} catch (ConfigurationException e) {
-					getMessageKeeper().add("error while retrieving configuration names from database", e);
-				}
-				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
-					for (String currentDbConfigurationName : dbConfigNames) {
-						if (!configNames.contains(currentDbConfigurationName)) {
-							ibisManager.getIbisContext().load(currentDbConfigurationName);
-						}
+		}
+		
+		if (CONFIG_AUTO_DB_CLASSLOADER) {
+			// load new (activated) configs
+			List<String> dbConfigNames = null;
+			try {
+				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), dataSource, true);
+			} catch (ConfigurationException e) {
+				getMessageKeeper().add("error while retrieving configuration names from database", e);
+			}
+			if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
+				for (String currentDbConfigurationName : dbConfigNames) {
+					if (!configNames.contains(currentDbConfigurationName)) {
+						ibisManager.getIbisContext().load(currentDbConfigurationName);
 					}
-					// unload old (deactivated) configurations
-					for (String currentConfigurationName : configNames) {
-						if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
-							ibisManager.getIbisContext().unload(currentConfigurationName);
-						}
+				}
+				// unload old (deactivated) configurations
+				for (String currentConfigurationName : configNames) {
+					if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+						ibisManager.getIbisContext().unload(currentConfigurationName);
 					}
 				}
 			}
@@ -871,9 +879,8 @@ public class JobDef extends TransactionAttributes {
 		}
 
 		// Get all IbisSchedules that have been stored in the database
-		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 		FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(configJmsRealm);
+		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 
 		try {
@@ -910,7 +917,7 @@ public class JobDef extends TransactionAttributes {
 			
 								locker.setName(lockKey);
 								locker.setObjectId(lockKey);
-								locker.setJmsRealm(configJmsRealm);
+								locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 								jobdef.setLocker(locker);
 							}
 			
@@ -1136,13 +1143,8 @@ public class JobDef extends TransactionAttributes {
 	}
 
 	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
-	public void setFunction(String function) throws ConfigurationException {
-		try {
-			this.function = JobDefFunctions.fromValue(function);
-		}
-		catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("jobdef ["+getName()+"] unknown function ["+function+"]. Must be one of "+ JobDefFunctions.getNames());
-		}
+	public void setFunction(String function) {
+		this.function = Misc.parseFromField(JobDefFunctions.class, "function", function, e -> e.getName());
 	}
 	public String getFunction() {
 		return function==null?null:function.getName();

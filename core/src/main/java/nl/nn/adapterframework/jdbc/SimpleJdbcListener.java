@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,13 +49,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@Override
 	public void configure() throws ConfigurationException {
-		try {
-			if (getDatasource() == null) {
-				throw new ConfigurationException(getLogPrefix() + "has no datasource");
-			}
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		}
+		super.configure();
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT_COUNT)) {
 			throw new ConfigurationException(getLogPrefix() + "query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT_COUNT + "]");
 		}

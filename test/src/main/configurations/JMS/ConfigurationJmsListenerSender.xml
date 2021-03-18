@@ -1,8 +1,7 @@
 <module>
 	<adapter name="JmsRRSender" description="Test the functioning of the JmsSender (RR)"
 		active="${active.jms}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JmsRRSender">
+		<receiver name="JmsRRSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsRRSender" />
 		</receiver>
@@ -23,8 +22,7 @@
 	</adapter>
 	<adapter name="JmsRRListener" description="Test the functioning of the JmsListener (RR)"
 		active="${active.jms}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JmsRRListener">
+		<receiver name="JmsRRListener">
 			<listener className="nl.nn.adapterframework.jms.JmsListener"
 				destinationName="jms/i4testiaf_in" useReplyTo="false" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1'">
@@ -45,8 +43,7 @@
 	</adapter>
 	<adapter name="JmsFFSender" description="Test the functioning of the JmsSender (FF)"
 		active="${active.jms}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JmsFFSender">
+		<receiver name="JmsFFSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSender" />
 		</receiver>
@@ -75,8 +72,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="JmsFFSenderWithDatasource" active="${active.jms}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JmsFFSenderWithDatasource">
+		<receiver name="JmsFFSenderWithDatasource">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSenderWithDatasource" />
 		</receiver>
@@ -125,8 +121,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="JmsFFSenderWithRead" active="${active.jms}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JmsFFSenderWithRead">
+		<receiver name="JmsFFSenderWithRead">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSenderWithRead" />
 		</receiver>
@@ -150,10 +145,31 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+	<adapter name="JmsFFSenderWithDynamicDestination" active="${active.jms}">
+		<receiver name="JmsFFSenderWithDynamicDestination">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-JmsFFSenderWithDynamicDestination" />
+		</receiver>
+		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="send2Jms">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					jmsRealm="qcf" destinationName="jms/i4testiaf_ff" destinationParam="destination">
+					<param name="SOURCE" value="${hostname}_FF3" />
+					<param name="destination" sessionKey="originalMessage" xpathExpression="*/@destination" />
+				</sender>
+			</pipe>
+			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResult"
+				returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
 	<adapter name="JmsFFListener" description="Test the functioning of the JmsListener (FF)"
 		active="${active.jms}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JmsFFListener" transactionAttribute="Required"
+		<receiver name="JmsFFListener" transactionAttribute="Required"
 			elementToMoveChain="Location" removeCompactMsgNamespaces="false"
 			maxRetries="0" hideRegex="(?&lt;=&lt;value&gt;).*?(?=&lt;/value&gt;)"
 			hideMethod="firstHalf">
@@ -203,8 +219,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="JmsFFListener_subcall" active="${active.jms}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JmsFFListener_subcall">
+		<receiver name="JmsFFListener_subcall">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				name="JmsFFListener_subcall" serviceName="ibis4test-JmsFFListener_subcall" />
 		</receiver>
@@ -231,8 +246,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="XmlJmsBrowserSender" description="Test the functioning of the XmlJmsBrowserSender" active="${active.jms}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="XmlJmsBrowserSender">
+		<receiver name="XmlJmsBrowserSender">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XmlJmsBrowserSender" />
 		</receiver>

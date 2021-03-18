@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.Test;
 
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -255,5 +257,37 @@ public class TestLogMessages {
 		String config = IbisLoggerConfigurationFactory.readLog4jConfiguration(newLog4jConfiguration);
 		String expected = TestFileUtils.getTestFile("/Logging/log4j-new.xml");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, config);
+	}
+
+	@Test
+	public void testChangeLogLevel() {
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
+		TestAppender.addToRootLogger(appender);
+		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests we use the `nl.nn` logger instead of the rootlogger
+
+		try {
+			Configurator.setLevel(rootLoggerName, Level.DEBUG);
+			log.debug("debug");
+
+			Configurator.setLevel(rootLoggerName, Level.INFO);
+			log.debug("debug");
+			log.info("info");
+
+			Configurator.setLevel(rootLoggerName, Level.WARN);
+			log.debug("debug");
+			log.info("info");
+			log.warn("warn");
+
+			Configurator.setLevel(rootLoggerName, Level.ERROR);
+			log.debug("debug");
+			log.info("info");
+			log.warn("warn");
+			log.error("error");
+
+			assertEquals(4, appender.getNumberOfAlerts());
+		} finally {
+			TestAppender.removeAppender(appender);
+			Configurator.setLevel(rootLoggerName, Level.DEBUG);
+		}
 	}
 }

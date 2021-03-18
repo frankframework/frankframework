@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,13 +37,16 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
@@ -54,6 +57,7 @@ import java.util.zip.Inflater;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -1354,5 +1358,69 @@ public class Misc {
 			return null;
 		}
 	}
+
+	public static <T> void addToSortedListUnique(List<T> list, T item) {
+		int index = Collections.binarySearch(list, item, null);
+		if (index < 0) {
+			list.add(Misc.binarySearchResultToInsertionPoint(index), item);
+		}
+	}
+
+	public static <T> void addToSortedListNonUnique(List<T> list, T item) {
+		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(list, item, null));
+		list.add(index, item);		
+	}
+
+	private static int binarySearchResultToInsertionPoint(int index) {
+		// See https://stackoverflow.com/questions/16764007/insert-into-an-already-sorted-list/16764413
+		// for more information.
+		if (index < 0) {
+			index = -index - 1;
+		}
+		return index;
+	}
 	
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
+		return parse(enumClass, null, value);
+	}
+
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value) {
+		E result = EnumUtils.getEnumIgnoreCase(enumClass, value);
+		if (result==null) {
+			throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ EnumUtils.getEnumList(enumClass));
+		}
+		return result;
+	}
+
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String value, Function<E,String> field) {
+		return parseFromField(enumClass, null, value, field);
+	}
+	
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, String value, Function<E,String> field) {
+		List<String> fieldValues = new ArrayList<>();
+		for (E e:EnumUtils.getEnumList(enumClass)) {
+			String fieldValue = field.apply(e);
+			if (fieldValue.equalsIgnoreCase(value)) {
+				return e;
+			}
+			fieldValues.add(fieldValue);
+		}
+		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
+	}
+
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, int value, Function<E,Integer> field) {
+		return parseFromField(enumClass, null, value, field);
+	}
+	
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, int value, Function<E,Integer> field) {
+		List<Integer> fieldValues = new ArrayList<>();
+		for (E e:EnumUtils.getEnumList(enumClass)) {
+			int fieldValue = field.apply(e);
+			if (fieldValue==value) {
+				return e;
+			}
+			fieldValues.add(fieldValue);
+		}
+		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
+	}
 }

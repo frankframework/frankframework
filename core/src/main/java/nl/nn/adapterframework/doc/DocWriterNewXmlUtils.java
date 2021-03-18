@@ -53,12 +53,13 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(element);
 	}
 
-	static void addElementRef(XmlBuilder context, String elementName, String minOccurs, String maxOccurs) {
+	static XmlBuilder addElementRef(XmlBuilder context, String elementName, String minOccurs, String maxOccurs) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("ref", elementName);
 		element.addAttribute("minOccurs", minOccurs);
 		element.addAttribute("maxOccurs", maxOccurs);
 		context.addSubElement(element);
+		return element;
 	}
 
 	static void addElementRef(XmlBuilder context, String elementName) {
@@ -103,6 +104,12 @@ class DocWriterNewXmlUtils {
 		return complexType;		
 	}
 
+	static XmlBuilder createSimpleType(String name) {
+		XmlBuilder simpleType = new XmlBuilder("simpleType", "xs", XML_SCHEMA_URI);
+		simpleType.addAttribute("name", name);
+		return simpleType;		
+	}
+
 	static XmlBuilder addComplexType(XmlBuilder schema, String name) {
 		XmlBuilder complexType;
 		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
@@ -114,6 +121,14 @@ class DocWriterNewXmlUtils {
 	static XmlBuilder addChoice(XmlBuilder context) {
 		XmlBuilder choice = new XmlBuilder("choice", "xs", XML_SCHEMA_URI);
 		context.addSubElement(choice);
+		return choice;
+	}
+
+	static XmlBuilder addChoice(XmlBuilder context, String minOccurs, String maxOccurs) {
+		XmlBuilder choice = new XmlBuilder("choice", "xs", XML_SCHEMA_URI);
+		context.addSubElement(choice);
+		choice.addAttribute("minOccurs", minOccurs);
+		choice.addAttribute("maxOccurs", maxOccurs);
 		return choice;
 	}
 
@@ -146,7 +161,7 @@ class DocWriterNewXmlUtils {
 		try {
 			addValueToAttribute(result, valueStatus, value);
 		} catch(AttributeFormatException e) {
-			log.warn(String.format("Error formatting attribute [%s]", name), e);
+			log.warn("Error formatting attribute [{}]", name, e);
 		}
 		addUsageToAttribute(result, attributeUse);
 		return result;
@@ -191,9 +206,18 @@ class DocWriterNewXmlUtils {
 		}
 	}
 
+	static XmlBuilder addAttribute(XmlBuilder context, String name, String typeName) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("name", name);
+		attribute.addAttribute("type", typeName);
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
 	static XmlBuilder addAnyAttribute(XmlBuilder context) {
 		XmlBuilder attribute = new XmlBuilder("anyAttribute", "xs", XML_SCHEMA_URI);
 		context.addSubElement(attribute);
+		attribute.addAttribute("processContents", "skip");
 		return attribute;
 	}
 
@@ -265,5 +289,19 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(extension);
 		extension.addAttribute("base", base);
 		return extension;
+	}
+
+	static XmlBuilder addRestriction(XmlBuilder context, String base) {
+		XmlBuilder restriction = new XmlBuilder("restriction", "xs", XML_SCHEMA_URI);
+		context.addSubElement(restriction);
+		restriction.addAttribute("base", base);
+		return restriction;
+	}
+
+	static XmlBuilder addEnumeration(XmlBuilder context, String item) {
+		XmlBuilder enumeration = new XmlBuilder("enumeration", "xs", XML_SCHEMA_URI);
+		context.addSubElement(enumeration);
+		enumeration.addAttribute("value", item);
+		return enumeration;
 	}
 }

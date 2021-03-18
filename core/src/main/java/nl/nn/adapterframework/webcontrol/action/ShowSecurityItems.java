@@ -43,6 +43,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
@@ -377,9 +378,10 @@ public final class ShowSecurityItems extends ActionBase {
 				DirectQuerySender qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 				qs.setJmsRealm(jmsRealm);
 				try {
-					dsName = qs.getDataSourceNameToUse();
+					qs.configure();
+					dsName = qs.getDatasourceName();
 					dsInfo = qs.getDatasourceInfo();
-				} catch (JdbcException jdbce) {
+				} catch (JdbcException | ConfigurationException jdbce) {
 					dsInfo = jdbce.getMessage();
 					dsInfoError = true;
 				}

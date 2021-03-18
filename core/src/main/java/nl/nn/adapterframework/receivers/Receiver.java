@@ -17,11 +17,11 @@ package nl.nn.adapterframework.receivers;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -283,6 +283,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private ISender errorSender=null;
 	// See configure() for explanation on this field
 	private ITransactionalStorage<Serializable> tmpInProcessStorage=null;
+	private ITransactionalStorage<Serializable> messageLog=null;
+	private ITransactionalStorage<Serializable> errorStorage=null;
 	private ISender sender=null; // answer-sender
 	private Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new HashMap<>();
 	
@@ -294,7 +296,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private EventHandler eventHandler=null;
 
-	private Set<ProcessState> knownProcessStates;
+	private Set<ProcessState> knownProcessStates = new LinkedHashSet<ProcessState>();
 	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
 
 
@@ -654,52 +656,57 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			
 			if (getListener() instanceof IHasProcessState) {
-				knownProcessStates = ((IHasProcessState)getListener()).knownProcessStates();
+				knownProcessStates.addAll(((IHasProcessState)getListener()).knownProcessStates());
 				targetProcessStates = ((IHasProcessState)getListener()).targetProcessStates();
-			} else {
-				knownProcessStates = ProcessState.getMandatoryKnownStates();
 			}
 			
-			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
-			if (errorStorage!=null) {
-				errorStorage.configure();
-				if (errorStorage instanceof HasPhysicalDestination) {
-					info("has errorStorage to "+((HasPhysicalDestination)errorStorage).getPhysicalDestinationName());
-				}
-				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
-			} else {
-				if (getListener() instanceof IProvidesMessageBrowsers) {
-					IMessageBrowser errorStoreBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(ProcessState.ERROR);
-					if (errorStoreBrowser instanceof IConfigurable) {
-						((IConfigurable)errorStoreBrowser).configure();
-					}
-					messageBrowsers.put(ProcessState.ERROR, errorStoreBrowser);
-				}
-			}
+			
 			ITransactionalStorage<Serializable> messageLog = getMessageLog();
 			if (messageLog!=null) {
+				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(ProcessState.DONE)!=null) {
+					throw new ConfigurationException("listener with built-in messageLog cannot have external messageLog too");
+				}
+				messageLog.setName("messageLog of ["+getName()+"]");
+				if (StringUtils.isEmpty(messageLog.getSlotId())) {
+					messageLog.setSlotId(getName());
+				}
+				messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
 				messageLog.configure();
 				if (messageLog instanceof HasPhysicalDestination) {
 					info("has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
+				knownProcessStates.add(ProcessState.DONE);
+				messageBrowsers.put(ProcessState.DONE, messageLog);
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
 					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
 				}
-			} else {
-				if (getListener() instanceof IProvidesMessageBrowsers) {
-					IMessageBrowser messageLogBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(ProcessState.DONE);
-					if (messageLogBrowser instanceof IConfigurable) {
-						((IConfigurable) messageLogBrowser).configure();
-					}
-					messageBrowsers.put(ProcessState.DONE, messageLogBrowser);
+			}
+			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+			if (errorStorage!=null) {
+				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(ProcessState.ERROR)!=null) {
+					throw new ConfigurationException("listener with built-in errorStorage cannot have external errorStorage too");
 				}
+				errorStorage.setName("errorStorage of ["+getName()+"]");
+				if (StringUtils.isEmpty(errorStorage.getSlotId())) {
+					errorStorage.setSlotId(getName());
+				}
+				errorStorage.setType(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
+				errorStorage.configure();
+				if (errorStorage instanceof HasPhysicalDestination) {
+					info("has errorStorage to "+((HasPhysicalDestination)errorStorage).getPhysicalDestinationName());
+				}
+				knownProcessStates.add(ProcessState.ERROR);
+				messageBrowsers.put(ProcessState.ERROR, errorStorage);
+				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 			}
 			if (getListener() instanceof IProvidesMessageBrowsers) {
-				IMessageBrowser inProcessBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(ProcessState.INPROCESS);
-				if (inProcessBrowser!=null && inProcessBrowser instanceof IConfigurable) {
-					((IConfigurable)inProcessBrowser).configure();
+				for (ProcessState state: knownProcessStates) {
+					IMessageBrowser messageBrowser = ((IProvidesMessageBrowsers)getListener()).getMessageBrowser(state);
+					if (messageBrowser!=null && messageBrowser instanceof IConfigurable) {
+						((IConfigurable)messageBrowser).configure();
+					}
+					messageBrowsers.put(state, messageBrowser);
 				}
-				messageBrowsers.put(ProcessState.INPROCESS, inProcessBrowser);
 			}
 			if (targetProcessStates==null) {
 				targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
@@ -827,9 +834,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@Override
-	public boolean changeProcessState(Object message, ProcessState toState, Map<String, Object> context) throws ListenerException {
-		return ((IHasProcessState<M>)getListener()).changeProcessState((M)message, toState, context);
-		
+	public M changeProcessState(Object message, ProcessState toState) throws ListenerException {
+		if (toState==ProcessState.AVAILABLE) {
+			String id = getListener().getIdFromRawMessage((M)message, null);
+			resetProblematicHistory(id);
+		}
+		return ((IHasProcessState<M>)getListener()).changeProcessState((M)message, toState); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
 	}
 
 	@Override
@@ -866,7 +876,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} else {
 			rcvDate=new Date();
 		}
-		if (isTransacted() || (getErrorStorage() != null && (!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId) || !isDuplicateAndSkip(getErrorStorage(), messageId, correlationId)))) {
+		if (isTransacted() || 
+				(getErrorStorage() != null && 
+					(!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId) || !isDuplicateAndSkip(getMessageBrowser(ProcessState.ERROR), messageId, correlationId))
+				)
+			) {
 			moveInProcessToError(messageId, correlationId, message, rcvDate, comments, rawMessage, TXREQUIRED);
 		}
 		PipeLineResult plr = new PipeLineResult();
@@ -886,8 +900,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private void moveInProcessToError(String originalMessageId, String correlationId, Message message, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
 		ISender errorSender = getErrorSender();
 		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
-		if (errorSender==null && errorStorage==null) {
-			log.debug(getLogPrefix()+"has no errorSender or errorStorage, will not move message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
+		if (errorSender==null && errorStorage==null && knownProcessStates().isEmpty()) {
+			log.debug(getLogPrefix()+"has no errorSender, errorStorage or knownProcessStates, will not move message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 			return;
 		}
 		throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
@@ -904,26 +918,38 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (errorSender!=null) {
 				errorSender.sendMessage(message, null);
 			}
-			Serializable sobj;
-			if (rawMessage == null) {
-				if (message.isBinary()) {
-					sobj = message.asByteArray();
+			// processState change is currently handled in listener.afterMessageProcessed()
+//			ProcessState targetState = null;
+//			if (knownProcessStates.contains(ProcessState.ERROR)) {
+//				targetState = ProcessState.ERROR;
+//			} else {
+//				if (knownProcessStates.contains(ProcessState.DONE)) {
+//					targetState = ProcessState.DONE;
+//				}
+//			}
+//			if (targetState !=null && getListener() instanceof IHasProcessState) {
+//				changeProcessState(rawMessage, targetState);
+//			}
+			if (errorStorage!=null) {
+				Serializable sobj;
+				if (rawMessage == null) {
+					if (message.isBinary()) {
+						sobj = message.asByteArray();
+					} else {
+						sobj = message.asString();
+					}
 				} else {
-					sobj = message.asString();
-				}
-			} else {
-				if (rawMessage instanceof Serializable) {
-					sobj=(Serializable)rawMessage;
-				} else {
-					try {
-						sobj = new MessageWrapper(rawMessage, getListener());
-					} catch (ListenerException e) {
-						log.error(getLogPrefix()+"could not wrap non serializable message for messageId ["+originalMessageId+"]",e);
-						sobj=message;
+					if (rawMessage instanceof Serializable) {
+						sobj=(Serializable)rawMessage;
+					} else {
+						try {
+							sobj = new MessageWrapper(rawMessage, getListener());
+						} catch (ListenerException e) {
+							log.error(getLogPrefix()+"could not wrap non serializable message for messageId ["+originalMessageId+"]",e);
+							sobj=message;
+						}
 					}
 				}
-			}
-			if (errorStorage!=null) {
 				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, null, sobj);
 			} 
 			txManager.commit(txStatus);
@@ -1205,7 +1231,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				setExitState(threadContext, "rejected", 500);
 				return Message.nullMessage();
 			}
-			if (isDuplicateAndSkip(getMessageLog(), messageId, businessCorrelationId)) {
+			if (isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, businessCorrelationId)) {
 				numRejected.increase();
 				setExitState(threadContext, "success", 304);
 				return Message.nullMessage();
@@ -1455,11 +1481,18 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} 
 		return isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId);
 	}
+	
+	private void resetProblematicHistory(String messageId) {
+		ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+		if (prci!=null) {
+			prci.receiveCount=0;
+		}
+	}
 
 	/*
 	 * returns true if message should not be processed
 	 */
-	private boolean isDuplicateAndSkip(IMessageBrowser<Serializable> transactionStorage, String messageId, String correlationId) throws ListenerException {
+	private boolean isDuplicateAndSkip(IMessageBrowser<Object> transactionStorage, String messageId, String correlationId) throws ListenerException {
 		if (isCheckForDuplicates() && transactionStorage != null) {
 			if ("CORRELATIONID".equalsIgnoreCase(getCheckForDuplicatesMethod())) {
 				if (transactionStorage.containsCorrelationId(correlationId)) {
@@ -1946,40 +1979,28 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@IbisDoc({"40", "Storage to keep track of messages that failed processing"})
 	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
 		if (errorStorage.isActive()) {
-			messageBrowsers.put(ProcessState.ERROR, errorStorage);
-			errorStorage.setName("errorStorage of ["+getName()+"]");
-			if (StringUtils.isEmpty(errorStorage.getSlotId())) {
-				errorStorage.setSlotId(getName());
-			}
-			errorStorage.setType(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
+			this.errorStorage = errorStorage;
 		}
 	}
 	/**
 	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed messages. If present, this storage will be managed by the Receiver.
 	 */
 	public ITransactionalStorage<Serializable> getErrorStorage() {
-		IMessageBrowser<?> errorStorage =  messageBrowsers.get(ProcessState.ERROR);
-		return errorStorage instanceof ITransactionalStorage ? (ITransactionalStorage)errorStorage: null;
+		return errorStorage;
 	}
 
 
 	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
 	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		if (messageLog.isActive()) {
-			messageBrowsers.put(ProcessState.DONE, messageLog);
-			messageLog.setName("messageLog of ["+getName()+"]");
-			if (StringUtils.isEmpty(messageLog.getSlotId())) {
-				messageLog.setSlotId(getName());
-			}
-			messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
+			this.messageLog = messageLog;
 		}
 	}
 	/**
 	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed successfully. If present, this storage will be managed by the Receiver.
 	 */
 	public ITransactionalStorage<Serializable> getMessageLog() {
-		IMessageBrowser<?> messageLog =  messageBrowsers.get(ProcessState.DONE);
-		return messageLog instanceof ITransactionalStorage ? (ITransactionalStorage)messageLog: null;
+		return messageLog;
 	}
 
 
@@ -2008,14 +2029,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
-	public void setOnError(String value) throws ConfigurationException {
+	public void setOnError(String value) {
 		if(StringUtils.isNotEmpty(value)) {
-			try {
-				onError = OnError.valueOf(value.toUpperCase());
-			}
-			catch (IllegalArgumentException iae) {
-				throw new ConfigurationException("Unknown onError value ["+value+"]. Must be one of "+ Arrays.asList(OnError.values()));
-			}
+			onError = Misc.parse(OnError.class, "onError", value);
 		}
 	}
 	public void setOnErrorEnum(OnError value) {

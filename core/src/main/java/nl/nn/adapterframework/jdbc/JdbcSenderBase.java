@@ -66,9 +66,6 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getDatasourceName())) {
-			throw new ConfigurationException(getLogPrefix()+"has no datasource");
-		}
 		if (paramList!=null) {
 			paramList.configure();
 		}

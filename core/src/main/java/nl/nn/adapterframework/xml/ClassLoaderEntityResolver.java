@@ -29,6 +29,10 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * @see org.xml.sax.EntityResolver
  * This class offers the resolveEntity method to resolve a systemId to a resource on the classpath.
+ * 
+ * It's important that the XMLEntityResolver does not return NULL, when it cannot find a resource.
+ * Returning NULL will cause the XmlReader to fall back to it's built in EntityResolver.
+ * 
  * @since 4.1.1
  */
 
@@ -55,8 +59,9 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 		if(resource != null) {
 			return resource.asInputSource();
 		}
-		// If nothing found, null is returned, for normal processing
-		return null;
-	}
 
+		// If nothing found, return a SAXException. If NULL is returned it can trigger default (fallback) behaviour using the internal EntityResolver.
+		String message = "Cannot get resource for publicId [" + publicId + "] with systemId [" + systemId + "] in scope ["+scopeProvider+"]";
+		throw new SAXException(message);
+	}
 }
