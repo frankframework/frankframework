@@ -18,6 +18,7 @@ package nl.nn.adapterframework.doc.model;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.AnnotationUtils;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
