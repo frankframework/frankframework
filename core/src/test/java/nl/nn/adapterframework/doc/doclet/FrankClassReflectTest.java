@@ -117,4 +117,18 @@ public class FrankClassReflectTest {
 			assertEquals(String.format("Duplicate method name [%s]", name), 1, methodsByName.get(name).size());
 		}
 	}
+
+	@Test
+	public void whenInterfaceDoesNotExtendOthersThenGetInterfacesReturnsEmptyArray() throws Exception{
+		FrankClass instance = classRepository.findClass(PACKAGE + "MyInterfaceParent");
+		assertEquals(0, instance.getInterfaces().length);
+	}
+
+	@Test
+	public void whenInterfaceExtendsOtherInterfaceThenReturnedByGetInterfaces() throws Exception {
+		FrankClass instance = classRepository.findClass(PACKAGE + "MyInterface");
+		FrankClass[] implementedInterfaces = instance.getInterfaces();
+		assertEquals(1, implementedInterfaces.length);
+		assertEquals("MyInterfaceParent", implementedInterfaces[0].getSimpleName());
+	}
 }

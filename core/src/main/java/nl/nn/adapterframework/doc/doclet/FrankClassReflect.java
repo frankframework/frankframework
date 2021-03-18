@@ -42,7 +42,6 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.util.Assert;
 
-import nl.nn.adapterframework.doc.objects.SpringBean;
 import nl.nn.adapterframework.util.LogUtil;
 
 class FrankClassReflect implements FrankClass {

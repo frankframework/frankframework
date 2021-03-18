@@ -6,6 +6,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -74,5 +78,28 @@ public class FrankMethodReflectTest {
 		annotation = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 		assertNotNull(annotation);
 		assertEquals(FrankDocletConstants.IBISDOC, annotation.getName());
+	}
+
+	@Test
+	public void overriddenMethodHasOverriderAsDeclaringClass() throws Exception {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
+		FrankMethod setter = getMethodFromDeclaredAndInheritedMethods(clazz, "setInherited");
+		assertEquals("Child", setter.getDeclaringClass().getSimpleName());
+	}
+
+	@Test
+	public void inheritedMethodHasAncestorAsDeclaringClass() throws Exception{
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
+		FrankMethod getter = getMethodFromDeclaredAndInheritedMethods(clazz, "getInherited");
+		assertEquals("Parent", getter.getDeclaringClass().getSimpleName());
+	}
+
+	private FrankMethod getMethodFromDeclaredAndInheritedMethods(FrankClass clazz, String methodName) {
+		FrankMethod[] methods = clazz.getDeclaredAndInheritedMethods();
+		List<FrankMethod> getters = Arrays.asList(methods).stream()
+				.filter(m -> m.getName().equals(methodName))
+				.collect(Collectors.toList());
+		assertEquals(1, getters.size());
+		return getters.get(0);
 	}
 }

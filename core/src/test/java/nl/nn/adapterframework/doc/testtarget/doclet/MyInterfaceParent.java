@@ -1,5 +1,5 @@
 package nl.nn.adapterframework.doc.testtarget.doclet;
 
-public interface MyInterface extends MyInterfaceParent {
+public interface MyInterfaceParent {
 
 }

@@ -40,23 +40,23 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 
 	static final class SortNode implements Comparable<SortNode> {
 		private static final Comparator<SortNode> SORT_NODE_COMPARATOR =
-				Comparator.comparing(SortNode::getName).thenComparing(sn -> sn.getElementTypeClass().getName());
+				Comparator.comparing(SortNode::getName).thenComparing(sn -> sn.getElementType().getName());
 
 		private @Getter String name;
 		private @Getter boolean documented;
 		private @Getter boolean deprecated;
-		private @Getter FrankType elementTypeClass;
+		private @Getter FrankType elementType;
 		private @Getter FrankAnnotation ibisDoc;
 
 		SortNode(FrankMethod method) {
 			this.name = method.getName();
 			this.documented = (method.getAnnotation(FrankDocletConstants.IBISDOC) != null);
 			this.deprecated = isDeprecated(method);
-			this.elementTypeClass = method.getParameterTypes()[0];
+			this.elementType = method.getParameterTypes()[0];
 			try {
 				this.ibisDoc = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 			} catch(DocletReflectiveOperationException e) {
-				log.warn("Could not @IbisDoc annotation");
+				log.warn("Could not @IbisDoc annotation", e);
 			}
 		}
 

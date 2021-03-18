@@ -356,8 +356,7 @@ public class FrankDocModel {
 		try {
 			values = (String[]) ibisDocRef.getValue();
 		} catch(DocletReflectiveOperationException e) {
-			// TODO: Improve this message
-			log.warn("Could not parse IbisDocRef annotation");
+			log.warn("IbisDocRef annotation did not have a value", e);
 			return result;
 		}
 		String methodString = null;
@@ -405,7 +404,7 @@ public class FrankDocModel {
 			}
 			return null;
 		} catch (DocletReflectiveOperationException e) {
-			log.warn("Super class [{}] was not found!", className);
+			log.warn("Super class [{}] was not found!", className, e);
 			return null;
 		}
 	}
@@ -423,7 +422,7 @@ public class FrankDocModel {
 			configChild.setMandatory(configChildDescriptor.isMandatory());
 			log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> sortNode.getName());
 			configChild.setElementRole(findOrCreateElementRole(
-					(FrankClass) sortNode.getElementTypeClass(), configChildDescriptor.getRoleName()));
+					(FrankClass) sortNode.getElementType(), configChildDescriptor.getRoleName()));
 			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> sortNode.getName());
 			if(sortNode.getIbisDoc() == null) {
 				log.warn("No @IbisDoc annotation for config child [{}] of FrankElement [{}]", () -> configChild.getKey().toString(), () -> parent.getFullName());
