@@ -303,7 +303,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			String containerElementString = StringUtils.isNotEmpty(getContainerElement()) ? "filter to containerElement '"+getContainerElement()+"'" : null;
 			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
 			String xpathString = getExtractElementsTp()!=null ? "filter XPath '"+getElementXPathExpression()+"'": null;
-			String label = "XML after preprocessing: " + Misc.concatStrings(Misc.concatStrings(containerElementString, ", ", targetElementString),", ", xpathString);
+			String label = "XML after preprocessing: " + Misc.concat(", ",containerElementString, targetElementString, xpathString);
 			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler);
 		}
 		

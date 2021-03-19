@@ -67,6 +67,9 @@ public class TransformerFilter extends FullXmlFilter {
 						}
 					} catch (TransformerException e) {
 						exceptionInsertingFilter.insertException(new SaxException(e));
+						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+						// If absent, Xslt tests fail.
+						throw e; 
 					}
 				}
 
@@ -78,6 +81,9 @@ public class TransformerFilter extends FullXmlFilter {
 						}
 					} catch (TransformerException e) {
 						exceptionInsertingFilter.insertException(new SaxException(e));
+						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+						// If absent, Xslt tests fail.
+						throw e; 
 					}
 					
 				}
@@ -90,6 +96,9 @@ public class TransformerFilter extends FullXmlFilter {
 						}
 					} catch (TransformerException e) {
 						exceptionInsertingFilter.insertException(new SaxException(e));
+						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+						// If absent, Xslt tests fail.
+						throw e; 
 					}
 					
 				}
