@@ -20,6 +20,10 @@ import java.util.Set;
 
 import javax.naming.NamingException;
 
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -43,8 +47,47 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 	private String thenForwardName = "then";
 	private String elseForwardName = "else";
 	
+	private String exceptionOnInput;
+	private String thenOnInput;
+	
 	@Override
-	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {		
+	public void configure() throws ConfigurationException {
+		if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
+			if (StringUtils.isNotEmpty(getThenOnInput())) {
+				throw new ConfigurationException("thenOnInput only allowed in stub mode");
+			}
+			if (StringUtils.isNotEmpty(getExceptionOnInput())) {
+				throw new ConfigurationException("exceptionOnInput only allowed in stub mode");
+			}
+		}
+		
+		super.configure();
+	}
+	
+	@Override
+	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {
+		if (message==null) {
+			throw new PipeRunException(this, getLogPrefix(session) + "input is null");
+		}
+		
+		String searchedDN;
+		try {
+			searchedDN = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session) + "Failure converting input to string", e);
+		}
+		
+		if (StringUtils.isNotEmpty(getThenOnInput())) {
+			if (getThenOnInput().equals(searchedDN)) {
+				return new PipeRunResult(findForward(getThenForwardName()), message);
+			} else {
+				return new PipeRunResult(findForward(getElseForwardName()), message);
+			}
+		}
+		if (StringUtils.isNotEmpty(getExceptionOnInput()) && getExceptionOnInput().equals(searchedDN)) {
+			throw new PipeRunException(this, getLogPrefix(session)+"exceptionOnInput ["+getExceptionOnInput()+"]");
+		}
+		
 		String groupDN_work;
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
@@ -57,17 +100,6 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 		groupDN_work = getParameterValue(pvl, PARAM_TARGET_GROUP_DN);
 		if (groupDN_work == null) {
 			groupDN_work = getGroupDN();
-		}
-		
-		if (message==null) {
-			throw new PipeRunException(this, getLogPrefix(session) + "input is null");
-		}
-		
-		String searchedDN;
-		try {
-			searchedDN = message.asString();
-		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "Failure converting input to string", e);
 		}
 
 		Set<String> memberships;
@@ -84,6 +116,18 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 			return new PipeRunResult(findForward(getElseForwardName()), message);
 		} catch (NamingException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
+		}
+	}
+	
+	/**
+	 * When stubbing, create empty ldapClient to prevent NPEs
+	 */
+	@Override
+	protected void createLdapClient() {
+		if (StringUtils.isNotEmpty(getThenOnInput())) {
+			ldapClient = new LdapClient();
+		} else {
+			super.createLdapClient();
 		}
 	}
 	
@@ -117,5 +161,21 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 	}
 	public String getElseForwardName(){
 		return elseForwardName;
+	}
+	
+	@IbisDoc({"5", "When not empty, the message is routed to <code>'then'</code> if input equals this value (for testing purposes only)", ""})
+	public void setThenOnInput(String string) {
+		thenOnInput = string;
+	}
+	public String getThenOnInput() {
+		return thenOnInput;
+	}
+
+	@IbisDoc({"6", "When not empty, a piperunexception is thrown when the input equals this value (for testing purposes only)", ""})
+	public void setExceptionOnInput(String string) {
+		exceptionOnInput = string;
+	}
+	public String getExceptionOnInput() {
+		return exceptionOnInput;
 	}
 }

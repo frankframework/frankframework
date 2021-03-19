@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.ldap.LdapIsMemberOfPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
 
 public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOfPipe> {
 	private String thenForwardName = "then";
@@ -34,8 +35,11 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 	
 	private String dnL1Group="ou=L1Group,ou=groups,ou=development,dc=ibissource,dc=org";
 	private String dnL4Group="ou=L4Group,ou=groups,ou=development,dc=ibissource,dc=org";
+	private String dnL1User="cn=L1user,ou=people,ou=development,dc=ibissource,dc=org";
 	private String dnL4User="cn=L4user,ou=people,ou=development,dc=ibissource,dc=org";
 
+	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
+	
 	@Override
 	public LdapIsMemberOfPipe createPipe() {
 		return new LdapIsMemberOfPipe();
@@ -52,8 +56,7 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 	public void recursiveIsMemberOf() throws ConfigurationException, PipeStartException, IOException, PipeRunException, SAXException {
 		pipe.setRecursiveSearch(true);
 		pipe.setGroupDN(dnL1Group);
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe,new Message(dnL4User), session);
 		PipeForward forward=prr.getPipeForward();
@@ -70,8 +73,7 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 	public void nonRecursiveIsMemberOf() throws ConfigurationException, PipeStartException, IOException, PipeRunException, SAXException {
 		pipe.setRecursiveSearch(false);
 		pipe.setGroupDN(dnL4Group);
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe,new Message(dnL4User), session);
 		PipeForward forward=prr.getPipeForward();
@@ -89,8 +91,7 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 	public void isNotMemberOf() throws ConfigurationException, PipeStartException, IOException, PipeRunException, SAXException {
 		pipe.setRecursiveSearch(false);
 		pipe.setGroupDN(dnL1Group);
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe,new Message(dnL4User), session);
 		PipeForward forward=prr.getPipeForward();
@@ -107,8 +108,7 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 	public void nonRecursiveIsRecursiveMemberOf() throws ConfigurationException, PipeStartException, IOException, PipeRunException, SAXException {
 		pipe.setRecursiveSearch(false);
 		pipe.setGroupDN(dnL1Group);
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe,new Message(dnL4User), session);
 		PipeForward forward=prr.getPipeForward();
@@ -119,5 +119,59 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 		assertEquals(elseForwardName,actualForwardName);
 
 		assertTrue(dnL4User.equals(prr.getResult().asString()));
+	}
+	
+	@Test
+	public void stubThen() throws ConfigurationException, PipeStartException, IOException, PipeRunException, SAXException {
+		pipe.setRecursiveSearch(false);
+		pipe.setGroupDN(dnL1Group);
+		configureAndStartPipe();
+		pipe.setThenOnInput(dnL4User);
+
+		PipeRunResult prr = doPipe(pipe,new Message(dnL4User), session);
+		PipeForward forward=prr.getPipeForward();
+
+		assertNotNull(forward);
+
+		String actualForwardName=forward.getName();
+		assertEquals(thenForwardName,actualForwardName);
+
+		assertTrue(dnL4User.equals(prr.getResult().asString()));
+	}
+	
+	@Test
+	public void stubElse() throws ConfigurationException, PipeStartException, IOException, PipeRunException, SAXException {
+		pipe.setRecursiveSearch(false);
+		pipe.setGroupDN(dnL1Group);
+		configureAndStartPipe();
+		pipe.setThenOnInput(dnL1User);
+
+		PipeRunResult prr = doPipe(pipe,new Message(dnL4User), session);
+		PipeForward forward=prr.getPipeForward();
+
+		assertNotNull(forward);
+
+		String actualForwardName=forward.getName();
+		assertEquals(elseForwardName,actualForwardName);
+
+		assertTrue(dnL4User.equals(prr.getResult().asString()));
+	}
+	
+	@Test(expected = ConfigurationException.class)
+	public void stubbingConfigureException() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setRecursiveSearch(false);
+		pipe.setGroupDN(dnL1Group);
+		pipe.setThenOnInput(dnL4User);
+		configureAndStartPipe();
+	}
+	
+	@Test(expected = PipeRunException.class)
+	public void stubException() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setRecursiveSearch(false);
+		pipe.setGroupDN(dnL1Group);
+		configureAndStartPipe();
+		pipe.setExceptionOnInput(dnL1User);
+
+		doPipe(pipe,new Message(dnL1User), session);
 	}
 } 
