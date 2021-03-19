@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.context.ApplicationListener;
+import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
@@ -60,12 +61,17 @@ import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
+import nl.nn.adapterframework.xml.IXmlDebugger;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.XmlTee;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
-public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>, ApplicationListener<DebuggerStatusChangedEvent> {
+public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
 	protected Logger log = LogUtil.getLogger(this);
 
 	// Contract for testtool state:
@@ -275,6 +281,19 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		} 
 		return resultStream!=null ? "<-- outputstream provided" : "<-- no outputstream could be provided";
 	}
+	
+	@Override
+	public ContentHandler inspectXml(IPipeLineSession session, String label, ContentHandler contentHandler) {
+		String correlationId = session == null ? null : session.getMessageId();
+		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showValue(correlationId, label, new WriterPlaceHolder());
+		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
+			Writer writer = session.scheduleCloseOnSessionExit(writerPlaceHolder.getWriter());
+			XmlWriter xmlWriter = new XmlWriter(StreamUtil.limitSize(writer, writerPlaceHolder.getSizeLimit()));
+			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
+		} 
+		return contentHandler;
+	}
+	
 	
 	/**
 	 * Provides advice for {@link CacheSenderWrapperProcessor#sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session)}
