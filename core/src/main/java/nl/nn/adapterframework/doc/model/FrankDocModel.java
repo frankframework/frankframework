@@ -205,6 +205,7 @@ public class FrankDocModel {
 				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
 			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
+			attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
 			documentAttribute(attribute, method, attributeOwner);
 			if(enumGettersByAttributeName.containsKey(attributeName)) {
 				attribute.setAttributeValues(findOrCreateAttributeValues((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
@@ -435,7 +436,13 @@ public class FrankDocModel {
 			result.add(configChild);
 			log.trace("Done creating ConfigChild for SortNode [{}], order = [{}]", () -> sortNode.getName(), () -> configChild.getOrder());
 		}
+		log.trace("Removing duplicate config children of FrankElement [{}]", () -> parent.getFullName());
+		result = ConfigChild.removeDuplicates(result);
 		Collections.sort(result);
+		log.trace("Sorted config children are:");
+		if(log.isTraceEnabled()) {
+			result.forEach(c -> log.trace("{}", c.toString()));
+		}
 		log.trace("Done creating config children of FrankElement [{}]", () -> parent.getFullName());
 		return result;
 	}

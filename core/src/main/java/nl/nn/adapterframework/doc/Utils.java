@@ -24,6 +24,14 @@ import java.util.Set;
 
 import nl.nn.adapterframework.doc.doclet.FrankMethod;
 
+/**
+ * Utility methods for the Frank!Doc. Many of these delegate to {@link nl.nn.adapterframework.doc.InfoBuilderSource}.
+ * Eventually, the implementations should be moved from {@link nl.nn.adapterframework.doc.InfoBuilderSource} to
+ * this class. This cannot be done now because the Frank!Doc is being updated. We still have to support the old
+ * Frank!Doc, which includes code from {@link nl.nn.adapterframework.doc.InfoBuilderSource}.
+ * @author martijn
+ *
+ */
 public final class Utils {
 	private static final String JAVA_STRING = "java.lang.String";
 	private static final String JAVA_INTEGER = "java.lang.Integer";

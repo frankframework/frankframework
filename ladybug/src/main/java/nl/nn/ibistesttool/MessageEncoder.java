@@ -40,18 +40,22 @@ public class MessageEncoder extends MessageEncoderImpl {
 	@Override
 	public ToStringResult toString(Object message, String charset) {
 		if (message instanceof Message) {
-			// Hide/remove the Message class/object
 			Message m = ((Message)message);
+			if (charset==null) {
+				charset = m.getCharset();
+			}
 			if (m.requiresStream()) {
 				if (m.isRepeatable()) {
 					if (m.isBinary()) {
 						ByteArrayOutputStream baos = new ByteArrayOutputStream();
 						try (InputStream inputStream = m.asInputStream()) {
 							IOUtils.copy(new BoundedInputStream(inputStream, testTool.getMaxMessageLength()), baos, testTool.getMaxMessageLength());
+							ToStringResult result = super.toString(baos.toByteArray(), charset);
+							result.setMessageClassName(m.asObject().getClass().getTypeName());
+							return result;
 						} catch (IOException e) {
 							return super.toString("Could not capture message: ("+ e.getClass().getTypeName()+") "+e.getMessage(), charset);
 						}
-						return super.toString(baos.toByteArray(), m.getCharset());
 					} 
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
@@ -64,6 +68,9 @@ public class MessageEncoder extends MessageEncoderImpl {
 				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.asObject().getClass().getTypeName());
 			}
 			return super.toString(m.asObject(), charset);
+		}
+		if (message instanceof WriterPlaceHolder) {
+			return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, "request to provide outputstream");
 		}
 		return super.toString(message, charset);
 	}

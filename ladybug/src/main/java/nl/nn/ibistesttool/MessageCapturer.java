@@ -22,7 +22,6 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.testtool.TestTool;
 
 public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
@@ -37,8 +36,8 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 				return m.isBinary() ? StreamingType.BYTE_STREAM : StreamingType.CHARACTER_STREAM;
 			}
 		} else {
-			if (message instanceof MessageOutputStream) {
-				return ((MessageOutputStream)message).isBinary() ? StreamingType.BYTE_STREAM : StreamingType.CHARACTER_STREAM;
+			if (message instanceof WriterPlaceHolder) {
+				return StreamingType.CHARACTER_STREAM;
 			}
 		}
 		return StreamingType.NONE;
@@ -50,9 +49,10 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 			((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
 			return message;
 		} 
-		if (message instanceof MessageOutputStream) {
-			((MessageOutputStream)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
-			return message;
+		if (message instanceof WriterPlaceHolder) {
+			WriterPlaceHolder writerPlaceHolder = (WriterPlaceHolder)message;
+			writerPlaceHolder.setWriter(writer);
+			writerPlaceHolder.setSizeLimit(testTool.getMaxMessageLength());
 		}
 		return message;
 	}
@@ -64,9 +64,6 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 			charsetNotifier.accept(m.getCharset());
 			((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
 			return message;
-		}
-		if (message instanceof MessageOutputStream) {
-			((MessageOutputStream)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
 		}
 		return message;
 	}

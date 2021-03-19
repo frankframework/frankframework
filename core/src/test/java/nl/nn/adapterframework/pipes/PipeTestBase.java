@@ -51,7 +51,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	/**
 	 * Configure the pipe
 	 */
-	protected void configurePipe() throws ConfigurationException, PipeStartException {
+	protected void configurePipe() throws ConfigurationException {
 		if (pipe instanceof IExtendedPipe) {
 			((IExtendedPipe) pipe).configure(pipeline);
 		} else {

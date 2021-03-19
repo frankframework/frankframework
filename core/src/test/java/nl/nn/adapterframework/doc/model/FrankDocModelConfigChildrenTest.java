@@ -108,6 +108,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertFalse(actual.isMandatory());
 		// The method in the parent is protected, so not overridden
 		assertNull(actual.getOverriddenFrom());
+		assertFalse(actual.isTechnicalOverride());
 		assertTrue(IN_XSD.test(actual));
 	}
 
@@ -124,6 +125,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertFalse(actual.isDeprecated());
 		// The method in the parent is protected, so not overridden
 		assertNull(actual.getOverriddenFrom());
+		assertFalse(actual.isTechnicalOverride());
 	}
 
 	@Test
@@ -136,6 +138,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals(10, actual.getOrder());
 		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
+		assertTrue(actual.isTechnicalOverride());
 		assertTrue(IN_XSD.test(actual));
 	}
 

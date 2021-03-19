@@ -161,6 +161,7 @@ public class FrankDocModelTest {
 		assertSame(actualParent, actualParentAttribute.getDescribingElement());
 		assertSame(actualParent, actualParentAttribute.getOwningElement());
 		assertNull(actualParentAttribute.getOverriddenFrom());
+		assertFalse(actualParentAttribute.isTechnicalOverride());
 		FrankAttribute actualInheritedAttribute = findAttribute(actualParent, "inheritedAttribute");
 		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
 		assertNull(actualInheritedAttribute.getOverriddenFrom());
