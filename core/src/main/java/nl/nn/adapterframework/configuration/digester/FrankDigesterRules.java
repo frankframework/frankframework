@@ -20,7 +20,6 @@ import java.io.IOException;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.RulesBinder;
 import org.apache.commons.digester3.binder.RulesModule;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
@@ -28,6 +27,7 @@ import org.xml.sax.SAXException;
 import lombok.Setter;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -68,7 +68,7 @@ public class FrankDigesterRules implements RulesModule, ApplicationContextAware 
 		}
 
 		DigesterRulesHandler handler = new DigesterRulesParser(digester, rulesBinder);
-		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(handler, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
+		SpringUtils.autowire(applicationContext, handler);
 		try {
 			XmlUtils.parseXml(digesterRules.asInputSource(), handler);
 		} catch (IOException e) {

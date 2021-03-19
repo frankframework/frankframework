@@ -167,7 +167,7 @@ public class IbisApplicationContext {
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
 		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
-		classPathapplicationContext.setDisplayName("IbisApplicationContext");
+		classPathapplicationContext.setId("IbisApplicationContext");
 
 		return classPathapplicationContext;
 	}
@@ -202,7 +202,7 @@ public class IbisApplicationContext {
 	 * 
 	 * @return Spring XML Bean Factory or NULL
 	 */
-	public AbstractApplicationContext getApplicationContext() {
+	protected AbstractApplicationContext getApplicationContext() {
 		if(applicationContext == null)
 			createApplicationContext();
 

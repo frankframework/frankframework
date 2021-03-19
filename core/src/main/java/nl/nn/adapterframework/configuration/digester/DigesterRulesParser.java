@@ -22,13 +22,13 @@ import org.apache.commons.digester3.Rule;
 import org.apache.commons.digester3.binder.LinkedRuleBuilder;
 import org.apache.commons.digester3.binder.RulesBinder;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.AttributeCheckingRule;
 import nl.nn.adapterframework.configuration.GenericFactory;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.SpringUtils;
 
 public class DigesterRulesParser extends DigesterRulesHandler {
 	private Digester digester;
@@ -93,13 +93,9 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		return autoWireAndInitializeBean(GenericFactory.class); //Wire the factory through Spring
 	}
 
-	@SuppressWarnings("unchecked")
 	protected <T> T autoWireAndInitializeBean(Class<T> clazz) {
 		if(applicationContext != null) {
-			AutowireCapableBeanFactory beanFactory = applicationContext.getAutowireCapableBeanFactory();
-//			T bean = (T) beanFactory.autowire(clazz, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false); //Wire the factory through Spring
-//			return (T) beanFactory.initializeBean(bean, bean.getClass().getSimpleName()); //Initialize the Bean through Spring (aka apply 'magic')
-			return (T) beanFactory.createBean(clazz, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false); //Wire the factory through Spring
+			return SpringUtils.createBean(applicationContext, clazz); //Wire the factory through Spring
 		} else {
 			throw new IllegalStateException("ApplicationContext not set");
 		}

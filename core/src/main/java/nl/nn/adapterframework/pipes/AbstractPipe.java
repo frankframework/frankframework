@@ -28,7 +28,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -100,11 +99,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable, ApplicationContextAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ApplicationContext applicationContext;
-
-	protected <T> T createBean(Class<T> beanClass) {
-		return SpringUtils.createBean(applicationContext, beanClass);
-	}
+	private @Getter ApplicationContext applicationContext;
 
 	private String name;
 	private String getInputFromSessionKey=null;
@@ -206,6 +201,18 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	public void configure(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline=pipeline;
 		configure();
+	}
+
+	/**
+	 * final method to ensure nobody overrides this...
+	 */
+	@Override
+	public final void setApplicationContext(ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext;
+	}
+
+	protected <T> T createBean(Class<T> beanClass) {
+		return SpringUtils.createBean(applicationContext, beanClass);
 	}
 
 
