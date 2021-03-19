@@ -21,8 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
@@ -36,6 +34,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.StringIteratorPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 
 /**
@@ -75,7 +74,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		getApplicationContext().getAutowireCapableBeanFactory().autowireBeanProperties(querySender, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		SpringUtils.autowire(getApplicationContext(), querySender);
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}

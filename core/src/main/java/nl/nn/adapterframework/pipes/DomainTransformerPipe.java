@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -71,8 +70,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		qs = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		qs = createBean(FixedQuerySender.class);
 
 		qs.setJmsRealm(jmsRealm);
 

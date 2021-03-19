@@ -133,7 +133,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	}
 
 	public Configuration() {
-		setConfigLocation("FrankFrameworkConfigurationContext.xml");
+		setConfigLocation("FrankFrameworkConfigurationContext.xml"); //Don't call the super(..), it will trigger a refresh.
 	}
 
 	@Override

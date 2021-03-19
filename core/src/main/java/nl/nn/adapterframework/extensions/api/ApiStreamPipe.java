@@ -21,7 +21,6 @@ import java.sql.SQLException;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -93,10 +92,7 @@ public class ApiStreamPipe extends StreamPipe {
 				} else {
 					// TODO: create dummyQuerySender should be put in
 					// configure(), but gives an error
-					IbisContext ibisContext = getAdapter().getConfiguration()
-							.getIbisManager().getIbisContext();
-					dummyQuerySender = (FixedQuerySender) ibisContext
-							.createBeanAutowireByName(FixedQuerySender.class);
+					dummyQuerySender = createBean(FixedQuerySender.class);
 					dummyQuerySender.setJmsRealm(jmsRealm);
 					dummyQuerySender
 							.setQuery("SELECT count(*) FROM ALL_TABLES");

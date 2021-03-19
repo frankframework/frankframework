@@ -270,7 +270,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * 
 	 * @see ClassLoaderManager#get(String)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(IbisContext)
-	 * @see #digestClassLoaderConfiguration(ClassLoader, ConfigurationDigester, String, ConfigurationException)
+	 * @see #digestClassLoaderConfiguration(ClassLoader, String, ConfigurationException)
 	 */
 	public void load(String configurationName) {
 		boolean configFound = false;
@@ -321,6 +321,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
+	// Create a new configuration through Spring, and explicitly set the ClassLoader before initializing it.
 	private Configuration createConfiguration(String name, ClassLoader classLoader) {
 		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		bean.setClassLoader(classLoader);

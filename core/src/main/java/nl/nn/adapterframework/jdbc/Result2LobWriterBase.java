@@ -23,9 +23,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import lombok.Setter;
 import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -33,6 +36,7 @@ import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 
 /**
@@ -47,8 +51,9 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public abstract class Result2LobWriterBase extends ResultWriter {
-	
+public abstract class Result2LobWriterBase extends ResultWriter implements ApplicationContextAware {
+	private @Setter ApplicationContext applicationContext;
+
 	protected Map<String,Connection> openConnections = Collections.synchronizedMap(new HashMap<String,Connection>());
 	protected Map<String,ResultSet>  openResultSets  = Collections.synchronizedMap(new HashMap<String,ResultSet>());
 	protected Map<String,Object>     openLobHandles  = Collections.synchronizedMap(new HashMap<String,Object>());
@@ -60,8 +65,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		IbisContext ibisContext = getPipe().getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		querySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		querySender = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		querySender.setName("querySender of "+getName());
 		querySender.configure();
 	}

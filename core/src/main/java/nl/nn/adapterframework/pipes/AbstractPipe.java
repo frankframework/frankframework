@@ -53,6 +53,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -100,6 +101,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable, ApplicationContextAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+
+	protected <T> T createBean(Class<T> beanClass) {
+		return SpringUtils.createBean(applicationContext, beanClass);
+	}
 
 	private String name;
 	private String getInputFromSessionKey=null;
