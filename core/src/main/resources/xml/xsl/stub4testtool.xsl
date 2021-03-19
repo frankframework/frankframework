@@ -16,6 +16,7 @@
 		- add the attribute useFixedValues with value true to all pipe, inputWrapper and outputWrapper elements SoapWrapperPipe
 		- stub the pipe element GetPrincipalPipe by a pipe element FixedResultPipe with attribute returnString set to tst9
 		- stub the pipe element IsUserInRolePipe by a pipe element EchoPipe
+		- add the attribute thenOnInput with the value 'cn=then,ou=stub,ou=LdapIsMemberOfPipe,dc=frankframework,dc=org' and attribute exceptionOnInput with value 'cn=exception,ou=stub,ou=LdapIsMemberOfPipe,dc=frankframework,dc=org' to all pipe elements LdapIsMemberOfPipe
 		- stub the pipe element UUIDGeneratorPipe by a pipe element FixedResultPipe with attribute returnString set to 1234567890123456789012345678901 if type='numeric' and 0a4544b6-37489ec0_15ad0f006ae_-7ff3 otherwise
 		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe, LdapFindGroupMembershipsPipe and SendTibcoMessage by a pipe element SenderPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
 		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements SenderPipe, GenericMessageSendingPipe and ForEachChildElementPipe
@@ -296,6 +297,19 @@
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="className">nl.nn.adapterframework.pipes.EchoPipe</xsl:attribute>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="pipe[@className='nl.nn.adapterframework.ldap.LdapIsMemberOfPipe']">
+		<xsl:element name="pipe">
+			<xsl:apply-templates select="@*" />
+			<xsl:if test="not(@thenOnInput)">
+				<xsl:attribute name="thenOnInput">cn=then,ou=stub,ou=LdapIsMemberOfPipe,dc=frankframework,dc=org</xsl:attribute>
+			</xsl:if>			
+			<xsl:if test="not(@exceptionOnInput)">
+				<xsl:attribute name="exceptionOnInput">cn=exception,ou=stub,ou=LdapIsMemberOfPipe,dc=frankframework,dc=org</xsl:attribute>
+			</xsl:if>
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
