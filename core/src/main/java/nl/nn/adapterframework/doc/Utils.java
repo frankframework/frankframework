@@ -25,10 +25,7 @@ import java.util.Set;
 import nl.nn.adapterframework.doc.doclet.FrankMethod;
 
 /**
- * Utility methods for the Frank!Doc. Many of these delegate to {@link nl.nn.adapterframework.doc.InfoBuilderSource}.
- * Eventually, the implementations should be moved from {@link nl.nn.adapterframework.doc.InfoBuilderSource} to
- * this class. This cannot be done now because the Frank!Doc is being updated. We still have to support the old
- * Frank!Doc, which includes code from {@link nl.nn.adapterframework.doc.InfoBuilderSource}.
+ * Utility methods for the Frank!Doc.
  * @author martijn
  *
  */
@@ -51,6 +48,13 @@ public final class Utils {
 
 	private static final Set<String> JAVA_BOXED = new HashSet<String>(Arrays.asList(new String[] {
 			JAVA_STRING, JAVA_INTEGER, JAVA_BOOLEAN, JAVA_LONG, JAVA_BYTE, JAVA_SHORT}));
+
+	// All types that are accepted by method isGetterOrSetter() 
+	public static final Set<String> ALLOWED_SETTER_TYPES = new HashSet<>();
+	static {
+		ALLOWED_SETTER_TYPES.addAll(primitiveToBoxed.keySet());
+		ALLOWED_SETTER_TYPES.addAll(JAVA_BOXED);
+	}
 
 	private Utils() {
 	}
@@ -86,6 +90,6 @@ public final class Utils {
 	}
 
 	public static String toUpperCamelCase(String arg) {
-		return InfoBuilderSource.toUpperCamelCase(arg);
+		return arg.substring(0,  1).toUpperCase() + arg.substring(1);
 	}
 }
