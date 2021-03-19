@@ -114,7 +114,7 @@ public abstract class ElementChild {
 					log.warn("Element child overrides deprecated ElementChild: descendant [{}], super [{}]", () -> toString(), () -> matchingChild.toString());
 				}
 				overriddenFrom = match;
-				if(! checkOverrideMeaningful(matchingChild)) {
+				if(! overrideIsMeaningful(matchingChild)) {
 					technicalOverride = true;
 				}
 				log.trace("{} [{}] of FrankElement [{}] has overriddenFrom = [{}]",
@@ -124,7 +124,7 @@ public abstract class ElementChild {
 		}
 	}
 
-	abstract boolean checkOverrideMeaningful(ElementChild overriddenFrom);
+	abstract boolean overrideIsMeaningful(ElementChild overriddenFrom);
 
 	boolean parseIbisDocAnnotation(IbisDoc ibisDoc) {
 		String[] ibisDocValues = ibisDoc.value();

@@ -41,11 +41,11 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 			.thenComparing(c -> c.getElementRole().getRoleName())
 			.thenComparing(c -> c.getElementRole().getElementType().getFullName());
 
-	private static final Comparator<ConfigChild> INVERSE_ALLOW_MULTIPLE =
+	private static final Comparator<ConfigChild> SINGLE_ELEMENT_ONLY =
 			Comparator.comparing(c -> ! c.isAllowMultiple());
 
 	private static final Comparator<ConfigChild> REMOVE_DUPLICATES_COMPARATOR =
-			INVERSE_ALLOW_MULTIPLE.thenComparing(c -> ! c.isMandatory());
+			SINGLE_ELEMENT_ONLY.thenComparing(c -> ! c.isMandatory());
 
 	static final class SortNode implements Comparable<SortNode> {
 		private static final Comparator<SortNode> SORT_NODE_COMPARATOR =
@@ -154,7 +154,7 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	}
 
 	@Override
-	boolean checkOverrideMeaningful(ElementChild overriddenFrom) {
+	boolean overrideIsMeaningful(ElementChild overriddenFrom) {
 		ConfigChild match = (ConfigChild) overriddenFrom;
 		boolean result = (allowMultiple != match.allowMultiple) || (mandatory != match.mandatory);
 		if(log.isTraceEnabled() && (! isOverrideMeaningfulLogged) && result) {
