@@ -56,6 +56,11 @@ public class FrankAttribute extends ElementChild implements Comparable<FrankAttr
 	}
 
 	@Override
+	boolean overrideIsMeaningful(ElementChild overriddenFrom) {
+		return false;
+	}
+
+	@Override
 	public int compareTo(FrankAttribute other) {
 		return FRANK_ATTRIBUTE_COMPARATOR.compare(this, (FrankAttribute) other);
 	}
