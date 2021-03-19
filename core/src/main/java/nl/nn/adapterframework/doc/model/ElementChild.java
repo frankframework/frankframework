@@ -153,7 +153,7 @@ public abstract class ElementChild {
 	}
 
 	@Override
-	final public String toString() {
+	public String toString() {
 		return String.format("(Key %s, owner %s)", getKey().toString(), owningElement.getFullName());
 	}
 

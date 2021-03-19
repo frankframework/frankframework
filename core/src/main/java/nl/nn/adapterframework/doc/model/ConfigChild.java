@@ -24,14 +24,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
+	private static Logger log = LogUtil.getLogger(ConfigChild.class);
+
 	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
 			Comparator.comparingInt(ConfigChild::getOrder)
 			.thenComparing(c -> c.getElementRole().getRoleName())
@@ -91,11 +95,14 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	private @Getter @Setter boolean mandatory;
 	private @Getter @Setter boolean allowMultiple;
 	private @Getter @Setter ElementRole elementRole;
+	private String methodName;
+	private boolean isOverrideMeaningfulLogged = false;
 
 	ConfigChild(FrankElement owningElement, SortNode sortNode) {
 		super(owningElement);
 		setDocumented(sortNode.isDocumented());
 		setDeprecated(sortNode.isDeprecated());
+		this.methodName = sortNode.name;
 	}
 
 	@Override
@@ -135,7 +142,13 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 		for(Key key: byKey.keySet()) {
 			List<ConfigChild> bucket = new ArrayList<>(byKey.get(key));
 			Collections.sort(bucket, REMOVE_DUPLICATES_COMPARATOR);
-			result.add(bucket.get(0));
+			ConfigChild selected = bucket.get(0);
+			result.add(selected);
+			if(log.isTraceEnabled() && (bucket.size() >= 2)) {
+				for(ConfigChild omitted: bucket.subList(1, bucket.size())) {
+					log.trace("Omitting config child {} because it is a duplicate of {}", omitted.toString(), selected.toString());
+				}
+			}
 		}
 		return result;
 	}
@@ -143,6 +156,16 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	@Override
 	boolean checkOverrideMeaningful(ElementChild overriddenFrom) {
 		ConfigChild match = (ConfigChild) overriddenFrom;
-		return (allowMultiple != match.allowMultiple) || (mandatory != match.mandatory);
+		boolean result = (allowMultiple != match.allowMultiple) || (mandatory != match.mandatory);
+		if(log.isTraceEnabled() && (! isOverrideMeaningfulLogged) && result) {
+			isOverrideMeaningfulLogged = true;
+			log.trace("Config {} overrides {} and changes isAllowMultiple() or isMandatory()", toString(), overriddenFrom.toString());
+		}
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s.%s(%s)", getOwningElement().getSimpleName(), methodName, getElementType().getSimpleName());
 	}
 }
