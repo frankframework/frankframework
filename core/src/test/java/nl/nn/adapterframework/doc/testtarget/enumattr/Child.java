@@ -1,11 +1,15 @@
 package nl.nn.adapterframework.doc.testtarget.enumattr;
 
 public class Child extends Parent {
-	public void setChildAttribute(String value) {
+	public void setChildStringAttribute(String value) {
 	}
 
-	public MyEnum getChildAttributeEnum() {
+	public MyEnum getChildStringAttributeEnum() {
 		return MyEnum.TWO;
+	}
+
+	// Attributes are sorted alphabetically by name. This one should be included before attribute childString
+	public void setChildIntAttribute(int value) {
 	}
 
 	public String getNotForAttributeBecauseNoEnumReturnedEnum() {

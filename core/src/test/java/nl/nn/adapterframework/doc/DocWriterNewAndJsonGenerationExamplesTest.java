@@ -57,7 +57,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	@Test
 	public void testXsd() throws Exception {
 		FrankDocModel model = createModel();
-		DocWriterNew docWriter = new DocWriterNew(model);
+		DocWriterNew docWriter = new DocWriterNew(model, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		docWriter.init(startClassName, XsdVersion.STRICT);
 		String actualXsd = docWriter.getSchema();
 		System.out.println(actualXsd);

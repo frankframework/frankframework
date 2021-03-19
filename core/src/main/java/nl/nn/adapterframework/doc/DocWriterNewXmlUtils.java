@@ -16,6 +16,9 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -25,7 +28,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 class DocWriterNewXmlUtils {
 	private static Logger log = LogUtil.getLogger(DocWriterNewXmlUtils.class);
 
-	private static final String XML_SCHEMA_URI = "http://www.w3.org/2001/XMLSchema";
+	static final String XML_SCHEMA_URI = "http://www.w3.org/2001/XMLSchema";
 
 	private DocWriterNewXmlUtils() {
 	}
@@ -102,6 +105,13 @@ class DocWriterNewXmlUtils {
 		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
 		complexType.addAttribute("name", name);
 		return complexType;		
+	}
+
+	static XmlBuilder addSimpleType(XmlBuilder schema) {
+		XmlBuilder complexType;
+		complexType = new XmlBuilder("simpleType", "xs", XML_SCHEMA_URI);
+		schema.addSubElement(complexType);
+		return complexType;
 	}
 
 	static XmlBuilder createSimpleType(String name) {
@@ -221,6 +231,13 @@ class DocWriterNewXmlUtils {
 		return attribute;
 	}
 
+	static XmlBuilder addAttributeWithType(XmlBuilder context, String name) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("name", name);
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
 	static void addDocumentation(XmlBuilder context, String description) {
 		XmlBuilder annotation = new XmlBuilder("annotation", "xs", XML_SCHEMA_URI);
 		context.addSubElement(annotation);
@@ -303,5 +320,13 @@ class DocWriterNewXmlUtils {
 		context.addSubElement(enumeration);
 		enumeration.addAttribute("value", item);
 		return enumeration;
+	}
+
+	static XmlBuilder addUnion(XmlBuilder context, String ...combinedTypes) {
+		XmlBuilder union = new XmlBuilder("union", "xs", XML_SCHEMA_URI);
+		context.addSubElement(union);
+		String memberTypes = Arrays.asList(combinedTypes).stream().collect(Collectors.joining(" "));
+		union.addAttribute("memberTypes", memberTypes);
+		return union;
 	}
 }

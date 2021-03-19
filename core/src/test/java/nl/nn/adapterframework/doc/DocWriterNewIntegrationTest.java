@@ -49,20 +49,20 @@ public class DocWriterNewIntegrationTest {
 	@Test
 	public void testStrict() throws Exception {
 		assumeTrue(TestAssertions.isTestRunningOnCI());
-		String schemaFileName = generateXsd(XsdVersion.STRICT);
+		String schemaFileName = generateXsd(XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		validate(schemaFileName, TEST_CONFIGURATION_FILE);
 	}
 
 	@Test
 	public void testCompatibility() throws Exception {
 		assumeTrue(TestAssertions.isTestRunningOnCI());
-		String schemaFileName = generateXsd(XsdVersion.COMPATIBILITY);
+		String schemaFileName = generateXsd(XsdVersion.COMPATIBILITY, AttributeTypeStrategy.VALUES_ONLY);
 		validate(schemaFileName, TEST_CONFIGURATION_FILE);
 	}
 
-	String generateXsd(XsdVersion version) throws IOException {
+	String generateXsd(XsdVersion version, AttributeTypeStrategy attributeTypeStrategy) throws IOException {
 		FrankDocModel model = FrankDocModel.populate();
-		DocWriterNew docWriter = new DocWriterNew(model);
+		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(version);
 		String xsdString = docWriter.getSchema();
 		File output = new File("FrankConfig-" + docWriter.getOutputFileName());
@@ -90,13 +90,14 @@ public class DocWriterNewIntegrationTest {
 	@Test
 	public void testExotic() throws Exception {
 		String outputFileName = generateXsd(
-				XsdVersion.STRICT, "/doc/exotic-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.exotic.Master", "exotic.xsd");
+				XsdVersion.STRICT, "/doc/exotic-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.exotic.Master", "exotic.xsd", AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		validate(outputFileName, "testExotic.xml");
 	}
 
-	private String generateXsd(XsdVersion version, final String digesterRulesFileName, final String rootClassName, String outputSchemaFileName) throws IOException {
+	private String generateXsd(
+			XsdVersion version, final String digesterRulesFileName, final String rootClassName, String outputSchemaFileName, AttributeTypeStrategy attributeTypeStrategy) throws IOException {
 		FrankDocModel model = FrankDocModel.populate(digesterRulesFileName, rootClassName);
-		DocWriterNew docWriter = new DocWriterNew(model);
+		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(rootClassName, version);
 		String xsdString = docWriter.getSchema();
 		File output = new File(outputSchemaFileName);

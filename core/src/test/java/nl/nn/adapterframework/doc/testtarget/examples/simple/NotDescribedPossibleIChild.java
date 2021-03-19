@@ -10,4 +10,7 @@ public class NotDescribedPossibleIChild implements IChild {
 	public MyEnum getFirstAttributeEnum() {
 		return MyEnum.ONE;
 	}
+
+	public void setThirdAttribute(int value) {
+	}
 }
