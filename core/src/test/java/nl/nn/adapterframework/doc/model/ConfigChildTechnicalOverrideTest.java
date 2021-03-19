@@ -47,10 +47,11 @@ public class ConfigChildTechnicalOverrideTest {
 	@Test
 	public void whenConfigChildInheritedWithoutJavaOverrideThenNoTechnicalOverride() {
 		FrankElement element = model.findFrankElement(PACKAGE + "ChildMeaningfulOverride");
+		FrankElement superElement = model.findFrankElement(PACKAGE + "ParentMeaningfulOverride");
 		ConfigChild child = selectChildByArgumentType(element, "Master");
 		assertFalse(child.isTechnicalOverride());
+		assertEquals(superElement.getSimpleName(), child.getOverriddenFrom().getSimpleName());
 		assertTrue(child.isAllowMultiple());
-		FrankElement superElement = model.findFrankElement(PACKAGE + "ParentMeaningfulOverride");
 		ConfigChild inherited = selectChildByArgumentType(superElement, "Master");
 		assertFalse(inherited.isTechnicalOverride());
 		assertFalse(inherited.isAllowMultiple());
