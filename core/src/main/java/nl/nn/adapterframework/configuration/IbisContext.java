@@ -204,10 +204,9 @@ public class IbisContext extends IbisApplicationContext {
 			if (configuration.getAdapterService().getAdapters().size() > 0) {
 				log("Not all adapters are unregistered: " + configuration.getAdapterService().getAdapters(), MessageKeeperLevel.ERROR);
 			}
-			// Improve configuration reload performance. Probably because
-			// garbage collection will be easier.
-			configuration.setAdapterService(null);
 			String configurationVersion = configuration.getVersion();
+			getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
+
 			String msg = "unload in " + (System.currentTimeMillis() - start) + " ms";
 			log(configurationName, configurationVersion, msg);
 			secLog.info("Configuration [" + configurationName + "] [" + configurationVersion+"] " + msg);

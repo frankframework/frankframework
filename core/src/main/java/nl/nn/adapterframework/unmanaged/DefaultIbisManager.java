@@ -183,7 +183,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			}
 		}
 
-		configuration.close();
 		configurations.remove(configuration);
 	}
 

@@ -77,8 +77,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	private ConfigurationException configurationException = null;
 	private BaseConfigurationWarnings configurationWarnings = new BaseConfigurationWarnings();
 
-	private static Date statisticsMarkDateMain=new Date();
-	private static Date statisticsMarkDateDetails=statisticsMarkDateMain;
+	private Date statisticsMarkDateMain=new Date();
+	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
 
 	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
 		Object root = hski.start(now,mainMark,detailMark);
@@ -158,6 +158,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		}
 
 		super.afterPropertiesSet(); //Triggers a context refresh
+
+		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
 	}
 
 	public void setAutoStart(boolean autoStart) {
