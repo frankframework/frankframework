@@ -213,7 +213,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
 		}
 		if (MonitorManager.getInstance().isEnabled()) {
-			MonitorManager.getInstance().configure(configuration);
+			MonitorManager.getInstance().configure(configuration); //Creates a memory leak when the configuration is reloaded
 		}
 	}
 

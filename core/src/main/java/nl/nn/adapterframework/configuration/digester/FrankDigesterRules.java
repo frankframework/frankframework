@@ -68,7 +68,7 @@ public class FrankDigesterRules implements RulesModule, ApplicationContextAware 
 		}
 
 		DigesterRulesHandler handler = new DigesterRulesParser(digester, rulesBinder);
-		SpringUtils.autowire(applicationContext, handler);
+		SpringUtils.autowireByType(applicationContext, handler);
 		try {
 			XmlUtils.parseXml(digesterRules.asInputSource(), handler);
 		} catch (IOException e) {

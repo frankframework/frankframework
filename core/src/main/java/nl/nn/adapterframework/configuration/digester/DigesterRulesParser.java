@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 public class DigesterRulesParser extends DigesterRulesHandler {
 	private Digester digester;
 	private RulesBinder rulesBinder;
-	private @Setter ApplicationContext applicationContext;
+	private @Setter ApplicationContext applicationContext; //Autowired ByType
 	private Rule attributeChecker = new AttributeCheckingRule();
 
 	public DigesterRulesParser(Digester digester, RulesBinder rulesBinder) {

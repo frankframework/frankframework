@@ -74,7 +74,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		SpringUtils.autowire(getApplicationContext(), querySender);
+		SpringUtils.autowireByName(getApplicationContext(), querySender);
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
