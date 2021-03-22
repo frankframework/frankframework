@@ -305,6 +305,32 @@ public class MiscTest {
 		assertEquals("LeBron//James", res);
 	}
 
+	@Test
+	public void testConcatStringsFirstEmpty() throws Exception {
+		String a = "";
+		String b = "James";
+		String seperator = "//";
+		String res = Misc.concatStrings(a, seperator, b);
+		assertEquals("James", res);
+	}
+
+	@Test
+	public void testConcatStringsSecondEmpty() throws Exception {
+		String a = "LeBron";
+		String b = "";
+		String seperator = "//";
+		String res = Misc.concatStrings(a, seperator, b);
+		assertEquals("LeBron", res);
+	}
+	
+	@Test
+	public void testConcat() throws Exception {
+		String seperator = "|";
+		String res = Misc.concat(seperator, null, "a", "b", null, "c", null);
+		assertEquals("a|b|c", res);
+	}
+	
+	
 	/**
 	 * Method: hide(String string)
 	 */

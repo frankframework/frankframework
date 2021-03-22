@@ -11,7 +11,7 @@
 	>
 
 	<bean
-		name="ibisDebuggerAdvice,threadLifeCycleEventListener"
+		name="ibisDebuggerAdvice,threadLifeCycleEventListener,xmlDebugger"
 		class="nl.nn.ibistesttool.IbisDebuggerAdvice"
 		autowire="byName"
 	/>
