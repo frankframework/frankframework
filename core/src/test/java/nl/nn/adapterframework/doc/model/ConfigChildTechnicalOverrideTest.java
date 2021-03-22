@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
+
 public class ConfigChildTechnicalOverrideTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.technical.override.";
 	private static final String DIGESTER_RULES = "doc/technical-override-digester-rules.xml";
@@ -18,7 +20,7 @@ public class ConfigChildTechnicalOverrideTest {
 
 	@BeforeClass
 	public static void setUp() {
-		model = FrankDocModel.populate(DIGESTER_RULES, PACKAGE + "Master");
+		model = FrankDocModel.populate(DIGESTER_RULES, PACKAGE + "Master", FrankClassRepository.getReflectInstance());
 	}
 
 	@Test

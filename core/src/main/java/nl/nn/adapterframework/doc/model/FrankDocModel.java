@@ -19,8 +19,6 @@ package nl.nn.adapterframework.doc.model;
 import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +34,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -44,10 +41,13 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.digester.DigesterRule;
 import nl.nn.adapterframework.configuration.digester.DigesterRulesHandler;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.doc.Utils;
-import nl.nn.adapterframework.doc.objects.SpringBean;
+import nl.nn.adapterframework.doc.doclet.FrankDocException;
+import nl.nn.adapterframework.doc.doclet.FrankAnnotation;
+import nl.nn.adapterframework.doc.doclet.FrankClass;
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.doc.doclet.FrankDocletConstants;
+import nl.nn.adapterframework.doc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -56,6 +56,8 @@ public class FrankDocModel {
 	private static String ENUM = "Enum";
 	private static final String DIGESTER_RULES = "digester-rules.xml";
 	static final String OTHER = "Other";
+
+	private FrankClassRepository classRepository;
 
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
 	
@@ -77,21 +79,25 @@ public class FrankDocModel {
 	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
 	private AttributeValuesFactory attributeValuesFactory = new AttributeValuesFactory();
 
+	FrankDocModel(FrankClassRepository classRepository) {
+		this.classRepository = classRepository;
+	}
+
 	/**
 	 * Get the FrankDocModel needed in production. This is just a first draft. The
 	 * present version does not have groups yet. It will be improved in future
 	 * pull requests. 
 	 */
-	public static FrankDocModel populate() {
-		return FrankDocModel.populate(DIGESTER_RULES, "nl.nn.adapterframework.configuration.Configuration");
+	public static FrankDocModel populate(FrankClassRepository classRepository) {
+		return FrankDocModel.populate(DIGESTER_RULES, "nl.nn.adapterframework.configuration.Configuration", classRepository);
 	}
 
-	public static FrankDocModel populate(final String digesterRulesFileName, final String rootClassName) {
-		FrankDocModel result = new FrankDocModel();
+	public static FrankDocModel populate(final String digesterRulesFileName, final String rootClassName, FrankClassRepository classRepository) {
+		FrankDocModel result = new FrankDocModel(classRepository);
 		try {
 			log.trace("Populating FrankDocModel");
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
-			result.findOrCreateFrankElement(Utils.getClass(rootClassName));
+			result.findOrCreateFrankElement(rootClassName);
 			result.calculateHighestCommonInterfaces();
 			result.setOverriddenFrom();
 			result.setHighestCommonInterface();
@@ -161,7 +167,8 @@ public class FrankDocModel {
 		return allTypes.containsKey(typeName);
 	}
 
-	FrankElement findOrCreateFrankElement(Class<?> clazz) throws ReflectiveOperationException {
+	FrankElement findOrCreateFrankElement(String fullClassName) throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(fullClassName);
 		log.trace("FrankElement requested for class name [{}]", () -> clazz.getName());
 		if(allElements.containsKey(clazz.getName())) {
 			log.trace("Already present");
@@ -170,8 +177,8 @@ public class FrankDocModel {
 		log.trace("Creating FrankElement for class name [{}]", () -> clazz.getName());
 		FrankElement current = new FrankElement(clazz);
 		allElements.put(clazz.getName(), current);
-		Class<?> superClass = clazz.getSuperclass();
-		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass);
+		FrankClass superClass = clazz.getSuperclass();
+		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass.getName());
 		current.setParent(parent);
 		current.setAttributes(createAttributes(clazz, current));
 		current.setConfigChildren(createConfigChildren(clazz.getDeclaredMethods(), current));
@@ -183,17 +190,17 @@ public class FrankDocModel {
 		return allElements.get(fullName);
 	}
 
-	List<FrankAttribute> createAttributes(Class<?> clazz, FrankElement attributeOwner) throws ReflectiveOperationException {
+	List<FrankAttribute> createAttributes(FrankClass clazz, FrankElement attributeOwner) throws FrankDocException {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
-		Method[] methods = clazz.getDeclaredMethods();
-		Map<String, Method> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
-		Map<String, Method> setterAttributes = getAttributeToMethodMap(methods, "set");
-		Map<String, Method> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
+		FrankMethod[] methods = clazz.getDeclaredMethods();
+		Map<String, FrankMethod> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
+		Map<String, FrankMethod> setterAttributes = getAttributeToMethodMap(methods, "set");
+		Map<String, FrankMethod> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
 		List<FrankAttribute> result = new ArrayList<>();
-		for(Entry<String, Method> entry: setterAttributes.entrySet()) {
+		for(Entry<String, FrankMethod> entry: setterAttributes.entrySet()) {
 			String attributeName = entry.getKey();
 			log.trace("Attribute [{}]", attributeName);
-			Method method = entry.getValue();
+			FrankMethod method = entry.getValue();
 			if(getterAttributes.containsKey(attributeName)) {
 				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
@@ -201,9 +208,7 @@ public class FrankDocModel {
 			attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
 			documentAttribute(attribute, method, attributeOwner);
 			if(enumGettersByAttributeName.containsKey(attributeName)) {
-				@SuppressWarnings("unchecked")
-				Class<? extends Enum<?>> restrictClass = (Class<? extends Enum<?>>) enumGettersByAttributeName.get(attributeName).getReturnType();
-				attribute.setAttributeValues(findOrCreateAttributeValues(restrictClass));
+				attribute.setAttributeValues(findOrCreateAttributeValues((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
 			}
 			result.add(attribute);
 			log.trace("Attribute [{}] done", attributeName);
@@ -213,9 +218,9 @@ public class FrankDocModel {
 		return result;
 	}
 
-	private Map<String, Method> getGetterAndIsserAttributes(Method[] methods, FrankElement attributeOwner) {
-		Map<String, Method> getterAttributes = getAttributeToMethodMap(methods, "get");
-		Map<String, Method> isserAttributes = getAttributeToMethodMap(methods, "is");
+	private Map<String, FrankMethod> getGetterAndIsserAttributes(FrankMethod[] methods, FrankElement attributeOwner) {
+		Map<String, FrankMethod> getterAttributes = getAttributeToMethodMap(methods, "get");
+		Map<String, FrankMethod> isserAttributes = getAttributeToMethodMap(methods, "is");
 		for(String isserAttributeName : isserAttributes.keySet()) {
 			if(getterAttributes.containsKey(isserAttributeName)) {
 				log.warn("For FrankElement [{}], attribute [{}] has both a getX and an isX method", () -> attributeOwner.getSimpleName(), () -> isserAttributeName);
@@ -230,17 +235,17 @@ public class FrankDocModel {
      * The original order of the methods is preserved, which you get when you iterate
      * over the entrySet() of the returned Map.
 	 */
-	static Map<String, Method> getAttributeToMethodMap(Method[] methods, String prefix) {
-		List<Method> methodList = Arrays.asList(methods);
+	static Map<String, FrankMethod> getAttributeToMethodMap(FrankMethod[] methods, String prefix) {
+		List<FrankMethod> methodList = Arrays.asList(methods);
 		methodList = methodList.stream()
-				.filter(m -> Modifier.isPublic(m.getModifiers()))
+				.filter(FrankMethod::isPublic)
 				.filter(Utils::isAttributeGetterOrSetter)
 				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
 				.collect(Collectors.toList());
 		// The sort order determines the creation order of AttributeValues instances.
-		Collections.sort(methodList, Comparator.comparing(Method::getName));
-		Map<String, Method> result = new LinkedHashMap<>();
-		for(Method method: methodList) {
+		Collections.sort(methodList, Comparator.comparing(FrankMethod::getName));
+		Map<String, FrankMethod> result = new LinkedHashMap<>();
+		for(FrankMethod method: methodList) {
 			String attributeName = attributeOf(method.getName(), prefix);
 			result.put(attributeName, method);
 		}
@@ -253,29 +258,29 @@ public class FrankDocModel {
 		return attributeName;
 	}
 
-	static Map<String, Method> getEnumGettersByAttributeName(Class<?> clazz) {
-		Method[] rawMethods = clazz.getMethods();
-		List<Method> methods = Arrays.asList(rawMethods).stream()
+	static Map<String, FrankMethod> getEnumGettersByAttributeName(FrankClass clazz) {
+		FrankMethod[] rawMethods = clazz.getDeclaredAndInheritedMethods();
+		List<FrankMethod> methods = Arrays.asList(rawMethods).stream()
 				.filter(m -> m.getName().endsWith(ENUM))
 				.filter(m -> m.getReturnType().isEnum())
 				.filter(m -> m.getParameterCount() == 0)
 				// This filter cannot be covered with tests, because getMethods
 				// does not include a non-public method in the test classes.
-				.filter(m -> m.getModifiers() == Modifier.PUBLIC)
+				.filter(FrankMethod::isPublic)
 				.collect(Collectors.toList());
-		Map<String, Method> result = new HashMap<>();
-		for(Method m: methods) {
+		Map<String, FrankMethod> result = new HashMap<>();
+		for(FrankMethod m: methods) {
 			result.put(enumAttributeOf(m), m);
 		}
 		return result;
 	}
 
-	private static String enumAttributeOf(Method method) {
+	private static String enumAttributeOf(FrankMethod method) {
 		String nameWithoutEnum = method.getName().substring(0, method.getName().length() - ENUM.length());
 		return attributeOf(nameWithoutEnum, "get");
 	}
 
-	private void checkForTypeConflict(Method setter, Method getter, FrankElement attributeOwner) {
+	private void checkForTypeConflict(FrankMethod setter, FrankMethod getter, FrankElement attributeOwner) {
 		log.trace("Checking for type conflict with getter or isser [{}]", () -> getter.getName());
 		String setterType = setter.getParameterTypes()[0].getName();
 		String getterType = getter.getReturnType().getName();
@@ -296,21 +301,21 @@ public class FrankDocModel {
 		}
 	}
 
-	private void documentAttribute(FrankAttribute attribute, Method method, FrankElement attributeOwner) throws ReflectiveOperationException {
-		attribute.setDeprecated(method.getAnnotation(Deprecated.class) != null);
+	private void documentAttribute(FrankAttribute attribute, FrankMethod method, FrankElement attributeOwner) throws FrankDocException {
+		attribute.setDeprecated(method.getAnnotation(FrankDocletConstants.DEPRECATED) != null);
 		attribute.setDocumented(
-				(method.getAnnotation(IbisDoc.class) != null)
-				|| (method.getAnnotation(IbisDocRef.class) != null));
+				(method.getAnnotation(FrankDocletConstants.IBISDOC) != null)
+				|| (method.getAnnotation(FrankDocletConstants.IBISDOCREF) != null));
 		log.trace("Attribute: deprecated = [{}], documented = [{}]", () -> attribute.isDeprecated(), () -> attribute.isDocumented());
-		IbisDocRef ibisDocRef = AnnotationUtils.findAnnotation(method, IbisDocRef.class);
+		FrankAnnotation ibisDocRef = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOCREF);
 		if(ibisDocRef != null) {
 			log.trace("Found @IbisDocRef annotation");
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
-			IbisDoc ibisDoc = null;
+			FrankAnnotation ibisDoc = null;
 			if(parsed.getReferredMethod() != null) {
-				ibisDoc = AnnotationUtils.findAnnotation(parsed.getReferredMethod(), IbisDoc.class);
+				ibisDoc = parsed.getReferredMethod().getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 				if(ibisDoc != null) {
-					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass()));
+					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass().getName()));
 					log.trace("Describing element of attribute [{}].[{}] is [{}]",
 							() -> attributeOwner.getFullName(), () -> attribute.getName(), () -> attribute.getDescribingElement().getFullName());
 					if(! attribute.parseIbisDocAnnotation(ibisDoc)) {
@@ -327,7 +332,7 @@ public class FrankDocModel {
 				log.warn("@IbisDocRef of Frank elelement [{}] attribute [{}] points to non-existent method", () -> attributeOwner.getSimpleName(), () -> attribute.getName());
 			}
 		}
-		IbisDoc ibisDoc = AnnotationUtils.findAnnotation(method, IbisDoc.class);
+		FrankAnnotation ibisDoc = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 		if(ibisDoc != null) {
 			log.trace("For attribute [{}], have @IbisDoc without @IbisDocRef", attribute);
 			attribute.parseIbisDocAnnotation(ibisDoc);
@@ -342,23 +347,30 @@ public class FrankDocModel {
 	private class ParsedIbisDocRef {
 		private @Getter @Setter boolean hasOrder;
 		private @Getter @Setter int order;
-		private @Getter @Setter Method referredMethod;
+		private @Getter @Setter FrankMethod referredMethod;
 	}
 
-	private ParsedIbisDocRef parseIbisDocRef(IbisDocRef ibisDocRef, Method originalMethod) {
+	private ParsedIbisDocRef parseIbisDocRef(FrankAnnotation ibisDocRef, FrankMethod originalMethod) {
 		ParsedIbisDocRef result = new ParsedIbisDocRef();
 		result.setHasOrder(false);
-		String[] values = ibisDocRef.value();
+		String[] values = null;
+		try {
+			values = (String[]) ibisDocRef.getValue();
+		} catch(FrankDocException e) {
+			log.warn("IbisDocRef annotation did not have a value", e);
+			return result;
+		}
 		String methodString = null;
 		if (values.length == 1) {
-			methodString = ibisDocRef.value()[0];
+			methodString = values[0];
 		} else if (values.length == 2) {
-			methodString = ibisDocRef.value()[1];
+			methodString = values[1];
 			try {
-				result.setOrder(Integer.parseInt(ibisDocRef.value()[0]));
+				result.setOrder(Integer.parseInt(values[0]));
 				result.setHasOrder(true);
 			} catch (Throwable t) {
-				log.warn("Could not parse order in @IbisDocRef annotation: [{}]", () -> ibisDocRef.value()[0]);
+				final String[] finalValues = values;
+				log.warn("Could not parse order in @IbisDocRef annotation: [{}]", () -> finalValues[0]);
 			}
 		}
 		else {
@@ -369,7 +381,7 @@ public class FrankDocModel {
 		return result;
 	}
 
-	private static Method getReferredMethod(String methodString, Method originalMethod) {
+	private FrankMethod getReferredMethod(String methodString, FrankMethod originalMethod) {
 		String lastNameComponent = methodString.substring(methodString.lastIndexOf(".") + 1).trim();
 		char firstLetter = lastNameComponent.toCharArray()[0];
 		String fullClassName = methodString;
@@ -383,22 +395,22 @@ public class FrankDocModel {
 		return getParentMethod(fullClassName, methodName);
 	}
 
-	private static Method getParentMethod(String className, String methodName) {
+	private FrankMethod getParentMethod(String className, String methodName) {
 		try {
-			Class<?> parentClass = Class.forName(className);
-			for (Method parentMethod : parentClass.getMethods()) {
+			FrankClass parentClass = classRepository.findClass(className);
+			for (FrankMethod parentMethod : parentClass.getDeclaredAndInheritedMethods()) {
 				if (parentMethod.getName().equals(methodName)) {
 					return parentMethod;
 				}
 			}
 			return null;
-		} catch (ClassNotFoundException e) {
-			log.warn("Super class [{}] was not found!", className);
+		} catch (FrankDocException e) {
+			log.warn("Super class [{}] was not found!", className, e);
 			return null;
 		}
 	}
 
-	private List<ConfigChild> createConfigChildren(Method[] methods, FrankElement parent) throws ReflectiveOperationException {
+	private List<ConfigChild> createConfigChildren(FrankMethod[] methods, FrankElement parent) throws FrankDocException {
 		log.trace("Creating config children of FrankElement [{}]", () -> parent.getFullName());
 		List<ConfigChild> result = new ArrayList<>();
 		for(ConfigChild.SortNode sortNode: createSortNodes(methods, parent)) {
@@ -411,7 +423,7 @@ public class FrankDocModel {
 			configChild.setMandatory(configChildDescriptor.isMandatory());
 			log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> sortNode.getName());
 			configChild.setElementRole(findOrCreateElementRole(
-					sortNode.getElementTypeClass(), configChildDescriptor.getRoleName()));
+					(FrankClass) sortNode.getElementType(), configChildDescriptor.getRoleName()));
 			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> sortNode.getName());
 			if(sortNode.getIbisDoc() == null) {
 				log.warn("No @IbisDoc annotation for config child [{}] of FrankElement [{}]", () -> configChild.getKey().toString(), () -> parent.getFullName());
@@ -435,14 +447,14 @@ public class FrankDocModel {
 		return result;
 	}
 
-	private List<ConfigChild.SortNode> createSortNodes(Method[] methods, FrankElement parent) {
-		List<Method> configChildSetters = Arrays.asList(methods).stream()
-				.filter(m -> Modifier.isPublic(m.getModifiers()))
+	private List<ConfigChild.SortNode> createSortNodes(FrankMethod[] methods, FrankElement parent) {
+		List<FrankMethod> configChildSetters = Arrays.asList(methods).stream()
+				.filter(FrankMethod::isPublic)
 				.filter(Utils::isConfigChildSetter)
 				.filter(m -> configChildDescriptors.get(m.getName()) != null)
 				.collect(Collectors.toList());
 		List<ConfigChild.SortNode> sortNodes = new ArrayList<>();
-		for(Method setter: configChildSetters) {
+		for(FrankMethod setter: configChildSetters) {
 			ConfigChild.SortNode sortNode = new ConfigChild.SortNode(setter);
 			sortNodes.add(sortNode);
 		}
@@ -450,7 +462,7 @@ public class FrankDocModel {
 		return sortNodes;
 	}
 
-	ElementRole findOrCreateElementRole(Class<?> elementTypeClass, String roleName) throws ReflectiveOperationException {
+	ElementRole findOrCreateElementRole(FrankClass elementTypeClass, String roleName) throws FrankDocException {
 		log.trace("ElementRole requested for elementTypeClass [{}] and roleName [{}]. Going to get the ElementType", () -> elementTypeClass.getName(), () -> roleName);
 		ElementType elementType = findOrCreateElementType(elementTypeClass);
 		ElementRole.Key key = new ElementRole.Key(elementTypeClass.getName(), roleName);
@@ -478,7 +490,7 @@ public class FrankDocModel {
 		return allElementRoles.get(new ElementRole.Key(fullElementTypeName, roleName));
 	}
 
-	ElementType findOrCreateElementType(Class<?> clazz) throws ReflectiveOperationException {
+	ElementType findOrCreateElementType(FrankClass clazz) throws FrankDocException {
 		log.trace("Requested ElementType for class [{}]", () -> clazz.getName());
 		if(allTypes.containsKey(clazz.getName())) {
 			log.trace("Already present");
@@ -490,16 +502,16 @@ public class FrankDocModel {
 		allTypes.put(result.getFullName(), result);
 		if(result.isFromJavaInterface()) {
 			log.trace("Class [{}] is a Java interface, going to create all member FrankElement", () -> clazz.getName());
-			List<SpringBean> springBeans = Utils.getSpringBeans(clazz.getName());
+			List<FrankClass> memberClasses = clazz.getInterfaceImplementations();
 			// We sort here to make the order deterministic.
-			Collections.sort(springBeans);
-			for(SpringBean b: springBeans) {
-				FrankElement frankElement = findOrCreateFrankElement(b.getClazz());
+			Collections.sort(memberClasses, Comparator.comparing(FrankClass::getName));
+			for(FrankClass memberClass: memberClasses) {
+				FrankElement frankElement = findOrCreateFrankElement(memberClass.getName());
 				result.addMember(frankElement);
 			}
 		} else {
 			log.trace("Class [{}] is not a Java interface, creating its FrankElement", () -> clazz.getName());
-			result.addMember(findOrCreateFrankElement(clazz));
+			result.addMember(findOrCreateFrankElement(clazz.getName()));
 		}
 		log.trace("Done creating ElementType for class [{}]", () -> clazz.getName());
 		return result;
@@ -703,7 +715,7 @@ public class FrankDocModel {
 		log.trace("Leave for roles [{}] and recursion depth [{}]", () -> ElementRole.describeCollection(roleGroup), () -> recursionDepth);
 	}
 
-	AttributeValues findOrCreateAttributeValues(Class<? extends Enum<?>> clazz) {
+	AttributeValues findOrCreateAttributeValues(FrankClass clazz) {
 		return attributeValuesFactory.findOrCreateAttributeValues(clazz);
 	}
 

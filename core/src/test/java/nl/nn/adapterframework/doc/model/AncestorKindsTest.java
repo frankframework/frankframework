@@ -24,6 +24,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
+
 /**
  * Class {@link FrankElement} has many different method to get children
  * and to search ancestors that have children. The tests in this class
@@ -38,7 +40,7 @@ public class AncestorKindsTest {
 
 	@Before
 	public void setUp() {
-		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild");
+		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild", FrankClassRepository.getReflectInstance());
 	}
 
 	@Test

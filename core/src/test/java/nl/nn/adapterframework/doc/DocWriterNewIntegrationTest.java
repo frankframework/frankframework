@@ -32,10 +32,12 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.model.FrankElementStatistics;
@@ -45,6 +47,13 @@ import nl.nn.adapterframework.util.LogUtil;
 public class DocWriterNewIntegrationTest {
 	private static Logger log = LogUtil.getLogger(DocWriterNewIntegrationTest.class);
 	private static final String TEST_CONFIGURATION_FILE = "testConfiguration.xml";
+
+	private FrankClassRepository classRepository;
+
+	@Before
+	public void setUp() {
+		classRepository = FrankClassRepository.getReflectInstance();
+	}
 
 	@Test
 	public void testStrict() throws Exception {
@@ -61,7 +70,7 @@ public class DocWriterNewIntegrationTest {
 	}
 
 	String generateXsd(XsdVersion version, AttributeTypeStrategy attributeTypeStrategy) throws IOException {
-		FrankDocModel model = FrankDocModel.populate();
+		FrankDocModel model = FrankDocModel.populate(classRepository);
 		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(version);
 		String xsdString = docWriter.getSchema();
@@ -96,7 +105,7 @@ public class DocWriterNewIntegrationTest {
 
 	private String generateXsd(
 			XsdVersion version, final String digesterRulesFileName, final String rootClassName, String outputSchemaFileName, AttributeTypeStrategy attributeTypeStrategy) throws IOException {
-		FrankDocModel model = FrankDocModel.populate(digesterRulesFileName, rootClassName);
+		FrankDocModel model = FrankDocModel.populate(digesterRulesFileName, rootClassName, classRepository);
 		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(rootClassName, version);
 		String xsdString = docWriter.getSchema();
@@ -115,7 +124,7 @@ public class DocWriterNewIntegrationTest {
 	@Ignore
 	@Test
 	public void testJsonForWebsite() throws Exception {
-		FrankDocModel model = FrankDocModel.populate();
+		FrankDocModel model = FrankDocModel.populate(classRepository);
 		FrankDocJsonFactory jsonFactory = new FrankDocJsonFactory(model);
 		JsonObject jsonObject = jsonFactory.getJson();
 		String jsonText = jsonPretty(jsonObject.toString());
@@ -133,7 +142,7 @@ public class DocWriterNewIntegrationTest {
 	@Ignore
 	@Test
 	public void testStatistics() throws IOException {
-		FrankDocModel model = FrankDocModel.populate();
+		FrankDocModel model = FrankDocModel.populate(classRepository);
 		File output = new File("testStatistics.csv");
 		System.out.println("Output file of test statistics: " + output.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(output));

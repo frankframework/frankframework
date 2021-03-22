@@ -28,6 +28,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -67,7 +68,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 
 	private FrankDocModel createModel() throws Exception {
 		return FrankDocModel.populate(
-				getDigesterRulesPath(digesterRulesFileName), startClassName);
+				getDigesterRulesPath(digesterRulesFileName), startClassName, FrankClassRepository.getReflectInstance());
 	}
 
 	private String getDigesterRulesPath(String fileName) {

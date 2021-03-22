@@ -22,6 +22,8 @@ import static org.junit.Assert.assertSame;
 import org.junit.Before;
 import org.junit.Test;
 
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
+
 public class HighestCommonInterfaceTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.role.inherit.";
 	private FrankDocModel model;
@@ -32,7 +34,7 @@ public class HighestCommonInterfaceTest {
 
 	@Before
 	public void setUp() {
-		model = FrankDocModel.populate("doc/role-inherit-digester-rules.xml", PACKAGE + "Master");
+		model = FrankDocModel.populate("doc/role-inherit-digester-rules.xml", PACKAGE + "Master", FrankClassRepository.getReflectInstance());
 		founder = model.findElementType(PACKAGE + "IFounder");
 		interfaceParent = model.findElementType(PACKAGE + "IInterfaceParent");
 		interfaceElementType = model.findElementType(PACKAGE + "IInterface");
