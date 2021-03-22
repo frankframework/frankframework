@@ -107,9 +107,9 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	 */
 	@Override
 	public void startConfiguration(Configuration configuration) {
-		startAdapters(configuration);
+//		startAdapters(configuration);
 		startScheduledJobs(configuration);
-		updateFlowDiagram(configuration);
+//		updateFlowDiagram(configuration);
 	}
 
 	private void updateFlowDiagram(Configuration configuration) {
@@ -357,23 +357,25 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 
 	private void startAdapters(Configuration configuration) {
 		log.info("Starting all autostart-configured adapters for configuation " + configuration.getName());
-		for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
-			if (adapter.isAutoStart()) {
-				log.info("Starting adapter [" + adapter.getName() + "]");
-				adapter.startRunning();
-			}
-		}
+		configuration.getAdapterManager().start();
+//		for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
+//			if (adapter.isAutoStart()) {
+//				log.info("Starting adapter [" + adapter.getName() + "]");
+//				adapter.startRunning();
+//			}
+//		}
 	}
 
 	private void stopAdapters(Configuration configuration) {
 		configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
 		log.info("Stopping all adapters for configuation " + configuration.getName());
-		List<Adapter> adapters = new ArrayList<Adapter>(configuration.getAdapterService().getAdapters().values());
-		Collections.reverse(adapters);
-		for (Adapter adapter : adapters) {
-			log.info("Stopping adapter [" + adapter.getName() + "]");
-			adapter.stopRunning();
-		}
+		configuration.getAdapterManager().stop();
+//		List<Adapter> adapters = new ArrayList<Adapter>(configuration.getAdapterService().getAdapters().values());
+//		Collections.reverse(adapters);
+//		for (Adapter adapter : adapters) {
+//			log.info("Stopping adapter [" + adapter.getName() + "]");
+//			adapter.stopRunning();
+//		}
 	}
 
 	@Override

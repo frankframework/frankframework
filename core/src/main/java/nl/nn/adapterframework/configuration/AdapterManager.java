@@ -11,6 +11,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.Lifecycle;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +20,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
-public class AdapterManager implements InitializingBean, AutoCloseable, ApplicationContextAware {
+public class AdapterManager implements InitializingBean, AutoCloseable, ApplicationContextAware, Lifecycle {
 	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -32,7 +33,7 @@ public class AdapterManager implements InitializingBean, AutoCloseable, Applicat
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		System.out.println("init");
+		System.out.println("init adapterManager for " + applicationContext);
 	}
 
 	@Override
@@ -48,7 +49,7 @@ public class AdapterManager implements InitializingBean, AutoCloseable, Applicat
 			}
 		}
 
-		stopAdapters();
+		stop();
 		while (getStopAdapterThreads().size() > 0) {
 			log.debug("Waiting for stop threads to end: " + getStopAdapterThreads());
 			try {
@@ -138,7 +139,9 @@ public class AdapterManager implements InitializingBean, AutoCloseable, Applicat
 		return startedAdapters;
 	}
 
-	public void stopAdapters() {
+	@Override
+	public void stop() {
+		System.out.println("stop AdapterManager");
 		log.info("Stopping all adapters for configuation " + applicationContext.getId());
 		List<Adapter> adapters = getAdapterList();
 		Collections.reverse(adapters);
@@ -149,7 +152,9 @@ public class AdapterManager implements InitializingBean, AutoCloseable, Applicat
 //		call unregister in processors
 	}
 
-	public void startAdapters() {
+	@Override
+	public void start() {
+		System.out.println("start AdapterManager");
 		log.info("Starting all autostart-configured adapters for configuation " + applicationContext.getDisplayName());
 		for (Adapter adapter : getAdapters().values()) {
 			if (adapter.isAutoStart()) {
@@ -157,5 +162,15 @@ public class AdapterManager implements InitializingBean, AutoCloseable, Applicat
 				adapter.startRunning();
 			}
 		}
+	}
+
+	@Override
+	public boolean isRunning() {
+		return !adapters.isEmpty();
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + " for " + applicationContext.getId();
 	}
 }

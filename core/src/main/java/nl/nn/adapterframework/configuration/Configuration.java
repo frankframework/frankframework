@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.configuration;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,6 +29,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.Adapter;
@@ -44,7 +45,6 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
@@ -59,8 +59,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 
 	private Boolean autoStart = null;
 
-	private AdapterManager adapterManager;
-	private IAdapterService adapterService;
+	private @Getter @Setter AdapterManager adapterManager;
 
 	private boolean unloadInProgressOrDone = false;
 
@@ -83,7 +82,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		Object root = hski.start(now,mainMark,detailMark);
 		try {
 			Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
-			for (Adapter adapter : adapterService.getAdapters().values()) {
+			for (Adapter adapter : adapterManager.getAdapterList()) {
 				adapter.forEachStatisticsKeeperBody(hski,groupData,action);
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
@@ -164,6 +163,15 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		super.refresh();
+		System.out.println("refresh config");
+		setAdapterManager(getBean("adapterManager", AdapterManager.class));
+		System.out.println(getAdapterManager());
+	}
+
+	@Override
+	public void start() {
+		super.start();
+		System.out.println("start config");
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
@@ -207,21 +215,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	 * @return IAdapter
 	 */
 	public Adapter getRegisteredAdapter(String name) {
-		return adapterService.getAdapter(name);
+		return adapterManager.getAdapter(name);
 	}
 
 	public List<Adapter> getRegisteredAdapters() {
-		return new ArrayList<>(adapterService.getAdapters().values());
-	}
-
-
-	public IAdapterService getAdapterService() {
-		return adapterService;
-	}
-
-	@Autowired
-	public void setAdapterService(IAdapterService adapterService) {
-		this.adapterService = adapterService;
+		return adapterManager.getAdapterList();
 	}
 
 	public void addStartAdapterThread(Runnable runnable) {
@@ -353,7 +351,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	public IbisManager getIbisManager() {
 		return ibisManager;
 	}
-
 
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;
