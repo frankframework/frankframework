@@ -306,14 +306,14 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public void removeFolder(String folderName, boolean removeNonEmptyDirectory) throws FileSystemException {
+	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		try {
 			IMAPFolder folder = getFolder(baseFolder, folderName);
 			if (folder == null) {
 				throw new FileSystemException("Could not find folder object [" + folderName + "]");
 			}
-			if (!folder.delete(removeNonEmptyDirectory)) {
+			if (!folder.delete(removeNonEmptyFolder)) {
 				throw new FileSystemException("Could not delete folder [" + folderName + "]");
 			}
 		} catch (MessagingException e) {

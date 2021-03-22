@@ -134,7 +134,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private int numberOfBackups=0;
 	private String wildCard=null;
 	private String excludeWildCard=null;
-	private boolean removeNonEmptyDirectory=false;
+	private boolean removeNonEmptyFolder=false;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
@@ -401,7 +401,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RMDIR)) {
 				String folder = determineInputFoldername(input, pvl);
-				fileSystem.removeFolder(folder, isRemoveNonEmptyDirectory());
+				fileSystem.removeFolder(folder, isRemoveNonEmptyFolder());
 				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RENAME)) {
 				F source=getFile(input, pvl);
@@ -691,11 +691,11 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return excludeWildCard;
 	}
 
-	@IbisDoc({"12", "If set to true then the directory and the content of the non empty directory will be deleted."})
-	public void setRemoveNonEmptyDirectory(boolean removeNonEmptyDirectory) {
-		this.removeNonEmptyDirectory = removeNonEmptyDirectory;
+	@IbisDoc({"12", "If set to true then the folder and the content of the non empty folder will be deleted."})
+	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
+		this.removeNonEmptyFolder = removeNonEmptyFolder;
 	}
-	public boolean isRemoveNonEmptyDirectory() {
-		return removeNonEmptyDirectory;
+	public boolean isRemoveNonEmptyFolder() {
+		return removeNonEmptyFolder;
 	}
 }

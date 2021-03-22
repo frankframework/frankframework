@@ -275,7 +275,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public void removeFolder(String folder, boolean removeNonEmptyDirectory) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (folderExists(folder)) {
 			folder = folder.endsWith("/") ? folder : folder + "/";
 			s3Client.deleteObject(bucketName, folder);

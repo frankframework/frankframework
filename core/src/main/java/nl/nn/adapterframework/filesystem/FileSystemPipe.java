@@ -233,7 +233,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 
 	@IbisDocRef({"12", FILESYSTEMACTOR})
-	public void setRemoveNonEmptyDirectory(boolean removeNonEmptyDirectory) {
-		actor.setRemoveNonEmptyDirectory(removeNonEmptyDirectory);
+	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
+		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
 	}
 }

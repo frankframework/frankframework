@@ -143,10 +143,10 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public void removeFolder(String folder, boolean removeNonEmptyDirectory) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (folderExists(folder)) {
 			try {
-				if(removeNonEmptyDirectory) {
+				if(removeNonEmptyFolder) {
 					Files.walk(toFile(folder))
 						.sorted(Comparator.reverseOrder())
 						.map(Path::toFile)

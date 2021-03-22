@@ -376,7 +376,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			createFile(innerFolder, filename, "is not empty");
 		}
 		
-		fileSystemSender.setRemoveNonEmptyDirectory(true);
+		fileSystemSender.setRemoveNonEmptyFolder(true);
 		fileSystemSender.setAction("rmdir");
 		fileSystemSender.configure();
 		fileSystemSender.open();

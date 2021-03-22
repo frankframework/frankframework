@@ -358,7 +358,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			createFile(innerFolder, filename, "is not empty");
 		}
 		
-		fileSystemPipe.setRemoveNonEmptyDirectory(true);
+		fileSystemPipe.setRemoveNonEmptyFolder(true);
 		fileSystemPipe.setAction("rmdir");
 		fileSystemPipe.configure();
 		fileSystemPipe.start();

@@ -290,7 +290,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public void removeFolder(String folder, boolean removeNonEmptyDirectory) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		checkOpen();
 		MockFolder cur = getFolders().get(folder);
 		if (cur==null) {
@@ -298,6 +298,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		}
 		if (!(cur instanceof MockFolder)) {
 				throw new FileSystemException("Entry is not a directory");
+		}
+		if(!removeNonEmptyFolder && !cur.getFiles().isEmpty() || !cur.getFolders().isEmpty()) {
+			throw new FileSystemException("Cannot remove folder");
 		}
 		getFolders().remove(folder);
 	}

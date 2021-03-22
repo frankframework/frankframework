@@ -196,7 +196,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public void removeFolder(String folder, boolean removeNonEmptyDirectory) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		try {
 			if (folderExists(folder)) {
 				toFile(folder).delete();

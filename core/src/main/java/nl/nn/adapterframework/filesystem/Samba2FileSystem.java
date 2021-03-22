@@ -376,12 +376,12 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public void removeFolder(String folder, boolean removeNonEmptyDirectory) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (!folderExists(folder)) {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		} else {
 			try {
-				diskShare.rmdir(folder, removeNonEmptyDirectory);
+				diskShare.rmdir(folder, removeNonEmptyFolder);
 			} catch(SMBApiException e) {
 				new FileSystemException("Remove directory for [" + folder + "] has failed.", e);
 			}

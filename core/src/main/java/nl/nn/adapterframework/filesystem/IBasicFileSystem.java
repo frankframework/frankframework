@@ -89,7 +89,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	public F copyFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
 	public void createFolder(String folder) throws FileSystemException;
-	public void removeFolder(String folder, boolean removeNonEmptyDirectory) throws FileSystemException;
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException;
 
 
 	public long getFileSize(F f) throws FileSystemException;
