@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+    This configuration file was written by the eclipse-cs plugin configuration editor
+-->
+<!--
+    Checkstyle-Configuration: Frank!Framework
+    Description: none
+-->
+<module name="Checker">
+  <property name="severity" value="warning"/>
+  <module name="TreeWalker">
+    <property name="severity" value="ignore"/>
+    <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
+    <module name="AvoidStarImport">
+      <property name="allowStaticMemberImports" value="true"/>
+    </module>
+    <module name="RedundantImport"/>
+    <module name="UnusedImports"/>
+    <module name="IllegalImport">
+      <property name="illegalPkgs" value="junit.framework"/>
+    </module>
+    <module name="IllegalImport">
+      <property name="illegalPkgs" value="org.apache.commons.lang"/>
+    </module>
+    <module name="ModifierOrder"/>
+    <module name="RedundantModifier">
+      <property name="tokens" value="ANNOTATION_FIELD_DEF"/>
+    </module>
+    <module name="LeftCurly">
+      <property name="tokens" value="CLASS_DEF,CTOR_DEF,INTERFACE_DEF,METHOD_DEF,LITERAL_SWITCH,STATIC_INIT"/>
+    </module>
+    <module name="EmptyStatement"/>
+    <module name="IllegalInstantiation"/>
+    <module name="UpperEll"/>
+    <module name="PackageAnnotation"/>
+    <module name="ArrayTypeStyle"/>
+    <module name="SuppressWarnings">
+      <property name="format" value="^all$"/>
+    </module>
+    <module name="FileSpaceCharacter">
+      <property name="severity" value="ignore"/>
+      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
+    </module>
+  </module>
+  <module name="RegexpSingleline">
+    <property name="format" value="\s+$"/>
+    <property name="message" value="Line has trailing spaces."/>
+  </module>
+</module>
