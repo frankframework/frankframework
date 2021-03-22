@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.doc.doclet.DocletReflectiveOperationException;
+import nl.nn.adapterframework.doc.doclet.FrankDocException;
 import nl.nn.adapterframework.doc.doclet.FrankClass;
 import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.doc.doclet.FrankMethod;
@@ -36,7 +36,7 @@ public class UtilsTest {
 	private static final String SIMPLE = "nl.nn.adapterframework.doc.testtarget.simple";
 
 	@Test
-	public void testGetSpringBeans() throws DocletReflectiveOperationException {
+	public void testGetSpringBeans() throws FrankDocException {
 		List<FrankClass> actual = FrankClassRepository.getReflectInstance().findClass(SIMPLE + ".IListener").getInterfaceImplementations();
 		Collections.sort(actual, Comparator.comparing(FrankClass::getName));
 		assertEquals(4, actual.size());
@@ -50,11 +50,11 @@ public class UtilsTest {
 	}
 
 	@Test
-	public void whenMethodIsConfigChildSetterThenRecognized() throws DocletReflectiveOperationException {
+	public void whenMethodIsConfigChildSetterThenRecognized() throws FrankDocException {
 		assertTrue(isConfigChildSetter(getTestMethod("setListener")));
 	}
 
-	private FrankMethod getTestMethod(String name) throws DocletReflectiveOperationException {
+	private FrankMethod getTestMethod(String name) throws FrankDocException {
 		FrankClass listenerChildClass = FrankClassRepository.getReflectInstance().findClass(SIMPLE + ".ListenerChild");
 		for(FrankMethod m: listenerChildClass.getDeclaredAndInheritedMethods()) {
 			if(m.getName().equals(name)) {
@@ -65,22 +65,22 @@ public class UtilsTest {
 	}
 
 	@Test
-	public void whenAttributeSetterThenNotConfigChildSetter() throws DocletReflectiveOperationException {
+	public void whenAttributeSetterThenNotConfigChildSetter() throws FrankDocException {
 		assertFalse(isConfigChildSetter(getTestMethod("setChildAttribute")));
 	}
 
 	@Test
-	public void whenMethodHasTwoArgsThenNotConfigChildSetter() throws DocletReflectiveOperationException {
+	public void whenMethodHasTwoArgsThenNotConfigChildSetter() throws FrankDocException {
 		assertFalse(isConfigChildSetter(getTestMethod("invalidConfigChildSetterTwoArgs")));
 	}
 
 	@Test
-	public void whenMethodReturnsPrimitiveThenNotConfigChildSetter() throws DocletReflectiveOperationException {
+	public void whenMethodReturnsPrimitiveThenNotConfigChildSetter() throws FrankDocException {
 		assertFalse(isConfigChildSetter(getTestMethod("invalidConfigChildSetterReturnsInt")));
 	}
 
 	@Test
-	public void whenMethodReturnsStringThenNotConfigChildSetter()  throws DocletReflectiveOperationException {
+	public void whenMethodReturnsStringThenNotConfigChildSetter()  throws FrankDocException {
 		assertFalse(isConfigChildSetter(getTestMethod("invalidConfigChildSetterReturnsString")));
 	}
 }

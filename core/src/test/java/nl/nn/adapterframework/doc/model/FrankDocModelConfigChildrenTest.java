@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.doc.doclet.DocletReflectiveOperationException;
+import nl.nn.adapterframework.doc.doclet.FrankDocException;
 import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
 
 public class FrankDocModelConfigChildrenTest {
@@ -45,7 +45,7 @@ public class FrankDocModelConfigChildrenTest {
 	private List<ConfigChild> configChildrenOfDerived;
 
 	@Before
-	public void setUp() throws SAXException, IOException, DocletReflectiveOperationException {
+	public void setUp() throws SAXException, IOException, FrankDocException {
 		classRepository = FrankClassRepository.getReflectInstance();
 		instance = new FrankDocModel(classRepository);
 		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");

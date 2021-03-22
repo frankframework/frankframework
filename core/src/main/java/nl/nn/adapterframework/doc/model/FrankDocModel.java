@@ -42,7 +42,7 @@ import nl.nn.adapterframework.configuration.digester.DigesterRule;
 import nl.nn.adapterframework.configuration.digester.DigesterRulesHandler;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.Utils;
-import nl.nn.adapterframework.doc.doclet.DocletReflectiveOperationException;
+import nl.nn.adapterframework.doc.doclet.FrankDocException;
 import nl.nn.adapterframework.doc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.doc.doclet.FrankClass;
 import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
@@ -167,7 +167,7 @@ public class FrankDocModel {
 		return allTypes.containsKey(typeName);
 	}
 
-	FrankElement findOrCreateFrankElement(String fullClassName) throws DocletReflectiveOperationException {
+	FrankElement findOrCreateFrankElement(String fullClassName) throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(fullClassName);
 		log.trace("FrankElement requested for class name [{}]", () -> clazz.getName());
 		if(allElements.containsKey(clazz.getName())) {
@@ -190,7 +190,7 @@ public class FrankDocModel {
 		return allElements.get(fullName);
 	}
 
-	List<FrankAttribute> createAttributes(FrankClass clazz, FrankElement attributeOwner) throws DocletReflectiveOperationException {
+	List<FrankAttribute> createAttributes(FrankClass clazz, FrankElement attributeOwner) throws FrankDocException {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
 		FrankMethod[] methods = clazz.getDeclaredMethods();
 		Map<String, FrankMethod> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
@@ -301,7 +301,7 @@ public class FrankDocModel {
 		}
 	}
 
-	private void documentAttribute(FrankAttribute attribute, FrankMethod method, FrankElement attributeOwner) throws DocletReflectiveOperationException {
+	private void documentAttribute(FrankAttribute attribute, FrankMethod method, FrankElement attributeOwner) throws FrankDocException {
 		attribute.setDeprecated(method.getAnnotation(FrankDocletConstants.DEPRECATED) != null);
 		attribute.setDocumented(
 				(method.getAnnotation(FrankDocletConstants.IBISDOC) != null)
@@ -356,7 +356,7 @@ public class FrankDocModel {
 		String[] values = null;
 		try {
 			values = (String[]) ibisDocRef.getValue();
-		} catch(DocletReflectiveOperationException e) {
+		} catch(FrankDocException e) {
 			log.warn("IbisDocRef annotation did not have a value", e);
 			return result;
 		}
@@ -404,13 +404,13 @@ public class FrankDocModel {
 				}
 			}
 			return null;
-		} catch (DocletReflectiveOperationException e) {
+		} catch (FrankDocException e) {
 			log.warn("Super class [{}] was not found!", className, e);
 			return null;
 		}
 	}
 
-	private List<ConfigChild> createConfigChildren(FrankMethod[] methods, FrankElement parent) throws DocletReflectiveOperationException {
+	private List<ConfigChild> createConfigChildren(FrankMethod[] methods, FrankElement parent) throws FrankDocException {
 		log.trace("Creating config children of FrankElement [{}]", () -> parent.getFullName());
 		List<ConfigChild> result = new ArrayList<>();
 		for(ConfigChild.SortNode sortNode: createSortNodes(methods, parent)) {
@@ -462,7 +462,7 @@ public class FrankDocModel {
 		return sortNodes;
 	}
 
-	ElementRole findOrCreateElementRole(FrankClass elementTypeClass, String roleName) throws DocletReflectiveOperationException {
+	ElementRole findOrCreateElementRole(FrankClass elementTypeClass, String roleName) throws FrankDocException {
 		log.trace("ElementRole requested for elementTypeClass [{}] and roleName [{}]. Going to get the ElementType", () -> elementTypeClass.getName(), () -> roleName);
 		ElementType elementType = findOrCreateElementType(elementTypeClass);
 		ElementRole.Key key = new ElementRole.Key(elementTypeClass.getName(), roleName);
@@ -490,7 +490,7 @@ public class FrankDocModel {
 		return allElementRoles.get(new ElementRole.Key(fullElementTypeName, roleName));
 	}
 
-	ElementType findOrCreateElementType(FrankClass clazz) throws DocletReflectiveOperationException {
+	ElementType findOrCreateElementType(FrankClass clazz) throws FrankDocException {
 		log.trace("Requested ElementType for class [{}]", () -> clazz.getName());
 		if(allTypes.containsKey(clazz.getName())) {
 			log.trace("Already present");

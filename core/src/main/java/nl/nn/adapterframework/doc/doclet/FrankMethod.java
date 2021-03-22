@@ -24,5 +24,5 @@ public interface FrankMethod extends FrankProgramElement {
 	FrankType getReturnType();
 	int getParameterCount();
 	FrankType[] getParameterTypes();
-	FrankAnnotation getAnnotationInludingInherited(String name) throws DocletReflectiveOperationException;
+	FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException;
 }

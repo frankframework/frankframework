@@ -134,12 +134,12 @@ class FrankClassReflect implements FrankClass {
 	}
 
 	@Override
-	public List<FrankClass> getInterfaceImplementations() throws DocletReflectiveOperationException {
+	public List<FrankClass> getInterfaceImplementations() throws FrankDocException {
 		List<SpringBean> springBeans;
 		try {
 			springBeans = getSpringBeans(clazz.getName());
 		} catch(ReflectiveOperationException e) {
-			throw new DocletReflectiveOperationException(String.format("Could not get interface implementations of Java class [%s]", getName()), e);
+			throw new FrankDocException(String.format("Could not get interface implementations of Java class [%s]", getName()), e);
 		}
 		// We sort here to make the order deterministic.
 		Collections.sort(springBeans);

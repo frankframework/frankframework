@@ -21,5 +21,5 @@ public interface FrankClassRepository {
 		return new FrankClassRepositoryReflect();
 	}
 
-	FrankClass findClass(String fullName) throws DocletReflectiveOperationException;
+	FrankClass findClass(String fullName) throws FrankDocException;
 }

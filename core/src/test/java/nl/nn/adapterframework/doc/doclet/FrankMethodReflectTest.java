@@ -25,7 +25,7 @@ public class FrankMethodReflectTest {
 	}
 
 	@Test
-	public void testMethod() throws DocletReflectiveOperationException {
+	public void testMethod() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Parent");
 		FrankMethod setter = TestUtil.getDeclaredMethodOf(clazz, "setInherited");
 		assertEquals("setInherited", setter.getName());
@@ -53,7 +53,7 @@ public class FrankMethodReflectTest {
 	}
 
 	@Test
-	public void whenMethodIsPackagePrivateThenNotPublic() throws DocletReflectiveOperationException {
+	public void whenMethodIsPackagePrivateThenNotPublic() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "packagePrivateMethod");
 		assertNotNull(method);
@@ -61,7 +61,7 @@ public class FrankMethodReflectTest {
 	}
 
 	@Test
-	public void whenNoAnnotationsThenNullReturned() throws DocletReflectiveOperationException {
+	public void whenNoAnnotationsThenNullReturned() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "packagePrivateMethod");
 		assertEquals(0, method.getAnnotations().length);
@@ -69,7 +69,7 @@ public class FrankMethodReflectTest {
 	}
 
 	@Test
-	public void whenInheritedAnnotationsRequestedThenInheritedAnnotationsIncluded() throws DocletReflectiveOperationException {
+	public void whenInheritedAnnotationsRequestedThenInheritedAnnotationsIncluded() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "setInherited");
 		assertNotNull(method);

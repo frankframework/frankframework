@@ -16,10 +16,10 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.doclet;
 
-public class DocletReflectiveOperationException extends Exception {
+public class FrankDocException extends Exception {
 	private static final long serialVersionUID = -3398857271185515294L;
 
-	public DocletReflectiveOperationException(String msg, Throwable cause) {
+	public FrankDocException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 }

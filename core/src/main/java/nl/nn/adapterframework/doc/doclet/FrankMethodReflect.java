@@ -99,14 +99,14 @@ class FrankMethodReflect implements FrankMethod {
 	}
 
 	@Override
-	public FrankAnnotation getAnnotationInludingInherited(String name) throws DocletReflectiveOperationException {
+	public FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException {
 		Annotation rawAnnotation = null;
 		try {
 			@SuppressWarnings("unchecked")
 			Class<? extends Annotation> annotationClass = (Class<? extends Annotation>) Class.forName(name);
 			rawAnnotation = AnnotationUtils.findAnnotation(method, annotationClass);
 		} catch(Exception e) {
-			throw new DocletReflectiveOperationException(String.format("Could not get annotation [%s] including inherited", name), e);
+			throw new FrankDocException(String.format("Could not get annotation [%s] including inherited", name), e);
 		}
 		if(rawAnnotation == null) {
 			return null;

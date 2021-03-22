@@ -39,7 +39,7 @@ public interface FrankClass extends FrankType {
 	/**
 	 * Assumes that this object models a Java interface and get the non-abstract interface implementations.
 	 */
-	List<FrankClass> getInterfaceImplementations() throws DocletReflectiveOperationException;
+	List<FrankClass> getInterfaceImplementations() throws FrankDocException;
 
 	FrankMethod[] getDeclaredMethods();
 	FrankMethod[] getDeclaredAndInheritedMethods();

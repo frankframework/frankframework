@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.doc.DocWriterNew;
-import nl.nn.adapterframework.doc.doclet.DocletReflectiveOperationException;
+import nl.nn.adapterframework.doc.doclet.FrankDocException;
 import nl.nn.adapterframework.doc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -131,7 +131,7 @@ public abstract class ElementChild {
 		String[] ibisDocValues = null;
 		try {
 			ibisDocValues = (String[]) ibisDoc.getValue();
-		} catch(DocletReflectiveOperationException e) {
+		} catch(FrankDocException e) {
 			log.warn("Could not parse FrankAnnotation of @IbisDoc", e);
 		}
 		boolean isIbisDocHasOrder = false;

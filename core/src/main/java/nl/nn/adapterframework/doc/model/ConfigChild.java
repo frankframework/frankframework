@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.doc.doclet.DocletReflectiveOperationException;
+import nl.nn.adapterframework.doc.doclet.FrankDocException;
 import nl.nn.adapterframework.doc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.doc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.doc.doclet.FrankMethod;
@@ -66,7 +66,7 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 			this.elementType = method.getParameterTypes()[0];
 			try {
 				this.ibisDoc = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
-			} catch(DocletReflectiveOperationException e) {
+			} catch(FrankDocException e) {
 				log.warn("Could not @IbisDoc annotation", e);
 			}
 		}

@@ -46,12 +46,12 @@ class FrankAnnotationReflect implements FrankAnnotation {
 	}
 
 	@Override
-	public Object getValue() throws DocletReflectiveOperationException {
+	public Object getValue() throws FrankDocException {
 		try {
 			Method valueMethod = annotation.annotationType().getMethod("value");
 			return valueMethod.invoke(annotation);
 		} catch(Exception e) {
-			throw new DocletReflectiveOperationException(String.format("Could not get value of annotation [%s]", getName()), e);
+			throw new FrankDocException(String.format("Could not get value of annotation [%s]", getName()), e);
 		}
 	}
 }

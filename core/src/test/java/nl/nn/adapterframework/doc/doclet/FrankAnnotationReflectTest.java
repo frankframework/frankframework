@@ -17,7 +17,7 @@ public class FrankAnnotationReflectTest {
 	}
 
 	@Test
-	public void whenArrayAnnotationValueProvidedAsScalarThenStillFetchable() throws DocletReflectiveOperationException {
+	public void whenArrayAnnotationValueProvidedAsScalarThenStillFetchable() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Parent");
 		FrankMethod setter = TestUtil.getDeclaredMethodOf(clazz, "setInherited");
 		assertEquals("setInherited", setter.getName());
@@ -31,7 +31,7 @@ public class FrankAnnotationReflectTest {
 	}
 
 	@Test
-	public void whenArrayAnnotaionValueProvidedAsArrayThenFetchable() throws DocletReflectiveOperationException {
+	public void whenArrayAnnotaionValueProvidedAsArrayThenFetchable() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "DeprecatedChild");
 		FrankMethod setter = TestUtil.getDeclaredMethodOf(clazz, "someSetter");
 		assertEquals("someSetter", setter.getName());
