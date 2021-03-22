@@ -161,7 +161,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		return digester;
 	}
 
-	public void digestConfiguration() throws ConfigurationException {
+	public void digest() throws ConfigurationException {
 		if(applicationContext instanceof Configuration) {
 			digestConfiguration((Configuration)applicationContext);
 		} else {

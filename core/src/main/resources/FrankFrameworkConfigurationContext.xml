@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	default-autowire="byName"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<bean
@@ -9,6 +10,18 @@
 		autowire="byName"
 		scope="singleton"
 	/>
+
+	<bean
+		name="adapterManager"
+		class="nl.nn.adapterframework.configuration.AdapterManager"
+		autowire="byType"
+		scope="singleton"
+	/>
+
+	<bean id="adapterProcessor" autowire="byName" scope="prototype" abstract="true" />
+
+	<bean name="adapterFlowProcessor" class="nl.nn.adapterframework.extensions.graphviz.AdapterFlowProcessor" parent="adapterProcessor"/>
+	<bean name="adapterJmxProcessor" class="nl.nn.adapterframework.jmx.JmxAdapterFilter" parent="adapterProcessor"/>
 
 	<!--
 	Beans created from Configuration.xml, but prototyped here for

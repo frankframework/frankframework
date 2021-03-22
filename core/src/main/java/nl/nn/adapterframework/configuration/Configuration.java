@@ -59,10 +59,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 
 	private Boolean autoStart = null;
 
+	private AdapterManager adapterManager;
 	private IAdapterService adapterService;
 
-	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
-	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
 	private boolean unloadInProgressOrDone = false;
 
 	private final Map<String, JobDef> jobTable = new LinkedHashMap<>(); // TODO useless synchronization ?
@@ -162,6 +161,27 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
 	}
 
+	@Override
+	public void refresh() throws BeansException, IllegalStateException {
+		super.refresh();
+
+		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
+		try {
+			configurationDigester.digest();
+		} catch (ConfigurationException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	@Override
+	public void close() {
+		setUnloadInProgressOrDone(true);
+
+		adapterManager.close();
+
+		super.close();
+	}
+
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
@@ -190,26 +210,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		return adapterService.getAdapter(name);
 	}
 
-	public Adapter getRegisteredAdapter(int index) {
-		return getRegisteredAdapters().get(index);
-	}
-
 	public List<Adapter> getRegisteredAdapters() {
 		return new ArrayList<>(adapterService.getAdapters().values());
 	}
 
-	public List<String> getSortedStartedAdapterNames() {
-		List<String> startedAdapters = new ArrayList<String>();
-		for (int i = 0; i < getRegisteredAdapters().size(); i++) {
-			IAdapter adapter = getRegisteredAdapter(i);
-			// add the adapterName if it is started.
-			if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
-				startedAdapters.add(adapter.getName());
-			}
-		}
-		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
-		return startedAdapters;
-	}
 
 	public IAdapterService getAdapterService() {
 		return adapterService;
@@ -221,27 +225,19 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	}
 
 	public void addStartAdapterThread(Runnable runnable) {
-		startAdapterThreads.add(runnable);
+		adapterManager.addStartAdapterThread(runnable);
 	}
 
 	public void removeStartAdapterThread(Runnable runnable) {
-		startAdapterThreads.remove(runnable);
-	}
-
-	public List<Runnable> getStartAdapterThreads() {
-		return startAdapterThreads;
+		adapterManager.removeStartAdapterThread(runnable);
 	}
 
 	public void addStopAdapterThread(Runnable runnable) {
-		stopAdapterThreads.add(runnable);
+		adapterManager.addStopAdapterThread(runnable);
 	}
 
 	public void removeStopAdapterThread(Runnable runnable) {
-		stopAdapterThreads.remove(runnable);
-	}
-
-	public List<Runnable> getStopAdapterThreads() {
-		return stopAdapterThreads;
+		adapterManager.removeStopAdapterThread(runnable);
 	}
 
 	public boolean isUnloadInProgressOrDone() {
@@ -274,6 +270,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		}
 		adapter.setConfiguration(this);
 
+		adapterManager.registerAdapter(adapter);
+/*
 		try {
 			adapterService.registerAdapter(adapter);
 		} catch (ConfigurationException e) { //For some reason the adapterService configures the adapter...
@@ -282,7 +280,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 			//Do nothing as this will cause the digester to stop digesting the configuration
 			log.error("error configuring adapter ["+adapter.getName()+"]", e);
 		}
-
+*/
 		log.debug("Configuration [" + getName() + "] registered adapter [" + adapter.toString() + "]");
 	}
 

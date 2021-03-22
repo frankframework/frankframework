@@ -149,29 +149,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	private void unload(Configuration configuration) {
-		configuration.setUnloadInProgressOrDone(true);
-		while (configuration.getStartAdapterThreads().size() > 0) {
-			log.debug("Waiting for start threads to end: " + configuration.getStartAdapterThreads());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for start threads to end", e);
-			}
-		}
-		stopAdapters(configuration);
-		while (configuration.getStopAdapterThreads().size() > 0) {
-			log.debug("Waiting for stop threads to end: " + configuration.getStopAdapterThreads());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for stop threads to end", e);
-			}
-		}
-		while (configuration.getRegisteredAdapters().size() > 0) {
-			Adapter adapter = configuration.getRegisteredAdapter(0);
-			IAdapterService adapterService = configuration.getAdapterService();
-			adapterService.unRegisterAdapter(adapter);
-		}
+		configuration.close();
 
 		//Remove all registered jobs
 		for (JobDef jobdef : configuration.getScheduledJobs()) {

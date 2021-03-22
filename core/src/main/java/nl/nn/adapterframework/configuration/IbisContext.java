@@ -320,7 +320,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	// Create a new configuration through Spring, and explicitly set the ClassLoader before initializing it.
+	// Create a new configuration through Spring, and explicitly set the ClassLoader before initialising it.
 	private Configuration createConfiguration(String name, ClassLoader classLoader) {
 		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		bean.setClassLoader(classLoader);
@@ -358,8 +358,6 @@ public class IbisContext extends IbisApplicationContext {
 					}
 				}
 
-				ConfigurationDigester configurationDigester = configuration.getBean(ConfigurationDigester.class);
-				configurationDigester.digestConfiguration();
 				if (currentConfigurationVersion == null) {
 					currentConfigurationVersion = configuration.getVersion(); //Digested configuration version
 				} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {
