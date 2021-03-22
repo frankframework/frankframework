@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.ldap.LdapIsMemberOfPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
 
 public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOfPipe> {
 	private String thenForwardName = "then";
@@ -38,8 +37,6 @@ public class LdapIsMemberOfPipeTest extends LdapQueryPipeTestBase<LdapIsMemberOf
 	private String dnL1User="cn=L1user,ou=people,ou=development,dc=ibissource,dc=org";
 	private String dnL4User="cn=L4user,ou=people,ou=development,dc=ibissource,dc=org";
 
-	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
-	
 	@Override
 	public LdapIsMemberOfPipe createPipe() {
 		return new LdapIsMemberOfPipe();
