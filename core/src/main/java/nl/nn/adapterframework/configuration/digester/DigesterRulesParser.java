@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,14 +25,18 @@ import org.apache.commons.digester3.Rule;
 import org.apache.commons.digester3.binder.LinkedRuleBuilder;
 import org.apache.commons.digester3.binder.RulesBinder;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.AttributeCheckingRule;
 import nl.nn.adapterframework.configuration.GenericFactory;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.SpringUtils;
 
 public class DigesterRulesParser extends DigesterRulesHandler {
 	private Digester digester;
 	private RulesBinder rulesBinder;
+	private @Setter ApplicationContext applicationContext; //Autowired ByType
 	private Rule attributeChecker = new AttributeCheckingRule();
 	private Set<String> parsedPatterns = new HashSet<String>();
 
@@ -88,7 +92,8 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			Object object;
 			try {
 				if(log.isTraceEnabled()) log.trace("attempting to create new factory of class ["+factory+"]");
-				object = ClassUtils.newInstance(factory);
+				Class<?> clazz = ClassUtils.loadClass(factory);
+				object = autoWireAndInitializeBean(clazz); //Wire the factory through Spring
 			} catch (Exception e) {
 				throw new IllegalArgumentException("factory ["+factory+"] not found", e);
 			}
@@ -98,6 +103,14 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			throw new IllegalArgumentException("factory type must implement ObjectCreationFactory");
 		}
 		if(log.isTraceEnabled()) log.trace("no factory specified, returing default ["+GenericFactory.class.getCanonicalName()+"]");
-		return new GenericFactory();
+		return autoWireAndInitializeBean(GenericFactory.class); //Wire the factory through Spring
+	}
+
+	protected <T> T autoWireAndInitializeBean(Class<T> clazz) {
+		if(applicationContext != null) {
+			return SpringUtils.createBean(applicationContext, clazz); //Wire the factory through Spring
+		} else {
+			throw new IllegalStateException("ApplicationContext not set");
+		}
 	}
 }
