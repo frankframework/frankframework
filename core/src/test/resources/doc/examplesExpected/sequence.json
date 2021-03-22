@@ -33,25 +33,29 @@
           "name": "clemens",
           "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
-          "description": ""
+          "description": "",
+          "type": "string"
         },
         {
           "name": "arnold",
           "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
-          "description": ""
+          "description": "",
+          "type": "string"
         },
         {
           "name": "dennis",
           "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
-          "description": ""
+          "description": "",
+          "type": "string"
         },
         {
           "name": "bernhard",
           "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
-          "description": ""
+          "description": "",
+          "type": "string"
         }
       ],
       "children": [

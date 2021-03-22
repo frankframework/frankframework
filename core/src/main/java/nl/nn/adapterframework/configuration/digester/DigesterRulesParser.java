@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.configuration.digester;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.digester3.ObjectCreationFactory;
@@ -35,6 +38,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	private RulesBinder rulesBinder;
 	private @Setter ApplicationContext applicationContext; //Autowired ByType
 	private Rule attributeChecker = new AttributeCheckingRule();
+	private Set<String> parsedPatterns = new HashSet<String>();
 
 	public DigesterRulesParser(Digester digester, RulesBinder rulesBinder) {
 		this.digester = digester;
@@ -44,8 +48,18 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	@Override
 	protected void handle(DigesterRule rule) {
 		if(log.isTraceEnabled()) log.trace("adding digesterRule " + rule.toString());
+		
+		String pattern = rule.getPattern();
 
-		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(rule.getPattern());
+		if (parsedPatterns.contains(pattern)) {
+			// Duplicate patterns are used to tell FrankDoc parser about changed multiplicity. 
+			// Original method will still be available to be used by digester, so second instance of rule can be ignored here.
+			log.warn("pattern [{}] already parsed", pattern); 
+			return;
+		}
+		parsedPatterns.add(pattern);
+		
+		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(pattern);
 		if(StringUtils.isNotEmpty(rule.getObject())) { //If a class is specified, load the class through the digester create-object-rule
 //			ruleBuilder.createObject().ofTypeSpecifiedByAttribute(rule.getObject()); //Can't use 'ruleBuilder' as this tries to load the class at configure time and not runtime
 			ruleBuilder.addRule(new ObjectCreateRule(rule.getObject()));
@@ -85,9 +99,8 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			}
 			if(object instanceof ObjectCreationFactory) {
 				return (ObjectCreationFactory) object;
-			} else {
-				throw new IllegalArgumentException("factory type must implement ObjectCreationFactory");
-			}
+			} 
+			throw new IllegalArgumentException("factory type must implement ObjectCreationFactory");
 		}
 		if(log.isTraceEnabled()) log.trace("no factory specified, returing default ["+GenericFactory.class.getCanonicalName()+"]");
 		return autoWireAndInitializeBean(GenericFactory.class); //Wire the factory through Spring

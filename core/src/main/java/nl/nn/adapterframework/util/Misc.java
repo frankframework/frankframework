@@ -513,13 +513,24 @@ public class Misc {
 	 * @return the concatenated string
 	 */
 	public static String concatStrings(String part1, String separator, String part2) {
-		if (StringUtils.isEmpty(part1)) {
-			return part2;
+		return concat(separator, part1, part2);
+	}
+
+	public static String concat(String separator, String... parts) {
+		int i=0;
+		while(i<parts.length && StringUtils.isEmpty(parts[i])) {
+			i++;
 		}
-		if (StringUtils.isEmpty(part2)) {
-			return part1;
+		if (i>=parts.length) {
+			return null;
 		}
-		return part1+separator+part2;
+		String result=parts[i];
+		while(++i<parts.length) {
+			if (StringUtils.isNotEmpty(parts[i])) {
+				result += separator + parts[i];
+			}
+		}
+		return result;
 	}
 
 	/**

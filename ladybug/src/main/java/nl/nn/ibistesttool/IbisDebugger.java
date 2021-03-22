@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ public interface IbisDebugger {
 	public Message preserveInput(String correlationId, Message input);
 
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value);
+	public <T> T showValue(String correlationId, String label, T value);
 
 	public boolean stubSender(ISender sender, String correlationId);
 

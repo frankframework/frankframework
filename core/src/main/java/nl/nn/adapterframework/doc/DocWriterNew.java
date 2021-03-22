@@ -16,8 +16,6 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addEnumeration;
-import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addRestriction;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAnyAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addAttribute;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addChoice;
@@ -26,7 +24,9 @@ import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addDocumentation;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementRef;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addElementWithType;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addEnumeration;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addExtension;
+import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addRestriction;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.addSequence;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createAttributeGroup;
 import static nl.nn.adapterframework.doc.DocWriterNewXmlUtils.createComplexType;
@@ -290,6 +290,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *     <td><code>ElementGroupBase</code></td>
  *     <td>Lists all choices that are allowed for a child tag, excluding the generic element option.</td>
  *   </tr>
+ *   <tr>
+ *     <td><code>xs:simpleType</code></td>
+ *     <td><code>AttributeValuesType</code></td>
+ *     <td>For attributes constrained by a Java enum, list all allowed values</td>
+ *   </tr>
  * </table>
  *
  * @author martijn
@@ -307,7 +312,8 @@ public class DocWriterNew {
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 	private static final String ELEMENT_ROLE = "elementRole";
 	private static final String ELEMENT_GROUP_BASE = "ElementGroupBase";
-	private static final String ATTRIBUTE_VALUES_TYPE = "AttributeValuesType";
+	static final String ATTRIBUTE_VALUES_TYPE = "AttributeValuesType";
+	static final String VARIABLE_REFERENCE = "variableRef";
 
 	private FrankDocModel model;
 	private String startClassName;
@@ -318,9 +324,11 @@ public class DocWriterNew {
 	private Set<ElementRole.Key> idsCreatedElementGroups = new HashSet<>();
 	private ElementGroupManager elementGroupManager;
 	private Set<String> definedAttributeValuesInstances = new HashSet<>();
+	private AttributeTypeStrategy attributeTypeStrategy;
 
-	public DocWriterNew(FrankDocModel model) {
+	public DocWriterNew(FrankDocModel model, AttributeTypeStrategy attributeTypeStrategy) {
 		this.model = model;
+		this.attributeTypeStrategy = attributeTypeStrategy;
 	}
 
 	public void init(XsdVersion versionTag) {
@@ -349,6 +357,7 @@ public class DocWriterNew {
 		// element options that do not correspond to a ConfigChildSet, then
 		// they are finished by this call.
 		finishLeftoverGenericOptionsAttributes();
+		xsdComplexItems.addAll(attributeTypeStrategy.createHelperTypes());
 		log.trace("Have the XmlBuilder objects. Going to add them in the right order to the schema root builder");
 		xsdElements.forEach(xsdRoot::addSubElement);
 		xsdComplexItems.forEach(xsdRoot::addSubElement);
@@ -934,7 +943,7 @@ public class DocWriterNew {
 				// The default value in the model is a *description* of the default value.
 				// Therefore, it should be added to the description in the xs:attribute.
 				// The "default" attribute of the xs:attribute should not be set.
-				attribute = addAttribute(context, frankAttribute.getName(), DEFAULT, null, OPTIONAL);
+				attribute = attributeTypeStrategy.addAttribute(context, frankAttribute.getName(), frankAttribute.getAttributeType());
 			} else {
 				attribute = addRestrictedAttribute(context, frankAttribute);
 			}
@@ -946,8 +955,8 @@ public class DocWriterNew {
 	}
 
 	private XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
+		XmlBuilder result = attributeTypeStrategy.addRestrictedAttribute(context, attribute);
 		AttributeValues attributeValues = attribute.getAttributeValues();
-		XmlBuilder result = addAttribute(context, attribute.getName(), attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE));
 		if(! definedAttributeValuesInstances.contains(attributeValues.getFullName())) {
 			definedAttributeValuesInstances.add(attributeValues.getFullName());
 			addAttributeValuesType(attributeValues);

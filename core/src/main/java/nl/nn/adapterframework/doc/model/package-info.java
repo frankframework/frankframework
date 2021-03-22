@@ -61,7 +61,8 @@ limitations under the License.
  * the parent tag and the {@link nl.nn.adapterframework.doc.model.ElementRole} for a set of allowed child tags.
  * <p>
  * Tags in Frank configs can have attributes, which are modeled by class {@link nl.nn.adapterframework.doc.model.FrankAttribute}.
- * Attributes can have their values restricted by a Java enum type. In that case, the list of allowed values is stored in a
+ * Attributes have a type that is modeled by {@link nl.nn.adapterframework.doc.model.AttributeType} (not in diagram).
+ * String attributes can have their values restricted by a Java enum type. In that case, the list of allowed values is stored in a
  * {@link nl.nn.adapterframework.doc.model.AttributeValues}, which can be shared by multiple {@link nl.nn.adapterframework.doc.model.FrankAttribute}. 
  * The tag in which the attribute occurs is modeled by its {@link nl.nn.adapterframework.doc.model.FrankElement}, see relation
  * "attribute of". The documentation of an attribute may appear in a Java class that differs
