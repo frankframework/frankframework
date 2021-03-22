@@ -79,7 +79,14 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe implements ICac
 			exceptionForward = findForward(getExceptionForwardName());
 		}
 		
-		createLdapClient();
+		Map<String,Object> options=new HashMap<String,Object>();
+		options.put("java.naming.provider.url",retrieveUrl(getHost(), getPort(), getBaseDN(), isUseSsl()));
+		options.put(Context.SECURITY_AUTHENTICATION, "simple");
+		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
+		options.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
+		ldapClient= new LdapClient(options);
+		ldapClient.setCache(cache);
+		ldapClient.configure();
 	}
 
 	@Override
@@ -119,15 +126,6 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe implements ICac
 
 	public abstract PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException;
 
-	protected void createLdapClient() {
-		Map<String,Object> options = new HashMap<String,Object>();
-		options.put("java.naming.provider.url",retrieveUrl(getHost(), getPort(), getBaseDN(), isUseSsl()));
-		options.put(Context.SECURITY_AUTHENTICATION, "simple");
-		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
-		options.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
-		ldapClient= new LdapClient(options);
-	}
-	
 	protected String retrieveUrl(String host, int port, String baseDN, boolean useSsl) {
 		String url; 
 		if (StringUtils.isNotEmpty(getLdapProviderURL())) {
