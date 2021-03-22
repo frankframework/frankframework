@@ -25,7 +25,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester3.AbstractObjectCreationFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -36,6 +35,7 @@ import org.xml.sax.Locator;
 import lombok.Setter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * This is a factory for objects to be used with the 'factory-create-rule'
@@ -293,10 +293,10 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * implemented by prefixing the element name with 'proto-'
 	 */
 	protected Object createBeanFromClassName(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {
+		if(applicationContext == null) {
+			throw new IllegalStateException("No ApplicationContext found, unable to initialize class [" + className + "]");
+		}
 
-        if (applicationContext == null) {
-            throw new IllegalStateException("No ApplicationContext set. Where's the Spring magic gone?");
-        }
         String beanName;
         Class<?> beanClass;
 
@@ -360,17 +360,12 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
         return applicationContext.getBean(beanName, beanClass);
     }
 
-	@SuppressWarnings("unchecked")
 	protected <T> T createBeanAndAutoWire(Class<T> beanClass) throws InstantiationException, IllegalAccessException {
 		if (log.isDebugEnabled()) {
 			log.debug("Bean class [" + beanClass.getName() + "], autowire bean name [" + getSuggestedBeanName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory ["+applicationContext.getDisplayName()+"] for auto-wiring support.");
 		}
-//		T bean = (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 
-		T bean = (T) applicationContext.getAutowireCapableBeanFactory().autowire(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false); //Wire the factory through Spring
-//		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
-		bean = (T) applicationContext.getAutowireCapableBeanFactory().initializeBean(bean, bean.getClass().getSimpleName()); //Initialise the Bean through Spring (aka apply 'magic')
-		return bean;
+		return SpringUtils.createBean(applicationContext, beanClass); //Autowire and initialize the bean through Spring
 	}
 
 	protected Map<String, String> copyAttrsToMap(Attributes attrs) {
