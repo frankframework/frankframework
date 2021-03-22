@@ -20,7 +20,7 @@
 
 	<rule pattern="*/receiver" registerMethod="registerReceiver"/>
 	<rule pattern="*/sender" registerMethod="setSender"/>
-	<rule pattern="*/sender" registerMethod="registerSender"/> <!-- e.g. for ParallelSenders -->
+	<rule pattern="*/sender" registerMethod="registerSender"/> <!-- to tell FrankDoc about multiplicity of SenderSeries and ParallelSenders. Duplicate pattern will be suppressed by core digester -->
 	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.ListenerFactory" registerMethod="setListener"/>
 	<rule pattern="*/errorSender" registerMethod="setErrorSender"/>
 	<rule pattern="*/messageLog" registerMethod="setMessageLog"/>
