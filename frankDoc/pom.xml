@@ -7,11 +7,9 @@
 		<version>7.7-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-doc</artifactId>
-	<name>Ibis AdapterFramework doc</name>
+	<artifactId>ibis-adapterframework-frankDoc</artifactId>
+	<name>Ibis AdapterFramework frankDoc</name>
 
-	<properties>
-	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -46,12 +44,4 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-		</plugins>
-	</build>
-
-	<profiles>
-	</profiles>
 </project>
