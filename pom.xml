@@ -442,6 +442,7 @@
 				<module>test</module>
 				<module>akamai</module>
 				<module>example</module>
+				<module>frankDoc</module>
 			</modules>
 		</profile>
 		<profile>
