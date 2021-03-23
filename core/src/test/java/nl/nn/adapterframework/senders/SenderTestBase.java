@@ -27,6 +27,8 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class SenderTestBase<S extends ISender> extends Mockito {
@@ -60,4 +62,12 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 		}
 	}
 
+	public Message sendMessage(String message) throws SenderException, TimeOutException {
+		return sendMessage(new Message(message));
+	}
+
+	public Message sendMessage(Message message) throws SenderException, TimeOutException {
+		return sender.sendMessage(message, session);
+	}
+	
 }
