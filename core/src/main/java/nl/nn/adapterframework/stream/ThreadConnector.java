@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,22 +22,22 @@ import java.util.Set;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 
-public class ThreadConnector {
+public class ThreadConnector<T> {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private ThreadLifeCycleEventListener<T> threadLifeCycleEventListener;
 	private Thread parentThread;
-	private Object threadInfo;
+	private T threadInfo;
 	private Set<String> hideRegex;
 	
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, String correlationId) {
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
 	}
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IPipeLineSession session) {
 		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
 	}
 	
@@ -50,12 +50,10 @@ public class ThreadConnector {
 			// if (currentThread.getContextClassLoader()!=parentThread.getContextClassLoader()) {
 			//	currentThread.setContextClassLoader(parentThread.getContextClassLoader());
 			// }
-		} else {
-			threadLifeCycleEventListener=null;
-		}
-		if (threadLifeCycleEventListener!=null) {
 			return threadLifeCycleEventListener.threadCreated(threadInfo, input);
 		}
+		threadLifeCycleEventListener.cancelChildThread(threadInfo);
+		threadLifeCycleEventListener=null;
 		return input;
 	}
 
