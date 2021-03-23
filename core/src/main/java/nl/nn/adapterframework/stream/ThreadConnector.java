@@ -50,10 +50,15 @@ public class ThreadConnector<T> {
 			// if (currentThread.getContextClassLoader()!=parentThread.getContextClassLoader()) {
 			//	currentThread.setContextClassLoader(parentThread.getContextClassLoader());
 			// }
-			return threadLifeCycleEventListener.threadCreated(threadInfo, input);
+			if (threadLifeCycleEventListener!=null) {
+				return threadLifeCycleEventListener.threadCreated(threadInfo, input);
+			}
+		} else {
+			if (threadLifeCycleEventListener!=null) {
+				threadLifeCycleEventListener.cancelChildThread(threadInfo);
+				threadLifeCycleEventListener=null;
+			}
 		}
-		threadLifeCycleEventListener.cancelChildThread(threadInfo);
-		threadLifeCycleEventListener=null;
 		return input;
 	}
 
