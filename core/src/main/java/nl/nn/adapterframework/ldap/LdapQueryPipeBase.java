@@ -23,6 +23,8 @@ import javax.naming.Context;
 
 import org.apache.commons.lang.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -60,7 +62,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe implements ICac
 	protected PipeForward exceptionForward;
 	
 	protected LdapClient ldapClient;
-	protected ICacheAdapter<String, Set<String>> cache;
+	protected @Getter @Setter ICacheAdapter<String, Set<String>> cache;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -138,15 +140,6 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe implements ICac
 		}
 		String d = (baseDN != null) ? ("/" + baseDN.replaceAll("\\s", "%20")) : "";
 		return url + d;
-	}
-
-	@Override
-	public void setCache(ICacheAdapter<String, Set<String>> cache) {
-		this.cache=cache;
-	}
-	@Override
-	public ICacheAdapter<String, Set<String>> getCache() {
-		return cache;
 	}
 	
 	@IbisDoc({"1", "Url to context to search in, e.g. 'ldaps://insim.biz'.", ""})

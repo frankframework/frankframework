@@ -16,10 +16,10 @@
 package nl.nn.adapterframework.ldap;
 
 import java.io.IOException;
-import java.util.Set;
 
 import javax.naming.NamingException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -36,12 +36,12 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 		
-	private boolean recursiveSearch = true;
-	private String groupDN;
+	private @Getter boolean recursiveSearch = true;
+	private @Getter String groupDN;
 	private final static String PARAM_TARGET_GROUP_DN = "groupDN";
 	
-	private String thenForwardName = "then";
-	private String elseForwardName = "else";
+	private @Getter String thenForwardName = "then";
+	private @Getter String elseForwardName = "else";
 	
 	@Override
 	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {		
@@ -85,31 +85,19 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 	public void setGroupDN(String string) {
 		groupDN = string;
 	}
-	public String getGroupDN() {
-		return groupDN;
-	}
 	
 	@IbisDoc({"2", "If <code>true</code>, the memberOf attribute is also searched in all the found memberships", "true"})
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
-	}
-	public boolean isRecursiveSearch() {
-		return recursiveSearch;
 	}
 
 	@IbisDoc({"3","Forward returned when <code>'true'</code>", "then"})
 	public void setThenForwardName(String thenForwardName){
 		this.thenForwardName = thenForwardName;
 	}
-	public String getThenForwardName(){
-		return thenForwardName;
-	}
 
 	@IbisDoc({"4","Forward returned when <code>'false'</code>", "else"})
 	public void setElseForwardName(String elseForwardName){
 		this.elseForwardName = elseForwardName;
-	}
-	public String getElseForwardName(){
-		return elseForwardName;
 	}
 }
