@@ -8,14 +8,14 @@
       </xs:sequence>
       <xs:attribute name="attribute" type="xs:string" />
       <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.Start" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="RoleNameTChild">
     <xs:complexType>
       <xs:sequence />
       <xs:attribute name="elementRole" type="xs:string" fixed="roleNameTChild" use="prohibited" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.TChild" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:group name="RoleNameIChildElementGroup">
@@ -40,7 +40,7 @@
           <xs:complexContent>
             <xs:extension base="DescribedPossibleIChildType">
               <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" use="prohibited" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -50,7 +50,7 @@
           <xs:complexContent>
             <xs:extension base="NotDescribedPossibleIChildType">
               <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" use="prohibited" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>

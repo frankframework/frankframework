@@ -4,34 +4,34 @@
       "name": "Child",
       "category": "Child",
       "members": [
-        "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
-        "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild"
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild"
       ]
     },
     {
       "name": "Other",
       "category": "Other",
-      "members": ["nl.nn.adapterframework.doc.testtarget.examples.simple.TChild"]
+      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"]
     }
   ],
   "elements": [
     {
       "name": "AbstractParentOfStart",
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart",
       "abstract": true,
       "deprecated": false,
       "elementNames": [],
       "attributes": [{
         "name": "abstractParentOfStartAttribute",
         "deprecated": false,
-        "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
+        "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart",
         "type": "string"
       }],
       "children": []
     },
     {
       "name": "DescribedPossibleIChild",
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
       "abstract": false,
       "deprecated": false,
       "elementNames": ["DescribedPossibleIRoleNameIChild"],
@@ -39,7 +39,7 @@
         {
           "name": "firstAttribute",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
           "description": "First attribute of DescribedPossibleIChild.",
           "default": "this default value",
           "type": "string"
@@ -47,7 +47,7 @@
         {
           "name": "secondAttribute",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
           "description": "Second attribute of DescribedPossibleIChild",
           "type": "string"
         }
@@ -56,7 +56,7 @@
     },
     {
       "name": "NotDescribedPossibleIChild",
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
       "abstract": false,
       "deprecated": false,
       "elementNames": ["NotDescribedPossibleIRoleNameIChild"],
@@ -64,7 +64,7 @@
         {
           "name": "firstAttribute",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
           "type": "string",
           "values": [
             "ONE",
@@ -74,13 +74,13 @@
         {
           "name": "secondAttribute",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
           "type": "string"
         },
         {
           "name": "thirdAttribute",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
           "type": "int"
         }
       ],
@@ -97,15 +97,15 @@
     },
     {
       "name": "Start",
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.Start",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
       "abstract": false,
       "deprecated": false,
-      "parent": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
+      "parent": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart",
       "elementNames": ["Start"],
       "attributes": [{
         "name": "attribute",
         "deprecated": false,
-        "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.Start",
+        "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
         "type": "string"
       }],
       "children": [
@@ -127,7 +127,7 @@
     },
     {
       "name": "TChild",
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.simple.TChild",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
       "abstract": false,
       "deprecated": false,
       "elementNames": ["RoleNameTChild"],

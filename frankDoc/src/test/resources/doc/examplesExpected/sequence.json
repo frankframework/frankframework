@@ -13,7 +13,7 @@
     {
       "name": "Other",
       "category": "Other",
-      "members": ["nl.nn.adapterframework.doc.testtarget.examples.sequence.Opaque"]
+      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque"]
     },
     {
       "name": "Proton",
@@ -24,7 +24,7 @@
   "elements": [
     {
       "name": "Master",
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
       "abstract": false,
       "deprecated": false,
       "elementNames": ["Master"],
@@ -32,28 +32,28 @@
         {
           "name": "clemens",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
           "description": "",
           "type": "string"
         },
         {
           "name": "arnold",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
           "description": "",
           "type": "string"
         },
         {
           "name": "dennis",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
           "description": "",
           "type": "string"
         },
         {
           "name": "bernhard",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Master",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
           "description": "",
           "type": "string"
         }
@@ -104,7 +104,7 @@
     },
     {
       "name": "Opaque",
-      "fullName": "nl.nn.adapterframework.doc.testtarget.examples.sequence.Opaque",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque",
       "abstract": false,
       "deprecated": false,
       "elementNames": ["RoleEpsilon"],
