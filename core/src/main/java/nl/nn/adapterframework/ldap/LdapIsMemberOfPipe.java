@@ -70,18 +70,12 @@ public class LdapIsMemberOfPipe extends LdapQueryPipeBase {
 			throw new PipeRunException(this, getLogPrefix(session) + "Failure converting input to string", e);
 		}
 
-		Set<String> memberships;
 		try {
-			if (isRecursiveSearch()) {
-				memberships= ldapClient.searchRecursivelyViaAttributes(searchedDN, getBaseDN(), "memberOf", groupDN_work);
-			} else {
-				memberships= ldapClient.searchObjectForMultiValuedAttribute(searchedDN, getBaseDN(), "memberOf");
-			}
-			
-			if (memberships.contains(groupDN_work)) {
+			if (ldapClient.searchViaAttributesForTargetValue(searchedDN, getBaseDN(), "memberOf", groupDN_work, isRecursiveSearch())) {
 				return new PipeRunResult(findForward(getThenForwardName()), message);
+			} else {
+				return new PipeRunResult(findForward(getElseForwardName()), message);
 			}
-			return new PipeRunResult(findForward(getElseForwardName()), message);
 		} catch (NamingException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
 		}

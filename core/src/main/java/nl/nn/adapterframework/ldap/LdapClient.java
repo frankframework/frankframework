@@ -333,7 +333,11 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     	return searchRecursivelyViaAttributes(uid, baseDn, attribute, null);
     }
     
-    public Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute, String searchTarget) throws NamingException {
+    /**
+     * Returns the recursive search from the uid using the specified attribute. 
+     * If searchTarget is specified and found, the search will stop at the level where searchTarget was found
+     */
+    private Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute, String searchTarget) throws NamingException {
     	Set<String> results=new LinkedHashSet<String>();
     	Set<String> toBeSearched=new LinkedHashSet<String>();
        	Set<String> searched=new LinkedHashSet<String>();
@@ -372,7 +376,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
        		context.close();
        	}
     }
-
+    
     /**
      * Search LDAP without filter, for example to find attributes of a specific user/object.
      */
@@ -653,6 +657,17 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		}
     }
 
+    /**
+     * Returns true if the searchTarget can be found under the attribute of the uid
+     */
+    public boolean searchViaAttributesForTargetValue(String uid, String baseDn, String attribute, String searchTarget, boolean recursiveSearch) throws NamingException {
+    	if (recursiveSearch) {
+    		return searchRecursivelyViaAttributes(uid, baseDn, attribute, searchTarget).contains(searchTarget);
+		} else {
+			return searchObjectForMultiValuedAttribute(uid, baseDn, attribute).contains(searchTarget);
+		}	
+    }
+    
     public String checkPassword(String userDN, String password, String baseDN, String returnedAttribute) throws NamingException {
     	
     	if (userDN==null || userDN.equals("") || password==null || password.equals("")) {
