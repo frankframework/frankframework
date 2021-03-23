@@ -34,6 +34,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
+
 @RunWith(Parameterized.class)
 public class NavigationCumulativeTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.walking";
@@ -68,7 +70,7 @@ public class NavigationCumulativeTest {
 	@Test
 	public void test() {
 		String rootClassName = PACKAGE + "." + simpleClassName;
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName);
+		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, FrankClassRepository.getReflectInstance());
 		FrankElement subject = model.findFrankElement(rootClassName);
 		List<String> actual = subject.getCumulativeAttributes(childSelector, childRejector).stream()
 				.map(a -> a.getName()).collect(Collectors.toList());

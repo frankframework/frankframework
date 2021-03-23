@@ -20,42 +20,43 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.doc.objects.SpringBean;
+import nl.nn.adapterframework.doc.doclet.FrankDocException;
+import nl.nn.adapterframework.doc.doclet.FrankClass;
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.doc.doclet.FrankMethod;
  
 public class UtilsTest {
 	private static final String SIMPLE = "nl.nn.adapterframework.doc.testtarget.simple";
 
 	@Test
-	public void testGetSpringBeans() throws ReflectiveOperationException {
-		List<SpringBean> actual = Utils.getSpringBeans(SIMPLE + ".IListener");
-		actual.sort((b1, b2) -> b1.compareTo(b2));
+	public void testGetSpringBeans() throws FrankDocException {
+		List<FrankClass> actual = FrankClassRepository.getReflectInstance().findClass(SIMPLE + ".IListener").getInterfaceImplementations();
+		Collections.sort(actual, Comparator.comparing(FrankClass::getName));
 		assertEquals(4, actual.size());
-		for(SpringBean a: actual) {
-			assertEquals(a.getClazz().getName(), a.getName());					
-		}
-		Iterator<SpringBean> it = actual.iterator();
-		SpringBean first = it.next();
+		Iterator<FrankClass> it = actual.iterator();
+		FrankClass first = it.next();
 		assertEquals(SIMPLE + ".ListenerChild", first.getName());
-		SpringBean second = it.next();
+		FrankClass second = it.next();
 		assertEquals(SIMPLE + ".ListenerGrandChild", second.getName());
-		SpringBean third = it.next();
+		FrankClass third = it.next();
 		assertEquals(SIMPLE + ".ListenerParent", third.getName());
 	}
 
 	@Test
-	public void whenMethodIsConfigChildSetterThenRecognized() {
+	public void whenMethodIsConfigChildSetterThenRecognized() throws FrankDocException {
 		assertTrue(isConfigChildSetter(getTestMethod("setListener")));
 	}
 
-	private Method getTestMethod(String name) {
-		Class<?> listenerChildClass = Utils.getClass(SIMPLE + ".ListenerChild");
-		for(Method m: listenerChildClass.getMethods()) {
+	private FrankMethod getTestMethod(String name) throws FrankDocException {
+		FrankClass listenerChildClass = FrankClassRepository.getReflectInstance().findClass(SIMPLE + ".ListenerChild");
+		for(FrankMethod m: listenerChildClass.getDeclaredAndInheritedMethods()) {
 			if(m.getName().equals(name)) {
 				return m;
 			}
@@ -64,22 +65,22 @@ public class UtilsTest {
 	}
 
 	@Test
-	public void whenAttributeSetterThenNotConfigChildSetter() {
+	public void whenAttributeSetterThenNotConfigChildSetter() throws FrankDocException {
 		assertFalse(isConfigChildSetter(getTestMethod("setChildAttribute")));
 	}
 
 	@Test
-	public void whenMethodHasTwoArgsThenNotConfigChildSetter() {
+	public void whenMethodHasTwoArgsThenNotConfigChildSetter() throws FrankDocException {
 		assertFalse(isConfigChildSetter(getTestMethod("invalidConfigChildSetterTwoArgs")));
 	}
 
 	@Test
-	public void whenMethodReturnsPrimitiveThenNotConfigChildSetter() {
+	public void whenMethodReturnsPrimitiveThenNotConfigChildSetter() throws FrankDocException {
 		assertFalse(isConfigChildSetter(getTestMethod("invalidConfigChildSetterReturnsInt")));
 	}
 
 	@Test
-	public void whenMethodReturnsStringThenNotConfigChildSetter() {
+	public void whenMethodReturnsStringThenNotConfigChildSetter()  throws FrankDocException {
 		assertFalse(isConfigChildSetter(getTestMethod("invalidConfigChildSetterReturnsString")));
 	}
 }

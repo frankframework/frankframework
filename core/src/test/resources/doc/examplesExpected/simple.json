@@ -24,7 +24,8 @@
       "attributes": [{
         "name": "abstractParentOfStartAttribute",
         "deprecated": false,
-        "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart"
+        "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.AbstractParentOfStart",
+        "type": "string"
       }],
       "children": []
     },
@@ -40,13 +41,15 @@
           "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
           "description": "First attribute of DescribedPossibleIChild.",
-          "default": "this default value"
+          "default": "this default value",
+          "type": "string"
         },
         {
           "name": "secondAttribute",
           "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.DescribedPossibleIChild",
-          "description": "Second attribute of DescribedPossibleIChild"
+          "description": "Second attribute of DescribedPossibleIChild",
+          "type": "string"
         }
       ],
       "children": []
@@ -62,6 +65,7 @@
           "name": "firstAttribute",
           "deprecated": false,
           "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
+          "type": "string",
           "values": [
             "ONE",
             "TWO"
@@ -70,7 +74,14 @@
         {
           "name": "secondAttribute",
           "deprecated": false,
-          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild"
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
+          "type": "string"
+        },
+        {
+          "name": "thirdAttribute",
+          "deprecated": false,
+          "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.NotDescribedPossibleIChild",
+          "type": "int"
         }
       ],
       "children": []
@@ -94,7 +105,8 @@
       "attributes": [{
         "name": "attribute",
         "deprecated": false,
-        "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.Start"
+        "describer": "nl.nn.adapterframework.doc.testtarget.examples.simple.Start",
+        "type": "string"
       }],
       "children": [
         {

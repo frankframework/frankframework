@@ -16,56 +16,80 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-import nl.nn.adapterframework.doc.objects.SpringBean;
+import nl.nn.adapterframework.doc.doclet.FrankMethod;
 
+/**
+ * Utility methods for the Frank!Doc.
+ * @author martijn
+ *
+ */
 public final class Utils {
+	private static final String JAVA_STRING = "java.lang.String";
+	private static final String JAVA_INTEGER = "java.lang.Integer";
+	private static final String JAVA_BOOLEAN = "java.lang.Boolean";
+	private static final String JAVA_LONG = "java.lang.Long";
+	private static final String JAVA_BYTE = "java.lang.Byte";
+	private static final String JAVA_SHORT = "java.lang.Short";
+
+	private static Map<String, String> primitiveToBoxed = new HashMap<>();
+	static {
+		primitiveToBoxed.put("int", JAVA_INTEGER);
+		primitiveToBoxed.put("boolean", JAVA_BOOLEAN);
+		primitiveToBoxed.put("long", JAVA_LONG);
+		primitiveToBoxed.put("byte", JAVA_BYTE);
+		primitiveToBoxed.put("short", JAVA_SHORT);
+	}
+
+	private static final Set<String> JAVA_BOXED = new HashSet<String>(Arrays.asList(new String[] {
+			JAVA_STRING, JAVA_INTEGER, JAVA_BOOLEAN, JAVA_LONG, JAVA_BYTE, JAVA_SHORT}));
+
+	// All types that are accepted by method isGetterOrSetter() 
+	public static final Set<String> ALLOWED_SETTER_TYPES = new HashSet<>();
+	static {
+		ALLOWED_SETTER_TYPES.addAll(primitiveToBoxed.keySet());
+		ALLOWED_SETTER_TYPES.addAll(JAVA_BOXED);
+	}
+
 	private Utils() {
 	}
 
-	/**
-	 * @param interfaceName The interface for which we want SpringBean objects.
-	 * @return All classes implementing interfaceName, ordered by their full class name.
-	 */
-	public static List<SpringBean> getSpringBeans(final String interfaceName) throws ReflectiveOperationException {
-		Class<?> interfaze = getClass(interfaceName);
-		if(interfaze == null) {
-			throw new ReflectiveOperationException("Class or interface is not available on the classpath: " + interfaceName);
-		}
-		if(!interfaze.isInterface()) {
-			throw new ReflectiveOperationException("This exists on the classpath but is not an interface: " + interfaceName);
-		}
-		Set<SpringBean> unfiltered = InfoBuilderSource.getSpringBeans(interfaze);
-		List<SpringBean> result = new ArrayList<SpringBean>();
-		for(SpringBean b: unfiltered) {
-			if(interfaze.isAssignableFrom(b.getClazz())) {
-				result.add(b);
-			}
-		}
-		return result;
+	public static boolean isAttributeGetterOrSetter(FrankMethod method) {
+		boolean isSetter = method.getReturnType().isPrimitive()
+				&& method.getReturnType().getName().equals("void")
+				&& (method.getParameterTypes().length == 1)
+				&& (method.getParameterTypes()[0].isPrimitive()
+						|| JAVA_BOXED.contains(method.getParameterTypes()[0].getName()));
+		boolean isGetter = (
+					(method.getReturnType().isPrimitive()
+							&& !method.getReturnType().getName().equals("void"))
+					|| JAVA_BOXED.contains(method.getReturnType().getName())
+				) && (method.getParameterTypes().length == 0);
+		return isSetter || isGetter;
 	}
 
-	public static Class<?> getClass(final String name) {
-		return InfoBuilderSource.getClass(name);
-	}
-
-	public static boolean isAttributeGetterOrSetter(Method method) {
-		return InfoBuilderSource.isGetterOrSetter(method);
-	}
-
-	public static boolean isConfigChildSetter(Method method) {
-		return InfoBuilderSource.isConfigChildSetter(method);
-	}
-
-	public static String toUpperCamelCase(String arg) {
-		return InfoBuilderSource.toUpperCamelCase(arg);
+	public static boolean isConfigChildSetter(FrankMethod method) {
+		return (method.getParameterTypes().length == 1)
+				&& (! method.getParameterTypes()[0].isPrimitive())
+				&& (! JAVA_BOXED.contains(method.getParameterTypes()[0].getName()))
+				&& (method.getReturnType().isPrimitive())
+				&& (method.getReturnType().getName().equals("void"));
 	}
 
 	public static String promoteIfPrimitive(String typeName) {
-		return InfoBuilderSource.promoteIfPrimitive(typeName);
+		if(primitiveToBoxed.containsKey(typeName)) {
+			return primitiveToBoxed.get(typeName);
+		} else {
+			return typeName;
+		}
+	}
+
+	public static String toUpperCamelCase(String arg) {
+		return arg.substring(0,  1).toUpperCase() + arg.substring(1);
 	}
 }

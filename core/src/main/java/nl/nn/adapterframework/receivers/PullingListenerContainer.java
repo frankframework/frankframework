@@ -78,7 +78,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 		processToken = new Semaphore(receiver.getNumThreads());
 		maxThreadCount = receiver.getNumThreads();
-		if (receiver.isTransacted()) {
+		if (receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
 			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 			if (receiver.getTransactionTimeout() > 0) {
 				txDef.setTimeout(receiver.getTransactionTimeout());
@@ -209,7 +209,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									}
 								}
 								if (messageAvailable) {
-									if (receiver.isTransacted()) {
+									// Start a transaction if the entire processing is transacted, or
+									// messages needs to be moved to inProcess, and transaction control is not inhibited by setting transactionAttribute=NotSupported.
+									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
 										txStatus = txManager.getTransaction(txNew);
 									}
 									rawMessage = listener.getRawMessage(threadContext);
@@ -228,11 +230,17 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								}
 							}
 							if (rawMessage == null) {
+								if (txStatus!=null) {
+									txManager.rollback(txStatus);
+								}
 								return;
 							}
 
 							if (inProcessStateManager!=null) {
 								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS))==null) {
+									if (txStatus!=null) {
+										txManager.rollback(txStatus);
+									}
 									return;
 								}
 								// If inProcess-state is used, we'll commit the transaction that set the message state to the inProcess.
@@ -240,7 +248,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								// This is necessary for dbmses like MariaDB, that have no 'SKIP LOCKED' functionality, and for pipelines that do not support roll back
 								if (txStatus!=null) {
 									txManager.commit(txStatus);
-									txStatus = txManager.getTransaction(txNew);
+									if (receiver.isTransacted()) {
+										txStatus = txManager.getTransaction(txNew);
+									}
 								}
 							}
 

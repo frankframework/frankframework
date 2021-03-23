@@ -18,8 +18,8 @@ package nl.nn.adapterframework.doc.model;
 import static java.util.Arrays.asList;
 import static nl.nn.adapterframework.doc.model.ElementChild.ALL;
 import static nl.nn.adapterframework.doc.model.ElementChild.DEPRECATED;
-import static nl.nn.adapterframework.doc.model.ElementChild.NONE;
 import static nl.nn.adapterframework.doc.model.ElementChild.IN_XSD;
+import static nl.nn.adapterframework.doc.model.ElementChild.NONE;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import lombok.EqualsAndHashCode;
-import nl.nn.adapterframework.doc.Utils;
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
 
 @RunWith(Parameterized.class)
 public class NavigationTest {
@@ -109,8 +109,8 @@ public class NavigationTest {
 	@Test
 	public void test() throws Exception {
 		String rootClassName = PACKAGE + "." + simpleClassName;
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName);
-		FrankElement walkFrom = model.findOrCreateFrankElement(Utils.getClass(rootClassName));
+		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, FrankClassRepository.getReflectInstance());
+		FrankElement walkFrom = model.findFrankElement(rootClassName);
 		walkFrom.walkCumulativeAttributes(new CumulativeChildHandler<FrankAttribute>() {
 			@Override
 			public void handleSelectedChildren(List<FrankAttribute> children, FrankElement owner) {

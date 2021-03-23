@@ -32,10 +32,12 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.doc.model.FrankDocModel;
 import nl.nn.adapterframework.doc.model.FrankElement;
 import nl.nn.adapterframework.doc.model.FrankElementStatistics;
@@ -46,23 +48,30 @@ public class DocWriterNewIntegrationTest {
 	private static Logger log = LogUtil.getLogger(DocWriterNewIntegrationTest.class);
 	private static final String TEST_CONFIGURATION_FILE = "testConfiguration.xml";
 
+	private FrankClassRepository classRepository;
+
+	@Before
+	public void setUp() {
+		classRepository = FrankClassRepository.getReflectInstance();
+	}
+
 	@Test
 	public void testStrict() throws Exception {
 		assumeTrue(TestAssertions.isTestRunningOnCI());
-		String schemaFileName = generateXsd(XsdVersion.STRICT);
+		String schemaFileName = generateXsd(XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		validate(schemaFileName, TEST_CONFIGURATION_FILE);
 	}
 
 	@Test
 	public void testCompatibility() throws Exception {
 		assumeTrue(TestAssertions.isTestRunningOnCI());
-		String schemaFileName = generateXsd(XsdVersion.COMPATIBILITY);
+		String schemaFileName = generateXsd(XsdVersion.COMPATIBILITY, AttributeTypeStrategy.VALUES_ONLY);
 		validate(schemaFileName, TEST_CONFIGURATION_FILE);
 	}
 
-	String generateXsd(XsdVersion version) throws IOException {
-		FrankDocModel model = FrankDocModel.populate();
-		DocWriterNew docWriter = new DocWriterNew(model);
+	String generateXsd(XsdVersion version, AttributeTypeStrategy attributeTypeStrategy) throws IOException {
+		FrankDocModel model = FrankDocModel.populate(classRepository);
+		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(version);
 		String xsdString = docWriter.getSchema();
 		File output = new File("FrankConfig-" + docWriter.getOutputFileName());
@@ -90,13 +99,14 @@ public class DocWriterNewIntegrationTest {
 	@Test
 	public void testExotic() throws Exception {
 		String outputFileName = generateXsd(
-				XsdVersion.STRICT, "/doc/exotic-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.exotic.Master", "exotic.xsd");
+				XsdVersion.STRICT, "/doc/exotic-digester-rules.xml", "nl.nn.adapterframework.doc.testtarget.exotic.Master", "exotic.xsd", AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		validate(outputFileName, "testExotic.xml");
 	}
 
-	private String generateXsd(XsdVersion version, final String digesterRulesFileName, final String rootClassName, String outputSchemaFileName) throws IOException {
-		FrankDocModel model = FrankDocModel.populate(digesterRulesFileName, rootClassName);
-		DocWriterNew docWriter = new DocWriterNew(model);
+	private String generateXsd(
+			XsdVersion version, final String digesterRulesFileName, final String rootClassName, String outputSchemaFileName, AttributeTypeStrategy attributeTypeStrategy) throws IOException {
+		FrankDocModel model = FrankDocModel.populate(digesterRulesFileName, rootClassName, classRepository);
+		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(rootClassName, version);
 		String xsdString = docWriter.getSchema();
 		File output = new File(outputSchemaFileName);
@@ -114,7 +124,7 @@ public class DocWriterNewIntegrationTest {
 	@Ignore
 	@Test
 	public void testJsonForWebsite() throws Exception {
-		FrankDocModel model = FrankDocModel.populate();
+		FrankDocModel model = FrankDocModel.populate(classRepository);
 		FrankDocJsonFactory jsonFactory = new FrankDocJsonFactory(model);
 		JsonObject jsonObject = jsonFactory.getJson();
 		String jsonText = jsonPretty(jsonObject.toString());
@@ -132,7 +142,7 @@ public class DocWriterNewIntegrationTest {
 	@Ignore
 	@Test
 	public void testStatistics() throws IOException {
-		FrankDocModel model = FrankDocModel.populate();
+		FrankDocModel model = FrankDocModel.populate(classRepository);
 		File output = new File("testStatistics.csv");
 		System.out.println("Output file of test statistics: " + output.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(output));

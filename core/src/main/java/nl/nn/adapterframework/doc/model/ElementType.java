@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.doc.doclet.FrankClass;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -52,11 +53,11 @@ public class ElementType {
 		private @Getter String simpleName;
 		private @Getter Map<String, InterfaceHierarchyItem> parentInterfaces = new TreeMap<>();
 
-		InterfaceHierarchyItem(Class<?> clazz) {
+		InterfaceHierarchyItem(FrankClass clazz) {
 			this.fullName = clazz.getName();
 			this.simpleName = clazz.getSimpleName();
 			if(clazz.isInterface()) {
-				for(Class<?> superInterface: clazz.getInterfaces()) {
+				for(FrankClass superInterface: clazz.getInterfaces()) {
 					InterfaceHierarchyItem superInterfaceHierarchyItem = new InterfaceHierarchyItem(superInterface);
 					parentInterfaces.put(superInterfaceHierarchyItem.getFullName(), superInterfaceHierarchyItem);
 				}
@@ -79,7 +80,7 @@ public class ElementType {
 	private final InterfaceHierarchyItem interfaceHierarchy;
 	private @Getter ElementType highestCommonInterface;
 
-	ElementType(Class<?> clazz) {
+	ElementType(FrankClass clazz) {
 		interfaceHierarchy = new InterfaceHierarchyItem(clazz);
 		members = new ArrayList<>();
 		this.fromJavaInterface = clazz.isInterface();
