@@ -333,7 +333,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     	return searchRecursivelyViaAttributes(uid, baseDn, attribute, null);
     }
     
-    public Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute, String stopCondition) throws NamingException {
+    public Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute, String searchTarget) throws NamingException {
     	Set<String> results=new LinkedHashSet<String>();
     	Set<String> toBeSearched=new LinkedHashSet<String>();
        	Set<String> searched=new LinkedHashSet<String>();
@@ -345,7 +345,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 			results=searchObjectForMultiValuedAttribute(context, uid, baseDn, attribute);
 			toBeSearched.addAll(results);
 
-			while (!toBeSearched.isEmpty() && (StringUtils.isEmpty(stopCondition) || !results.contains(stopCondition))) {
+			while (!toBeSearched.isEmpty() && (StringUtils.isEmpty(searchTarget) || !results.contains(searchTarget))) {
 		       	Set<String> searchingNow=toBeSearched;
 		       	toBeSearched=new LinkedHashSet<String>();
 		       	nestingLevel++;
