@@ -1,3 +1,18 @@
+/*
+   Copyright 2021 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.configuration;
 
 import java.util.ArrayList;
@@ -7,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -20,11 +34,15 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
-public class AdapterManager implements InitializingBean, AutoCloseable, ApplicationContextAware, Lifecycle {
+public class AdapterManager implements ApplicationContextAware, AutoCloseable, Lifecycle {
 	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<? extends AdapterProcessor> adapterProcessors;
+	private enum BootState {
+		STARTING, STARTED, STOPPING, STOPPED;
+	}
+	private BootState state = BootState.STARTING;
 
 	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
 	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
@@ -32,13 +50,8 @@ public class AdapterManager implements InitializingBean, AutoCloseable, Applicat
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
-		System.out.println("init adapterManager for " + applicationContext);
-	}
-
-	@Override
 	public void close() {
-		System.out.println("destroying AdapterManager");
+		log.info("destroying AdapterManager ["+this+"]");
 
 		while (getStartAdapterThreads().size() > 0) {
 			log.debug("Waiting for start threads to end: " + getStartAdapterThreads());
@@ -49,7 +62,8 @@ public class AdapterManager implements InitializingBean, AutoCloseable, Applicat
 			}
 		}
 
-		stop();
+		stop(); //Just call this in case...
+
 		while (getStopAdapterThreads().size() > 0) {
 			log.debug("Waiting for stop threads to end: " + getStopAdapterThreads());
 			try {
@@ -58,11 +72,19 @@ public class AdapterManager implements InitializingBean, AutoCloseable, Applicat
 				log.warn("Interrupted waiting for stop threads to end", e);
 			}
 		}
-//		unRegisterAdapters
+
+		while (getAdapterList().size() > 0) {
+			Adapter adapter = getAdapter(0);
+			unRegisterAdapter(adapter);
+		}
 	}
 
 	public void registerAdapter(Adapter adapter) {
-		if(log.isDebugEnabled()) log.debug("registering adapter ["+adapter+"] with AdapterService ["+this+"]");
+		if(state != BootState.STARTING) {
+			log.warn("cannot add adapter, manager in state ["+state.name()+"]");
+		}
+
+		if(log.isDebugEnabled()) log.debug("registering adapter ["+adapter+"] with AdapterManager ["+this+"]");
 		if(adapter.getName() == null) {
 			throw new IllegalStateException("Adapter has no name");
 		}
@@ -76,10 +98,19 @@ public class AdapterManager implements InitializingBean, AutoCloseable, Applicat
 		adapters.put(adapter.getName(), adapter);
 	}
 
+	public void unRegisterAdapter(Adapter adapter) {
+		String name = adapter.getName();
+		for (AdapterProcessor adapterProcessor : adapterProcessors) {
+			adapterProcessor.removeAdapter(adapter);
+		}
+
+		adapters.remove(name);
+		if(log.isDebugEnabled()) log.debug("unregistered adapter ["+name+"] from AdapterManager ["+this+"]");
+	}
+
 	@Autowired
 	public void setAdapterProcessors(List<? extends AdapterProcessor> adapterProcessors) {
 		this.adapterProcessors = adapterProcessors;
-		System.err.println(adapterProcessors);
 	}
 
 	public void addStartAdapterThread(Runnable runnable) {
@@ -141,32 +172,46 @@ public class AdapterManager implements InitializingBean, AutoCloseable, Applicat
 
 	@Override
 	public void stop() {
-		System.out.println("stop AdapterManager");
-		log.info("Stopping all adapters for configuation " + applicationContext.getId());
+		if(state != BootState.STARTED) {
+			return;
+		}
+
+		state = BootState.STOPPING;
+		log.info("stopping all adapters in AdapterManager ["+this+"]");
 		List<Adapter> adapters = getAdapterList();
 		Collections.reverse(adapters);
 		for (Adapter adapter : adapters) {
-			log.info("Stopping adapter [" + adapter.getName() + "]");
+			log.info("stopping adapter [" + adapter.getName() + "]");
 			adapter.stopRunning();
 		}
-//		call unregister in processors
+		state = BootState.STOPPED;
 	}
 
 	@Override
 	public void start() {
-		System.out.println("start AdapterManager");
-		log.info("Starting all autostart-configured adapters for configuation " + applicationContext.getDisplayName());
-		for (Adapter adapter : getAdapters().values()) {
-			if (adapter.isAutoStart()) {
+		if(state != BootState.STARTING) {
+			return;
+		}
+
+		log.info("starting all autostart-configured adapters for AdapterManager "+this+"]");
+		for (Adapter adapter : getAdapterList()) {
+			try {
+				adapter.configure();
+			} catch (ConfigurationException e) {
+				log.error("error configuring adapter ["+adapter.getName()+"]", e);
+			}
+
+			if (adapter.configurationSucceeded() && adapter.isAutoStart()) {
 				log.info("Starting adapter [" + adapter.getName() + "]");
 				adapter.startRunning();
 			}
 		}
+		state = BootState.STARTED;
 	}
 
 	@Override
 	public boolean isRunning() {
-		return !adapters.isEmpty();
+		return state == BootState.STARTED;
 	}
 
 	@Override

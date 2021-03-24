@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -45,6 +46,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
@@ -163,15 +165,15 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		super.refresh();
-		System.out.println("refresh config");
-		setAdapterManager(getBean("adapterManager", AdapterManager.class));
-		System.out.println(getAdapterManager());
+
+		if(adapterManager == null) {
+			setAdapterManager(getBean("adapterManager", AdapterManager.class));
+		}
 	}
 
 	@Override
 	public void start() {
-		super.start();
-		System.out.println("start config");
+		System.out.println("starting configuration ["+getId()+"]");
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
@@ -179,13 +181,22 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		} catch (ConfigurationException e) {
 			throw new IllegalStateException(e);
 		}
+
+		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
+		if(flowDiagramManager != null) {
+			try {
+				flowDiagramManager.generate(this);
+			} catch (IOException e) {
+				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
+			}
+		}
+
+		super.start();
 	}
 
 	@Override
 	public void close() {
 		setUnloadInProgressOrDone(true);
-
-		adapterManager.close();
 
 		super.close();
 	}
