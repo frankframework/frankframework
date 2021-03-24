@@ -39,6 +39,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<? extends AdapterProcessor> adapterProcessors;
+
 	private enum BootState {
 		STARTING, STARTED, STOPPING, STOPPED;
 	}
@@ -220,7 +221,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder(this.getClass().getSimpleName());
+		StringBuilder builder = new StringBuilder();
 		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
 		builder.append(" state ["+state+"]");
 		builder.append(" adapters ["+adapters.size()+"]");
