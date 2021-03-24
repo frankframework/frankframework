@@ -92,16 +92,20 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 			throw new IllegalStateException("Adapter [" + adapter.getName() + "] already registered.");
 		}
 
-		for (AdapterProcessor adapterProcessor : adapterProcessors) {
-			adapterProcessor.addAdapter(adapter);
+		if(adapterProcessors != null) {
+			for (AdapterProcessor adapterProcessor : adapterProcessors) {
+				adapterProcessor.addAdapter(adapter);
+			}
 		}
 		adapters.put(adapter.getName(), adapter);
 	}
 
 	public void unRegisterAdapter(Adapter adapter) {
 		String name = adapter.getName();
-		for (AdapterProcessor adapterProcessor : adapterProcessors) {
-			adapterProcessor.removeAdapter(adapter);
+		if(adapterProcessors != null) {
+			for (AdapterProcessor adapterProcessor : adapterProcessors) {
+				adapterProcessor.removeAdapter(adapter);
+			}
 		}
 
 		adapters.remove(name);
@@ -216,6 +220,13 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + " for " + applicationContext.getId();
+		StringBuilder builder = new StringBuilder(this.getClass().getSimpleName());
+		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
+		builder.append(" state ["+state+"]");
+		builder.append(" adapters ["+adapters.size()+"]");
+		if(applicationContext != null) {
+			builder.append(" applicationContext ["+applicationContext.getDisplayName()+"]");
+		}
+		return builder.toString();
 	}
 }

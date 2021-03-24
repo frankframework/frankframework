@@ -25,8 +25,7 @@ import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import nl.nn.adapterframework.configuration.IAdapterService;
-import nl.nn.adapterframework.configuration.DummyAdapterService;
+import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -44,7 +43,7 @@ public class MockIbisManager extends Mockito implements IbisManager {
 	private List<Configuration> configurations = new ArrayList<Configuration>();
 
 	public MockIbisManager() {
-		IAdapterService adapterService = new DummyAdapterService();
+		AdapterManager adapterService = new AdapterManager();
 		Adapter adapter = new Adapter();
 		adapter.setName("dummyAdapter");
 		try {
@@ -63,7 +62,7 @@ public class MockIbisManager extends Mockito implements IbisManager {
 			fail("error registering adapter ["+adapter+"] " + e.getMessage());
 		}
 		Configuration mockConfiguration = spy(new Configuration());
-		mockConfiguration.setAdapterService(adapterService);
+		mockConfiguration.setAdapterManager(adapterService);
 		mockConfiguration.setName("myConfiguration");
 		BaseConfigurationWarnings warnings = new BaseConfigurationWarnings();
 		warnings.add("hello I am a configuration warning!");
