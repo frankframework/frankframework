@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.mongodb;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -13,10 +13,6 @@ import org.bson.types.ObjectId;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
@@ -24,29 +20,20 @@ import nl.nn.adapterframework.stream.Message;
 public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	private String host="localhost";
+	private String user="testiaf_user";
+	private String password="testiaf_user00";
 	private String database="testdb";
+	private String collection="Students";
 	private String action="FINDONE";
-	private String user="root";
-	private String password="example";
-	
-	@Override
-	public void setUp() throws Exception {
-		String url = "mongodb://"+ user+":"+password+"@" + host;
-		MongoClient mongoClient = MongoClients.create(url);
-		MongoDatabase mongoDatabase = mongoClient.getDatabase(database);
-		//mongoDatabase.drop();
-		super.setUp();
-	}
 
-	
-	
+
 	@Override
 	public MongoDbSender createSender() throws Exception {
 		MongoDbSender result = new MongoDbSender();
-		result.setHost(host);
+		String url = "mongodb://"+ user+":"+password+"@" + host;
+		result.setUrl(url);
 		result.setDatabase(database);
-		result.setUsername(user);
-		result.setPassword(password);
+		result.setCollection(collection);
 		return result;
 	}
 
@@ -63,26 +50,6 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 	}
 
-//	@Test
-//	public void testListDatabases() throws Exception {
-//		sender.setAction("ListDatabases");
-//		sender.configure();
-//		sender.open();
-//		
-//		Message result = sendMessage("fakeMsg");
-//		assertNull(result.asString());
-//	}
-//
-//	@Test
-//	public void testCreateCollection() throws Exception {
-//		sender.setAction("CreateCollection");
-//		sender.configure();
-//		sender.open();
-//		
-//		Message result = sendMessage("fakeCollection");
-//		assertNull(result.asString());
-//	}
-//
 	@Test
 	public void testInsertOne() throws Exception {
 		sender.setAction("InsertOne");
@@ -92,7 +59,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		JsonObject stud = createStudent("Evert","1c", 4,4,3);
 		Message result = sendMessage(stud.toString());
-		assertNull(result.asString());
+		assertThat(result.asString(),StringContains.containsString("\"insertedId\":"));
 	}
 
 	@Test
@@ -106,7 +73,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		students.add(createStudent("Harry","1a", 4,5,6));
 		students.add(createStudent("Klaas","1b", 5,7,9));
 		Message result = sendMessage(students.build().toString());
-		assertNull(result.asString());
+		assertThat(result.asString(),StringContains.containsString("\"insertedId\":"));
 	}
 	
 	@Test
@@ -133,7 +100,34 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		assertThat(result.asString(),StringContains.containsString("\"student_id\": \"Evert\", \"class_id\": \"1c\""));
 	}
 
+	@Test
+	public void testFindManyCountOnly() throws Exception {
+		sender.setAction("FindMany");
+		sender.setCollection("Students");
+		sender.setCountOnly(true);
+		sender.configure();
+		sender.open();
 
+		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
+		System.out.println("FindMany: ["+result.asString()+"]");
+		int count = Integer.parseInt(result.asString());
+		assertTrue(count>0);
+	}
+
+	@Test
+	public void testFindManyLimit() throws Exception {
+		sender.setAction("FindMany");
+		sender.setCollection("Students");
+		sender.setCountOnly(true);
+		sender.setLimit(1);
+		sender.configure();
+		sender.open();
+
+		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
+		System.out.println("FindMany: ["+result.asString()+"]");
+		int count = Integer.parseInt(result.asString());
+		assertTrue(count==1);
+	}
 	@Test
 	public void testUpdateOne() throws Exception {
 		String filter = "{ \"student_id\": \"Evert\" }";
@@ -147,6 +141,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		Message result = sendMessage(update);
 		System.out.println("UpdateOne: ["+result.asString()+"]");
+		assertThat(result.asString(),StringContains.containsString("\"modifiedCount\":"));
 	}
 
 	@Test
@@ -162,6 +157,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		Message result = sendMessage(update);
 		System.out.println("UpdateMany: ["+result.asString()+"]");
+		assertThat(result.asString(),StringContains.containsString("\"modifiedCount\":"));
 	}
 
 	public JsonObject createStudent(String studentId, String classId, Integer... grades) {

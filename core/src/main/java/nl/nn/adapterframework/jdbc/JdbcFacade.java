@@ -41,6 +41,7 @@ import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jndi.JndiBase;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -93,7 +94,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty("jdbc.datasource.default"));
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
 		}
 		try {
 			if (getDatasource() == null) {
@@ -279,7 +280,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return result;
 	}
 
-	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", "${jdbc.datasource.default}"})
+	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
