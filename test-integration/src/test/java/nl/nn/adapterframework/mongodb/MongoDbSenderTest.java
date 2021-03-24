@@ -14,6 +14,7 @@ import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -59,6 +60,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		JsonObject stud = createStudent("Evert","1c", 4,4,3);
 		Message result = sendMessage(stud.toString());
+		System.out.println(result.asString());
 		assertThat(result.asString(),StringContains.containsString("\"insertedId\":"));
 	}
 
@@ -83,7 +85,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.configure();
 		sender.open();
 
-		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
+		Message result = sendMessage("{ \"student_id\": \"${userparam}\" }");
 		System.out.println("FindOne: ["+result.asString()+"]");
 		assertThat(result.asString(),StringContains.containsString("\"student_id\": \"Evert\", \"class_id\": \"1c\""));
 	}
@@ -96,7 +98,23 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
-		System.out.println("FindMany: ["+result.asString()+"]");
+//		System.out.println("FindMany: ["+result.asString()+"]");
+		assertThat(result.asString(),StringContains.containsString("\"student_id\": \"Evert\", \"class_id\": \"1c\""));
+	}
+
+	@Test
+	public void testFindManyUsingParameter() throws Exception {
+		sender.setAction("FindMany");
+		sender.setCollection("Students");
+		Parameter param = new Parameter();
+		param.setName("searchTarget");
+		param.setValue("Evert");
+		sender.addParameter(param);
+		sender.configure();
+		sender.open();
+
+		Message result = sendMessage("{ \"student_id\": \"?{searchTarget}\" }");
+//		System.out.println("FindMany: ["+result.asString()+"]");
 		assertThat(result.asString(),StringContains.containsString("\"student_id\": \"Evert\", \"class_id\": \"1c\""));
 	}
 

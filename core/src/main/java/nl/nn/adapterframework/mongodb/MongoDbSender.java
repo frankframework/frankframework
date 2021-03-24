@@ -59,15 +59,19 @@ import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringResolver;
 
 public class MongoDbSender extends StreamingSenderBase {
-	
+
 	public final String PARAM_DATABASE="database";
 	public final String PARAM_COLLECTION="collection";
 	public final String PARAM_FILTER="filter";
 	public final String PARAM_LIMIT="limit";
-	
-	
+
+	public final String NAMED_PARAM_START="?{";
+	public final String NAMED_PARAM_END="}";
+
+
 	private @Getter String datasourceName;
 	private @Getter String url;
 	private @Getter String database;
@@ -76,6 +80,7 @@ public class MongoDbSender extends StreamingSenderBase {
 	private @Getter String filter;
 	private @Getter int limit=0;
 	private @Getter boolean countOnly=false;
+//	private OutputFormat outputFormat=OutputFormat.JSON;
 
 	private @Setter @Getter IMongoClientFactory mongoClientFactory = null; // Spring should wire this!
 
@@ -92,6 +97,11 @@ public class MongoDbSender extends StreamingSenderBase {
 		DELETEONE,
 		DELETEMANY;
 	}
+	
+//	public enum OutputFormat {
+//		JSON,
+//		XML
+//	}
 	
 	@Override
 	public void configure() throws ConfigurationException {
@@ -284,15 +294,15 @@ public class MongoDbSender extends StreamingSenderBase {
 		return mongoDatabase.getCollection(collectionName);
 	}
 	
-	protected Document getFilter(ParameterValueList pvl, Message message) throws IOException {
+	protected Document getFilter(ParameterValueList pvl, Message message) throws IOException, ParameterException, IllegalArgumentException {
 		String filterSpec = getParameterOverriddenAttributeValue(pvl, PARAM_FILTER, getFilter());
-		if (StringUtils.isNotEmpty(filterSpec)) {
-			return getDocument(filterSpec);
+		if (StringUtils.isEmpty(filterSpec)) {
+			filterSpec = Message.isEmpty(message) ? "" : message.asString();
 		}
-		if (!Message.isEmpty(message)) {
-			return getDocument(message);
+		if (filterSpec.contains(NAMED_PARAM_START) && filterSpec.contains(NAMED_PARAM_END)) {
+			filterSpec = StringResolver.substVars(filterSpec, pvl.getValueMap(), null, null, NAMED_PARAM_START, NAMED_PARAM_END);
 		}
-		return getDocument("");
+		return getDocument(filterSpec);
 	}
 	
 	protected int getLimit(ParameterValueList pvl) {
@@ -328,7 +338,7 @@ public class MongoDbSender extends StreamingSenderBase {
 		return action;
 	}
 	
-	@IbisDoc({"11", "Filter. Can be overridden by parameter '"+PARAM_FILTER+"'", ""})
+	@IbisDoc({"11", "Filter. Can contain references to parameters between '"+NAMED_PARAM_START+"' and '"+NAMED_PARAM_END+"'. Can be overridden by parameter '"+PARAM_FILTER+"'", ""})
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}
@@ -342,5 +352,14 @@ public class MongoDbSender extends StreamingSenderBase {
 	public void setCountOnly(boolean countOnly) {
 		this.countOnly = countOnly;
 	}
+
+//	@IbisDoc({"14", "OutputFormat", "JSON"})
+//	public void setOutputFormat(String outputFormat) {
+//		this.outputFormat = Misc.parse(OutputFormat.class, outputFormat);
+//	}
+//	public OutputFormat getOutputFormatEnum() {
+//		return outputFormat;
+//	}
+//	
 
 }
