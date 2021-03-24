@@ -173,7 +173,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 
 	@Override
 	public void start() {
-		System.out.println("starting configuration ["+getId()+"]");
+		log.info("starting configuration ["+getId()+"]");
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {

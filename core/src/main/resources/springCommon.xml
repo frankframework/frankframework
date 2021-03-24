@@ -60,14 +60,6 @@
 		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
-	<bean
-		name="adapterService"
-		class="nl.nn.adapterframework.configuration.JmxRegisteringAdapterService"
-		autowire="byName"
-		scope="prototype"
-		>
-	</bean>
-
 	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
 		<property name="locateExistingServerIfPossible" value="true" /><!-- indicate to first look for a server -->
 		<property name="defaultDomain" value="${instance.name}" />
