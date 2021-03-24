@@ -278,18 +278,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 			return;
 		}
 		adapter.setConfiguration(this);
-
 		adapterManager.registerAdapter(adapter);
-/*
-		try {
-			adapterService.registerAdapter(adapter);
-		} catch (ConfigurationException e) { //For some reason the adapterService configures the adapter...
-			//TODO: this the configuration should have a configure method which configures every adapter.
 
-			//Do nothing as this will cause the digester to stop digesting the configuration
-			log.error("error configuring adapter ["+adapter.getName()+"]", e);
-		}
-*/
 		log.debug("Configuration [" + getName() + "] registered adapter [" + adapter.toString() + "]");
 	}
 
