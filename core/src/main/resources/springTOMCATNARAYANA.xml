@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation=
+		"
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		"
+	>
+
+	<import resource="springTOMCAT.xml"/>
+	<import resource="springJms.xml"/>
+
+	<bean
+		name="txManagerReal"
+		class="org.springframework.transaction.jta.JtaTransactionManager"
+		>
+		<property name="transactionManager" ref="narayanaTransactionManager"/>
+		<property name="userTransaction" ref="userTransaction"/>
+	</bean>
+
+	<bean
+		name="narayanaTransactionManager"
+		class="com.arjuna.ats.jta.TransactionManager"
+		factory-method="transactionManager"
+		depends-on="recoveryManager,defaultDataSource"
+	/>
+
+	<bean
+		name="userTransaction"
+		class="com.arjuna.ats.jta.UserTransaction"
+		factory-method="userTransaction"
+		depends-on="recoveryManager,defaultDataSource"
+	/>
+
+	<bean id="recoveryManager" class="nl.nn.adapterframework.narayana.NarayanaRecoveryManager" />
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.narayana.NarayanaDataSourceFactory" autowire="byName" />
+	<bean id="transactionHelper" class="org.jboss.narayana.jta.jms.TransactionHelperImpl">
+		<constructor-arg ref="narayanaTransactionManager"/>
+	</bean>
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.narayana.NarayanaConnectionFactoryFactory" autowire="byName" />
+
+</beans>
