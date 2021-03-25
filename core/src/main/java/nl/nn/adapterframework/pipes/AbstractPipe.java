@@ -24,6 +24,8 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -50,6 +52,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -94,8 +97,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @see IPipeLineSession
  */
-public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable {
+public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable, ApplicationContextAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ApplicationContext applicationContext;
 
 	private String name;
 	private String getInputFromSessionKey=null;
@@ -197,6 +201,18 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	public void configure(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline=pipeline;
 		configure();
+	}
+
+	/**
+	 * final method to ensure nobody overrides this...
+	 */
+	@Override
+	public final void setApplicationContext(ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext;
+	}
+
+	protected <T> T createBean(Class<T> beanClass) {
+		return SpringUtils.createBean(applicationContext, beanClass);
 	}
 
 

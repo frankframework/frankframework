@@ -30,6 +30,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -46,12 +48,14 @@ import nl.nn.adapterframework.stream.SaxTimeoutException;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ExceptionCatchingFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
+import nl.nn.adapterframework.xml.IXmlDebugger;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.NodeSetFilter;
 import nl.nn.adapterframework.xml.SaxException;
@@ -80,6 +84,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	private TransformerPool extractElementsTp=null;
 	private ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	private @Getter @Setter IXmlDebugger xmlDebugger;
 
 	{ 
 		setNamespaceAware(true);
@@ -293,6 +298,14 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	protected void createHandler(HandlerRecord result, IPipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		ItemCallbackCallingHandler itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=itemHandler;
+		
+		if (getXmlDebugger()!=null && (StringUtils.isNotEmpty(getContainerElement()) || StringUtils.isNotEmpty(getTargetElement()) || getExtractElementsTp()!=null)) {
+			String containerElementString = StringUtils.isNotEmpty(getContainerElement()) ? "filter to containerElement '"+getContainerElement()+"'" : null;
+			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
+			String xpathString = getExtractElementsTp()!=null ? "filter XPath '"+getElementXPathExpression()+"'": null;
+			String label = "XML after preprocessing: " + Misc.concat(", ",containerElementString, targetElementString, xpathString);
+			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler);
+		}
 		
 		if (isRemoveNamespaces()) {
 			result.inputHandler = new NamespaceRemovingFilter(result.inputHandler);

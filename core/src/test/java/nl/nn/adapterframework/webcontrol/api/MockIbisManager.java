@@ -62,7 +62,8 @@ public class MockIbisManager extends Mockito implements IbisManager {
 			e.printStackTrace();
 			fail("error registering adapter ["+adapter+"] " + e.getMessage());
 		}
-		Configuration mockConfiguration = spy(new Configuration(adapterService));
+		Configuration mockConfiguration = spy(new Configuration());
+		mockConfiguration.setAdapterService(adapterService);
 		mockConfiguration.setName("myConfiguration");
 		BaseConfigurationWarnings warnings = new BaseConfigurationWarnings();
 		warnings.add("hello I am a configuration warning!");

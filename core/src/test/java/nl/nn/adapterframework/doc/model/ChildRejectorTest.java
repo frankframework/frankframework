@@ -16,8 +16,8 @@ limitations under the License.
 package nl.nn.adapterframework.doc.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.doc.Utils;
+import nl.nn.adapterframework.doc.doclet.FrankClassRepository;
 
 public class ChildRejectorTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.doc.testtarget.walking";
@@ -37,7 +37,7 @@ public class ChildRejectorTest {
 
 	private void init(String modelPopulateClassSimpleName, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, String subject) throws Exception {
 		String rootClassName = PACKAGE + "." + modelPopulateClassSimpleName;
-		model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName);
+		model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, FrankClassRepository.getReflectInstance());
 		instance = new ChildRejector<FrankAttribute>(
 				selector, rejector, FrankAttribute.class);
 		instance.init(getElement(subject));
@@ -45,7 +45,7 @@ public class ChildRejectorTest {
 
 	private FrankElement getElement(String simpleName) throws Exception {
 		String rootClassName = PACKAGE + "." + simpleName;
-		return model.findOrCreateFrankElement(Utils.getClass(rootClassName));
+		return model.findOrCreateFrankElement(rootClassName);
 	}
 
 	private Set<String> childNames(String frankElementSimpleName) throws Exception {

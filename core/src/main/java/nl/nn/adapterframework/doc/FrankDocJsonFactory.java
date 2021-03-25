@@ -133,6 +133,7 @@ public class FrankDocJsonFactory {
 		result.add("describer", frankAttribute.getDescribingElement().getFullName());
 		addIfNotNull(result, "description", frankAttribute.getDescription());
 		addIfNotNull(result, "default", frankAttribute.getDefaultValue());
+		result.add("type", frankAttribute.getAttributeType().name().toLowerCase());
 		if(frankAttribute.getAttributeValues() != null) {
 			result.add("values", getValues(frankAttribute.getAttributeValues()));
 		}

@@ -22,10 +22,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -139,14 +138,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  */
 
-public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAware {
+public class CreateRestViewPipe extends XsltPipe {
 	private static final String CONTENTTYPE = "contentType";
 	private static final String SRCPREFIX = "srcPrefix";
+	private @Getter @Setter ApplicationMetrics metrics;
 
 	private String contentType = "text/html";
-	private ApplicationContext applicationContext;
-
-	AppConstants appConstants;
+	private AppConstants appConstants;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -194,7 +192,6 @@ public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAw
 	}
 
 	private Map<String,Object> retrieveParameters(HttpServletRequest httpServletRequest, ServletContext servletContext, String srcPrefix) throws DomBuilderException {
-		ApplicationMetrics metrics = applicationContext.getBean("metrics", ApplicationMetrics.class);
 		Map<String,Object> parameters = new Hashtable<String,Object>();
 		String requestInfoXml = "<requestInfo>" + "<servletRequest>"
 				+ "<serverInfo><![CDATA[" + servletContext.getServerInfo()
@@ -305,10 +302,5 @@ public class CreateRestViewPipe extends XsltPipe implements ApplicationContextAw
 
 	public String getContentType() {
 		return contentType;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
 	}
 }

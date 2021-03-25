@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
@@ -124,8 +125,6 @@ public class IbisContext extends IbisApplicationContext {
 
 			classLoaderManager = new ClassLoaderManager(this);
 
-			AbstractSpringPoweredDigesterFactory.setIbisContext(this);
-
 			try {
 				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialize.
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
@@ -205,10 +204,9 @@ public class IbisContext extends IbisApplicationContext {
 			if (configuration.getAdapterService().getAdapters().size() > 0) {
 				log("Not all adapters are unregistered: " + configuration.getAdapterService().getAdapters(), MessageKeeperLevel.ERROR);
 			}
-			// Improve configuration reload performance. Probably because
-			// garbage collection will be easier.
-			configuration.setAdapterService(null);
 			String configurationVersion = configuration.getVersion();
+			getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
+
 			String msg = "unload in " + (System.currentTimeMillis() - start) + " ms";
 			log(configurationName, configurationVersion, msg);
 			secLog.info("Configuration [" + configurationName + "] [" + configurationVersion+"] " + msg);
@@ -271,14 +269,12 @@ public class IbisContext extends IbisApplicationContext {
 	 * 
 	 * @see ClassLoaderManager#get(String)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(IbisContext)
-	 * @see #digestClassLoaderConfiguration(ClassLoader, ConfigurationDigester, String, ConfigurationException)
+	 * @see #digestClassLoaderConfiguration(ClassLoader, String, ConfigurationException)
 	 */
 	public void load(String configurationName) {
 		boolean configFound = false;
 
 		//We have an ordered list with all configurations, lets loop through!
-		ConfigurationDigester configurationDigester = new ConfigurationDigester();
-
 		Map<String, String> allConfigNamesItems = ConfigurationUtils.retrieveAllConfigNames(this);
 		for (Entry<String, String> currentConfigNameItem : allConfigNamesItems.entrySet()) {
 			String currentConfigurationName = currentConfigNameItem.getKey();
@@ -306,7 +302,7 @@ public class IbisContext extends IbisApplicationContext {
 				if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found classloader ["+ClassUtils.nameOf(classLoader)+"]");
 				try {
 					loadingConfigs.add(currentConfigurationName);
-					digestClassLoaderConfiguration(classLoader, configurationDigester, currentConfigurationName, customClassLoaderConfigurationException);
+					digestClassLoaderConfiguration(classLoader, currentConfigurationName, customClassLoaderConfigurationException);
 				} catch (Exception e) {
 					LOG.error("an unhandled exception occurred while digesting configuration ["+currentConfigurationName+"]", e);
 				} finally {
@@ -324,32 +320,31 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	private void digestClassLoaderConfiguration(ClassLoader classLoader, ConfigurationDigester configurationDigester, String currentConfigurationName, ConfigurationException customClassLoaderConfigurationException) {
+	// Create a new configuration through Spring, and explicitly set the ClassLoader before initializing it.
+	private Configuration createConfiguration(String name, ClassLoader classLoader) {
+		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		bean.setClassLoader(classLoader);
+		return (Configuration) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
+	}
+
+	private void digestClassLoaderConfiguration(ClassLoader classLoader, String currentConfigurationName, ConfigurationException customClassLoaderConfigurationException) {
 
 		long start = System.currentTimeMillis();
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
 
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		String currentConfigurationVersion = null;
 
 		if (classLoader != null) {
 			Thread.currentThread().setContextClassLoader(classLoader);
-			currentConfigurationVersion = ConfigurationUtils.getConfigurationVersion(classLoader);
-			if(StringUtils.isEmpty(currentConfigurationVersion)) {
-				LOG.info("unable to determine [configuration.version] for configuration ["+currentConfigurationName+"]");
-			}
 		}
 
-		if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found currentConfigurationVersion ["+currentConfigurationVersion+"]");
+		Configuration configuration = createConfiguration(currentConfigurationName, classLoader);
+		if(!configuration.getName().equals(currentConfigurationName)) { //Pre-digest validation to make sure no extra Spring magic happened.
+			throw new IllegalStateException("ConfigurationName mismatch");
+		}
+		String currentConfigurationVersion = configuration.getVersion();
 
-		//TODO autowire the entire configuration in it's own context.
-		Configuration configuration = createBeanAutowireByName(Configuration.class);
 		try {
-			configuration.setName(currentConfigurationName);
-			configuration.setVersion(currentConfigurationVersion);
-			configuration.setIbisManager(ibisManager);
-			configuration.setClassLoader(classLoader);
-			ibisManager.addConfiguration(configuration);
 			if (customClassLoaderConfigurationException == null) {
 				ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
 
@@ -363,9 +358,10 @@ public class IbisContext extends IbisApplicationContext {
 					}
 				}
 
-				configurationDigester.digestConfiguration(classLoader, configuration);
+				ConfigurationDigester configurationDigester = configuration.getBean(ConfigurationDigester.class);
+				configurationDigester.digestConfiguration();
 				if (currentConfigurationVersion == null) {
-					currentConfigurationVersion = configuration.getVersion();
+					currentConfigurationVersion = configuration.getVersion(); //Digested configuration version
 				} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {
 					log(currentConfigurationName, currentConfigurationVersion, "configuration version doesn't match Configuration version attribute: " + configuration.getVersion(), MessageKeeperLevel.WARN);
 				}

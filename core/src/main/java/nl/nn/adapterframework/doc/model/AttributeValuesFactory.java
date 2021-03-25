@@ -24,13 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import nl.nn.adapterframework.doc.doclet.FrankClass;
+
 class AttributeValuesFactory {
 	private Map<String, AttributeValues> allAttributeValuesInstances = new LinkedHashMap<>();
 	private Map<String, Integer> lastAssignedSeq = new HashMap<>();
 
-	AttributeValues findOrCreateAttributeValues(Class<? extends Enum<?>> clazz) {
+	AttributeValues findOrCreateAttributeValues(FrankClass clazz) {
 		List<String> values = Arrays.asList(clazz.getEnumConstants()).stream()
-				.map(c -> c.name())
 				.collect(Collectors.toList());
 		return findOrCreateAttributeValues(clazz.getName(), clazz.getSimpleName(), values);
 	}

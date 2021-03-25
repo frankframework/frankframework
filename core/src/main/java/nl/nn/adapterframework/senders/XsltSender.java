@@ -267,7 +267,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 	
 
-	protected XMLReader getXmlReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
+	protected XMLReader getXmlReader(IPipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
 		return XmlUtils.getXMLReader(handler);
 	}
 	
@@ -292,7 +292,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 						}
 					};
 				}
-				XMLReader reader = getXmlReader(handler);
+				XMLReader reader = getXmlReader(session, handler);
 				InputSource source = message.asInputSource();
 				reader.parse(source);
 				return target.getPipeRunResult();

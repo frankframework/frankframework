@@ -16,7 +16,6 @@ limitations under the License.
 
 package nl.nn.adapterframework.doc.model;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +33,8 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.doc.Utils;
+import nl.nn.adapterframework.doc.doclet.FrankClass;
+import nl.nn.adapterframework.doc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.doc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -57,9 +58,9 @@ public class FrankElement implements Comparable<FrankElement> {
 	private @Getter FrankElementStatistics statistics;
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 
-	FrankElement(Class<?> clazz) {
-		this(clazz.getName(), clazz.getSimpleName(), Modifier.isAbstract(clazz.getModifiers()));
-		isDeprecated = clazz.getAnnotation(Deprecated.class) != null;
+	FrankElement(FrankClass clazz) {
+		this(clazz.getName(), clazz.getSimpleName(), clazz.isAbstract());
+		isDeprecated = clazz.getAnnotation(FrankDocletConstants.DEPRECATED) != null;
 		configChildSets = new LinkedHashMap<>();
 	}
 
