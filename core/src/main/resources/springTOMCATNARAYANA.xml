@@ -23,17 +23,29 @@
 		name="narayanaTransactionManager"
 		class="com.arjuna.ats.jta.TransactionManager"
 		factory-method="transactionManager"
-		depends-on="recoveryManager,defaultDataSource"
+		depends-on="narayanaConfig,recoveryManager,defaultDataSource"
 	/>
 
 	<bean
 		name="userTransaction"
 		class="com.arjuna.ats.jta.UserTransaction"
 		factory-method="userTransaction"
-		depends-on="recoveryManager,defaultDataSource"
+		depends-on="narayanaConfig,recoveryManager,defaultDataSource"
 	/>
 
-	<bean id="recoveryManager" class="nl.nn.adapterframework.narayana.NarayanaRecoveryManager" />
+	<bean id="narayanaConfig" class="nl.nn.adapterframework.narayana.NarayanaConfigurationBean">
+		<property name="properties">
+			<props>
+				<prop key="JDBCEnvironmentBean.isolationLevel">2</prop> <!-- TRANSACTION_READ_COMMITTED -->
+				<prop key="CoreEnvironmentBean.nodeIdentifier">${instance.name.lc}.tm</prop>
+				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${log.dir}/${instance.name.lc}-narayana</prop>
+				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${log.dir}/${instance.name.lc}-narayana</prop>
+				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${log.dir}/${instance.name.lc}-narayana</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="recoveryManager" class="nl.nn.adapterframework.narayana.NarayanaRecoveryManager" depends-on="narayanaConfig" />
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.narayana.NarayanaDataSourceFactory" autowire="byName" />
 	<bean id="transactionHelper" class="org.jboss.narayana.jta.jms.TransactionHelperImpl">
 		<constructor-arg ref="narayanaTransactionManager"/>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2016 the original author or authors, 2021 WeAreFrank!
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,8 @@ import org.springframework.util.ClassUtils;
 public class NarayanaDataSource implements DataSource {
 
 	private final XADataSource xaDataSource;
-	private final boolean useNarayanaPooling = true;
+	private final boolean connectionPooling = true;
+	private final int maxConnections = 100;
 
 	/**
 	 * Create a new {@link NarayanaDataSource} instance.
@@ -59,7 +60,8 @@ public class NarayanaDataSource implements DataSource {
 	public Connection getConnection() throws SQLException {
 		Properties properties = new Properties();
 		properties.put(TransactionalDriver.XADataSource, this.xaDataSource);
-		properties.put(TransactionalDriver.poolConnections, useNarayanaPooling);
+		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
+		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
 		return ConnectionManager.create(null, properties);
 	}
 
@@ -69,7 +71,8 @@ public class NarayanaDataSource implements DataSource {
 		properties.put(TransactionalDriver.XADataSource, this.xaDataSource);
 		properties.put(TransactionalDriver.userName, username);
 		properties.put(TransactionalDriver.password, password);
-		properties.put(TransactionalDriver.poolConnections, useNarayanaPooling);
+		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
+		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
 		return ConnectionManager.create(null, properties);
 	}
 

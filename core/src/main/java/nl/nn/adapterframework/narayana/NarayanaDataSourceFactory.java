@@ -15,20 +15,17 @@
 */
 package nl.nn.adapterframework.narayana;
 
+import java.sql.SQLException;
+
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.apache.commons.dbcp2.ConnectionFactory;
-import org.apache.commons.dbcp2.DataSourceConnectionFactory;
-import org.apache.commons.dbcp2.PoolableConnection;
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.dbcp2.PoolingDataSource;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.arjuna.ats.internal.jdbc.ConnectionImple;
+import com.arjuna.ats.internal.jdbc.ConnectionManager;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -42,24 +39,16 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory implements 
 		this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
 		return new NarayanaDataSource((XADataSource) dataSource);
-//		ConnectionFactory connectionFactory = new DataSourceConnectionFactory(new NarayanaDataSource((XADataSource) dataSource));
-//		PoolableConnectionFactory poolFactory = new PoolableConnectionFactory(connectionFactory, null);
-//		GenericObjectPoolConfig<PoolableConnection> config = new GenericObjectPoolConfig<>();
-//		config.setMaxTotal(100);
-//		GenericObjectPool<PoolableConnection> pool = new GenericObjectPool<>(poolFactory, config);
-//		poolFactory.setPool(pool);
-//		return new PoolingDataSource<>(pool);
 	}
 
 	@Override
 	public void destroy() throws Exception {
 		for(DataSource dataSource : objects.values()) {
-//			try {
-//				((BasicManagedDataSource) dataSource).close();
-//				ConnectionManager.remove((ConnectionImple) dataSource.getConnection());
-//			} catch (SQLException e) {
-				// ignore the connection if it cannot create/have a connection
-//			}
+			try {
+				ConnectionImple connection = (ConnectionImple) dataSource.getConnection();
+				ConnectionManager.remove(connection);
+				ConnectionManager.release(connection);
+			} catch (SQLException e) { } // ignore the error if there is no connection
 		}
 	}
 
