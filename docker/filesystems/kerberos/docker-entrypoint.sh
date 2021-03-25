@@ -83,6 +83,7 @@ EOT
 
     echo "Creating Admin Account"
     kadmin.local -q "addprinc -pw ${KRB5_PASS} admin/admin@${KRB5_REALM}"
+    kadmin.local -q "addprinc -pw ${KRB5_PASS} wearefrank@${KRB5_REALM}"
 
 fi
 

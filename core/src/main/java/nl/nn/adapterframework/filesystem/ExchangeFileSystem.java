@@ -726,11 +726,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 
 	@Override
-	public void removeFolder(String folderName) throws FileSystemException {
+	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
 		try {
 			FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, false);
 			Folder folder = Folder.bind(exchangeService, folderId);
+			if(removeNonEmptyFolder) {
+				folder.empty(DeleteMode.HardDelete, true);
+			}
 			folder.delete(DeleteMode.HardDelete);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
