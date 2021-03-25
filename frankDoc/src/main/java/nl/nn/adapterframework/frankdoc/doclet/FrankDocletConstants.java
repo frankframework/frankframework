@@ -20,6 +20,7 @@ public class FrankDocletConstants {
 	public static final String DEPRECATED = "java.lang.Deprecated";
 	public static final String IBISDOC = "nl.nn.adapterframework.doc.IbisDoc";
 	public static final String IBISDOCREF = "nl.nn.adapterframework.doc.IbisDocRef";
+	public static final String OBJECT = "java.lang.Object";
 
 	private FrankDocletConstants() {
 	}
