@@ -17,12 +17,8 @@ package nl.nn.adapterframework.jms;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.w3c.dom.Element;
 
-import lombok.Setter;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
@@ -103,13 +99,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author  Peter Leeuwenburgh
  */
-public class XmlJmsBrowserSender extends SenderWithParametersBase implements ApplicationContextAware {
-
-	public @Setter ApplicationContext applicationContext = null;
+public class XmlJmsBrowserSender extends SenderWithParametersBase {
 
 	@SuppressWarnings("unchecked")
 	public JmsBrowser<javax.jms.Message> createJmsBrowser() {
-		return (JmsBrowser<javax.jms.Message>) applicationContext.getAutowireCapableBeanFactory().createBean(JmsBrowser.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		return createBean(JmsBrowser.class);
 	}
 
 	@Override
