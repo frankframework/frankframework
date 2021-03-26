@@ -15,7 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.transformer;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;

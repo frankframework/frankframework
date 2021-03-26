@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.digester3.Digester;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.struts.action.DynaActionForm;
 import org.apache.struts.upload.FormFile;
 

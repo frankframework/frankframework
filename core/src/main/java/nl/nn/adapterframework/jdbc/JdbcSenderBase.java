@@ -18,8 +18,7 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;

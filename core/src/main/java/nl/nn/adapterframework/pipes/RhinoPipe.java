@@ -17,8 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.net.URL;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.Function;
@@ -95,7 +94,7 @@ public class RhinoPipe extends FixedForwardPipe {
 				throw new ConfigurationException("cannot find resource [" + getFileName() + "]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception loading [" + getFileName() + "]", e);
 			}
@@ -137,7 +136,7 @@ public class RhinoPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+getFileName()+"]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+getFileName()+"]", e);
 			}

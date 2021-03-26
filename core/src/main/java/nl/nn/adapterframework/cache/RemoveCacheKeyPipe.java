@@ -18,7 +18,7 @@ package nl.nn.adapterframework.cache;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import net.sf.ehcache.Cache;
 import nl.nn.adapterframework.configuration.ConfigurationException;

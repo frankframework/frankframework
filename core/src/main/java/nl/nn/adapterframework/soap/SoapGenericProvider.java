@@ -27,7 +27,7 @@ import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.soap.Constants;
 import org.apache.soap.Envelope;

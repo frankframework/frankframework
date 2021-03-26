@@ -23,7 +23,7 @@ import java.util.List;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author  Gerrit van Brakel

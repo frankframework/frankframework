@@ -27,8 +27,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import javax.xml.transform.Transformer;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * ErrorMessageFormatter that returns a fixed message with replacements.
@@ -52,7 +51,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 		}
 		if (StringUtils.isNotEmpty(getFileName())) {
 			try {
-				messageToReturn = new Message(messageToReturn.asString() + Misc.resourceToString(ClassUtils.getResourceURL(this, getFileName()), SystemUtils.LINE_SEPARATOR));
+				messageToReturn = new Message(messageToReturn.asString() + Misc.resourceToString(ClassUtils.getResourceURL(this, getFileName()), Misc.LINE_SEPARATOR));
 			} catch (Throwable e) {
 				log.error("got exception loading error message file [" + getFileName() + "]", e);
 			}

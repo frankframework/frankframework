@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.processors;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import nl.nn.adapterframework.core.IPipeLineSession;

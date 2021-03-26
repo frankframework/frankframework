@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.stream.Message;
 

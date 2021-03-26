@@ -20,7 +20,7 @@ import java.util.Set;
 
 import javax.xml.soap.SOAPConstants;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 
 public enum SoapVersion {

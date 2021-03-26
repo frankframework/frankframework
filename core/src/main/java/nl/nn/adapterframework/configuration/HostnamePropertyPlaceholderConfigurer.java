@@ -20,7 +20,7 @@ import java.util.Properties;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
  /**

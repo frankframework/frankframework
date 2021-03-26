@@ -22,7 +22,7 @@ import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;

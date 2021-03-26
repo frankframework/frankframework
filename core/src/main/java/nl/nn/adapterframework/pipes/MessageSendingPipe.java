@@ -23,8 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
@@ -267,7 +266,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new ConfigurationException("could not find resource for stubfile ["+getStubFileName()+"]");
 			}
 			try {
-				returnString = Misc.resourceToString(stubUrl, SystemUtils.LINE_SEPARATOR);
+				returnString = Misc.resourceToString(stubUrl, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception loading stubfile ["+getStubFileName()+"] from resource ["+stubUrl.toExternalForm()+"]", e);
 			}
@@ -591,7 +590,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				if (sfn != null) {
 					try {
-						result = new Message(Misc.resourceToString(ClassUtils.getResourceURL(this, sfn), SystemUtils.LINE_SEPARATOR));
+						result = new Message(Misc.resourceToString(ClassUtils.getResourceURL(this, sfn), Misc.LINE_SEPARATOR));
 						log.info(getLogPrefix(session)+"returning result from dynamic stub ["+sfn+"]");
 					} catch (Throwable e) {
 						throw new PipeRunException(this,getLogPrefix(session)+"got exception loading result from stub [" + sfn + "]",e);
