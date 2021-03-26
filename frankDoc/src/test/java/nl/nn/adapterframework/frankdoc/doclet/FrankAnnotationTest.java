@@ -3,39 +3,12 @@ package nl.nn.adapterframework.frankdoc.doclet;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class FrankAnnotationTest {
-	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.doclet.";
-
-	@Parameters(name = "{0}")
-	public static Collection<Object[]> data() {
-		final List<Object[]> result = new ArrayList<>();
-		Arrays.asList(Environment.values()).forEach(v -> result.add(new Object[] {v}));
-		return result;
-	}
-
-	@Parameter
-	public Environment environment;
-
-	private FrankClassRepository classRepository;
-
-	@Before
-	public void setUp() {
-		classRepository = environment.getRepository(PACKAGE);
-	}
-
+public class FrankAnnotationTest extends TestBase{
 	@Test
 	public void whenArrayAnnotationValueProvidedAsScalarThenStillFetchable() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Parent");

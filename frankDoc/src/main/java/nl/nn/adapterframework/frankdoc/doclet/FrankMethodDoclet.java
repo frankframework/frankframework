@@ -1,9 +1,6 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
@@ -19,10 +16,13 @@ class FrankMethodDoclet implements FrankMethod {
 
 	private final MethodDoc method;
 	private final FrankClassDoclet declaringClass;
+	private final Map<String, FrankAnnotation> frankAnnotationsByName;
 
 	FrankMethodDoclet(MethodDoc method, FrankClassDoclet declaringClass) {
 		this.method = method;
 		this.declaringClass = declaringClass;
+		AnnotationDesc[] annotationDescs = method.annotations();
+		frankAnnotationsByName = FrankDocletUtils.getFrankAnnotationsByName(annotationDescs);
 	}
 
 	@Override
@@ -37,24 +37,12 @@ class FrankMethodDoclet implements FrankMethod {
 
 	@Override
 	public FrankAnnotation[] getAnnotations() {
-		AnnotationDesc[] annotationDescs = method.annotations();
-		FrankAnnotation[] annotations = new FrankAnnotation[annotationDescs.length];
-		for(int i = 0; i < annotationDescs.length; ++i) {
-			annotations[i] = new FrankAnnotationDoclet(annotationDescs[i]);
-		}
-		return annotations;
+		return frankAnnotationsByName.values().toArray(new FrankAnnotation[] {});
 	}
 
 	@Override
 	public FrankAnnotation getAnnotation(String name) {
-		List<FrankAnnotation> candidates = Arrays.asList(getAnnotations()).stream()
-				.filter(fa -> fa.getName().equals(name))
-				.collect(Collectors.toList());
-		if(candidates.isEmpty()) {
-			return null;
-		} else {
-			return candidates.get(0);
-		}
+		return frankAnnotationsByName.get(name);
 	}
 
 	@Override
@@ -119,14 +107,12 @@ class FrankMethodDoclet implements FrankMethod {
 		return result;
 	}
 
-	List<FrankMethod> removeOverriddenMethod(List<FrankMethod> from) {
+	void removeOverriddenFrom(Map<MethodDoc, FrankMethod> methodRepository) {
 		MethodDoc toRemove = method.overriddenMethod();
-		List<FrankMethod> result = new ArrayList<>();
-		for(FrankMethod candidate: from) {
-			if(! ((FrankMethodDoclet) candidate).method.equals(toRemove)) {
-				result.add(candidate);
-			}
-		}
-		return result;
+		methodRepository.remove(toRemove);
+	}
+
+	void addToRepository(Map<MethodDoc, FrankMethod> methodRepository) {
+		methodRepository.put(method, this);
 	}
 }

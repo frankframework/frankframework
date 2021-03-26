@@ -4,16 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
-
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.AnnotationValue;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 class FrankAnnotationDoclet implements FrankAnnotation {
-	private static Logger log = LogUtil.getLogger(FrankAnnotationDoclet.class);
-
 	private final AnnotationDesc annotation;
 
 	FrankAnnotationDoclet(AnnotationDesc annotation) {
@@ -31,18 +25,6 @@ class FrankAnnotationDoclet implements FrankAnnotation {
 	}
 
 	@Override
-	public FrankAnnotation[] getAnnotations() {
-		// TODO: Implement or throw exception that it is not implemented.
-		return new FrankAnnotation[] {};
-	}
-
-	@Override
-	public FrankAnnotation getAnnotation(String name) {
-		// TODO Implement or throw exception that it is not implemented.
-		return null;
-	}
-
-	@Override
 	public Object getValue() throws FrankDocException {
 		List<Object> candidates = Arrays.asList(annotation.elementValues()).stream()
 				.filter(ev -> ev.element().name().equals("value"))
@@ -56,8 +38,7 @@ class FrankAnnotationDoclet implements FrankAnnotation {
 			try {
 				valueAsArray = (AnnotationValue[]) rawValue;
 			} catch(ClassCastException e) {
-				log.warn("Could not cast annotation value to array: {}", rawValue.toString(), e);
-				return rawValue.toString();
+				throw new FrankDocException(String.format("Annotation has unknown type: [%s]", getName()), e);
 			}
 			List<String> valueAsStringList = Arrays.asList(valueAsArray).stream()
 					.map(v -> v.value().toString())

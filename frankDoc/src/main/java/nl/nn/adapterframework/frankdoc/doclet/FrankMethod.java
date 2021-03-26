@@ -17,6 +17,8 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.doclet;
 
 public interface FrankMethod extends FrankProgramElement {
+	FrankAnnotation[] getAnnotations();
+	FrankAnnotation getAnnotation(String name);
 	FrankClass getDeclaringClass();
 	/**
 	 * If the return type is void, return a {@link FrankPrimitiveType} wrapping "void".

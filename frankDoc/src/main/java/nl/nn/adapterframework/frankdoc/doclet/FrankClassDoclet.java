@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.ClassDoc;
+import com.sun.javadoc.FieldDoc;
 import com.sun.javadoc.MethodDoc;
 
 import nl.nn.adapterframework.util.LogUtil;
@@ -25,6 +26,7 @@ class FrankClassDoclet implements FrankClass {
 	private final Set<String> childClassNames = new HashSet<>();
 	private final Map<String, FrankClass> interfaceImplementationsByName = new HashMap<>();
 	private final Map<MethodDoc, FrankMethod> frankMethodsByDocletMethod = new HashMap<>();
+	private final Map<String, FrankAnnotation> frankAnnotationsByName;
 
 	FrankClassDoclet(ClassDoc clazz, FrankClassRepository repository) {
 		this.repository = repository;
@@ -32,6 +34,8 @@ class FrankClassDoclet implements FrankClass {
 		for(MethodDoc methodDoc: clazz.methods()) {
 			frankMethodsByDocletMethod.put(methodDoc, new FrankMethodDoclet(methodDoc, this));
 		}
+		AnnotationDesc[] annotationDescs = clazz.annotations();
+		frankAnnotationsByName = FrankDocletUtils.getFrankAnnotationsByName(annotationDescs);
 	}
 
 	void addChild(String className) {
@@ -58,25 +62,13 @@ class FrankClassDoclet implements FrankClass {
 
 	@Override
 	public FrankAnnotation[] getAnnotations() {
-		AnnotationDesc[] annotationDescs = clazz.annotations();
-		FrankAnnotation[] result = new FrankAnnotation[annotationDescs.length];
-		for(int i = 0; i < annotationDescs.length; ++i) {
-			result[i] = new FrankAnnotationDoclet(annotationDescs[i]);
-		}
-		return result;
+		List<FrankAnnotation> values = new ArrayList<>(frankAnnotationsByName.values());
+		return values.toArray(new FrankAnnotation[] {});
 	}
 
 	@Override
 	public FrankAnnotation getAnnotation(String name) {
-		FrankAnnotation[] allAnnotations = getAnnotations();
-		List<FrankAnnotation> candidates = Arrays.asList(allAnnotations).stream()
-				.filter(a -> a.getName().equals(name))
-				.collect(Collectors.toList());
-		if(candidates.isEmpty()) {
-			return null;
-		} else {
-			return candidates.get(0);
-		}
+		return frankAnnotationsByName.get(name);
 	}
 
 	@Override
@@ -99,7 +91,10 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	@Override
-	public FrankClass[] getInterfaces() {
+	public FrankClass[] getInterfaces() throws FrankDocException {
+		if(! isInterface()) {
+			throw new FrankDocException(String.format("Class [%s] is not an interfaces, and hence method isInterfaces is not supported", getName()), null);
+		}
 		ClassDoc[] interfaceDocs = clazz.interfaces();
 		List<FrankClass> resultList = new ArrayList<>();
 		for(ClassDoc interfaceDoc: interfaceDocs) {
@@ -112,11 +107,7 @@ class FrankClassDoclet implements FrankClass {
 				log.warn("Error searching for {}", interfaceDoc.name(), e);
 			}
 		}
-		FrankClass[] result = new FrankClass[resultList.size()];
-		for(int i = 0; i < resultList.size(); ++i) {
-			result[i] = resultList.get(i);
-		}
-		return result;
+		return resultList.toArray(new FrankClass[] {});
 	}
 
 	@Override
@@ -139,14 +130,23 @@ class FrankClassDoclet implements FrankClass {
 		if(! isInterface()) {
 			throw new FrankDocException(String.format("Cannot get implementations of non-interface [%s]", getName()), null);
 		}
-		List<FrankClass> result = new ArrayList<>();
-		result.addAll(interfaceImplementationsByName.values());
-		return result;
+		return interfaceImplementationsByName.values().stream()
+				// Remove abstract classes to make it the same as reflection does it.
+				.filter(c -> ! c.isAbstract())
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public FrankMethod[] getDeclaredMethods() {
 		List<FrankMethod> resultList = new ArrayList<>(frankMethodsByDocletMethod.values());
+		return resultList.toArray(new FrankMethod[] {});
+	}
+
+	@Override
+	public FrankMethod[] getDeclaredAndInheritedMethods() {
+		List<FrankMethod> resultList = getDeclaredAndInheritedMethodsAsMap().values().stream()
+				.filter(FrankMethod::isPublic)				
+				.collect(Collectors.toList());
 		FrankMethod[] result = new FrankMethod[resultList.size()];
 		for(int i = 0; i < resultList.size(); ++i) {
 			result[i] = resultList.get(i);
@@ -154,35 +154,27 @@ class FrankClassDoclet implements FrankClass {
 		return result;
 	}
 
-	@Override
-	public FrankMethod[] getDeclaredAndInheritedMethods() {
-		Map<String, List<FrankMethod>> inheritedMethodsByName = new HashMap<>();
+	private Map<MethodDoc, FrankMethod> getDeclaredAndInheritedMethodsAsMap() {
+		final Map<MethodDoc, FrankMethod> result = new HashMap<>();
 		if(getSuperclass() != null) {
-			inheritedMethodsByName = Arrays.asList(getSuperclass().getDeclaredAndInheritedMethods()).stream()
-					.collect(Collectors.groupingBy(FrankMethod::getName));
+			result.putAll(((FrankClassDoclet) getSuperclass()).getDeclaredAndInheritedMethodsAsMap());
 		}
-		for(FrankMethod declaredMethod: getDeclaredMethods()) {
-			String declaredMethodName = declaredMethod.getName();
-			if(inheritedMethodsByName.containsKey(declaredMethodName)) {
-				List<FrankMethod> bucket = inheritedMethodsByName.get(declaredMethodName);
-				inheritedMethodsByName.put(declaredMethodName, ((FrankMethodDoclet) declaredMethod).removeOverriddenMethod(bucket));
-			}
+		List<FrankMethod> declaredMethodList = Arrays.asList(getDeclaredMethods());
+		for(FrankMethod declaredMethod: declaredMethodList) {
+			((FrankMethodDoclet) declaredMethod).removeOverriddenFrom(result);
 		}
-		List<FrankMethod> resultList = inheritedMethodsByName.values().stream()
-				.flatMap(List::stream)
-				.collect(Collectors.toList());
-		resultList.addAll(Arrays.asList(getDeclaredMethods()));
-		FrankMethod[] result = new FrankMethod[resultList.size()];
-		for(int i = 0; i < resultList.size(); ++i) {
-			result[i] = resultList.get(i);
-		}
+		declaredMethodList.forEach(dm -> ((FrankMethodDoclet) dm).addToRepository(result));
 		return result;
 	}
 
 	@Override
 	public String[] getEnumConstants() {
-		// TODO Auto-generated method stub
-		return null;
+		FieldDoc[] fieldDocs = clazz.enumConstants();
+		String[] result = new String[fieldDocs.length];
+		for(int i = 0; i < fieldDocs.length; ++i) {
+			result[i] = fieldDocs[i].name();
+		}
+		return result;
 	}
 
 	FrankClassRepositoryDoclet getRepository() {

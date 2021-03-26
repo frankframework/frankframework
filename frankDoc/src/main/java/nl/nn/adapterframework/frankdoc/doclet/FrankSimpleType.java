@@ -18,11 +18,6 @@ abstract class FrankSimpleType implements FrankType {
 	}
 
 	@Override
-	public boolean isAnnotation() {
-		return false;
-	}
-
-	@Override
 	public FrankAnnotation[] getAnnotations() {
 		return new FrankAnnotation[] {};
 	}
