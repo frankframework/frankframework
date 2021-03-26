@@ -143,7 +143,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	}
 
 	/**
-	 * Spring's configure method!
+	 * Spring's configure method.
+	 * Only called when the Configuration has been added through a parent context!
 	 */
 	@Override
 	public void afterPropertiesSet() {

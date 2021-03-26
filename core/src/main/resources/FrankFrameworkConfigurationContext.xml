@@ -18,11 +18,6 @@
 		scope="singleton"
 	/>
 
-	<bean id="adapterProcessor" autowire="byName" scope="prototype" abstract="true" />
-
-	<bean name="adapterFlowProcessor" class="nl.nn.adapterframework.extensions.graphviz.FlowDiagramAdapterWrapper" parent="adapterProcessor"/>
-	<bean name="adapterJmxProcessor" class="nl.nn.adapterframework.jmx.JmxAdapterWrapper" parent="adapterProcessor"/>
-
 	<!--
 	Beans created from Configuration.xml, but prototyped here for
 	extra dependencies which cannot be created otherwise.

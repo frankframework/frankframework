@@ -60,6 +60,12 @@
 		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
+
+	<bean id="adapterProcessor" autowire="byName" scope="prototype" abstract="true" />
+
+	<bean name="adapterFlowProcessor" class="nl.nn.adapterframework.extensions.graphviz.FlowDiagramAdapterWrapper" parent="adapterProcessor"/>
+	<bean name="adapterJmxProcessor" class="nl.nn.adapterframework.jmx.JmxAdapterWrapper" parent="adapterProcessor"/>
+
 	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
 		<property name="locateExistingServerIfPossible" value="true" /><!-- indicate to first look for a server -->
 		<property name="defaultDomain" value="${instance.name}" />
