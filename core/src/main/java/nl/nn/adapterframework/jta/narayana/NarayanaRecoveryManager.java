@@ -47,7 +47,7 @@ public class NarayanaRecoveryManager implements InitializingBean, DisposableBean
 		this.recoveryManager.terminate();
 	}
 
-	void registerXAResourceRecoveryHelper(XAResourceRecoveryHelper xaResourceRecoveryHelper) {
+	public void registerXAResourceRecoveryHelper(XAResourceRecoveryHelper xaResourceRecoveryHelper) {
 		getXARecoveryModule().addXAResourceRecoveryHelper(xaResourceRecoveryHelper);
 	}
 
