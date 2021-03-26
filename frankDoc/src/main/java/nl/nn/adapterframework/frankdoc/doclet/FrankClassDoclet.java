@@ -24,10 +24,14 @@ class FrankClassDoclet implements FrankClass {
 	private final ClassDoc clazz;
 	private final Set<String> childClassNames = new HashSet<>();
 	private final Map<String, FrankClass> interfaceImplementationsByName = new HashMap<>();
+	private final Map<MethodDoc, FrankMethod> frankMethodsByDocletMethod = new HashMap<>();
 
 	FrankClassDoclet(ClassDoc clazz, FrankClassRepository repository) {
 		this.repository = repository;
 		this.clazz = clazz;
+		for(MethodDoc methodDoc: clazz.methods()) {
+			frankMethodsByDocletMethod.put(methodDoc, new FrankMethodDoclet(methodDoc, this));
+		}
 	}
 
 	void addChild(String className) {
@@ -142,10 +146,10 @@ class FrankClassDoclet implements FrankClass {
 
 	@Override
 	public FrankMethod[] getDeclaredMethods() {
-		MethodDoc[] methodDocs = clazz.methods();
-		FrankMethod[] result = new FrankMethod[methodDocs.length];
-		for(int i = 0; i < methodDocs.length; ++i) {
-			result[i] = new FrankMethodDoclet(methodDocs[i], this);
+		List<FrankMethod> resultList = new ArrayList<>(frankMethodsByDocletMethod.values());
+		FrankMethod[] result = new FrankMethod[resultList.size()];
+		for(int i = 0; i < resultList.size(); ++i) {
+			result[i] = resultList.get(i);
 		}
 		return result;
 	}
@@ -181,4 +185,17 @@ class FrankClassDoclet implements FrankClass {
 		return null;
 	}
 
+	FrankClassRepositoryDoclet getRepository() {
+		return (FrankClassRepositoryDoclet) repository;
+	}
+
+	FrankMethod recursivelyFindFrankMethod(MethodDoc methodDoc) {
+		if(frankMethodsByDocletMethod.containsKey(methodDoc)) {
+			return frankMethodsByDocletMethod.get(methodDoc);
+		} else if(getSuperclass() != null) {
+			return ((FrankClassDoclet) getSuperclass()).recursivelyFindFrankMethod(methodDoc);
+		} else {
+			return null;
+		}
+	}
 }
