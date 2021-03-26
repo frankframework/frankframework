@@ -29,7 +29,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
-import nl.nn.adapterframework.frankdoc.model.ExcludeFilter;
+import nl.nn.adapterframework.frankdoc.model.FrankElementFilters;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -69,8 +69,8 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 
 	private FrankDocModel createModel() throws Exception {
 		FrankClassRepository classRepository = FrankClassRepository.getReflectInstance();
-		classRepository.setExcludeFilters(ExcludeFilter.getExcludeFilter());
-		classRepository.setIncludeFilters(ExcludeFilter.getIncludeFilter());
+		classRepository.setExcludeFilters(FrankElementFilters.getExcludeFilter());
+		classRepository.setIncludeFilters(FrankElementFilters.getIncludeFilter());
 		return FrankDocModel.populate(
 				getDigesterRulesPath(digesterRulesFileName), startClassName, classRepository);
 	}

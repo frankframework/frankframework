@@ -38,7 +38,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
-import nl.nn.adapterframework.frankdoc.model.ExcludeFilter;
+import nl.nn.adapterframework.frankdoc.model.FrankElementFilters;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
 import nl.nn.adapterframework.frankdoc.model.FrankElementStatistics;
@@ -54,13 +54,13 @@ public class DocWriterNewIntegrationTest {
 	@Before
 	public void setUp() {
 		classRepository = FrankClassRepository.getReflectInstance();
-		classRepository.setExcludeFilters(ExcludeFilter.getExcludeFilter());
-		classRepository.setIncludeFilters(ExcludeFilter.getIncludeFilter());
+		classRepository.setExcludeFilters(FrankElementFilters.getExcludeFilter());
+		classRepository.setIncludeFilters(FrankElementFilters.getIncludeFilter());
 	}
 
 	@Test
 	public void testStrict() throws Exception {
-		assumeTrue(TestAssertions.isTestRunningOnCI());
+		// assumeTrue(TestAssertions.isTestRunningOnCI());
 		String schemaFileName = generateXsd(XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		validate(schemaFileName, TEST_CONFIGURATION_FILE);
 	}

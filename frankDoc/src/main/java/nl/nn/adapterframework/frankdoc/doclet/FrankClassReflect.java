@@ -168,7 +168,8 @@ class FrankClassReflect implements FrankClass {
 		scanner.setBeanNameGenerator(beanNameGenerator);
 		Set<String> excludeFilters = new HashSet<>(repository.getExcludeFilters());
 		for (String excludeFilter : excludeFilters) {
-			addExcludeFilter(scanner, excludeFilter);
+			String filterRegex = excludeFilter.replaceAll("\\.", "\\\\.");
+			addExcludeFilter(scanner, filterRegex);
 		}
 		boolean success = false;
 		int maxTries = 100;
