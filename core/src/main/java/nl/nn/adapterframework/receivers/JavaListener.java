@@ -233,7 +233,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	/**
 	 * The <code>toString()</code> method retrieves its value
 	 * by reflection.
-	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
 	 *
 	 **/
 	@Override

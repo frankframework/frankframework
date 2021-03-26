@@ -2,7 +2,7 @@
 <%@ page import="nl.nn.adapterframework.util.Misc"%>
 <%@ page import="nl.nn.adapterframework.util.ProcessMetrics"%>
 <%@ page import="nl.nn.adapterframework.util.XmlUtils"%>
-<%@ page import="org.apache.commons.lang.builder.ToStringBuilder"%>
+<%@ page import="org.apache.commons.lang3.builder.ToStringBuilder"%>
 <%@ taglib uri="/WEB-INF/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/xtags.tld" prefix="xtags" %>

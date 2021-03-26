@@ -29,7 +29,7 @@ import javax.xml.xquery.XQException;
 import javax.xml.xquery.XQPreparedExpression;
 import javax.xml.xquery.XQResultSequence;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import net.sf.saxon.xqj.SaxonXQDataSource;
 import nl.nn.adapterframework.configuration.ConfigurationException;

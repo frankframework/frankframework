@@ -17,7 +17,7 @@ package nl.nn.adapterframework.core;
 
 import java.security.Principal;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * Security handler that declares that each role is valid. 

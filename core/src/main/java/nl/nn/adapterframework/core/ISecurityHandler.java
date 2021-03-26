@@ -17,7 +17,7 @@ package nl.nn.adapterframework.core;
 
 import java.security.Principal;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * Defines behaviour that can be used to assert identity of callers of a pipeline.

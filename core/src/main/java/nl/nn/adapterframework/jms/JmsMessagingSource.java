@@ -25,7 +25,7 @@ import javax.naming.NamingException;
 
 import nl.nn.adapterframework.util.ClassUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * {@link MessagingSource} for JMS connections.

@@ -20,7 +20,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import javax.script.Invocable;
