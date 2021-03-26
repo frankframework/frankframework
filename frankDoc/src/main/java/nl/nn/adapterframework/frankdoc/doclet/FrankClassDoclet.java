@@ -77,6 +77,10 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	@Override
+	public String getPackageName() {
+		return clazz.containingPackage().name();
+	}
+	@Override
 	public FrankClass getSuperclass() {
 		FrankClass result = null;
 		ClassDoc superClazz = clazz.superclass();

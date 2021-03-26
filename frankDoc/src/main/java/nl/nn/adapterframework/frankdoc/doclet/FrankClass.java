@@ -25,6 +25,7 @@ public interface FrankClass extends FrankType {
 	}
 
 	String getSimpleName();
+	String getPackageName();
 	FrankClass getSuperclass();
 
 	/**

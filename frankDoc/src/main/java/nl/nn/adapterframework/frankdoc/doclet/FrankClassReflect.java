@@ -76,6 +76,11 @@ class FrankClassReflect implements FrankClass {
 	}
 
 	@Override
+	public String getPackageName() {
+		return clazz.getPackage().getName();
+	}
+
+	@Override
 	public FrankClass getSuperclass() {
 		Class<?> superClazz = clazz.getSuperclass();
 		if(superClazz == null) {
