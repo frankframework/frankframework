@@ -25,6 +25,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,6 +60,8 @@ public class FrankDocModelTest {
 	@Before
 	public void setUp() {
 		classRepository = FrankClassRepository.getReflectInstance();
+		classRepository.setIncludeFilters(SIMPLE, IBISDOCREF, "nl.nn.adapterframework.frankdoc.testtarget.reflect");
+		classRepository.setExcludeFilters(new HashSet<>());
 		instance = new FrankDocModel(classRepository);
 		fakeAttributeOwner = null;
 	}

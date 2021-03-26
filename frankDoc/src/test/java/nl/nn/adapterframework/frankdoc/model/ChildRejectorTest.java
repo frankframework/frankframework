@@ -37,7 +37,10 @@ public class ChildRejectorTest {
 
 	private void init(String modelPopulateClassSimpleName, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, String subject) throws Exception {
 		String rootClassName = PACKAGE + "." + modelPopulateClassSimpleName;
-		model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, FrankClassRepository.getReflectInstance());
+		FrankClassRepository repository = FrankClassRepository.getReflectInstance();
+		repository.setIncludeFilters(PACKAGE);
+		repository.setExcludeFilters(new HashSet<>());
+		model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
 		instance = new ChildRejector<FrankAttribute>(
 				selector, rejector, FrankAttribute.class);
 		instance.init(getElement(subject));

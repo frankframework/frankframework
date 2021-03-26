@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
+import java.util.HashSet;
+
 import com.sun.javadoc.ClassDoc;
 
 enum Environment {
@@ -13,7 +15,10 @@ enum Environment {
 	}
 
 	FrankClassRepository getRepository(String packageName) {
-		return delegate.getRepository(packageName);
+		FrankClassRepository result = delegate.getRepository(packageName);
+		result.setIncludeFilters(packageName);
+		result.setExcludeFilters(new HashSet<>());
+		return result;
 	}
 
 	private static abstract class Delegate {

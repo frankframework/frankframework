@@ -34,7 +34,10 @@ public class FrankDocModelPopulateTest {
 
 	@Before
 	public void setUp() {
-		instance = FrankDocModel.populate(FrankClassRepository.getReflectInstance());
+		FrankClassRepository classRepository = FrankClassRepository.getReflectInstance();
+		classRepository.setExcludeFilters(ExcludeFilter.getExcludeFilter());
+		classRepository.setIncludeFilters(ExcludeFilter.getIncludeFilter());
+		instance = FrankDocModel.populate(classRepository);
 		actualTypeSimpleNames = instance.getAllTypes().values().stream()
 				.map(ElementType::getSimpleName).collect(Collectors.toSet());
 		actualElementSimpleNames = instance.getAllElements().values().stream()

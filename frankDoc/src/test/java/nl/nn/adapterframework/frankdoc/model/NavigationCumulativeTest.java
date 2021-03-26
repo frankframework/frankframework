@@ -23,6 +23,7 @@ import static nl.nn.adapterframework.frankdoc.model.ElementChild.NONE;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -69,7 +70,10 @@ public class NavigationCumulativeTest {
 	@Test
 	public void test() {
 		String rootClassName = PACKAGE + "." + simpleClassName;
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, FrankClassRepository.getReflectInstance());
+		FrankClassRepository repository = FrankClassRepository.getReflectInstance();
+		repository.setIncludeFilters(PACKAGE);
+		repository.setExcludeFilters(new HashSet<>());
+		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
 		FrankElement subject = model.findFrankElement(rootClassName);
 		List<String> actual = subject.getCumulativeAttributes(childSelector, childRejector).stream()
 				.map(a -> a.getName()).collect(Collectors.toList());

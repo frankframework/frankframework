@@ -22,9 +22,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
@@ -34,10 +36,18 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
  
 public class UtilsTest {
 	private static final String SIMPLE = "nl.nn.adapterframework.frankdoc.testtarget.simple";
+	private FrankClassRepository repository;
+
+	@Before
+	public void setUp() {
+		repository = FrankClassRepository.getReflectInstance();
+		repository.setIncludeFilters(SIMPLE);
+		repository.setExcludeFilters(new HashSet<>());
+	}
 
 	@Test
 	public void testGetSpringBeans() throws FrankDocException {
-		List<FrankClass> actual = FrankClassRepository.getReflectInstance().findClass(SIMPLE + ".IListener").getInterfaceImplementations();
+		List<FrankClass> actual = repository.findClass(SIMPLE + ".IListener").getInterfaceImplementations();
 		Collections.sort(actual, Comparator.comparing(FrankClass::getName));
 		assertEquals(4, actual.size());
 		Iterator<FrankClass> it = actual.iterator();
@@ -55,7 +65,7 @@ public class UtilsTest {
 	}
 
 	private FrankMethod getTestMethod(String name) throws FrankDocException {
-		FrankClass listenerChildClass = FrankClassRepository.getReflectInstance().findClass(SIMPLE + ".ListenerChild");
+		FrankClass listenerChildClass = repository.findClass(SIMPLE + ".ListenerChild");
 		for(FrankMethod m: listenerChildClass.getDeclaredAndInheritedMethods()) {
 			if(m.getName().equals(name)) {
 				return m;

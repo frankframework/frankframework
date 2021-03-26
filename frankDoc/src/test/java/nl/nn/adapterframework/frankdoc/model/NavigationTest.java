@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -109,7 +110,10 @@ public class NavigationTest {
 	@Test
 	public void test() throws Exception {
 		String rootClassName = PACKAGE + "." + simpleClassName;
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, FrankClassRepository.getReflectInstance());
+		FrankClassRepository repository = FrankClassRepository.getReflectInstance();
+		repository.setIncludeFilters(PACKAGE);
+		repository.setExcludeFilters(new HashSet<>());
+		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
 		FrankElement walkFrom = model.findFrankElement(rootClassName);
 		walkFrom.walkCumulativeAttributes(new CumulativeChildHandler<FrankAttribute>() {
 			@Override

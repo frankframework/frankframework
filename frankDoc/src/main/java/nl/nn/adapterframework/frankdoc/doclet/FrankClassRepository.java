@@ -16,10 +16,16 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.doclet;
 
+import java.util.Set;
+
 public interface FrankClassRepository {
-	static FrankClassRepository getReflectInstance() {
+	void setExcludeFilters(Set<String> excludeFilters);
+	Set<String> getExcludeFilters();
+	void setIncludeFilters(String ...items);
+	String[] getIncludeFilter();
+	FrankClass findClass(String fullName) throws FrankDocException;
+
+	public static FrankClassRepository getReflectInstance() {
 		return new FrankClassRepositoryReflect();
 	}
-
-	FrankClass findClass(String fullName) throws FrankDocException;
 }

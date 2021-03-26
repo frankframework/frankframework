@@ -19,6 +19,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
+import java.util.HashSet;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,7 +36,10 @@ public class HighestCommonInterfaceTest {
 
 	@Before
 	public void setUp() {
-		model = FrankDocModel.populate("doc/role-inherit-digester-rules.xml", PACKAGE + "Master", FrankClassRepository.getReflectInstance());
+		FrankClassRepository repository = FrankClassRepository.getReflectInstance();
+		repository.setIncludeFilters(PACKAGE);
+		repository.setExcludeFilters(new HashSet<>());
+		model = FrankDocModel.populate("doc/role-inherit-digester-rules.xml", PACKAGE + "Master", repository);
 		founder = model.findElementType(PACKAGE + "IFounder");
 		interfaceParent = model.findElementType(PACKAGE + "IInterfaceParent");
 		interfaceElementType = model.findElementType(PACKAGE + "IInterface");

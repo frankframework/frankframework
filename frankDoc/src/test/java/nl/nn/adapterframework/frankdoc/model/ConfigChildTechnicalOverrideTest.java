@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,10 @@ public class ConfigChildTechnicalOverrideTest {
 
 	@BeforeClass
 	public static void setUp() {
-		model = FrankDocModel.populate(DIGESTER_RULES, PACKAGE + "Master", FrankClassRepository.getReflectInstance());
+		FrankClassRepository repository = FrankClassRepository.getReflectInstance();
+		repository.setIncludeFilters(PACKAGE);
+		repository.setExcludeFilters(new HashSet<>());
+		model = FrankDocModel.populate(DIGESTER_RULES, PACKAGE + "Master", repository);
 	}
 
 	@Test

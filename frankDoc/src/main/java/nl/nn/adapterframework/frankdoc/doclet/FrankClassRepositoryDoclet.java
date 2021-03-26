@@ -15,6 +15,9 @@ import nl.nn.adapterframework.util.LogUtil;
 class FrankClassRepositoryDoclet implements FrankClassRepository {
 	private static Logger log = LogUtil.getLogger(FrankClassRepositoryDoclet.class);
 
+	private Set<String> excludeFilters;
+	private String[] includeFilter;
+
 	private final Map<String, FrankClassDoclet> classesByName = new HashMap<>();
 
 	FrankClassRepositoryDoclet(ClassDoc[] classDocs) {
@@ -28,6 +31,26 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 		for(ClassDoc classDoc: classDocs) {
 			setInterfaceImplementations(classDoc, interfacesByName);
 		}
+	}
+
+	@Override
+	public void setExcludeFilters(Set<String> excludeFilters) {
+		this.excludeFilters = excludeFilters;
+	}
+
+	@Override
+	public Set<String> getExcludeFilters() {
+		return excludeFilters;
+	}
+
+	@Override
+	public void setIncludeFilters(String ...items) {
+		includeFilter = items;
+	}
+
+	@Override
+	public String[] getIncludeFilter() {
+		return includeFilter;
 	}
 
 	private FrankClassDoclet findOrCreateClass(ClassDoc classDoc) {

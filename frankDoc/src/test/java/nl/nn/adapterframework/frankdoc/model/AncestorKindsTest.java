@@ -21,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,7 +42,10 @@ public class AncestorKindsTest {
 
 	@Before
 	public void setUp() {
-		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild", FrankClassRepository.getReflectInstance());
+		FrankClassRepository classRepository = FrankClassRepository.getReflectInstance();
+		classRepository.setIncludeFilters(PACKAGE);
+		classRepository.setExcludeFilters(new HashSet<>());
+		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild", classRepository);
 	}
 
 	@Test

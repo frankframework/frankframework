@@ -18,6 +18,8 @@ package nl.nn.adapterframework.frankdoc.model;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.util.HashSet;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,6 +36,8 @@ public class FrankElementXsdElementNameTest {
 	@Before
 	public void setUp() {
 		classRepository = FrankClassRepository.getReflectInstance();
+		classRepository.setIncludeFilters(PACKAGE);
+		classRepository.setExcludeFilters(new HashSet<>());
 		model = FrankDocModel.populate(DIGESTER_RULES, CONTAINER, classRepository);
 	}
 
