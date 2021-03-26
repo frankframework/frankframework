@@ -2,7 +2,10 @@ package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.Adapter;
 
-public class AutoRegisteringAdapterManager extends AdapterManager {
+/**
+ * Minimum Viable AdapterManager that also calls the configure method upon registering
+ */
+public class AutoConfiguringAdapterManager extends AdapterManager {
 
 	@Override
 	public void registerAdapter(Adapter adapter) {

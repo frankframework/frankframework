@@ -32,10 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jmx.export.MBeanExporter;
 
-import nl.nn.adapterframework.configuration.AdapterProcessor;
+import nl.nn.adapterframework.configuration.AdapterLifecylceWrapperBase;
 import nl.nn.adapterframework.core.Adapter;
 
-public class JmxAdapterFilter extends AdapterProcessor implements InitializingBean {
+public class JmxAdapterWrapper extends AdapterLifecylceWrapperBase implements InitializingBean {
 
 	private MBeanExporter mBeanManager = null;
 	private static Map<Adapter, ObjectName> registeredAdapters = new HashMap<>();

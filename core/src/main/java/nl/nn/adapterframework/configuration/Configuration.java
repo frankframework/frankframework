@@ -28,6 +28,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.Lifecycle;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -141,6 +142,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		setParent(applicationContext);
 	}
 
+	/**
+	 * Spring's configure method!
+	 */
 	@Override
 	public void afterPropertiesSet() {
 		if(!(getClassLoader() instanceof IConfigurationClassLoader)) {
@@ -166,15 +170,25 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	public void refresh() throws BeansException, IllegalStateException {
 		super.refresh();
 
-		if(adapterManager == null) {
+		if(adapterManager == null) { //Manually set the AdapterManager bean
 			setAdapterManager(getBean("adapterManager", AdapterManager.class));
 		}
 	}
 
+	/**
+	 * Spring method which starts the ApplicationContext.
+	 * Loads + digests the configuration and calls start() in all registered 
+	 * beans that implement the Spring {@link Lifecycle} interface.
+	 */
 	@Override
 	public void start() {
 		log.info("starting configuration ["+getId()+"]");
+		load();
 
+		super.start();
+	}
+
+	private void load() {
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
 			configurationDigester.digest();
@@ -190,13 +204,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
 			}
 		}
-
-		super.start();
 	}
 
 	@Override
 	public void close() {
-		setUnloadInProgressOrDone(true);
+		setUnloadInProgressOrDone(true); //Marks Configuration as inactive
 
 		super.close();
 	}

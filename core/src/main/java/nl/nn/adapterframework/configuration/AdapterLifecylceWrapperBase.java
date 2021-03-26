@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.util.LogUtil;
 
-public abstract class AdapterProcessor {
+public abstract class AdapterLifecylceWrapperBase {
 	protected final Logger log = LogUtil.getLogger(this);
 
 	public abstract void addAdapter(Adapter adapter);

@@ -201,9 +201,9 @@ public class IbisContext extends IbisApplicationContext {
 		if (configuration != null) {
 			long start = System.currentTimeMillis();
 			ibisManager.unload(configurationName);
-//			if (configuration.getAdapterService().getAdapters().size() > 0) {
-//				log("Not all adapters are unregistered: " + configuration.getAdapterService().getAdapters(), MessageKeeperLevel.ERROR);
-//			}
+			if (configuration.getRegisteredAdapters().size() > 0) {
+				log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageKeeperLevel.ERROR);
+			}
 			String configurationVersion = configuration.getVersion();
 			getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
 

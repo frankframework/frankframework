@@ -20,12 +20,12 @@ import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import nl.nn.adapterframework.configuration.AdapterProcessor;
+import nl.nn.adapterframework.configuration.AdapterLifecylceWrapperBase;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
-public class AdapterFlowProcessor extends AdapterProcessor {
+public class FlowDiagramAdapterWrapper extends AdapterLifecylceWrapperBase {
 	private FlowDiagramManager flowDiagramManager;
 
 	@Override

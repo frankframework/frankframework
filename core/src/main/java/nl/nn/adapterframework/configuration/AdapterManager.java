@@ -38,7 +38,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter ApplicationContext applicationContext;
-	private List<? extends AdapterProcessor> adapterProcessors;
+	private List<? extends AdapterLifecylceWrapperBase> adapterProcessors;
 
 	private enum BootState {
 		STARTING, STARTED, STOPPING, STOPPED;
@@ -49,36 +49,6 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
-
-	@Override
-	public void close() {
-		log.info("destroying AdapterManager ["+this+"]");
-
-		while (getStartAdapterThreads().size() > 0) {
-			log.debug("Waiting for start threads to end: " + getStartAdapterThreads());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for start threads to end", e);
-			}
-		}
-
-		stop(); //Just call this in case...
-
-		while (getStopAdapterThreads().size() > 0) {
-			log.debug("Waiting for stop threads to end: " + getStopAdapterThreads());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for stop threads to end", e);
-			}
-		}
-
-		while (getAdapterList().size() > 0) {
-			Adapter adapter = getAdapter(0);
-			unRegisterAdapter(adapter);
-		}
-	}
 
 	public void registerAdapter(Adapter adapter) {
 		if(state != BootState.STARTING) {
@@ -94,7 +64,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 		}
 
 		if(adapterProcessors != null) {
-			for (AdapterProcessor adapterProcessor : adapterProcessors) {
+			for (AdapterLifecylceWrapperBase adapterProcessor : adapterProcessors) {
 				adapterProcessor.addAdapter(adapter);
 			}
 		}
@@ -104,7 +74,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 	public void unRegisterAdapter(Adapter adapter) {
 		String name = adapter.getName();
 		if(adapterProcessors != null) {
-			for (AdapterProcessor adapterProcessor : adapterProcessors) {
+			for (AdapterLifecylceWrapperBase adapterProcessor : adapterProcessors) {
 				adapterProcessor.removeAdapter(adapter);
 			}
 		}
@@ -114,7 +84,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 	}
 
 	@Autowired
-	public void setAdapterProcessors(List<? extends AdapterProcessor> adapterProcessors) {
+	public void setAdapterProcessors(List<? extends AdapterLifecylceWrapperBase> adapterProcessors) {
 		this.adapterProcessors = adapterProcessors;
 	}
 
@@ -175,23 +145,13 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 		return startedAdapters;
 	}
 
-	@Override
-	public void stop() {
-		if(state != BootState.STARTED) {
-			return;
-		}
-
-		state = BootState.STOPPING;
-		log.info("stopping all adapters in AdapterManager ["+this+"]");
-		List<Adapter> adapters = getAdapterList();
-		Collections.reverse(adapters);
-		for (Adapter adapter : adapters) {
-			log.info("stopping adapter [" + adapter.getName() + "]");
-			adapter.stopRunning();
-		}
-		state = BootState.STOPPED;
-	}
-
+	/**
+	 * Inherited from the Spring {@link Lifecycle} interface.
+	 * Upon registering all Beans in the ApplicationContext (Configuration)
+	 * the {@link LifecycleProcessor} will trigger this method.
+	 * 
+	 * Starts all Adapters registered in this manager.
+	 */
 	@Override
 	public void start() {
 		if(state != BootState.STARTING) {
@@ -212,6 +172,56 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 			}
 		}
 		state = BootState.STARTED;
+	}
+
+	/**
+	 * Stops all Adapters registered in this manager.
+	 */
+	@Override
+	public void stop() {
+		if(state != BootState.STARTED) {
+			return;
+		}
+
+		state = BootState.STOPPING;
+		log.info("stopping all adapters in AdapterManager ["+this+"]");
+		List<Adapter> adapters = getAdapterList();
+		Collections.reverse(adapters);
+		for (Adapter adapter : adapters) {
+			log.info("stopping adapter [" + adapter.getName() + "]");
+			adapter.stopRunning();
+		}
+		state = BootState.STOPPED;
+	}
+
+	@Override
+	public void close() {
+		log.info("destroying AdapterManager ["+this+"]");
+
+		while (getStartAdapterThreads().size() > 0) {
+			log.debug("Waiting for start threads to end: " + getStartAdapterThreads());
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted waiting for start threads to end", e);
+			}
+		}
+
+		stop(); //Call this just in case...
+
+		while (getStopAdapterThreads().size() > 0) {
+			log.debug("Waiting for stop threads to end: " + getStopAdapterThreads());
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted waiting for stop threads to end", e);
+			}
+		}
+
+		while (getAdapterList().size() > 0) {
+			Adapter adapter = getAdapter(0);
+			unRegisterAdapter(adapter);
+		}
 	}
 
 	@Override
