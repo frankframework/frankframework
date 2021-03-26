@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nl.nn.adapterframework.narayana;
+package nl.nn.adapterframework.jta.narayana;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -25,6 +25,7 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 /**
  * Bean to set up Narayana recovery manager.
+ * See org.springframework.boot.jta.narayana.NarayanaRecoveryManagerBean.
  *
  * @author Gytis Trikleris
  * @since 1.4.0

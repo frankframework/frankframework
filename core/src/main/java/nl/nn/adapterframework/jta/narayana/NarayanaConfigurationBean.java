@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.narayana;
+package nl.nn.adapterframework.jta.narayana;
 
 import java.util.Properties;
 
@@ -34,7 +34,7 @@ public class NarayanaConfigurationBean implements InitializingBean {
 	private class NarayanaPropertiesFactory extends PropertiesFactoryStax {
 		@Override
 		public Properties getPropertiesFromFile(String propertyFileName, ClassLoader classLoader) {
-			Properties properties = super.getPropertiesFromFile(propertyFileName, classLoader); //Loads the default jbossts-properties.xml properties.
+			Properties properties = super.getPropertiesFromFile(propertyFileName, classLoader); //Loads the default narayana-jta.jar/jbossts-properties.xml properties.
 			properties.putAll(AppConstants.getInstance()); //Override with properties set in the Ibis
 			properties.putAll(customProperties); //Override with spring configured properties
 			return properties;

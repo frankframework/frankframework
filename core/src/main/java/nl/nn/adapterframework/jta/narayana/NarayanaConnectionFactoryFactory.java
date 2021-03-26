@@ -13,8 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.narayana;
-
+package nl.nn.adapterframework.jta.narayana;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.XAConnectionFactory;

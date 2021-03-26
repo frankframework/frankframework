@@ -13,9 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.narayana;
-
-import java.sql.SQLException;
+package nl.nn.adapterframework.jta.narayana;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -24,8 +22,6 @@ import javax.sql.XADataSource;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.arjuna.ats.internal.jdbc.ConnectionImple;
-import com.arjuna.ats.internal.jdbc.ConnectionManager;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -38,18 +34,12 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory implements 
 		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
 		this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
-		return new NarayanaDataSource((XADataSource) dataSource);
+		return new NarayanaDataSource((DataSource) dataSource);
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		for(DataSource dataSource : objects.values()) {
-			try {
-				ConnectionImple connection = (ConnectionImple) dataSource.getConnection();
-				ConnectionManager.remove(connection);
-				ConnectionManager.release(connection);
-			} catch (SQLException e) { } // ignore the error if there is no connection
-		}
+		objects.values().forEach(ds -> ((NarayanaDataSource)ds).close());
 	}
 
 	@Autowired

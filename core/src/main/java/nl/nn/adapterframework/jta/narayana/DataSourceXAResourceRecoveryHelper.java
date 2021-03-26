@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nl.nn.adapterframework.narayana;
+package nl.nn.adapterframework.jta.narayana;
 
 import java.sql.SQLException;
 
@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
 /**
  * XAResourceRecoveryHelper implementation which gets XIDs, which needs to be recovered,
  * from the database.
+ * See org.springframework.boot.jta.narayana.DataSourceXAResourceRecoveryHelper.
  *
  * @author Gytis Trikleris
  * @since 1.4.0

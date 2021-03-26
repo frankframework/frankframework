@@ -33,23 +33,23 @@
 		depends-on="narayanaConfig,recoveryManager,defaultDataSource"
 	/>
 
-	<bean id="narayanaConfig" class="nl.nn.adapterframework.narayana.NarayanaConfigurationBean">
+	<bean id="narayanaConfig" class="nl.nn.adapterframework.jta.narayana.NarayanaConfigurationBean">
 		<property name="properties">
 			<props>
 				<prop key="JDBCEnvironmentBean.isolationLevel">2</prop> <!-- TRANSACTION_READ_COMMITTED -->
 				<prop key="CoreEnvironmentBean.nodeIdentifier">${instance.name.lc}.tm</prop>
-				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${log.dir}/${instance.name.lc}-narayana</prop>
-				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${log.dir}/${instance.name.lc}-narayana</prop>
-				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${log.dir}/${instance.name.lc}-narayana</prop>
+				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionlog.dir}-narayana</prop>
+				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionlog.dir}-narayana</prop>
+				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionlog.dir}-narayana</prop>
 			</props>
 		</property>
 	</bean>
 
-	<bean id="recoveryManager" class="nl.nn.adapterframework.narayana.NarayanaRecoveryManager" depends-on="narayanaConfig" />
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.narayana.NarayanaDataSourceFactory" autowire="byName" />
+	<bean id="recoveryManager" class="nl.nn.adapterframework.jta.narayana.NarayanaRecoveryManager" depends-on="narayanaConfig" />
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaDataSourceFactory" autowire="byName" />
 	<bean id="transactionHelper" class="org.jboss.narayana.jta.jms.TransactionHelperImpl">
 		<constructor-arg ref="narayanaTransactionManager"/>
 	</bean>
-	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.narayana.NarayanaConnectionFactoryFactory" autowire="byName" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaConnectionFactoryFactory" autowire="byName" />
 
 </beans>

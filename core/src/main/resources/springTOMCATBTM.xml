@@ -33,11 +33,11 @@
 		factory-method="getConfiguration"
 		>
 			<property name="serverId" value="${instance.name.lc}.tm"/>
-			<property name="logPart1Filename" value="${log.dir}/${instance.name.lc}-btm1.tlog" />
-			<property name="logPart2Filename" value="${log.dir}/${instance.name.lc}-btm2.tlog" />
+			<property name="logPart1Filename" value="${transactionlog.dir}-btm/1.tlog" />
+			<property name="logPart2Filename" value="${transactionlog.dir}-btm/2.tlog" />
 	</bean>
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.BtmDataSourceFactory" />
-	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jms.BtmConnectionFactoryFactory" />
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.btm.BtmDataSourceFactory" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.btm.BtmConnectionFactoryFactory" />
 
 </beans>
