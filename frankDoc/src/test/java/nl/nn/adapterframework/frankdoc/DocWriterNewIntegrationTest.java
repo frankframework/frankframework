@@ -60,7 +60,7 @@ public class DocWriterNewIntegrationTest {
 
 	@Test
 	public void testStrict() throws Exception {
-		// assumeTrue(TestAssertions.isTestRunningOnCI());
+		assumeTrue(TestAssertions.isTestRunningOnCI());
 		String schemaFileName = generateXsd(XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		validate(schemaFileName, TEST_CONFIGURATION_FILE);
 	}
