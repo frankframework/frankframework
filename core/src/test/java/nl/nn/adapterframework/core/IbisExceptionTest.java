@@ -3,8 +3,10 @@ package nl.nn.adapterframework.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
+import javax.jms.JMSException;
 import javax.mail.internet.AddressException;
 
 import org.junit.Test;
@@ -81,11 +83,37 @@ public class IbisExceptionTest {
 
 	@Test
 	public void testRecursiveExceptionMessageSearchUseToString() {
-		SenderException exception = new SenderException("IbisLocalSender [CallAdapter-sender] exception calling JavaListener [NestedAdapter_04]: Pipe [CallAdapter] msgId [Test Tool correlation id] caught exception: IbisLocalSender [CallAdapter-sender] exception calling JavaListener [TestErrorAdapter_Stub]: Pipe [StubbedSender] msgId [Test Tool correlation id] caught exception: Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]", 
-				new SenderException("javax.mail.internet.AddressException: Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]", 
-				new AddressException("Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]")));
-		String result = exception.getMessage();
+		String rootMessage = "rootmsg";
+		Exception rootException = new AddressException(rootMessage);
+		String message2 = rootException.toString();
+		Exception exception2 = new IbisException(message2, rootException);
+		String message3base = "Message3: ";
+		Exception exception3 = new IbisException(message3base+exception2.getMessage(), exception2);
+		String result = exception3.getMessage();
 
-		assertEquals("IbisLocalSender [CallAdapter-sender] exception calling JavaListener [NestedAdapter_04]: Pipe [CallAdapter] msgId [Test Tool correlation id] caught exception: IbisLocalSender [CallAdapter-sender] exception calling JavaListener [TestErrorAdapter_Stub]: Pipe [StubbedSender] msgId [Test Tool correlation id] caught exception: (AddressException) Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]", result);
+		assertEquals(message3base + "(AddressException) "+rootMessage, result);
+	}
+
+	@Test
+	public void testRecursiveExceptionMessageSearchUseToStringShort() {
+		String rootMessage = "rootmsg";
+		Exception rootException = new AddressException(rootMessage);
+		String message2 = rootException.toString();
+		Exception exception2 = new IbisException(message2, rootException);
+		String result = exception2.getMessage();
+
+		assertEquals("(AddressException) "+rootMessage, result);
+	}
+
+	@Test
+	public void testJmsException() {
+		IOException root = new IOException("rootMsg");
+		JMSException jmse = new JMSException("reason", "errorCode");
+		jmse.setLinkedException(root);
+		Exception ibisException = new IbisException("wrapper", jmse);
+		
+		String result = ibisException.getMessage();
+
+		assertEquals("wrapper: (JMSException) reason: (IOException) rootMsg", result);
 	}
 }
