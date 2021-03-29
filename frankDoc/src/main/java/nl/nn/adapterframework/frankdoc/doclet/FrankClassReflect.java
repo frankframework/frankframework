@@ -47,10 +47,10 @@ class FrankClassReflect implements FrankClass {
 	private static Logger log = LogUtil.getLogger(FrankClassReflect.class);
 
 	private final Class<?> clazz;
-	private final FrankClassRepository repository;
+	private final FrankClassRepositoryReflect repository;
 	private final Map<String, FrankAnnotation> annotations;
 
-	FrankClassReflect(Class<?> clazz, FrankClassRepository repository) {
+	FrankClassReflect(Class<?> clazz, FrankClassRepositoryReflect repository) {
 		this.clazz = clazz;
 		this.repository = repository;
 		Annotation[] reflectAnnotations = clazz.getAnnotations();
@@ -182,7 +182,7 @@ class FrankClassReflect implements FrankClass {
 		while (!success && tryCount < maxTries) {
 			tryCount++;
 			try {
-				scanner.scan(repository.getIncludeFilter());
+				scanner.scan(new ArrayList<>(repository.getIncludeFilters()).toArray(new String[] {}));
 				success = true;
 			} catch(BeanDefinitionStoreException e) {
 				// Exclude errors like class java.lang.NoClassDefFoundError: com/tibco/tibjms/admin/TibjmsAdminException

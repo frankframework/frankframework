@@ -99,6 +99,11 @@ class FrankClassDoclet implements FrankClass {
 		if(! isInterface()) {
 			throw new FrankDocException(String.format("Class [%s] is not an interfaces, and hence method isInterfaces is not supported", getName()), null);
 		}
+		List<FrankClass> resultList = getInterfacesRaw();
+		return resultList.toArray(new FrankClass[] {});
+	}
+
+	List<FrankClass> getInterfacesRaw() {
 		ClassDoc[] interfaceDocs = clazz.interfaces();
 		List<FrankClass> resultList = new ArrayList<>();
 		for(ClassDoc interfaceDoc: interfaceDocs) {
@@ -111,7 +116,7 @@ class FrankClassDoclet implements FrankClass {
 				log.warn("Error searching for {}", interfaceDoc.name(), e);
 			}
 		}
-		return resultList.toArray(new FrankClass[] {});
+		return resultList;
 	}
 
 	@Override

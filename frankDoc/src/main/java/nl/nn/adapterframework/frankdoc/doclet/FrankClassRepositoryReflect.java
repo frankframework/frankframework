@@ -18,30 +18,13 @@ package nl.nn.adapterframework.frankdoc.doclet;
 
 import java.util.Set;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
 class FrankClassRepositoryReflect implements FrankClassRepository {
-	private Set<String> excludeFilters;
-	private String[] includeFilter;
-
-	@Override
-	public void setExcludeFilters(Set<String> excludeFilters) {
-		this.excludeFilters = excludeFilters;
-	}
-
-	@Override
-	public Set<String> getExcludeFilters() {
-		return excludeFilters;
-	}
-
-	@Override
-	public void setIncludeFilters(String ...items) {
-		includeFilter = items;
-	}
-
-	@Override
-	public String[] getIncludeFilter() {
-		return includeFilter;
-	}
-
+	private @Getter @Setter(AccessLevel.PACKAGE) Set<String> excludeFilters;
+	private @Getter @Setter(AccessLevel.PACKAGE) Set<String> includeFilters;
 
 	@Override
 	public FrankClass findClass(String fullName) throws FrankDocException {

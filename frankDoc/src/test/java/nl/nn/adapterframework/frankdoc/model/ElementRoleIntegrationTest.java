@@ -18,8 +18,6 @@ package nl.nn.adapterframework.frankdoc.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.HashSet;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,9 +30,7 @@ public class ElementRoleIntegrationTest {
 
 	@Before
 	public void setUp() {
-		FrankClassRepository repository = FrankClassRepository.getReflectInstance();
-		repository.setIncludeFilters(PACKAGE);
-		repository.setExcludeFilters(new HashSet<>());
+		FrankClassRepository repository = FrankClassRepository.getReflectInstance(PACKAGE);
 		model = FrankDocModel.populate("doc/role-digester-rules.xml", PACKAGE + "Master", repository);
 	}
 

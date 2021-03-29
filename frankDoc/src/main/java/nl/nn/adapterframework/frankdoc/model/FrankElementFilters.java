@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.frankdoc.model;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -7,8 +9,8 @@ public final class FrankElementFilters {
 	private FrankElementFilters() {
 	}
 
-	public static String[] getIncludeFilter() {
-		return new String[] {"nl.nn.adapterframework", "nl.nn.ibistesttool"};
+	public static Set<String> getIncludeFilter() {
+		return new HashSet<>(Arrays.asList("nl.nn.adapterframework", "nl.nn.ibistesttool"));
 	}
 
 	/**

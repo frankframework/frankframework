@@ -20,7 +20,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Before;
@@ -36,9 +35,7 @@ public class FrankDocModelGroupsTest {
 	
 	@Before
 	public void setUp() throws SAXException, IOException, ReflectiveOperationException {
-		FrankClassRepository r = FrankClassRepository.getReflectInstance();
-		r.setIncludeFilters("nl.nn.adapterframework.frankdoc.testtarget.groups");
-		r.setExcludeFilters(new HashSet<>());
+		FrankClassRepository r = FrankClassRepository.getReflectInstance("nl.nn.adapterframework.frankdoc.testtarget.groups");
 		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.groups.GroupContainer", r);
 	}
 

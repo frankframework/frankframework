@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,12 +15,9 @@ import nl.nn.adapterframework.util.LogUtil;
 class FrankClassRepositoryDoclet implements FrankClassRepository {
 	private static Logger log = LogUtil.getLogger(FrankClassRepositoryDoclet.class);
 
-	private Set<String> excludeFilters;
-	private String[] includeFilter;
-
 	private final Map<String, FrankClassDoclet> classesByName = new HashMap<>();
 
-	FrankClassRepositoryDoclet(ClassDoc[] classDocs) {
+	FrankClassRepositoryDoclet(ClassDoc[] classDocs, Set<String> includeFilters, Set<String> excludeFilters) {
 		Map<String, FrankClassDoclet> interfacesByName = new HashMap<>();
 		for(ClassDoc classDoc: classDocs) {
 			FrankClassDoclet frankClass = findOrCreateClass(classDoc);
@@ -28,29 +25,14 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 				interfacesByName.put(frankClass.getName(), frankClass);
 			}
 		}
-		for(ClassDoc classDoc: classDocs) {
-			setInterfaceImplementations(classDoc, interfacesByName);
+		final Set<String> correctedIncludeFilters = includeFilters.stream().map(FrankClassRepository::removeTrailingDot).collect(Collectors.toSet());
+		List<FrankClassDoclet> filteredClassesForInterfaceImplementations = classesByName.values().stream()
+				.filter(c -> correctedIncludeFilters.stream().anyMatch(i -> c.getPackageName().startsWith(i)))
+				.filter(c -> ! excludeFilters.contains(c.getName()))
+				.collect(Collectors.toList());
+		for(FrankClassDoclet c: filteredClassesForInterfaceImplementations) {
+			setInterfaceImplementations(c, interfacesByName);
 		}
-	}
-
-	@Override
-	public void setExcludeFilters(Set<String> excludeFilters) {
-		this.excludeFilters = excludeFilters;
-	}
-
-	@Override
-	public Set<String> getExcludeFilters() {
-		return excludeFilters;
-	}
-
-	@Override
-	public void setIncludeFilters(String ...items) {
-		includeFilter = items;
-	}
-
-	@Override
-	public String[] getIncludeFilter() {
-		return includeFilter;
 	}
 
 	private FrankClassDoclet findOrCreateClass(ClassDoc classDoc) {
@@ -67,13 +49,13 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 		return result;
 	}
 
-	private void setInterfaceImplementations(ClassDoc classDoc, Map<String, FrankClassDoclet> availableInterfacesByName) {
-		Set<String> implementedInterfaceNames = Arrays.asList(classDoc.interfaces()).stream()
-				.map(ClassDoc::qualifiedName)
+	private void setInterfaceImplementations(FrankClassDoclet clazz, Map<String, FrankClassDoclet> availableInterfacesByName) {
+		Set<String> implementedInterfaceNames = clazz.getInterfacesRaw().stream()
+				.map(FrankClass::getName)
 				.collect(Collectors.toSet());
 		implementedInterfaceNames.retainAll(availableInterfacesByName.keySet());
 		try {
-			FrankClassDoclet implementation = (FrankClassDoclet) findClass(classDoc.qualifiedName());
+			FrankClassDoclet implementation = (FrankClassDoclet) findClass(clazz.getName());
 			for(String implementedInterfaceName: implementedInterfaceNames) {
 				FrankClassDoclet interfaze = availableInterfacesByName.get(implementedInterfaceName);
 				interfaze.recursivelyAddInterfaceImplementation(implementation);
@@ -82,7 +64,7 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 				}
 			}
 		} catch(FrankDocException e) {
-			log.warn("Error setting implemented interfaces of class {}", classDoc.name(), e);
+			log.warn("Error setting implemented interfaces of class {}", clazz.getName(), e);
 		}
 	}
 

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashSet;
 import java.util.Map;
 
 import org.junit.Before;
@@ -23,9 +22,7 @@ public class FrankDocModelAttributeTypeTest {
 
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance();
-		classRepository.setIncludeFilters(PACKAGE);
-		classRepository.setExcludeFilters(new HashSet<>());
+		classRepository = FrankClassRepository.getReflectInstance(PACKAGE);
 	}
 
 	@Test

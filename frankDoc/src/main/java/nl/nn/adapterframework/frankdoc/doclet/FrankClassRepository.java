@@ -16,16 +16,44 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.doclet;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
+import com.sun.javadoc.ClassDoc;
+
 public interface FrankClassRepository {
-	void setExcludeFilters(Set<String> excludeFilters);
-	Set<String> getExcludeFilters();
-	void setIncludeFilters(String ...items);
-	String[] getIncludeFilter();
 	FrankClass findClass(String fullName) throws FrankDocException;
 
-	public static FrankClassRepository getReflectInstance() {
-		return new FrankClassRepositoryReflect();
+	public static FrankClassRepository getReflectInstance(String ...includeFilters) {
+		FrankClassRepositoryReflect result = new FrankClassRepositoryReflect();
+		result.setIncludeFilters(new HashSet<>(Arrays.asList(includeFilters)));
+		result.setExcludeFilters(new HashSet<>());
+		return result;
+	}
+
+	public static FrankClassRepository getReflectInstance(Set<String> includeFilters, Set<String> excludeFilters) {
+		FrankClassRepositoryReflect result = new FrankClassRepositoryReflect();
+		result.setIncludeFilters(includeFilters);
+		result.setExcludeFilters(excludeFilters);
+		return result;
+	}
+
+	public static FrankClassRepository getDocletInstance(ClassDoc[] classDocs, Set<String> includeFilters, Set<String> excludeFilters) {
+		return new FrankClassRepositoryDoclet(classDocs, includeFilters, excludeFilters);
+	}
+
+	/**
+	 * Removes a trailing dot from a package name. It is handy to refer to class names like
+	 * <code>PACKAGE + simpleName</code> but for this to work the variable <code>PACKAGE</code>
+	 * should end with a dot. This function removes that dot to arrive at a plain package name
+	 * again.
+	 */
+	static String removeTrailingDot(String s) {
+		if(s.endsWith(".")) {
+			return s.substring(0, s.length() - 1);
+		} else {
+			return s;
+		}
 	}
 }

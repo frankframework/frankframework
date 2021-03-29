@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -40,9 +39,7 @@ public class UtilsTest {
 
 	@Before
 	public void setUp() {
-		repository = FrankClassRepository.getReflectInstance();
-		repository.setIncludeFilters(SIMPLE);
-		repository.setExcludeFilters(new HashSet<>());
+		repository = FrankClassRepository.getReflectInstance(SIMPLE);
 	}
 
 	@Test

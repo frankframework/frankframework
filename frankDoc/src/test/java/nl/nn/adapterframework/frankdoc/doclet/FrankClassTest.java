@@ -32,15 +32,7 @@ public class FrankClassTest extends TestBase {
 		assertEquals("Child", instance.getSimpleName());
 		assertEquals("Parent", instance.getSuperclass().getSimpleName());
 		assertFalse(instance.isInterface());
-		assertEquals(removeTrailingDot(PACKAGE), instance.getPackageName());
-	}
-
-	private static String removeTrailingDot(String s) {
-		if(s.endsWith(".")) {
-			return s.substring(0, s.length() - 1);
-		} else {
-			return s;
-		}
+		assertEquals(FrankClassRepository.removeTrailingDot(PACKAGE), instance.getPackageName());
 	}
 
 	@Test

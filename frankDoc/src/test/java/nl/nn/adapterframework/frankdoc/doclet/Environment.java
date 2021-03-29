@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 import com.sun.javadoc.ClassDoc;
@@ -15,10 +16,7 @@ enum Environment {
 	}
 
 	FrankClassRepository getRepository(String packageName) {
-		FrankClassRepository result = delegate.getRepository(packageName);
-		result.setIncludeFilters(packageName);
-		result.setExcludeFilters(new HashSet<>());
-		return result;
+		return delegate.getRepository(packageName);
 	}
 
 	private static abstract class Delegate {
@@ -28,7 +26,7 @@ enum Environment {
 	private static class ReflectionDelegate extends Delegate {
 		@Override
 		FrankClassRepository getRepository(String packageName) {
-			return new FrankClassRepositoryReflect();
+			return FrankClassRepository.getReflectInstance(packageName);
 		}
 	}
 
@@ -36,7 +34,7 @@ enum Environment {
 		@Override
 		FrankClassRepository getRepository(String packageName) {
 			ClassDoc[] classDocs = TestUtil.getClassDocs(packageName);
-			return new FrankClassRepositoryDoclet(classDocs);
+			return FrankClassRepository.getDocletInstance(classDocs, new HashSet<>(Arrays.asList(packageName)), new HashSet<>());
 		}
 	}
 }

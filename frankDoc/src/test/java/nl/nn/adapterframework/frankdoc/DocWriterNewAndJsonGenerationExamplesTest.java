@@ -68,9 +68,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	}
 
 	private FrankDocModel createModel() throws Exception {
-		FrankClassRepository classRepository = FrankClassRepository.getReflectInstance();
-		classRepository.setExcludeFilters(FrankElementFilters.getExcludeFilter());
-		classRepository.setIncludeFilters(FrankElementFilters.getIncludeFilter());
+		FrankClassRepository classRepository = FrankClassRepository.getReflectInstance(FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter());
 		return FrankDocModel.populate(
 				getDigesterRulesPath(digesterRulesFileName), startClassName, classRepository);
 	}
