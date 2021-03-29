@@ -158,6 +158,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 			return;
 		}
 
+		//TODO test if reconfigure happens when stop start
 		log.info("starting all autostart-configured adapters for AdapterManager "+this+"]");
 		for (Adapter adapter : getAdapterList()) {
 			try {

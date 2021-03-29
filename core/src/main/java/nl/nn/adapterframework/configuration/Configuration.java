@@ -16,11 +16,8 @@
 package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -63,11 +60,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	private Boolean autoStart = null;
 
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
+	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
 
 	private boolean unloadInProgressOrDone = false;
-
-	private final Map<String, JobDef> jobTable = new LinkedHashMap<>(); // TODO useless synchronization ?
-	private final List<JobDef> scheduledJobs = new ArrayList<>();
 
 	private String version;
 	private IbisManager ibisManager;
@@ -177,6 +172,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 
 		if(adapterManager == null) { //Manually set the AdapterManager bean
 			setAdapterManager(getBean("adapterManager", AdapterManager.class));
+		}
+		if(scheduleManager == null) { //Manually set the ScheduleManager bean
+			setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
 		}
 	}
 
@@ -313,9 +311,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	 * @since 4.0
 	 */
 	public void registerScheduledJob(JobDef jobdef) throws ConfigurationException {
-		jobdef.configure(this);
-		jobTable.put(jobdef.getName(), jobdef);
-		scheduledJobs.add(jobdef);
+		scheduleManager.register(jobdef);
 	}
 
 	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
@@ -388,15 +384,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	}
 
 	public JobDef getScheduledJob(String name) {
-		return jobTable.get(name);
-	}
-
-	public JobDef getScheduledJob(int index) {
-		return scheduledJobs.get(index);
+		return scheduleManager.getSchedule(name);
 	}
 
 	public List<JobDef> getScheduledJobs() {
-		return scheduledJobs;
+		return scheduleManager.getSchedulesList();
 	}
 
 	public void setConfigurationException(ConfigurationException exception) {

@@ -23,6 +23,13 @@
 		scope="singleton"
 	/>
 
+	<bean
+		name="scheduleManager"
+		class="nl.nn.adapterframework.configuration.ScheduleManager"
+		autowire="byType"
+		scope="singleton"
+	/>
+
 	<!--
 	Beans created from Configuration.xml, but prototyped here for
 	extra dependencies which cannot be created otherwise.
