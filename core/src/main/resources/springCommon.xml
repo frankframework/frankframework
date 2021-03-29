@@ -60,13 +60,11 @@
 		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
-	<bean
-		name="adapterService"
-		class="nl.nn.adapterframework.configuration.JmxRegisteringAdapterService"
-		autowire="byName"
-		scope="prototype"
-		>
-	</bean>
+
+	<bean id="adapterLifecylceWrapper" autowire="byName" scope="prototype" abstract="true" />
+
+	<bean name="adapterFlowProcessor" class="nl.nn.adapterframework.extensions.graphviz.FlowDiagramAdapterWrapper" parent="adapterLifecylceWrapper"/>
+	<bean name="adapterJmxProcessor" class="nl.nn.adapterframework.jmx.JmxAdapterWrapper" parent="adapterLifecylceWrapper"/>
 
 	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
 		<property name="locateExistingServerIfPossible" value="true" /><!-- indicate to first look for a server -->

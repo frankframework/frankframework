@@ -166,7 +166,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(ibisContext);
 		Configuration configuration = new Configuration();
-		configuration.setAdapterService(new DummyAdapterService());
+		configuration.setAdapterManager(new AutoConfiguringAdapterManager());
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);
