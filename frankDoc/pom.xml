@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -36,12 +38,17 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<!-- Without this dependency, the unit tests fail with a NoClassDefFoundError, Martijn does not know why.
-		     The error mentions javax/jms/JMSException -->
+		<!-- Without this dependency, the unit tests fail with a NoClassDefFoundError, 
+			Martijn does not know why. The error mentions javax/jms/JMSException -->
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.sun</groupId>
@@ -66,7 +73,7 @@
 				<includes>
 					<include>build.properties</include>
 				</includes>
-				<filtering>true</filtering>				
+				<filtering>true</filtering>
 			</testResource>
 		</testResources>
 	</build>
