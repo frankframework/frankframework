@@ -19,14 +19,13 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
-public class NarayanaDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
+public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	private NarayanaRecoveryManager recoveryManager;
 
 	@Override
@@ -35,11 +34,6 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory implements 
 		this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
 		return new NarayanaDataSource((DataSource) dataSource);
-	}
-
-	@Override
-	public void destroy() throws Exception {
-		objects.values().forEach(ds -> ((NarayanaDataSource)ds).close());
 	}
 
 	@Autowired

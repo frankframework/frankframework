@@ -25,7 +25,6 @@ import javax.sql.XADataSource;
 import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
-import com.arjuna.ats.internal.jdbc.ConnectionImple;
 import com.arjuna.ats.internal.jdbc.ConnectionManager;
 import com.arjuna.ats.jdbc.TransactionalDriver;
 
@@ -41,7 +40,7 @@ public class NarayanaDataSource extends DelegatingDataSource {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Setter boolean connectionPooling = true;
-	private @Setter int maxConnections = 100;
+	private @Setter int maxConnections = 50;
 
 	public NarayanaDataSource(DataSource dataSource) {
 		super(dataSource);
@@ -65,15 +64,5 @@ public class NarayanaDataSource extends DelegatingDataSource {
 		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
 		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
 		return ConnectionManager.create(null, properties);
-	}
-
-	public void close() {
-		try {
-			ConnectionImple connection = (ConnectionImple) getConnection();
-			ConnectionManager.remove(connection);
-			ConnectionManager.release(connection);
-		} catch (SQLException e) {
-			log.warn("exception closing and/or releasing connection", e);
-		}
 	}
 }
