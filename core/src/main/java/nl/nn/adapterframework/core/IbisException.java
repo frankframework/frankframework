@@ -23,9 +23,9 @@ import javax.mail.internet.AddressException;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.util.Misc;
@@ -36,6 +36,8 @@ import nl.nn.adapterframework.util.Misc;
  * @author Gerrit van Brakel
  */
 public class IbisException extends Exception {
+	
+	private String expandedMessage = null;
 	
 	public IbisException() {
 		super();
@@ -50,7 +52,7 @@ public class IbisException extends Exception {
 		super(cause);
 	}
 		
-	public String getExceptionSpecificDetails(Throwable t) {
+	public static String getExceptionSpecificDetails(Throwable t) {
 		String result=null;
 		if (t instanceof AddressException) { 
 			AddressException ae = (AddressException)t;
@@ -125,40 +127,39 @@ public class IbisException extends Exception {
 
 	@Override
 	public String getMessage() {
-		List<String> msgChain = getMessages(this, super.getMessage());
-		String result = null;
-		Throwable t = this;
-		for(String message:msgChain) {
-			String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
-			message = Misc.concatStrings(exceptionType, " ", message);
-			result = Misc.concatStrings(result, ": ", message);
-			t = ExceptionUtils.getCause(t);
+		if (expandedMessage == null) {
+			List<String> msgChain = getMessages(this, super.getMessage());
+			Throwable t = this;
+			for(String message:msgChain) {
+				String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
+				message = Misc.concatStrings(exceptionType, " ", message);
+				expandedMessage = Misc.concatStrings(expandedMessage, ": ", message);
+				t = ExceptionUtils.getCause(t);
+			}
+			if (expandedMessage==null) {
+				// do not replace the following with toString(), this causes an endless loop. GvB
+				expandedMessage="no message, fields of this exception: "+ToStringBuilder.reflectionToString(this);
+			}
 		}
-		if (result==null) {
-			// do not replace the following with toString(), this causes an endless loop. GvB
-			result="no message, fields of this exception: "+ToStringBuilder.reflectionToString(this);
-		}
-		return result;
+		return expandedMessage;
 	}
 
 
 
-	public LinkedList<String> getMessages(Throwable t, String message) {
+	public static LinkedList<String> getMessages(Throwable t, String message) {
 		Throwable cause = ExceptionUtils.getCause(t);
 		LinkedList<String> result;
 		if (cause !=null) {
 			String causeMessage = cause.getMessage();
-			String causeToString; 
+			String causeToString = cause.toString(); 
 
 			if (cause instanceof IbisException) {
 				// in case of an IbisException, the recursion already happened in cause.getMessage(), so do not call getMessages() here.
 				result = new LinkedList<>();
 				result.add(causeMessage);
-				causeToString = null; // might be useful to work this out to cater for new Exception(ibisException.toString(), ibisException) case
 			} else {
 				causeMessage = cause.getMessage();
 				result = getMessages(cause, causeMessage);
-				causeToString = cause.toString();
 			}
 			if (StringUtils.isNotEmpty(message) && (message.equals(causeMessage) || message.equals(causeToString))) {
 				message = null;

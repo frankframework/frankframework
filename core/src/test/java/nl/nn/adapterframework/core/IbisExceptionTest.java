@@ -5,11 +5,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.NoSuchElementException;
 
 import javax.jms.JMSException;
 import javax.mail.internet.AddressException;
 
 import org.junit.Test;
+
+import nl.nn.adapterframework.pipes.FixedResultPipe;
 
 public class IbisExceptionTest {
 
@@ -31,14 +34,19 @@ public class IbisExceptionTest {
 
 	@Test
 	public void testRecursiveExceptionMessageSearch() {
-		SenderException exception = new SenderException("IbisLocalSender [CallAdapter-sender] exception calling JavaListener [NestedAdapter_04]: Pipe [CallAdapter] msgId [Test Tool correlation id] caught exception: IbisLocalSender [CallAdapter-sender] exception calling JavaListener [TestErrorAdapter_Stub]: Pipe [StubbedSender] msgId [Test Tool correlation id] caught exception: Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]", 
-				new SenderException("Pipe [CallAdapter] msgId [Test Tool correlation id] caught exception: IbisLocalSender [CallAdapter-sender] exception calling JavaListener [TestErrorAdapter_Stub]: Pipe [StubbedSender] msgId [Test Tool correlation id] caught exception: Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]", 
-				new SenderException("IbisLocalSender [CallAdapter-sender] exception calling JavaListener [TestErrorAdapter_Stub]: Pipe [StubbedSender] msgId [Test Tool correlation id] caught exception: Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]",
-				new SenderException("Pipe [StubbedSender] msgId [Test Tool correlation id] caught exception: Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]", 
-				new SenderException("Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]")))));
-		String result = exception.getMessage();
+		String msg1 = "Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]";
+		SenderException exception1 = new SenderException(msg1);
+		String msg2 = "Pipe [StubbedSender] msgId [Test Tool correlation id] caught exception: "+exception1.getMessage();
+		SenderException exception2 = new SenderException(msg2, exception1);
+		String msg3 = "IbisLocalSender [CallAdapter-sender] exception calling JavaListener [TestErrorAdapter_Stub]: "+exception2.getMessage();
+		SenderException exception3 = new SenderException(msg3, exception2);
+		String msg4 = "Pipe [CallAdapter] msgId [Test Tool correlation id] caught exception: "+exception3.getMessage();
+		SenderException exception4 = new SenderException(msg4, exception3);
+		String msg5 = "IbisLocalSender [CallAdapter-sender] exception calling JavaListener [NestedAdapter_04]: "+exception4.getMessage();;
+		SenderException exception5 = new SenderException(msg5, exception4);
+		String result = exception5.getMessage();
 
-		assertEquals("IbisLocalSender [CallAdapter-sender] exception calling JavaListener [NestedAdapter_04]: Pipe [CallAdapter] msgId [Test Tool correlation id] caught exception: IbisLocalSender [CallAdapter-sender] exception calling JavaListener [TestErrorAdapter_Stub]: Pipe [StubbedSender] msgId [Test Tool correlation id] caught exception: Pipe [StubbedSender] msgId [Test Tool correlation id] exceptionOnResult [[error]]", result);
+		assertEquals(msg5, result);
 	}
 	
 	@Test
@@ -115,5 +123,30 @@ public class IbisExceptionTest {
 		String result = ibisException.getMessage();
 
 		assertEquals("wrapper: (JMSException) reason: (IOException) rootMsg", result);
+	}
+	
+	@Test
+	public void testListenerPipeRunOther() {
+		IPipe pipe = new FixedResultPipe();
+		String rootMessage = "rootmsg";
+		Exception rootException = new NoSuchElementException(rootMessage);
+		String message2 = "Caught Exception";
+		Exception exception2 = new PipeRunException(pipe, message2, rootException);
+		Exception exception3 = new ListenerException(exception2);
+		String result = exception3.getMessage();
+
+		assertEquals(message2+": ("+rootException.getClass().getSimpleName()+") "+rootMessage, result);
+	}
+
+	@Test
+	public void testListenerPipeRun() {
+		IPipe pipe = new FixedResultPipe();
+		String rootMessage = "rootmsg";
+		Exception rootException = new PipeRunException(pipe, rootMessage);
+		String message2 = "Caught Exception";
+		Exception exception2 = new ListenerException(message2, rootException);
+		String result = exception2.getMessage();
+
+		assertEquals(message2+": "+rootMessage, result);
 	}
 }
