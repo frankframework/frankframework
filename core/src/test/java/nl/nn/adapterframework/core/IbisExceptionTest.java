@@ -42,7 +42,7 @@ public class IbisExceptionTest {
 		SenderException exception3 = new SenderException(msg3, exception2);
 		String msg4 = "Pipe [CallAdapter] msgId [Test Tool correlation id] caught exception: "+exception3.getMessage();
 		SenderException exception4 = new SenderException(msg4, exception3);
-		String msg5 = "IbisLocalSender [CallAdapter-sender] exception calling JavaListener [NestedAdapter_04]: "+exception4.getMessage();;
+		String msg5 = "IbisLocalSender [CallAdapter-sender] exception calling JavaListener [NestedAdapter_04]: "+exception4.getMessage();
 		SenderException exception5 = new SenderException(msg5, exception4);
 		String result = exception5.getMessage();
 
