@@ -35,6 +35,9 @@ import org.springframework.jmx.export.MBeanExporter;
 import nl.nn.adapterframework.configuration.AdapterLifecylceWrapperBase;
 import nl.nn.adapterframework.core.Adapter;
 
+/**
+ * NOTE: Using the PlatformMBeanServer on WebSphere changes ObjectNames on registration.
+ */
 public class JmxAdapterWrapper extends AdapterLifecylceWrapperBase implements InitializingBean {
 
 	private MBeanExporter mBeanManager = null;

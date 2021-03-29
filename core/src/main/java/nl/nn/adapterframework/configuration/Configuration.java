@@ -62,7 +62,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 
 	private Boolean autoStart = null;
 
-	private @Getter @Setter AdapterManager adapterManager;
+	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 
 	private boolean unloadInProgressOrDone = false;
 
@@ -167,6 +167,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
 	}
 
+	/**
+	 * Don't manually call this method. Spring should automatically trigger 
+	 * this when super.afterPropertiesSet(); is called.
+	 */
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		super.refresh();
@@ -183,13 +187,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	 */
 	@Override
 	public void start() {
-		log.info("starting configuration ["+getId()+"]");
 		load();
 
 		super.start();
 	}
 
 	private void load() {
+		log.info("loading configuration ["+getId()+"]");
+
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
 			configurationDigester.digest();
