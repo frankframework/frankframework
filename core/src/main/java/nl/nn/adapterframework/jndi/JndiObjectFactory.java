@@ -43,20 +43,20 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class JndiObjectFactory<O,L> implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	private Class<L> lookupClass;
 	private @Setter String jndiContextPrefix = null;
-	
+
 	protected Map<String,O> objects = new ConcurrentHashMap<>();
-	
+
 	public JndiObjectFactory(Class<L> lookupClass) {
 		this.lookupClass = lookupClass;
 	}
-	
+
 	public O get(String jndiName) throws NamingException {
 		return get(jndiName, null);
 	}
-	
+
 	public O get(String jndiName, Properties jndiEnvironment) throws NamingException {
 		return objects.computeIfAbsent(jndiName, k -> compute(k, jndiEnvironment));
 	}
@@ -110,7 +110,7 @@ public class JndiObjectFactory<O,L> implements ApplicationContextAware {
 	private O compute(L object, String jndiName) {
 		return augment(object, jndiName);
 	}
-	
+
 	private String getPrefixedJndiName(String jndiName) {
 		return (StringUtils.isNotEmpty(jndiContextPrefix)) ? jndiContextPrefix + jndiName : jndiName;
 	}
@@ -122,5 +122,4 @@ public class JndiObjectFactory<O,L> implements ApplicationContextAware {
 			setJndiContextPrefix(jndiContextFactory.getContextPrefix());
 		}
 	}
-
 }
