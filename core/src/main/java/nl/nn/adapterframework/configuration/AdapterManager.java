@@ -38,7 +38,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter ApplicationContext applicationContext;
-	private List<? extends AdapterLifecylceWrapperBase> adapterLifecylceWrappers;
+	private List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers;
 
 	private enum BootState {
 		STARTING, STARTED, STOPPING, STOPPED;
@@ -63,8 +63,8 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 			throw new IllegalStateException("Adapter [" + adapter.getName() + "] already registered.");
 		}
 
-		if(adapterLifecylceWrappers != null) {
-			for (AdapterLifecylceWrapperBase adapterProcessor : adapterLifecylceWrappers) {
+		if(adapterLifecycleWrappers != null) {
+			for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
 				adapterProcessor.addAdapter(adapter);
 			}
 		}
@@ -73,8 +73,8 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 
 	public void unRegisterAdapter(Adapter adapter) {
 		String name = adapter.getName();
-		if(adapterLifecylceWrappers != null) {
-			for (AdapterLifecylceWrapperBase adapterProcessor : adapterLifecylceWrappers) {
+		if(adapterLifecycleWrappers != null) {
+			for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
 				adapterProcessor.removeAdapter(adapter);
 			}
 		}
@@ -84,8 +84,8 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 	}
 
 	@Autowired
-	public void setAdapterLifecylceWrappers(List<? extends AdapterLifecylceWrapperBase> adapterLifecylceWrappers) {
-		this.adapterLifecylceWrappers = adapterLifecylceWrappers ;
+	public void setAdapterLifecycleWrappers(List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers) {
+		this.adapterLifecycleWrappers = adapterLifecycleWrappers;
 	}
 
 	public void addStartAdapterThread(Runnable runnable) {
