@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -101,6 +101,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class XmlJmsBrowserSender extends SenderWithParametersBase {
 
+	@SuppressWarnings("unchecked")
+	public JmsBrowser<javax.jms.Message> createJmsBrowser() {
+		return createBean(JmsBrowser.class);
+	}
+
 	@Override
 	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Element queueBrowserElement;
@@ -120,7 +125,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		}
 
-		JmsBrowser<javax.jms.Message> jmsBrowser = new JmsBrowser<>();
+		JmsBrowser<javax.jms.Message> jmsBrowser = createJmsBrowser();
 		jmsBrowser.setName("XmlQueueBrowserSender");
 		if (jmsRealm != null) {
 			jmsBrowser.setJmsRealm(jmsRealm);
