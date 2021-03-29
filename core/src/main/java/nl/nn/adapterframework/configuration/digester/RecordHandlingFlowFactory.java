@@ -13,37 +13,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration;
+package nl.nn.adapterframework.configuration.digester;
 
 /**
- * Factory for retrieving ConfigurationDigester instance from BeanFactory,
- * for use with the 'include' element in the IBIS Configuration XML.
- *
- * The GenericFactory can not be used because it is not desirable to
- * add an alias to the bean 'configurationDigester' under the name
- * 'proto-include', which would be chosen by the GenericFactory, and
- * because the configurationDigester bean is a singleton instead of a
- * prototype.
- *
- * @author Tim van der Leeuw
+ * 
+ * 
+ * @author  Tim van der Leeuw
+ * @since   4.8
  */
-public class ConfigurationDigesterFactory
+public class RecordHandlingFlowFactory
     extends AbstractSpringPoweredDigesterFactory {
 
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getBeanName()
      */
-    @Override
     public String getSuggestedBeanName() {
-        return "configurationDigester";
-    }
-
-    /* (non-Javadoc)
-     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#isPrototypesOnly()
-     */
-    @Override
-    public boolean isPrototypesOnly() {
-        return false;
+        return "proto-RecordHandlingFlow";
     }
 
 }

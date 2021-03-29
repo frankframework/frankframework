@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.nn.adapterframework.configuration.AttributeCheckingRule;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.digester.AttributeCheckingRule;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.util.AppConstants;
