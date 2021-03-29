@@ -158,7 +158,6 @@ public class IbisException extends Exception {
 				result = new LinkedList<>();
 				result.add(causeMessage);
 			} else {
-				causeMessage = cause.getMessage();
 				result = getMessages(cause, causeMessage);
 			}
 			if (StringUtils.isNotEmpty(message) && (message.equals(causeMessage) || message.equals(causeToString))) {
