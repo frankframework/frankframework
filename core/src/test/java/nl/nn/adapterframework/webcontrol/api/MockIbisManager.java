@@ -152,7 +152,7 @@ public class MockIbisManager extends Mockito implements IbisManager {
 	public List<Adapter> getRegisteredAdapters() {
 		List<Adapter> registeredAdapters = new ArrayList<Adapter>();
 		for (Configuration configuration : configurations) {
-			registeredAdapters.addAll(configuration.getRegisteredAdapters());
+			registeredAdapters.addAll(configuration.getAdapterManager().getAdapterList());
 		}
 		return registeredAdapters;
 	}

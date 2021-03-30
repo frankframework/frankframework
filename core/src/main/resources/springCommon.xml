@@ -292,14 +292,6 @@
 	</bean>
 
 	<bean
-		name="concurrentTaskExecutor"
-		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"
-		scope="prototype"
-	>
-		<property name="WaitForTasksToCompleteOnShutdown" value="true" />
-	</bean>
-
-	<bean
 		name="messageListenerClassName"
 		class="java.lang.String"
 		>

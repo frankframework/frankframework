@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -256,6 +257,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public List<Adapter> getRegisteredAdapters() {
+		if(adapterManager == null || !isActive()) {
+			return Collections.emptyList();
+		}
 		return adapterManager.getAdapterList();
 	}
 
