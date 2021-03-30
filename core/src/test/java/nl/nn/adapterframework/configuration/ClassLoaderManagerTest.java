@@ -163,10 +163,16 @@ public class ClassLoaderManagerTest extends Mockito {
 
 	private void createAdapter4ServiceClassLoader(String config4Adaptername) throws ConfigurationException {
 		// Mock a configuration with an adapter in it
-		IbisManager ibisManager = spy(new DefaultIbisManager());
+		AdapterManager adapterManager = new AutoConfiguringAdapterManager();
+		IbisManager ibisManager = spy(new DefaultIbisManager() {
+			@Override
+			public Adapter getRegisteredAdapter(String name) {
+				return adapterManager.getAdapter(name);
+			}
+		});
 		ibisManager.setIbisContext(ibisContext);
 		Configuration configuration = new Configuration();
-		configuration.setAdapterManager(new AutoConfiguringAdapterManager());
+		configuration.setAdapterManager(adapterManager);
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);

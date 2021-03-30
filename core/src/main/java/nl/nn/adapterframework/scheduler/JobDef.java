@@ -102,7 +102,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * Operation of scheduling:
  * <ul>
  *   <li>at configuration time {@link Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
- *   <li>this calls {@link SchedulerHelper#scheduleJob(IbisManager, JobDef) SchedulerHelper.scheduleJob()};</li>
+ *   <li>this calls {@link SchedulerHelper#scheduleJob(JobDef) SchedulerHelper.scheduleJob()};</li>
  *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
  *   <li>this job is scheduled using the cron expression</li> 

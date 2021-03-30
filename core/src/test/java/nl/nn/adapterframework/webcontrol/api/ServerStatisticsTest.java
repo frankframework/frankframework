@@ -15,9 +15,9 @@
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import javax.ws.rs.HttpMethod;
@@ -77,7 +77,7 @@ public class ServerStatisticsTest extends ApiTestBase<ServerStatistics> {
 		assertEquals(200, response.getStatus());
 		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
 
-		assertEquals("{\"myConfiguration\":{\"errorStoreCount\":0,\"warnings\":[\"hello I am a configuration warning!\"]},\"totalErrorStoreCount\":0}", response.getEntity());
+		assertEquals("{\"myConfiguration\":{\"warnings\":[\"hello I am a configuration warning!\"]},\"totalErrorStoreCount\":0}", response.getEntity());
 	}
 
 	@Test

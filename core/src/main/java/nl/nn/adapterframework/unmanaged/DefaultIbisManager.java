@@ -324,7 +324,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 
 	@Override
 	public List<Adapter> getRegisteredAdapters() {
-		List<Adapter> registeredAdapters = new ArrayList<Adapter>();
+		List<Adapter> registeredAdapters = new ArrayList<>();
 		for (Configuration configuration : configurations) {
 			if(configuration.isActive()) {
 				registeredAdapters.addAll(configuration.getRegisteredAdapters());
