@@ -239,7 +239,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	}
 
 	/**
-	 * Get a registered adapter by its name through {@link IAdapterService#getAdapter(String)}
+	 * Get a registered adapter by its name through {@link AdapterManager#getAdapter(String)}
 	 * @param name the adapter to retrieve
 	 * @return IAdapter
 	 */
