@@ -34,8 +34,7 @@ import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -54,7 +53,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.Adapter
  */
-public class Configuration extends ClassPathXmlApplicationContext implements INamedObject, ApplicationContextAware, IScopeProvider {
+public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Boolean autoStart = null;
@@ -69,6 +68,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	private String originalConfiguration;
 	private String loadedConfiguration;
 	private StatisticsKeeperIterationHandler statisticsHandler = null;
+	private @Getter @Setter boolean configured = false;
 
 	private ConfigurationException configurationException = null;
 	private BaseConfigurationWarnings configurationWarnings = new BaseConfigurationWarnings();
@@ -144,10 +144,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	@Override
 	public void afterPropertiesSet() {
 		if(!(getClassLoader() instanceof IConfigurationClassLoader)) {
-			throw new IllegalStateException("No IConfigurationClassLoader set");
+			throw new IllegalStateException("no IConfigurationClassLoader set");
 		}
 		if(ibisManager == null) {
-			throw new IllegalStateException("No IbisManager set");
+			throw new IllegalStateException("no IbisManager set");
 		}
 
 		setVersion(ConfigurationUtils.getConfigurationVersion(getClassLoader()));
@@ -159,6 +159,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 
 		super.afterPropertiesSet(); //Triggers a context refresh
 
+		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
 	}
 
@@ -185,13 +186,18 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	 */
 	@Override
 	public void start() {
-		load();
-
+		if(!isConfigured()) {
+			throw new IllegalStateException("cannot start configuration that's not configured");
+		}
 		super.start();
 	}
 
-	private void load() {
-		log.info("loading configuration ["+getId()+"]");
+	/**
+	 * Digest the configuration and generate flow diagram.
+	 */
+	@Override
+	public void configure() {
+		log.info("configuring configuration ["+getId()+"]");
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
@@ -208,6 +214,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
 			}
 		}
+		setConfigured(true);
 	}
 
 	@Override
@@ -359,7 +366,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 
 	@Autowired
 	public void setIbisManager(IbisManager ibisManager) {
-		ibisManager.addConfiguration(this);
 		this.ibisManager = ibisManager;
 	}
 
