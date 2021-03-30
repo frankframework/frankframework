@@ -288,7 +288,7 @@ public class FileSystemUtils {
 					try {
 						ds.close();
 					} catch (IOException e) {
-						Lombok.sneakyThrow(e);
+						throw Lombok.sneakyThrow(e);
 					}
 				});
 	}

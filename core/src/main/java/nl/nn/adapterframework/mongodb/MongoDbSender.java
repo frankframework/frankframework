@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +42,7 @@ import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 
 import lombok.Getter;
+import lombok.Lombok;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -57,6 +57,10 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
+import nl.nn.adapterframework.stream.document.DocumentException;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
@@ -80,13 +84,13 @@ public class MongoDbSender extends StreamingSenderBase {
 	private @Getter String filter;
 	private @Getter int limit=0;
 	private @Getter boolean countOnly=false;
-//	private OutputFormat outputFormat=OutputFormat.JSON;
+	private DocumentFormat outputFormat=DocumentFormat.JSON;
 
 	private @Setter @Getter IMongoClientFactory mongoClientFactory = null; // Spring should wire this!
 
 	private MongoClient mongoClient;
 	private ConcurrentHashMap<String,MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
-	
+
 	public enum MongoAction {
 		INSERTONE,
 		INSERTMANY,
@@ -97,12 +101,8 @@ public class MongoDbSender extends StreamingSenderBase {
 		DELETEONE,
 		DELETEMANY;
 	}
-	
-//	public enum OutputFormat {
-//		JSON,
-//		XML
-//	}
-	
+
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -117,7 +117,10 @@ public class MongoDbSender extends StreamingSenderBase {
 		if (getActionEnum()==null) {
 			throw new ConfigurationException("attribute action not specified");
 		}
-	}
+		if (getOutputFormatEnum()==DocumentFormat.XML && (getActionEnum()==MongoAction.FINDONE || getActionEnum()==MongoAction.FINDMANY )) {
+			throw new ConfigurationException("outputFormat "+getOutputFormatEnum()+" not supported for FIND-actions");
+		}
+ 	}
 
 	@Override
 	public void open() throws SenderException {
@@ -155,109 +158,124 @@ public class MongoDbSender extends StreamingSenderBase {
 	@Override
 	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		message.closeOnCloseOf(session);
-		JsonObject result;
-		try {
+		try (MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
 			MongoCollection<Document> mongoCollection = getCollection(mongoDatabase, pvl);
 			switch (getActionEnum()) {
 			case INSERTONE:
-				result = renderResult(mongoCollection.insertOne(getDocument(message)));
+				renderResult(mongoCollection.insertOne(getDocument(message)), target);
 				break;
 			case INSERTMANY:
-				result = renderResult(mongoCollection.insertMany(getDocuments(message)));
+				renderResult(mongoCollection.insertMany(getDocuments(message)), target);
 				break;
 			case FINDONE:
-				Document findOne = mongoCollection.find(getFilter(pvl, message)).first();
-				return new PipeRunResult(null, new Message(findOne.toJson()));
+				try (Writer writer = target.asWriter()) {
+					Document findOne = mongoCollection.find(getFilter(pvl, message)).first();
+					writer.write(findOne.toJson());
+				}
+				break;
 			case FINDMANY:
-				return renderResult(mongoCollection.find(getFilter(pvl, message)).limit(getLimit(pvl)), session, next);
+				renderResult(mongoCollection.find(getFilter(pvl, message)).limit(getLimit(pvl)), target);
+				break;
 			case UPDATEONE:
-				result = renderResult(mongoCollection.updateOne(getFilter(pvl, null), getDocument(message)));
+				renderResult(mongoCollection.updateOne(getFilter(pvl, null), getDocument(message)), target);
 				break;
 			case UPDATEMANY:
-				result = renderResult(mongoCollection.updateMany(getFilter(pvl, null), getDocument(message)));
+				renderResult(mongoCollection.updateMany(getFilter(pvl, null), getDocument(message)), target);
 				break;
 			case DELETEONE:
-				result = renderResult(mongoCollection.deleteOne(getFilter(pvl, message)));
+				renderResult(mongoCollection.deleteOne(getFilter(pvl, message)), target);
 				break;
 			case DELETEMANY:
-				result = renderResult(mongoCollection.deleteMany(getFilter(pvl, message)));
+				renderResult(mongoCollection.deleteMany(getFilter(pvl, message)), target);
 				break;
 			default:
 				throw new SenderException("Unknown action ["+getActionEnum()+"]");
 			}
-			return new PipeRunResult(null, new Message(result.toString()));
-		} catch (IOException | StreamingException | ParameterException e) {
+			return target.getPipeRunResult();
+		} catch (Exception e) {
 			throw new SenderException("Cannot execute action ["+getActionEnum()+"]", e);
 		}
 	}
 
-	protected JsonObject renderResult(InsertOneResult insertOneResult) {
-		JsonObjectBuilder resultBuilder = Json.createObjectBuilder().add("acknowledged", insertOneResult.wasAcknowledged());
-		if (insertOneResult.wasAcknowledged()) {
-			resultBuilder.add("insertedId", insertOneResult.getInsertedId().asString().getValue());
-		}
-		return resultBuilder.build();
-	}
-
-	protected JsonObject renderResult(InsertManyResult insertManyResult) {
-		JsonObjectBuilder resultBuilder = Json.createObjectBuilder().add("acknowledged", insertManyResult.wasAcknowledged());
-		JsonObjectBuilder insertedId = Json.createObjectBuilder();
-		if (insertManyResult.wasAcknowledged()) {
-			Map<Integer, BsonValue> insertedIds = insertManyResult.getInsertedIds();
-			insertedIds.forEach((k,v)->insertedId.add(Integer.toString(k), v.asString().getValue()));
-		}
-		resultBuilder.add("insertedId", insertedId.build());
-		return resultBuilder.build();
-	}
-
-	protected PipeRunResult renderResult(FindIterable<Document> findResults, IPipeLineSession session, IForwardTarget next) throws StreamingException {
-		if (isCountOnly()) {
-			int count=0;
-			for (Document doc : findResults) {
-				count++;
+	
+	protected void renderResult(InsertOneResult insertOneResult, MessageOutputStream target) throws DocumentException, StreamingException {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "insertOneResult", target)) {
+			builder.add("acknowledged", insertOneResult.wasAcknowledged());
+			if (insertOneResult.wasAcknowledged()) {
+				builder.add("insertedId", insertOneResult.getInsertedId().asString().getValue());
 			}
-			return new PipeRunResult(null, new Message(Integer.toString(count)));
 		}
-		try (MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next)) {
-			try (Writer writer = target.asWriter()) {
-				writer.write("[");
-				boolean firstElementSeen = false;
+	}
+
+	protected void renderResult(InsertManyResult insertManyResult, MessageOutputStream target) throws DocumentException, StreamingException {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "insertManyResult", target)) {
+			builder.add("acknowledged", insertManyResult.wasAcknowledged());
+			if (insertManyResult.wasAcknowledged()) {
+				try (ObjectBuilder objectBuilder = builder.addObjectField("insertedIds")) {
+					Map<Integer, BsonValue> insertedIds = insertManyResult.getInsertedIds();
+					
+					insertedIds.forEach((k,v)->{
+						try {
+							objectBuilder.add(Integer.toString(k), v.asString().getValue());
+						} catch (DocumentException e) {
+							throw Lombok.sneakyThrow(e);
+						}
+					});
+				}
+			}
+		}
+	}
+
+	protected void renderResult(FindIterable<Document> findResults, MessageOutputStream target) throws StreamingException {
+		try (Writer writer = target.asWriter()) {
+			if (isCountOnly()) {
+				int count=0;
 				for (Document doc : findResults) {
-					if (firstElementSeen) {
-						writer.write(",");
-					}
-					writer.write(doc.toJson());
-					}
-				writer.write("]");
+					count++;
+				}
+				writer.write(Integer.toString(count));
+				return;
 			}
-			return target.getPipeRunResult();
+			writer.write("[");
+			boolean firstElementSeen = false;
+			for (Document doc : findResults) {
+				if (firstElementSeen) {
+					writer.write(",");
+				}
+				writer.write(doc.toJson());
+				}
+			writer.write("]");
 		} catch (Exception e) {
 			throw new StreamingException("Could not render collection", e);
 		}
 	}
 	
-	protected JsonObject renderResult(UpdateResult updateResult) {
-		JsonObjectBuilder resultBuilder = Json.createObjectBuilder().add("acknowledged", updateResult.wasAcknowledged());
-		if (updateResult.wasAcknowledged()) {
-			resultBuilder.add("matchedCount", updateResult.getMatchedCount());
-			resultBuilder.add("modifiedCount", updateResult.getModifiedCount());
-			addOptionalValue(resultBuilder, "upsertedId", updateResult.getUpsertedId());
+	protected void renderResult(UpdateResult updateResult, MessageOutputStream target) throws DocumentException, StreamingException {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "updateResult", target)) {
+			builder.add("acknowledged", updateResult.wasAcknowledged());
+			if (updateResult.wasAcknowledged()) {
+				builder.add("matchedCount", updateResult.getMatchedCount());
+				builder.add("modifiedCount", updateResult.getModifiedCount());
+				addOptionalValue(builder, "upsertedId", updateResult.getUpsertedId());
+			}
 		}
-		return resultBuilder.build();
 	}
 	
-	protected JsonObject renderResult(DeleteResult deleteResult) {
-		JsonObjectBuilder resultBuilder = Json.createObjectBuilder().add("acknowledged", deleteResult.wasAcknowledged());
-		if (deleteResult.wasAcknowledged()) {
-			resultBuilder.add("deleteCount", deleteResult.getDeletedCount());
+	protected void renderResult(DeleteResult deleteResult, MessageOutputStream target) throws DocumentException, StreamingException {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "deleteResult", target)) {
+			builder.add("acknowledged", deleteResult.wasAcknowledged());
+			if (deleteResult.wasAcknowledged()) {
+				builder.add("deleteCount", deleteResult.getDeletedCount());
+			}
 		}
-		return resultBuilder.build();
 	}
 	
-	protected JsonObjectBuilder addOptionalValue(JsonObjectBuilder builder, String name, BsonValue bsonValue) {
-		return bsonValue==null ? builder : builder.add(name, bsonValue.asString().getValue());
+	protected void addOptionalValue(ObjectBuilder builder, String name, BsonValue bsonValue) throws DocumentException {
+		if (bsonValue!=null) {
+			builder.add(name, bsonValue.asString().getValue());
+		}	
 	}
 	
 
@@ -353,13 +371,12 @@ public class MongoDbSender extends StreamingSenderBase {
 		this.countOnly = countOnly;
 	}
 
-//	@IbisDoc({"14", "OutputFormat", "JSON"})
-//	public void setOutputFormat(String outputFormat) {
-//		this.outputFormat = Misc.parse(OutputFormat.class, outputFormat);
-//	}
-//	public OutputFormat getOutputFormatEnum() {
-//		return outputFormat;
-//	}
-//	
-
+	@IbisDoc({"14", "OutputFormat", "JSON"})
+	public void setOutputFormat(String outputFormat) {
+		this.outputFormat = Misc.parse(DocumentFormat.class, outputFormat);
+	}
+	public DocumentFormat getOutputFormatEnum() {
+		return outputFormat;
+	}
+	
 }

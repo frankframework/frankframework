@@ -75,7 +75,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		students.add(createStudent("Harry","1a", 4,5,6));
 		students.add(createStudent("Klaas","1b", 5,7,9));
 		Message result = sendMessage(students.build().toString());
-		assertThat(result.asString(),StringContains.containsString("\"insertedId\":"));
+		assertThat(result.asString(),StringContains.containsString("\"insertedIds\":"));
 	}
 	
 	@Test
@@ -85,7 +85,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.configure();
 		sender.open();
 
-		Message result = sendMessage("{ \"student_id\": \"${userparam}\" }");
+		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
 		System.out.println("FindOne: ["+result.asString()+"]");
 		assertThat(result.asString(),StringContains.containsString("\"student_id\": \"Evert\", \"class_id\": \"1c\""));
 	}
@@ -176,6 +176,23 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		Message result = sendMessage(update);
 		System.out.println("UpdateMany: ["+result.asString()+"]");
 		assertThat(result.asString(),StringContains.containsString("\"modifiedCount\":"));
+	}
+
+	@Test
+	public void testUpdateManyXml() throws Exception {
+		String filter = "{ \"student_id\": \"Evert\" }";
+		String update = "{\"$set\": {\"seatno\":"+10+"}}";
+
+		sender.setAction("UpdateMany");
+		sender.setCollection("Students");
+		sender.setFilter(filter);
+		sender.setOutputFormat("xml");
+		sender.configure();
+		sender.open();
+
+		Message result = sendMessage(update);
+		System.out.println("UpdateMany: ["+result.asString()+"]");
+		assertThat(result.asString(),StringContains.containsString("<modifiedCount>"));
 	}
 
 	public JsonObject createStudent(String studentId, String classId, Integer... grades) {

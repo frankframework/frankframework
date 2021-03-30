@@ -26,6 +26,7 @@ import java.io.Writer;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.logging.log4j.Logger;
+import org.jsfr.json.JsonSaxHandler;
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -33,6 +34,8 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.json.JsonTee;
+import nl.nn.adapterframework.stream.json.JsonWriter;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -93,8 +96,19 @@ public class MessageOutputStream implements AutoCloseable {
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
 	
+	public MessageOutputStream(INamedObject owner, JsonSaxHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, next);
+		this.requestStream=handler;
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+	}
+	public MessageOutputStream(INamedObject owner, JsonSaxHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, nextStream);
+		this.requestStream=handler;
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+	}
 
-	
+
+
 	private void connect(MessageOutputStream nextStream) {
 		this.nextStream=nextStream;
 		if (nextStream==null) {
@@ -165,6 +179,10 @@ public class MessageOutputStream implements AutoCloseable {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning ContentHandler as OutputStream");
 			return new ContentHandlerOutputStream((ContentHandler) requestStream, threadConnector);
 		}
+		if (requestStream instanceof JsonSaxHandler) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning JsonSaxHandler as OutputStream");
+			return new JsonSaxHandlerOutputStream((JsonSaxHandler) requestStream, threadConnector);
+		}
 		return null;
 	}
 	
@@ -189,6 +207,14 @@ public class MessageOutputStream implements AutoCloseable {
 				throw new StreamingException(e);
 			}
 		}
+		if (requestStream instanceof JsonSaxHandler) {
+			try {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonSaxHandler as Writer");
+				return new OutputStreamWriter(new JsonSaxHandlerOutputStream((JsonSaxHandler) requestStream, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			} catch (UnsupportedEncodingException e) {
+				throw new StreamingException(e);
+			}
+		}
 		return null;
 	}
 
@@ -196,6 +222,9 @@ public class MessageOutputStream implements AutoCloseable {
 		if (requestStream instanceof ContentHandler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning ContentHandler as ContentHandler");
 			return (ContentHandler) requestStream;
+		}
+		if (requestStream instanceof JsonSaxHandler) {
+			throw new StreamingException("Cannot handle XML as JSON");
 		}
 		if (requestStream instanceof OutputStream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as ContentHandler");
@@ -208,7 +237,25 @@ public class MessageOutputStream implements AutoCloseable {
 			return new XmlWriter((Writer) requestStream);
 		}
 		return null;
+	}
 
+	public JsonSaxHandler asJsonSaxHandler() throws StreamingException {
+		if (requestStream instanceof JsonSaxHandler) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonSaxHandler as JsonSaxHandler");
+			return (JsonSaxHandler) requestStream;
+		}
+		if (requestStream instanceof ContentHandler) {
+			throw new StreamingException("Cannot handle JSON as XML");
+		}
+		if (requestStream instanceof OutputStream) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as JsonSaxHandler");
+			return new JsonWriter((OutputStream) requestStream);
+		}
+		if (requestStream instanceof Writer) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as JsonSaxHandler");
+			return new JsonWriter((Writer) requestStream);
+		}
+		return null;
 	}
 
 	public StringWriter captureCharacterStream() {
@@ -228,6 +275,10 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		if (requestStream instanceof ContentHandler) {
 			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(writer, maxSize))));
+			return;
+		}
+		if (requestStream instanceof JsonSaxHandler) {
+			requestStream = new JsonTee((JsonSaxHandler)requestStream, new JsonWriter(StreamUtil.limitSize(writer, maxSize)));
 			return;
 		}
 		if (requestStream instanceof OutputStream) {
@@ -254,6 +305,10 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		if (requestStream instanceof ContentHandler) {
 			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(outputStream, maxSize))));
+			return;
+		}
+		if (requestStream instanceof JsonSaxHandler) {
+			requestStream = new JsonTee((JsonSaxHandler)requestStream, new JsonWriter(StreamUtil.limitSize(outputStream, maxSize)));
 			return;
 		}
 		if (requestStream instanceof Writer) {
