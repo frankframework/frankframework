@@ -33,7 +33,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.scheduler.JobDef;
@@ -249,6 +248,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * @return IAdapter
 	 */
 	public Adapter getRegisteredAdapter(String name) {
+		if(adapterManager == null || !isActive()) {
+			return null;
+		}
+
 		return adapterManager.getAdapter(name);
 	}
 
@@ -278,18 +281,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	public void setUnloadInProgressOrDone(boolean unloadInProgressOrDone) {
 		this.unloadInProgressOrDone = unloadInProgressOrDone;
-	}
-
-	/**
-	 * Performs a check to see if the receiver is known at the adapter
-	 * @return true if the receiver is known at the adapter
-	 */
-	public boolean isRegisteredReceiver(String adapterName, String receiverName) {
-		IAdapter adapter = getRegisteredAdapter(adapterName);
-		if(null == adapter) {
-			return false;
-		}
-		return adapter.getReceiverByName(receiverName) != null;
 	}
 
 	/**

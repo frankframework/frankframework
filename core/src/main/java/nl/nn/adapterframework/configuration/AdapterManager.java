@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
+import org.springframework.context.LifecycleProcessor;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -112,11 +113,6 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 		return stopAdapterThreads;
 	}
 
-	/**
-	 * Get a registered adapter by its name through {@link IAdapterService#getAdapter(String)}
-	 * @param name the adapter to retrieve
-	 * @return IAdapter
-	 */
 	public Adapter getAdapter(String name) {
 		return getAdapters().get(name);
 	}
@@ -158,13 +154,14 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 			return;
 		}
 
-		//TODO test if reconfigure happens when stop start
 		log.info("starting all autostart-configured adapters for AdapterManager "+this+"]");
 		for (Adapter adapter : getAdapterList()) {
-			try {
-				adapter.configure();
-			} catch (ConfigurationException e) {
-				log.error("error configuring adapter ["+adapter.getName()+"]", e);
+			if(!adapter.configurationSucceeded()) {
+				try {
+					adapter.configure();
+				} catch (ConfigurationException e) {
+					log.error("error configuring adapter ["+adapter.getName()+"]", e);
+				}
 			}
 
 			if (adapter.configurationSucceeded() && adapter.isAutoStart()) {
