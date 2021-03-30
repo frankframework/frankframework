@@ -17,7 +17,6 @@ public class DocletBuilder extends com.sun.javadoc.Doclet {
 
     public static boolean start(RootDoc root) {
     	printOptions(root);
-    	System.out.println("site.logdir=" + System.getProperty("site.logdir"));
     	ClassDoc classes[] = root.classes();
     	boolean result = true;
     	try {

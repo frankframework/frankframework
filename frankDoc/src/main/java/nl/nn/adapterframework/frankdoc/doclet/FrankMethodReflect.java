@@ -75,6 +75,11 @@ class FrankMethodReflect implements FrankMethod {
 	}
 
 	@Override
+	public boolean isVarargs() {
+		return method.isVarArgs();
+	}
+
+	@Override
 	public FrankType[] getParameterTypes() {
 		FrankType[] result = new FrankType[method.getParameterCount()];
 		for(int i = 0; i < method.getParameterCount(); ++i) {

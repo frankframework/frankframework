@@ -36,8 +36,8 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 	}
 
 	private FrankClassDoclet findOrCreateClass(ClassDoc classDoc) {
-		if(classesByName.containsKey(classDoc.name())) {
-			return classesByName.get(classDoc.name());
+		if(classesByName.containsKey(classDoc.qualifiedName())) {
+			return classesByName.get(classDoc.qualifiedName());
 		}
 		FrankClassDoclet result = new FrankClassDoclet(classDoc, this);
 		classesByName.put(result.getName(), result);

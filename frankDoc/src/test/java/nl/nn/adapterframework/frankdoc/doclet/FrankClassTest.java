@@ -63,19 +63,24 @@ public class FrankClassTest extends TestBase {
 	public void interfaceCanGiveItsImplementations() throws FrankDocException {
 		FrankClass instance = classRepository.findClass(PACKAGE + "MyInterface");
 		List<FrankClass> implementations = instance.getInterfaceImplementations();
-		assertEquals(1, implementations.size());
+		assertEquals(3, implementations.size());
 		// We test abstract classes are omitted. With reflection and Spring
 		// this happens automatically, so it should also work like that
 		// within a doclet.
-		assertEquals("Child", implementations.get(0).getSimpleName());
+		checkInterfaceImplementations(implementations);
+	}
+
+	private void checkInterfaceImplementations(List<FrankClass> implementations) {
+		List<String> expectedImplementationNames = Arrays.asList(new String[] {"Child", "GrandChild", "GrandGrandChild"});
+		List<String> actualImplementationNames = implementations.stream().map(FrankClass::getSimpleName).sorted().collect(Collectors.toList());
+		assertArrayEquals(expectedImplementationNames.toArray(new String[] {}), actualImplementationNames.toArray(new String[] {}));
 	}
 
 	@Test
 	public void superInterfaceHasImplementationsOfChildInterfaces() throws FrankDocException {
 		FrankClass instance = classRepository.findClass(PACKAGE + "MyInterfaceParent");
 		List<FrankClass> implementations = instance.getInterfaceImplementations();
-		assertEquals(1, implementations.size());
-		assertEquals("Child", implementations.get(0).getSimpleName());
+		checkInterfaceImplementations(implementations);
 	}
 
 	@Test(expected = FrankDocException.class)
@@ -100,7 +105,7 @@ public class FrankClassTest extends TestBase {
 		Arrays.asList(declaredMethods).forEach(m -> actualMethodNames.add(m.getName()));
 		List<String> sortedActualMethodNames = new ArrayList<>(actualMethodNames);
 		sortedActualMethodNames = sortedActualMethodNames.stream().filter(name -> ! name.contains("jacoco")).collect(Collectors.toList());
-		assertArrayEquals(new String[] {"packagePrivateMethod", "setInherited"}, sortedActualMethodNames.toArray());
+		assertArrayEquals(new String[] {"packagePrivateMethod", "setInherited", "setVarargMethod"}, sortedActualMethodNames.toArray());
 	}
 
 	/**
@@ -120,7 +125,7 @@ public class FrankClassTest extends TestBase {
 			.map(FrankMethod::getName)
 			.filter(name -> ! name.contains("jacoco"))
 			.forEach(name -> methodNames.add(name));
-		assertArrayEquals(new String[] {"equals", "getClass", "getInherited", "hashCode", "notify", "notifyAll", "setInherited", "toString", "wait"}, new ArrayList<>(methodNames).toArray());
+		assertArrayEquals(new String[] {"equals", "getClass", "getInherited", "hashCode", "notify", "notifyAll", "setInherited", "setVarargMethod", "toString", "wait"}, new ArrayList<>(methodNames).toArray());
 		// Test we have no duplicates
 		Map<String, List<FrankMethod>> methodsByName = Arrays.asList(methods).stream()
 				.filter(m -> methodNames.contains(m.getName()))

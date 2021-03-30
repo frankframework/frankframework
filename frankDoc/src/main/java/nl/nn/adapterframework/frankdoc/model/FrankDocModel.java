@@ -398,6 +398,10 @@ public class FrankDocModel {
 	private FrankMethod getParentMethod(String className, String methodName) {
 		try {
 			FrankClass parentClass = classRepository.findClass(className);
+			if(parentClass == null) {
+				log.warn("Class {} is unknown", className);
+				return null;
+			}
 			for (FrankMethod parentMethod : parentClass.getDeclaredAndInheritedMethods()) {
 				if (parentMethod.getName().equals(methodName)) {
 					return parentMethod;

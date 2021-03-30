@@ -8,4 +8,7 @@ public class Child extends Parent implements MyInterface {
 	String packagePrivateMethod() {
 		return null;
 	}
+
+	public void setVarargMethod(String ...value) {
+	}
 }

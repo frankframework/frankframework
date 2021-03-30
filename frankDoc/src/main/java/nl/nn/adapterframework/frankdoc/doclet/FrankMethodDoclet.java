@@ -81,6 +81,11 @@ class FrankMethodDoclet implements FrankMethod {
 	}
 
 	@Override
+	public boolean isVarargs() {
+		return method.isVarArgs();
+	}
+
+	@Override
 	public FrankType[] getParameterTypes() {
 		Parameter[] parametersDoclet = method.parameters();
 		FrankType[] result = new FrankType[parametersDoclet.length];

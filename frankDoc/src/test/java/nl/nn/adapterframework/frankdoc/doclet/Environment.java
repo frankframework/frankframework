@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.sun.javadoc.ClassDoc;
 
-enum Environment {
+public enum Environment {
 	REFLECTION(new ReflectionDelegate()),
 	DOCLET(new DocletDelegate());
 
@@ -20,7 +20,7 @@ enum Environment {
 		return delegate.getRepository(packageName);
 	}
 
-	FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters) {
+	public FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters) {
 		return delegate.getRepository(allPackages, includeFilters, excludeFilters);
 	}
 

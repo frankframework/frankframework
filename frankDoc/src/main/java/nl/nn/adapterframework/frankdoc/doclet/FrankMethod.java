@@ -26,5 +26,6 @@ public interface FrankMethod extends FrankProgramElement {
 	FrankType getReturnType();
 	int getParameterCount();
 	FrankType[] getParameterTypes();
+	boolean isVarargs();
 	FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException;
 }
