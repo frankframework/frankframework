@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration;
+package nl.nn.adapterframework.jmx;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,16 +32,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jmx.export.MBeanExporter;
 
+import nl.nn.adapterframework.configuration.AdapterLifecylceWrapperBase;
 import nl.nn.adapterframework.core.Adapter;
 
 /**
- * This implementation of {@link IAdapterService} registers the adapters to a JMX server.
- * 
  * NOTE: Using the PlatformMBeanServer on WebSphere changes ObjectNames on registration.
- * 
- * @author Niels Meijer
  */
-public class JmxRegisteringAdapterService extends AdapterService implements InitializingBean {
+public class JmxAdapterWrapper extends AdapterLifecylceWrapperBase implements InitializingBean {
 
 	private MBeanExporter mBeanManager = null;
 	private static Map<Adapter, ObjectName> registeredAdapters = new HashMap<>();
@@ -53,10 +50,9 @@ public class JmxRegisteringAdapterService extends AdapterService implements Init
 		}
 	}
 
+	
 	@Override
-	public void registerAdapter(Adapter adapter) throws ConfigurationException {
-		super.registerAdapter(adapter);
-
+	public void addAdapter(Adapter adapter) {
 		log.debug("registering adapter [" + adapter.getName() + "] to the JMX server");
 		synchronized(registeredAdapters) {
 			ObjectName name = mBeanManager.registerManagedResource(adapter);
@@ -65,10 +61,9 @@ public class JmxRegisteringAdapterService extends AdapterService implements Init
 		}
 	}
 
-	@Override
-	public void unRegisterAdapter(Adapter adapter) {
-		super.unRegisterAdapter(adapter);
 
+	@Override
+	public void removeAdapter(Adapter adapter) {
 		synchronized(registeredAdapters) {
 			ObjectName name = registeredAdapters.remove(adapter);
 			if(name == null) {

@@ -332,7 +332,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertEquals("result of sender should be name of created folder",folder,result.asString());
 		assertTrue("Expected folder [" + folder + "] to be present", actual);
 	}
-
+	
 	@Test
 	public void fileSystemSenderRmdirActionTest() throws Exception {
 		String folder = DIR1;
@@ -359,6 +359,40 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertFalse("Expected folder [" + folder + "] " + "not to be present", actual);
 	}
 
+	@Test
+	public void fileSystemPipeRmNonEmptyDirActionTest() throws Exception {
+		String folder = DIR1;
+		String innerFolder = DIR1+"/innerFolder";
+		if (!_folderExists(DIR1)) {
+			_createFolder(folder);
+		}
+		if (!_folderExists(innerFolder)) {
+			_createFolder(innerFolder);
+		}
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "file"+i + FILE1;
+			createFile(folder, filename, "is not empty");
+			createFile(innerFolder, filename, "is not empty");
+		}
+		
+		fileSystemSender.setRemoveNonEmptyFolder(true);
+		fileSystemSender.setAction("rmdir");
+		fileSystemSender.configure();
+		fileSystemSender.open();
+		
+		IPipeLineSession session = new PipeLineSessionBase();
+		Message message=new Message(folder);
+		Message result = fileSystemSender.sendMessage(message, session);
+
+		// test
+		assertEquals("result of sender should be name of deleted folder",folder,result.asString());
+		waitForActionToFinish();
+		
+		boolean actual = _folderExists(folder);
+		// test
+		assertFalse("Expected folder [" + folder + "] " + "not to be present", actual);
+	}
 	@Test
 	public void fileSystemSenderDeleteActionTest() throws Exception {
 		String filename = "tobedeleted" + FILE1;

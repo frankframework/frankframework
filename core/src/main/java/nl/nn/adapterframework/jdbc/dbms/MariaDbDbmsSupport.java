@@ -18,7 +18,7 @@ package nl.nn.adapterframework.jdbc.dbms;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 

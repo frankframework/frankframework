@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.stream.Message;

@@ -23,7 +23,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 			fileSystem.createFolder(folderName);
 			assertTrue(fileSystem.folderExists(folderName));
 		} finally {
-			fileSystem.removeFolder(folderName);
+			fileSystem.removeFolder(folderName, false);
 			assertFalse(fileSystem.folderExists(folderName));
 		}
 	}
@@ -48,7 +48,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		String folderName2 = folderName+"-2";
 
 		if (fileSystem.folderExists(folderName)) {
-			fileSystem.removeFolder(folderName);
+			fileSystem.removeFolder(folderName, false);
 			assertFalse(fileSystem.folderExists(folderName));
 		}
 		fileSystem.createFolder(folderName);
@@ -100,10 +100,10 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		fileSystem.deleteFile(destFile2);
 		assertFalse("file should not exist anymore after being deleted", fileSystem.exists(destFile2));
 
-		fileSystem.removeFolder(folderName2);
+		fileSystem.removeFolder(folderName2, false);
 		assertFalse(fileSystem.folderExists(folderName2));
 
-		fileSystem.removeFolder(folderName);
+		fileSystem.removeFolder(folderName, false);
 		assertFalse(fileSystem.folderExists(folderName));
 	}
 
@@ -112,7 +112,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		String folderName2 = folderName+"-2";
 
 		if (fileSystem.folderExists(folderName)) {
-			fileSystem.removeFolder(folderName);
+			fileSystem.removeFolder(folderName, false);
 			assertFalse(fileSystem.folderExists(folderName));
 		}
 		fileSystem.createFolder(folderName);
@@ -160,10 +160,10 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		fileSystem.deleteFile(destFile2);
 		assertFalse(fileSystem.exists(destFile2));
 
-		fileSystem.removeFolder(folderName2);
+		fileSystem.removeFolder(folderName2, false);
 		assertFalse(fileSystem.folderExists(folderName2));
 
-		fileSystem.removeFolder(folderName);
+		fileSystem.removeFolder(folderName, false);
 		assertFalse(fileSystem.folderExists(folderName));
 	}
 

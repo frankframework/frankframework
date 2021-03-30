@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.esb;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;

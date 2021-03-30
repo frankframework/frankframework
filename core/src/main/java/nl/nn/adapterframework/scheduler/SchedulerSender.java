@@ -17,7 +17,7 @@ package nl.nn.adapterframework.scheduler;
 
 import static org.quartz.JobBuilder.newJob;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;

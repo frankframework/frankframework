@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,8 +28,11 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.Lifecycle;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.Adapter;
@@ -44,7 +47,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
@@ -59,10 +62,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 
 	private Boolean autoStart = null;
 
-	private IAdapterService adapterService;
+	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 
-	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
-	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
 	private boolean unloadInProgressOrDone = false;
 
 	private final Map<String, JobDef> jobTable = new LinkedHashMap<>(); // TODO useless synchronization ?
@@ -84,7 +85,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		Object root = hski.start(now,mainMark,detailMark);
 		try {
 			Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
-			for (Adapter adapter : adapterService.getAdapters().values()) {
+			for (Adapter adapter : adapterManager.getAdapterList()) {
 				adapter.forEachStatisticsKeeperBody(hski,groupData,action);
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
@@ -141,6 +142,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		setParent(applicationContext);
 	}
 
+	/**
+	 * Spring's configure method.
+	 * Only called when the Configuration has been added through a parent context!
+	 */
 	@Override
 	public void afterPropertiesSet() {
 		if(!(getClassLoader() instanceof IConfigurationClassLoader)) {
@@ -160,6 +165,58 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		super.afterPropertiesSet(); //Triggers a context refresh
 
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
+	}
+
+	/**
+	 * Don't manually call this method. Spring should automatically trigger 
+	 * this when super.afterPropertiesSet(); is called.
+	 */
+	@Override
+	public void refresh() throws BeansException, IllegalStateException {
+		super.refresh();
+
+		if(adapterManager == null) { //Manually set the AdapterManager bean
+			setAdapterManager(getBean("adapterManager", AdapterManager.class));
+		}
+	}
+
+	/**
+	 * Spring method which starts the ApplicationContext.
+	 * Loads + digests the configuration and calls start() in all registered 
+	 * beans that implement the Spring {@link Lifecycle} interface.
+	 */
+	@Override
+	public void start() {
+		load();
+
+		super.start();
+	}
+
+	private void load() {
+		log.info("loading configuration ["+getId()+"]");
+
+		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
+		try {
+			configurationDigester.digest();
+		} catch (ConfigurationException e) {
+			throw new IllegalStateException(e);
+		}
+
+		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
+		if(flowDiagramManager != null) {
+			try {
+				flowDiagramManager.generate(this);
+			} catch (IOException e) {
+				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
+			}
+		}
+	}
+
+	@Override
+	public void close() {
+		setUnloadInProgressOrDone(true); //Marks Configuration as inactive
+
+		super.close();
 	}
 
 	public void setAutoStart(boolean autoStart) {
@@ -187,61 +244,27 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	 * @return IAdapter
 	 */
 	public Adapter getRegisteredAdapter(String name) {
-		return adapterService.getAdapter(name);
-	}
-
-	public Adapter getRegisteredAdapter(int index) {
-		return getRegisteredAdapters().get(index);
+		return adapterManager.getAdapter(name);
 	}
 
 	public List<Adapter> getRegisteredAdapters() {
-		return new ArrayList<>(adapterService.getAdapters().values());
-	}
-
-	public List<String> getSortedStartedAdapterNames() {
-		List<String> startedAdapters = new ArrayList<String>();
-		for (int i = 0; i < getRegisteredAdapters().size(); i++) {
-			IAdapter adapter = getRegisteredAdapter(i);
-			// add the adapterName if it is started.
-			if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
-				startedAdapters.add(adapter.getName());
-			}
-		}
-		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
-		return startedAdapters;
-	}
-
-	public IAdapterService getAdapterService() {
-		return adapterService;
-	}
-
-	@Autowired
-	public void setAdapterService(IAdapterService adapterService) {
-		this.adapterService = adapterService;
+		return adapterManager.getAdapterList();
 	}
 
 	public void addStartAdapterThread(Runnable runnable) {
-		startAdapterThreads.add(runnable);
+		adapterManager.addStartAdapterThread(runnable);
 	}
 
 	public void removeStartAdapterThread(Runnable runnable) {
-		startAdapterThreads.remove(runnable);
-	}
-
-	public List<Runnable> getStartAdapterThreads() {
-		return startAdapterThreads;
+		adapterManager.removeStartAdapterThread(runnable);
 	}
 
 	public void addStopAdapterThread(Runnable runnable) {
-		stopAdapterThreads.add(runnable);
+		adapterManager.addStopAdapterThread(runnable);
 	}
 
 	public void removeStopAdapterThread(Runnable runnable) {
-		stopAdapterThreads.remove(runnable);
-	}
-
-	public List<Runnable> getStopAdapterThreads() {
-		return stopAdapterThreads;
+		adapterManager.removeStopAdapterThread(runnable);
 	}
 
 	public boolean isUnloadInProgressOrDone() {
@@ -273,15 +296,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 			return;
 		}
 		adapter.setConfiguration(this);
-
-		try {
-			adapterService.registerAdapter(adapter);
-		} catch (ConfigurationException e) { //For some reason the adapterService configures the adapter...
-			//TODO: this the configuration should have a configure method which configures every adapter.
-
-			//Do nothing as this will cause the digester to stop digesting the configuration
-			log.error("error configuring adapter ["+adapter.getName()+"]", e);
-		}
+		adapterManager.registerAdapter(adapter);
 
 		log.debug("Configuration [" + getName() + "] registered adapter [" + adapter.toString() + "]");
 	}
@@ -355,7 +370,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	public IbisManager getIbisManager() {
 		return ibisManager;
 	}
-
 
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;

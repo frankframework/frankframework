@@ -24,7 +24,7 @@ import nl.nn.adapterframework.stream.Message;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Pipe that throws an exception, based on the input message.

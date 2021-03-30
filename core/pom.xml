@@ -424,11 +424,19 @@
 			<artifactId>htmlcleaner</artifactId>
 			<version>2.7</version>
 		</dependency>
+
+		<!-- TransactionManagers: BTM + NARAYANA -->
 		<dependency>
 			<groupId>com.github.marcus-nl.btm</groupId>
 			<artifactId>btm</artifactId>
 			<version>3.0.0-mk1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jboss.narayana.jta</groupId>
+			<artifactId>narayana-jta</artifactId>
+			<version>5.11.0.Final</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

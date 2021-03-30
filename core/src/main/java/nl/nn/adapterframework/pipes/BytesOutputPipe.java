@@ -18,7 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;

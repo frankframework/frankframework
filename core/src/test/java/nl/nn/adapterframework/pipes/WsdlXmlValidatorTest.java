@@ -13,10 +13,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.configuration.AutoConfiguringAdapterManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.DummyAdapterService;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -242,7 +242,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));
 		Configuration configuration = new Configuration();
-		configuration.setAdapterService(new DummyAdapterService());
+		configuration.setAdapterManager(new AutoConfiguringAdapterManager());
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);
@@ -284,7 +284,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(spy(new IbisContext()));
 		Configuration configuration = new Configuration();
-		configuration.setAdapterService(new DummyAdapterService());
+		configuration.setAdapterManager(new AutoConfiguringAdapterManager());
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);

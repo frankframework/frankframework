@@ -172,7 +172,7 @@
 									<arg value="--volumes"/>
 									<arg value="--remove-orphans"/>
 								</exec>
-								<exec executable="docker">
+								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
 									<arg value="iaf-test-as-websphere"/>

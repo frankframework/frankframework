@@ -38,7 +38,7 @@ import java.util.StringTokenizer;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

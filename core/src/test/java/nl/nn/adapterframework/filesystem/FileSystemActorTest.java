@@ -1167,7 +1167,67 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// test
 		assertFalse("Expected folder [" + folder + "] " + "not to be present", actual);
 	}
+	@Test
+	public void fileSystemActorRmNonEmptyDirActionTest() throws Exception {
+		String folder = DIR1;
+		String innerFolder = DIR1+"/innerFolder";
+		if (!_folderExists(DIR1)) {
+			_createFolder(folder);
+		}
+		if (!_folderExists(innerFolder)) {
+			_createFolder(innerFolder);
+		}
+		for (int i=0; i < 3; i++) {
+			String filename = "file"+i + FILE1;
+			createFile(folder, filename, "is not empty");
+			createFile(innerFolder, filename, "is not empty");
+		}
 
+		actor.setAction("rmdir");
+		actor.setRemoveNonEmptyFolder(true);
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message message = new Message(folder);
+		ParameterValueList pvl = null;
+		Object result = actor.doAction(message, pvl, session);
+
+		// test
+		assertEquals("result of actor should be name of removed folder",folder,result);
+		waitForActionToFinish();
+		
+		boolean actual = _folderExists(folder);
+		// test
+		assertFalse("Expected folder [" + folder + "] " + "not to be present", actual);
+	}
+	
+	@Test
+	public void fileSystemActorAttemptToRmNonEmptyDir() throws Exception {
+		thrown.expectMessage("Cannot remove folder");
+		String folder = DIR1;
+		String innerFolder = DIR1+"/innerFolder";
+		if (!_folderExists(DIR1)) {
+			_createFolder(folder);
+		}
+		if (!_folderExists(innerFolder)) {
+			_createFolder(innerFolder);
+		}
+		for (int i=0; i < 3; i++) {
+			String filename = "file"+i + FILE1;
+			createFile(folder, filename, "is not empty");
+			createFile(innerFolder, filename, "is not empty");
+		}
+
+		actor.setAction("rmdir");
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message message = new Message(folder);
+		ParameterValueList pvl = null;
+		actor.doAction(message, pvl, session);
+
+	}
+	
 	@Test
 	public void fileSystemActorDeleteActionTest() throws Exception {
 		String filename = "tobedeleted" + FILE1;

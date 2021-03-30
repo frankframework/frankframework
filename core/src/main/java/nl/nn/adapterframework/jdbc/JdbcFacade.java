@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import lombok.Getter;

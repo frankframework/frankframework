@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.ws.soap.SOAPBinding;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;

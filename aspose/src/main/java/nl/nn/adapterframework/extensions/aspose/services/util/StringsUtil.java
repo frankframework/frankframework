@@ -26,21 +26,21 @@ public class StringsUtil {
 	}
 
 	/**
-	 * Replaces org.apache.commons.lang.StringUtils.isBlank(String) with the guava library.
+	 * Replaces org.apache.commons.lang3.StringUtils.isBlank(String) with the guava library.
 	 */
 	public static boolean isBlank(String str) {
 		return Strings.isNullOrEmpty(trimToNull(str));
 	}
 
 	/**
-	 * Replaces org.apache.commons.lang.StringUtils.isNotBlank(String) with the guava library.
+	 * Replaces org.apache.commons.lang3.StringUtils.isNotBlank(String) with the guava library.
 	 */
 	public static boolean isNotBlank(String str) {
 		return !isBlank(str);
 	}
 
 	/**
-	 * Replaces org.apache.commons.lang.StringUtils.trimToNull(String) with the guava library.
+	 * Replaces org.apache.commons.lang3.StringUtils.trimToNull(String) with the guava library.
 	 */
 	public static String trimToNull(String str) {
 		String result = null;

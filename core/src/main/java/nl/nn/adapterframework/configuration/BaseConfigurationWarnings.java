@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.util.LinkedList;

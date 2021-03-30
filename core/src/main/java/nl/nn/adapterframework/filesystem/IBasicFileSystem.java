@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	public F copyFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
 	public void createFolder(String folder) throws FileSystemException;
-	public void removeFolder(String folder) throws FileSystemException;
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException;
 
 
 	public long getFileSize(F f) throws FileSystemException;

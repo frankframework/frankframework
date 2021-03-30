@@ -24,7 +24,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -201,8 +201,8 @@ public class IbisContext extends IbisApplicationContext {
 		if (configuration != null) {
 			long start = System.currentTimeMillis();
 			ibisManager.unload(configurationName);
-			if (configuration.getAdapterService().getAdapters().size() > 0) {
-				log("Not all adapters are unregistered: " + configuration.getAdapterService().getAdapters(), MessageKeeperLevel.ERROR);
+			if (configuration.getRegisteredAdapters().size() > 0) {
+				log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageKeeperLevel.ERROR);
 			}
 			String configurationVersion = configuration.getVersion();
 			getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
@@ -320,7 +320,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
-	// Create a new configuration through Spring, and explicitly set the ClassLoader before initializing it.
+	// Create a new configuration through Spring, and explicitly set the ClassLoader before initialising it.
 	private Configuration createConfiguration(String name, ClassLoader classLoader) {
 		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		bean.setClassLoader(classLoader);
@@ -358,8 +358,6 @@ public class IbisContext extends IbisApplicationContext {
 					}
 				}
 
-				ConfigurationDigester configurationDigester = configuration.getBean(ConfigurationDigester.class);
-				configurationDigester.digestConfiguration();
 				if (currentConfigurationVersion == null) {
 					currentConfigurationVersion = configuration.getVersion(); //Digested configuration version
 				} else if (!currentConfigurationVersion.equals(configuration.getVersion())) {

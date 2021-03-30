@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -24,8 +23,6 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -33,8 +30,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IAdapterService;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -52,7 +47,6 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -70,7 +64,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	private SchedulerHelper schedulerHelper;
 	private PlatformTransactionManager transactionManager;
 	private ApplicationEventPublisher applicationEventPublisher;
-	private FlowDiagramManager flowDiagramManager;
 
 	@Override
 	public void setIbisContext(IbisContext ibisContext) {
@@ -107,25 +100,8 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	 */
 	@Override
 	public void startConfiguration(Configuration configuration) {
-		startAdapters(configuration);
+		configuration.start();
 		startScheduledJobs(configuration);
-		updateFlowDiagram(configuration);
-	}
-
-	private void updateFlowDiagram(Configuration configuration) {
-		if (flowDiagramManager != null) {
-			try {
-				flowDiagramManager.generate(configuration);
-			} catch (IOException e) {
-				ConfigurationWarnings.add(configuration, log, "Error generating flow diagram for configuration ["+configuration.getName()+"]", e);
-			}
-		}
-	}
-
-	@Autowired(required = false)
-	@Qualifier("flowDiagramManager")
-	public void setFlowDiagramManager(FlowDiagramManager flowDiagramManager) {
-		this.flowDiagramManager = flowDiagramManager;
 	}
 
 	/**
@@ -149,29 +125,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	private void unload(Configuration configuration) {
-		configuration.setUnloadInProgressOrDone(true);
-		while (configuration.getStartAdapterThreads().size() > 0) {
-			log.debug("Waiting for start threads to end: " + configuration.getStartAdapterThreads());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for start threads to end", e);
-			}
-		}
-		stopAdapters(configuration);
-		while (configuration.getStopAdapterThreads().size() > 0) {
-			log.debug("Waiting for stop threads to end: " + configuration.getStopAdapterThreads());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for stop threads to end", e);
-			}
-		}
-		while (configuration.getRegisteredAdapters().size() > 0) {
-			Adapter adapter = configuration.getRegisteredAdapter(0);
-			IAdapterService adapterService = configuration.getAdapterService();
-			adapterService.unRegisterAdapter(adapter);
-		}
+		configuration.close();
 
 		//Remove all registered jobs
 		for (JobDef jobdef : configuration.getScheduledJobs()) {
@@ -379,23 +333,13 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 
 	private void startAdapters(Configuration configuration) {
 		log.info("Starting all autostart-configured adapters for configuation " + configuration.getName());
-		for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
-			if (adapter.isAutoStart()) {
-				log.info("Starting adapter [" + adapter.getName() + "]");
-				adapter.startRunning();
-			}
-		}
+		configuration.getAdapterManager().start();
 	}
 
 	private void stopAdapters(Configuration configuration) {
 		configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
 		log.info("Stopping all adapters for configuation " + configuration.getName());
-		List<Adapter> adapters = new ArrayList<Adapter>(configuration.getAdapterService().getAdapters().values());
-		Collections.reverse(adapters);
-		for (Adapter adapter : adapters) {
-			log.info("Stopping adapter [" + adapter.getName() + "]");
-			adapter.stopRunning();
-		}
+		configuration.getAdapterManager().stop();
 	}
 
 	@Override
