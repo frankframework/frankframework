@@ -15,8 +15,6 @@
 */
 package nl.nn.ibistesttool;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -106,7 +104,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			testTool.infopoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), pipeDescription.getDescription());
 			Iterator<String> iterator = pipeDescription.getResourceNames().iterator();
 			while (iterator.hasNext()) {
-				String resourceName = (String)iterator.next();
+				String resourceName = iterator.next();
 				testTool.infopoint(correlationId, pipe.getClass().getName(), resourceName, pipeDescriptionProvider.getResource(pipeLine, resourceName));
 			}
 		}
@@ -143,17 +141,17 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public String replyListenerInput(IListener listener, String correlationId, String input) {
-		return (String)testTool.startpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), input);
+	public String replyListenerInput(IListener<?> listener, String correlationId, String input) {
+		return testTool.startpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), input);
 	}
 
 	@Override
-	public String replyListenerOutput(IListener listener, String correlationId, String output) {
-		return (String)testTool.endpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), output);
+	public String replyListenerOutput(IListener<?> listener, String correlationId, String output) {
+		return testTool.endpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), output);
 	}
 
 	@Override
-	public Throwable replyListenerAbort(IListener listener, String correlationId, Throwable throwable){
+	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable){
 		testTool.abortpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), throwable);
 		return throwable;
 	}
@@ -161,6 +159,11 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	@Override
 	public void createThread(Object sourceObject, String threadId, String correlationId) {
 		testTool.threadCreatepoint(correlationId, threadId); 
+	}
+
+	@Override
+	public void cancelThread(Object sourceObject, String threadId, String correlationId) {
+		testTool.close(correlationId, threadId); 
 	}
 
 	@Override
@@ -298,7 +301,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	// Called by IbisDebuggerAdvice
 	@Override
-	public boolean stubReplyListener(IListener listener, String correlationId) {
+	public boolean stubReplyListener(IListener<?> listener, String correlationId) {
 		return stubINamedObject("Listener ", listener, correlationId);
 	}
 
