@@ -62,6 +62,8 @@ public final class TestPipeline extends Base {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
+	public final String PIPELINE_RESULT_STATE_ERROR="ERROR";
+	
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-pipeline")
@@ -118,11 +120,11 @@ public final class TestPipeline extends Base {
 					result.put("state", plr.getState());
 					result.put("result", plr.getResult().asString());
 				} catch (Exception e) {
-					result.put("state", "Error");
+					result.put("state", PIPELINE_RESULT_STATE_ERROR);
 					result.put("result", "An Exception occurred while extracting the result of the PipeLine with exit state ["+plr.getState()+"]: ("+e.getClass().getTypeName()+") "+e.getMessage());
 				}
 			} catch (Exception e) {
-				result.put("state", "Error");
+				result.put("state", PIPELINE_RESULT_STATE_ERROR);
 				result.put("result", "An Exception occurred while processing the message: ("+e.getClass().getTypeName()+") "+e.getMessage());
 			}
 		}
