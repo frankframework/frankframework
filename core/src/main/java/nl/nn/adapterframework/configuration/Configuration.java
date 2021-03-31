@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
+import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -36,6 +37,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -207,13 +209,20 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
-		if(flowDiagramManager != null) {
+		if(flowDiagramManager != null) { //Optional bean
 			try {
 				flowDiagramManager.generate(this);
 			} catch (IOException e) {
 				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
 			}
 		}
+
+		//Trigger a configure on all Lifecycle beans
+		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
+		if(lifecycle instanceof ConfigurableLifecycle) {
+			((ConfigurableLifecycle) lifecycle).configure();
+		}
+
 		setConfigured(true);
 	}
 

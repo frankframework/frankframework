@@ -25,15 +25,20 @@ import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.Lifecycle;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
+import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ScheduleManager implements ApplicationContextAware, AutoCloseable, Lifecycle {
+/**
+ * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
+ *
+ */
+public class ScheduleManager implements ApplicationContextAware, AutoCloseable, ConfigurableLifecycle {
 	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -45,6 +50,18 @@ public class ScheduleManager implements ApplicationContextAware, AutoCloseable, 
 	}
 	private BootState state = BootState.STARTING;
 
+	@Override
+	public void configure() {
+		for (JobDef jobdef : getSchedulesList()) {
+			try {
+				jobdef.configure();
+				log.info("job scheduled with properties :" + jobdef.toString());
+			} catch (Exception e) {
+				log.error("Could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
+			}
+		}
+	}
+
 	/**
 	 * Configure and start, managed through the Spring Lifecyle
 	 */
@@ -55,12 +72,15 @@ public class ScheduleManager implements ApplicationContextAware, AutoCloseable, 
 		}
 
 		for (JobDef jobdef : getSchedulesList()) {
-			try {
-				jobdef.configure();
-				schedulerHelper.scheduleJob(jobdef);
-				log.info("job scheduled with properties :" + jobdef.toString());
-			} catch (Exception e) {
-				log.error("Could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
+			if(jobdef.isConfigured()) {
+				try {
+					schedulerHelper.scheduleJob(jobdef);
+					log.info("job scheduled with properties :" + jobdef.toString());
+				} catch (SchedulerException e) {
+					log.error("Could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
+				}
+			} else {
+				log.info("Could not schedule job [" + jobdef.getName() + "] as it is not configured");
 			}
 		}
 

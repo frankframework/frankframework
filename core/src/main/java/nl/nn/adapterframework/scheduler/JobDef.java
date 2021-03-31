@@ -359,6 +359,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter AdapterManager adapterManager;
+	private @Getter boolean configured;
 
 	private String name;
 	private String cronExpression;
@@ -486,6 +487,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 
 		super.configure();
 		messageKeeper.add("job successfully configured");
+		configured = true;
 	}
 
 	public JobDetail getJobDetail() {

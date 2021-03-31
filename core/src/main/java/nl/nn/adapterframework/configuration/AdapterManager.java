@@ -32,10 +32,16 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
+import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
-public class AdapterManager implements ApplicationContextAware, AutoCloseable, Lifecycle {
+/**
+ * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
+ *
+ */
+public class AdapterManager implements ApplicationContextAware, AutoCloseable, ConfigurableLifecycle {
 	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -141,6 +147,19 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 		return startedAdapters;
 	}
 
+	@Override
+	public void configure() {
+		log.info("configuring all adapters for AdapterManager "+this+"]");
+
+		for (Adapter adapter : getAdapterList()) {
+			try {
+				adapter.configure();
+			} catch (ConfigurationException e) {
+				log.error("error configuring adapter ["+adapter.getName()+"]", e);
+			}
+		}
+	}
+
 	/**
 	 * Inherited from the Spring {@link Lifecycle} interface.
 	 * Upon registering all Beans in the ApplicationContext (Configuration)
@@ -156,14 +175,6 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 
 		log.info("starting all autostart-configured adapters for AdapterManager "+this+"]");
 		for (Adapter adapter : getAdapterList()) {
-			if(!adapter.configurationSucceeded()) {
-				try {
-					adapter.configure();
-				} catch (ConfigurationException e) {
-					log.error("error configuring adapter ["+adapter.getName()+"]", e);
-				}
-			}
-
 			if (adapter.configurationSucceeded() && adapter.isAutoStart()) {
 				log.info("Starting adapter [" + adapter.getName() + "]");
 				adapter.startRunning();
