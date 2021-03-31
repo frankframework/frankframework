@@ -17,16 +17,7 @@ package nl.nn.adapterframework.stream.document;
 
 import org.xml.sax.SAXException;
 
-public abstract class ObjectBuilder implements IObjectBuilder {
-
-	private NodeBuilder field;
-	
-	@Override
-	public void close() throws SAXException {
-		if (field!=null) {
-			field.close();
-		}
-	}
+public abstract class ObjectBuilder extends StructureBuilder implements IObjectBuilder {
 
 	public void add(String name, String value) throws SAXException {
 		addField(name).setValue(value);
@@ -41,14 +32,14 @@ public abstract class ObjectBuilder implements IObjectBuilder {
 	}
 	
 	public ObjectBuilder addObjectField(String name) throws SAXException {
-		NodeBuilder field = addField(name);
+		INodeBuilder field = addField(name);
 		ObjectBuilder result = field.startObject();
 		result.field=field;
 		return result;
 	}
 
 	public ArrayBuilder addArrayField(String name, String elementName) throws SAXException {
-		NodeBuilder field = addField(name);
+		INodeBuilder field = addField(name);
 		ArrayBuilder result = field.startArray(elementName);
 		result.field=field;
 		return result;

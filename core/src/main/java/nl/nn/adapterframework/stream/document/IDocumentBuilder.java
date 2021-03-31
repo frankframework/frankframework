@@ -15,6 +15,11 @@
 */
 package nl.nn.adapterframework.stream.document;
 
-public abstract class NodeBuilder implements INodeBuilder {
+import org.xml.sax.SAXException;
+
+public interface IDocumentBuilder extends INodeBuilder {
+
+	public ObjectBuilder asObjectBuilder() throws SAXException;
+	public ArrayBuilder asArrayBuilder(String elementName) throws SAXException;
 
 }

@@ -22,32 +22,25 @@ import nl.nn.adapterframework.stream.JsonEventHandler;
 public class JsonObjectBuilder extends ObjectBuilder {
 
 	private JsonEventHandler handler;
-	private boolean asRoot;
 	
 	public JsonObjectBuilder(JsonEventHandler handler) throws SAXException {
-		this(handler, false);
-	}
-	public JsonObjectBuilder(JsonEventHandler handler, boolean asRoot) throws SAXException {
 		super();
 		this.handler=handler;
-		if (asRoot) {
-			handler.startDocument();
-		}
 		handler.startObject();
 	}
 
 	@Override
 	public void close() throws SAXException {
-		handler.endObject();
-		super.close();
-		if (asRoot) {
-			handler.endDocument();
+		try {
+			handler.endObject();
+		} finally {
+			super.close();
 		}
 	}
 
 
 	@Override
-	public NodeBuilder addField(String fieldName) throws SAXException {
+	public INodeBuilder addField(String fieldName) throws SAXException {
 		handler.startObjectEntry(fieldName);
 		return new JsonNodeBuilder(handler);
 	}

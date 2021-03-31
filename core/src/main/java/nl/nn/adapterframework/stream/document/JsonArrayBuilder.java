@@ -29,12 +29,16 @@ public class JsonArrayBuilder extends ArrayBuilder {
 	}
 
 	@Override
-	public NodeBuilder addElement() {
+	public INodeBuilder addElement() {
 		return new JsonNodeBuilder(handler);
 	}
 
 	@Override
 	public void close() throws SAXException {
-		handler.endArray();
+		try {
+			handler.endArray();
+		} finally {
+			super.close();
+		}
 	}
 }

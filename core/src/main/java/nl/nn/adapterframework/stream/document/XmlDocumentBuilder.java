@@ -18,39 +18,27 @@ package nl.nn.adapterframework.stream.document;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.stream.JsonEventHandler;
-import nl.nn.adapterframework.stream.json.JsonWriter;
+import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 
-public class JsonDocumentBuilder extends JsonNodeBuilder implements IDocumentBuilder {
+public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuilder {
 
-	private JsonEventHandler handler;
 	private Writer writer;
-
-	public JsonDocumentBuilder() throws SAXException {
-		this(new StringWriter());
+	
+	public XmlDocumentBuilder(String rootElement) throws SAXException {
+		this(rootElement, new StringWriter());
 	}
-
-	public JsonDocumentBuilder(Writer writer) throws SAXException {
-		this(new JsonWriter(writer));
+	
+	public XmlDocumentBuilder(String rootElement, Writer writer) throws SAXException {
+		super(new SaxDocumentBuilder(null, writer), rootElement);
 		this.writer = writer;
 	}
 	
-	public JsonDocumentBuilder(JsonEventHandler handler) throws SAXException {
-		super(handler);
-		this.handler=handler;
-		handler.startDocument();
+	public XmlDocumentBuilder(String rootElement, ContentHandler handler) throws SAXException {
+		super(new SaxDocumentBuilder(null, handler), rootElement);
 	}
-	@Override
-	public void close() throws SAXException {
-		try {
-			handler.endDocument();
-		} finally {
-			super.close();
-		}
-	}
-
 
 	@Override
 	public String toString() {

@@ -15,34 +15,30 @@
 */
 package nl.nn.adapterframework.stream.document;
 
-import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
-public class XmlNodeBuilder extends NodeBuilder {
+public class XmlNodeBuilder implements INodeBuilder {
 
 	private SaxElementBuilder current;
 
-	public XmlNodeBuilder(String rootElement, ContentHandler handler) throws SAXException {
-		current = new SaxDocumentBuilder(rootElement, handler);
-	}
 	public XmlNodeBuilder(SaxElementBuilder current, String elementName) throws SAXException {
 		this.current = current.startElement(elementName);
 	}
+
 	@Override
 	public void close() throws SAXException {
 		current.close();
 	}
 
 	@Override
-	public ArrayBuilder startArray(String elementName) {
+	public XmlArrayBuilder startArray(String elementName) {
 		return new XmlArrayBuilder(current, elementName);
 	}
 
 	@Override
-	public ObjectBuilder startObject() throws SAXException {
+	public XmlObjectBuilder startObject() throws SAXException {
 		return new XmlObjectBuilder(current, null);
 	}
 
@@ -60,5 +56,5 @@ public class XmlNodeBuilder extends NodeBuilder {
 	public void setValue(boolean value) throws SAXException {
 		current.addValue(Boolean.toString(value)).close();
 	}
-	
+
 }

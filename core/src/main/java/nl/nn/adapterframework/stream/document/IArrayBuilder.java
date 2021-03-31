@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 
 public interface IArrayBuilder extends AutoCloseable {
 
-	public NodeBuilder addElement() throws SAXException;
+	public INodeBuilder addElement() throws SAXException;
 	
 	@Override
 	public void close() throws SAXException;

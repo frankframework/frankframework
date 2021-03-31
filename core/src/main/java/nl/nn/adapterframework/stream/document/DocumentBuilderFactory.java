@@ -24,10 +24,10 @@ import nl.nn.adapterframework.stream.StreamingException;
 
 public class DocumentBuilderFactory {
 
-	public static NodeBuilder startDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream) throws SAXException, StreamingException {
+	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream) throws SAXException, StreamingException {
 		switch (format) {
 		case XML:
-			return new XmlNodeBuilder(rootElement, outputStream.asContentHandler());
+			return new XmlDocumentBuilder(rootElement, outputStream.asContentHandler());
 		case JSON:
 			return new JsonDocumentBuilder(outputStream.asJsonEventHandler());
 		default:
@@ -35,23 +35,39 @@ public class DocumentBuilderFactory {
 		}
 	}
 	
-	public static NodeBuilder startDocument(String rootElement, ContentHandler handler) throws SAXException {
-		return new XmlNodeBuilder(rootElement, handler);
+	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement) throws SAXException, StreamingException {
+		switch (format) {
+		case XML:
+			return new XmlDocumentBuilder(rootElement);
+		case JSON:
+			return new JsonDocumentBuilder();
+		default:
+			throw new IllegalArgumentException("Unknown document format ["+format+"]");
+		}
 	}
 	
-	public static NodeBuilder startDocument(JsonEventHandler handler) throws SAXException {
+	public static IDocumentBuilder startDocument(String rootElement, ContentHandler handler) throws SAXException {
+		return new XmlDocumentBuilder(rootElement, handler);
+	}
+	
+	public static IDocumentBuilder startDocument(JsonEventHandler handler) throws SAXException {
 		return new JsonDocumentBuilder(handler);
 	}
 	
 	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream) throws SAXException, StreamingException {
-		switch (format) {
-		case XML:
-			return new XmlObjectBuilder(rootElement, outputStream.asContentHandler());
-		case JSON:
-			return new JsonObjectBuilder(outputStream.asJsonEventHandler(), true);
-		default:
-			throw new IllegalArgumentException("Unknown document format ["+format+"]");
-		}
+		return startDocument(format, rootElement, outputStream).asObjectBuilder();
+	}
+
+	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement) throws SAXException, StreamingException {
+		return startDocument(format, rootElement).asObjectBuilder();
+	}
+
+	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName, MessageOutputStream outputStream) throws SAXException, StreamingException {
+		return startDocument(format, rootElement, outputStream).asArrayBuilder(elementName);
+	}
+
+	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName) throws SAXException, StreamingException {
+		return startDocument(format, rootElement).asArrayBuilder(elementName);
 	}
 
 }

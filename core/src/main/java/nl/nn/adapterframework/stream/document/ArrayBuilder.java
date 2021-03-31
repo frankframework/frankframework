@@ -17,17 +17,8 @@ package nl.nn.adapterframework.stream.document;
 
 import org.xml.sax.SAXException;
 
-public abstract class ArrayBuilder implements IArrayBuilder {
+public abstract class ArrayBuilder extends StructureBuilder implements IArrayBuilder {
 	
-	protected NodeBuilder field;
-	
-	@Override
-	public void close() throws SAXException {
-		if (field!=null) {
-			field.close();
-		}
-	}
-
 	public void addElement(String value) throws SAXException {
 		addElement().setValue(value);
 	}

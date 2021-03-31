@@ -18,9 +18,8 @@ package nl.nn.adapterframework.stream.document;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.stream.JsonEventHandler;
-import nl.nn.adapterframework.stream.json.JsonWriter;
 
-public class JsonNodeBuilder extends NodeBuilder {
+public class JsonNodeBuilder implements INodeBuilder {
 
 	private JsonEventHandler handler;
 	
@@ -28,21 +27,17 @@ public class JsonNodeBuilder extends NodeBuilder {
 		this.handler = handler;
 	}
 
-	public JsonNodeBuilder() {
-		handler = new JsonWriter();
-	}
-	
 	@Override
 	public void close() throws SAXException {
 	}
 
 	@Override
-	public ArrayBuilder startArray(String elementName) throws SAXException {
+	public JsonArrayBuilder startArray(String elementName) throws SAXException {
 		return new JsonArrayBuilder(handler);
 	}
 
 	@Override
-	public ObjectBuilder startObject() throws SAXException {
+	public JsonObjectBuilder startObject() throws SAXException {
 		return new JsonObjectBuilder(handler);
 	}
 

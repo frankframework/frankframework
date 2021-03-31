@@ -17,31 +17,38 @@ package nl.nn.adapterframework.stream.document;
 
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.xml.SaxElementBuilder;
+public abstract class StructureBuilder {
 
-public class XmlObjectBuilder extends ObjectBuilder {
-
-	private SaxElementBuilder current;
-
-	public XmlObjectBuilder(SaxElementBuilder current, String elementName) throws SAXException {
-		this.current = current.startElement(elementName);
-	}
-	@Override
+	protected INodeBuilder field;
+	INodeBuilder parent; // package private
+	
 	public void close() throws SAXException {
 		try {
-			current.close();
+			if (field!=null) {
+				field.close();
+			}
 		} finally {
-			super.close();
+			if (parent!=null) {
+				parent.close();
+			}
 		}
 	}
-	
+
 	@Override
-	public INodeBuilder addField(String fieldName) throws SAXException {
-		return new XmlNodeBuilder(current, fieldName);
+	public String toString() {
+		return parent!=null ? parent.toString() : super.toString();
 	}
-	@Override
-	public ArrayBuilder addRepeatedField(String fieldName) throws SAXException {
-		return new XmlArrayBuilder(current, fieldName);
+
+	public static ObjectBuilder asObjectBuilder(IDocumentBuilder documentBuilder) throws SAXException {
+		ObjectBuilder result = documentBuilder.startObject();
+		result.parent=documentBuilder;
+		return result; 
+	}
+
+	public static ArrayBuilder asArrayBuilder(IDocumentBuilder documentBuilder, String elementName) throws SAXException {
+		ArrayBuilder result = documentBuilder.startArray(elementName);
+		result.parent=documentBuilder;
+		return result; 
 	}
 
 }
