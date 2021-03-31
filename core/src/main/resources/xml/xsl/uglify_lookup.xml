@@ -842,7 +842,7 @@
   <Element>
     <Name>SenderPipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.GenericMessageSendingPipe</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.SenderPipe</ClassName>
   </Element>
   <Element>
     <Name>SignaturePipe</Name>
