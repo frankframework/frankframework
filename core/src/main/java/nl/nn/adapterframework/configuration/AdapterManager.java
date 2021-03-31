@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
-import org.springframework.context.LifecycleProcessor;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -114,7 +113,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 	}
 
 	/**
-	 * Get a registered adapter by its name
+	 * Get a registered adapter by its name through {@link IAdapterService#getAdapter(String)}
 	 * @param name the adapter to retrieve
 	 * @return IAdapter
 	 */
