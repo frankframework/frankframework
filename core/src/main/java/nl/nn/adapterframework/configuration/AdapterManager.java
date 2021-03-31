@@ -149,7 +149,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, C
 
 	@Override
 	public void configure() {
-		log.info("configuring all adapters for AdapterManager "+this+"]");
+		log.info("configuring all adapters in AdapterManager ["+this+"]");
 
 		for (Adapter adapter : getAdapterList()) {
 			try {
@@ -173,7 +173,7 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, C
 			return;
 		}
 
-		log.info("starting all autostart-configured adapters for AdapterManager "+this+"]");
+		log.info("starting all autostart-configured adapters in AdapterManager ["+this+"]");
 		for (Adapter adapter : getAdapterList()) {
 			if (adapter.configurationSucceeded() && adapter.isAutoStart()) {
 				log.info("Starting adapter [" + adapter.getName() + "]");
