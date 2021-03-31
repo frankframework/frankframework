@@ -13,6 +13,9 @@ import org.bson.types.ObjectId;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
@@ -26,13 +29,23 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	private String database="testdb";
 	private String collection="Students";
 	private String action="FINDONE";
+	
+	private JndiMongoClientFactory mongoClientFactory;
+
+	@Override
+	public void setUp() throws Exception {
+		String url = "mongodb://"+ user+":"+password+"@" + host;
+		MongoClient mongoClient = MongoClients.create(url);
+		mongoClientFactory = new JndiMongoClientFactory();
+		mongoClientFactory.add(mongoClient, JndiMongoClientFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		super.setUp();
+	}
 
 
 	@Override
 	public MongoDbSender createSender() throws Exception {
 		MongoDbSender result = new MongoDbSender();
-		String url = "mongodb://"+ user+":"+password+"@" + host;
-		result.setUrl(url);
+		result.setMongoClientFactory(mongoClientFactory);
 		result.setDatabase(database);
 		result.setCollection(collection);
 		return result;

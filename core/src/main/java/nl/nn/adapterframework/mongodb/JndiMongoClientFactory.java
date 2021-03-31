@@ -29,7 +29,8 @@ import nl.nn.adapterframework.util.AppConstants;
 public class JndiMongoClientFactory extends JndiObjectFactory<MongoClient,MongoClient> implements IMongoClientFactory {
 
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "mongodb.datasource.default";
-	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
+	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT = "mongodb/MongoClient";
+	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY, GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT);
 
 	public JndiMongoClientFactory() {
 		super(MongoClient.class);

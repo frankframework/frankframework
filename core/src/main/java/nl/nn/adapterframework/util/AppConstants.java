@@ -163,6 +163,13 @@ public final class AppConstants extends Properties implements Serializable {
 		return super.getProperty(key);
 	}
 
+	public String getResolvedProperty(String key, String defaultValue) {
+		String result = getResolvedProperty(key);
+		if (StringUtils.isEmpty(result)) {
+			return defaultValue;
+		}
+		return result;
+	}
 	/**
 	 * the method is like the <code>Properties.getProperty</code>, but provides functionality to resolve <code>${variable}</code>
 	 * syntaxis. It uses the AppConstants values and systemvalues to resolve the variables, and does this recursively.

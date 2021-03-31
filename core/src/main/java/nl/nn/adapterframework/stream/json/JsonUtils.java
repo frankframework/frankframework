@@ -30,7 +30,7 @@ import org.jsfr.json.JsonSaxHandler;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class JsonUtils {
-	static Logger log = LogUtil.getLogger(JsonUtils.class);
+	private static Logger log = LogUtil.getLogger(JsonUtils.class);
 
 	
 	public static void parseJson(String json, JsonSaxHandler handler) {

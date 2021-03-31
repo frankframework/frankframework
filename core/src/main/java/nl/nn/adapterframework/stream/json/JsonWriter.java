@@ -36,10 +36,10 @@ public class JsonWriter implements JsonSaxHandler {
 	private Stack<NodeState> stateStack = new Stack<>();
 	
 	private class NodeState {
-		boolean firstElemSeen;
-		boolean inArray;
+		private boolean firstElemSeen;
+		private boolean inArray;
 		
-		NodeState(boolean inArray) {
+		private NodeState(boolean inArray) {
 			this.inArray=inArray;
 		}
 	}

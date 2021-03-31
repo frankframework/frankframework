@@ -77,7 +77,6 @@ public class MongoDbSender extends StreamingSenderBase {
 
 
 	private @Getter String datasourceName;
-	private @Getter String url;
 	private @Getter String database;
 	private @Getter String collection;
 	private MongoAction action;
@@ -107,10 +106,10 @@ public class MongoDbSender extends StreamingSenderBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty(JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty(JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY, JndiMongoClientFactory.GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT));
 		}
-		if (mongoClientFactory==null && StringUtils.isEmpty(getUrl())) {
-			throw new ConfigurationException("no mongoClientFactory available, and attribute url not specified");
+		if (mongoClientFactory==null) {
+			throw new ConfigurationException("no mongoClientFactory available");
 		}
 		checkStringAttributeOrParameter("database", getDatabase(), PARAM_DATABASE);
 		checkStringAttributeOrParameter("collection", getCollection(), PARAM_COLLECTION);
@@ -124,14 +123,10 @@ public class MongoDbSender extends StreamingSenderBase {
 
 	@Override
 	public void open() throws SenderException {
-		if (mongoClientFactory!=null) {
-			try {
-				mongoClient = mongoClientFactory.getMongoClient(getDatasourceName());
-			} catch (NamingException e) {
-				throw new SenderException("cannot open MongoDB datasource ["+getDatasourceName()+"]", e);
-			}
-		} else {
-			mongoClient = MongoClients.create(getUrl());
+		try {
+			mongoClient = mongoClientFactory.getMongoClient(getDatasourceName());
+		} catch (NamingException e) {
+			throw new SenderException("cannot open MongoDB datasource ["+getDatasourceName()+"]", e);
 		}
 		super.open();
 	}
@@ -331,11 +326,6 @@ public class MongoDbSender extends StreamingSenderBase {
 	@IbisDoc({"1", "The MongoDB datasource", "${"+JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
-	}
-
-	@IbisDoc({"2", "mongodb-url, only used when no datasourceName is specified", ""})
-	public void setUrl(String url) {
-		this.url = url;
 	}
 
 	@IbisDoc({"8", "Database to connect to. Can be overridden by parameter '"+PARAM_DATABASE+"'", ""})
