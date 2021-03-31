@@ -186,7 +186,7 @@ public class ServerStatistics extends Base {
 			}
 
 			//ErrorStore count
-			if (showCountErrorStore) {
+			if (configuration.isActive() && showCountErrorStore) {
 				long esr = 0;
 				for (Adapter adapter : configuration.getRegisteredAdapters()) {
 					for (Receiver<?> receiver: adapter.getReceivers()) {

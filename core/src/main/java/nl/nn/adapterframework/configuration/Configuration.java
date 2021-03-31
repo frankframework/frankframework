@@ -16,11 +16,9 @@
 package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
+import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -36,10 +35,9 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -57,23 +55,22 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.Adapter
  */
-public class Configuration extends ClassPathXmlApplicationContext implements INamedObject, ApplicationContextAware, IScopeProvider {
+public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Boolean autoStart = null;
 
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
+	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
 
 	private boolean unloadInProgressOrDone = false;
-
-	private final Map<String, JobDef> jobTable = new LinkedHashMap<>(); // TODO useless synchronization ?
-	private final List<JobDef> scheduledJobs = new ArrayList<>();
 
 	private String version;
 	private IbisManager ibisManager;
 	private String originalConfiguration;
 	private String loadedConfiguration;
 	private StatisticsKeeperIterationHandler statisticsHandler = null;
+	private @Getter @Setter boolean configured = false;
 
 	private ConfigurationException configurationException = null;
 	private BaseConfigurationWarnings configurationWarnings = new BaseConfigurationWarnings();
@@ -164,6 +161,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 
 		super.afterPropertiesSet(); //Triggers a context refresh
 
+		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
 	}
 
@@ -178,6 +176,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		if(adapterManager == null) { //Manually set the AdapterManager bean
 			setAdapterManager(getBean("adapterManager", AdapterManager.class));
 		}
+		if(scheduleManager == null) { //Manually set the ScheduleManager bean
+			setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
+		}
 	}
 
 	/**
@@ -187,13 +188,18 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	 */
 	@Override
 	public void start() {
-		load();
-
+		if(!isConfigured()) {
+			throw new IllegalStateException("cannot start configuration that's not configured");
+		}
 		super.start();
 	}
 
-	private void load() {
-		log.info("loading configuration ["+getId()+"]");
+	/**
+	 * Digest the configuration and generate flow diagram.
+	 */
+	@Override
+	public void configure() {
+		log.info("configuring configuration ["+getId()+"]");
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
@@ -203,13 +209,21 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 		}
 
 		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
-		if(flowDiagramManager != null) {
+		if(flowDiagramManager != null) { //Optional bean
 			try {
 				flowDiagramManager.generate(this);
 			} catch (IOException e) {
 				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
 			}
 		}
+
+		//Trigger a configure on all Lifecycle beans
+		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
+		if(lifecycle instanceof ConfigurableLifecycle) {
+			((ConfigurableLifecycle) lifecycle).configure();
+		}
+
+		setConfigured(true);
 	}
 
 	@Override
@@ -239,15 +253,22 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	}
 
 	/**
-	 * Get a registered adapter by its name through {@link IAdapterService#getAdapter(String)}
+	 * Get a registered adapter by its name through {@link AdapterManager#getAdapter(String)}
 	 * @param name the adapter to retrieve
 	 * @return IAdapter
 	 */
 	public Adapter getRegisteredAdapter(String name) {
+		if(adapterManager == null || !isActive()) {
+			return null;
+		}
+
 		return adapterManager.getAdapter(name);
 	}
 
 	public List<Adapter> getRegisteredAdapters() {
+		if(adapterManager == null || !isActive()) {
+			return Collections.emptyList();
+		}
 		return adapterManager.getAdapterList();
 	}
 
@@ -276,18 +297,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	}
 
 	/**
-	 * Performs a check to see if the receiver is known at the adapter
-	 * @return true if the receiver is known at the adapter
-	 */
-	public boolean isRegisteredReceiver(String adapterName, String receiverName) {
-		IAdapter adapter = getRegisteredAdapter(adapterName);
-		if(null == adapter) {
-			return false;
-		}
-		return adapter.getReceiverByName(receiverName) != null;
-	}
-
-	/**
 	 * Register an adapter with the configuration.
 	 */
 	public void registerAdapter(Adapter adapter) {
@@ -313,9 +322,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	 * @since 4.0
 	 */
 	public void registerScheduledJob(JobDef jobdef) throws ConfigurationException {
-		jobdef.configure(this);
-		jobTable.put(jobdef.getName(), jobdef);
-		scheduledJobs.add(jobdef);
+		scheduleManager.register(jobdef);
 	}
 
 	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
@@ -363,7 +370,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 
 	@Autowired
 	public void setIbisManager(IbisManager ibisManager) {
-		ibisManager.addConfiguration(this);
 		this.ibisManager = ibisManager;
 	}
 
@@ -388,15 +394,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements INa
 	}
 
 	public JobDef getScheduledJob(String name) {
-		return jobTable.get(name);
-	}
-
-	public JobDef getScheduledJob(int index) {
-		return scheduledJobs.get(index);
+		return scheduleManager.getSchedule(name);
 	}
 
 	public List<JobDef> getScheduledJobs() {
-		return scheduledJobs;
+		return scheduleManager.getSchedulesList();
 	}
 
 	public void setConfigurationException(ConfigurationException exception) {

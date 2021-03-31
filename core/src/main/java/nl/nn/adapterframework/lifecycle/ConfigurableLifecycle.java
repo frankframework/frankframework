@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,15 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.scheduler;
+package nl.nn.adapterframework.lifecycle;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import org.springframework.context.Lifecycle;
 
-public class DatabaseJobDef extends JobDef {
+public interface ConfigurableLifecycle extends Lifecycle {
 
-	@Override
-	public void configure() throws ConfigurationException {
-		setFunction(JobDefFunctions.SEND_MESSAGE.getName());
-		super.configure();
-	}
+	public void configure();
 }

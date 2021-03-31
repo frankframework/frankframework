@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration;
+package nl.nn.adapterframework.configuration.digester;
 
 /**
  * Generic factory for instantiating beans from the Digester framework.
@@ -55,7 +55,7 @@ public class GenericFactory extends AbstractSpringPoweredDigesterFactory {
      * Return name of current element prefixed with the string "proto-" as
      * bean-name.
      *
-     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getSuggestedBeanName()
+     * @see nl.nn.adapterframework.configuration.digester.AbstractSpringPoweredDigesterFactory#getSuggestedBeanName()
      */
     @Override
     public String getSuggestedBeanName() {

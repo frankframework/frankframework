@@ -16,9 +16,18 @@
 		scope="singleton"
 	/>
 
+	<bean name="lifecycleProcessor" class="nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor" />
+
 	<bean
 		name="adapterManager"
 		class="nl.nn.adapterframework.configuration.AdapterManager"
+		autowire="byType"
+		scope="singleton"
+	/>
+
+	<bean
+		name="scheduleManager"
+		class="nl.nn.adapterframework.configuration.ScheduleManager"
 		autowire="byType"
 		scope="singleton"
 	/>

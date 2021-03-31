@@ -26,19 +26,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
+import org.springframework.context.LifecycleProcessor;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
+import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
-public class AdapterManager implements ApplicationContextAware, AutoCloseable, Lifecycle {
+/**
+ * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
+ *
+ */
+public class AdapterManager implements ApplicationContextAware, AutoCloseable, ConfigurableLifecycle {
 	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter ApplicationContext applicationContext;
-	private List<? extends AdapterLifecylceWrapperBase> adapterLifecylceWrappers;
+	private List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers;
 
 	private enum BootState {
 		STARTING, STARTED, STOPPING, STOPPED;
@@ -63,8 +70,8 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 			throw new IllegalStateException("Adapter [" + adapter.getName() + "] already registered.");
 		}
 
-		if(adapterLifecylceWrappers != null) {
-			for (AdapterLifecylceWrapperBase adapterProcessor : adapterLifecylceWrappers) {
+		if(adapterLifecycleWrappers != null) {
+			for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
 				adapterProcessor.addAdapter(adapter);
 			}
 		}
@@ -73,8 +80,8 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 
 	public void unRegisterAdapter(Adapter adapter) {
 		String name = adapter.getName();
-		if(adapterLifecylceWrappers != null) {
-			for (AdapterLifecylceWrapperBase adapterProcessor : adapterLifecylceWrappers) {
+		if(adapterLifecycleWrappers != null) {
+			for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
 				adapterProcessor.removeAdapter(adapter);
 			}
 		}
@@ -84,8 +91,8 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 	}
 
 	@Autowired
-	public void setAdapterLifecylceWrappers(List<? extends AdapterLifecylceWrapperBase> adapterLifecylceWrappers) {
-		this.adapterLifecylceWrappers = adapterLifecylceWrappers ;
+	public void setAdapterLifecycleWrappers(List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers) {
+		this.adapterLifecycleWrappers = adapterLifecycleWrappers;
 	}
 
 	public void addStartAdapterThread(Runnable runnable) {
@@ -112,11 +119,6 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 		return stopAdapterThreads;
 	}
 
-	/**
-	 * Get a registered adapter by its name through {@link IAdapterService#getAdapter(String)}
-	 * @param name the adapter to retrieve
-	 * @return IAdapter
-	 */
 	public Adapter getAdapter(String name) {
 		return getAdapters().get(name);
 	}
@@ -145,6 +147,19 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 		return startedAdapters;
 	}
 
+	@Override
+	public void configure() {
+		log.info("configuring all adapters in AdapterManager ["+this+"]");
+
+		for (Adapter adapter : getAdapterList()) {
+			try {
+				adapter.configure();
+			} catch (ConfigurationException e) {
+				log.error("error configuring adapter ["+adapter.getName()+"]", e);
+			}
+		}
+	}
+
 	/**
 	 * Inherited from the Spring {@link Lifecycle} interface.
 	 * Upon registering all Beans in the ApplicationContext (Configuration)
@@ -158,14 +173,8 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, L
 			return;
 		}
 
-		log.info("starting all autostart-configured adapters for AdapterManager "+this+"]");
+		log.info("starting all autostart-configured adapters in AdapterManager ["+this+"]");
 		for (Adapter adapter : getAdapterList()) {
-			try {
-				adapter.configure();
-			} catch (ConfigurationException e) {
-				log.error("error configuring adapter ["+adapter.getName()+"]", e);
-			}
-
 			if (adapter.configurationSucceeded() && adapter.isAutoStart()) {
 				log.info("Starting adapter [" + adapter.getName() + "]");
 				adapter.startRunning();

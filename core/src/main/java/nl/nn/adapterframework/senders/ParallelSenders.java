@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.util.ConcurrencyThrottleSupport;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -32,6 +33,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -50,6 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class ParallelSenders extends SenderSeries {
 
 	private int maxConcurrentThreads = 0;
+	private TaskExecutor executor;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -61,13 +64,13 @@ public class ParallelSenders extends SenderSeries {
 			}
 			ConfigurationWarnings.add(this, log, "parameters ["+paramList+"] of ParallelSenders ["+getName()+"] are not available for use by nested Senders");
 		}
+		executor = createTaskExecutor();
 	}
 
 	@Override
 	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
-		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
-		TaskExecutor executor = createTaskExecutor();
+		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 
 		for (ISender sender: getSenders()) {
 			guard.addResource();
@@ -130,13 +133,12 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	protected TaskExecutor createTaskExecutor() {
-		ThreadPoolTaskExecutor executor = getApplicationContext().getBean("concurrentTaskExecutor", ThreadPoolTaskExecutor.class);
+		SimpleAsyncTaskExecutor executor = SpringUtils.createBean(getApplicationContext(), SimpleAsyncTaskExecutor.class);
 
-		if(getMaxConcurrentThreads() > 0) { //MaxPoolSize defaults to Integer.MAX_VALUE so only set this if a maximum has been set!
-			executor.setMaxPoolSize(getMaxConcurrentThreads());
-			executor.setCorePoolSize(getMaxConcurrentThreads());
+		if(getMaxConcurrentThreads() > 0) { //ConcurrencyLimit defaults to NONE so only this technically limits it!
+			executor.setConcurrencyLimit(getMaxConcurrentThreads());
 		} else {
-			executor.setCorePoolSize(Integer.MAX_VALUE); //initial pool size
+			executor.setConcurrencyLimit(ConcurrencyThrottleSupport.UNBOUNDED_CONCURRENCY);
 		}
 
 		return executor;

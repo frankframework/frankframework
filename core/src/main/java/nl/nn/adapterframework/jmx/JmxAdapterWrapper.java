@@ -32,13 +32,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jmx.export.MBeanExporter;
 
-import nl.nn.adapterframework.configuration.AdapterLifecylceWrapperBase;
+import nl.nn.adapterframework.configuration.AdapterLifecycleWrapperBase;
 import nl.nn.adapterframework.core.Adapter;
 
 /**
  * NOTE: Using the PlatformMBeanServer on WebSphere changes ObjectNames on registration.
  */
-public class JmxAdapterWrapper extends AdapterLifecylceWrapperBase implements InitializingBean {
+public class JmxAdapterWrapper extends AdapterLifecycleWrapperBase implements InitializingBean {
 
 	private MBeanExporter mBeanManager = null;
 	private static Map<Adapter, ObjectName> registeredAdapters = new HashMap<>();

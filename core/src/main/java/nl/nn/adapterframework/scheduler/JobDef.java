@@ -34,8 +34,13 @@ import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -74,6 +79,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -96,7 +102,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * Operation of scheduling:
  * <ul>
  *   <li>at configuration time {@link Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
- *   <li>this calls {@link SchedulerHelper#scheduleJob(IbisManager, JobDef) SchedulerHelper.scheduleJob()};</li>
+ *   <li>this calls {@link SchedulerHelper#scheduleJob(JobDef) SchedulerHelper.scheduleJob()};</li>
  *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
  *   <li>this job is scheduled using the cron expression</li> 
@@ -347,10 +353,13 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * 
  * @author  Johan  Verrips
  */
-public class JobDef extends TransactionAttributes {
+public class JobDef extends TransactionAttributes implements ApplicationContextAware {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter AdapterManager adapterManager;
+	private @Getter boolean configured;
 
 	private String name;
 	private String cronExpression;
@@ -434,8 +443,8 @@ public class JobDef extends TransactionAttributes {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
-	public void configure(Configuration config) throws ConfigurationException {
-		super.configure();
+	@Override
+	public void configure() throws ConfigurationException {
 		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
@@ -446,8 +455,8 @@ public class JobDef extends TransactionAttributes {
 			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
 		}
 
-		if(config != null && StringUtils.isEmpty(getJobGroup())) //If not explicitly set, configure this JobDef under the config it's specified in
-			setJobGroup(config.getName());
+		if(StringUtils.isEmpty(getJobGroup())) //If not explicitly set, configure this JobDef under the config it's specified in
+			setJobGroup(applicationContext.getId());
 
 		if (function.equals(JobDefFunctions.QUERY)) {
 			if (StringUtils.isEmpty(getJmsRealm())) {
@@ -457,19 +466,18 @@ public class JobDef extends TransactionAttributes {
 			if (StringUtils.isEmpty(getAdapterName())) {
 				throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a adapterName must be specified");
 			}
-			if (config != null && config.getRegisteredAdapter(getAdapterName()) == null) {
+			Adapter adapter = adapterManager.getAdapter(getAdapterName());
+			if(adapter == null) { //Make sure the adapter is registered in this configuration
 				String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
 				throw new ConfigurationException(msg);
 			}
-			if (function.isEqualToAtLeastOneOf(JobDefFunctions.STOP_RECEIVER, JobDefFunctions.START_RECEIVER)) {
+			if (function.isEqualToAtLeastOneOf(JobDefFunctions.STOP_RECEIVER, JobDefFunctions.START_RECEIVER, JobDefFunctions.SEND_MESSAGE)) {
 				if (StringUtils.isEmpty(getReceiverName())) {
 					throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a receiverName must be specified");
 				}
-				if (config != null && StringUtils.isNotEmpty(getReceiverName())){
-					if (! config.isRegisteredReceiver(getAdapterName(), getReceiverName())) {
-						String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
-						throw new ConfigurationException(msg);
-					}
+				if (adapter.getReceiverByName(getReceiverName()) == null) {
+					String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
+					throw new ConfigurationException(msg);
 				}
 			}
 		}
@@ -479,9 +487,11 @@ public class JobDef extends TransactionAttributes {
 
 		super.configure();
 		messageKeeper.add("job successfully configured");
+		configured = true;
 	}
 
-	public JobDetail getJobDetail(IbisManager ibisManager) {
+	public JobDetail getJobDetail() {
+		IbisManager ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
 
 		JobDetail jobDetail = IbisJobBuilder.fromJobDef(this)
 				.setIbisManager(ibisManager)
@@ -879,7 +889,7 @@ public class JobDef extends TransactionAttributes {
 		}
 
 		// Get all IbisSchedules that have been stored in the database
-		FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 
@@ -903,7 +913,7 @@ public class JobDef extends TransactionAttributes {
 							JobKey key = JobKey.jobKey(jobName, jobGroup);
 			
 							//Create a new JobDefinition so we can compare it with existing jobs
-							DatabaseJobDef jobdef = new DatabaseJobDef();
+							DatabaseJobDef jobdef = SpringUtils.createBean(applicationContext, DatabaseJobDef.class);
 							jobdef.setCronExpression(cronExpression);
 							jobdef.setName(jobName);
 							jobdef.setInterval(interval);
@@ -913,7 +923,7 @@ public class JobDef extends TransactionAttributes {
 							jobdef.setMessage(message);
 			
 							if(hasLocker) {
-								Locker locker = (Locker) ibisManager.getIbisContext().createBeanAutowireByName(Locker.class);
+								Locker locker = SpringUtils.createBean(applicationContext, Locker.class);
 			
 								locker.setName(lockKey);
 								locker.setObjectId(lockKey);
@@ -933,7 +943,7 @@ public class JobDef extends TransactionAttributes {
 								if(!oldJobDetails.compareWith(jobdef)) {
 									log.debug("updating DatabaseSchedule ["+key+"]");
 									try {
-										sh.scheduleJob(ibisManager, jobdef);
+										sh.scheduleJob(jobdef);
 									} catch (SchedulerException e) {
 										getMessageKeeper().add("unable to update schedule ["+key+"]", e);
 									}
@@ -944,7 +954,7 @@ public class JobDef extends TransactionAttributes {
 								// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
 								log.debug("add DatabaseSchedule ["+key+"]");
 								try {
-									sh.scheduleJob(ibisManager, jobdef);
+									sh.scheduleJob(jobdef);
 								} catch (SchedulerException e) {
 									getMessageKeeper().add("unable to add schedule ["+key+"]", e);
 								}
@@ -1149,7 +1159,7 @@ public class JobDef extends TransactionAttributes {
 	public String getFunction() {
 		return function==null?null:function.getName();
 	}
-	public JobDefFunctions getJobDefFunction() {
+	public JobDefFunctions getFunctionEnum() {
 		return function;
 	}
 

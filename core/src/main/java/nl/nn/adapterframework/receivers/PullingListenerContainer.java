@@ -28,7 +28,10 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.IHasProcessState;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
@@ -129,16 +132,22 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 	}
 
-	private class ControllerTask implements SchedulingAwareRunnable {
+	private class ControllerTask implements SchedulingAwareRunnable, INamedObject {
+
+		private @Getter @Setter String name;
 
 		@Override
 		public boolean isLongLived() {
 			return true;
 		}
 
+		public ControllerTask() {
+			setName(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"]");
+		}
+
 		@Override
 		public void run() {
-			ThreadContext.push(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"]");
+			ThreadContext.push(getName());
 			log.debug("taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
 			receiver.setRunState(RunStateEnum.STARTED);
 			log.debug("started ControllerTask");
@@ -171,13 +180,18 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 	}
 
-	private class ListenTask implements SchedulingAwareRunnable {
+	private class ListenTask implements SchedulingAwareRunnable, INamedObject {
 
+		private @Getter @Setter String name;
 		private IHasProcessState<M> inProcessStateManager=null;
 
 		@Override
 		public boolean isLongLived() {
 			return false;
+		}
+
+		public ListenTask() {
+			setName("Receiver ["+receiver.getName()+"]");
 		}
 
 		@Override
