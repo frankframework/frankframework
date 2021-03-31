@@ -144,10 +144,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void afterPropertiesSet() {
 		if(!(getClassLoader() instanceof IConfigurationClassLoader)) {
-			throw new IllegalStateException("no IConfigurationClassLoader set");
+			throw new IllegalStateException("No IConfigurationClassLoader set");
 		}
 		if(ibisManager == null) {
-			throw new IllegalStateException("no IbisManager set");
+			throw new IllegalStateException("No IbisManager set");
 		}
 
 		setVersion(ConfigurationUtils.getConfigurationVersion(getClassLoader()));

@@ -444,7 +444,6 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 
 	@Override
 	public void configure() throws ConfigurationException {
-		super.configure();
 		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
@@ -455,7 +454,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
 		}
 
-		if(applicationContext != null && StringUtils.isEmpty(getJobGroup())) //If not explicitly set, configure this JobDef under the config it's specified in
+		if(StringUtils.isEmpty(getJobGroup())) //If not explicitly set, configure this JobDef under the config it's specified in
 			setJobGroup(applicationContext.getId());
 
 		if (function.equals(JobDefFunctions.QUERY)) {

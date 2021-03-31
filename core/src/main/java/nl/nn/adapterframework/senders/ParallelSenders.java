@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -70,7 +70,7 @@ public class ParallelSenders extends SenderSeries {
 	@Override
 	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
-		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<>();
+		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 
 		for (ISender sender: getSenders()) {
 			guard.addResource();

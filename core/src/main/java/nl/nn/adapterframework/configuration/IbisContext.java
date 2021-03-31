@@ -270,7 +270,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * 
 	 * @see ClassLoaderManager#get(String)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(IbisContext)
-	 * @see #digestClassLoaderConfiguration(ClassLoader, String, ConfigurationException)
+	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ConfigurationException)
 	 */
 	public void load(String configurationName) {
 		boolean configFound = false;
@@ -303,7 +303,7 @@ public class IbisContext extends IbisApplicationContext {
 				if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found classloader ["+ClassUtils.nameOf(classLoader)+"]");
 				try {
 					loadingConfigs.add(currentConfigurationName);
-					digestClassLoaderConfiguration(classLoader, currentConfigurationName, customClassLoaderConfigurationException);
+					createAndConfigureConfigurationWithClassLoader(classLoader, currentConfigurationName, customClassLoaderConfigurationException);
 				} catch (Exception e) {
 					log(currentConfigurationName, null, "an unhandled exception occurred while loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);
 				} finally {
@@ -338,7 +338,7 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * either ClassLoader is populated or ConfigurationException, but never both!
 	 */
-	private void digestClassLoaderConfiguration(ClassLoader classLoader, String currentConfigurationName, ConfigurationException classLoaderException) {
+	private void createAndConfigureConfigurationWithClassLoader(ClassLoader classLoader, String currentConfigurationName, ConfigurationException classLoaderException) {
 
 		long start = System.currentTimeMillis();
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");

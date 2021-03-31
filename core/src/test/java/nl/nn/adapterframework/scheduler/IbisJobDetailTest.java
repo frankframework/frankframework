@@ -6,11 +6,12 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.AdapterManager;
-import nl.nn.adapterframework.configuration.AutoConfiguringAdapterManager;
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.TestConfiguration;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.util.Locker;
+import nl.nn.adapterframework.util.SpringUtils;
 
 public class IbisJobDetailTest {
 
@@ -19,23 +20,22 @@ public class IbisJobDetailTest {
 
 	@Before
 	public void setup() throws ConfigurationException {
-		AdapterManager adapterManager = new AutoConfiguringAdapterManager();
+		Configuration configuration = new TestConfiguration();
 		Adapter adapter = new Adapter();
 		adapter.setName("fakeAdapter");
-		adapterManager.registerAdapter(adapter);
-		adapterManager.start();
+		configuration.registerAdapter(adapter);
 
-		jobDef1 = new JobDef();
+		jobDef1 = SpringUtils.createBean(configuration, JobDef.class);
 		jobDef1.setName("fakeName");
 		jobDef1.setFunction("StopAdapter");
 		jobDef1.setAdapterName("fakeAdapter");
-		jobDef1.setAdapterManager(adapterManager);
+		configuration.registerScheduledJob(jobDef1);
 
-		jobDef2 = new JobDef();
-		jobDef2.setName("fakeName");
+		jobDef2 = SpringUtils.createBean(configuration, JobDef.class);
+		jobDef2.setName("fakeName2");
 		jobDef2.setFunction("StopAdapter");
 		jobDef2.setAdapterName("fakeAdapter");
-		jobDef2.setAdapterManager(adapterManager);
+		configuration.registerScheduledJob(jobDef2);
 }
 	
 	@Test
