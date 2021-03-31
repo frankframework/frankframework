@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.text.StrTokenizer;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
@@ -103,7 +101,7 @@ public class MessageStoreListener extends JdbcTableListener {
 		if (rawMessage != null && sessionKeys != null) {
 			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
 			try {
-				StrTokenizer strTokenizer = StrTokenizer.getCSVInstance().reset(messageWrapper.getMessage().asString());
+				org.apache.commons.text.StringTokenizer strTokenizer = org.apache.commons.text.StringTokenizer.getCSVInstance().reset(messageWrapper.getMessage().asString());
 				messageWrapper.setMessage(new Message((String)strTokenizer.next()));
 				int i = 0;
 				while (strTokenizer.hasNext()) {

@@ -21,8 +21,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.text.StrBuilder;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.text.TextStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -125,7 +125,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 					String sessionKey = (String)tokenizer.nextElement();
 					list.add(StringEscapeUtils.escapeCsv((String)session.get(sessionKey)));
 				}
-				StrBuilder sb = new StrBuilder();
+				TextStringBuilder sb = new TextStringBuilder();
 				sb.appendWithSeparators(list, ",");
 				messageToStore = Message.asMessage(sb.toString());
 			}
