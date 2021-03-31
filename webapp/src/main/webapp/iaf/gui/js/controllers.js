@@ -269,7 +269,7 @@ angular.module('iaf.beheerconsole')
 						adapter.status = "stopped";
 
 					//Add flow diagrams
-					adapter.flow = Misc.getServerPath() + 'iaf/api/adapters/' + adapter.name + "/flow";
+					adapter.flow = Misc.getServerPath() + 'iaf/api/adapters/' + adapter.name + "/flow?"+adapter.upSince;
 
 					$rootScope.adapters[adapter.name] = adapter;
 
