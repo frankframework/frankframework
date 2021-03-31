@@ -372,18 +372,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		if (!isEnabled()) {
 			return;
 		}
-		// create dummy thread to be able to start and end child thread, to avoid ladybug waiting for thread to start/end that will not happen.
-		// TODO replace with call to Ladybug cancelChildThread() when available.
-		Thread thread = new Thread() {
-
-			@Override
-			public void run() {
-				threadCreated(threadInfo, "create dummy thread");
-				threadEnded(threadInfo, "cancel dummy thread");
-			}
-			
-		};
-		thread.start();
+		ibisDebugger.cancelThread(threadInfo.owner, threadInfo.threadId, threadInfo.correlationId);
 	}
 
 	@Override
