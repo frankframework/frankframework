@@ -3,6 +3,7 @@ package nl.nn.adapterframework.stream.document;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.stream.json.JsonWriter;
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -14,7 +15,7 @@ public class DocumentBuilderTest {
 	private String expectedXml = "<root><veld1>waarde1</veld1><veld2>10</veld2><array><element>elem1</element><element>elem2</element></array><repField>rep1</repField><repField>rep2</repField><objField><o1>w1</o1><o2>10</o2></objField></root>";
 	
 	
-	public void buildDocument(INodeBuilder root) throws DocumentException {
+	public void buildDocument(INodeBuilder root) throws SAXException {
 		try (ObjectBuilder object = root.startObject()) {
 			object.add("veld1", "waarde1");
 			object.add("veld2", 10);
@@ -34,7 +35,7 @@ public class DocumentBuilderTest {
 	}
 	
 	@Test
-	public void testXmlDocumentBuilder() throws DocumentException {
+	public void testXmlDocumentBuilder() throws SAXException {
 		
 		String expected = expectedXml;
 		XmlWriter writer = new XmlWriter();
@@ -46,24 +47,11 @@ public class DocumentBuilderTest {
 	}
 
 	@Test
-	public void testJsonStructureDocumentBuilder() throws DocumentException {
-		
-		String expected = expectedJson;
-		try (JsonStructureNodeBuilder root = new JsonStructureNodeBuilder()) {
-			buildDocument(root);
-			root.close();
-			MatchUtils.assertJsonEqual("", expected, root.getRoot().toString());
-			assertEquals(expected, root.getRoot().toString());
-		}
-		
-	}
-
-	@Test
-	public void testJsonHandlerDocumentBuilder() throws DocumentException {
+	public void testJsonDocumentBuilder() throws SAXException {
 		
 		String expected = expectedJson;
 		JsonWriter writer = new JsonWriter();
-		try (JsonHandlerNodeBuilder root = new JsonHandlerNodeBuilder(writer)) {
+		try (JsonNodeBuilder root = new JsonNodeBuilder(writer)) {
 			buildDocument(root);
 		}
 		//MatchUtils.assertJsonEqual("", expected, root.getRoot().toString());

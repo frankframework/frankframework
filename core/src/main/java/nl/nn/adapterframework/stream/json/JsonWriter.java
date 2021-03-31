@@ -22,16 +22,15 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Stack;
 
-import org.jsfr.json.JsonSaxHandler;
-import org.jsfr.json.PrimitiveHolder;
+import org.xml.sax.SAXException;
 
-import lombok.Getter;
+import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.xml.SaxException;
 
-public class JsonWriter implements JsonSaxHandler {
+public class JsonWriter implements JsonEventHandler {
 
 	private Writer writer;
-	private @Getter Exception exception;
 	
 	private Stack<NodeState> stateStack = new Stack<>();
 	
@@ -58,19 +57,17 @@ public class JsonWriter implements JsonSaxHandler {
 	}
 
 	@Override
-	public boolean startJSON() {
-		return true;
+	public void startDocument() {
+		// nothing special
 	}
 
 	@Override
-	public boolean endJSON() {
+	public void endDocument() throws SAXException {
 		try {
 			writer.flush();
 		} catch (IOException e) {
-			exception = e;
-			return false;
+			throw new SaxException(e);
 		}
-		return true;
 	}
 
 	private void writeSeparatingComma(boolean beforeKey) throws IOException {
@@ -85,87 +82,76 @@ public class JsonWriter implements JsonSaxHandler {
 	}
 	
 	@Override
-	public boolean startObject() {
+	public void startObject() throws SAXException {
 		try {
 			writeSeparatingComma(false);
 			stateStack.push(new NodeState(false));
 			writer.write("{");
 		} catch (IOException e) {
-			exception = e;
-			return false;
+			throw new SaxException(e);
 		}
-		return true;
 	}
 
 	@Override
-	public boolean startObjectEntry(String key) {
+	public void startObjectEntry(String key) throws SAXException {
 		try {
 			writeSeparatingComma(true);
 			writer.write("\""+key+"\":");
 		} catch (IOException e) {
-			exception = e;
-			return false;
+			throw new SaxException(e);
 		}
-		return true;
 	}
 
 	@Override
-	public boolean endObject() {
+	public void endObject() throws SAXException {
 		try {
 			stateStack.pop();
 			writer.write("}");
 		} catch (IOException e) {
-			exception = e;
-			return false;
+			throw new SaxException(e);
 		}
-		return true;
 	}
 
 	@Override
-	public boolean startArray() {
+	public void startArray() throws SAXException {
 		try {
 			writeSeparatingComma(false);
 			stateStack.push(new NodeState(true));
 			writer.write("[");
 		} catch (IOException e) {
-			exception = e;
-			return false;
+			throw new SaxException(e);
 		}
-		return true;
 	}
 
 	@Override
-	public boolean endArray() {
+	public void endArray() throws SAXException {
 		try {
 			stateStack.pop();
 			writer.write("]");
 		} catch (IOException e) {
-			exception = e;
-			return false;
+			throw new SaxException(e);
 		}
-		return true;
 	}
 
 	@Override
-	public boolean primitive(PrimitiveHolder primitiveHolder) {
+	public void primitive(Object value) throws SaxException {
 		try {
 			writeSeparatingComma(false);
-			Object value = primitiveHolder.getValue();
 			if (value instanceof String) {
 				writer.write("\""+value+"\"");
 			} else {
 				writer.write(value.toString());
 			}
 		} catch (IOException e) {
-			exception = e;
-			return false;
+			throw new SaxException(e);
 		}
-		return true;
 	}
+
+
 
 	@Override
 	public String toString() {
 		return writer.toString();
 	}
-	
+
 }

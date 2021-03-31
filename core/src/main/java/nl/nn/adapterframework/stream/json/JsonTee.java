@@ -15,73 +15,66 @@
 */
 package nl.nn.adapterframework.stream.json;
 
-import org.jsfr.json.JsonSaxHandler;
-import org.jsfr.json.PrimitiveHolder;
+import org.xml.sax.SAXException;
 
-public class JsonTee implements JsonSaxHandler {
+import nl.nn.adapterframework.stream.JsonEventHandler;
 
-	private JsonSaxHandler first;
-	private JsonSaxHandler second;
+public class JsonTee implements JsonEventHandler {
+
+	private JsonEventHandler first;
+	private JsonEventHandler second;
 	
-	public JsonTee(JsonSaxHandler first, JsonSaxHandler second) {
+	public JsonTee(JsonEventHandler first, JsonEventHandler second) {
 		this.first=first;
 		this.second=second;
 	}
 
 	@Override
-	public boolean startJSON() {
-		boolean result = first.startJSON();
-		second.startJSON();
-		return result;
+	public void startDocument() throws SAXException {
+		first.startDocument();
+		second.startDocument();
 	}
 
 	@Override
-	public boolean endJSON() {
-		boolean result = first.endJSON();
-		second.endJSON();
-		return result;
+	public void endDocument() throws SAXException {
+		first.endDocument();
+		second.endDocument();
 	}
 
 	@Override
-	public boolean startObject() {
-		boolean result = first.startObject();
+	public void startObject() throws SAXException {
+		first.startObject();
 		second.startObject();
-		return result;
 	}
 
 	@Override
-	public boolean startObjectEntry(String key) {
-		boolean result = first.startObjectEntry(key);
+	public void startObjectEntry(String key) throws SAXException {
+		first.startObjectEntry(key);
 		second.startObjectEntry(key);
-		return result;
 	}
 
 	@Override
-	public boolean endObject() {
-		boolean result = first.endObject();
+	public void endObject() throws SAXException {
+		first.endObject();
 		second.endObject();
-		return result;
 	}
 
 	@Override
-	public boolean startArray() {
-		boolean result = first.startArray();
+	public void startArray() throws SAXException {
+		first.startArray();
 		second.startArray();
-		return result;
 	}
 
 	@Override
-	public boolean endArray() {
-		boolean result = first.endArray();
+	public void endArray() throws SAXException {
+		first.endArray();
 		second.endArray();
-		return result;
 	}
 
 	@Override
-	public boolean primitive(PrimitiveHolder primitiveHolder) {
-		boolean result = first.primitive(primitiveHolder);
-		second.primitive(primitiveHolder);
-		return result;
+	public void primitive(Object value) throws SAXException {
+		first.primitive(value);
+		second.primitive(value);
 	}
 	
 }

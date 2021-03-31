@@ -30,6 +30,7 @@ import javax.naming.NamingException;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonValue;
 import org.bson.Document;
+import org.xml.sax.SAXException;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -57,7 +58,6 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
-import nl.nn.adapterframework.stream.document.DocumentException;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.AppConstants;
@@ -194,7 +194,7 @@ public class MongoDbSender extends StreamingSenderBase {
 	}
 
 	
-	protected void renderResult(InsertOneResult insertOneResult, MessageOutputStream target) throws DocumentException, StreamingException {
+	protected void renderResult(InsertOneResult insertOneResult, MessageOutputStream target) throws SAXException, StreamingException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "insertOneResult", target)) {
 			builder.add("acknowledged", insertOneResult.wasAcknowledged());
 			if (insertOneResult.wasAcknowledged()) {
@@ -203,7 +203,7 @@ public class MongoDbSender extends StreamingSenderBase {
 		}
 	}
 
-	protected void renderResult(InsertManyResult insertManyResult, MessageOutputStream target) throws DocumentException, StreamingException {
+	protected void renderResult(InsertManyResult insertManyResult, MessageOutputStream target) throws SAXException, StreamingException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "insertManyResult", target)) {
 			builder.add("acknowledged", insertManyResult.wasAcknowledged());
 			if (insertManyResult.wasAcknowledged()) {
@@ -213,7 +213,7 @@ public class MongoDbSender extends StreamingSenderBase {
 					insertedIds.forEach((k,v)->{
 						try {
 							objectBuilder.add(Integer.toString(k), v.asString().getValue());
-						} catch (DocumentException e) {
+						} catch (SAXException e) {
 							throw Lombok.sneakyThrow(e);
 						}
 					});
@@ -246,7 +246,7 @@ public class MongoDbSender extends StreamingSenderBase {
 		}
 	}
 	
-	protected void renderResult(UpdateResult updateResult, MessageOutputStream target) throws DocumentException, StreamingException {
+	protected void renderResult(UpdateResult updateResult, MessageOutputStream target) throws SAXException, StreamingException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "updateResult", target)) {
 			builder.add("acknowledged", updateResult.wasAcknowledged());
 			if (updateResult.wasAcknowledged()) {
@@ -257,7 +257,7 @@ public class MongoDbSender extends StreamingSenderBase {
 		}
 	}
 	
-	protected void renderResult(DeleteResult deleteResult, MessageOutputStream target) throws DocumentException, StreamingException {
+	protected void renderResult(DeleteResult deleteResult, MessageOutputStream target) throws SAXException, StreamingException {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "deleteResult", target)) {
 			builder.add("acknowledged", deleteResult.wasAcknowledged());
 			if (deleteResult.wasAcknowledged()) {
@@ -266,7 +266,7 @@ public class MongoDbSender extends StreamingSenderBase {
 		}
 	}
 	
-	protected void addOptionalValue(ObjectBuilder builder, String name, BsonValue bsonValue) throws DocumentException {
+	protected void addOptionalValue(ObjectBuilder builder, String name, BsonValue bsonValue) throws SAXException {
 		if (bsonValue!=null) {
 			builder.add(name, bsonValue.asString().getValue());
 		}	

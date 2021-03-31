@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.stream;
 
-import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -33,7 +33,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.hamcrest.core.StringContains;
-import org.jsfr.json.JsonSaxHandler;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -115,7 +114,7 @@ public class MessageOutputStreamTest {
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
-			JsonSaxHandler handler = stream.asJsonSaxHandler();
+			JsonEventHandler handler = stream.asJsonEventHandler();
 			JsonUtils.parseJson(testJson, handler);
 			
 		}
@@ -185,7 +184,7 @@ public class MessageOutputStreamTest {
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
-			JsonSaxHandler handler = stream.asJsonSaxHandler();
+			JsonEventHandler handler = stream.asJsonEventHandler();
 			JsonUtils.parseJson(testJson, handler);
 			
 		}
@@ -434,7 +433,7 @@ public class MessageOutputStreamTest {
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
-			JsonSaxHandler handler = stream.asJsonSaxHandler();
+			JsonEventHandler handler = stream.asJsonEventHandler();
 	
 			try {
 				JsonUtils.parseJson(testJson, handler);
@@ -541,7 +540,7 @@ public class MessageOutputStreamTest {
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
-			JsonSaxHandler handler = stream.asJsonSaxHandler();
+			JsonEventHandler handler = stream.asJsonEventHandler();
 	
 			try {
 				JsonUtils.parseJson(testJson, handler);

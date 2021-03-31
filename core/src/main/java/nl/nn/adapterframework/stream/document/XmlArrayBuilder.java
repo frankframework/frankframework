@@ -23,8 +23,8 @@ public class XmlArrayBuilder extends ArrayBuilder {
 
 	private SaxElementBuilder current;
 	private String elementName;
-	
-	
+
+
 	public XmlArrayBuilder(SaxElementBuilder current, String elementName) {
 		this.elementName = elementName;
 		this.current = current;
@@ -32,19 +32,14 @@ public class XmlArrayBuilder extends ArrayBuilder {
 
 
 	@Override
-	public void close() throws DocumentException {
-		try {
-			current.close();
-		} catch (SAXException e) {
-			throw new DocumentException(e);
-		}
+	public void close() throws SAXException {
+		current.close();
 	}
 
 
 	@Override
-	public NodeBuilder addElement() throws DocumentException {
+	public NodeBuilder addElement() throws SAXException {
 		return new XmlNodeBuilder(current, elementName);
 	}
-	
-	
+
 }

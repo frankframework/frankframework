@@ -25,36 +25,24 @@ public class XmlObjectBuilder extends ObjectBuilder {
 
 	private SaxElementBuilder current;
 
-	public XmlObjectBuilder(String rootElement, ContentHandler handler) throws DocumentException {
-		try {
-			current = new SaxDocumentBuilder(rootElement, handler);
-		} catch (SAXException e) {
-			throw new DocumentException(e);
-		}
+	public XmlObjectBuilder(String rootElement, ContentHandler handler) throws SAXException {
+		current = new SaxDocumentBuilder(rootElement, handler);
 	}
-	public XmlObjectBuilder(SaxElementBuilder current, String elementName) throws DocumentException {
-		try {
-			this.current = current.startElement(elementName);
-		} catch (SAXException e) {
-			throw new DocumentException(e);
-		}
+	public XmlObjectBuilder(SaxElementBuilder current, String elementName) throws SAXException {
+		this.current = current.startElement(elementName);
 	}
 	@Override
-	public void close() throws DocumentException {
-		try {
-			current.close();
-			super.close();
-		} catch (SAXException e) {
-			throw new DocumentException(e);
-		}
+	public void close() throws SAXException {
+		current.close();
+		super.close();
 	}
 	
 	@Override
-	public NodeBuilder addField(String fieldName) throws DocumentException {
+	public NodeBuilder addField(String fieldName) throws SAXException {
 		return new XmlNodeBuilder(current, fieldName);
 	}
 	@Override
-	public ArrayBuilder addRepeatedField(String fieldName) throws DocumentException {
+	public ArrayBuilder addRepeatedField(String fieldName) throws SAXException {
 		return new XmlArrayBuilder(current, fieldName);
 	}
 

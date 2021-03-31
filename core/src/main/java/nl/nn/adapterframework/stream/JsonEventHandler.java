@@ -13,26 +13,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.stream.document;
+package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.core.IbisException;
+import org.xml.sax.SAXException;
 
-public class DocumentException extends IbisException {
+public interface JsonEventHandler {
 
-	public DocumentException() {
-		super();
-	}
+	void startDocument() throws SAXException;
 
-	public DocumentException(String message, Throwable cause) {
-		super(message, cause);
-	}
+	void endDocument() throws SAXException;
 
-	public DocumentException(String message) {
-		super(message);
-	}
+	void startObject() throws SAXException;
 
-	public DocumentException(Throwable cause) {
-		super(cause);
-	}
+	void startObjectEntry(String key) throws SAXException;
 
+	void endObject() throws SAXException;
+
+	void startArray() throws SAXException;
+
+	void endArray() throws SAXException;
+
+	// Must be able to handle String, long, BigDecimal, boolean, Date and null
+	void primitive(Object value) throws SAXException;
 }

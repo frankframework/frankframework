@@ -26,7 +26,6 @@ import java.io.Writer;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.logging.log4j.Logger;
-import org.jsfr.json.JsonSaxHandler;
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -96,12 +95,12 @@ public class MessageOutputStream implements AutoCloseable {
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
 	
-	public MessageOutputStream(INamedObject owner, JsonSaxHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
 		this(owner, next);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
-	public MessageOutputStream(INamedObject owner, JsonSaxHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
 		this(owner, nextStream);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
@@ -179,9 +178,9 @@ public class MessageOutputStream implements AutoCloseable {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning ContentHandler as OutputStream");
 			return new ContentHandlerOutputStream((ContentHandler) requestStream, threadConnector);
 		}
-		if (requestStream instanceof JsonSaxHandler) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning JsonSaxHandler as OutputStream");
-			return new JsonSaxHandlerOutputStream((JsonSaxHandler) requestStream, threadConnector);
+		if (requestStream instanceof JsonEventHandler) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning JsonEventHandler as OutputStream");
+			return new JsonEventHandlerOutputStream((JsonEventHandler) requestStream, threadConnector);
 		}
 		return null;
 	}
@@ -207,10 +206,10 @@ public class MessageOutputStream implements AutoCloseable {
 				throw new StreamingException(e);
 			}
 		}
-		if (requestStream instanceof JsonSaxHandler) {
+		if (requestStream instanceof JsonEventHandler) {
 			try {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonSaxHandler as Writer");
-				return new OutputStreamWriter(new JsonSaxHandlerOutputStream((JsonSaxHandler) requestStream, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as Writer");
+				return new OutputStreamWriter(new JsonEventHandlerOutputStream((JsonEventHandler) requestStream, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
 			}
@@ -223,7 +222,7 @@ public class MessageOutputStream implements AutoCloseable {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning ContentHandler as ContentHandler");
 			return (ContentHandler) requestStream;
 		}
-		if (requestStream instanceof JsonSaxHandler) {
+		if (requestStream instanceof JsonEventHandler) {
 			throw new StreamingException("Cannot handle XML as JSON");
 		}
 		if (requestStream instanceof OutputStream) {
@@ -239,20 +238,20 @@ public class MessageOutputStream implements AutoCloseable {
 		return null;
 	}
 
-	public JsonSaxHandler asJsonSaxHandler() throws StreamingException {
-		if (requestStream instanceof JsonSaxHandler) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonSaxHandler as JsonSaxHandler");
-			return (JsonSaxHandler) requestStream;
+	public JsonEventHandler asJsonEventHandler() throws StreamingException {
+		if (requestStream instanceof JsonEventHandler) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as JsonEventHandler");
+			return (JsonEventHandler) requestStream;
 		}
 		if (requestStream instanceof ContentHandler) {
 			throw new StreamingException("Cannot handle JSON as XML");
 		}
 		if (requestStream instanceof OutputStream) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as JsonSaxHandler");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as JsonEventHandler");
 			return new JsonWriter((OutputStream) requestStream);
 		}
 		if (requestStream instanceof Writer) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as JsonSaxHandler");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as JsonEventHandler");
 			return new JsonWriter((Writer) requestStream);
 		}
 		return null;
@@ -277,8 +276,8 @@ public class MessageOutputStream implements AutoCloseable {
 			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(writer, maxSize))));
 			return;
 		}
-		if (requestStream instanceof JsonSaxHandler) {
-			requestStream = new JsonTee((JsonSaxHandler)requestStream, new JsonWriter(StreamUtil.limitSize(writer, maxSize)));
+		if (requestStream instanceof JsonEventHandler) {
+			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamUtil.limitSize(writer, maxSize)));
 			return;
 		}
 		if (requestStream instanceof OutputStream) {
@@ -307,8 +306,8 @@ public class MessageOutputStream implements AutoCloseable {
 			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(outputStream, maxSize))));
 			return;
 		}
-		if (requestStream instanceof JsonSaxHandler) {
-			requestStream = new JsonTee((JsonSaxHandler)requestStream, new JsonWriter(StreamUtil.limitSize(outputStream, maxSize)));
+		if (requestStream instanceof JsonEventHandler) {
+			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamUtil.limitSize(outputStream, maxSize)));
 			return;
 		}
 		if (requestStream instanceof Writer) {

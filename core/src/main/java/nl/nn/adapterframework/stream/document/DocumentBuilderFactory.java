@@ -15,39 +15,40 @@
 */
 package nl.nn.adapterframework.stream.document;
 
-import org.jsfr.json.JsonSaxHandler;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 
 public class DocumentBuilderFactory {
 
-	public static NodeBuilder startDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream) throws DocumentException, StreamingException {
+	public static NodeBuilder startDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream) throws SAXException, StreamingException {
 		switch (format) {
 		case XML:
 			return new XmlNodeBuilder(rootElement, outputStream.asContentHandler());
 		case JSON:
-			return new JsonHandlerDocumentBuilder(outputStream.asJsonSaxHandler());
+			return new JsonDocumentBuilder(outputStream.asJsonEventHandler());
 		default:
 			throw new IllegalArgumentException("Unknown document format ["+format+"]");
 		}
 	}
 	
-	public static NodeBuilder startDocument(String rootElement, ContentHandler handler) throws DocumentException {
+	public static NodeBuilder startDocument(String rootElement, ContentHandler handler) throws SAXException {
 		return new XmlNodeBuilder(rootElement, handler);
 	}
 	
-	public static NodeBuilder startDocument(JsonSaxHandler handler) {
-		return new JsonHandlerDocumentBuilder(handler);
+	public static NodeBuilder startDocument(JsonEventHandler handler) throws SAXException {
+		return new JsonDocumentBuilder(handler);
 	}
 	
-	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream) throws DocumentException, StreamingException {
+	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream) throws SAXException, StreamingException {
 		switch (format) {
 		case XML:
 			return new XmlObjectBuilder(rootElement, outputStream.asContentHandler());
 		case JSON:
-			return new JsonHandlerObjectBuilder(outputStream.asJsonSaxHandler(), true);
+			return new JsonObjectBuilder(outputStream.asJsonEventHandler(), true);
 		default:
 			throw new IllegalArgumentException("Unknown document format ["+format+"]");
 		}

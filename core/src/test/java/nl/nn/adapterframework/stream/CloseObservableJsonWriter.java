@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.stream;
 
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.stream.json.JsonWriter;
 
 public class CloseObservableJsonWriter extends JsonWriter {
@@ -7,9 +9,9 @@ public class CloseObservableJsonWriter extends JsonWriter {
 	private boolean closeCalled=false;
 	
 	@Override
-	public boolean endJSON() {
+	public void endDocument() throws SAXException {
 		closeCalled=true;
-		return super.endJSON();
+		super.endDocument();
 	}
 
 	public boolean isCloseCalled() {

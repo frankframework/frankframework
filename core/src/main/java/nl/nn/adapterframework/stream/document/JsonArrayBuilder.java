@@ -13,19 +13,28 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.stream.json;
+package nl.nn.adapterframework.stream.document;
 
-import org.jsfr.json.PrimitiveHolder;
+import org.xml.sax.SAXException;
 
-import lombok.Getter;
-import lombok.Setter;
+import nl.nn.adapterframework.stream.JsonEventHandler;
 
-public class ParserPrimitiveHolder implements PrimitiveHolder {
+public class JsonArrayBuilder extends ArrayBuilder {
 
-	private @Getter @Setter Object value;
-	
-	public ParserPrimitiveHolder(Object value) {
-		this.value=value;
+	private JsonEventHandler handler;
+
+	public JsonArrayBuilder(JsonEventHandler handler) throws SAXException {
+		this.handler = handler;
+		handler.startArray();
 	}
 
+	@Override
+	public NodeBuilder addElement() {
+		return new JsonNodeBuilder(handler);
+	}
+
+	@Override
+	public void close() throws SAXException {
+		handler.endArray();
+	}
 }

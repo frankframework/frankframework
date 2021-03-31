@@ -20,7 +20,6 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
 import org.apache.logging.log4j.Logger;
-import org.jsfr.json.JsonSaxHandler;
 
 import nl.nn.adapterframework.stream.json.JsonUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -31,10 +30,10 @@ import nl.nn.adapterframework.util.LogUtil;
  * 
  * @author Gerrit van Brakel
  */
-public class JsonSaxHandlerOutputStream extends PipedOutputStream implements Thread.UncaughtExceptionHandler {
+public class JsonEventHandlerOutputStream extends PipedOutputStream implements Thread.UncaughtExceptionHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private JsonSaxHandler handler;
+	private JsonEventHandler handler;
 	
 	private ThreadConnector threadConnector;
 
@@ -42,7 +41,7 @@ public class JsonSaxHandlerOutputStream extends PipedOutputStream implements Thr
 	private final EventConsumer pipeReader=new EventConsumer();
 	private Throwable exception;
 	
-	public JsonSaxHandlerOutputStream(JsonSaxHandler handler, ThreadConnector threadConnector) throws StreamingException {
+	public JsonEventHandlerOutputStream(JsonEventHandler handler, ThreadConnector threadConnector) throws StreamingException {
 		this.handler=handler;
 		this.threadConnector=threadConnector;
 		try {

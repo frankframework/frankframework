@@ -15,50 +15,50 @@
 */
 package nl.nn.adapterframework.stream.document;
 
-import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.xml.SaxDocumentBuilder;
-import nl.nn.adapterframework.xml.SaxElementBuilder;
+import nl.nn.adapterframework.stream.JsonEventHandler;
+import nl.nn.adapterframework.stream.json.JsonWriter;
 
-public class XmlNodeBuilder extends NodeBuilder {
+public class JsonNodeBuilder extends NodeBuilder {
 
-	private SaxElementBuilder current;
-
-	public XmlNodeBuilder(String rootElement, ContentHandler handler) throws SAXException {
-		current = new SaxDocumentBuilder(rootElement, handler);
+	private JsonEventHandler handler;
+	
+	public JsonNodeBuilder(JsonEventHandler handler) {
+		this.handler = handler;
 	}
-	public XmlNodeBuilder(SaxElementBuilder current, String elementName) throws SAXException {
-		this.current = current.startElement(elementName);
+
+	public JsonNodeBuilder() {
+		handler = new JsonWriter();
 	}
+	
 	@Override
 	public void close() throws SAXException {
-		current.close();
 	}
 
 	@Override
-	public ArrayBuilder startArray(String elementName) {
-		return new XmlArrayBuilder(current, elementName);
+	public ArrayBuilder startArray(String elementName) throws SAXException {
+		return new JsonArrayBuilder(handler);
 	}
 
 	@Override
 	public ObjectBuilder startObject() throws SAXException {
-		return new XmlObjectBuilder(current, null);
+		return new JsonObjectBuilder(handler);
 	}
 
 	@Override
 	public void setValue(String value) throws SAXException {
-		current.addValue(value).close();
+		handler.primitive(value);
 	}
 
 	@Override
 	public void setValue(long value) throws SAXException {
-		current.addValue(Long.toString(value)).close();
+		handler.primitive(value);
 	}
 
 	@Override
 	public void setValue(boolean value) throws SAXException {
-		current.addValue(Boolean.toString(value)).close();
+		handler.primitive(value);
 	}
-	
+
 }

@@ -15,12 +15,14 @@
 */
 package nl.nn.adapterframework.stream.document;
 
+import org.xml.sax.SAXException;
+
 public interface IObjectBuilder extends AutoCloseable {
 
-	public NodeBuilder addField(String fieldName) throws DocumentException;
-	public ArrayBuilder addRepeatedField(String fieldName) throws DocumentException;
+	public NodeBuilder addField(String fieldName) throws SAXException;
+	public ArrayBuilder addRepeatedField(String fieldName) throws SAXException;
 	
 	@Override
-	public void close() throws DocumentException;
+	public void close() throws SAXException;
 	
 }

@@ -15,11 +15,13 @@
 */
 package nl.nn.adapterframework.stream.document;
 
+import org.xml.sax.SAXException;
+
 public interface IArrayBuilder extends AutoCloseable {
 
-	public NodeBuilder addElement() throws DocumentException;
+	public NodeBuilder addElement() throws SAXException;
 	
 	@Override
-	public void close() throws DocumentException;
+	public void close() throws SAXException;
 	
 }

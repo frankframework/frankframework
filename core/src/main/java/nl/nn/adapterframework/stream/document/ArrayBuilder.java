@@ -15,26 +15,28 @@
 */
 package nl.nn.adapterframework.stream.document;
 
+import org.xml.sax.SAXException;
+
 public abstract class ArrayBuilder implements IArrayBuilder {
 	
 	protected NodeBuilder field;
 	
 	@Override
-	public void close() throws DocumentException {
+	public void close() throws SAXException {
 		if (field!=null) {
 			field.close();
 		}
 	}
 
-	public void addElement(String value) throws DocumentException {
+	public void addElement(String value) throws SAXException {
 		addElement().setValue(value);
 	}
 
-	public void addElement(long value) throws DocumentException {
+	public void addElement(long value) throws SAXException {
 		addElement().setValue(value);
 	}
 
-	public void addElement(boolean value) throws DocumentException {
+	public void addElement(boolean value) throws SAXException {
 		addElement().setValue(value);
 	}
 

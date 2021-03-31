@@ -15,15 +15,17 @@
 */
 package nl.nn.adapterframework.stream.document;
 
+import org.xml.sax.SAXException;
+
 public interface INodeBuilder extends AutoCloseable {
 
-	public ArrayBuilder startArray(String elementName) throws DocumentException;
-	public ObjectBuilder startObject() throws DocumentException;
-	public void setValue(String value) throws DocumentException;
-	public void setValue(long value) throws DocumentException;
-	public void setValue(boolean value) throws DocumentException;
+	public ArrayBuilder startArray(String elementName) throws SAXException;
+	public ObjectBuilder startObject() throws SAXException;
+	public void setValue(String value) throws SAXException;
+	public void setValue(long value) throws SAXException;
+	public void setValue(boolean value) throws SAXException;
 	
 	@Override
-	public void close() throws DocumentException;
+	public void close() throws SAXException;
 
 }

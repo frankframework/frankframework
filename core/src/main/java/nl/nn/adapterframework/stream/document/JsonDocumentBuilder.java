@@ -15,24 +15,33 @@
 */
 package nl.nn.adapterframework.stream.document;
 
-import org.jsfr.json.JsonSaxHandler;
+import java.io.Writer;
 
-public class JsonHandlerArrayBuilder extends ArrayBuilder {
+import org.xml.sax.SAXException;
 
-	private JsonSaxHandler handler;
+import nl.nn.adapterframework.stream.JsonEventHandler;
+import nl.nn.adapterframework.stream.json.JsonWriter;
 
-	public JsonHandlerArrayBuilder(JsonSaxHandler handler) {
-		this.handler = handler;
-		handler.startArray();
+public class JsonDocumentBuilder extends JsonNodeBuilder {
+
+	private JsonEventHandler handler;
+
+	public JsonDocumentBuilder(Writer writer) throws SAXException {
+		this(new JsonWriter(writer));
+	}
+	
+	public JsonDocumentBuilder() throws SAXException {
+		this(new JsonWriter());
 	}
 
+	public JsonDocumentBuilder(JsonEventHandler handler) throws SAXException {
+		super(handler);
+		this.handler=handler;
+		handler.startDocument();
+	}
 	@Override
-	public NodeBuilder addElement() throws DocumentException {
-		return new JsonHandlerNodeBuilder(handler);
+	public void close() throws SAXException {
+		handler.endDocument();
 	}
 
-	@Override
-	public void close() throws DocumentException {
-		handler.endArray();
-	}
 }

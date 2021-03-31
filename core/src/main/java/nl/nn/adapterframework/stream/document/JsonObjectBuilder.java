@@ -15,45 +15,47 @@
 */
 package nl.nn.adapterframework.stream.document;
 
-import org.jsfr.json.JsonSaxHandler;
+import org.xml.sax.SAXException;
 
-public class JsonHandlerObjectBuilder extends ObjectBuilder {
+import nl.nn.adapterframework.stream.JsonEventHandler;
 
-	private JsonSaxHandler handler;
+public class JsonObjectBuilder extends ObjectBuilder {
+
+	private JsonEventHandler handler;
 	private boolean asRoot;
 	
-	public JsonHandlerObjectBuilder(JsonSaxHandler handler) {
+	public JsonObjectBuilder(JsonEventHandler handler) throws SAXException {
 		this(handler, false);
 	}
-	public JsonHandlerObjectBuilder(JsonSaxHandler handler, boolean asRoot) {
+	public JsonObjectBuilder(JsonEventHandler handler, boolean asRoot) throws SAXException {
 		super();
 		this.handler=handler;
 		if (asRoot) {
-			handler.startJSON();
+			handler.startDocument();
 		}
 		handler.startObject();
 	}
 
 	@Override
-	public void close() throws DocumentException {
+	public void close() throws SAXException {
 		handler.endObject();
 		super.close();
 		if (asRoot) {
-			handler.endJSON();
+			handler.endDocument();
 		}
 	}
 
 
 	@Override
-	public NodeBuilder addField(String fieldName) throws DocumentException {
+	public NodeBuilder addField(String fieldName) throws SAXException {
 		handler.startObjectEntry(fieldName);
-		return new JsonHandlerNodeBuilder(handler);
+		return new JsonNodeBuilder(handler);
 	}
 
 	@Override
-	public ArrayBuilder addRepeatedField(String fieldName) throws DocumentException {
+	public ArrayBuilder addRepeatedField(String fieldName) throws SAXException {
 		handler.startObjectEntry(fieldName);
-		return new JsonHandlerArrayBuilder(handler);
+		return new JsonArrayBuilder(handler);
 	}
 
 }

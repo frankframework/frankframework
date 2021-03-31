@@ -25,18 +25,19 @@ import javax.json.stream.JsonParser.Event;
 import javax.json.stream.JsonParserFactory;
 
 import org.apache.logging.log4j.Logger;
-import org.jsfr.json.JsonSaxHandler;
+import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class JsonUtils {
 	private static Logger log = LogUtil.getLogger(JsonUtils.class);
 
 	
-	public static void parseJson(String json, JsonSaxHandler handler) {
+	public static void parseJson(String json, JsonEventHandler handler) throws SAXException {
 		parseJson(new StringReader(json),handler);
 	}
-	public static void parseJson(InputStream inputStream, JsonSaxHandler handler) {
+	public static void parseJson(InputStream inputStream, JsonEventHandler handler) throws SAXException {
 		JsonParserFactory factory = Json.createParserFactory(null);
 		try {
 			JsonParser parser = factory.createParser(inputStream);
@@ -49,7 +50,7 @@ public class JsonUtils {
 			}
 		}
 	}
-	public static void parseJson(Reader reader, JsonSaxHandler handler) {
+	public static void parseJson(Reader reader, JsonEventHandler handler) throws SAXException {
 		JsonParserFactory factory = Json.createParserFactory(null);
 		try {
 			JsonParser parser = factory.createParser(reader);
@@ -62,56 +63,57 @@ public class JsonUtils {
 			}
 		}
 	}
-	public static void parseJson(JsonParser parser, JsonSaxHandler handler) {
+	public static void parseJson(JsonParser parser, JsonEventHandler handler) throws SAXException {
 		try {
-			if (!handler.startJSON()) {
-				return;
-			}
-	
+			handler.startDocument();	
 			while (parser.hasNext()) {
 				Event event = parser.next();
 	
 				switch (event) {
 	
 					case START_ARRAY:
-						if (!handler.startArray()) return;
+						handler.startArray();
 						break;
 					case END_ARRAY:
-						if (!handler.endArray()) return;
+						handler.endArray();
 						break;
 	
 					case START_OBJECT:
-						if (!handler.startObject()) return;
+						handler.startObject();
 						break;
 					case END_OBJECT:
-						if (!handler.endObject()) return;
+						handler.endObject();
 						break;
 	
 					case KEY_NAME:
-						if (!handler.startObjectEntry(parser.getString())) return;
+						handler.startObjectEntry(parser.getString());
 						break;
 	
 					case VALUE_STRING:
-						if (!handler.primitive(new ParserPrimitiveHolder(parser.getString()))) return;
+						handler.primitive(parser.getString());
 						break;
 					case VALUE_NUMBER:
-						if (!handler.primitive(new ParserPrimitiveHolder(parser.isIntegralNumber()?parser.getLong():parser.getBigDecimal()))) return;
+						if (parser.isIntegralNumber()) {
+							handler.primitive(parser.getLong());
+						} else {
+							handler.primitive(parser.getBigDecimal());
+						}
 						break;
 					case VALUE_TRUE:
-						if (!handler.primitive(new ParserPrimitiveHolder(Boolean.TRUE))) return;
+						handler.primitive(true);
 						break;
 					case VALUE_FALSE:
-						if (!handler.primitive(new ParserPrimitiveHolder(Boolean.FALSE))) return;
+						handler.primitive(false);
 						break;
 					case VALUE_NULL:
-						if (!handler.primitive(new ParserPrimitiveHolder(null))) return;
+						handler.primitive(null);
 						break;
 					default:
 						throw new IllegalStateException("Unknown parser event ["+event+"]");
 				}
 			}
 		} finally {
-			handler.endJSON();
+			handler.endDocument();
 		}
 	}
 	

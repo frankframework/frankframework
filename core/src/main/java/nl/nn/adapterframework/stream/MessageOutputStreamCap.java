@@ -20,7 +20,6 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.jsfr.json.JsonSaxHandler;
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -69,11 +68,11 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 	}
 
 	@Override
-	public JsonSaxHandler asJsonSaxHandler() throws StreamingException {
+	public JsonEventHandler asJsonEventHandler() throws StreamingException {
 		if (super.asNative()==null) {
 			setRequestStream(new StringWriter());
 		}
-		return super.asJsonSaxHandler();
+		return super.asJsonEventHandler();
 	}
 
 	@Override
