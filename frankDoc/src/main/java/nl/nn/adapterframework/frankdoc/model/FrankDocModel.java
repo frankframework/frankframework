@@ -312,7 +312,7 @@ public class FrankDocModel {
 			log.trace("Found @IbisDocRef annotation");
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
 			FrankAnnotation ibisDoc = null;
-			if(parsed.getReferredMethod() != null) {
+			if((parsed != null) && (parsed.getReferredMethod() != null)) {
 				ibisDoc = parsed.getReferredMethod().getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 				if(ibisDoc != null) {
 					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass().getName()));
@@ -377,7 +377,13 @@ public class FrankDocModel {
 			log.warn("Too many or zero parameters in @IbisDocRef annotation on method: [{}].[{}]", () -> originalMethod.getDeclaringClass().getName(), () -> originalMethod.getName());
 			return null;
 		}
-		result.setReferredMethod(getReferredMethod(methodString, originalMethod));
+		try {
+			result.setReferredMethod(getReferredMethod(methodString, originalMethod));
+		} catch(Exception e) {
+			log.warn("@IbisDocRef on [{}].[{}] annotation references invalid method [{}], ignoring @IbisDocRef annotation",
+					originalMethod.getDeclaringClass().getName(), originalMethod.getName(), methodString);
+			return null;
+		}
 		return result;
 	}
 
