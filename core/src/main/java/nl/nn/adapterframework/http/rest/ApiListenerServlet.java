@@ -128,7 +128,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		 * Generate an OpenApi json file
 		 */
 		if(uri.equalsIgnoreCase("/openapi.json")) {
-			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema();
+			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
 			returnJson(response, 200, jsonSchema);
 			return;
 		}
@@ -140,7 +140,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			uri = uri.substring(0, uri.lastIndexOf("/"));
 			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
 			if(apiConfig != null) {
-				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig);
+				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
 				returnJson(response, 200, jsonSchema);
 				return;
 			}
