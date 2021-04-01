@@ -8,9 +8,9 @@ env:
   USE_PROPRIETARY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
 on:
   push:
-    branches: [master, 7.5-release]
+    branches: [master, 7.5-release, 7.6-release]
   pull_request:
-    branches: [master, 7.5-release]
+    branches: [master, 7.5-release, 7.6-release]
 
 jobs:
   build:
