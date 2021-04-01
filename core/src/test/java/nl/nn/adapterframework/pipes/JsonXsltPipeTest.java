@@ -14,9 +14,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
+public class JsonXsltPipeTest extends StreamingPipeTestBase<JsonXsltPipe> {
 
 	@Override
 	public JsonXsltPipe createPipe() {

@@ -28,9 +28,11 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.util.JsonXmlHandler;
 import nl.nn.adapterframework.util.JsonXmlReader;
 import nl.nn.adapterframework.util.XmlJsonWriter;
 import nl.nn.adapterframework.xml.IXmlDebugger;
@@ -64,7 +66,10 @@ public class JsonXsltSender extends XsltSender {
 
 	@Override
 	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
-		return null; // JsonParser requires inputSource
+		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
+		ContentHandler handler = createHandler(null, session, target);
+		JsonEventHandler jsonEventHandler = new JsonXmlHandler(handler);
+		return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, session);
 	}
 
 	@Override
