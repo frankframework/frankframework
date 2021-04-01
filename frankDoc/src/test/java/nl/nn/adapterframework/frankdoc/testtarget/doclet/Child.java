@@ -11,4 +11,10 @@ public class Child extends Parent implements MyInterface {
 
 	public void setVarargMethod(String ...value) {
 	}
+
+	public enum MyInnerEnum {INNER_FIRST, INNER_SECOND};
+
+	public MyInnerEnum getMyInnerEnum() {
+		return null;
+	}
 }

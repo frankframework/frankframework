@@ -33,6 +33,7 @@ public class FrankClassTest extends TestBase {
 		assertEquals("Parent", instance.getSuperclass().getSimpleName());
 		assertFalse(instance.isInterface());
 		assertEquals(FrankClassRepository.removeTrailingDot(PACKAGE), instance.getPackageName());
+		assertFalse(instance.isEnum());
 	}
 
 	@Test
@@ -105,7 +106,7 @@ public class FrankClassTest extends TestBase {
 		Arrays.asList(declaredMethods).forEach(m -> actualMethodNames.add(m.getName()));
 		List<String> sortedActualMethodNames = new ArrayList<>(actualMethodNames);
 		sortedActualMethodNames = sortedActualMethodNames.stream().filter(name -> ! name.contains("jacoco")).collect(Collectors.toList());
-		assertArrayEquals(new String[] {"packagePrivateMethod", "setInherited", "setVarargMethod"}, sortedActualMethodNames.toArray());
+		assertArrayEquals(new String[] {"getMyInnerEnum", "packagePrivateMethod", "setInherited", "setVarargMethod"}, sortedActualMethodNames.toArray());
 	}
 
 	/**
@@ -125,7 +126,7 @@ public class FrankClassTest extends TestBase {
 			.map(FrankMethod::getName)
 			.filter(name -> ! name.contains("jacoco"))
 			.forEach(name -> methodNames.add(name));
-		assertArrayEquals(new String[] {"equals", "getClass", "getInherited", "hashCode", "notify", "notifyAll", "setInherited", "setVarargMethod", "toString", "wait"}, new ArrayList<>(methodNames).toArray());
+		assertArrayEquals(new String[] {"equals", "getClass", "getInherited", "getMyInnerEnum", "hashCode", "notify", "notifyAll", "setInherited", "setVarargMethod", "toString", "wait"}, new ArrayList<>(methodNames).toArray());
 		// Test we have no duplicates
 		Map<String, List<FrankMethod>> methodsByName = Arrays.asList(methods).stream()
 				.filter(m -> methodNames.contains(m.getName()))
@@ -152,6 +153,14 @@ public class FrankClassTest extends TestBase {
 	@Test
 	public void testGetEnumConstants() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "MyEnum");
+		assertTrue(clazz.isEnum());
 		assertArrayEquals(new String[] {"ONE", "TWO", "THREE"}, clazz.getEnumConstants());
+	}
+
+	@Test
+	public void testGetEnumConstantsInnerEnum() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Child" + ".MyInnerEnum");
+		assertTrue(clazz.isEnum());
+		assertArrayEquals(new String[] {"INNER_FIRST", "INNER_SECOND"}, clazz.getEnumConstants());
 	}
 }

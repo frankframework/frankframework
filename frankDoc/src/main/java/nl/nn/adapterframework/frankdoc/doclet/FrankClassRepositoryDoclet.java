@@ -26,9 +26,9 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 		this.excludeFiltersForSuperclass = new HashSet<>(excludeFiltersForSuperclass);
 		Map<String, FrankClassDoclet> interfacesByName = new HashMap<>();
 		for(ClassDoc classDoc: classDocs) {
-			FrankClassDoclet frankClass = findOrCreateClass(classDoc);
-			if(classDoc.isInterface()) {
-				interfacesByName.put(frankClass.getName(), frankClass);
+			findOrCreateFrankClassAndUpdateInterfaces(classDoc, interfacesByName);
+			for(ClassDoc innerClassDoc: classDoc.innerClasses()) {
+				findOrCreateFrankClassAndUpdateInterfaces(innerClassDoc, interfacesByName);
 			}
 		}
 		final Set<String> correctedIncludeFilters = includeFilters.stream().map(FrankClassRepository::removeTrailingDot).collect(Collectors.toSet());
@@ -38,6 +38,13 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 				.collect(Collectors.toList());
 		for(FrankClassDoclet c: filteredClassesForInterfaceImplementations) {
 			setInterfaceImplementations(c, interfacesByName);
+		}
+	}
+
+	private void findOrCreateFrankClassAndUpdateInterfaces(ClassDoc classDoc, Map<String, FrankClassDoclet> interfacesByName) {
+		FrankClassDoclet frankClass = findOrCreateClass(classDoc);
+		if(classDoc.isInterface()) {
+			interfacesByName.put(frankClass.getName(), frankClass);
 		}
 	}
 
