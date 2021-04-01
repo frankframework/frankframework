@@ -40,14 +40,25 @@ jobs:
       with:
         java-version: 1.8
 
+    - name: Echo event
+      env:
+        EVENT_CONTEXT: ${{ toJSON(github.event) }}
+      run: echo "$EVENT_CONTEXT"
+
+    - name: Echo event name
+      if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
+      env:
+        EVENT_NAME: ${{ toJSON(github.event_name) }}
+      run: echo "$EVENT_NAME"
+
     - name: Create Maven settings.xml file
-      if: ${{ github.event.repository.owner.name != 'ibissource'}}
+      if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
       uses: s4u/maven-settings-action@v2.3.0
       with:
         servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
 
     - name: Update maven profiles
-      if: ${{ github.event.repository.owner.name == 'ibissource'}}
+      if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
       run: |
         echo "PROFILES=ibissource,codecoverage,proprietary" >> $GITHUB_ENV
 
