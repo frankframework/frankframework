@@ -53,7 +53,8 @@ public class DocWriterNewIntegrationTest {
 
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance(FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter());
+		classRepository = FrankClassRepository.getReflectInstance(
+				FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter(), FrankElementFilters.getExcludeFiltersForSuperclass());
 	}
 
 	@Test

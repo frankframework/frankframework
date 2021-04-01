@@ -25,6 +25,7 @@ import lombok.Setter;
 class FrankClassRepositoryReflect implements FrankClassRepository {
 	private @Getter @Setter(AccessLevel.PACKAGE) Set<String> excludeFilters;
 	private @Getter @Setter(AccessLevel.PACKAGE) Set<String> includeFilters;
+	private @Getter @Setter(AccessLevel.PACKAGE) Set<String> excludeFiltersForSuperclass;
 
 	@Override
 	public FrankClass findClass(String fullName) throws FrankDocException {

@@ -51,4 +51,8 @@ public final class FrankElementFilters {
 		excludeFilters.add("nl.nn.adapterframework.pipes.CreateRestViewPipe");
 		return excludeFilters;
 	}
+
+	public static Set<String> getExcludeFiltersForSuperclass() {
+		return new HashSet<>(Arrays.asList("org.springframework"));
+	}
 }

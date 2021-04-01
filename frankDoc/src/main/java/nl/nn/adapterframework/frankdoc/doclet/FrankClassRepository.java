@@ -29,18 +29,21 @@ public interface FrankClassRepository {
 		FrankClassRepositoryReflect result = new FrankClassRepositoryReflect();
 		result.setIncludeFilters(new HashSet<>(Arrays.asList(includeFilters)));
 		result.setExcludeFilters(new HashSet<>());
+		result.setExcludeFiltersForSuperclass(new HashSet<>());
 		return result;
 	}
 
-	public static FrankClassRepository getReflectInstance(Set<String> includeFilters, Set<String> excludeFilters) {
+	public static FrankClassRepository getReflectInstance(Set<String> includeFilters, Set<String> excludeFilters, Set<String> excludeFiltersForSuperclass) {
 		FrankClassRepositoryReflect result = new FrankClassRepositoryReflect();
 		result.setIncludeFilters(includeFilters);
 		result.setExcludeFilters(excludeFilters);
+		result.setExcludeFiltersForSuperclass(excludeFiltersForSuperclass);
 		return result;
 	}
 
-	public static FrankClassRepository getDocletInstance(ClassDoc[] classDocs, Set<String> includeFilters, Set<String> excludeFilters) {
-		return new FrankClassRepositoryDoclet(classDocs, includeFilters, excludeFilters);
+	public static FrankClassRepository getDocletInstance(
+			ClassDoc[] classDocs, Set<String> includeFilters, Set<String> excludeFilters, Set<String> excludeFiltersForSuperclass) {
+		return new FrankClassRepositoryDoclet(classDocs, includeFilters, excludeFilters, excludeFiltersForSuperclass);
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,14 +11,19 @@ import org.apache.logging.log4j.Logger;
 
 import com.sun.javadoc.ClassDoc;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import nl.nn.adapterframework.util.LogUtil;
 
 class FrankClassRepositoryDoclet implements FrankClassRepository {
 	private static Logger log = LogUtil.getLogger(FrankClassRepositoryDoclet.class);
 
+	private @Getter(AccessLevel.PACKAGE) Set<String> excludeFiltersForSuperclass;
+
 	private final Map<String, FrankClassDoclet> classesByName = new HashMap<>();
 
-	FrankClassRepositoryDoclet(ClassDoc[] classDocs, Set<String> includeFilters, Set<String> excludeFilters) {
+	FrankClassRepositoryDoclet(ClassDoc[] classDocs, Set<String> includeFilters, Set<String> excludeFilters, Set<String> excludeFiltersForSuperclass) {
+		this.excludeFiltersForSuperclass = new HashSet<>(excludeFiltersForSuperclass);
 		Map<String, FrankClassDoclet> interfacesByName = new HashMap<>();
 		for(ClassDoc classDoc: classDocs) {
 			FrankClassDoclet frankClass = findOrCreateClass(classDoc);

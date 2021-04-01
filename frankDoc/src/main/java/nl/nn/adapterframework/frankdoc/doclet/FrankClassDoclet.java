@@ -80,13 +80,20 @@ class FrankClassDoclet implements FrankClass {
 	public String getPackageName() {
 		return clazz.containingPackage().name();
 	}
+
 	@Override
 	public FrankClass getSuperclass() {
 		FrankClass result = null;
 		ClassDoc superClazz = clazz.superclass();
 		if(superClazz != null) {
 			try {
-				result = repository.findClass(superClazz.qualifiedName());
+				String superclassQualifiedName = superClazz.qualifiedName();
+				boolean omit = ((FrankClassRepositoryDoclet) repository).getExcludeFiltersForSuperclass().stream().anyMatch(
+						exclude -> superclassQualifiedName.startsWith(exclude));
+				if(omit) {
+					return null;
+				}
+				result = repository.findClass(superclassQualifiedName);
 			} catch(FrankDocException e) {
 				log.warn("Could not get superclass of {}", getName(), e);
 			}

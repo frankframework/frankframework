@@ -20,13 +20,14 @@ public enum Environment {
 		return delegate.getRepository(packageName);
 	}
 
-	public FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters) {
-		return delegate.getRepository(allPackages, includeFilters, excludeFilters);
+	public FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters, List<String> excludeFiltersForSuperclass) {
+		return delegate.getRepository(allPackages, includeFilters, excludeFilters, excludeFiltersForSuperclass);
 	}
 
 	private static abstract class Delegate {
 		abstract FrankClassRepository getRepository(String packageName);
-		abstract FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters);
+		abstract FrankClassRepository getRepository(
+				List<String> allPackages, List<String> includeFilters, List<String> excludeFilters, List<String> excludeFiltersForSuperclass);
 	}
 
 	private static class ReflectionDelegate extends Delegate {
@@ -36,8 +37,8 @@ public enum Environment {
 		}
 
 		@Override
-		FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters) {
-			return FrankClassRepository.getReflectInstance(new HashSet<>(includeFilters), new HashSet<>(excludeFilters));
+		FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters, List<String> excludeFiltersForSuperclass) {
+			return FrankClassRepository.getReflectInstance(new HashSet<>(includeFilters), new HashSet<>(excludeFilters), new HashSet<>(excludeFiltersForSuperclass));
 		}
 	}
 
@@ -45,13 +46,13 @@ public enum Environment {
 		@Override
 		FrankClassRepository getRepository(String packageName) {
 			ClassDoc[] classDocs = TestUtil.getClassDocs(packageName);
-			return FrankClassRepository.getDocletInstance(classDocs, new HashSet<>(Arrays.asList(packageName)), new HashSet<>());
+			return FrankClassRepository.getDocletInstance(classDocs, new HashSet<>(Arrays.asList(packageName)), new HashSet<>(), new HashSet<>());
 		}
 
 		@Override
-		FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters) {
+		FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters, List<String> excludeFiltersForSuperclass) {
 			ClassDoc[] classDocs = TestUtil.getClassDocs(allPackages.toArray(new String[] {}));
-			return FrankClassRepository.getDocletInstance(classDocs, new HashSet<>(includeFilters), new HashSet<>(excludeFilters));
+			return FrankClassRepository.getDocletInstance(classDocs, new HashSet<>(includeFilters), new HashSet<>(excludeFilters), new HashSet<>(excludeFiltersForSuperclass));
 		}
 	}
 }

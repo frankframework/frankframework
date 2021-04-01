@@ -16,7 +16,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class FilteringTest {
+public class FilteringInterfaceImplementationsTest {
 	private static final int NUM_PARAMETERS = 5;
 
 	private static final String PREFIX = "nl.nn.adapterframework.frankdoc.testtarget.doclet.filtering.";
@@ -70,7 +70,7 @@ public class FilteringTest {
 
 	@Test
 	public void test() throws FrankDocException {
-		FrankClassRepository repository = environment.getRepository(asList(BOTH_PACKAGES), includes, excludes);
+		FrankClassRepository repository = environment.getRepository(asList(BOTH_PACKAGES), includes, excludes, new ArrayList<>());
 		FrankClass clazz = repository.findClass(FIRST_PACKAGE + "MyInterface");
 		List<FrankClass> implementations = clazz.getInterfaceImplementations();
 		List<String> actualSimpleNames = implementations.stream()

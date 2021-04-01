@@ -82,11 +82,17 @@ class FrankClassReflect implements FrankClass {
 
 	@Override
 	public FrankClass getSuperclass() {
-		Class<?> superClazz = clazz.getSuperclass();
+		final Class<?> superClazz = clazz.getSuperclass();
 		if(superClazz == null) {
 			return null;
 		} else {
-			return new FrankClassReflect(superClazz, repository);
+			boolean omit = ((FrankClassRepositoryReflect) repository).getExcludeFiltersForSuperclass().stream().anyMatch(
+					exclude -> superClazz.getName().startsWith(exclude));
+			if(omit) {
+				return null;
+			} else {
+				return new FrankClassReflect(superClazz, repository);
+			}
 		}
 	}
 

@@ -32,7 +32,8 @@ class Doclet {
 	Doclet(ClassDoc[] classes, String outputDirString) throws FrankDocException {
 		log.info("Output directory is: [{}]", outputDirString);
 		try {
-			FrankClassRepository repository = FrankClassRepository.getDocletInstance(classes, FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter());
+			FrankClassRepository repository = FrankClassRepository.getDocletInstance(
+					classes, FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter(), FrankElementFilters.getExcludeFiltersForSuperclass());
 			model = FrankDocModel.populate(repository);
 			outputDir = new File(outputDirString);
 			outputDir.mkdirs();

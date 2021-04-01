@@ -79,7 +79,7 @@ public class FrankDocModelTest {
 	@Before
 	public void setUp() {
 		List<String> allPackages = Arrays.asList(SIMPLE, IBISDOCREF, "nl.nn.adapterframework.frankdoc.testtarget.reflect");
-		classRepository = environment.getRepository(allPackages, allPackages, new ArrayList<String>());
+		classRepository = environment.getRepository(allPackages, allPackages, new ArrayList<String>(), new ArrayList<>());
 		instance = new FrankDocModel(classRepository);
 		attributeOwner = null;
 	}
