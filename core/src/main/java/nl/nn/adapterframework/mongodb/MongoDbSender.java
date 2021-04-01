@@ -152,11 +152,12 @@ public class MongoDbSender extends StreamingSenderBase {
 	@Override
 	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		message.closeOnCloseOf(session);
-		try (MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next)) {
+		MongoAction mngaction = getActionEnum();
+		try (MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? next : null)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
 			MongoCollection<Document> mongoCollection = getCollection(mongoDatabase, pvl);
-			switch (getActionEnum()) {
+			switch (mngaction) {
 			case INSERTONE:
 				renderResult(mongoCollection.insertOne(getDocument(message)), target);
 				break;
