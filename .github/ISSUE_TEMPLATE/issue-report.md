@@ -7,8 +7,8 @@ assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Describe the issue**
+A clear and concise description of what the issue is.
 
 **Reporter**
 Please state your name. If we don't know who is reporting, a solution of the issue might be delayed.
