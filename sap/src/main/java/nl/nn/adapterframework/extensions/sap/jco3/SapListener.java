@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocDocumentIterator;
@@ -259,7 +259,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 	/**
 	 * The <code>toString()</code> method retrieves its value
   	 * by reflection.
-  	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+  	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
   	 *
   	 **/
 	@Override

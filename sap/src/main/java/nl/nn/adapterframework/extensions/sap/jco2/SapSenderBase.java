@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.sap.mw.jco.JCO;
