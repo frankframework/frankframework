@@ -28,7 +28,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;

@@ -81,7 +81,8 @@ public class JmsMessagingSource extends MessagingSource {
 		}
 		return dest;
 	}
-	
+
+	@Override
 	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(),"wrapped");
 	}
