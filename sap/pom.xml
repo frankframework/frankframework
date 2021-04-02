@@ -16,10 +16,6 @@
       <artifactId>ibis-adapterframework-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sap.jco2</groupId>
       <artifactId>sapidoc</artifactId>
       <version>1.0.1</version>
