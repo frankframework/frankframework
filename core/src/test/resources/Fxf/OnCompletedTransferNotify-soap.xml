@@ -1,0 +1,13 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+xmlns:ns="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1">
+<soap:Header/>
+<soap:Body>
+<ns:OnCompletedTransferNotify_Action>
+<ns:TransferFlowId>NNX12345</ns:TransferFlowId>
+<ns:UserData>?</ns:UserData>
+<ns:ClientFilename>ClientFile</ns:ClientFilename>
+<ns:ServerFilename>ServerFile</ns:ServerFilename>
+<ns:LocalTransactionID>?</ns:LocalTransactionID>
+</ns:OnCompletedTransferNotify_Action>
+</soap:Body>
+</soap:Envelope>
