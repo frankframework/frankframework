@@ -41,13 +41,13 @@ jobs:
         java-version: 1.8
 
     - name: Create Maven settings.xml file
-      if: ${{ env.USE_PROPRIETARY == 1 }}
+      if: ${{ env.USE_PROPRIETARY == 'true' }}
       uses: s4u/maven-settings-action@v2.3.0
       with:
         servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
 
     - name: Update maven profiles
-      if: ${{ env.USE_PROPRIETARY == 1 }}
+      if: ${{ env.USE_PROPRIETARY == 'true' }}
       run: |
         echo "PROFILES=ibissource,codecoverage,proprietary" >> $GITHUB_ENV
 
