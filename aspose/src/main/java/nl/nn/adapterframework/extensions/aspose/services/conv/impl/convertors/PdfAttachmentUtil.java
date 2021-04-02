@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.axis.utils.ByteArrayOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.aspose.pdf.Document;
@@ -35,7 +36,6 @@ import com.aspose.pdf.SaveFormat;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileConstants;
-import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -131,7 +131,7 @@ public class PdfAttachmentUtil {
 
 	private String convertToValidFileName(String value) {
 		String result = value;
-		if (!StringsUtil.isBlank(value)) {
+		if (StringUtils.isNotEmpty(value)) {
 			result = value.replaceAll(FileConstants.REPLACE_CHARACTERS_IN_NAME_REGEX, FileConstants.REPLACE_CHARACTER);
 			if (!result.equals(value)) {
 				LOGGER.debug("Updated filename to a valid filename from \"" + value + "\" to \"" + result + "\"");
