@@ -43,7 +43,7 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter {
 		log.debug("creating Destination ["+ClassUtils.nameOf(this)+"]");
 	}
 
-	
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getName())) {
 			setName(ClassUtils.nameOf(this));
@@ -58,15 +58,16 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter {
 
 	public String makeXml(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		XmlBuilder eventXml = new XmlBuilder("event");
-		eventXml.addAttribute("hostname",hostname);		
-		eventXml.addAttribute("source",sourceId);		
-		eventXml.addAttribute("subSource",subSource);		
-		eventXml.addAttribute("eventType",eventType.getName());		
-		eventXml.addAttribute("severity",severity.getName());		
-		eventXml.addAttribute("message",message);		
+		eventXml.addAttribute("hostname",hostname);
+		eventXml.addAttribute("source",sourceId);
+		eventXml.addAttribute("subSource",subSource);
+		eventXml.addAttribute("eventType",eventType.name());
+		eventXml.addAttribute("severity",severity.name());
+		eventXml.addAttribute("message",message);
 		return eventXml.toXML();
 	}
 
+	@Override
 	public XmlBuilder toXml() {
 		XmlBuilder destinationXml=new XmlBuilder("destination");
 		destinationXml.addAttribute("name",getName());
@@ -75,13 +76,16 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter {
 	}
 
 
+	@Override
 	public void setName(String string) {
 		name = string;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void register(Object x) {
 		MonitorManager.getInstance().registerDestination(this);
 	}

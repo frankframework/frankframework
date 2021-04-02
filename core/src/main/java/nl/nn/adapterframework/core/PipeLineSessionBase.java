@@ -71,6 +71,15 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		return (String) Message.asObject(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
 	}
 
+	@Override
+	public Message getMessage(String key) {
+		Object obj = get(key);
+		if(obj != null) {
+			return Message.asMessage(obj);
+		}
+		return Message.nullMessage();
+	}
+
 	/**
 	 * Convenience method to set required parameters from listeners
 	 */

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 	}
 
 	@After
-	public void tearDown() throws SenderException {
+	public void tearDown() throws Exception {
 		if (sender != null) {
 			sender.close();
 			sender = null;
@@ -63,11 +63,12 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 	}
 
 	public Message sendMessage(String message) throws SenderException, TimeOutException {
-		return sendMessage(new Message(message));
+		return sendMessage(new Message(message), session);
 	}
-
 	public Message sendMessage(Message message) throws SenderException, TimeOutException {
+		return sendMessage(message, session);
+	}
+	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		return sender.sendMessage(message, session);
 	}
-	
 }

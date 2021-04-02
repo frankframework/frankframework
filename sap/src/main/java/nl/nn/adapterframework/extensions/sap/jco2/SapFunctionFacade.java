@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.sap.mw.jco.IFunctionTemplate;
@@ -78,6 +78,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 		return this.getClass().getName()+" ["+getName()+"] ";
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 //		if (StringUtils.isEmpty(getSapSystemName())) {
 //			throw new ConfigurationException("attribute sapSystemName must be specified");

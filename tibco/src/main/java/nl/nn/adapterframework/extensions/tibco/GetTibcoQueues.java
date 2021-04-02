@@ -36,7 +36,7 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.tibco.tibjms.admin.ACLEntry;
 import com.tibco.tibjms.admin.BridgeTarget;
@@ -284,7 +284,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		QueueBrowser queueBrowser = null;
 		try {
 			queueBrowser = jSession.createBrowser(queue);
-			Enumeration enm = queueBrowser.getEnumeration();
+			Enumeration<?> enm = queueBrowser.getEnumeration();
 			int count = 0;
 			boolean found = false;
 			String chompCharSizeString = AppConstants.getInstance().getString(
@@ -307,7 +307,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						qMessageXml.addSubElement(qTimestamp);
 
 						StringBuffer sb = new StringBuffer("");
-						Enumeration propertyNames = msg.getPropertyNames();
+						Enumeration<?> propertyNames = msg.getPropertyNames();
 						while (propertyNames.hasMoreElements()) {
 							String propertyName = (String) propertyNames
 									.nextElement();
@@ -367,18 +367,17 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 		qMessageXml.addSubElement(qNameXml);
 
-		Map aclMap = getAclMap(admin, ldapSender);
+		Map<String, String> aclMap = getAclMap(admin, ldapSender);
 		XmlBuilder aclXml = new XmlBuilder("acl");
 		XmlBuilder qInfoXml = qInfoToXml(qInfo);
 		aclXml.setValue((String) aclMap.get(qInfo.getName()));
 		qInfoXml.addSubElement(aclXml);
 		qMessageXml.addSubElement(qInfoXml);
 
-		Map consumersMap = getConnectedConsumersMap(admin);
+		Map<String, LinkedList<String>> consumersMap = getConnectedConsumersMap(admin);
 		XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 		if (consumersMap.containsKey(qInfo.getName())) {
-			LinkedList<String> consumers = (LinkedList<String>) consumersMap
-					.get(qInfo.getName());
+			LinkedList<String> consumers = consumersMap.get(qInfo.getName());
 			String consumersString = listToString(consumers);
 			if (consumersString != null) {
 				consumerXml.setCdataValue(consumersString);
@@ -414,8 +413,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				DateUtils.format(startTime, DateUtils.fullIsoFormat));
 		qInfosXml.addAttribute("age", Misc.getAge(startTime));
 		
-		Map aclMap = getAclMap(admin, ldapSender);
-		Map consumersMap = getConnectedConsumersMap(admin);
+		Map<String, String> aclMap = getAclMap(admin, ldapSender);
+		Map<String, LinkedList<String>> consumersMap = getConnectedConsumersMap(admin);
 		QueueInfo[] qInfos = admin.getQueues();
 		for (int i = 0; i < qInfos.length; i++) {
 			QueueInfo qInfo = qInfos[i];
@@ -429,8 +428,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				qInfoXml.addSubElement(aclXml);
 				XmlBuilder consumerXml = new XmlBuilder("connectedConsumers");
 				if (consumersMap.containsKey(qInfo.getName())) {
-					LinkedList<String> consumers = (LinkedList<String>) consumersMap
-							.get(qInfo.getName());
+					LinkedList<String> consumers = consumersMap.get(qInfo.getName());
 					String consumersString = listToString(consumers);
 					if (consumersString != null) {
 						consumerXml.setCdataValue(consumersString);
@@ -520,12 +518,12 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return qInfoXml;
 	}
 
-	private String listToString(LinkedList list) {
+	private String listToString(LinkedList<String> list) {
 		String string = null;
 		if (list != null) {
 			for (Iterator<String> it = list.iterator(); it.hasNext();) {
 				if (string == null) {
-					string = (String) it.next();
+					string = it.next();
 				} else {
 					string = string + "; " + it.next();
 				}
@@ -534,9 +532,9 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return string;
 	}
 
-	private Map getAclMap(TibjmsAdmin admin, LdapSender ldapSender) throws TibjmsAdminException {
-		Map userMap = new HashMap();
-		Map aclMap = new HashMap();
+	private Map<String, String> getAclMap(TibjmsAdmin admin, LdapSender ldapSender) throws TibjmsAdminException {
+		Map<String, String> userMap = new HashMap<>();
+		Map<String, String> aclMap = new HashMap<>();
 		ACLEntry[] aclEntries = admin.getACLEntries();
 		for (int j = 0; j < aclEntries.length; j++) {
 			ACLEntry aclEntry = aclEntries[j];
@@ -546,7 +544,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			String principalDescription = null;
 			if (principal != null) {
 				if (userMap.containsKey(principal)) {
-					principalDescription = (String) userMap.get(principal);
+					principalDescription = userMap.get(principal);
 				} else {
 					if (ldapSender != null) {
 						principalDescription = getLdapPrincipalDescription(principal, ldapSender);
@@ -554,8 +552,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 					if (principalDescription == null) {
 						UserInfo principalUserInfo = admin.getUser(principal);
 						if (principalUserInfo != null) {
-							principalDescription = principalUserInfo
-									.getDescription();
+							principalDescription = principalUserInfo.getDescription();
 						}
 					}
 					userMap.put(principal, principalDescription);
@@ -570,7 +567,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 			}
 			if (aclMap.containsKey(destination)) {
-				String ppe = (String) aclMap.get(destination);
+				String ppe = aclMap.get(destination);
 				aclMap.remove(destination);
 				aclMap.put(destination, ppe + "; " + pp);
 			} else {
@@ -586,9 +583,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		try {
 			String ldapResult = ldapSender.sendMessage(ldapRequest, null).asString();
 			if (ldapResult != null) {
-				Collection<String> c = XmlUtils.evaluateXPathNodeSet(
-						ldapResult,
-						"attributes/attribute[@name='description']/@value");
+				Collection<String> c = XmlUtils.evaluateXPathNodeSet(ldapResult,"attributes/attribute[@name='description']/@value");
 				if (c != null && c.size() > 0) {
 					principalDescription = c.iterator().next();
 				}
@@ -621,9 +616,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return inetAddress.getCanonicalHostName();
 	}
 
-	private Map getConnectedConsumersMap(TibjmsAdmin admin)
-			throws TibjmsAdminException {
-		Map connectionMap = new HashMap();
+	private Map<String, LinkedList<String>> getConnectedConsumersMap(TibjmsAdmin admin) throws TibjmsAdminException {
+		Map<Long, String> connectionMap = new HashMap<>();
 		ConnectionInfo[] connectionInfos = admin.getConnections();
 		for (int i = 0; i < connectionInfos.length; i++) {
 			ConnectionInfo connectionInfo = connectionInfos[i];
@@ -634,7 +628,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			}
 		}
 
-		Map consumerMap = new HashMap();
+		Map<String, LinkedList<String>> consumerMap = new HashMap<>();
 		ConsumerInfo[] consumerInfos = admin.getConsumers();
 		for (int i = 0; i < consumerInfos.length; i++) {
 			ConsumerInfo consumerInfo = consumerInfos[i];
@@ -643,15 +637,13 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			if (connectionMap.containsKey(connectionId)) {
 				String ci = (String) connectionMap.get(connectionId);
 				if (consumerMap.containsKey(destinationName)) {
-					LinkedList consumers = (LinkedList) consumerMap
-							.get(destinationName);
+					LinkedList<String> consumers = consumerMap.get(destinationName);
 					if (!consumers.contains(ci)) {
 						consumers.add(ci);
-						consumerMap.remove(consumers);
 						consumerMap.put(destinationName, consumers);
 					}
 				} else {
-					LinkedList consumers = new LinkedList();
+					LinkedList<String> consumers = new LinkedList<>();
 					consumers.add(ci);
 					consumerMap.put(destinationName, consumers);
 				}

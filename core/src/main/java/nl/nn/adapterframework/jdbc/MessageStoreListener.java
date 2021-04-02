@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.text.StrTokenizer;
+import org.apache.commons.text.StringEscapeUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -81,10 +81,10 @@ public class MessageStoreListener extends JdbcTableListener {
 		setSelectCondition("SLOTID = '" + slotId + "'");
 		super.configure();
 		if (sessionKeys != null) {
-			sessionKeysList = new ArrayList<String>();
+			sessionKeysList = new ArrayList<>();
 			StringTokenizer stringTokenizer = new StringTokenizer(sessionKeys, ",");
 			while (stringTokenizer.hasMoreElements()) {
-				sessionKeysList.add((String)stringTokenizer.nextElement());
+				sessionKeysList.add(stringTokenizer.nextToken());
 			}
 		}
 		if (isMoveToMessageLog()) {
@@ -103,11 +103,11 @@ public class MessageStoreListener extends JdbcTableListener {
 		if (rawMessage != null && sessionKeys != null) {
 			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
 			try {
-				StrTokenizer strTokenizer = StrTokenizer.getCSVInstance().reset(messageWrapper.getMessage().asString());
-				messageWrapper.setMessage(new Message((String)strTokenizer.next()));
+				StringTokenizer strTokenizer = new StringTokenizer(messageWrapper.getMessage().asString(), ",");
+				messageWrapper.setMessage(new Message(strTokenizer.nextToken()));
 				int i = 0;
-				while (strTokenizer.hasNext()) {
-					threadContext.put(sessionKeysList.get(i), strTokenizer.next());
+				while (strTokenizer.hasMoreTokens()) {
+					threadContext.put(sessionKeysList.get(i), StringEscapeUtils.unescapeCsv(strTokenizer.nextToken()));
 					i++;
 				}
 			} catch (IOException e) {
