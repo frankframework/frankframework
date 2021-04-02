@@ -103,7 +103,7 @@
 		name="jdbc/ibis4test-postgres-xa" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.postgresql.xa.PGXADataSource" 
-		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
+		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
 		user="testiaf_user" 
 		password="testiaf_user00" 
 	/>
@@ -111,13 +111,24 @@
  	<Resource name="jdbc/ibis4test-postgres" auth="Container"
 		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"
-		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
+		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
 		username="testiaf_user"
 		password="testiaf_user00" 
 		maxTotal="10"
 		maxWaitMillis="5000"
 	/>	
-		
+
+	<Resource name="mongodb/ibis4test" 
+		type="com.mongodb.MongoClient" 
+		factory="com.mongodb.client.MongoClientFactory" 
+		auth="Container"
+		closeMethod="close"
+		singleton="true"
+		connectionString="mongodb://host.docker.internal" 
+		username="testiaf_user"
+		password="testiaf_user00" 
+	/>
+
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="org.apache.naming.factory.BeanFactory"

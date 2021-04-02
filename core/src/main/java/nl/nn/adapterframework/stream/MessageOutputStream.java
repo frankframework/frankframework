@@ -33,11 +33,13 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.json.JsonTee;
+import nl.nn.adapterframework.stream.json.JsonWriter;
+import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
-import nl.nn.adapterframework.xml.XmlTee;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream implements AutoCloseable {
@@ -93,8 +95,19 @@ public class MessageOutputStream implements AutoCloseable {
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
 	
+	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, next);
+		this.requestStream=handler;
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+	}
+	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+		this(owner, nextStream);
+		this.requestStream=handler;
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+	}
 
-	
+
+
 	private void connect(MessageOutputStream nextStream) {
 		this.nextStream=nextStream;
 		if (nextStream==null) {
@@ -165,6 +178,10 @@ public class MessageOutputStream implements AutoCloseable {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning ContentHandler as OutputStream");
 			return new ContentHandlerOutputStream((ContentHandler) requestStream, threadConnector);
 		}
+		if (requestStream instanceof JsonEventHandler) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning JsonEventHandler as OutputStream");
+			return new JsonEventHandlerOutputStream((JsonEventHandler) requestStream, threadConnector);
+		}
 		return null;
 	}
 	
@@ -189,6 +206,14 @@ public class MessageOutputStream implements AutoCloseable {
 				throw new StreamingException(e);
 			}
 		}
+		if (requestStream instanceof JsonEventHandler) {
+			try {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as Writer");
+				return new OutputStreamWriter(new JsonEventHandlerOutputStream((JsonEventHandler) requestStream, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			} catch (UnsupportedEncodingException e) {
+				throw new StreamingException(e);
+			}
+		}
 		return null;
 	}
 
@@ -196,6 +221,9 @@ public class MessageOutputStream implements AutoCloseable {
 		if (requestStream instanceof ContentHandler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning ContentHandler as ContentHandler");
 			return (ContentHandler) requestStream;
+		}
+		if (requestStream instanceof JsonEventHandler) {
+			throw new StreamingException("Cannot handle XML as JSON");
 		}
 		if (requestStream instanceof OutputStream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as ContentHandler");
@@ -208,7 +236,25 @@ public class MessageOutputStream implements AutoCloseable {
 			return new XmlWriter((Writer) requestStream);
 		}
 		return null;
+	}
 
+	public JsonEventHandler asJsonEventHandler() throws StreamingException {
+		if (requestStream instanceof JsonEventHandler) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as JsonEventHandler");
+			return (JsonEventHandler) requestStream;
+		}
+		if (requestStream instanceof ContentHandler) {
+			throw new StreamingException("Cannot handle JSON as XML");
+		}
+		if (requestStream instanceof OutputStream) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as JsonEventHandler");
+			return new JsonWriter((OutputStream) requestStream);
+		}
+		if (requestStream instanceof Writer) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as JsonEventHandler");
+			return new JsonWriter((Writer) requestStream);
+		}
+		return null;
 	}
 
 	public StringWriter captureCharacterStream() {
@@ -228,6 +274,10 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		if (requestStream instanceof ContentHandler) {
 			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(writer, maxSize))));
+			return;
+		}
+		if (requestStream instanceof JsonEventHandler) {
+			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamUtil.limitSize(writer, maxSize)));
 			return;
 		}
 		if (requestStream instanceof OutputStream) {
@@ -254,6 +304,10 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		if (requestStream instanceof ContentHandler) {
 			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(outputStream, maxSize))));
+			return;
+		}
+		if (requestStream instanceof JsonEventHandler) {
+			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamUtil.limitSize(outputStream, maxSize)));
 			return;
 		}
 		if (requestStream instanceof Writer) {
