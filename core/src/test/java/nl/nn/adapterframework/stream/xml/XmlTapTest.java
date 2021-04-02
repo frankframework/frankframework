@@ -1,11 +1,13 @@
-package nl.nn.adapterframework.xml;
+package nl.nn.adapterframework.stream.xml;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import nl.nn.adapterframework.stream.xml.XmlTap;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class XmlTapTest {
 

@@ -7,8 +7,8 @@
     <version>7.7-SNAPSHOT</version>
   </parent>
 
-  <artifactId>ibis-adapterframework-test-integration</artifactId>
-  <name>Ibis AdapterFramework Integration Tests for various databases, messaging and mail systems</name>
+	<artifactId>ibis-adapterframework-test-integration</artifactId>
+	<name>Ibis AdapterFramework Integration Tests for various databases, messaging and mail systems</name>
 
 	<dependencies>
 		<dependency>

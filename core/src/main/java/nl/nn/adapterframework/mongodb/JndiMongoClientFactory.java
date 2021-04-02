@@ -13,41 +13,42 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jndi;
+package nl.nn.adapterframework.mongodb;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import javax.naming.NamingException;
-import javax.sql.CommonDataSource;
-import javax.sql.DataSource;
 
-import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import com.mongodb.client.MongoClient;
+
+import nl.nn.adapterframework.jndi.JndiObjectFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
-public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDataSource> implements IDataSourceFactory {
+public class JndiMongoClientFactory extends JndiObjectFactory<MongoClient,MongoClient> implements IMongoClientFactory {
 
-	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
-	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
+	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "mongodb.datasource.default";
+	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT = "mongodb/MongoClient";
+	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY, GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT);
 
-	public JndiDataSourceFactory() {
-		super(CommonDataSource.class);
+	public JndiMongoClientFactory() {
+		super(MongoClient.class);
 	}
 
 	@Override
-	public DataSource getDataSource(String dataSourceName) throws NamingException {
+	public MongoClient getMongoClient(String dataSourceName) throws NamingException {
 		return get(dataSourceName);
 	}
 
 	@Override
-	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws NamingException {
+	public MongoClient getMongoClient(String dataSourceName, Properties jndiEnvironment) throws NamingException {
 		return get(dataSourceName, jndiEnvironment);
 	}
 
 
 	@Override
-	public List<String> getDataSourceNames() {
+	public List<String> getMongoClients() {
 		return new ArrayList<String>(objects.keySet());
 	}
 
