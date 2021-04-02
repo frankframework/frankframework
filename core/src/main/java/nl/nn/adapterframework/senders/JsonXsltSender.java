@@ -32,8 +32,8 @@ import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
-import nl.nn.adapterframework.util.JsonXmlHandler;
-import nl.nn.adapterframework.util.JsonXmlReader;
+import nl.nn.adapterframework.stream.xml.JsonXslt3XmlHandler;
+import nl.nn.adapterframework.stream.xml.JsonXslt3XmlReader;
 import nl.nn.adapterframework.util.XmlJsonWriter;
 import nl.nn.adapterframework.xml.IXmlDebugger;
 
@@ -68,7 +68,7 @@ public class JsonXsltSender extends XsltSender {
 	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		ContentHandler handler = createHandler(null, session, target);
-		JsonEventHandler jsonEventHandler = new JsonXmlHandler(handler);
+		JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
 		return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, session);
 	}
 
@@ -92,7 +92,7 @@ public class JsonXsltSender extends XsltSender {
 		if (getXmlDebugger()!=null) {
 			handler = getXmlDebugger().inspectXml(session, "JSON converted to XML", handler);
 		}
-		return new JsonXmlReader(handler);
+		return new JsonXslt3XmlReader(handler);
 	}
 
 	@IbisDoc({"1", "When <code>true</code>, the xml result of the transformation is converted back to json", "true"})

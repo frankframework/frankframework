@@ -13,12 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.xml;
+package nl.nn.adapterframework.stream.xml;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
+
+import nl.nn.adapterframework.xml.FullXmlFilter;
 
 public class XmlTee extends FullXmlFilter {
 

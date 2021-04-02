@@ -13,9 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.xml;
+package nl.nn.adapterframework.stream.xml;
 
 import org.xml.sax.ContentHandler;
+
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class XmlTap extends XmlTee {
 

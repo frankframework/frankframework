@@ -13,39 +13,51 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.stream.xml;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
+import javax.json.Json;
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParser.Event;
 
 import org.xml.sax.ContentHandler;
+import org.xml.sax.DTDHandler;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.stream.JsonEventHandler;
 
+public class JsonXslt3XmlReader implements XMLReader {
 
-public class JsonXmlHandler implements JsonEventHandler {
-
+//	private String atttributePrefix="@";
 	private String TARGETNAMESPACE="http://www.w3.org/2013/XSL/json";
 	
-	private @Getter @Setter ContentHandler contentHandler;
+	private String FEATURE_NAMESPACES = "http://xml.org/sax/features/namespaces";
+	private String FEATURE_NAMESPACE_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";
 	
-	private boolean elementEnded=false;	
-	private String parsedKey=null;
+	private ErrorHandler errorHandler;
+	private ContentHandler contentHandler;
+	private EntityResolver entityResolver;
+	private DTDHandler dtdHandler;
 	
-	public JsonXmlHandler() {
+	private boolean elementEnded=false;
+	
+	public JsonXslt3XmlReader() {
 		super();
 	}
 
-	public JsonXmlHandler(ContentHandler handler) {
+	public JsonXslt3XmlReader(ContentHandler handler) {
 		this();
 		setContentHandler(handler);
+		if (handler instanceof ErrorHandler) {
+			setErrorHandler((ErrorHandler)handler);
+		}
 	}
 	
 	public boolean parse(String key, JsonParser parser) throws IOException, SAXException {
@@ -122,70 +134,96 @@ public class JsonXmlHandler implements JsonEventHandler {
 		elementEnded=true;
 	}
 
-	private void simpleElement(String typename, String key, Object value) throws SAXException {
+	private void simpleElement(String typename, String key, String value) throws SAXException {
 		startElement(typename, key);
-		if (value!=null) {
-			String valueString = value.toString();
-			getContentHandler().characters(valueString.toCharArray(), 0, valueString.length());
-		}
+		if (value!=null) getContentHandler().characters(value.toCharArray(), 0, value.length());
 		endElement(typename);
 	}
 	
 	
 
-
 	@Override
-	public void startDocument() throws SAXException {
-		contentHandler.startDocument();
-		contentHandler.startPrefixMapping("", TARGETNAMESPACE);
+	public void parse(InputSource input) throws IOException, SAXException {
+		ContentHandler ch=getContentHandler();
+		ch.startDocument();
+		ch.startPrefixMapping("", TARGETNAMESPACE);
+		parse(null, Json.createParser(input.getCharacterStream()));
+		ch.endPrefixMapping("");
+		ch.endDocument();
 	}
 
 	@Override
-	public void endDocument() throws SAXException {
-		contentHandler.endPrefixMapping("");
-		contentHandler.endDocument();
+	public void parse(String systemId) throws IOException, SAXException {
+		parse(new InputSource(systemId));
+	}
+
+	
+	
+	@Override
+	public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+		throw new SAXNotRecognizedException("Feature not recognized ["+name+"]");
 	}
 
 	@Override
-	public void startObject() throws SAXException {
-		startElement("map", parsedKey);
-	}
-
-	@Override
-	public void startObjectEntry(String key) throws SAXException {
-		parsedKey=key;
-	}
-
-	@Override
-	public void endObject() throws SAXException {
-		endElement("map");
-	}
-
-	@Override
-	public void startArray() throws SAXException {
-		startElement("array", parsedKey);
-	}
-
-	@Override
-	public void endArray() throws SAXException {
-		endElement("array");
-	}
-
-	@Override
-	public void primitive(Object value) throws SAXException {
-		if (value == null) {
-			simpleElement("null", parsedKey, value);
-		} else {
-			if (value instanceof Long || value instanceof BigDecimal) {
-				simpleElement("number", parsedKey, value);
-			} else {
-				if (value instanceof Boolean) {
-					simpleElement("boolean", parsedKey, value);
-				} else {
-					simpleElement("string", parsedKey, value);
-				}
+	public void setFeature(String name, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
+		if (name.equals(FEATURE_NAMESPACES)) {
+			if (!value) {
+				throw new SAXNotRecognizedException("Cannot set feature ["+name+"] to false");
 			}
+		} else if (name.equals(FEATURE_NAMESPACE_PREFIXES)) {
+			if (value) {
+				throw new SAXNotRecognizedException("Cannot set feature ["+name+"] to true");
+			}
+		} else {
+			throw new SAXNotRecognizedException("Feature not recognized ["+name+"]");
 		}
+	}
+
+	@Override
+	public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+		throw new SAXNotRecognizedException("Protperty not recognized ["+name+"]");
+	}
+
+	@Override
+	public void setProperty(String name, Object value) throws SAXNotRecognizedException, SAXNotSupportedException {
+		throw new SAXNotRecognizedException("Protperty not recognized ["+name+"]");
+	}
+
+
+	@Override
+	public void setEntityResolver(EntityResolver resolver) {
+		entityResolver=resolver;
+	}
+	@Override
+	public EntityResolver getEntityResolver() {
+		return entityResolver;
+	}
+
+	@Override
+	public void setDTDHandler(DTDHandler handler) {
+		dtdHandler=handler;
+	}
+	@Override
+	public DTDHandler getDTDHandler() {
+		return dtdHandler;
+	}
+
+	@Override
+	public void setContentHandler(ContentHandler handler) {
+		contentHandler=handler;
+	}
+	@Override
+	public ContentHandler getContentHandler() {
+		return contentHandler;
+	}
+
+	@Override
+	public void setErrorHandler(ErrorHandler handler) {
+		errorHandler=handler;
+	}
+	@Override
+	public ErrorHandler getErrorHandler() {
+		return errorHandler;
 	}
 
 }
