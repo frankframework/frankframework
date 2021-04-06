@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.task.TaskExecutor;
 import org.xml.sax.SAXException;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IDataIterator;
@@ -42,9 +43,11 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.Semaphore;
@@ -119,7 +122,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public abstract class IteratingPipe<I> extends MessageSendingPipe {
+public abstract class IteratingPipe<I> extends MessageSendingPipe implements IThreadCreator {
 
 	private String styleSheetName;
 	private String xpathExpression=null;
@@ -152,6 +155,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private StatisticsKeeper stopConditionStatisticsKeeper;
 
 	private Semaphore childThreadSemaphore=null;
+	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -327,7 +331,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						if (isCollectResults()) {
 							guard.addResource();
 						}
-						ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, message, session, childThreadSemaphore, guard, senderStatisticsKeeper);
+						ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, message, session, childThreadSemaphore, guard, senderStatisticsKeeper, threadLifeCycleEventListener);
 						if (isCollectResults()) {
 							executorList.add(pse);
 						}

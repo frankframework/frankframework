@@ -1,0 +1,36 @@
+<module>
+	<adapter
+		name="TransactionHandlingMultiThread"
+		description="Adapter for testing transaction handling over multipe threads"
+	>
+		<receiver>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionHandlingMultiThread"
+				serviceName="ibis4test-TransactionHandlingMultiThread"
+			/>
+		</receiver>
+
+		<pipeline transactionAttribute="Required" transactionTimeout="10">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			
+			<pipe name="deleteFromIbisTemp">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="DELETE FROM IBISTEMP WHERE TKEY=999" />
+			</pipe>
+			<pipe name="insertIntoIbisTemp">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY,TCHAR) VALUES (999,'x')" />
+			</pipe>
+
+			<pipe name="updateIbisTemp">
+				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
+					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='y' WHERE TKEY=999" />
+				</sender>
+			</pipe>
+			<pipe name="selectFromIbisTemp">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TKEY,TCHAR FROM IBISTEMP WHERE TKEY=999" queryType="select"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

@@ -23,6 +23,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ConcurrencyThrottleSupport;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -30,7 +31,9 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -49,10 +52,12 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class ParallelSenders extends SenderSeries {
+public class ParallelSenders extends SenderSeries implements IThreadCreator {
 
 	private int maxConcurrentThreads = 0;
 	private TaskExecutor executor;
+
+	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -86,7 +91,7 @@ public class ParallelSenders extends SenderSeries {
 			// the message in parallel with 10 SenderWrappers (containing a
 			// XsltSender and IbisLocalSender).
 
-			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
+			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender), threadLifeCycleEventListener);
 			executorMap.put(sender, pse);
 
 			executor.execute(pse);

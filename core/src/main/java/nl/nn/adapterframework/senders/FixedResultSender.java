@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -77,16 +77,16 @@ public class FixedResultSender extends SenderWithParametersBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-	    
+
 		if (StringUtils.isNotEmpty(fileName)) {
 			try {
 				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this, fileName), Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+fileName+"]", e);
+				throw new ConfigurationException("Sender [" + getName() + "] got exception loading ["+fileName+"]", e);
 			}
 		}
 		if ((StringUtils.isEmpty(fileName)) && returnString==null) {  // allow an empty returnString to be specified
-			throw new ConfigurationException("Pipe [" + getName() + "] has neither fileName nor returnString specified");
+			throw new ConfigurationException("Sender [" + getName() + "] has neither fileName nor returnString specified");
 		}
 		if (StringUtils.isNotEmpty(replaceFrom)) {
 			returnString = replace(returnString, replaceFrom, replaceTo );
@@ -157,12 +157,6 @@ public class FixedResultSender extends SenderWithParametersBase {
 		}
 		buffer.append (targetChars, copyFrom, targetChars.length-copyFrom);
 		return buffer.toString();
-	}
-
-
-	@Override
-	public boolean isSynchronous() {
-		return true;
 	}
 
 

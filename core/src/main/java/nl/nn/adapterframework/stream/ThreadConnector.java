@@ -15,12 +15,17 @@
 */
 package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class ThreadConnector<T> {
 	protected Logger log = LogUtil.getLogger(this);
@@ -29,27 +34,33 @@ public class ThreadConnector<T> {
 	private Thread parentThread;
 	private T threadInfo;
 	private Set<String> hideRegex;
-	
+
+	private Map<Object, Object> resources;
+	private List<TransactionSynchronization> synchronizations;
+	private String currentTransactionName;
+	private Boolean currentTransactionReadOnly;
+	private Integer currentTransactionIsolationLevel;
+	private Boolean actualTransactionActive;
+
+
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
+		storeTransactionInfo();
 	}
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IPipeLineSession session) {
 		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
 	}
 	
-	public Object startThread(Object input) {
+	public <M> M startThread(M input) {
 		Thread currentThread = Thread.currentThread();
 		if (currentThread!=parentThread) {
 			currentThread.setName(parentThread.getName()+"/"+currentThread.getName());
 			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
-			// Commented out code below. Do not set contextClassLoader, contextClassLoader is not reliable outside configure().
-			// if (currentThread.getContextClassLoader()!=parentThread.getContextClassLoader()) {
-			//	currentThread.setContextClassLoader(parentThread.getContextClassLoader());
-			// }
+			applyTransactionInfo();
 			if (threadLifeCycleEventListener!=null) {
 				return threadLifeCycleEventListener.threadCreated(threadInfo, input);
 			}
@@ -62,7 +73,7 @@ public class ThreadConnector<T> {
 		return input;
 	}
 
-	public Object endThread(Object response) {
+	public <M> M endThread(M response) {
 		try {
 			if (threadLifeCycleEventListener!=null) {
 				return threadLifeCycleEventListener.threadEnded(threadInfo, response);
@@ -88,5 +99,36 @@ public class ThreadConnector<T> {
 			IbisMaskingLayout.removeThreadLocalReplace();
 		}
 	}
+
+	public void storeTransactionInfo() {
+		resources = TransactionSynchronizationManager.getResourceMap();
+//		if (TransactionSynchronizationManager.isSynchronizationActive()) {
+//			synchronizations = TransactionSynchronizationManager.getSynchronizations();
+//		}
+		currentTransactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		currentTransactionReadOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
+		currentTransactionIsolationLevel = TransactionSynchronizationManager.getCurrentTransactionIsolationLevel();
+		actualTransactionActive = TransactionSynchronizationManager.isActualTransactionActive();
+	}
 	
+	public void applyTransactionInfo() {
+		if (resources!=null) {
+			resources.forEach((k,v) ->TransactionSynchronizationManager.bindResource(k, v));
+		}
+		if (synchronizations!=null) {
+			synchronizations.forEach( v ->TransactionSynchronizationManager.registerSynchronization(v));
+		}
+		if (currentTransactionName!=null) {
+			TransactionSynchronizationManager.setCurrentTransactionName(currentTransactionName);
+		}
+		if (currentTransactionReadOnly!=null) {
+			TransactionSynchronizationManager.setCurrentTransactionReadOnly(currentTransactionReadOnly);
+		}
+		if (currentTransactionIsolationLevel!=null) {
+			TransactionSynchronizationManager.setCurrentTransactionIsolationLevel(currentTransactionIsolationLevel);
+		}
+		if (actualTransactionActive!=null) {
+			TransactionSynchronizationManager.setActualTransactionActive(actualTransactionActive);
+		}
+	}
 }

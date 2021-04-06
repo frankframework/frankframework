@@ -9,6 +9,7 @@
 	<!ENTITY TransactionHandlingRequiredSubAdapterException SYSTEM "./TransactionHandlingRequiredSubAdapterException.xml">
 
 	<!ENTITY TransactionHandlingMultiAdapter SYSTEM "./TransactionHandlingMultiAdapter.xml">
+	<!ENTITY TransactionHandlingMultiThread SYSTEM "./TransactionHandlingMultiThread.xml">
 ]>
 
 <configuration name="TX">
@@ -22,4 +23,5 @@
 	&TransactionHandlingRequiredSubAdapterException;
 
 	&TransactionHandlingMultiAdapter;
+	&TransactionHandlingMultiThread;
 </configuration>
