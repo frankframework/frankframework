@@ -108,9 +108,10 @@ class FrankMethodDoclet implements FrankMethod {
 		FrankMethod overriddenMethod = null;
 		if(overriddenMethodDoc != null) {
 			overriddenMethod = declaringClass.recursivelyFindFrankMethod(overriddenMethodDoc);
-		}
-		if(overriddenMethod != null) {
-			return overriddenMethod.getAnnotationInludingInherited(name);
+			result = overriddenMethod.getAnnotation(name);
+			if(result != null) {
+				return result;
+			}
 		}
 		return searchImplementedInterfacesForAnnotation(this.getDeclaringClass(), this.getSignature(), name);
 	}
