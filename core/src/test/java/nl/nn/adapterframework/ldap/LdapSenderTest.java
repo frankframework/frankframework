@@ -3,6 +3,7 @@ package nl.nn.adapterframework.ldap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeNotNull;
 
 import java.io.IOException;
 import java.net.URL;
@@ -22,9 +23,11 @@ import org.xml.sax.SAXException;
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 import com.unboundid.ldap.sdk.LDAPConnection;
+import com.unboundid.ldap.sdk.LDAPException;
 
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 
@@ -34,7 +37,16 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 	@Override
 	public LdapSender createSender() throws Exception {
-		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
+		LDAPConnection connection = null;
+		try {
+			connection = inMemoryDirectoryServer.getConnection();
+		} catch (LDAPException e) {
+			if(!TestAssertions.isTestRunningOnGitHub()) {
+				fail(e.getMessage());
+			}
+		}
+
+		assumeNotNull(connection);
 		LdapSender ldapSender = new LdapSender();
 		ldapSender.setLdapProviderURL("ldap://localhost:" + connection.getConnectedPort());
 		return ldapSender;

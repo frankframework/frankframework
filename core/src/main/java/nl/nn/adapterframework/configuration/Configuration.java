@@ -243,11 +243,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public boolean isStubbed() {
-		if(getClassLoader() == null) {
-			return false;
+		if(getClassLoader() instanceof IConfigurationClassLoader) {
+			return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
 		}
 
-		return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
+		return false;
 	}
 
 	/**

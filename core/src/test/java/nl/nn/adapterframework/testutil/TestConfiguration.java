@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.testutil;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -29,6 +30,6 @@ public class TestConfiguration extends Configuration {
 		assertTrue(config.isActive());
 		assertEquals(TEST_CONFIGURATION_NAME, config.getId());
 		config.close();
-		assertTrue(!config.isActive());
+		assertFalse(config.isActive());
 	}
 }
