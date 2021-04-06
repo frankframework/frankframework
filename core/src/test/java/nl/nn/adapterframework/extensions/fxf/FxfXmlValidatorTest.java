@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.extensions.fxf;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -39,6 +40,7 @@ public class FxfXmlValidatorTest extends PipeTestBase<FxfXmlValidator> {
 
 		exception.expectMessage("Validation using FxfXmlValidator with 'xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl' failed");
 		doPipe(input);
+		fail("expected validation to fail");
 	}
 
 }
