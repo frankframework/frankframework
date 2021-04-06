@@ -102,6 +102,8 @@
 		>
 	</bean>
 
+	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigWarning" />
+
 	<bean
 		name="listenerContainer"
 		class="nl.nn.adapterframework.receivers.PullingListenerContainer"

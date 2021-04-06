@@ -87,7 +87,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 						hint += ", or globally by setting the property '"+suppressionKey.getKey()+"=true'";
 					}
 				} else if(suppressionKey.isAllowGlobalSuppression()) {
-					hint = "This warning can be suppressed globally by setting the property '"+suppressionKey.getKey()+"=true'";
+					hint = ". This warning can be suppressed globally by setting the property '"+suppressionKey.getKey()+"=true'";
 				}
 			}
 			add(object, log, message, null, hint);

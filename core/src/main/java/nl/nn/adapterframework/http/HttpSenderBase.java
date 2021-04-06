@@ -70,6 +70,9 @@ import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigWarning;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -164,6 +167,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 //TODO: Fix javadoc!
 
 public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination {
+
+	private @Getter @Setter ConfigWarning configurationWarnings;
 
 	private String url;
 	private String urlParam = "url";

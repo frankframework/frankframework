@@ -32,6 +32,8 @@
 		scope="singleton"
 	/>
 
+	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigWarning" />
+
 	<!--
 	Beans created from Configuration.xml, but prototyped here for
 	extra dependencies which cannot be created otherwise.

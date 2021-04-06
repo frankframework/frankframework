@@ -48,6 +48,7 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigWarning;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
@@ -213,6 +214,8 @@ public class ServerStatistics extends Base {
 			}
 			if(warnings.size() > 0)
 				configurationsMap.put("warnings", warnings);
+//			ConfigWarning cw = configuration.getBean("configurationWarnings", ConfigWarning.class);
+//			cw.
 
 			//Configuration specific messages
 			MessageKeeper messageKeeper = getIbisContext().getMessageKeeper(configuration.getName());
