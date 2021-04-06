@@ -1,6 +1,9 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -107,9 +110,30 @@ class FrankMethodDoclet implements FrankMethod {
 			overriddenMethod = declaringClass.recursivelyFindFrankMethod(overriddenMethodDoc);
 		}
 		if(overriddenMethod != null) {
-			result = overriddenMethod.getAnnotationInludingInherited(name);
+			return overriddenMethod.getAnnotationInludingInherited(name);
 		}
-		return result;
+		return searchImplementedInterfacesForAnnotation(this.getDeclaringClass(), this.getSignature(), name);
+	}
+
+	String getSignature() {
+		List<String> components = new ArrayList<>();
+		components.add(getName());
+		for(FrankType type: getParameterTypes()) {
+			components.add(type.getName());
+		}
+		return components.stream().collect(Collectors.joining(", "));
+	}
+
+	private FrankAnnotation searchImplementedInterfacesForAnnotation(FrankClass clazz, String methodSignature, String annotationName) throws FrankDocException {
+		TransitiveImplementedInterfaceBrowser<FrankAnnotation> interfaceBrowser = new TransitiveImplementedInterfaceBrowser<>(clazz);
+		FrankAnnotation result = interfaceBrowser.search(interfaze -> ((FrankClassDoclet) interfaze).getMethodAnnotationFromSignature(methodSignature, annotationName));
+		if(result != null) {
+			return result;
+		}
+		if(clazz.getSuperclass() == null) {
+			return null;
+		}
+		return searchImplementedInterfacesForAnnotation(clazz.getSuperclass(), methodSignature, annotationName);
 	}
 
 	void removeOverriddenFrom(Map<MethodDoc, FrankMethod> methodRepository) {

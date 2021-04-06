@@ -2,6 +2,7 @@ package nl.nn.adapterframework.frankdoc.doclet;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,5 +129,38 @@ public class InterfaceAndAnnotationTest {
 		} else {
 			return null;
 		}
+	}
+
+	@Test
+	public void whenMatchingInterfaceMethodHasAnnotationThenAnnotationFound() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "DiamondImplementationOfCommonParent");
+		assertEquals(1, clazz.getDeclaredMethods().length);
+		FrankMethod method = clazz.getDeclaredMethods()[0];
+		assertEquals("annotatedMethod", method.getName());
+		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
+		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
+		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
+	}
+
+	@Test
+	public void whenSuperclassHasMatchingInterfaceMethodWithAnnotationThenAnnotationFound() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "GrandChild");
+		assertEquals(1, clazz.getDeclaredMethods().length);
+		FrankMethod method = clazz.getDeclaredMethods()[0];
+		assertEquals("annotatedMethod", method.getName());
+		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
+		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
+		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
+	}
+
+	@Test
+	public void whenAbstractSuperclassHasMatchingInterfaceMethodWithAnnotationThenAnnotationFound() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "ChildOfAbstractImplementation");
+		assertEquals(1, clazz.getDeclaredMethods().length);
+		FrankMethod method = clazz.getDeclaredMethods()[0];
+		assertEquals("annotatedMethod", method.getName());
+		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
+		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
+		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}
 }

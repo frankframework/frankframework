@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.frankdoc.testtarget.doclet.interfaces;
 
-public class ImplementationWithMeaninglessImportOfParentInterface2 implements FirstChildOfCommonParent, ParentOfTwoChildren {
+public class GrandChild extends DiamondImplementationOfCommonParent {
 	@Override
 	public void annotatedMethod(String value) {
 	}

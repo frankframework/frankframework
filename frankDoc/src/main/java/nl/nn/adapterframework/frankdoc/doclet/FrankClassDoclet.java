@@ -26,13 +26,16 @@ class FrankClassDoclet implements FrankClass {
 	private final Set<String> childClassNames = new HashSet<>();
 	private final Map<String, FrankClass> interfaceImplementationsByName = new HashMap<>();
 	private final Map<MethodDoc, FrankMethod> frankMethodsByDocletMethod = new HashMap<>();
+	private final Map<String, FrankMethodDoclet> methodsBySignature = new HashMap<>();
 	private final Map<String, FrankAnnotation> frankAnnotationsByName;
 
 	FrankClassDoclet(ClassDoc clazz, FrankClassRepository repository) {
 		this.repository = repository;
 		this.clazz = clazz;
 		for(MethodDoc methodDoc: clazz.methods()) {
-			frankMethodsByDocletMethod.put(methodDoc, new FrankMethodDoclet(methodDoc, this));
+			FrankMethodDoclet frankMethod = new FrankMethodDoclet(methodDoc, this);
+			frankMethodsByDocletMethod.put(methodDoc, frankMethod);
+			methodsBySignature.put(frankMethod.getSignature(), frankMethod);
 		}
 		AnnotationDesc[] annotationDescs = clazz.annotations();
 		frankAnnotationsByName = FrankDocletUtils.getFrankAnnotationsByName(annotationDescs);
@@ -208,5 +211,20 @@ class FrankClassDoclet implements FrankClass {
 		} else {
 			return null;
 		}
+	}
+
+	FrankMethodDoclet getMethodFromSignature(String signature) {
+		return methodsBySignature.get(signature);
+	}
+
+	FrankAnnotation getMethodAnnotationFromSignature(String methodSignature, String annotationName) {
+		FrankMethodDoclet frankMethod = getMethodFromSignature(methodSignature);
+		if(frankMethod != null) {
+			FrankAnnotation result = frankMethod.getAnnotation(annotationName);
+			if(result != null) {
+				return result;
+			}
+		}
+		return null;
 	}
 }
