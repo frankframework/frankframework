@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
@@ -29,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -65,8 +65,7 @@ public class Base64Pipe extends StreamingPipe {
 	}
 	public enum OutputTypes {
 		STRING,
-		BYTES,
-		STREAM;
+		BYTES;
 	}
 
 	@Override
@@ -115,31 +114,14 @@ public class Base64Pipe extends StreamingPipe {
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
 		Message result = new Message(base64);
-		if (!directionEncode && StringUtils.isNotEmpty(getCharset())) {
+		if (!directionEncode && StringUtils.isNotEmpty(getCharset()) || getOutputTypeEnum()==OutputTypes.STRING) {
 			try {
 				result = new Message(result.asReader(getCharset()));
 			} catch (IOException e) {
 				throw new PipeRunException(this,"cannot open stream", e);
 			}
 		}
-		if(getOutputTypeEnum()==OutputTypes.STREAM) {
-			return new PipeRunResult(getForward(), result);
-		}
-
-		try (MessageOutputStream target=getTargetStream(session)) {
-			if(getOutputTypeEnum()==OutputTypes.STRING) {
-				try (Writer writer = target.asWriter()) {
-					Misc.readerToWriter(result.asReader(), writer);
-				}
-			} else {
-				try (OutputStream out = target.asStream()) {
-					Misc.streamToStream(result.asInputStream(), out);
-				}
-			}
-			return target.getPipeRunResult();
-		} catch (Exception e) {
-			throw new PipeRunException(this, "cannot convert base64 "+getDirectionEnum()+" result", e);
-		}
+		return new PipeRunResult(getForward(), result);
 	}
 
 	@SuppressWarnings("resource")
@@ -148,7 +130,7 @@ public class Base64Pipe extends StreamingPipe {
 		MessageOutputStream target = getTargetStream(session);
 		boolean directionEncode = getDirectionEnum()==Direction.ENCODE;//TRUE encode - FALSE decode
 		OutputStream targetStream;
-		if (getOutputTypeEnum()==OutputTypes.STRING || getOutputTypeEnum()==OutputTypes.STREAM && directionEncode || !directionEncode && StringUtils.isNotEmpty(getCharset())) {
+		if (!directionEncode && StringUtils.isNotEmpty(getCharset()) || getOutputTypeEnum()==OutputTypes.STRING) {
 			targetStream = new WriterOutputStream(target.asWriter(), getCharset()!=null? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING );
 		} else {
 			targetStream = target.asStream();
@@ -185,9 +167,13 @@ public class Base64Pipe extends StreamingPipe {
 		convertToString = b;
 	}
 
-	@IbisDoc({"2", "Either <code>string</code>, <code>bytes</code> or <code>stream</code>", "string"})
+	@IbisDoc({"2", "Either <code>string</code> or <code>bytes</code> or <code>stream</code>", "string for direction=encode, bytes for direction=decode"})
 	public void setOutputType(String outputType) {
-		this.outputType = Misc.parse(OutputTypes.class, outputType);
+		if (outputType.equalsIgnoreCase("Stream")) {
+			ConfigurationWarnings.add(this, log, "outputType 'Stream' is no longer used");
+		} else {
+			this.outputType = Misc.parse(OutputTypes.class, outputType);
+		}
 	}
 	public OutputTypes getOutputTypeEnum() {
 		return outputType;
