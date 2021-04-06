@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -155,22 +155,16 @@ public class Base64Pipe extends StreamingPipe {
 		return direction;
 	}
 
-	/**
-	 * If true and decoding, result is returned as a string, otherwise as a byte array.
-	 * If true and encoding, input is read as a string, otherwise as a byte array.
-	 * @deprecated please use outputType instead
-	 * @param b convert result to string or outputStream depending on the direction used
-	 */
 	@Deprecated
 	@ConfigurationWarning("please specify outputType instead")
 	public void setConvert2String(boolean b) {
 		convertToString = b;
 	}
 
-	@IbisDoc({"2", "Either <code>string</code> or <code>bytes</code> or <code>stream</code>", "string for direction=encode, bytes for direction=decode"})
+	@IbisDoc({"2", "Either <code>string</code> for character output or <code>bytes</code> for binary output. The value <code>stream</code> is no longer used. Streaming is automatic where possible", "string for direction=encode, bytes for direction=decode"})
 	public void setOutputType(String outputType) {
 		if (outputType.equalsIgnoreCase("Stream")) {
-			ConfigurationWarnings.add(this, log, "outputType 'Stream' is no longer used");
+			ConfigurationWarnings.add(this, log, "outputType 'Stream' is no longer used. Streaming is automatic where possible");
 		} else {
 			this.outputType = Misc.parse(OutputTypes.class, outputType);
 		}
