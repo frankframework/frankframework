@@ -4,6 +4,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.DocErrorReporter;
+import com.sun.javadoc.LanguageVersion;
 import com.sun.javadoc.RootDoc;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
@@ -77,5 +78,10 @@ public class DocletBuilder extends com.sun.javadoc.Doclet {
             		OPT_OUTPUT_DIR, OPT_OUTPUT_DIR));
         }
         return foundOutputDirOption;
+    }
+
+    public static LanguageVersion languageVersion() {
+    	System.out.println("*** Method languageVersion() called");
+    	return LanguageVersion.JAVA_1_5;
     }
 }

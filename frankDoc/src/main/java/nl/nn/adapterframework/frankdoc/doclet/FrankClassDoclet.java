@@ -73,7 +73,13 @@ class FrankClassDoclet implements FrankClass {
 
 	@Override
 	public String getSimpleName() {
-		return clazz.name();
+		String result = clazz.name();
+		// For inner classes, we now have result == <outerClassName>.<innerClassName>
+		// We want only <innerClassName>
+		if(result.contains(".")) {
+			result = result.substring(result.lastIndexOf(".") + 1);
+		}
+		return result;
 	}
 
 	@Override
@@ -103,9 +109,6 @@ class FrankClassDoclet implements FrankClass {
 
 	@Override
 	public FrankClass[] getInterfaces() throws FrankDocException {
-		if(! isInterface()) {
-			throw new FrankDocException(String.format("Class [%s] is not an interfaces, and hence method isInterfaces is not supported", getName()), null);
-		}
 		List<FrankClass> resultList = getInterfacesRaw();
 		return resultList.toArray(new FrankClass[] {});
 	}

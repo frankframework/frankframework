@@ -688,7 +688,7 @@
 						<reportSets>
 							<reportSet>
 								<reports>
-									<report>javadoc-no-fork</report>
+									<report>javadoc</report>
 								</reports>
 							</reportSet>
 						</reportSets>
@@ -706,6 +706,7 @@
 								-outputDir
 								${project.reporting.outputDirectory}/frankDoc
 							</additionalOptions>
+							<source>1.8</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<!-- <plugins> <plugin> <artifactId>maven-compiler-plugin</artifactId> 
 								<version>3.8.1</version> <configuration> <source>1.8</source> <target>1.8</target> 

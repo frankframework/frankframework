@@ -98,9 +98,6 @@ class FrankClassReflect implements FrankClass {
 
 	@Override
 	public FrankClass[] getInterfaces() throws FrankDocException {
-		if(! isInterface()) {
-			throw new FrankDocException(String.format("Class [%s] is not an interfaces, and hence method isInterfaces is not supported", getName()), null);
-		}
 		Class<?>[] interfazes = clazz.getInterfaces();
 		FrankClass[] result = new FrankClass[interfazes.length];
 		for(int i = 0; i < interfazes.length; ++i) {

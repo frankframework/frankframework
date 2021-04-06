@@ -17,4 +17,8 @@ public class Child extends Parent implements MyInterface {
 	public MyInnerEnum getMyInnerEnum() {
 		return null;
 	}
+
+	@Override
+	public void myAnnotatedMethod() {
+	}
 }
