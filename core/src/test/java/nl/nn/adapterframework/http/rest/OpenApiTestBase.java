@@ -163,9 +163,21 @@ public class OpenApiTestBase extends Mockito {
 			if(StringUtils.isNotEmpty(operationId)) {
 				listener.setOperationId(operationId);
 			}
-
 			return this;
 		}
+		public AdapterBuilder setHeaderParams(String headerParams) {
+			listener.setHeaderParams(headerParams);
+			return this;
+		}
+		public AdapterBuilder setCookieParams(String cookieParams) {
+			listener.setCookieParams(cookieParams);
+			return this;
+		}
+		public AdapterBuilder setMessageIdHeader(String messageIdHeader) {
+			listener.setMessageIdHeader(messageIdHeader);
+			return this;
+		}
+		
 		public AdapterBuilder setValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
 			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+responseRoot;
 			validator = new Json2XmlValidator();

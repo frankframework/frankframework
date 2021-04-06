@@ -3,8 +3,11 @@ package nl.nn.adapterframework.http.rest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import javax.servlet.http.Cookie;
+
 import org.junit.Rule;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.testutil.TestAssertions;
@@ -310,6 +313,150 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uri+"/validator");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/noValidatorForOneEndpoint.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
+
+	@Test
+	@IsolatedThread
+	public void parametersFromHeader() throws Exception {
+		String uri="/headerparams";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		new AdapterBuilder("myAdapterName", "description4simple-get")
+			.setListener(uri, "get", null, null)
+			.setHeaderParams("envelopeId, envelopeType")
+			.setValidator("simple.xsd", null, "user", null)
+			.addExit("200")
+			.addExit("500")
+			.build(true);
+
+		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri + "/openapi.json");
+		request.setServerName("dummy");
+		request.setPathInfo(uri + "/openapi.json");
+		request.addHeader("envelopeId", "dummy");
+		request.addHeader("envelopeType", "dummyType");
+		
+		String result = service(request);
+
+		String expected = TestFileUtils.getTestFile("/OpenApi/twoHeaderParams.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
+
+	@Test
+	@IsolatedThread
+	public void parametersFromCookie() throws Exception {
+		String uri="/cookieparams";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		new AdapterBuilder("myAdapterName", "description4simple-get")
+			.setListener(uri, "get", null, null)
+			.setCookieParams("envelopeId, envelopeType")
+			.setValidator("simple.xsd", null, "user", null)
+			.addExit("200")
+			.addExit("500")
+			.build(true);
+
+		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri + "/openapi.json");
+		request.setServerName("dummy");
+		request.setPathInfo(uri + "/openapi.json");
+		Cookie[] cookies = {new Cookie("envelopeId", "dummy"), new Cookie("envelopeType", "dummyType")};
+		request.setCookies(cookies);
+		
+		String result = service(request);
+
+		String expected = TestFileUtils.getTestFile("/OpenApi/cookieParams.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
+
+	@Test
+	@IsolatedThread
+	public void parametersFromCookieAndHeader() throws Exception {
+		String uri="/cookieplusheaderparams";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		new AdapterBuilder("myAdapterName", "description4simple-get")
+			.setListener(uri, "get", null, null)
+			.setHeaderParams("headerparam")
+			.setCookieParams("envelopeId, envelopeType")
+			.setValidator("simple.xsd", null, "user", null)
+			.addExit("200")
+			.addExit("500")
+			.build(true);
+
+		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri + "/openapi.json");
+		request.setServerName("dummy");
+		request.setPathInfo(uri + "/openapi.json");
+		Cookie[] cookies = {new Cookie("envelopeId", "dummy"), new Cookie("envelopeType", "dummyType")};
+		request.setCookies(cookies);
+		request.addHeader("headerparam", "dummy");
+		
+		String result = service(request);
+
+		String expected = TestFileUtils.getTestFile("/OpenApi/parametersFromCookieAndHeader.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
+
+	@Test
+	@IsolatedThread
+	public void validatorParamFromHeaderNotQuery() throws Exception {
+		String uri="/validatorParamFromHeaderNotQuery";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+		Parameter param = new Parameter();
+		param.setName("parameter");
+		param.setValue("parameter");
+		param.setSessionKey("parameter");
+
+		new AdapterBuilder("myAdapterName", "get envelope adapter description")
+			.setListener(uri, "get", null, null)
+			.setHeaderParams("parameter")
+			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+			.addExit("200")
+			.build(true);
+
+
+		assertEquals("more then 2 registered pattern found!", 1, dispatcher.findConfigForUri(uri).getMethods().size());
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri + "/openapi.json");
+		request.setServerName("dummy");
+		request.setPathInfo(uri + "/openapi.json");
+		request.addHeader("parameter", "dummy");
+		
+		String result = service(request);
+
+		String expected = TestFileUtils.getTestFile("/OpenApi/validatorParamFromHeaderNotQuery.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
+
+	@Test
+	@IsolatedThread
+	public void messageIdHeaderTest() throws Exception {
+		String uri="/messageIdHeaderTest";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		new AdapterBuilder("myAdapterName", "get envelope adapter description")
+			.setListener(uri, "get", null, null)
+			.setMessageIdHeader("x-message-id")
+			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
+			.addExit("200")
+			.build(true);
+
+
+		assertEquals("more then 2 registered pattern found!", 1, dispatcher.findConfigForUri(uri).getMethods().size());
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri + "/openapi.json");
+		request.setServerName("dummy");
+		request.setPathInfo(uri + "/openapi.json");
+		request.addHeader("x-message-id", "dummy");
+
+		String result = service(request);
+
+		String expected = TestFileUtils.getTestFile("/OpenApi/messageIdHeaderTest.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
 }

@@ -475,6 +475,24 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageId = messageIdHeader;
 					}
 				}
+				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
+					String params[] = listener.getHeaderParams().split(",");
+					for (String headerParam : params) {
+						String param = request.getHeader(headerParam);
+						if(param != null) {
+							messageContext.put(headerParam, param);
+						}
+					}
+				}
+				if(StringUtils.isNotEmpty(listener.getCookieParams())) {
+					String params[] = listener.getCookieParams().split(",");
+					for (String cookieParam : params) {
+						Cookie cookie = CookieUtil.getCookie(request, cookieParam);
+						if(cookie != null) {
+							messageContext.put(cookieParam, cookie.getValue());
+						}
+					}
+				}
 				PipeLineSessionBase.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
 				Message result = listener.processRequest(null, body, messageContext);
 

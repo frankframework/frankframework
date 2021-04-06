@@ -59,6 +59,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
+	private String headerParams = null;
+	private String cookieParams = null;
 	private String charset = null;
 
 	public enum AuthenticationMethods {
@@ -284,6 +286,22 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 	public String getOperationId() {
 		return operationId;
+	}
+
+	@IbisDoc({"12", "Comma separated list of parameter names defined in the header. Do not use followings 'Accept', 'Content-Type' or 'Authorization'", ""})
+	public void setHeaderParams(String headerParams) {
+		this.headerParams = headerParams;
+	}
+	public String getHeaderParams() {
+		return headerParams;
+	}
+
+	@IbisDoc({"13", "Comma separated list of parameter names defined in the cookie.", ""})
+	public void setCookieParams(String cookieParams) {
+		this.cookieParams = cookieParams;
+	}
+	public String getCookieParams() {
+		return cookieParams;
 	}
 
 	@Override

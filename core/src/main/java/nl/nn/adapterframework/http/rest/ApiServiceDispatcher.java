@@ -195,7 +195,7 @@ public class ApiServiceDispatcher {
 					if(!method.equals("GET") && !method.equals("DELETE")) {
 						mapRequest(adapter, listener.getConsumesEnum(), methodBuilder);
 					}
-					mapParamsInRequest(adapter, listener, methodBuilder);
+					mapParamsInRequest(request, adapter, listener, methodBuilder);
 
 					//ContentType may have more parameters such as charset and formdata-boundry
 					MediaTypes produces = listener.getProducesEnum();
@@ -252,9 +252,10 @@ public class ApiServiceDispatcher {
 		return null;
 	}
 
-	private void mapParamsInRequest(IAdapter adapter, ApiListener listener, JsonObjectBuilder methodBuilder) {
+	private void mapParamsInRequest(HttpServletRequest request, IAdapter adapter, ApiListener listener, JsonObjectBuilder methodBuilder) {
 		String uriPattern = listener.getUriPattern();
 		JsonArrayBuilder paramBuilder = Json.createArrayBuilder();
+		// path parameters
 		if(uriPattern.contains("{")) {
 			Pattern p = Pattern.compile("[^{/}]+(?=})");
 			Matcher m = p.matcher(uriPattern);
@@ -267,12 +268,49 @@ public class ApiServiceDispatcher {
 				paramBuilder.add(param);
 			}
 		}
+		List<String> paramsFromHeaderAndCookie = new ArrayList<String>();
+		// header parameters
+		if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
+			String params[] = listener.getHeaderParams().split(",");
+			for (String parameter : params) {
+				JsonObjectBuilder param = Json.createObjectBuilder();
+				param.add("name", parameter);
+				param.add("in", "header");
+				param.add("schema", Json.createObjectBuilder().add("type", "string"));
+				paramBuilder.add(param);
+				paramsFromHeaderAndCookie.add(parameter);
+			}
+		}
+		if(StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
+			String messageIdHeader = request.getHeader(listener.getMessageIdHeader());
+			if(StringUtils.isNotEmpty(messageIdHeader)) {
+				JsonObjectBuilder param = Json.createObjectBuilder();
+				param.add("name", listener.getMessageIdHeader());
+				param.add("in", "header");
+				param.add("schema", Json.createObjectBuilder().add("type", "string"));
+				paramBuilder.add(param);
+			}
+		}
+		// cookie params
+		if(StringUtils.isNotEmpty(listener.getCookieParams())) {
+			String params[] = listener.getCookieParams().split(",");
+			for (String parameter : params) {
+				JsonObjectBuilder param = Json.createObjectBuilder();
+				param.add("name", parameter);
+				param.add("in", "cookie");
+				param.add("schema", Json.createObjectBuilder().add("type", "string"));
+				paramBuilder.add(param);
+				paramsFromHeaderAndCookie.add(parameter);
+			}
+		}
+		// query params
 		Json2XmlValidator validator = getJsonValidator(adapter.getPipeLine());
 		if(validator != null && !validator.getParameterList().isEmpty()) {
 			for (Parameter parameter : validator.getParameterList()) {
-				if(StringUtils.isNotEmpty(parameter.getSessionKey())) {
+				String parameterSessionkey = parameter.getSessionKey();
+				if(StringUtils.isNotEmpty(parameterSessionkey) && !paramsFromHeaderAndCookie.contains(parameterSessionkey)) {
 					JsonObjectBuilder param = Json.createObjectBuilder();
-					param.add("name", parameter.getSessionKey());
+					param.add("name", parameterSessionkey);
 					param.add("in", "query");
 					String parameterType = parameter.getType() != null ? parameter.getType() : "string";
 					param.add("schema", Json.createObjectBuilder().add("type", parameterType));
