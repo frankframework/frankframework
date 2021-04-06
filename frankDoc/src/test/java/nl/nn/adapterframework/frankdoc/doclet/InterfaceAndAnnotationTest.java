@@ -1,0 +1,132 @@
+package nl.nn.adapterframework.frankdoc.doclet;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
+@RunWith(Parameterized.class)
+public class InterfaceAndAnnotationTest {
+	static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.doclet.interfaces.";
+
+	@Parameters(name = "{0}")
+	public static Collection<Object[]> data() {
+		final List<Object[]> result = new ArrayList<>();
+		Arrays.asList(Environment.values()).forEach(v -> result.add(new Object[] {v}));
+		return result;
+	}
+
+	@Parameter
+	public Environment environment;
+
+	FrankClassRepository classRepository;
+
+	@Before
+	public void setUp() {
+		classRepository = environment.getRepository(PACKAGE);
+	}
+
+	@Test
+	public void whenClassInheritsInterfaceThroughChildInterfacesThenNotReturnedByMethodInterfaces() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "DiamondImplementationOfCommonParent");
+		List<String> actualInterfaceSimpleNames = getSimpleNamesOfImplementedInterfaces(clazz);
+		String[] expectedInterfaceSimpleNames = new String[] {"FirstChildOfCommonParent", "SecondChildOfCommonParent"};
+		assertArrayEquals(expectedInterfaceSimpleNames, actualInterfaceSimpleNames.toArray(new String[] {}));
+	}
+
+	private List<String> getSimpleNamesOfImplementedInterfaces(FrankClass clazz) throws FrankDocException {
+		return Arrays.asList(clazz.getInterfaces()).stream()
+				.map(FrankClass::getSimpleName)
+				.collect(Collectors.toList());
+	}
+
+	@Test
+	public void whenClassAlreadyImplementsInterfaceViaChildInterfaceThenParentInterfaceStillReturnedByMethodInterfaces() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "ImplementationWithMeaninglessImportOfParentInterface");
+		List<String> actualInterfaceSimpleNames = getSimpleNamesOfImplementedInterfaces(clazz);
+		String[] expectedInterfaceSimpleNames = new String[] {"ParentOfTwoChildren", "FirstChildOfCommonParent"};
+		assertArrayEquals(expectedInterfaceSimpleNames, actualInterfaceSimpleNames.toArray(new String[] {}));
+	}
+
+	@Test
+	public void whenClassAlreadyImplementsInterfaceViaChildInterfaceThenParentInterfaceStillReturnedByMethodInterfaces2() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "ImplementationWithMeaninglessImportOfParentInterface2");
+		List<String> actualInterfaceSimpleNames = getSimpleNamesOfImplementedInterfaces(clazz);
+		String[] expectedInterfaceSimpleNames = new String[] {"FirstChildOfCommonParent", "ParentOfTwoChildren"};
+		assertArrayEquals(expectedInterfaceSimpleNames, actualInterfaceSimpleNames.toArray(new String[] {}));
+	}
+
+	@Test
+	public void browseTransitiveImplementedInterfaces() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "ImplementationWithMeaninglessImportOfParentInterface");
+		String[] actual = browseTransitiveInterfaceImplementations(clazz);
+		String[] expected = new String[] {"ParentOfTwoChildren", "FirstChildOfCommonParent", "GrandParent1", "GrandParent2"};
+		assertArrayEquals(expected, actual);
+	}
+
+	@Test
+	public void browseTransitiveImplementedInterfaces2() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "ImplementationWithMeaninglessImportOfParentInterface2");
+		String[] actual = browseTransitiveInterfaceImplementations(clazz);
+		String[] expected = new String[] {"FirstChildOfCommonParent", "ParentOfTwoChildren", "GrandParent1", "GrandParent2"};
+		assertArrayEquals(expected, actual);
+	}
+
+	private String[] browseTransitiveInterfaceImplementations(FrankClass clazz) throws FrankDocException {
+		final List<String> browsedClassSimpleNames = new ArrayList<>();
+		TransitiveImplementedInterfaceBrowser<String> browser = new TransitiveImplementedInterfaceBrowser<String>(clazz);
+		browser.search(c -> handle(c, browsedClassSimpleNames));
+		return browsedClassSimpleNames.toArray(new String[] {});
+	}
+
+	private String handle(FrankClass clazz, final List<String> visited) {
+		visited.add(clazz.getSimpleName());
+		return null;
+	}
+
+	@Test
+	public void searchingStopsWhenTargetIsFound() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "ImplementationWithMeaninglessImportOfParentInterface");
+		SearchResult actual = browseTransitiveInterfaceImplementations(clazz, "FirstChildOfCommonParent");
+		String[] expectedVisited = new String[] {"ParentOfTwoChildren", "FirstChildOfCommonParent"};
+		assertArrayEquals(expectedVisited, actual.visitedClassSimpleNames);
+		assertEquals("found", actual.searchResult);
+	}
+
+	private static class SearchResult {
+		final String[] visitedClassSimpleNames;
+		final String searchResult;
+
+		SearchResult(String[] visitedClassSimpleNames, String searchResult) {
+			this.visitedClassSimpleNames = visitedClassSimpleNames;
+			this.searchResult = searchResult;
+		}
+	}
+
+	private SearchResult browseTransitiveInterfaceImplementations(FrankClass clazz, final String foundWhenSimpleNameIs) throws FrankDocException {
+		final List<String> browsedClassSimpleNames = new ArrayList<>();
+		TransitiveImplementedInterfaceBrowser<String> browser = new TransitiveImplementedInterfaceBrowser<String>(clazz);
+		String result = browser.search(c -> handleForSearchOf(c, foundWhenSimpleNameIs, browsedClassSimpleNames));
+		return new SearchResult(browsedClassSimpleNames.toArray(new String[] {}), result);
+	}
+
+	private String handleForSearchOf(FrankClass clazz, String foundWhenSimpleNameIs, final List<String> visited) {
+		visited.add(clazz.getSimpleName());
+		if(clazz.getSimpleName().equals(foundWhenSimpleNameIs)) {
+			return "found";
+		} else {
+			return null;
+		}
+	}
+}
