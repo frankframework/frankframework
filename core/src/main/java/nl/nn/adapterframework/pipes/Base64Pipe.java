@@ -28,6 +28,7 @@ import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -54,6 +55,7 @@ public class Base64Pipe extends StreamingPipe {
 	private String lineSeparator = "auto";
 	private String charset = null;
 	private OutputTypes outputType = null;
+	private Boolean convertToString = false;
 
 	private byte lineSeparatorArray[];
 	
@@ -84,7 +86,11 @@ public class Base64Pipe extends StreamingPipe {
 				setLineSeparatorArray(getLineSeparator());
 			}
 		}
-
+		
+		if (dir==Direction.DECODE && convertToString) {
+			setOutputType("string");
+		}
+		
 		if (getOutputTypeEnum()==null) {
 			setOutputType(dir==Direction.DECODE ? "bytes" : "string");
 		}
@@ -142,7 +148,7 @@ public class Base64Pipe extends StreamingPipe {
 		MessageOutputStream target = getTargetStream(session);
 		boolean directionEncode = getDirectionEnum()==Direction.ENCODE;//TRUE encode - FALSE decode
 		OutputStream targetStream;
-		if (getOutputTypeEnum()==OutputTypes.STRING || (getOutputTypeEnum()==OutputTypes.STREAM && directionEncode)) {
+		if (getOutputTypeEnum()==OutputTypes.STRING || getOutputTypeEnum()==OutputTypes.STREAM && directionEncode || !directionEncode && StringUtils.isNotEmpty(getCharset())) {
 			targetStream = new WriterOutputStream(target.asWriter(), getCharset()!=null? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING );
 		} else {
 			targetStream = target.asStream();
@@ -165,6 +171,18 @@ public class Base64Pipe extends StreamingPipe {
 	}
 	public Direction getDirectionEnum() {
 		return direction;
+	}
+
+	/**
+	 * If true and decoding, result is returned as a string, otherwise as a byte array.
+	 * If true and encoding, input is read as a string, otherwise as a byte array.
+	 * @deprecated please use outputType instead
+	 * @param b convert result to string or outputStream depending on the direction used
+	 */
+	@Deprecated
+	@ConfigurationWarning("please specify outputType instead")
+	public void setConvert2String(boolean b) {
+		convertToString = b;
 	}
 
 	@IbisDoc({"2", "Either <code>string</code>, <code>bytes</code> or <code>stream</code>", "string"})
