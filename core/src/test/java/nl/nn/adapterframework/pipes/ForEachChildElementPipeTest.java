@@ -156,7 +156,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	}
 
 	@Override
-	public void setup() throws ConfigurationException {
+	public void setup() throws Exception {
 		assumeFalse(provideStreamForInput);
 		super.setup();
 	}
