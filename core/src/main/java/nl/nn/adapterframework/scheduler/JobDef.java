@@ -1062,10 +1062,11 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				if (adapter.configurationSucceeded()) {
 					startAdapter = adapter.isAutoStart(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
 				}
+
+				log.debug("finished recovering adapter [" + adapter.getName() + "]");
 			}
 
 			String message = "adapter [" + adapter.getName() + "] has state [" + adapterRunState + "]";
-			adapterRunState = adapter.getRunState();
 			if (adapterRunState.equals(RunStateEnum.STARTED)) {
 				countAdapterStateStarted++;
 				heartbeatLog.info(message);
@@ -1100,10 +1101,8 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			}
 
 			if (startAdapter) { // can only be true if adapter was in error before and AutoStart is enabled
-				adapter.startRunning();
+				adapter.startRunning(); //ASync startup can still cause the Adapter to end up in an ERROR state
 			}
-
-			log.debug("finished recovering adapter [" + adapter.getName() + "]");
 		}
 		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunStateEnum.STARTED + "]");
 	}
