@@ -202,13 +202,11 @@ public class UnzipPipe extends FixedForwardPipe {
 					} else {
 						basename=filename;
 					}
-					InputStream inputStream;
+					InputStream inputStream = StreamUtil.dontClose(zis); 
 					byte[] fileContentBytes = null;
 					if (isCollectFileContents()) {
-						fileContentBytes = Misc.streamToBytes(StreamUtil.dontClose(zis));
+						fileContentBytes = Misc.streamToBytes(inputStream);
 						inputStream = new ByteArrayInputStream(fileContentBytes);
-					} else {
-						inputStream = StreamUtil.dontClose(zis);
 					}
 					File tmpFile = null;
 					if (dir != null) {
