@@ -57,6 +57,11 @@ public class PipeLineSessionDebugger implements IPipeLineSession {
 	}
 
 	@Override
+	public Message getMessage(String key) {
+		return pipeLineSession.getMessage(key);
+	}
+
+	@Override
 	public void setSecurityHandler(ISecurityHandler handler) {
 		pipeLineSession.setSecurityHandler(handler);
 	}

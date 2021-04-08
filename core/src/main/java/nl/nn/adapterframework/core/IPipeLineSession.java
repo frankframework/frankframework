@@ -65,9 +65,7 @@ public interface IPipeLineSession extends Map<String,Object>, AutoCloseable {
 	 */
 	public String getMessageId();
 
-	default public Message getMessage(String key) {
-		throw new NotImplementedException("method getMessage has not been implemented (yet!)");
-	}
+	public Message getMessage(String key);
 
 	/**
 	 * Set a SecurityHandler. NOTE: It can also be set via key in PipeLineSession.

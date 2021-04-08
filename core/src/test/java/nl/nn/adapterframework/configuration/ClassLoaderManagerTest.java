@@ -34,6 +34,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
