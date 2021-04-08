@@ -27,9 +27,6 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 		this.excludeFiltersForSuperclass = new HashSet<>(excludeFiltersForSuperclass);
 		for(ClassDoc classDoc: classDocs) {
 			findOrCreateClass(classDoc);
-			for(ClassDoc innerClassDoc: classDoc.innerClasses()) {
-				findOrCreateClass(innerClassDoc);
-			}
 		}
 		final Set<String> correctedIncludeFilters = includeFilters.stream().map(FrankClassRepository::removeTrailingDot).collect(Collectors.toSet());
 		filteredClassesForInterfaceImplementations = classesByName.values().stream()
