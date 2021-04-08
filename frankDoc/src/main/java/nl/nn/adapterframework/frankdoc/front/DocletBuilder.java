@@ -81,7 +81,7 @@ public class DocletBuilder extends com.sun.javadoc.Doclet {
     }
 
     public static LanguageVersion languageVersion() {
-    	System.out.println("*** Method languageVersion() called");
+    	log.trace("Method languageVersion() called");
     	return LanguageVersion.JAVA_1_5;
     }
 }

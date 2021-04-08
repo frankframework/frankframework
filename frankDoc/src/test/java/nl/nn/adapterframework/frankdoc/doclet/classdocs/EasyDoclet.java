@@ -7,12 +7,12 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.RootDoc;
@@ -22,9 +22,10 @@ import com.sun.tools.javac.util.Options;
 import com.sun.tools.javadoc.JavadocTool;
 import com.sun.tools.javadoc.ModifierFilter;
 
-public class EasyDoclet {
+import nl.nn.adapterframework.util.LogUtil;
 
-	final private Logger log = Logger.getLogger(EasyDoclet.class.getName());
+public class EasyDoclet {
+	private static Logger log = LogUtil.getLogger(EasyDoclet.class);
 
 	final private File sourceDirectory;
 	final private String[] packageNames;
@@ -52,8 +53,8 @@ public class EasyDoclet {
 			subPackages.append(packageName);
 		}
 
-		new PublicMessager(context, getApplicationName(), new PrintWriter(new LogWriter(Level.SEVERE), true),
-				new PrintWriter(new LogWriter(Level.WARNING), true), new PrintWriter(new LogWriter(Level.INFO), true));
+		new PublicMessager(context, getApplicationName(), new PrintWriter(new LogWriter(Level.ERROR), true),
+				new PrintWriter(new LogWriter(Level.WARN), true), new PrintWriter(new LogWriter(Level.INFO), true));
 
 		JavadocTool javadocTool = JavadocTool.make0(context);
 
@@ -71,9 +72,9 @@ public class EasyDoclet {
 			throw new RuntimeException(ex);
 		}
 
-		if (log.isLoggable(Level.FINEST)) {
+		if (log.isDebugEnabled()) {
 			for (ClassDoc classDoc : getRootDoc().classes()) {
-				log.finest("Parsed Javadoc class source: " + classDoc.position() + " with inline tags: " + classDoc.inlineTags().length);
+				log.debug("Parsed Javadoc class source: " + classDoc.position() + " with inline tags: " + classDoc.inlineTags().length);
 			}
 		}
 	}
@@ -101,7 +102,7 @@ public class EasyDoclet {
 		public void write(char[] chars, int offset, int length) throws IOException {
 			String s = new String(Arrays.copyOf(chars, length));
 			if (!s.equals("\n"))
-				System.out.println(s);
+				log.info(s);
 		}
 
 		public void flush() throws IOException {
