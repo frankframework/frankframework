@@ -208,7 +208,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 					if (currObj instanceof HasSpecialDefaultValues) {
 						dv = ((HasSpecialDefaultValues)currObj).getSpecialDefaultValue(attributeName, dv, attrs);
 					}
-					if (dv!=null) {
+					if (dv!=null) { //If a default value exists
+						System.out.println(value);
 						if (dv instanceof String) {
 							if (value.equals(dv)) {
 								addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);

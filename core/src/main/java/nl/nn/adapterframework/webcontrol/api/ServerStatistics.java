@@ -214,8 +214,9 @@ public class ServerStatistics extends Base {
 			}
 			if(warnings.size() > 0)
 				configurationsMap.put("warnings", warnings);
-//			ConfigWarning cw = configuration.getBean("configurationWarnings", ConfigWarning.class);
-//			cw.
+
+			ConfigWarning cw = configuration.getBean("configurationWarnings", ConfigWarning.class);
+			configurationsMap.put("warnings2", cw.getWarnings());
 
 			//Configuration specific messages
 			MessageKeeper messageKeeper = getIbisContext().getMessageKeeper(configuration.getName());

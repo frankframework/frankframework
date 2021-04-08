@@ -1,36 +1,45 @@
-package nl.nn.adapterframework.configuration;
+/*
+Copyright 2021 WeAreFrank!
 
-import java.util.LinkedList;
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+package nl.nn.adapterframework.configuration;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
-import lombok.Setter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigWarning implements ApplicationContextAware, InitializingBean {
-	private @Setter ApplicationContext applicationContext;
-	private AppConstants appConstants;
-	private LinkedList<String> warnings;
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		appConstants = AppConstants.getInstance(applicationContext.getClassLoader());
-		warnings = new LinkedList<>();
-	}
+public class ConfigWarning extends ApplicationWarnings {
 
 	/**
 	 * Add configuration warning with INamedObject prefix
 	 */
 	public void add(INamedObject source, String message) {
-		add(source, message, null);
+		add(source, message, (Throwable) null);
+	}
+
+	public static void add(ApplicationContext configuration, INamedObject source, String message) {
+		if(configuration != null) {
+			ConfigWarning cw = configuration.getBean("configurationWarnings", ConfigWarning.class);
+			cw.add(source, message);
+		} else {
+			throw new IllegalStateException("cannot add INamedObject warning without ApplicationContext");
+		} 
 	}
 
 	/**
@@ -44,8 +53,9 @@ public class ConfigWarning implements ApplicationContextAware, InitializingBean 
 		return LogUtil.getLogger(source); //HashTable key lookup
 	}
 
-//	2021-04-04 12:38:19,661 WARN  [localhost-startStop-1] null http.HttpSender - attribute [paramsInUrl] is deprecated: no longer required when using FORMDATA or MTOM requests
-//	2021-04-04 12:38:19,661 WARN  [localhost-startStop-1] null http.HttpSender - HttpSender [null] attribute [paramsInUrl] is deprecated: no longer required when using FORMDATA or MTOM requestsThis warning can be suppressed globally by setting the property 'warnings.suppress.deprecated=true'
+	public void add(INamedObject source, String message, SuppressKeys suppressionKey) {
+		add(source, message, suppressionKey, null);
+	}
 
 	public void add(INamedObject source, String message, SuppressKeys suppressionKey, IAdapter adapter) {
 		if(!isSuppressed(suppressionKey, adapter)) {
@@ -73,15 +83,7 @@ public class ConfigWarning implements ApplicationContextAware, InitializingBean 
 
 	private void doAdd(Logger log, String msg, String logHint, Throwable t) {
 		String logMsg = StringUtils.isNotEmpty(logHint) ? msg + logHint : msg;
-		if (t == null) {
-			log.warn(logMsg);
-		} else {
-			log.warn(logMsg, t);
-		}
-		boolean onlyOnce = (t==null);
-		if (!onlyOnce || !warnings.contains(msg)) {
-			warnings.add(msg);
-		}
+		doAdd(log, logMsg, t);
 	}
 
 	public boolean isSuppressed(SuppressKeys key, IAdapter adapter) {
@@ -89,7 +91,7 @@ public class ConfigWarning implements ApplicationContextAware, InitializingBean 
 			return false;
 		}
 
-		return key.isAllowGlobalSuppression() && appConstants.getBoolean(key.getKey(), false) // warning is suppressed globally, for all adapters
-				|| adapter!=null && appConstants.getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
+		return key.isAllowGlobalSuppression() && getAppConstants().getBoolean(key.getKey(), false) // warning is suppressed globally, for all adapters
+				|| adapter!=null && getAppConstants().getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
 	}
 }

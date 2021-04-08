@@ -185,12 +185,14 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<>();
-			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);
+			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+			String propertiesHideString = appConstants.getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 			}
-			String loaded = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()));
-			String loadedHide = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
+			String loaded = StringResolver.substVars(original, appConstants);
+			loaded = original;
+			String loadedHide = StringResolver.substVars(original, appConstants, null, propsToHide);
 			loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
 			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
 			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
@@ -217,6 +219,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
+	/**
+	 * Create a list of attributes which use a property that resolves to the default value
+	 */
 	private void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
 		URL xsltSource = ClassUtils.getResourceURL(ATTRIBUTEGETTER_XSLT);
 		if (xsltSource == null) {
