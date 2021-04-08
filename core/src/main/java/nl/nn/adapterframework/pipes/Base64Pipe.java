@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
@@ -113,10 +114,10 @@ public class Base64Pipe extends StreamingPipe {
 
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
-		Message result = new Message(base64);
-		if (!directionEncode && StringUtils.isNotEmpty(getCharset()) || getOutputTypeEnum()==OutputTypes.STRING) {
+		Message result = new Message(base64, directionEncode ? StandardCharsets.US_ASCII.name() : getCharset());
+		if (getOutputTypeEnum()==OutputTypes.STRING) {
 			try {
-				result = new Message(result.asReader(getCharset()));
+				result = new Message(result.asReader());
 			} catch (IOException e) {
 				throw new PipeRunException(this,"cannot open stream", e);
 			}
@@ -130,10 +131,11 @@ public class Base64Pipe extends StreamingPipe {
 		MessageOutputStream target = getTargetStream(session);
 		boolean directionEncode = getDirectionEnum()==Direction.ENCODE;//TRUE encode - FALSE decode
 		OutputStream targetStream;
-		if (!directionEncode && StringUtils.isNotEmpty(getCharset()) || getOutputTypeEnum()==OutputTypes.STRING) {
-			targetStream = new WriterOutputStream(target.asWriter(), getCharset()!=null? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING );
+		String outputCharset = directionEncode ? StandardCharsets.US_ASCII.name() : getCharset();
+		if (getOutputTypeEnum()==OutputTypes.STRING) {
+			targetStream = new WriterOutputStream(target.asWriter(), outputCharset !=null? outputCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} else {
-			targetStream = target.asStream();
+			targetStream = target.asStream(outputCharset);
 		}
 		OutputStream base64 = new Base64OutputStream(targetStream, directionEncode, getLineLength(), lineSeparatorArray);
 		if (directionEncode && StringUtils.isNotEmpty(getCharset())) {

@@ -71,14 +71,15 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		doPipe(pipe,plainText, session);
 	}
 
-	@Test(expected = PipeRunException.class)
-	public void wrongOutputEncoding() throws ConfigurationException, PipeStartException, PipeRunException {
+	@Test(expected = Exception.class)
+	public void wrongOutputEncoding() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
 		pipe.setCharset("test123");
 		pipe.setDirection("decode");
 		pipe.configure();
 		pipe.start();
 
-		doPipe(pipe, base64Encoded, session);
+		PipeRunResult decodeResult = doPipe(pipe, base64Encoded, session);
+		decodeResult.getResult().asString();
 	}
 
 	@Test
