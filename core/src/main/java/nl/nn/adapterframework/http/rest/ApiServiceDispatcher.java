@@ -221,21 +221,13 @@ public class ApiServiceDispatcher {
 		String env = AppConstants.getInstance().getString("dtap.stage", "LOC");
 		int port = request.getServerPort();
 		// Get load balancer url if exists
-		String loadBalancerUrl = AppConstants.getInstance().getProperty("load.balancer.url", null);
+		String loadBalancerUrl = AppConstants.getInstance().getProperty("loadBalancer.url", null);
 		if(StringUtils.isNotEmpty(loadBalancerUrl)) {
 			serversArray.add(Json.createObjectBuilder().add("url", loadBalancerUrl + suffix).add("description", "load balancer for " + env + " server"));
 		}
-		// Get details from properties
-		String hostname = AppConstants.getInstance().getString("hostname", null);
-		if(StringUtils.isNotEmpty(hostname)) {
-			String webContextPath = AppConstants.getInstance().getString("web.contextpath", null);
-			hostname += (port != 0 ? ":" + port : "") + (webContextPath != null ? webContextPath : "");
-			String restBaseUrl = hostname.toLowerCase() + suffix;
-			serversArray.add(Json.createObjectBuilder().add("url", protocol + restBaseUrl).add("description", env + " server hostname"));
-		}
 		// Get details from the request
 		String requestServerName = request.getServerName();
-		if(StringUtils.isNotEmpty(requestServerName) && !requestServerName.equals(hostname) && !requestServerName.equals(loadBalancerUrl)) {
+		if(StringUtils.isNotEmpty(requestServerName) && !requestServerName.equals(loadBalancerUrl)) {
 			String restBaseUrl = requestServerName + (port != 0 ? ":" + port : "") + request.getContextPath() + suffix;
 			serversArray.add(Json.createObjectBuilder().add("url", protocol + restBaseUrl).add("description", env + " server"));
 		}
@@ -264,7 +256,7 @@ public class ApiServiceDispatcher {
 		if(validator != null && !validator.getParameterList().isEmpty()) {
 			for (Parameter parameter : validator.getParameterList()) {
 				String parameterSessionkey = parameter.getSessionKey();
-				if(StringUtils.isNotEmpty(parameterSessionkey) && !paramsFromHeaderAndCookie.contains(parameterSessionkey)) {
+				if(StringUtils.isNotEmpty(parameterSessionkey) && !parameterSessionkey.equals("headers") && !paramsFromHeaderAndCookie.contains(parameterSessionkey)) {
 					String parameterType = parameter.getType() != null ? parameter.getType() : "string";
 					paramBuilder.add(addParameterToSchema(parameterSessionkey, "query", false, Json.createObjectBuilder().add("type", parameterType)));
 				}

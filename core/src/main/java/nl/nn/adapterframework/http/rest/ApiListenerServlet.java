@@ -363,26 +363,27 @@ public class ApiListenerServlet extends HttpServletBase {
 				/**
 				 * Map headers into messageContext
 				 */
-				Enumeration<String> headers = request.getHeaderNames();
-				XmlBuilder headersXml = new XmlBuilder("headers");
-				while (headers.hasMoreElements()) {
-					String headerName = headers.nextElement().toLowerCase();
-					if(IGNORE_HEADERS.contains(headerName))
-						continue;
-	
-					String headerValue = request.getHeader(headerName);
-					try {
-						XmlBuilder headerXml = new XmlBuilder("header");
-						headerXml.addAttribute("name", headerName);
-						headerXml.setValue(headerValue);
-						headersXml.addSubElement(headerXml);
+				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
+					XmlBuilder headersXml = new XmlBuilder("headers");
+					String params[] = listener.getHeaderParams().split(",");
+					for (String headerParam : params) {
+						if(IGNORE_HEADERS.contains(headerParam)) {
+							continue;
+						}
+						String headerValue = request.getHeader(headerParam);
+						try {
+							XmlBuilder headerXml = new XmlBuilder("header");
+							headerXml.addAttribute("name", headerParam);
+							headerXml.setValue(headerValue);
+							headersXml.addSubElement(headerXml);
+						}
+						catch (Throwable t) {
+							log.info("unable to convert header to xml name["+headerParam+"] value["+headerValue+"]");
+						}
 					}
-					catch (Throwable t) {
-						log.info("unable to convert header to xml name["+headerName+"] value["+headerValue+"]");
-					}
+					messageContext.put("headers", headersXml.toXML());
 				}
-				messageContext.put("headers", headersXml.toXML());
-	
+
 				/**
 				 * Map multipart parts into messageContext
 				 */
@@ -473,15 +474,6 @@ public class ApiListenerServlet extends HttpServletBase {
 					String messageIdHeader = request.getHeader(listener.getMessageIdHeader());
 					if(StringUtils.isNotEmpty(messageIdHeader)) {
 						messageId = messageIdHeader;
-					}
-				}
-				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
-					String params[] = listener.getHeaderParams().split(",");
-					for (String headerParam : params) {
-						String param = request.getHeader(headerParam);
-						if(param != null) {
-							messageContext.put(headerParam, param);
-						}
 					}
 				}
 				if(StringUtils.isNotEmpty(listener.getCookieParams())) {

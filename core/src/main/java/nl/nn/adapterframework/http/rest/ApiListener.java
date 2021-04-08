@@ -288,7 +288,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return operationId;
 	}
 
-	@IbisDoc({"12", "Comma separated list of parameters passed as http header.", ""})
+	@IbisDoc({"12", "Comma separated list of parameters passed as http header. Parameters will be stored in 'headers' sessionkey.", ""})
 	public void setHeaderParams(String headerParams) {
 		this.headerParams = headerParams;
 	}

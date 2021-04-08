@@ -7,10 +7,6 @@
     },
     "servers":[
         {
-            "url":"http://hostname:80/api",
-            "description":"xxx server hostname"
-        },
-        {
             "url":"http://dummy:80/api",
             "description":"xxx server"
         }

@@ -459,4 +459,37 @@ public class OpenApiTest extends OpenApiTestBase {
 		String expected = TestFileUtils.getTestFile("/OpenApi/messageIdHeaderTest.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
+	
+	@Test
+	@IsolatedThread
+	public void testHeaderParamIsnotAddedAsQueryParam() throws Exception {
+		String uri="/headerparams";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+		Parameter p = new Parameter();
+		p.setName("envelopeId");
+		p.setValue("envelopeType");
+		p.setSessionKey("headers");
+		p.setXpathExpression("/headers/header[@name='envelopeId']");
+
+		new AdapterBuilder("myAdapterName", "description4simple-get")
+			.setListener(uri, "get", null, null)
+			.setHeaderParams("envelopeId, envelopeType")
+			.setValidator("simple.xsd", null, "user", p)
+			.addExit("200")
+			.addExit("500")
+			.build(true);
+
+		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri + "/openapi.json");
+		request.setServerName("dummy");
+		request.setPathInfo(uri + "/openapi.json");
+		request.addHeader("envelopeId", "dummy");
+		request.addHeader("envelopeType", "dummyType");
+
+		String result = service(request);
+
+		String expected = TestFileUtils.getTestFile("/OpenApi/twoHeaderParams.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
 }
