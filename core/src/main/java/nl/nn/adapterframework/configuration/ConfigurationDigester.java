@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -51,7 +52,10 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.FullXmlFilter;
+import nl.nn.adapterframework.xml.PropertyResolvingXmlFilter;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -181,16 +185,17 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			}
 			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
-			String original = XmlUtils.identityTransform(configurationResource);
+			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+			String original = identityTransform(configurationResource, appConstants);
 			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<>();
-			String propertiesHideString = AppConstants.getInstance(Thread.currentThread().getContextClassLoader()).getString("properties.hide", null);
+			String propertiesHideString = appConstants.getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 			}
-			String loaded = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()));
-			String loadedHide = StringResolver.substVars(original, AppConstants.getInstance(Thread.currentThread().getContextClassLoader()), null, propsToHide);
+			String loaded = StringResolver.substVars(original, appConstants);
+			String loadedHide = StringResolver.substVars(original, appConstants, null, propsToHide);
 			loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
 			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
 			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
@@ -215,6 +220,19 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		if (MonitorManager.getInstance().isEnabled()) {
 			MonitorManager.getInstance().configure(configuration); //TODO fix memory leak when the configuration is reloaded
 		}
+	}
+
+	/**
+	 * 
+	 * Performs an Identity-transform, with resolving entities with content from files found on the ClassPath.
+	 * Resolve all non-attribute properties
+	 * @param appConstants 
+	 */
+	private String identityTransform(Resource resource, AppConstants appConstants) throws  IOException, SAXException {
+		XmlWriter writer = new XmlWriter();
+		PropertyResolvingXmlFilter filter = new PropertyResolvingXmlFilter(writer, appConstants);
+		XmlUtils.parseXml(resource, filter);
+		return writer.toString();
 	}
 
 	private void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {

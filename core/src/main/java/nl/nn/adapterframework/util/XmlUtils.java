@@ -1707,17 +1707,6 @@ public class XmlUtils {
 		return true;
 	}
 
-	/**
-	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
-	 * @return String (the complete and resolved xml)
-	 */
-	static public String identityTransform(Resource resource) throws  IOException, SAXException {
-		XmlWriter writer = new XmlWriter();
-		parseXml(resource, writer);
-		return writer.toString();
-	}
-
-
 	public static Set<Entry<String,String>> getVersionInfo() {
 		Map<String,String> map = new LinkedHashMap<>();
 		
