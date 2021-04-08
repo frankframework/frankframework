@@ -288,7 +288,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return operationId;
 	}
 
-	@IbisDoc({"12", "Comma separated list of parameter names defined in the header. Do not use followings 'Accept', 'Content-Type' or 'Authorization'", ""})
+	@IbisDoc({"12", "Comma separated list of parameters passed as http header.", ""})
 	public void setHeaderParams(String headerParams) {
 		this.headerParams = headerParams;
 	}
@@ -296,7 +296,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return headerParams;
 	}
 
-	@IbisDoc({"13", "Comma separated list of parameter names defined in the cookie.", ""})
+	@IbisDoc({"13", "Comma separated list of parameters passed as cookie.", ""})
 	public void setCookieParams(String cookieParams) {
 		this.cookieParams = cookieParams;
 	}
