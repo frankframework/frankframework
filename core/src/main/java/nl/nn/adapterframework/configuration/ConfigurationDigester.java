@@ -52,7 +52,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.PropertyResolvingXmlFilter;
 import nl.nn.adapterframework.xml.SaxException;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -186,7 +185,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-			String original = identityTransform(configurationResource, appConstants);
+			String original = resolveEntitiesAndProperties(configurationResource, appConstants);
+
 			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<>();
@@ -224,11 +224,11 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	/**
 	 * 
-	 * Performs an Identity-transform, with resolving entities with content from files found on the ClassPath.
+	 * Performs an Identity-transform, which resolves entities with content from files found on the ClassPath.
 	 * Resolve all non-attribute properties
 	 * @param appConstants 
 	 */
-	private String identityTransform(Resource resource, AppConstants appConstants) throws  IOException, SAXException {
+	private String resolveEntitiesAndProperties(Resource resource, AppConstants appConstants) throws  IOException, SAXException {
 		XmlWriter writer = new XmlWriter();
 		PropertyResolvingXmlFilter filter = new PropertyResolvingXmlFilter(writer, appConstants);
 		XmlUtils.parseXml(resource, filter);

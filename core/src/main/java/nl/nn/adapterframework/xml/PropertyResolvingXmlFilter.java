@@ -38,34 +38,42 @@ public class PropertyResolvingXmlFilter extends FullXmlFilter {
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		String characters = new String(ch, start, length);
-		System.err.println("characters- " + start + " \t " + length + "\t" + characters.trim());
+//		System.out.println("characters: " + start + " \t " + length + "\t" + characters.trim());
 
-		if(pendingSubstBuff.length() > 0) {
-			if(characters.contains(StringResolver.DELIM_STOP)) {
-				pendingSubstBuff.append(characters);
-				flushBuffer();
-				return;
-			}
-		}
-
-		if(characters.contains(StringResolver.DELIM_START)) {//TODO test if char[] contains 2 properties
-			if(!characters.contains(StringResolver.DELIM_STOP)) { //store in buffer, we don't have the entire property to substitute
-				pendingSubstBuff.append(characters);
-				return;
-			}
-
+		if(characters.contains(StringResolver.DELIM_START) || pendingSubstBuff.length() > 0) {
 			pendingSubstBuff.append(characters);
+
 			flushBuffer();
 			return;
 		}
 
-		// No start or stop was found, assume we are in a property, append all
-		pendingSubstBuff.append(characters);
+		super.characters(ch, start, length);
 	}
 
+	//If a complete substitution is possible flush, else keep buffer.
 	private void flushBuffer() throws SAXException {
-		String resolved = StringResolver.substVars(pendingSubstBuff.toString(), properties);
-		super.characters(resolved.toCharArray(), 0, resolved.length());//TODO don't parse the resolved data as characters, it could contain xml elements
-		pendingSubstBuff.setLength(0);
+		while(pendingSubstBuff.indexOf(StringResolver.DELIM_STOP) > 0) { //There could be multiple properties in the buffer
+			substitude();
+		}
+
+		//Check if whatever is left in the buffer is part of a property. If not, we can flush it as well.
+		if(pendingSubstBuff.indexOf(StringResolver.DELIM_START) == -1) {
+			String remainder = pendingSubstBuff.toString();
+			super.characters(remainder.toCharArray(), 0, remainder.length());
+			pendingSubstBuff.setLength(0);
+		}
+	}
+
+	private void substitude() throws SAXException {
+		int start = pendingSubstBuff.indexOf(StringResolver.DELIM_START);
+		int stop  = pendingSubstBuff.indexOf(StringResolver.DELIM_STOP);
+
+		if(start > -1 && stop > -1) {//get the first property, there could be more
+			String buff = pendingSubstBuff.substring(0, stop +1); // append StringResolver.DELIM_STOP.length() to stop.
+			pendingSubstBuff.delete(start, stop+1);
+
+			String resolved = StringResolver.substVars(buff, properties);
+			super.characters(resolved.toCharArray(), 0, resolved.length());//TODO don't parse the resolved data as characters, it could contain xml elements
+		}
 	}
 }
