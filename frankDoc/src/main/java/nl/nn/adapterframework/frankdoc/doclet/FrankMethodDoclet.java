@@ -100,20 +100,24 @@ class FrankMethodDoclet implements FrankMethod {
 
 	@Override
 	public FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException {
+		FrankAnnotation result = searchAnnotationExcludingImplementedInterfaces(name);
+		if(result == null) {
+			result = searchImplementedInterfacesForAnnotation(this.getDeclaringClass(), this.getSignature(), name);
+		}
+		return result;
+	}
+
+	private FrankAnnotation searchAnnotationExcludingImplementedInterfaces(String name) throws FrankDocException {
 		FrankAnnotation result = getAnnotation(name);
 		if(result != null) {
 			return result;
 		}
 		MethodDoc overriddenMethodDoc = method.overriddenMethod();
-		FrankMethod overriddenMethod = null;
 		if(overriddenMethodDoc != null) {
-			overriddenMethod = declaringClass.recursivelyFindFrankMethod(overriddenMethodDoc);
-			result = overriddenMethod.getAnnotation(name);
-			if(result != null) {
-				return result;
-			}
+			FrankMethodDoclet overriddenMethod = (FrankMethodDoclet) declaringClass.recursivelyFindFrankMethod(overriddenMethodDoc);
+			return overriddenMethod.searchAnnotationExcludingImplementedInterfaces(name);
 		}
-		return searchImplementedInterfacesForAnnotation(this.getDeclaringClass(), this.getSignature(), name);
+		return null;
 	}
 
 	String getSignature() {
