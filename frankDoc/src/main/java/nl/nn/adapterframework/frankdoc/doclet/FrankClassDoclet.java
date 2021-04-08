@@ -50,7 +50,12 @@ class FrankClassDoclet implements FrankClass {
 		interfaceImplementationsByName.put(implementation.getName(), implementation);
 		for(String implementationChildClassName: implementation.childClassNames) {
 			FrankClassDoclet implementationChild = (FrankClassDoclet) repository.findClass(implementationChildClassName);
-			recursivelyAddInterfaceImplementation(implementationChild);
+			if(((FrankClassRepositoryDoclet) repository).classIsAllowedAsInterfaceImplementation(implementationChild)) {
+				recursivelyAddInterfaceImplementation(implementationChild);
+			}
+			else {
+				log.trace("From interface {} omitted implementation because of filtering {}", () -> getName(), () -> implementationChild.getName());
+			}
 		}
 	}
 

@@ -26,16 +26,19 @@ public class FilteringInterfaceImplementationsTest {
 	private static final String SECOND_PACKAGE = PREFIX + SECOND;
 	private static final String[] BOTH_PACKAGES = new String[] {FIRST_PACKAGE, SECOND_PACKAGE};
 	private static final String FIRST_IMPL = "FirstImpl";
+	private static final String CHILD_OF_FIRST_IMPL_IN_SECOND_PACKAGE = "ChildOfFirstImplInOtherPackage";
 	private static final String SECOND_IMPL = "SecondImpl";
 	private static final String THIRD_IMPL = "ThirdImpl";
 	private static final String[] NO_EXCLUDES = new String[] {};
 	private static final String[] THIRD_IMPL_EXCLUDED = new String[] {SECOND_PACKAGE + THIRD_IMPL};
+	private static final String[] CHILD_OF_FIRST_IMPL_IN_SECOND_PACKAGE_EXCLUDED = new String[] {SECOND_PACKAGE + CHILD_OF_FIRST_IMPL_IN_SECOND_PACKAGE};
 
 	private static Collection<Object[]> cases = Arrays.asList(new Object[][] {
 		{"First package no exclude", asList(FIRST_PACKAGE), asList(NO_EXCLUDES), new String[] {FIRST_IMPL}},
 		{"First package with exclude", asList(FIRST_PACKAGE), asList(THIRD_IMPL_EXCLUDED), new String[] {FIRST_IMPL}},
-		{"Both packages no exclude", asList(BOTH_PACKAGES), asList(NO_EXCLUDES), new String[] {FIRST_IMPL, SECOND_IMPL, THIRD_IMPL}},
-		{"Both packages with exclude", asList(BOTH_PACKAGES), asList(THIRD_IMPL_EXCLUDED), new String[] {FIRST_IMPL,SECOND_IMPL}}});
+		{"Both packages no exclude", asList(BOTH_PACKAGES), asList(NO_EXCLUDES), new String[] {CHILD_OF_FIRST_IMPL_IN_SECOND_PACKAGE, FIRST_IMPL, SECOND_IMPL, THIRD_IMPL}},
+		{"Both packages with exclude", asList(BOTH_PACKAGES), asList(THIRD_IMPL_EXCLUDED), new String[] {CHILD_OF_FIRST_IMPL_IN_SECOND_PACKAGE, FIRST_IMPL,SECOND_IMPL}},
+		{"Both packages derived class of implementation excluded", asList(BOTH_PACKAGES), asList(CHILD_OF_FIRST_IMPL_IN_SECOND_PACKAGE_EXCLUDED), new String[] {FIRST_IMPL, SECOND_IMPL, THIRD_IMPL}}});
 
 	@Parameters(name = "{0}, {1}")
 	public static Collection<Object[]> data() {

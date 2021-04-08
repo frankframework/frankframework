@@ -21,6 +21,7 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 	private @Getter(AccessLevel.PACKAGE) Set<String> excludeFiltersForSuperclass;
 
 	private final Map<String, FrankClassDoclet> classesByName = new HashMap<>();
+	private final Set<FrankClassDoclet> filteredClassesForInterfaceImplementations;
 
 	FrankClassRepositoryDoclet(ClassDoc[] classDocs, Set<String> includeFilters, Set<String> excludeFilters, Set<String> excludeFiltersForSuperclass) {
 		this.excludeFiltersForSuperclass = new HashSet<>(excludeFiltersForSuperclass);
@@ -31,10 +32,10 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 			}
 		}
 		final Set<String> correctedIncludeFilters = includeFilters.stream().map(FrankClassRepository::removeTrailingDot).collect(Collectors.toSet());
-		List<FrankClassDoclet> filteredClassesForInterfaceImplementations = classesByName.values().stream()
+		filteredClassesForInterfaceImplementations = classesByName.values().stream()
 				.filter(c -> correctedIncludeFilters.stream().anyMatch(i -> c.getPackageName().startsWith(i)))
 				.filter(c -> ! excludeFilters.contains(c.getName()))
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 		for(FrankClassDoclet c: filteredClassesForInterfaceImplementations) {
 			log.trace("Examining what interfaces are implemented by class [{}]", () -> c.getName());
 			setInterfaceImplementations(c);
@@ -80,6 +81,10 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 			log.warn("Could not recurse over chidren of {} to set them as implementations of {}", clazz.getName(), interfaze.getName(), e);
 		}
 		return null;
+	}
+
+	boolean classIsAllowedAsInterfaceImplementation(FrankClassDoclet clazz) {
+		return filteredClassesForInterfaceImplementations.contains(clazz);
 	}
 
 	@Override
