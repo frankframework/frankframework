@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018, 2019, 2021 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.http.cxf;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.HashMap;
@@ -166,10 +165,8 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 				// Process message via WebServiceListener
 				ISecurityHandler securityHandler = new WebServiceContextSecurityHandler(webServiceContext);
 				pipelineSession.setSecurityHandler(securityHandler);
-				pipelineSession.put(IPipeLineSession.HTTP_REQUEST_KEY, webServiceContext.getMessageContext()
-						.get(MessageContext.SERVLET_REQUEST));
-				pipelineSession.put(IPipeLineSession.HTTP_RESPONSE_KEY, webServiceContext.getMessageContext()
-						.get(MessageContext.SERVLET_RESPONSE));
+				pipelineSession.put(IPipeLineSession.HTTP_REQUEST_KEY, webServiceContext.getMessageContext().get(MessageContext.SERVLET_REQUEST));
+				pipelineSession.put(IPipeLineSession.HTTP_RESPONSE_KEY, webServiceContext.getMessageContext().get(MessageContext.SERVLET_RESPONSE));
 	
 				try {
 					log.debug(getLogPrefix(correlationId)+"processing message");
@@ -218,34 +215,24 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						String partName = partElement.getAttribute("name");
 						String partSessionKey = partElement.getAttribute("sessionKey");
 						String partMimeType = partElement.getAttribute("mimeType");
-						Object partObject = pipelineSession.get(partSessionKey);
-						if (partObject instanceof InputStream) {
-							InputStream fis = (InputStream) partObject;
-	
-							DataHandler dataHander = null;
-							try {
-								dataHander = new DataHandler(new ByteArrayDataSource(fis, partMimeType));
-							} catch (IOException e) {
-								String m = "Unable to add session key '" + partSessionKey + "' as attachment";
-								log.error(m, e);
-								throw new WebServiceException(m, e);
+						Message partObject = Message.asMessage(pipelineSession.get(partSessionKey));
+						DataHandler dataHander;
+						try {
+							if (partObject.isBinary()) {
+								dataHander = new DataHandler(new ByteArrayDataSource(partObject.asByteArray(), partMimeType));
+							} else {
+								dataHander = new DataHandler(new ByteArrayDataSource(partObject.asString(), partMimeType));
 							}
-							AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-							attachmentPart.setContentId(partName);
-							soapMessage.addAttachmentPart(attachmentPart);
-	
-							log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] with value ["+partObject+"] and name ["+partName+"]");
+						} catch (IOException e) {
+							String m = "Unable to add session key '" + partSessionKey + "' as attachment";
+							log.error(m, e);
+							throw new WebServiceException(m, e);
 						}
-						else { //String
-							String partValue = (String) partObject;
-	
-							DataHandler dataHander = new DataHandler(new ByteArrayDataSource(partValue, partMimeType));
-							AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-							attachmentPart.setContentId(partName);
-							soapMessage.addAttachmentPart(attachmentPart);
-	
-							log.debug(getLogPrefix(correlationId)+"appended stringpart ["+partSessionKey+"] with value ["+partValue+"]");
-						}
+						AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
+						attachmentPart.setContentId(partName);
+						soapMessage.addAttachmentPart(attachmentPart);
+
+						log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] name ["+partName+"]");
 					}
 				}
 			}
