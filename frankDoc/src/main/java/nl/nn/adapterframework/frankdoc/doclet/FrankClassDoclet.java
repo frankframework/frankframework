@@ -113,11 +113,11 @@ class FrankClassDoclet implements FrankClass {
 
 	@Override
 	public FrankClass[] getInterfaces() throws FrankDocException {
-		List<FrankClass> resultList = getInterfacesRaw();
+		List<FrankClass> resultList = getInterfacesAsList();
 		return resultList.toArray(new FrankClass[] {});
 	}
 
-	List<FrankClass> getInterfacesRaw() {
+	List<FrankClass> getInterfacesAsList() {
 		ClassDoc[] interfaceDocs = clazz.interfaces();
 		List<FrankClass> resultList = new ArrayList<>();
 		for(ClassDoc interfaceDoc: interfaceDocs) {

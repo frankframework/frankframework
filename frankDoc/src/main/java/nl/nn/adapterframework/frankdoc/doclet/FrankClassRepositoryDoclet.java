@@ -24,11 +24,10 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 
 	FrankClassRepositoryDoclet(ClassDoc[] classDocs, Set<String> includeFilters, Set<String> excludeFilters, Set<String> excludeFiltersForSuperclass) {
 		this.excludeFiltersForSuperclass = new HashSet<>(excludeFiltersForSuperclass);
-		Map<String, FrankClassDoclet> interfacesByName = new HashMap<>();
 		for(ClassDoc classDoc: classDocs) {
-			findOrCreateFrankClassAndUpdateInterfaces(classDoc, interfacesByName);
+			findOrCreateClass(classDoc);
 			for(ClassDoc innerClassDoc: classDoc.innerClasses()) {
-				findOrCreateFrankClassAndUpdateInterfaces(innerClassDoc, interfacesByName);
+				findOrCreateClass(innerClassDoc);
 			}
 		}
 		final Set<String> correctedIncludeFilters = includeFilters.stream().map(FrankClassRepository::removeTrailingDot).collect(Collectors.toSet());
@@ -38,15 +37,8 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 				.collect(Collectors.toList());
 		for(FrankClassDoclet c: filteredClassesForInterfaceImplementations) {
 			log.trace("Examining what interfaces are implemented by class [{}]", () -> c.getName());
-			setInterfaceImplementations(c, interfacesByName);
+			setInterfaceImplementations(c);
 			log.trace("Done examining what interfaces are implemented by class [{}]", () -> c.getName());
-		}
-	}
-
-	private void findOrCreateFrankClassAndUpdateInterfaces(ClassDoc classDoc, Map<String, FrankClassDoclet> interfacesByName) {
-		FrankClassDoclet frankClass = findOrCreateClass(classDoc);
-		if(classDoc.isInterface()) {
-			interfacesByName.put(frankClass.getName(), frankClass);
 		}
 	}
 
@@ -64,15 +56,14 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 		return result;
 	}
 
-	private void setInterfaceImplementations(FrankClassDoclet clazz, Map<String, FrankClassDoclet> availableInterfacesByName) {
-		Set<String> implementedInterfaceNames = clazz.getInterfacesRaw().stream()
-				.map(FrankClass::getName)
-				.collect(Collectors.toSet());
-		implementedInterfaceNames.retainAll(availableInterfacesByName.keySet());
-		log.trace("Directly implemented interfaces: [{}]", () -> implementedInterfaceNames.stream().collect(Collectors.joining(", ")));
+	private void setInterfaceImplementations(FrankClassDoclet clazz) {
+		List<FrankClassDoclet> implementedInterfaces = clazz.getInterfacesAsList().stream()
+				.distinct()
+				.map(c -> (FrankClassDoclet) c)
+				.collect(Collectors.toList());
+		log.trace("Directly implemented interfaces: [{}]", () -> implementedInterfaces.stream().map(FrankClass::getSimpleName).collect(Collectors.joining(", ")));
 		try {
-			for(String implementedInterfaceName: implementedInterfaceNames) {
-				FrankClassDoclet interfaze = availableInterfacesByName.get(implementedInterfaceName);
+			for(FrankClassDoclet interfaze: implementedInterfaces) {
 				interfaze.recursivelyAddInterfaceImplementation(clazz);
 				new TransitiveImplementedInterfaceBrowser<FrankClassDoclet>(interfaze).search(i -> loggedAddInterfaceImplementation(i, clazz));
 			}
