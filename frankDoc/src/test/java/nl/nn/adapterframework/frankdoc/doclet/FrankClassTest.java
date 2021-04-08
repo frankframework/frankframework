@@ -68,6 +68,8 @@ public class FrankClassTest extends TestBase {
 		// We test abstract classes are omitted. With reflection and Spring
 		// this happens automatically, so it should also work like that
 		// within a doclet.
+		//
+		// We also test that inner classes are omitted as interface implementations.
 		checkInterfaceImplementations(implementations);
 	}
 

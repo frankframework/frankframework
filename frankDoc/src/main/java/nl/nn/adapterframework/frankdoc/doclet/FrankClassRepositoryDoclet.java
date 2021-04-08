@@ -32,6 +32,8 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 		filteredClassesForInterfaceImplementations = classesByName.values().stream()
 				.filter(c -> correctedIncludeFilters.stream().anyMatch(i -> c.getPackageName().startsWith(i)))
 				.filter(c -> ! excludeFilters.contains(c.getName()))
+				// Filter is there to get the same as with reflection.
+				.filter(c -> c.isTopLevel())
 				.collect(Collectors.toSet());
 		for(FrankClassDoclet c: filteredClassesForInterfaceImplementations) {
 			log.trace("Examining what interfaces are implemented by class [{}]", () -> c.getName());

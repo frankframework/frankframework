@@ -233,4 +233,8 @@ class FrankClassDoclet implements FrankClass {
 		}
 		return null;
 	}
+
+	boolean isTopLevel() {
+		return clazz.containingClass() == null;
+	}
 }
