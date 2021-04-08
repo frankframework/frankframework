@@ -46,6 +46,7 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	void recursivelyAddInterfaceImplementation(FrankClassDoclet implementation) throws FrankDocException {
+		log.trace("Interface {} is implemented by {}", () -> getName(), () -> implementation.getName());
 		interfaceImplementationsByName.put(implementation.getName(), implementation);
 		for(String implementationChildClassName: implementation.childClassNames) {
 			FrankClassDoclet implementationChild = (FrankClassDoclet) repository.findClass(implementationChildClassName);

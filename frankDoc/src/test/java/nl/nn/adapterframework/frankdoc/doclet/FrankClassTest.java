@@ -84,6 +84,13 @@ public class FrankClassTest extends TestBase {
 		checkInterfaceImplementations(implementations);
 	}
 
+	@Test
+	public void superSuperInterfaceHasImplementationsOfChildInterfaces() throws FrankDocException {
+		FrankClass instance = classRepository.findClass(PACKAGE + "MyInterfaceGrandParent");
+		List<FrankClass> implementations = instance.getInterfaceImplementations();
+		checkInterfaceImplementations(implementations);
+	}
+
 	@Test(expected = FrankDocException.class)
 	public void nonInterfaceCannotGiveItsImplementations() throws FrankDocException {
 		FrankClass instance = classRepository.findClass(PACKAGE + "Child");
@@ -138,7 +145,7 @@ public class FrankClassTest extends TestBase {
 
 	@Test
 	public void whenInterfaceDoesNotExtendOthersThenGetInterfacesReturnsEmptyArray() throws Exception{
-		FrankClass instance = classRepository.findClass(PACKAGE + "MyInterfaceParent");
+		FrankClass instance = classRepository.findClass(PACKAGE + "MyInterfaceGrandParent");
 		assertEquals(0, instance.getInterfaces().length);
 	}
 

@@ -29,8 +29,7 @@ public interface FrankClass extends FrankType {
 	FrankClass getSuperclass();
 
 	/**
-	 * Get super interfaces of an interface.
-	 * @throws FrankDocException if this method is applied to a non-interface class.
+	 * Get super interfaces of an interface, or interfaces implemented by a class.
 	 */
 	FrankClass[] getInterfaces() throws FrankDocException;
 

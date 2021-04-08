@@ -37,7 +37,9 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 				.filter(c -> ! excludeFilters.contains(c.getName()))
 				.collect(Collectors.toList());
 		for(FrankClassDoclet c: filteredClassesForInterfaceImplementations) {
+			log.trace("Examining what interfaces are implemented by class [{}]", () -> c.getName());
 			setInterfaceImplementations(c, interfacesByName);
+			log.trace("Done examining what interfaces are implemented by class [{}]", () -> c.getName());
 		}
 	}
 
@@ -67,18 +69,26 @@ class FrankClassRepositoryDoclet implements FrankClassRepository {
 				.map(FrankClass::getName)
 				.collect(Collectors.toSet());
 		implementedInterfaceNames.retainAll(availableInterfacesByName.keySet());
+		log.trace("Directly implemented interfaces: [{}]", () -> implementedInterfaceNames.stream().collect(Collectors.joining(", ")));
 		try {
-			FrankClassDoclet implementation = (FrankClassDoclet) findClass(clazz.getName());
 			for(String implementedInterfaceName: implementedInterfaceNames) {
 				FrankClassDoclet interfaze = availableInterfacesByName.get(implementedInterfaceName);
-				interfaze.recursivelyAddInterfaceImplementation(implementation);
-				for(FrankClass parentInterfaze: interfaze.getInterfaces()) {
-					((FrankClassDoclet) parentInterfaze).recursivelyAddInterfaceImplementation(implementation);
-				}
+				interfaze.recursivelyAddInterfaceImplementation(clazz);
+				new TransitiveImplementedInterfaceBrowser<FrankClassDoclet>(interfaze).search(i -> loggedAddInterfaceImplementation(i, clazz));
 			}
 		} catch(FrankDocException e) {
 			log.warn("Error setting implemented interfaces of class {}", clazz.getName(), e);
 		}
+	}
+
+	private FrankClassDoclet loggedAddInterfaceImplementation(FrankClass interfaze, FrankClassDoclet clazz) {
+		log.trace("Considering ancestor interface {}", () -> interfaze.getName());
+		try {
+			((FrankClassDoclet) interfaze).recursivelyAddInterfaceImplementation(clazz);
+		} catch(FrankDocException e) {
+			log.warn("Could not recurse over chidren of {} to set them as implementations of {}", clazz.getName(), interfaze.getName(), e);
+		}
+		return null;
 	}
 
 	@Override
