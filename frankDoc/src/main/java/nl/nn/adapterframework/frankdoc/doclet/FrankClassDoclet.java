@@ -46,16 +46,16 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	void recursivelyAddInterfaceImplementation(FrankClassDoclet implementation) throws FrankDocException {
-		log.trace("Interface {} is implemented by {}", () -> getName(), () -> implementation.getName());
-		interfaceImplementationsByName.put(implementation.getName(), implementation);
+		if(((FrankClassRepositoryDoclet) repository).classIsAllowedAsInterfaceImplementation(implementation)) {
+			log.trace("Interface {} is implemented by {}", () -> getName(), () -> implementation.getName());
+			// TODO: Test that children of omitted classes can be accepted again.
+			interfaceImplementationsByName.put(implementation.getName(), implementation);
+		} else {
+			log.trace("From interface {} omitted implementation because of filtering {}", () -> getName(), () -> implementation.getName());			
+		}
 		for(String implementationChildClassName: implementation.childClassNames) {
 			FrankClassDoclet implementationChild = (FrankClassDoclet) repository.findClass(implementationChildClassName);
-			if(((FrankClassRepositoryDoclet) repository).classIsAllowedAsInterfaceImplementation(implementationChild)) {
-				recursivelyAddInterfaceImplementation(implementationChild);
-			}
-			else {
-				log.trace("From interface {} omitted implementation because of filtering {}", () -> getName(), () -> implementationChild.getName());
-			}
+			recursivelyAddInterfaceImplementation(implementationChild);
 		}
 	}
 
