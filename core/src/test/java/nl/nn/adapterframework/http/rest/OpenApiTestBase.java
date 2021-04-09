@@ -169,10 +169,10 @@ public class OpenApiTestBase extends Mockito {
 			listener.setHeaderParams(headerParams);
 			return this;
 		}
-		public AdapterBuilder setCookieParams(String cookieParams) {
-			listener.setCookieParams(cookieParams);
-			return this;
-		}
+//		public AdapterBuilder setCookieParams(String cookieParams) {
+//			listener.setCookieParams(cookieParams);
+//			return this;
+//		}
 		public AdapterBuilder setMessageIdHeader(String messageIdHeader) {
 			listener.setMessageIdHeader(messageIdHeader);
 			return this;

@@ -60,7 +60,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
 	private String headerParams = null;
-	private String cookieParams = null;
+//	private String cookieParams = null;
 	private String charset = null;
 
 	public enum AuthenticationMethods {
@@ -296,13 +296,13 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return headerParams;
 	}
 
-	@IbisDoc({"13", "Comma separated list of parameters passed as cookie.", ""})
-	public void setCookieParams(String cookieParams) {
-		this.cookieParams = cookieParams;
-	}
-	public String getCookieParams() {
-		return cookieParams;
-	}
+//	@IbisDoc({"13", "Comma separated list of parameters passed as cookie.", ""})
+//	public void setCookieParams(String cookieParams) {
+//		this.cookieParams = cookieParams;
+//	}
+//	public String getCookieParams() {
+//		return cookieParams;
+//	}
 
 	@Override
 	public String toString() {
