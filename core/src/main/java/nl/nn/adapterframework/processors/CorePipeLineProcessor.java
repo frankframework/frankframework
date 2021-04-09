@@ -257,7 +257,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						if (message.asObject()!=null && !plExit.getEmptyResult()) {
 							pipeLineResult.setResult(message);
 						} else {
-							pipeLineResult.setResult(null);
+							pipeLineResult.setResult(Message.nullMessage());
 						}
 						ready=true;
 						if (log.isDebugEnabled()){  // for performance reasons
