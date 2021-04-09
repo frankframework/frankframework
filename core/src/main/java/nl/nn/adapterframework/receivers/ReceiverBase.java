@@ -83,6 +83,7 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.task.TimeoutGuard;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.Counter;
@@ -270,6 +271,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	private EventHandler eventHandler=null;
 
+	private boolean suppressTransactionWarnings = AppConstants.getInstance().getBoolean("warnings.suppress.transaction", false);
 	/**
 	 * The cache for poison messages acts as a sort of poor-mans error
 	 * storage and is always available, even if an error-storage is not.
@@ -586,7 +588,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					info("Listener of receiver ["+getName()+"] has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
 				}
 			}
-			if (getListener() instanceof ITransactionRequirements) {
+			if (getListener() instanceof ITransactionRequirements && !suppressTransactionWarnings) {
 				ITransactionRequirements tr=(ITransactionRequirements)getListener();
 				if (tr.transactionalRequired() && !isTransacted()) {
 					String msg=getLogPrefix()+"listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing";
@@ -639,7 +641,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //					warn(getLogPrefix()+"sets transacted=true, but listener not. Transactional integrity is not guaranteed"); 
 //				}
 				
-				if (errorSender==null && errorStorage==null) {
+				if (errorSender==null && errorStorage==null && !suppressTransactionWarnings) {
 					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 					String msg = getLogPrefix()+"sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost";
 					configWarnings.add(log, msg);
@@ -1842,12 +1844,16 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //		this.transacted = transacted;
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (transacted) {
-			String msg = getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required";
-			configWarnings.add(log, msg);
+			if(!suppressTransactionWarnings) {
+				String msg = getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required";
+				configWarnings.add(log, msg);
+			}
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			String msg = getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports";
-			configWarnings.add(log, msg);
+			if(!suppressTransactionWarnings) {
+				String msg = getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports";
+				configWarnings.add(log, msg);
+			}
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
