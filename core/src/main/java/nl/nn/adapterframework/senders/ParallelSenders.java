@@ -16,14 +16,16 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.util.ConcurrencyThrottleSupport;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -54,6 +56,7 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 
 	private int maxConcurrentThreads = 0;
 	private ApplicationContext applicationContext;
+	private TaskExecutor executor;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -65,13 +68,13 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 			}
 			ConfigurationWarnings.add(this, log, "parameters ["+paramList+"] of ParallelSenders ["+getName()+"] are not available for use by nested Senders");
 		}
+		executor = createTaskExecutor();
 	}
 
 	@Override
 	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
-		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
-		TaskExecutor executor = createTaskExecutor();
+		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 
 		for (ISender sender: getSenders()) {
 			guard.addResource();
@@ -134,13 +137,12 @@ public class ParallelSenders extends SenderSeries implements ApplicationContextA
 	}
 
 	protected TaskExecutor createTaskExecutor() {
-		ThreadPoolTaskExecutor executor = applicationContext.getBean("concurrentTaskExecutor", ThreadPoolTaskExecutor.class);
+		SimpleAsyncTaskExecutor executor = (SimpleAsyncTaskExecutor) applicationContext.getAutowireCapableBeanFactory().createBean(SimpleAsyncTaskExecutor.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 
-		if(getMaxConcurrentThreads() > 0) { //MaxPoolSize defaults to Integer.MAX_VALUE so only set this if a maximum has been set!
-			executor.setMaxPoolSize(getMaxConcurrentThreads());
-			executor.setCorePoolSize(getMaxConcurrentThreads());
+		if(getMaxConcurrentThreads() > 0) { //ConcurrencyLimit defaults to NONE so only this technically limits it!
+			executor.setConcurrencyLimit(getMaxConcurrentThreads());
 		} else {
-			executor.setCorePoolSize(Integer.MAX_VALUE); //initial pool size
+			executor.setConcurrencyLimit(ConcurrencyThrottleSupport.UNBOUNDED_CONCURRENCY);
 		}
 
 		return executor;
