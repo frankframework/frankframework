@@ -266,9 +266,9 @@ public class SchemaUtils {
 								if (noOutput) {
 									// First call to this method collecting
 									// schema attributes.
-									Iterator<Attribute> attributeiterator = startElement.getAttributes();
-									while (attributeiterator.hasNext()) {
-										Attribute attribute = attributeiterator.next();
+									Iterator<Attribute> attributeIterator = startElement.getAttributes();
+									while (attributeIterator.hasNext()) {
+										Attribute attribute = attributeIterator.next();
 										boolean add = true;
 										for (Attribute attribute2 : rootAttributes) {
 											if (XmlUtils.attributesEqual(attribute, attribute2)) {
