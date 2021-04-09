@@ -265,8 +265,13 @@ public class FrankDocModelTest {
 	 * to do with method {@link nl.nn.adapterframework.frankdoc.Utils#isAttributeGetterOrSetter(FrankMethod)}.
 	 * That method filters method using {@link nl.nn.adapterframework.frankdoc.doclet.FrankMethod#isVarargs()}.
 	 * That filter is only needed when a varargs String argument appears as a String argument type.
-	 * This is the case for ClassDoc but not for Java reflection. With reflection, a
+	 * This might be the case for ClassDoc but not for Java reflection. With reflection, a
 	 * varargs String appears as type String[].
+	 * <p>
+	 * Probably, vararg strings arguments only appear as simple String arguments for ClassDoc-s
+	 * if a doclet does not set the languageVersion to JAVA_1_5. There was no need to investigate
+	 * further, because the JAVA_1_5 language version is now set, see {@link nl.nn.adapterframework.frankdoc.front.DocletBuilder#languageVersion()}.
+	 * Furthermore, filtering with isVarargs() certainly does no harm.
 	 * @throws FrankDocException
 	 */
 	@Test
