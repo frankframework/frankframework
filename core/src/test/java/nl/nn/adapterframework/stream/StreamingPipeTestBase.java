@@ -14,7 +14,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
@@ -47,7 +46,7 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 	}
 
 	@Override
-	public void setup() throws ConfigurationException {
+	public void setup() throws Exception {
 		super.setup();
 		pipe.setStreamingActive(!classic);
 	}
