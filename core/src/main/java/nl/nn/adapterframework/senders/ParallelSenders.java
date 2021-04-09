@@ -15,9 +15,17 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.util.ConcurrencyThrottleSupport;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -31,9 +39,6 @@ import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
 /**
  * Collection of Senders, that are executed all at the same time.
  * 
@@ -46,9 +51,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class ParallelSenders extends SenderSeries {
+public class ParallelSenders extends SenderSeries implements ApplicationContextAware {
 
 	private int maxConcurrentThreads = 0;
+	private ApplicationContext applicationContext;
+	private TaskExecutor executor;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -61,13 +68,13 @@ public class ParallelSenders extends SenderSeries {
 			String msg = "parameters ["+paramList+"] of ParallelSenders ["+getName()+"] are not available for use by nested Senders";
 			ConfigurationWarnings.getInstance().add(log, msg, true);
 		}
+		executor = createTaskExecutor();
 	}
 
 	@Override
 	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
-		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
-		TaskExecutor executor = createTaskExecutor();
+		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 
 		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
 			ISender sender = it.next();
@@ -129,13 +136,12 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	protected TaskExecutor createTaskExecutor() {
-		ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) getConfiguration().getIbisManager().getIbisContext().getBean("concurrentTaskExecutor");
+		SimpleAsyncTaskExecutor executor = (SimpleAsyncTaskExecutor) applicationContext.getAutowireCapableBeanFactory().createBean(SimpleAsyncTaskExecutor.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 
-		if(getMaxConcurrentThreads() > 0) { //MaxPoolSize defaults to Integer.MAX_VALUE so only set this if a maximum has been set!
-			executor.setMaxPoolSize(getMaxConcurrentThreads());
-			executor.setCorePoolSize(getMaxConcurrentThreads());
+		if(getMaxConcurrentThreads() > 0) { //ConcurrencyLimit defaults to NONE so only this technically limits it!
+			executor.setConcurrencyLimit(getMaxConcurrentThreads());
 		} else {
-			executor.setCorePoolSize(Integer.MAX_VALUE); //initial pool size
+			executor.setConcurrencyLimit(ConcurrencyThrottleSupport.UNBOUNDED_CONCURRENCY);
 		}
 
 		return executor;
@@ -150,5 +156,10 @@ public class ParallelSenders extends SenderSeries {
 	}
 	public int getMaxConcurrentThreads() {
 		return maxConcurrentThreads;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }

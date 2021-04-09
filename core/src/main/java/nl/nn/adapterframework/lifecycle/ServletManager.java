@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * <br/>
  * The following properties can be set to change the DynamicRegistration.Servlet registration behaviour<br/>
  * <code>servlet.<name>.transportGuarantee</code> - forces https when set to CONFIDENTIAL<br/>
- * <code>servlet.<name>.securityroles</code> - use the default IBIS roles or create your own<br/>
+ * <code>servlet.<name>.securityRoles</code> - use the default IBIS roles or create your own<br/>
  * <code>servlet.<name>.urlMapping</code> - path the servlet listens to<br/>
  * <code>servlet.<name>.loadOnStartup</code> - automatically load or use lazyloading<br/>
  * 
@@ -108,7 +108,7 @@ public class ServletManager {
 		}
 
 		String[] rolesCopy = new String[0];
-		if(roles != null && !stage.equalsIgnoreCase("LOC"))
+		if(roles != null && stage != null && !stage.equalsIgnoreCase("LOC"))
 			rolesCopy = roles;
 		String roleNames = appConstants.getString(propertyPrefix+"securityroles", null);
 		if(StringUtils.isNotEmpty(roleNames))
