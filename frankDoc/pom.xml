@@ -37,7 +37,7 @@
 			<scope>provided</scope>
 		</dependency>
 		<!-- Without this dependency, the unit tests fail with a NoClassDefFoundError, Martijn does not know why.
-			 The error mentions javax/jms/JMSException -->
+		     The error mentions javax/jms/JMSException -->
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
