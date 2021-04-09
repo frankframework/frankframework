@@ -93,7 +93,7 @@
 		type="org.mariadb.jdbc.MariaDbDataSource"
 		user="testiaf_user"
 		password="testiaf_user00"
-		url="jdbc:mariadb://${databaseHost}:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
+		url="jdbc:mariadb://host.docker.internal:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
 	/>
  -->
  	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->

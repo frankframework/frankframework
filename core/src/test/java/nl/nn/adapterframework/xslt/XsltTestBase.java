@@ -44,7 +44,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
  
 	
 	@Override
-	public void setup() throws ConfigurationException {
+	public void setup() throws Exception {
 		session = new PipeLineSessionBase();
 		super.setup();
 	}

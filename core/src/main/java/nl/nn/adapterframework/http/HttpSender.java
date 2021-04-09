@@ -540,10 +540,7 @@ public class HttpSender extends HttpSenderBase {
 					body = "(" + ClassUtils.nameOf(e) + "): " + e.getMessage();
 				}
 			}
-			throw new SenderException(getLogPrefix() + "httpstatus "
-					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
-					+ " body: " + body);
-			
+			throw new SenderException(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + responseHandler.getStatusLine().getReasonPhrase() + "] body [" + body +"]");
 		}
 
 		HttpServletResponse response = null;
@@ -666,7 +663,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	@IbisDoc({"When <code>methodeType=POST</code>, the type of post request, must be one of [RAW (text/xml/json), BINARY (file), URLENCODED, FORMDATA, MTOM]", "RAW"})
+	@IbisDoc({"When <code>methodType=POST</code>, the type of post request, must be one of [RAW (text/xml/json), BINARY (file), URLENCODED, FORMDATA, MTOM]", "RAW"})
 	public void setPostType(String type) throws ConfigurationException {
 		try {
 			this.postType = PostType.valueOf(type.toUpperCase());
@@ -676,7 +673,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	@IbisDoc({"When false and <code>methodeType=POST</code>, request parameters are put in the request body instead of in the url", "true"})
+	@IbisDoc({"When false and <code>methodType=POST</code>, request parameters are put in the request body instead of in the url", "true"})
 	@Deprecated
 	public void setParamsInUrl(boolean b) {
 		if(!b) {
@@ -698,7 +695,7 @@ public class HttpSender extends HttpSenderBase {
 	public void setInputMessageParam(String inputMessageParam) {
 		setFirstBodyPartName(inputMessageParam);
 	}
-	@IbisDoc({"(Only used when <code>methodeType=POST</code> and <code>postType=URLENCODED, FORM-DATA or MTOM</code>) Name of the first body part", ""})
+	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType=URLENCODED, FORM-DATA or MTOM</code>) Name of the first body part", ""})
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
 	}

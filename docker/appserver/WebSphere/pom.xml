@@ -10,8 +10,9 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-docker-as</artifactId>
-		<version>7.7-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
