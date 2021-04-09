@@ -42,6 +42,7 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
@@ -669,13 +670,18 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		boolean suppressed = AppConstants.getInstance().getBoolean("warnings.suppress.transaction", false);
 		if (transacted) {
-			String msg = "Pipeline of [" + owner.getName() + "] implementing setting of transacted=true as transactionAttribute=Required";
-			configWarnings.add(log, msg);
+			if(!suppressed) {
+				String msg = "Pipeline of [" + owner.getName() + "] implementing setting of transacted=true as transactionAttribute=Required";
+				configWarnings.add(log, msg);
+			}
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			String msg = "Pipeline of [" + owner.getName() + "] implementing setting of transacted=false as transactionAttribute=Supports";
-			configWarnings.add(log, msg);
+			if(!suppressed) {
+				String msg = "Pipeline of [" + owner.getName() + "] implementing setting of transacted=false as transactionAttribute=Supports";
+				configWarnings.add(log, msg);
+			}
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
