@@ -552,7 +552,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-<!--		Bouncy GPG uses this version. However another dependency uses 1.60, 
+<!--		Bouncy GPG uses this version. However another dependency uses 1.60,
 			and causes problems during loading from classpath.
 			So, it requires to add explicit dependency.-->
 		<dependency>
