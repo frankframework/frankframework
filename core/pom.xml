@@ -552,9 +552,9 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- Bouncy GPG uses this version. However another dependency uses 1.60, 
-			and causes problems during loading from classpath. So, it requires to add 
-			explicit dependency. -->
+<!-- 		Bouncy GPG uses this version. However another dependency uses 1.60, 
+			and causes problems during loading from classpath.
+			So, it requires to add explicit dependency. -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
@@ -609,7 +609,7 @@
 			<version>42.2.16</version>
 			<scope>test</scope>
 		</dependency>
-
+	
 		<dependency>
 			<groupId>com.unboundid</groupId>
 			<artifactId>unboundid-ldapsdk</artifactId>
@@ -644,11 +644,25 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-war-plugin</artifactId> 
-				<version>3.3.1</version> <executions> <execution> <id>services-war</id> <goals> 
-				<goal>war</goal> </goals> <configuration> <classifier>services</classifier> 
-				<packagingIncludes>WEB-INF/classes/META-INF/services/</packagingIncludes> 
-				</configuration> </execution> </executions> </plugin> -->
+			<!--
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId> 
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>services-war</id>
+						<goals> 
+							<goal>war</goal>
+						</goals>
+						<configuration>
+							<classifier>services</classifier> 
+							<packagingIncludes>WEB-INF/classes/META-INF/services/</packagingIncludes> 
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			-->
 		</plugins>
 	</build>
 
@@ -657,8 +671,7 @@
 			<id>ibm-jdk</id>
 			<dependencies>
 				<!-- Gerrit says: required when compiling with IBM JDK -->
-				<!-- Niels says: The POM for org.ibissource:ibis-adapterframework-core:jar 
-					is invalid! -->
+				<!-- Niels says: The POM for org.ibissource:ibis-adapterframework-core:jar is invalid! -->
 				<dependency>
 					<groupId>com.sun.net</groupId>
 					<artifactId>ssl</artifactId>
