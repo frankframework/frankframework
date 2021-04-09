@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
 
@@ -47,7 +48,7 @@ public class MessageOutputStream implements AutoCloseable {
 	
 	private INamedObject owner;
 	protected Object requestStream;
-	private Object response;
+	private Message response;
 	private PipeForward forward;
 	
 	private MessageOutputStream nextStream;
@@ -166,13 +167,17 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 	
 	public OutputStream asStream() throws StreamingException {
+		return asStream(null);
+	}
+	
+	public OutputStream asStream(String charset) throws StreamingException {
 		if (requestStream instanceof OutputStream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning OutputStream as OutputStream");
 			return (OutputStream) requestStream;
 		}
 		if (requestStream instanceof Writer) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning Writer as OutputStream");
-			return new WriterOutputStream((Writer) requestStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return new WriterOutputStream((Writer) requestStream, StringUtils.isNotEmpty(charset)?charset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		}
 		if (requestStream instanceof ContentHandler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning ContentHandler as OutputStream");
@@ -322,10 +327,10 @@ public class MessageOutputStream implements AutoCloseable {
 	 * after processing the stream. It is the responsability of the
 	 * {@link MessageOutputStream target} to set this message.
 	 */
-	public void setResponse(Object response) {
+	public void setResponse(Message response) {
 		this.response = response;
 	}
-	public Object getResponse() {
+	public Message getResponse() {
 		return response;
 	}
 
