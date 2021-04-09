@@ -159,6 +159,10 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 			Collections.sort(bucket, REMOVE_DUPLICATES_COMPARATOR);
 			ConfigChild selected = bucket.get(0);
 			result.add(selected);
+			if(selected.isDeprecated()) {
+				log.warn("From duplicate config children, only a deprecated one is selected. In strict.xsd, {} will not have a config child for ElementRole {}",
+						() -> selected.getOwningElement().getFullName(), () -> selected.getElementRole().toString());
+			}
 			if(log.isTraceEnabled() && (bucket.size() >= 2)) {
 				for(ConfigChild omitted: bucket.subList(1, bucket.size())) {
 					log.trace("Omitting config child {} because it is a duplicate of {}", omitted.toString(), selected.toString());
