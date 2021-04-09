@@ -16,6 +16,13 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.doclet;
 
+/**
+ * Models classes like java.lang.Object, java.lang.String and org.apache.xerces.xs.XSTypeDefinition.
+ * Such classes are referenced as arguments or return types in MethodDoc objects, but
+ * no detailed information about them is needed. 
+ * @author martijn
+ *
+ */
 class FrankNonCompiledClassDoclet extends FrankSimpleType {
 	FrankNonCompiledClassDoclet(String name) {
 		super(name);

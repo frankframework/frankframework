@@ -16,7 +16,7 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.doclet;
 
-public class FrankPrimitiveType extends FrankSimpleType {
+class FrankPrimitiveType extends FrankSimpleType {
 	FrankPrimitiveType(String name) {
 		super(name);
 	}
