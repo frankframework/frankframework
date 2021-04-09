@@ -217,18 +217,18 @@ public class ApiServiceDispatcher {
 	private JsonArrayBuilder mapServers(HttpServletRequest request) {
 		JsonArrayBuilder serversArray = Json.createArrayBuilder();
 		String protocol = request.isSecure() ? "https://" : "http://";
-		String suffix = "/api";
+		String apiPath = AppConstants.getInstance().getString("servlet.ApiListenerServlet.urlMapping", "/api");
 		String env = AppConstants.getInstance().getString("dtap.stage", "LOC");
 		int port = request.getServerPort();
 		// Get load balancer url if exists
 		String loadBalancerUrl = AppConstants.getInstance().getProperty("loadBalancer.url", null);
 		if(StringUtils.isNotEmpty(loadBalancerUrl)) {
-			serversArray.add(Json.createObjectBuilder().add("url", loadBalancerUrl + suffix).add("description", "load balancer for " + env + " server"));
+			serversArray.add(Json.createObjectBuilder().add("url", loadBalancerUrl + apiPath).add("description", "load balancer for " + env + " server"));
 		}
 		// Get details from the request
 		String requestServerName = request.getServerName();
 		if(StringUtils.isNotEmpty(requestServerName) && !requestServerName.equals(loadBalancerUrl)) {
-			String restBaseUrl = requestServerName + (port != 0 ? ":" + port : "") + request.getContextPath() + suffix;
+			String restBaseUrl = requestServerName + (port != 0 ? ":" + port : "") + request.getContextPath() + apiPath;
 			serversArray.add(Json.createObjectBuilder().add("url", protocol + restBaseUrl).add("description", env + " server"));
 		}
 		return serversArray;
