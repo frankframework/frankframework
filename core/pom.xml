@@ -138,8 +138,7 @@
 			<artifactId>sendgrid-java</artifactId>
 			<version>4.3.0</version>
 			<exclusions>
-				<!-- exclude mockito from the main build path. It should not be there, 
-					and it causes problems with Hamcrest Matchers -->
+				<!-- exclude mockito from the main build path. It should not be there, and it causes problems with Hamcrest Matchers -->
 				<exclusion>
 					<groupId>org.mockito</groupId>
 					<artifactId>mockito-core</artifactId>
@@ -246,10 +245,8 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-struts</artifactId>
 		</dependency>
-		<dependency><!-- Needed for WsdlUtils. When running with only Woodstox, 
-				NullPointerExceptions in System.arraycopy appear, probably due to a mal-initialized 
-				writer. Probably also needed when running on WAS, see comment about SJSXP 
-				in XmlUtils.java -->
+		<dependency><!-- Needed for WsdlUtils. When running with only Woodstox, NullPointerExceptions in System.arraycopy appear,
+		probably due to a mal-initialized writer.  Probably also needed when running on WAS, see comment about SJSXP in XmlUtils.java -->
 			<groupId>com.sun.xml.stream</groupId>
 			<artifactId>sjsxp</artifactId>
 			<version>1.0.2</version>
@@ -460,8 +457,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>3.5.3</version><!-- beware, Liquibase checksum generation is 
-				not consistent over liquibase versions, see https://liquibase.jira.com/browse/CORE-3204 -->
+			<version>3.5.3</version><!-- beware, Liquibase checksum generation is not consistent over liquibase versions, see https://liquibase.jira.com/browse/CORE-3204 -->
 		</dependency>
 
 		<dependency>
@@ -515,8 +511,7 @@
 			<artifactId>cxf-rt-transports-http</artifactId>
 			<version>${cxf.version}</version>
 		</dependency>
-		<!-- Add the excluded files from the CXF dependency explicitly which prevents 
-			duplicates in war files -->
+		<!-- Add the excluded files from the CXF dependency explicitly which prevents duplicates in war files -->
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
@@ -551,8 +546,7 @@
 			<version>2.2.0</version>
 			<exclusions>
 				<exclusion>
-					<!-- #475 exclude to avoid excessive logging of other slf4j enabled 
-						components like quartz -->
+					<!-- #475 exclude to avoid excessive logging of other slf4j enabled components like quartz -->
 					<groupId>ch.qos.logback</groupId>
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
