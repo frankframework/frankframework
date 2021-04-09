@@ -97,7 +97,7 @@ class FrankClassReflect implements FrankClass {
 	}
 
 	@Override
-	public FrankClass[] getInterfaces() throws FrankDocException {
+	public FrankClass[] getInterfaces() {
 		Class<?>[] interfazes = clazz.getInterfaces();
 		FrankClass[] result = new FrankClass[interfazes.length];
 		for(int i = 0; i < interfazes.length; ++i) {

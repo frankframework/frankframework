@@ -133,7 +133,7 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	@Override
-	public FrankClass[] getInterfaces() throws FrankDocException {
+	public FrankClass[] getInterfaces() {
 		List<FrankClass> resultList = getInterfacesAsList();
 		return resultList.toArray(new FrankClass[] {});
 	}

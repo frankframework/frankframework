@@ -29,7 +29,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
-import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -57,15 +56,11 @@ public class ElementType {
 		InterfaceHierarchyItem(FrankClass clazz) {
 			this.fullName = clazz.getName();
 			this.simpleName = clazz.getSimpleName();
-			try {
-				if(clazz.isInterface()) {
-					for(FrankClass superInterface: clazz.getInterfaces()) {
-						InterfaceHierarchyItem superInterfaceHierarchyItem = new InterfaceHierarchyItem(superInterface);
-						parentInterfaces.put(superInterfaceHierarchyItem.getFullName(), superInterfaceHierarchyItem);
-					}
+			if(clazz.isInterface()) {
+				for(FrankClass superInterface: clazz.getInterfaces()) {
+					InterfaceHierarchyItem superInterfaceHierarchyItem = new InterfaceHierarchyItem(superInterface);
+					parentInterfaces.put(superInterfaceHierarchyItem.getFullName(), superInterfaceHierarchyItem);
 				}
-			} catch(FrankDocException e) {
-				log.warn("Programming error, expected to be working with interfaces instead of classes", e);
 			}
 		}
 

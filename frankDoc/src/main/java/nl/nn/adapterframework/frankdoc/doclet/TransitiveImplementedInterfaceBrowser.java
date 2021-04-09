@@ -31,7 +31,7 @@ class TransitiveImplementedInterfaceBrowser<T> {
 		uniquelyEnqueueSuperInterfaces(clazz);
 	}
 
-	private void uniquelyEnqueueSuperInterfaces(FrankClass clazz) throws FrankDocException {
+	private void uniquelyEnqueueSuperInterfaces(FrankClass clazz) {
 		Arrays.asList(clazz.getInterfaces()).forEach(this::enqueueUniquely);
 	}
 

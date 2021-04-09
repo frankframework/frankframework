@@ -46,7 +46,7 @@ public class InterfaceAndAnnotationTest {
 		assertArrayEquals(expectedInterfaceSimpleNames, actualInterfaceSimpleNames.toArray(new String[] {}));
 	}
 
-	private List<String> getSimpleNamesOfImplementedInterfaces(FrankClass clazz) throws FrankDocException {
+	private List<String> getSimpleNamesOfImplementedInterfaces(FrankClass clazz) {
 		return Arrays.asList(clazz.getInterfaces()).stream()
 				.map(FrankClass::getSimpleName)
 				.collect(Collectors.toList());
