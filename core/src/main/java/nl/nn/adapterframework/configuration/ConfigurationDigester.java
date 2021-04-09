@@ -52,9 +52,8 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.PropertyResolvingXmlFilter;
+import nl.nn.adapterframework.xml.ElementPropertyResolver;
 import nl.nn.adapterframework.xml.SaxException;
-import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -229,10 +228,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * @param appConstants 
 	 */
 	private String resolveEntitiesAndProperties(Resource resource, AppConstants appConstants) throws  IOException, SAXException {
-		XmlWriter writer = new XmlWriter();
-		PropertyResolvingXmlFilter filter = new PropertyResolvingXmlFilter(writer, appConstants);
-		XmlUtils.parseXml(resource, filter);
-		return writer.toString();
+		ElementPropertyResolver resolver = new ElementPropertyResolver(appConstants);
+		XmlUtils.parseXml(resource, resolver);
+		return resolver.toString();
 	}
 
 	private void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
