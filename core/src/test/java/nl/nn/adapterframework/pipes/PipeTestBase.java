@@ -34,7 +34,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	public abstract P createPipe();
 	
 	@Before
-	public void setup() throws ConfigurationException {
+	public void setup() throws Exception {
 		pipe = createPipe();
 		pipe.registerForward(new PipeForward("success",null));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
