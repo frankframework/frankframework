@@ -228,12 +228,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					message=pipeRunResult.getResult();
 	
 					// TODO: this should be moved to a StatisticsPipeProcessor
-					if (!(pipeToRun instanceof AbstractPipe)) {
-						if (!message.isEmpty()) {
-							StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
-							if (sizeStat!=null) {
-								sizeStat.addValue(message.size());
-							}
+					if (!(pipeToRun instanceof AbstractPipe) && !message.isEmpty()) {
+						StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
+						if (sizeStat!=null) {
+							sizeStat.addValue(message.size());
 						}
 					}
 
