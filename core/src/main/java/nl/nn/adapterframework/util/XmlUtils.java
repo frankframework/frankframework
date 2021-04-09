@@ -1637,12 +1637,8 @@ public class XmlUtils {
 		for (String paramName:parameters.keySet()) {
 			Object value = parameters.get(paramName);
 			if (value != null) {
-				if (value instanceof Reader) {
+				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[]) {
 					value = Message.asString(value);
-				} else {
-					if (value instanceof InputStream) {
-						value = Message.asByteArray(value);
-					}
 				}
 				t.setParameter(paramName, value);
 				log.debug("setting parameter [" + paramName+ "] on transformer from class ["+value.getClass().getTypeName()+"]");
