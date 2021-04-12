@@ -285,4 +285,9 @@ class FrankClassReflect implements FrankClass {
 		}
 		return result;
 	}
+
+	@Override
+	public String getJavaDoc() {
+		return null;
+	}
 }
