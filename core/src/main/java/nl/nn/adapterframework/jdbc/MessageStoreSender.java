@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2015 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -81,9 +81,16 @@ import nl.nn.adapterframework.stream.Message;
  * @author Jaco de Groot
  */
 public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
+	
+	public final String PARAM_MESSAGEID = "messageId";
+	
 	private ParameterList paramList = null;
 	private String sessionKeys = null;
 
+	{ 
+		setOnlyStoreWhenMessageIdUnique(true);
+	}
+	
 	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList != null) {
@@ -133,10 +140,10 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			// the messageId to be inserted in the messageStore defaults to the messageId of the session
 			String messageId = session.getMessageId(); 
 			String correlationID = messageId;
-			if (paramList != null && paramList.findParameter("messageId") != null) {
+			if (paramList != null && paramList.findParameter(PARAM_MESSAGEID) != null) {
 				try {
 					// the messageId to be inserted can also be specified via the parameter messageId
-					messageId = (String)paramList.getValues(message, session).getValue("messageId");
+					messageId = (String)paramList.getValues(message, session).getValue(PARAM_MESSAGEID);
 				} catch (ParameterException e) {
 					throw new SenderException("Could not resolve parameter messageId", e);
 				}
@@ -147,7 +154,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 		}
 	}
 
-	@IbisDoc({"comma separated list of sessionkey's to be stored together with the message. please note: corresponding {@link messagestorelistener} must have the same value for this attribute", ""})
+	@IbisDoc({"1", "Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessagestoreListener must have the same value for this attribute", ""})
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}
@@ -155,4 +162,11 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	public String getSessionKeys() {
 		return sessionKeys;
 	}
+
+	@IbisDoc({"2", "If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.", "true"})
+	@Override
+	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
+		super.setOnlyStoreWhenMessageIdUnique(onlyStoreWhenMessageIdUnique);
+	}
+
 }
