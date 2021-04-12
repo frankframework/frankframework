@@ -57,8 +57,13 @@ Upcoming
 ### Non backwards compatible changes
 
 - Change HashPipe attribute encoding into charset. Its default has changed from ISO8859-1 into UTF-8
+- Log4j to Log4j2
+- Resteasy library is replaced with Apache-cxf
+- StaxParserFactory to enable XML 1.1 content
 
+### Breaking changes
 
+- It is highly recommended not to use any custom file which overrides a file from the framework itself. In case it is really required to override a file then do not forget to update that custom file by examining the changes made while upgrading the framework version.
 
 7.5
 --------
