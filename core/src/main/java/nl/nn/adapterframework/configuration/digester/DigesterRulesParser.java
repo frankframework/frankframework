@@ -68,18 +68,19 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 				ruleBuilder.factoryCreate().usingFactory(factory); //If a factory is specified, use the factory to create the object
 			}
 		}
-		ruleBuilder.setProperties(); //set the set-properties-rule
 		if(rule.getRegisterMethod() != null) { //set the register method (set-next-rule)
 			ruleBuilder.setNext(rule.getRegisterMethod());
 		}
 		if(rule.getSelfRegisterMethod() != null) { //set the register method (set-top-rule)
 			ruleBuilder.setTop(rule.getSelfRegisterMethod());
 		}
+		ruleBuilder.setProperties(); //set the set-properties-rule
 		ruleBuilder.addRule(attributeChecker); //Add the attribute checker
 	}
 
 	/**
 	 * Return the specified factory or the default factory when empty.
+	 * The factory should be Spring wired
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private ObjectCreationFactory<Object> getFactory(String factory) {

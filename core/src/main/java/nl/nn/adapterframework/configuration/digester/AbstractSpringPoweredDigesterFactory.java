@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.env.PropertyResolver;
 import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
@@ -41,6 +42,7 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringResolver;
 
 /**
  * This is a factory for objects to be used with the 'factory-create-rule'
@@ -162,7 +164,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 		Object currObj = createBeanFromClassName(className);
 
-		checkDeprecation(currObj);
+//		checkDeprecation(currObj);
 		checkAttributes(currObj, attrs);
 		return currObj;
 	}
@@ -194,7 +196,9 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		for (Iterator<String> it = attrs.keySet().iterator(); it.hasNext();) {
 			String attributeName = it.next();
 			String value = attrs.get(attributeName);
-			checkAttribute(currObj, beanName, attributeName, value, attrs);
+			if(!value.startsWith(StringResolver.DELIM_START) && !value.endsWith(StringResolver.DELIM_STOP)) { //Only check for default values when value is not a property
+				checkAttribute(currObj, beanName, attributeName, value, attrs);
+			}
 		}
 	}
 

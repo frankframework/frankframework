@@ -37,6 +37,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -54,6 +55,7 @@ import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ElementPropertyResolver;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -96,6 +98,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	String lastResolvedEntity = null;
+	private boolean preparse = true;
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private Configuration configuration;
@@ -186,14 +189,15 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			String original = resolveEntitiesAndProperties(configurationResource, appConstants);
 
-			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
+//			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<>();
 			String propertiesHideString = appConstants.getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 			}
-			String loaded = StringResolver.substVars(original, appConstants);
+//			String loaded = StringResolver.substVars(original, appConstants);
+			String loaded = original; //TODO
 			String loadedHide = StringResolver.substVars(original, appConstants, null, propsToHide);
 			loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
 			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
@@ -228,7 +232,13 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * @param appConstants 
 	 */
 	private String resolveEntitiesAndProperties(Resource resource, AppConstants appConstants) throws  IOException, SAXException {
-		ElementPropertyResolver resolver = new ElementPropertyResolver(appConstants);
+		ContentHandler resolver;
+		if(preparse) {
+			resolver = new ElementPropertyResolver(appConstants);
+		} else {
+			resolver = new XmlWriter();
+		}
+
 		XmlUtils.parseXml(resource, resolver);
 		return resolver.toString();
 	}
