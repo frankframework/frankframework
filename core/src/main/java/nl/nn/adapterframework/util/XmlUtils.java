@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -66,7 +67,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -1626,8 +1627,9 @@ public class XmlUtils {
 
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values.
+	 * @throws IOException 
 	 */
-	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) {
+	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) throws IOException {
 		t.clearParameters();
 		if (parameters == null) {
 			return;
@@ -1635,8 +1637,11 @@ public class XmlUtils {
 		for (String paramName:parameters.keySet()) {
 			Object value = parameters.get(paramName);
 			if (value != null) {
+				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[]) {
+					value = Message.asString(value);
+				}
 				t.setParameter(paramName, value);
-				log.debug("setting parameter [" + paramName+ "] on transformer");
+				log.debug("setting parameter [" + paramName+ "] on transformer from class ["+value.getClass().getTypeName()+"]");
 			}
 			else {
 				log.info("omitting setting of parameter ["+paramName+"] on transformer, as it has a null-value");

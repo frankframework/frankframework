@@ -15,8 +15,9 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.util.LogUtil;
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -30,9 +31,7 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 
-import static org.quartz.TriggerBuilder.*;
-import static org.quartz.SimpleScheduleBuilder.*;
-import static org.quartz.CronScheduleBuilder.*;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * The SchedulerHelper encapsulates the quarz scheduler.
@@ -47,8 +46,8 @@ public class SchedulerHelper {
 
 	private Scheduler scheduler;
 
-	public void scheduleJob(IbisManager ibisManager, JobDef jobdef) throws SchedulerException {
-		JobDetail jobDetail = jobdef.getJobDetail(ibisManager);
+	public void scheduleJob(JobDef jobdef) throws SchedulerException {
+		JobDetail jobDetail = jobdef.getJobDetail();
 		scheduleJob(jobDetail, jobdef.getCronExpression(), jobdef.getInterval(), true);
 	}
 

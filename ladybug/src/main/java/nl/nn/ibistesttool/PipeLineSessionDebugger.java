@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
@@ -54,6 +54,11 @@ public class PipeLineSessionDebugger implements IPipeLineSession {
 	@Override
 	public String getMessageId() {
 		return pipeLineSession.getMessageId();
+	}
+
+	@Override
+	public Message getMessage(String key) {
+		return pipeLineSession.getMessage(key);
 	}
 
 	@Override

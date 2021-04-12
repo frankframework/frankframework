@@ -18,7 +18,7 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.ListenerException;

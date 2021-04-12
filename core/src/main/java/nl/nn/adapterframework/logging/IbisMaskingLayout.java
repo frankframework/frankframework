@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.logging;
 
 import nl.nn.adapterframework.util.Misc;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.impl.MutableLogEvent;

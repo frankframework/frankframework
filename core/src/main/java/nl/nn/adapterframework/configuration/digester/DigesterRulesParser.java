@@ -28,8 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.AttributeCheckingRule;
-import nl.nn.adapterframework.configuration.GenericFactory;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 

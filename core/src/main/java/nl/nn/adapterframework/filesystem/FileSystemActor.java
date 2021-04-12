@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -35,7 +34,6 @@ import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import lombok.Lombok;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -136,6 +134,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private int numberOfBackups=0;
 	private String wildCard=null;
 	private String excludeWildCard=null;
+	private boolean removeNonEmptyFolder=false;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
@@ -402,7 +401,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RMDIR)) {
 				String folder = determineInputFoldername(input, pvl);
-				fileSystem.removeFolder(folder);
+				fileSystem.removeFolder(folder, isRemoveNonEmptyFolder());
 				return folder;
 			} else if (action.equalsIgnoreCase(ACTION_RENAME)) {
 				F source=getFile(input, pvl);
@@ -542,7 +541,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
 			MessageOutputStream stream = new MessageOutputStream(owner, out, next);
-			stream.setResponse(getFileAsXmlBuilder(file, "file").toXML());
+			stream.setResponse(new Message(getFileAsXmlBuilder(file, "file").toXML()));
 			return stream;
 		} catch (FileSystemException | IOException e) {
 			throw new StreamingException("cannot obtain OutputStream", e);
@@ -690,5 +689,13 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 	public String getExcludeWildCard() {
 		return excludeWildCard;
+	}
+
+	@IbisDoc({"12", "If set to true then the folder and the content of the non empty folder will be deleted."})
+	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
+		this.removeNonEmptyFolder = removeNonEmptyFolder;
+	}
+	public boolean isRemoveNonEmptyFolder() {
+		return removeNonEmptyFolder;
 	}
 }

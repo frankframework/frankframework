@@ -157,7 +157,7 @@
 			<pipe name="send2Jms">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="jms/i4testiaf_ff" destinationParam="destination">
-					<param name="SOURCE" value="${hostname}_FF3" />
+					<param name="SOURCE" value="IAFTEST_DYNDEST" />
 					<param name="destination" sessionKey="originalMessage" xpathExpression="*/@destination" />
 				</sender>
 			</pipe>

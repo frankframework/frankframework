@@ -17,7 +17,7 @@ package nl.nn.adapterframework.http;
 
 import java.util.Map;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;

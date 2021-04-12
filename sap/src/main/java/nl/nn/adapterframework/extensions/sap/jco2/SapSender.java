@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.sap.mw.jco.JCO;
 

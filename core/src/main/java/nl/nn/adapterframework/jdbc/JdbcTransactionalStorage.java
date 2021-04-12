@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 

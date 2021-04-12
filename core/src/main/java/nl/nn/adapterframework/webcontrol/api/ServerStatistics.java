@@ -186,9 +186,9 @@ public class ServerStatistics extends Base {
 			}
 
 			//ErrorStore count
-			if (showCountErrorStore) {
+			if (configuration.isActive() && showCountErrorStore) {
 				long esr = 0;
-				for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
+				for (Adapter adapter : configuration.getRegisteredAdapters()) {
 					for (Receiver<?> receiver: adapter.getReceivers()) {
 						IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
 						if (errorStorage != null) {

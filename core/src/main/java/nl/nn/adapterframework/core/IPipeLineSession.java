@@ -22,6 +22,10 @@ import java.io.Writer;
 import java.security.Principal;
 import java.util.Map;
 
+import org.apache.commons.lang3.NotImplementedException;
+
+import nl.nn.adapterframework.stream.Message;
+
 
 /**
  * The <code>PipeLineSession</code> is an object similar to
@@ -61,25 +65,23 @@ public interface IPipeLineSession extends Map<String,Object>, AutoCloseable {
 	 */
 	public String getMessageId();
 
+	public Message getMessage(String key);
+
 	/**
 	 * Set a SecurityHandler. NOTE: It can also be set via key in PipeLineSession.
 	 * @param handler ISecurityHandler to set
 	 */
 	public void setSecurityHandler(ISecurityHandler handler);
-
 	public ISecurityHandler getSecurityHandler();
-
 	public boolean isUserInRole(String role);
-
 	public Principal getPrincipal();
 
-	
 	public InputStream scheduleCloseOnSessionExit(InputStream stream);
 	public OutputStream scheduleCloseOnSessionExit(OutputStream stream);
 	public Reader scheduleCloseOnSessionExit(Reader reader);
 	public Writer scheduleCloseOnSessionExit(Writer writer);
 	public void unscheduleCloseOnSessionExit(AutoCloseable resource);
-	
+
 	@Override // to remove throws clause
 	public void close();
 }

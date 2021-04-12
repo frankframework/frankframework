@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 

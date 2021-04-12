@@ -21,8 +21,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.text.StrBuilder;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.text.TextStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -80,10 +80,9 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Jaco de Groot
  */
-public class MessageStoreSender extends JdbcTransactionalStorage implements ISenderWithParameters {
+public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
 	private ParameterList paramList = null;
 	private String sessionKeys = null;
-	private boolean onlyStoreWhenMessageIdUnique = true;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -91,7 +90,6 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 			paramList.configure();
 		}
 		setType(StorageType.MESSAGESTORAGE.getCode());
-		setOnlyStoreWhenMessageIdUnique(isOnlyStoreWhenMessageIdUnique());
 		super.configure();
 	}
 
@@ -123,9 +121,12 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 				StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
 				while (tokenizer.hasMoreElements()) {
 					String sessionKey = (String)tokenizer.nextElement();
-					list.add(StringEscapeUtils.escapeCsv((String)session.get(sessionKey)));
+					Message msg = session.getMessage(sessionKey);
+					if(!msg.isEmpty()) {
+						list.add(StringEscapeUtils.escapeCsv(msg.asString()));
+					}
 				}
-				StrBuilder sb = new StrBuilder();
+				TextStringBuilder sb = new TextStringBuilder();
 				sb.appendWithSeparators(list, ",");
 				messageToStore = Message.asMessage(sb.toString());
 			}
@@ -154,16 +155,4 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 	public String getSessionKeys() {
 		return sessionKeys;
 	}
-
-	@IbisDoc({" ", "true"})
-	@Override
-	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
-		this.onlyStoreWhenMessageIdUnique = onlyStoreWhenMessageIdUnique;
-	}
-
-	@Override
-	public boolean isOnlyStoreWhenMessageIdUnique() {
-		return onlyStoreWhenMessageIdUnique;
-	}
-
 }

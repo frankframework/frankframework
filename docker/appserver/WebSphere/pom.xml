@@ -10,8 +10,9 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-docker-as</artifactId>
-		<version>7.7-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -172,7 +173,7 @@
 									<arg value="--volumes"/>
 									<arg value="--remove-orphans"/>
 								</exec>
-								<exec executable="docker">
+								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
 									<arg value="iaf-test-as-websphere"/>
