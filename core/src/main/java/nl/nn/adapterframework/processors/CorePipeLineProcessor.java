@@ -87,7 +87,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			if (validationResult!=null) {
 				if (!validationResult.getPipeForward().getName().equals("success")) {
 					forwardTarget = pipeLine.resolveForward(inputValidator, validationResult.getPipeForward());
-					log.warn("setting first pipe to ["+forwardTarget.getName()+"] due to validation fault");
+					log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to validation fault");
 					inputValidateError = true;
 				}
 				Message validatedMessage = validationResult.getResult();
@@ -104,7 +104,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, message, pipeLineSession);
 				if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
 					forwardTarget = pipeLine.resolveForward(inputWrapper, wrapResult.getPipeForward());
-					log.warn("setting first pipe to ["+forwardTarget.getName()+"] due to wrap fault");
+					log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
 				} else {
 					message = wrapResult.getResult();
 				}
@@ -159,7 +159,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
 							if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
 								forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
-								log.warn("setting next pipe to ["+forwardTarget.getName()+"] due to wrap fault");
+								log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
 								outputWrapError = true;
 							} else {
 								log.debug("wrap succeeded");
@@ -181,7 +181,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 									if (!outputValidationFailed) {
 										outputValidationFailed=true;
 										forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());
-										log.warn("setting next pipe to ["+forwardTarget.getName()+"] due to validation fault");
+										log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to validation fault");
 									} else {
 										log.warn("validation of error message by validator ["+outputValidator.getName()+"] failed, returning result anyhow"); // to avoid endless looping
 										message = validationResult.getResult();
