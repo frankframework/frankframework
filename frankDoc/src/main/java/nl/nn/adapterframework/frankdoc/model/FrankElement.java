@@ -61,6 +61,7 @@ public class FrankElement implements Comparable<FrankElement> {
 	private @Getter FrankElementStatistics statistics;
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 	private @Getter @Setter String description;
+	private @Getter @Setter String descriptionHeader;
 
 	FrankElement(FrankClass clazz) {
 		this(clazz.getName(), clazz.getSimpleName(), clazz.isAbstract());
