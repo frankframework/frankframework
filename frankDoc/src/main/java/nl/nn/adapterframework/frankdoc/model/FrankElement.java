@@ -57,11 +57,13 @@ public class FrankElement implements Comparable<FrankElement> {
 	private @Getter List<String> xmlElementNames;
 	private @Getter FrankElementStatistics statistics;
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
+	private @Getter String description;
 
 	FrankElement(FrankClass clazz) {
 		this(clazz.getName(), clazz.getSimpleName(), clazz.isAbstract());
 		isDeprecated = clazz.getAnnotation(FrankDocletConstants.DEPRECATED) != null;
 		configChildSets = new LinkedHashMap<>();
+		description = clazz.getJavaDoc();
 	}
 
 	/**
