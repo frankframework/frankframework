@@ -32,7 +32,7 @@ enum JavadocStrategy {
 		void completeFrankElement(FrankElement frankElement, FrankClass clazz) {
 			frankElement.setDescription(clazz.getJavaDoc());
 			if(frankElement.getDescription() != null) {
-				String[] parts = frankElement.getDescription().split("\n\s*\n");
+				String[] parts = frankElement.getDescription().split("\n\\s*\n");
 				frankElement.setDescriptionHeader(parts[0]);
 			}
 		}
