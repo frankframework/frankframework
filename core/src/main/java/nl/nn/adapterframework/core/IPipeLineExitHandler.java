@@ -31,5 +31,5 @@ public interface IPipeLineExitHandler extends INamedObject {
 	 * @param pipeLineResult the result of the PipeLine 
 	 * @param session		 the PipeLineSession
 	 */
-	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, IPipeLineSession session) throws PipeRunException;
+	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, PipeLineSession session) throws PipeRunException;
 }

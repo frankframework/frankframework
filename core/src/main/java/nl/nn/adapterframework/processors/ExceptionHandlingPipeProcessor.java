@@ -19,7 +19,7 @@ import java.util.Date;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -31,14 +31,14 @@ import nl.nn.adapterframework.util.DateUtils;
 public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult prr = null;
 		try {
 			prr = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 		} catch (PipeRunException e) {
 			Map<String, PipeForward> forwards = pipe.getForwards();
 			if (forwards!=null && forwards.containsKey("exception")) {
-				Object tsReceivedObj = pipeLineSession.get(IPipeLineSession.tsReceivedKey);
+				Object tsReceivedObj = pipeLineSession.get(PipeLineSession.tsReceivedKey);
 				Date tsReceivedDate = null;
 
 				if(tsReceivedObj instanceof Date) {

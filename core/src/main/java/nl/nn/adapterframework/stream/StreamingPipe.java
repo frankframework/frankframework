@@ -18,7 +18,7 @@ package nl.nn.adapterframework.stream;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -69,12 +69,12 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 * provide the outputstream, or null if a stream cannot be provided.
 	 * Implementations should provide a forward target by calling {@link #getNextPipe()}.
 	 */
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return null;
 	}
 
 	@Override
-	public final MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public final MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		return provideOutputStream(session);
 	}
 	
@@ -82,7 +82,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	/**
 	 * Provides a non-null MessageOutputStream, that the caller can use to obtain a Writer, OutputStream or ContentHandler.
 	 */
-	protected MessageOutputStream getTargetStream(IPipeLineSession session) throws StreamingException {
+	protected MessageOutputStream getTargetStream(PipeLineSession session) throws StreamingException {
 		if (canStreamToNextPipe()) {
 			return MessageOutputStream.getTargetStream(this, session, getNextPipe());
 		}

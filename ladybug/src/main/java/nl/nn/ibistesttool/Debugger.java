@@ -30,10 +30,9 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
@@ -240,7 +239,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 					try {
 						// Try with resource will make sure pipeLineSession is closed and all (possibly opened) streams
 						// are also closed and the generated report will not remain in progress
-						try (IPipeLineSession pipeLineSession = new PipeLineSessionBase()) {
+						try (PipeLineSession pipeLineSession = new PipeLineSession()) {
 							while (checkpoints.size() > i + 1) {
 								i++;
 								checkpoint = checkpoints.get(i);
@@ -344,7 +343,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			return (checkpointName.startsWith("Sender ") || checkpointName.startsWith("Listener ")) && isEndpoint;
 		} 
 		if (STUB_STRATEGY_ALWAYS.equals(stubStrategy)
-			// Don't stub messageId as IbisDebuggerAdvice will read it as correlationId from IPipeLineSession and
+			// Don't stub messageId as IbisDebuggerAdvice will read it as correlationId from PipeLineSession and
 			// use it as correlationId parameter for checkpoints, hence these checkpoint will not be correlated to
 			// the report with the correlationId used by the rerun method
 			&& !"SessionKey messageId".equals(checkpointName)) {

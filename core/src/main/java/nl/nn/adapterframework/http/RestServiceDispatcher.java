@@ -41,10 +41,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.pipes.CreateRestViewPipe;
@@ -141,7 +140,7 @@ public class RestServiceDispatcher  {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
 	 */
-	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, IPipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
+	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
 		
@@ -270,9 +269,9 @@ public class RestServiceDispatcher  {
 			if (etagKey!=null) context.put(etagKey,etag);
 			if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
 			if (log.isTraceEnabled()) log.trace("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
-			if (httpServletRequest!=null) context.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
-			if (httpServletResponse!=null) context.put(IPipeLineSession.HTTP_RESPONSE_KEY, httpServletResponse);
-			if (servletContext!=null) context.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
+			if (httpServletRequest!=null) context.put(PipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
+			if (httpServletResponse!=null) context.put(PipeLineSession.HTTP_RESPONSE_KEY, httpServletResponse);
+			if (servletContext!=null) context.put(PipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
 
 			if (writeToSecLog) {
 				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
@@ -358,9 +357,9 @@ public class RestServiceDispatcher  {
 			pipe.registerForward(pipeForward);
 			pipe.configure();
 			pipe.start();
-			IPipeLineSession session = new PipeLineSessionBase();
-			session.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
-			session.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
+			PipeLineSession session = new PipeLineSession();
+			session.put(PipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
+			session.put(PipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
 			String result = pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult().asString();
 			pipe.stop();
 			return result;

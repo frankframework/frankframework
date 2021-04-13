@@ -38,8 +38,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -127,7 +126,7 @@ public class HttpSenderResultTest extends Mockito {
 	public void simpleMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSender();
 
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		sender.setMethodType("GET");
 
@@ -143,7 +142,7 @@ public class HttpSenderResultTest extends Mockito {
 	public void simpleBase64MockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSender();
 
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		sender.setMethodType("GET");
 		sender.setBase64(true);
@@ -168,7 +167,7 @@ public class HttpSenderResultTest extends Mockito {
 	public void simpleBase64MockedHttpPost() throws Exception {
 		HttpSender sender = createHttpSender();
 
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("inputMessageParam");
@@ -188,7 +187,7 @@ public class HttpSenderResultTest extends Mockito {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.setMethodType("GET");
 		sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
@@ -209,7 +208,7 @@ public class HttpSenderResultTest extends Mockito {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.setMethodType("POST");
 		sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
@@ -230,7 +229,7 @@ public class HttpSenderResultTest extends Mockito {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.setMethodType("GET");
 		sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
@@ -251,7 +250,7 @@ public class HttpSenderResultTest extends Mockito {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.setMethodType("POST");
 		sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
@@ -271,7 +270,7 @@ public class HttpSenderResultTest extends Mockito {
 	public void simpleMultiPartResponseMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSenderFromFile("multipart1.txt");
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.setMethodType("GET");
 		sender.setMultipartResponse(true);
@@ -300,7 +299,7 @@ public class HttpSenderResultTest extends Mockito {
 	public void simpleMtomResponseMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSenderFromFile("mtom-multipart.txt");
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.setMethodType("GET");
 		sender.setMultipartResponse(true);

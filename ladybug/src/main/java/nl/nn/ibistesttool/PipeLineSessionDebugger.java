@@ -15,188 +15,64 @@
 */
 package nl.nn.ibistesttool;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
-import java.security.Principal;
-import java.util.Collection;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 
-import org.apache.commons.lang3.NotImplementedException;
-
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.ISecurityHandler;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * Wrapper class for PipeLineSession to be able to debug storing values in
  * session keys.
- * 
- * @author  Jaco de Groot (jaco@dynasol.nl)
  */
+public class PipeLineSessionDebugger implements MethodHandler {
 
-public class PipeLineSessionDebugger implements IPipeLineSession {
-	private IPipeLineSession pipeLineSession;
+	private PipeLineSession pipeLineSession;
 	private IbisDebugger ibisDebugger;
 
-	PipeLineSessionDebugger(IPipeLineSession pipeLineSession) {
+	private PipeLineSessionDebugger(PipeLineSession pipeLineSession, IbisDebugger ibisDebugger) {
 		this.pipeLineSession = pipeLineSession;
-	}
-
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
 		this.ibisDebugger = ibisDebugger;
 	}
-
-	// Methods implementing IPipeLineSession
-
-	@Override
-	public String getMessageId() {
-		return pipeLineSession.getMessageId();
+	
+	public static PipeLineSession newInstance(PipeLineSession pipeLineSession, IbisDebugger ibisDebugger) throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+		ProxyFactory factory = new ProxyFactory();
+		factory.setSuperclass(PipeLineSession.class);
+		PipeLineSessionDebugger handler = new PipeLineSessionDebugger(pipeLineSession, ibisDebugger);
+		return (PipeLineSession)factory.create(new Class[0], new Object[0], handler);
 	}
 
 	@Override
-	public Message getMessage(String key) {
-		return pipeLineSession.getMessage(key);
+	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
+		if (method.getName().equals("put")) {
+			return put((String)args[0], args[1]);
+		}
+		if (method.getName().equals("putAll")) {
+			putAll((Map<String,Object>)args[0]);
+			return null;
+		}
+		return method.invoke(pipeLineSession, args);
 	}
 
-	@Override
-	public void setSecurityHandler(ISecurityHandler handler) {
-		pipeLineSession.setSecurityHandler(handler);
-	}
-
-	@Override
-	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
-		return pipeLineSession.getSecurityHandler();
-	}
-
-	@Override
-	public boolean isUserInRole(String role) throws NotImplementedException {
-		return pipeLineSession.isUserInRole(role);
-	}
-
-	@Override
-	public Principal getPrincipal() throws NotImplementedException {
-		return pipeLineSession.getPrincipal();
-	}
-
-	// Methods implementing Map
-
-	@Override
-	public void clear() {
-		pipeLineSession.clear();
-	}
-
-	@Override
-	public boolean containsKey(Object key) {
-		return pipeLineSession.containsKey(key);
-	}
-
-	@Override
-	public boolean containsValue(Object value) {
-		return pipeLineSession.containsValue(value);
-	}
-
-	@Override
-	public Set<java.util.Map.Entry<String, Object>> entrySet() {
-		return pipeLineSession.entrySet();
-	}
-
-	@Override
-	public boolean equals(Object other) {
-		return pipeLineSession.equals(other);
-	}
-
-	@Override
-	public Object get(Object key) {
-		return pipeLineSession.get(key);
-	}
-
-	@Override
-	public int hashCode() {
-		return pipeLineSession.hashCode();
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return pipeLineSession.isEmpty();
-	}
-
-	@Override
-	public Set<String> keySet() {
-		return pipeLineSession.keySet();
-	}
-
-	@Override
-	public Object put(String name, Object value) {
+	private Object put(String name, Object value) {
 		Object oldValue = value;
-		value = ibisDebugger.storeInSessionKey(getMessageId(), name, value);
+		value = ibisDebugger.storeInSessionKey(pipeLineSession.getMessageId(), name, value);
 		if (value != oldValue && value instanceof Message) {
 			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
 			// keep the report in progress (waiting for the stream to be read, captured and closed).
-			((Message)value).closeOnCloseOf(this);
+			((Message)value).closeOnCloseOf(pipeLineSession);
 		}
 		return pipeLineSession.put(name, value);
 	}
 
-	@Override
-	public void putAll(Map<? extends String,? extends Object> entries) {
+	private void putAll(Map<? extends String,? extends Object> entries) {
 		for(Entry<? extends String,? extends Object> entry: entries.entrySet()) {
 			put(entry.getKey(),entry.getValue());
 		}
-	}
-
-	@Override
-	public Object remove(Object key) {
-		return pipeLineSession.remove(key);
-	}
-
-	@Override
-	public int size() {
-		return pipeLineSession.size();
-	}
-
-	@Override
-	public Collection<Object> values() {
-		return pipeLineSession.values();
-	}
-
-	@Override
-	public InputStream scheduleCloseOnSessionExit(InputStream stream) {
-		return pipeLineSession.scheduleCloseOnSessionExit(stream);
-	}
-
-	@Override
-	public OutputStream scheduleCloseOnSessionExit(OutputStream stream) {
-		return pipeLineSession.scheduleCloseOnSessionExit(stream);
-	}
-
-	@Override
-	public Reader scheduleCloseOnSessionExit(Reader reader) {
-		return pipeLineSession.scheduleCloseOnSessionExit(reader);
-	}
-
-	@Override
-	public Writer scheduleCloseOnSessionExit(Writer writer) {
-		return pipeLineSession.scheduleCloseOnSessionExit(writer);
-	}
-
-	@Override
-	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
-		pipeLineSession.unscheduleCloseOnSessionExit(resource);
-	}
-
-	@Override
-	public void close() {
-		pipeLineSession.close();
-	}
-
-	// Remaining methods
-
-	@Override
-	public String toString() {
-		return pipeLineSession.toString();
 	}
 
 }

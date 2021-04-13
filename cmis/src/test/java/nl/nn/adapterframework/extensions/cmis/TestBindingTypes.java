@@ -30,7 +30,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -123,7 +123,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 		byte[] base64 = Base64.encodeBase64("dummy data".getBytes());
 		session.put("fileContent", new String(base64));
 		HttpServletResponse response = mock(HttpServletResponse.class);
-		session.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
+		session.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 
 		Session cmisSession = mock(Session.class);
 		ObjectFactory objectFactory = mock(ObjectFactoryImpl.class);

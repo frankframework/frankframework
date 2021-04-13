@@ -37,41 +37,56 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 
 /**
- * Basic implementation of <code>IPipeLineSession</code>.
+ * Basic implementation of <code>PipeLineSession</code>.
  * 
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public class PipeLineSessionBase extends HashMap<String,Object> implements IPipeLineSession {
+public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
 	private Logger log = LogUtil.getLogger(this);
+
+	public static final String originalMessageKey="originalMessage";
+	public static final String originalMessageIdKey="id";
+	public static final String messageIdKey="messageId";
+	public static final String businessCorrelationIdKey="cid";
+	public static final String technicalCorrelationIdKey="tcid";
+	public static final String tsReceivedKey="tsReceived";
+	public static final String tsSentKey="tsSent";
+	public static final String securityHandlerKey="securityHandler";
+
+	public static final String HTTP_REQUEST_KEY    = "restListenerServletRequest";
+	public static final String HTTP_RESPONSE_KEY   = "restListenerServletResponse";
+	public static final String SERVLET_CONTEXT_KEY = "restListenerServletContext";
+
+	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
+	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
+	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
 	private ISecurityHandler securityHandler = null;
 	
 	// Map that maps resources to wrapped versions of them. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	private Map<AutoCloseable,AutoCloseable> closeables = new HashMap<>(); 
-	public PipeLineSessionBase() {
+	public PipeLineSession() {
 		super();
 	}
 
-	public PipeLineSessionBase(int initialCapacity) {
+	public PipeLineSession(int initialCapacity) {
 		super(initialCapacity);
 	}
 
-	public PipeLineSessionBase(int initialCapacity, float loadFactor) {
+	public PipeLineSession(int initialCapacity, float loadFactor) {
 		super(initialCapacity, loadFactor);
 	}
 
-	public PipeLineSessionBase(Map<String, Object> t) {
+	public PipeLineSession(Map<String, Object> t) {
 		super(t);
 	}
 
 	//Shouldn't this be `id` ? See {#setListenerParameters(...)};
-	@Override
 	public String getMessageId() {
 		return (String) Message.asObject(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
 	}
 
-	@Override
 	public Message getMessage(String key) {
 		Object obj = get(key);
 		if(obj != null) {
@@ -99,13 +114,11 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		}
 	}
 
-	@Override
 	public void setSecurityHandler(ISecurityHandler handler) {
 		securityHandler = handler;
 		put(securityHandlerKey, handler);
 	}
 
-	@Override
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler==null) {
 			securityHandler=(ISecurityHandler)get(securityHandlerKey);
@@ -116,13 +129,11 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		return securityHandler;
 	}
 
-	@Override
 	public boolean isUserInRole(String role) throws NotImplementedException {
 		ISecurityHandler handler = getSecurityHandler();
 		return handler.isUserInRole(role, this);
 	}
 
-	@Override
 	public Principal getPrincipal() throws NotImplementedException {
 		ISecurityHandler handler = getSecurityHandler();
 		return handler.getPrincipal(this);
@@ -131,8 +142,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	private String getString(String key) {
 		try {
 			return (String) get(key);
-		}
-		catch(Exception e) {
+		} catch(Exception e) {
 			return get(key).toString();
 		}
 	}
@@ -161,10 +171,10 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Boolean)
+		if(ob instanceof Boolean) {
 			return (Boolean) ob;
-		else
-			return this.getString(key).equalsIgnoreCase("true");
+		}
+		return this.getString(key).equalsIgnoreCase("true");
 	}
 
 	/**
@@ -177,10 +187,10 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Integer)
+		if(ob instanceof Integer) {
 			return (Integer) ob;
-		else
-			return Integer.parseInt(this.getString(key));
+		}
+		return Integer.parseInt(this.getString(key));
 	}
 
 	/**
@@ -193,10 +203,10 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Long)
+		if(ob instanceof Long) {
 			return (Long) ob;
-		else
-			return Long.parseLong(this.getString(key));
+		}
+		return Long.parseLong(this.getString(key));
 	}
 
 	/**
@@ -209,28 +219,24 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Double)
+		if(ob instanceof Double) {
 			return (Double) ob;
-		else
-			return Double.parseDouble(this.getString(key));
+		}
+		return Double.parseDouble(this.getString(key));
 	}
 	
-	@Override
 	public InputStream scheduleCloseOnSessionExit(InputStream stream) {
 		return scheduleCloseOnSessionExit(stream, StreamUtil::onClose );
 	}
 		
-	@Override
 	public OutputStream scheduleCloseOnSessionExit(OutputStream stream) {
 		return scheduleCloseOnSessionExit(stream, StreamUtil::onClose );
 	}
 
-	@Override
 	public Reader scheduleCloseOnSessionExit(Reader reader) {
 		return scheduleCloseOnSessionExit(reader, StreamUtil::onClose );
 	}
 		
-	@Override
 	public Writer scheduleCloseOnSessionExit(Writer writer) {
 		return scheduleCloseOnSessionExit(writer, StreamUtil::onClose );
 	}
@@ -256,7 +262,6 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	}
 
 
-	@Override
 	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
 		Optional<Entry<AutoCloseable, AutoCloseable>> entry = closeables.entrySet().stream().filter(e -> resource == e.getValue()).findFirst();
 		if (entry.isPresent()) {

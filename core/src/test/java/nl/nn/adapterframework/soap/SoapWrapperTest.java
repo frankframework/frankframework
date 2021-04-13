@@ -5,8 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -78,7 +77,7 @@ public class SoapWrapperTest {
 		String soapMessage = soapMessageSoap11;
 		String expectedSoapBody = expectedSoapBody11;
 		String soapBody = null;
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
 			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
@@ -96,7 +95,7 @@ public class SoapWrapperTest {
 		String soapMessage = soapMessageSoap12;
 		String expectedSoapBody = expectedSoapBody12;
 		String soapBody = null;
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
 			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
@@ -114,7 +113,7 @@ public class SoapWrapperTest {
 		String soapMessage = xmlMessage;
 		String expectedSoapBody = xmlMessage;
 		String soapBody = null;
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
 			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();

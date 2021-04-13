@@ -26,7 +26,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.stream.Message;
@@ -65,7 +65,7 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		ContentHandler handler = createHandler(null, session, target);
 		JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
@@ -73,7 +73,7 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	protected ContentHandler createHandler(Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(Message input, PipeLineSession session, MessageOutputStream target) throws StreamingException {
 		if (!isJsonResult()) {
 			return super.createHandler(input, session, target);
 		}
@@ -88,7 +88,7 @@ public class JsonXsltSender extends XsltSender {
 
 
 	@Override
-	protected XMLReader getXmlReader(IPipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
+	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
 		if (getXmlDebugger()!=null) {
 			handler = getXmlDebugger().inspectXml(session, "JSON converted to XML", handler);
 		}

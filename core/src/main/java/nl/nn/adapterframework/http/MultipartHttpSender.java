@@ -18,7 +18,7 @@ package nl.nn.adapterframework.http;
 import java.io.IOException;
 import java.io.InputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 
@@ -39,7 +39,7 @@ public class MultipartHttpSender extends HttpSender {
 	}
 
 	@Override
-	protected FormBodyPart elementToFormBodyPart(Element element, IPipeLineSession session) {
+	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) {
 		String partType = element.getAttribute("type"); //File or otherwise
 		String partName = element.getAttribute("name"); //Name of the part
 		String fileName = (StringUtils.isNotEmpty(element.getAttribute("filename"))) ? element.getAttribute("filename") : element.getAttribute("fileName"); //Name of the file
@@ -73,7 +73,7 @@ public class MultipartHttpSender extends HttpSender {
 	 * Automatically detect if the response is a multipart response or not. (duh!)
 	 */
 	@Override
-	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		String contentType = responseHandler.getHeader("content-type");
 		if(contentType != null)
 			setMultipartResponse(contentType.contains("multipart"));

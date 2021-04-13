@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -87,7 +87,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 					Map<String, Object> parametervalues = null;
 					try {
-						parametervalues = params.getValues(new Message(errorMessage), new PipeLineSessionBase()).getValueMap();
+						parametervalues = params.getValues(new Message(errorMessage), new PipeLineSession()).getValueMap();
 					} catch (ParameterException e) {
 						log.error("got exception extracting parameters",e);
 					}

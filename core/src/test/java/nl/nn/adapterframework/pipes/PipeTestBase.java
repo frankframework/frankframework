@@ -8,11 +8,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -22,7 +21,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class PipeTestBase<P extends IPipe> {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected IPipeLineSession session = new PipeLineSessionBase();
+	protected PipeLineSession session = new PipeLineSession();
 
 	protected P pipe;
 	protected PipeLine pipeline;
@@ -84,11 +83,11 @@ public abstract class PipeTestBase<P extends IPipe> {
 	protected PipeRunResult doPipe(Message input) throws PipeRunException {
 		return doPipe(pipe, input, session);
 	}
-	protected PipeRunResult doPipe(P pipe, Message input, IPipeLineSession session) throws PipeRunException {
+	protected PipeRunResult doPipe(P pipe, Message input, PipeLineSession session) throws PipeRunException {
 		return pipe.doPipe(input, session);
 	}
 	
-	protected PipeRunResult doPipe(P pipe, Object input, IPipeLineSession session) throws PipeRunException {
+	protected PipeRunResult doPipe(P pipe, Object input, PipeLineSession session) throws PipeRunException {
 		return doPipe(pipe, Message.asMessage(input), session);
 	}
 

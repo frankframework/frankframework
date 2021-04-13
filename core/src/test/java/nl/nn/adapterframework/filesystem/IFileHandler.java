@@ -1,14 +1,14 @@
 package nl.nn.adapterframework.filesystem;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 
 public interface IFileHandler {
 	public void configure() throws ConfigurationException;
 
-	public Object handle(Message input, IPipeLineSession session, ParameterList paramList) throws Exception;
+	public Object handle(Message input, PipeLineSession session, ParameterList paramList) throws Exception;
 	
 	public void setActions(String actions);
 	public void setCharset(String charset);

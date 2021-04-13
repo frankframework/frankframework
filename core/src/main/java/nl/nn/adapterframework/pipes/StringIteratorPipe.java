@@ -21,7 +21,7 @@ import java.io.Writer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -61,7 +61,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 
 	
 	@Override
-	protected IteratingPipe<String>.ItemCallback createItemCallBack(IPipeLineSession session, ISender sender, Writer writer) {
+	protected IteratingPipe<String>.ItemCallback createItemCallBack(PipeLineSession session, ISender sender, Writer writer) {
 		return new ItemCallback(session, sender, writer) {
 
 			private int itemCounter=0;
