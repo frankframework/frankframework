@@ -42,6 +42,7 @@ import org.springframework.transaction.TransactionDefinition;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
@@ -145,7 +146,8 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableMessageBrowser<S> implements ITransactionalStorage<S> {
 
-	private @Getter boolean checkIfTableExists=false;
+	private @Getter boolean checkTable; 		// default set from appConstant jdbc.storage.checkTable
+	private @Getter boolean checkIndices;		// default set from appConstant jdbc.storage.checkIndices
 	private @Getter boolean createTable=false;
 
 	private String host;
@@ -181,8 +183,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	private static final String PROPERTY_CHECK_INDICES=CONTROL_PROPERTY_PREFIX+"checkIndices";	
 	
 	private static final boolean documentQueries=false;
-	private boolean checkTable;
-	private boolean checkIndices;	
 
 	protected @Getter @Setter PlatformTransactionManager txManager;
 
@@ -317,13 +317,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 						} else {
 							throw new ConfigurationException("Attribute [sequenceName] is not set");
 						}
-						}
-						if (checkIndices) {
-							checkIndices(connection);
-						}
-					} else {
-						ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
 					}
+					if (checkIndices) {
+						checkIndices(connection);
+					}
+				} else {
+					ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
+				}
 			} catch (JdbcException e) {
 				ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]"+e.getMessage(), e);
 			} catch (SQLException e) {
@@ -453,7 +453,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		try (Connection conn = getConnection()) {
 			boolean tableMustBeCreated;
 
-			if (isCheckIfTableExists()) {
+			if (isCheckTable()) {
 				try {
 					tableMustBeCreated = !getDbmsSupport().isTablePresent(conn, getPrefix()+getTableName());
 					if (!isCreateTable() && tableMustBeCreated) {
@@ -886,11 +886,16 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		sequenceName = string;
 	}
 
-	@IbisDoc({"5", "If set to <code>true</code>, checks are performed if the table is properly created", "false"})
+	@Deprecated
+	@ConfigurationWarning("Replaced with checkTable")
 	public void setCheckIfTableExists(boolean b) {
-		checkIfTableExists = b;
+		setCheckTable(b);
 	}
 
+	@IbisDoc({"5", "If set to <code>true</code>, checks are performed if the table exists and is properly created", "false"})
+	public void setCheckTable(boolean b) {
+		checkTable = b;
+	}
 	
 	@IbisDoc({"6", "If set to <code>true</code>, the table is created if it does not exist", "false"})
 	public void setCreateTable(boolean b) {
