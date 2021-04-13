@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
