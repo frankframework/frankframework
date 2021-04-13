@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019, 2021 Nationale-Nederlanden
+   Copyright 2018-2021 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
 import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.w3c.dom.Element;
@@ -160,7 +161,18 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 					throw new WebServiceException(m, e);
 				}
 				pipelineSession.put("soapProtocol", soapProtocol);
-	
+				if(soapProtocol.equals(SOAPConstants.SOAP_1_1_PROTOCOL)) {
+					String soapAction = (String) webServiceContext.getMessageContext().get(SoapBindingConstants.SOAP_ACTION);
+					pipelineSession.put(SoapBindingConstants.SOAP_ACTION, soapAction);
+				} else if(soapProtocol.equals(SOAPConstants.SOAP_1_2_PROTOCOL)) {
+					String contentType = (String) webServiceContext.getMessageContext().get("Content-Type");
+					if(contentType.contains("action")) {
+						// example content-type: application/xml; action=test
+						String soapAction = contentType.substring(contentType.indexOf("action")+7, contentType.length());
+						pipelineSession.put(SoapBindingConstants.SOAP_ACTION, soapAction);
+					}
+				}
+
 				// Process message via WebServiceListener
 				ISecurityHandler securityHandler = new WebServiceContextSecurityHandler(webServiceContext);
 				pipelineSession.setSecurityHandler(securityHandler);
