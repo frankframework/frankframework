@@ -33,7 +33,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -106,7 +106,7 @@ public class StreamPipe extends FixedForwardPipe {
 	}
 	
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Object result = message;
 		Map<String,Object> parameters = null;
 		ParameterList parameterList = getParameterList();
@@ -261,7 +261,7 @@ public class StreamPipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 	
-	protected String adjustFirstStringPart(String firstStringPart, IPipeLineSession session) throws PipeRunException {
+	protected String adjustFirstStringPart(String firstStringPart, PipeLineSession session) throws PipeRunException {
 		if (firstStringPart == null) {
 			return "";
 		} else {
@@ -277,11 +277,11 @@ public class StreamPipe extends FixedForwardPipe {
 		}
 	}
 
-	private void addSessionKey(IPipeLineSession session, String key, Object value) {
+	private void addSessionKey(PipeLineSession session, String key, Object value) {
 		addSessionKey(session, key, value, null);
 	}
 
-	private void addSessionKey(IPipeLineSession session, String key, Object value, String name) {
+	private void addSessionKey(PipeLineSession session, String key, Object value, String name) {
 		String message = getLogPrefix(session) + "setting sessionKey [" + key + "] to ";
 		if (value instanceof InputStream) {
 			message = message + "input stream of file [" + name + "]";

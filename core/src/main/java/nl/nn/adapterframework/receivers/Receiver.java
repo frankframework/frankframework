@@ -57,7 +57,6 @@ import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.IPullingListener;
@@ -71,7 +70,7 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttributes;
@@ -327,8 +326,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return configurationSucceeded;
 	}
 
-	private IPipeLineSession createProcessingContext(String correlationId, Map<String,Object> threadContext, String messageId) {
-		IPipeLineSession pipelineSession = new PipeLineSessionBase();
+	private PipeLineSession createProcessingContext(String correlationId, Map<String,Object> threadContext, String messageId) {
+		PipeLineSession pipelineSession = new PipeLineSession();
 		if (threadContext != null) {
 			pipelineSession.putAll(threadContext);
 			if (log.isDebugEnabled()) {
@@ -365,7 +364,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return hiddenString;
 	}
 
-	private void putSessionKeysIntoThreadContext(Map<String,Object>threadContext, IPipeLineSession pipelineSession) {
+	private void putSessionKeysIntoThreadContext(Map<String,Object>threadContext, PipeLineSession pipelineSession) {
 		if (StringUtils.isNotEmpty(getReturnedSessionKeys()) && threadContext != null) {
 			if (log.isDebugEnabled()) {
 				log.debug(getLogPrefix()+"setting returned session keys [" + getReturnedSessionKeys() + "]");
@@ -996,15 +995,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		Date tsSent = null;
 		if (context!=null) {
 			//ClassCasting Exceptions occur when using PipeLineSessionBase.setListenerParameters, hence these silly instanceof's
-			Object tsReceivedObj = context.get(IPipeLineSession.tsReceivedKey);
-			Object tsSentObj = (Date)context.get(IPipeLineSession.tsSentKey);
+			Object tsReceivedObj = context.get(PipeLineSession.tsReceivedKey);
+			Object tsSentObj = (Date)context.get(PipeLineSession.tsSentKey);
 			if(tsReceivedObj instanceof Date) {
-				tsReceived = (Date) context.get(IPipeLineSession.tsReceivedKey);
+				tsReceived = (Date) context.get(PipeLineSession.tsReceivedKey);
 			} else if(tsReceivedObj instanceof String) {
 				tsReceived = DateUtils.parseToDate((String) tsReceivedObj, DateUtils.FORMAT_FULL_GENERIC);
 			}
 			if(tsSentObj instanceof Date) {
-				tsSent = (Date) context.get(IPipeLineSession.tsSentKey);
+				tsSent = (Date) context.get(PipeLineSession.tsSentKey);
 			} else if(tsSentObj instanceof String) {
 				tsSent = DateUtils.parseToDate((String) tsSentObj, DateUtils.FORMAT_FULL_GENERIC);
 			}
@@ -1012,8 +1011,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			context=new HashMap<>();
 		}
 
-		PipeLineSessionBase.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
-		String messageId = (String) context.get(IPipeLineSession.originalMessageIdKey);
+		PipeLineSession.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
+		String messageId = (String) context.get(PipeLineSession.originalMessageIdKey);
 		return processMessageInAdapter(rawMessage, message, messageId, correlationId, context, waitingTime, false);
 	}
 
@@ -1077,7 +1076,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				throw new ListenerException(e);
 			}
 		}
-		String messageId = (String)threadContext.get(IPipeLineSession.originalMessageIdKey);
+		String messageId = (String)threadContext.get(PipeLineSession.originalMessageIdKey);
 		long endExtractingMessage = System.currentTimeMillis();
 		messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
 		processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
@@ -1116,11 +1115,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 			try {	
 				if (msg instanceof Serializable) {
-					String originalMessageId = (String)threadContext.get(IPipeLineSession.originalMessageIdKey);
-					String correlationId = (String)threadContext.get(IPipeLineSession.businessCorrelationIdKey);
-					String receivedDateStr = (String)threadContext.get(IPipeLineSession.tsReceivedKey);
+					String originalMessageId = (String)threadContext.get(PipeLineSession.originalMessageIdKey);
+					String correlationId = (String)threadContext.get(PipeLineSession.businessCorrelationIdKey);
+					String receivedDateStr = (String)threadContext.get(PipeLineSession.tsReceivedKey);
 					if (receivedDateStr==null) {
-						log.warn(getLogPrefix()+IPipeLineSession.tsReceivedKey+" is unknown, cannot update comments");
+						log.warn(getLogPrefix()+PipeLineSession.tsReceivedKey+" is unknown, cannot update comments");
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
 						errorStorage.deleteMessage(storageKey);
@@ -1211,7 +1210,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			businessCorrelationId=messageId;
 		}
 		log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
-		threadContext.put(IPipeLineSession.businessCorrelationIdKey, businessCorrelationId);
+		threadContext.put(PipeLineSession.businessCorrelationIdKey, businessCorrelationId);
 		String label=null;
 		if (labelTp!=null) {
 			try {
@@ -1251,7 +1250,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		// count in processing statistics includes messages that are rolled back to input
 		startProcessingMessage(waitingDuration);
 		
-		IPipeLineSession pipelineSession = null;
+		PipeLineSession pipelineSession = null;
 		String errorMessage="";
 		boolean messageInError = false;
 		Message result = null;
@@ -1403,8 +1402,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private void setExitState(Map<String,Object> threadContext, String state, int code) {
 		if (threadContext!=null) {
-			threadContext.put(IPipeLineSession.EXIT_STATE_CONTEXT_KEY, state);
-			threadContext.put(IPipeLineSession.EXIT_CODE_CONTEXT_KEY, code);
+			threadContext.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, state);
+			threadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, code);
 		}
 	}
 	

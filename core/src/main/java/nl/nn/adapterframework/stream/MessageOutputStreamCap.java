@@ -30,6 +30,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 	private Object responseBuffer;
 	private Object captureStream;
 	private int caputureSize;
+	private String charset;
 	
 	public MessageOutputStreamCap(INamedObject owner, IForwardTarget next) {
 		super(owner, next);
@@ -44,11 +45,12 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 	}
 
 	@Override
-	public OutputStream asStream() throws StreamingException {
+	public OutputStream asStream(String charset) throws StreamingException {
+		this.charset=charset;
 		if (super.asNative()==null) {
 			setRequestStream(new ByteArrayOutputStream());
 		}
-		return super.asStream();
+		return super.asStream(charset);
 	}
 
 	@Override
@@ -76,13 +78,13 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 	}
 
 	@Override
-	public Object getResponse() {
+	public Message getResponse() {
 		if (responseBuffer==null) {
 			return null;
 		} else if (responseBuffer instanceof ByteArrayOutputStream) {
-			return ((ByteArrayOutputStream)responseBuffer).toByteArray();
+			return new Message(((ByteArrayOutputStream)responseBuffer).toByteArray(), charset);
 		} else {
-			return responseBuffer.toString();
+			return new Message(responseBuffer.toString());
 		}
 	}
 

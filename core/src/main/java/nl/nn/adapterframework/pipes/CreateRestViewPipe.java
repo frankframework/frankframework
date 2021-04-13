@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -160,8 +160,8 @@ public class CreateRestViewPipe extends XsltPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
-		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
+		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		String requestURL = httpServletRequest.getRequestURL().toString();
 		String servletPath = httpServletRequest.getServletPath();
 		String uri = StringUtils.substringAfter(requestURL, servletPath);
@@ -176,7 +176,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		log.debug("transforming page [" + result + "] to view");
 
 		String newResult = null;
-		ServletContext servletContext = (ServletContext) session.get(IPipeLineSession.SERVLET_CONTEXT_KEY);
+		ServletContext servletContext = (ServletContext) session.get(PipeLineSession.SERVLET_CONTEXT_KEY);
 
 		try {
 			Map<String,Object> parameters = retrieveParameters(httpServletRequest, servletContext, srcPrefix);

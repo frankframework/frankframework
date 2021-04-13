@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.validation;
 
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.pipes.XmlValidator;
@@ -77,7 +77,7 @@ public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {
 			return;
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		String input = TestFileUtils.getTestFile(xmlLocation);
 
 		try {

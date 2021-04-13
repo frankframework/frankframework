@@ -19,9 +19,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 
@@ -70,13 +69,13 @@ public class ParameterList extends ArrayList<Parameter> {
 	}
 	
 
-	public ParameterValueList getValues(Message message, IPipeLineSession session) throws ParameterException {
+	public ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
 		return getValues(message, session, true);
 	}
 	/**
 	 * Returns an array list of <link>ParameterValue<link> objects
 	 */
-	public ParameterValueList getValues(Message message, IPipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		ParameterValueList result = new ParameterValueList();
 		for (Parameter parm:this) {
 			String parmSessionKey = parm.getSessionKey();
@@ -85,7 +84,7 @@ public class ParameterList extends ArrayList<Parameter> {
 			if ("*".equals(parmSessionKey)) {
 				String parmName = parm.getName();
 				for (String sessionKey: session.keySet()) {
-					if (!PipeLineSessionBase.tsReceivedKey.equals(sessionKey) && !PipeLineSessionBase.tsSentKey.equals(sessionKey)) {
+					if (!PipeLineSession.tsReceivedKey.equals(sessionKey) && !PipeLineSession.tsSentKey.equals(sessionKey)) {
 						if ((sessionKey.startsWith(parmName) || "*".equals(parmName))) {
 							Parameter newParm = new Parameter();
 							newParm.setName(sessionKey);
@@ -106,7 +105,7 @@ public class ParameterList extends ArrayList<Parameter> {
 		return result;
 	}
 
-	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p, Message message, IPipeLineSession session, boolean namespaceAware) throws ParameterException {
+	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, message, session, namespaceAware));
 	}
 

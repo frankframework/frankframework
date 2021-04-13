@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.javascript;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 
@@ -74,7 +74,7 @@ public interface JavascriptEngine<E> {
 	 * 
 	 * @param sender		The sender given in the adapter configuration
 	 */
-	public void registerCallback(ISender sender, IPipeLineSession session);
+	public void registerCallback(ISender sender, PipeLineSession session);
 
 	/**
 	 * Registers the result and error functions to be handled by the given result handler.

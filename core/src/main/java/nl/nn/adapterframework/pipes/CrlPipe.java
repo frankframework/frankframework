@@ -26,7 +26,7 @@ import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -77,7 +77,7 @@ public class CrlPipe extends FixedForwardPipe {
 	private String issuerSessionKey;
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		X509CRL crl;
 		try (InputStream inputStream = message.asInputStream()) {
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");

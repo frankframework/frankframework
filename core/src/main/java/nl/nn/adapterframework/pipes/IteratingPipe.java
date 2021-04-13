@@ -33,7 +33,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -177,11 +177,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe implements ITh
 		}
 	}
 
-	protected IDataIterator<I> getIterator(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<I> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		return null;
 	}
 
-	protected ItemCallback createItemCallBack(IPipeLineSession session, ISender sender, Writer out) {
+	protected ItemCallback createItemCallBack(PipeLineSession session, ISender sender, Writer out) {
 		return new ItemCallback(session, sender, out);
 	}
 	
@@ -189,7 +189,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe implements ITh
 		return Message.asMessage(item);
 	}
 
-	protected void iterateOverInput(Message input, IPipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException, IOException {
+	protected void iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException, IOException {
 		IDataIterator<I> it=null;
 		it = getIterator(input,session, threadContext);
 		try {
@@ -219,7 +219,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe implements ITh
 	}
 
 	protected class ItemCallback {
-		private IPipeLineSession session;
+		private PipeLineSession session;
 		private ISender sender; 
 		private Writer results;
 		private int itemsInBlock=0;
@@ -230,7 +230,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe implements ITh
 		private Guard guard;
 		private List<ParallelSenderExecutor> executorList;
 
-		public ItemCallback(IPipeLineSession session, ISender sender, Writer out) {
+		public ItemCallback(PipeLineSession session, ISender sender, Writer out) {
 			this.session=session;
 			this.sender=sender;
 			this.results=out;
@@ -452,7 +452,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe implements ITh
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return null; // ancestor MessageSendingPipe forwards provideOutputStream to sender, which is not correct for IteratingPipe
 	}
 
@@ -462,7 +462,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe implements ITh
 	}
 
 	@Override
-	protected PipeRunResult sendMessage(Message input, IPipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, IOException {
+	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		try (MessageOutputStream target=getTargetStream(session)) { 
 			try (Writer resultWriter = target.asWriter()) {

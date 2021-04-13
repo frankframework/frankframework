@@ -18,7 +18,7 @@ public class SizePipeTest extends PipeTestBase<SizePipe>{
 
 	/**
 	 * 
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 * 
 	 */
 	@Test

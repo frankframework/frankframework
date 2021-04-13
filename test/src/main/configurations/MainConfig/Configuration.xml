@@ -7,6 +7,7 @@
 	<!ENTITY ErrorMessageFormatter SYSTEM "./ConfigurationErrorMessageFormatter.xml">
 	<!ENTITY ExceptionPipe SYSTEM "./ConfigurationExceptionPipe.xml">
 	<!ENTITY ExchangeMail SYSTEM "./ConfigurationExchangeMail.xml">
+	<!ENTITY Exits SYSTEM "./ConfigurationExits.xml">
 	<!ENTITY ReplacerPipe SYSTEM "./ConfigurationReplacerPipe.xml">
 	<!ENTITY ReplaceInputAndPreserve SYSTEM "./ConfigurationReplaceInputAndPreserve.xml">
 	<!ENTITY CompareStringPipe SYSTEM "./ConfigurationCompareStringPipe.xml">
@@ -67,6 +68,7 @@
 	&ErrorMessageFormatter;
 	&ExceptionPipe;
 	&ExchangeMail;
+	&Exits;
 	&ReplacerPipe;
 	&ReplaceInputAndPreserve;
 	&CompareStringPipe;

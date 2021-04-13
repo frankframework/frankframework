@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -101,11 +101,11 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 
-	protected ZipWriter getZipWriter(IPipeLineSession session) {
+	protected ZipWriter getZipWriter(PipeLineSession session) {
 		return ZipWriter.getZipWriter(session,getZipWriterHandle());
 	}
 
-	protected ZipWriter createZipWriter(IPipeLineSession session, ParameterValueList pvl, Message message) throws PipeRunException {
+	protected ZipWriter createZipWriter(PipeLineSession session, ParameterValueList pvl, Message message) throws PipeRunException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"opening new zipstream");
 		OutputStream resultStream=null;
 		Object input=message.asObject();
@@ -146,7 +146,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 
-	protected void closeZipWriterHandle(IPipeLineSession session, boolean mustFind) throws PipeRunException {
+	protected void closeZipWriterHandle(PipeLineSession session, boolean mustFind) throws PipeRunException {
 		ZipWriter sessionData=getZipWriter(session);
 		if (sessionData==null) {
 			if (mustFind) {
@@ -165,7 +165,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (ACTION_CLOSE.equals(getAction())) {
 			closeZipWriterHandle(session,true);
 			return new PipeRunResult(getForward(),input);
@@ -220,7 +220,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	protected String getLogPrefix(IPipeLineSession session) {
+	protected String getLogPrefix(PipeLineSession session) {
 		return super.getLogPrefix(session)+"action ["+getAction()+"] ";
 	}
 

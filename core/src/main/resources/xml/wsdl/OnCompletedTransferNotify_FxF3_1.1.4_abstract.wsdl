@@ -8,8 +8,22 @@
                     <xs:sequence>
                         <xs:element name="TransferFlowId" type="xs:string"/>
                         <xs:element name="UserData" type="xs:string"/>
-                        <xs:element name="ClientFilename" type="xs:string"/>
-                        <xs:element name="ServerFilename" type="xs:string"/>
+						<xs:element name="ClientFilename">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:minLength value="1"/>
+									<xs:whiteSpace value="collapse"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="ServerFilename">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:minLength value="1"/>
+									<xs:whiteSpace value="collapse"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
                         <xs:element name="LocalTransactionID" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
