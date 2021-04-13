@@ -102,9 +102,9 @@ public class ThreadConnector<T> {
 
 	public void storeTransactionInfo() {
 		resources = TransactionSynchronizationManager.getResourceMap();
-//		if (TransactionSynchronizationManager.isSynchronizationActive()) {
-//			synchronizations = TransactionSynchronizationManager.getSynchronizations();
-//		}
+		if (TransactionSynchronizationManager.isSynchronizationActive()) {
+			synchronizations = TransactionSynchronizationManager.getSynchronizations();
+		}
 		currentTransactionName = TransactionSynchronizationManager.getCurrentTransactionName();
 		currentTransactionReadOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
 		currentTransactionIsolationLevel = TransactionSynchronizationManager.getCurrentTransactionIsolationLevel();
@@ -115,7 +115,7 @@ public class ThreadConnector<T> {
 		if (resources!=null) {
 			resources.forEach((k,v) ->TransactionSynchronizationManager.bindResource(k, v));
 		}
-		if (synchronizations!=null) {
+		if (synchronizations!=null && TransactionSynchronizationManager.isSynchronizationActive()) {
 			synchronizations.forEach( v ->TransactionSynchronizationManager.registerSynchronization(v));
 		}
 		if (currentTransactionName!=null) {
