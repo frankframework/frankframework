@@ -19,17 +19,21 @@ import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEqual;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 
 import javax.json.JsonObject;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.sun.javadoc.ClassDoc;
+
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
-import nl.nn.adapterframework.frankdoc.model.FrankElementFilters;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -56,6 +60,14 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	@Parameter(3)
 	public String expectedJsonFileName;
 
+	private String packageOfClasses;
+
+	@Before
+	public void setUp() {
+		int idx = startClassName.lastIndexOf(".");
+		packageOfClasses = startClassName.substring(0, idx);
+	}
+
 	@Test
 	public void testXsd() throws Exception {
 		FrankDocModel model = createModel();
@@ -68,8 +80,9 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	}
 
 	private FrankDocModel createModel() throws Exception {
-		FrankClassRepository classRepository = FrankClassRepository.getReflectInstance(
-				FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter(), FrankElementFilters.getExcludeFiltersForSuperclass());
+		ClassDoc[] classDocs = TestUtil.getClassDocs(packageOfClasses);
+		FrankClassRepository classRepository = FrankClassRepository.getDocletInstance(
+				classDocs, new HashSet<>(Arrays.asList(packageOfClasses)), new HashSet<>(), new HashSet<>());
 		return FrankDocModel.populate(
 				getDigesterRulesPath(digesterRulesFileName), startClassName, classRepository);
 	}
