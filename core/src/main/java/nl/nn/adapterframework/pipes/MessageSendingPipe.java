@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -191,7 +192,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	private boolean streamResultToServlet=false;
 
-	private String stubFilename;
+	private @Getter String stubFilename;
 	private String timeOutOnResult;
 	private String exceptionOnResult;
 
@@ -256,20 +257,20 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void configure() throws ConfigurationException {
 		super.configure();
 		msgLog = LogUtil.getMsgLogger(getAdapter(), this);
-		if (StringUtils.isNotEmpty(getStubFileName())) {
+		if (StringUtils.isNotEmpty(getStubFilename())) {
 			URL stubUrl;
 			try {
-				stubUrl = ClassUtils.getResourceURL(this, getStubFileName());
+				stubUrl = ClassUtils.getResourceURL(this, getStubFilename());
 			} catch (Throwable e) {
-				throw new ConfigurationException("got exception finding resource for stubfile ["+getStubFileName()+"]", e);
+				throw new ConfigurationException("got exception finding resource for stubfile ["+getStubFilename()+"]", e);
 			}
 			if (stubUrl==null) {
-				throw new ConfigurationException("could not find resource for stubfile ["+getStubFileName()+"]");
+				throw new ConfigurationException("could not find resource for stubfile ["+getStubFilename()+"]");
 			}
 			try {
 				returnString = Misc.resourceToString(stubUrl, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new ConfigurationException("got exception loading stubfile ["+getStubFileName()+"] from resource ["+stubUrl.toExternalForm()+"]", e);
+				throw new ConfigurationException("got exception loading stubfile ["+getStubFilename()+"] from resource ["+stubUrl.toExternalForm()+"]", e);
 			}
 		} else {
 			propagateName();
@@ -363,7 +364,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog==null) {
-			if (StringUtils.isEmpty(getStubFileName()) && !getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) { // sender is asynchronous and not a local sender, but has no messageLog
+			if (StringUtils.isEmpty(getStubFilename()) && !getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) { // sender is asynchronous and not a local sender, but has no messageLog
 				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed(SuppressKeys.INTEGRITY_CHECK_SUPPRESS_KEY, getAdapter(), getConfigurationClassLoader());
 				if (!suppressIntegrityCheckWarning) {
 					boolean legacyCheckMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", true);
@@ -504,7 +505,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public boolean canProvideOutputStream() {
 		return super.canProvideOutputStream() && 
 				getInputValidator()==null && getInputWrapper()==null && getOutputValidator()==null && getOutputWrapper()==null &&
-				!isStreamResultToServlet() && StringUtils.isEmpty(getStubFileName()) && getMessageLog()==null && getListener()==null;
+				!isStreamResultToServlet() && StringUtils.isEmpty(getStubFilename()) && getMessageLog()==null && getListener()==null;
 	}
 
 	@Override
@@ -575,7 +576,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 		}
 
-		if (StringUtils.isNotEmpty(getStubFileName())) {
+		if (StringUtils.isNotEmpty(getStubFilename())) {
 			ParameterList pl = getParameterList();
 			result=new Message(returnString);
 			if (pl != null) {
@@ -597,10 +598,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						throw new PipeRunException(this,getLogPrefix(session)+"got exception loading result from stub [" + sfn + "]",e);
 					}
 				} else {
-					log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFileName()+"]");
+					log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFilename()+"]");
 				}
 			} else {
-				log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFileName()+"]");
+				log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFilename()+"]");
 			}
 		} else {
 			Map<String,Object> threadContext=new LinkedHashMap<String,Object>();
@@ -938,7 +939,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	@Override
 	public void start() throws PipeStartException {
-		if (StringUtils.isEmpty(getStubFileName())) {
+		if (StringUtils.isEmpty(getStubFilename())) {
 			try {
 				getSender().open();
 				if (getListener() != null) {
@@ -978,7 +979,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 	@Override
 	public void stop() {
-		if (StringUtils.isEmpty(getStubFileName())) {
+		if (StringUtils.isEmpty(getStubFilename())) {
 			log.info(getLogPrefix(null) + "is closing");
 			try {
 				getSender().close();
@@ -1350,10 +1351,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void setStubFilename(String filename) {
 		stubFilename = filename;
 	}
-	public String getStubFileName() {
-		return stubFilename;
-	}
-	
+
 	@IbisDoc({"26", "when not empty, a timeoutexception is thrown when the result equals this value (for testing purposes only)", ""})
 	public void setTimeOutOnResult(String string) {
 		timeOutOnResult = string;

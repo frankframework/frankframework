@@ -111,6 +111,12 @@ public class FilePipe extends FixedForwardPipe {
 		fileHandler.setFilename(filename);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
+	public void setFileNameSessionKey(String filenameSessionKey) {
+		setFilenameSessionKey(filenameSessionKey);
+	}
+
 	public void setFilenameSessionKey(String filenameSessionKey) {
 		fileHandler.setFilenameSessionKey(filenameSessionKey);
 	}
