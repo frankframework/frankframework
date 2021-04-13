@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
@@ -190,7 +191,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	private boolean streamResultToServlet=false;
 
-	private String stubFileName;
+	private String stubFilename;
 	private String timeOutOnResult;
 	private String exceptionOnResult;
 
@@ -1339,12 +1340,18 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return streamResultToServlet;
 	}
 
-	@IbisDoc({"25", "when set, the pipe returns a message from a file, instead of doing the regular process", ""})
+	@Deprecated
+	@ConfigurationWarning("attribute 'stubFileName' is replaced with 'stubFilename'")
 	public void setStubFileName(String fileName) {
-		stubFileName = fileName;
+		stubFilename = fileName;
+	}
+
+	@IbisDoc({"25", "when set, the pipe returns a message from a file, instead of doing the regular process", ""})
+	public void setStubFilename(String filename) {
+		stubFilename = filename;
 	}
 	public String getStubFileName() {
-		return stubFileName;
+		return stubFilename;
 	}
 	
 	@IbisDoc({"26", "when not empty, a timeoutexception is thrown when the result equals this value (for testing purposes only)", ""})

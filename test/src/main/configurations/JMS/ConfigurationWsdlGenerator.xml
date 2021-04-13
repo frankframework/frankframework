@@ -48,7 +48,7 @@
 			</outputWrapper>
 
 			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="WsdlGenerator/xml/fixedReply.xml">
+				filename="WsdlGenerator/xml/fixedReply.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 
@@ -94,7 +94,7 @@
 				soapBody="FindVehicleTypeRLY" throwException="true" />
 
 			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="WsdlGenerator/xml/fixedReply2.xml">
+				filename="WsdlGenerator/xml/fixedReply2.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 
@@ -142,7 +142,7 @@
 			</outputWrapper>
 
 			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="WsdlGenerator/xml/fixedReply3.xml">
+				filename="WsdlGenerator/xml/fixedReply3.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 
@@ -198,7 +198,7 @@
 			</outputWrapper>
 
 			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
-				fileName="WsdlGenerator/xml/fixedReply4.xml">
+				filename="WsdlGenerator/xml/fixedReply4.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 

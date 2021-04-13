@@ -101,12 +101,18 @@ public class FilePipe extends FixedForwardPipe {
 		fileHandler.setWriteSuffix(suffix);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
 	public void setFileName(String filename) {
 		fileHandler.setFileName(filename);
 	}
 
-	public void setFileNameSessionKey(String filenameSessionKey) {
-		fileHandler.setFileNameSessionKey(filenameSessionKey);
+	public void setFilename(String filename) {
+		fileHandler.setFilename(filename);
+	}
+
+	public void setFilenameSessionKey(String filenameSessionKey) {
+		fileHandler.setFilenameSessionKey(filenameSessionKey);
 	}
 
 	public void setCreateDirectory(boolean b) {
