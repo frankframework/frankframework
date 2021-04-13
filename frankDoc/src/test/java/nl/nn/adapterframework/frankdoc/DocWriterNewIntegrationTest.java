@@ -32,8 +32,10 @@ import javax.xml.validation.Validator;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
@@ -50,6 +52,9 @@ public class DocWriterNewIntegrationTest {
 	private static final String TEST_CONFIGURATION_FILE = "testConfiguration.xml";
 
 	private FrankClassRepository classRepository;
+
+	@ClassRule
+	public static TemporaryFolder testFolder = new TemporaryFolder();
 
 	@Before
 	public void setUp() {
@@ -111,7 +116,8 @@ public class DocWriterNewIntegrationTest {
 		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(rootClassName, version);
 		String xsdString = docWriter.getSchema();
-		File output = new File(outputSchemaFileName);
+
+		File output = new File(testFolder.getRoot(), outputSchemaFileName);
 		log.info("Output file of test xsd: " + output.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(output));
 		try {

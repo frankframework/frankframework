@@ -10,6 +10,21 @@
 	<artifactId>ibis-adapterframework-frankDoc</artifactId>
 	<name>Ibis AdapterFramework frankDoc</name>
 
+	<profiles>
+		<profile>
+			<id>ibissource</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<repositories>
+				<repository>
+					<id>ibissource</id>
+					<url>https://nexus.ibissource.org/content/groups/public</url>
+				</repository>
+			</repositories>
+		</profile>
+	</profiles>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -52,11 +67,9 @@
 			<groupId>com.sun</groupId>
 			<artifactId>tools</artifactId>
 			<version>1.8</version>
-			<scope>system</scope>
-			<!-- Not ${java.home}, because that would point to the JRE -->
-			<systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<testResources>
 			<testResource>
