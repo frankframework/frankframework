@@ -25,7 +25,7 @@ import org.apache.chemistry.opencmis.commons.spi.DiscoveryService;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.w3c.dom.Element;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
@@ -73,7 +73,7 @@ public class IbisDiscoveryService implements DiscoveryService {
 			cmisXml.addSubElement(buildXml("maxItems", maxItems));
 			cmisXml.addSubElement(buildXml("skipCount", skipCount));
 
-			IPipeLineSession context = new PipeLineSession();
+			PipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 			Element cmisResult = eventDispatcher.trigger(CmisEvent.QUERY, cmisXml.toXML(), context);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "objectList");

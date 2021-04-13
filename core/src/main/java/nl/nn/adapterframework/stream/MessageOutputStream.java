@@ -31,7 +31,7 @@ import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.json.JsonTee;
@@ -85,23 +85,23 @@ public class MessageOutputStream implements AutoCloseable {
 		this.requestStream=writer;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, next);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, nextStream);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
 	
-	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, next);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
-	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, nextStream);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
@@ -356,7 +356,7 @@ public class MessageOutputStream implements AutoCloseable {
 	/**
 	 * Provides a non-null MessageOutputStream, that the caller can use to obtain a Writer, OutputStream or ContentHandler.
 	 */
-	public static MessageOutputStream getTargetStream(INamedObject owner, IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public static MessageOutputStream getTargetStream(INamedObject owner, PipeLineSession session, IForwardTarget next) throws StreamingException {
 		IOutputStreamingSupport nextProvider=null;
 		if (next!=null && next instanceof IOutputStreamingSupport) {
 			nextProvider = (IOutputStreamingSupport)next;

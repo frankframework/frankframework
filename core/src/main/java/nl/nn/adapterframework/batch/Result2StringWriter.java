@@ -18,7 +18,7 @@ package nl.nn.adapterframework.batch;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 
 
 /**
@@ -30,12 +30,12 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 public class Result2StringWriter extends ResultWriter {
 	
 	@Override
-	protected Writer createWriter(IPipeLineSession session, String streamId) throws Exception {
+	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
 		return new StringWriter();
 	}
 
 	@Override
-	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
 		super.finalizeResult(session,streamId, error);
 		StringWriter writer = (StringWriter)getWriter(session,streamId,false);
 		String result=null;

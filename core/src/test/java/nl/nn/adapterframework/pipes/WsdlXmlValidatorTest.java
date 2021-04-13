@@ -20,7 +20,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -43,7 +43,7 @@ public class WsdlXmlValidatorTest extends Mockito {
     private static final String DOUBLE_BODY           = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetailsDoubleBody.wsdl";
     private static final String BASIC                 = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
 
-    private IPipeLineSession session = mock(IPipeLineSession.class);
+    private PipeLineSession session = mock(PipeLineSession.class);
 
     @Test
     public void wsdlValidate() throws Exception {
@@ -211,7 +211,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		val.registerForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
-		IPipeLineSession pls = new PipeLineSession();
+		PipeLineSession pls = new PipeLineSession();
 		val.validate("<xml/>", pls);
 		List<String> lines = Arrays.asList(
 				((String) pls.get(val.getReasonSessionKey())).split("\\r?\\n"));

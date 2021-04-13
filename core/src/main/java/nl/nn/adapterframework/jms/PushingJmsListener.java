@@ -28,7 +28,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
@@ -152,7 +152,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		String cid     = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
+		String cid     = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
 		Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PushingJmsListener.afterMessageProcessed()");
@@ -195,7 +195,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
 					PipeLineSession pipeLineSession = new PipeLineSession();
-					pipeLineSession.put(IPipeLineSession.messageIdKey,cid);
+					pipeLineSession.put(PipeLineSession.messageIdKey,cid);
 					getSender().sendMessage(plr.getResult(), pipeLineSession);
 				}
 			}

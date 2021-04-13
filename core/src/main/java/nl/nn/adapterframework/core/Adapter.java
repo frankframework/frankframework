@@ -579,7 +579,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public PipeLineResult processMessage(String messageId, Message message, IPipeLineSession pipeLineSession) {
+	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
 			return processMessageWithExceptions(messageId, message, pipeLineSession);
@@ -615,7 +615,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public PipeLineResult processMessageWithExceptions(String messageId, Message message, IPipeLineSession pipeLineSession) throws ListenerException {
+	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
 
 		PipeLineResult result = new PipeLineResult();
 

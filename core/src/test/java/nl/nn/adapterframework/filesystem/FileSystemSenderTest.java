@@ -16,7 +16,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -212,7 +212,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -234,7 +234,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setBase64("encode");
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -269,7 +269,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -319,7 +319,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(folder);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -345,7 +345,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(folder);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -381,7 +381,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		Message message=new Message(folder);
 		Message result = fileSystemSender.sendMessage(message, session);
 
@@ -405,7 +405,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -438,7 +438,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		deleteFile(null, dest);
 
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -473,7 +473,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message("");
 		Message result = fileSystemSender.sendMessage(message, session);

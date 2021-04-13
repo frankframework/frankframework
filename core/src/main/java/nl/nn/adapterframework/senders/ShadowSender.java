@@ -25,7 +25,7 @@ import java.util.Map;
 import org.springframework.core.task.TaskExecutor;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -101,7 +101,7 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();

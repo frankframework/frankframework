@@ -37,13 +37,30 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 
 /**
- * Basic implementation of <code>IPipeLineSession</code>.
+ * Basic implementation of <code>PipeLineSession</code>.
  * 
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public class PipeLineSession extends HashMap<String,Object> implements IPipeLineSession {
+public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
 	private Logger log = LogUtil.getLogger(this);
+
+	public static final String originalMessageKey="originalMessage";
+	public static final String originalMessageIdKey="id";
+	public static final String messageIdKey="messageId";
+	public static final String businessCorrelationIdKey="cid";
+	public static final String technicalCorrelationIdKey="tcid";
+	public static final String tsReceivedKey="tsReceived";
+	public static final String tsSentKey="tsSent";
+	public static final String securityHandlerKey="securityHandler";
+
+	public static final String HTTP_REQUEST_KEY    = "restListenerServletRequest";
+	public static final String HTTP_RESPONSE_KEY   = "restListenerServletResponse";
+	public static final String SERVLET_CONTEXT_KEY = "restListenerServletContext";
+
+	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
+	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
+	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
 	private ISecurityHandler securityHandler = null;
 	
@@ -66,12 +83,10 @@ public class PipeLineSession extends HashMap<String,Object> implements IPipeLine
 	}
 
 	//Shouldn't this be `id` ? See {#setListenerParameters(...)};
-	@Override
 	public String getMessageId() {
 		return (String) Message.asObject(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
 	}
 
-	@Override
 	public Message getMessage(String key) {
 		Object obj = get(key);
 		if(obj != null) {
@@ -99,13 +114,11 @@ public class PipeLineSession extends HashMap<String,Object> implements IPipeLine
 		}
 	}
 
-	@Override
 	public void setSecurityHandler(ISecurityHandler handler) {
 		securityHandler = handler;
 		put(securityHandlerKey, handler);
 	}
 
-	@Override
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler==null) {
 			securityHandler=(ISecurityHandler)get(securityHandlerKey);
@@ -116,13 +129,11 @@ public class PipeLineSession extends HashMap<String,Object> implements IPipeLine
 		return securityHandler;
 	}
 
-	@Override
 	public boolean isUserInRole(String role) throws NotImplementedException {
 		ISecurityHandler handler = getSecurityHandler();
 		return handler.isUserInRole(role, this);
 	}
 
-	@Override
 	public Principal getPrincipal() throws NotImplementedException {
 		ISecurityHandler handler = getSecurityHandler();
 		return handler.getPrincipal(this);
@@ -214,22 +225,18 @@ public class PipeLineSession extends HashMap<String,Object> implements IPipeLine
 		return Double.parseDouble(this.getString(key));
 	}
 	
-	@Override
 	public InputStream scheduleCloseOnSessionExit(InputStream stream) {
 		return scheduleCloseOnSessionExit(stream, StreamUtil::onClose );
 	}
 		
-	@Override
 	public OutputStream scheduleCloseOnSessionExit(OutputStream stream) {
 		return scheduleCloseOnSessionExit(stream, StreamUtil::onClose );
 	}
 
-	@Override
 	public Reader scheduleCloseOnSessionExit(Reader reader) {
 		return scheduleCloseOnSessionExit(reader, StreamUtil::onClose );
 	}
 		
-	@Override
 	public Writer scheduleCloseOnSessionExit(Writer writer) {
 		return scheduleCloseOnSessionExit(writer, StreamUtil::onClose );
 	}
@@ -255,7 +262,6 @@ public class PipeLineSession extends HashMap<String,Object> implements IPipeLine
 	}
 
 
-	@Override
 	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
 		Optional<Entry<AutoCloseable, AutoCloseable>> entry = closeables.entrySet().stream().filter(e -> resource == e.getValue()).findFirst();
 		if (entry.isPresent()) {

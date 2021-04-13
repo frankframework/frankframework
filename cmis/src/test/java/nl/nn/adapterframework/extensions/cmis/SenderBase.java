@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -28,7 +28,7 @@ public abstract class SenderBase<S extends ISender> extends Mockito {
 	protected S sender;
 
 	@Mock
-	protected IPipeLineSession session = new PipeLineSession();
+	protected PipeLineSession session = new PipeLineSession();
 
 	public abstract S createSender() throws ConfigurationException;
 

@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.testtool;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -18,7 +18,7 @@ public class SenderThread extends Thread {
 
 	private String name;
 	private ISender sender;
-	private IPipeLineSession session;
+	private PipeLineSession session;
 	private String request;
 	private String response;
 	private SenderException senderException;
@@ -26,7 +26,7 @@ public class SenderThread extends Thread {
 	private TimeOutException timeOutException;
 	private boolean convertExceptionToMessage = false;
 
-	SenderThread(ISender sender, String request, IPipeLineSession session, boolean convertExceptionToMessage) {
+	SenderThread(ISender sender, String request, PipeLineSession session, boolean convertExceptionToMessage) {
 		name = sender.getName();
 		this.sender = sender;
 		this.request = request;
@@ -42,7 +42,7 @@ public class SenderThread extends Thread {
 			if (session==null) {
 				session = new PipeLineSession();
 			}
-			session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+			session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 			response = sender.sendMessage(new Message(request), session).asString();
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {

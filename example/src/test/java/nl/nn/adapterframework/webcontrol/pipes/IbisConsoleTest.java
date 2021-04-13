@@ -24,7 +24,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -45,7 +45,7 @@ public class IbisConsoleTest {
 	private static Transformer showEnvironmentVariablesTransformer;
 	private static IbisTester ibisTester;
 	private static IbisContext ibisContext;
-	private IPipeLineSession session;
+	private PipeLineSession session;
 
 	@Before
 	public void initXMLUnit() throws IOException {
@@ -96,7 +96,7 @@ public class IbisConsoleTest {
 		showConfigurationStatus.configure(pipeLine);
 		session.put("configuration", "*ALL*");
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
+		session.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 		PipeRunResult pipeRunResult = showConfigurationStatus.doPipe(null, session);
 		String result = transformShowConfigurationStatusXml(pipeRunResult.getResult().asString());
 		// System.out.println("Result [" + result + "]");
@@ -116,7 +116,7 @@ public class IbisConsoleTest {
 		showConfigurationStatus.configure(pipeLine);
 		session.put("configuration", "Ibis4Example");
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
+		session.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 		PipeRunResult pipeRunResult = showConfigurationStatus.doPipe(null, session);
 		String result = transformShowConfigurationStatusXml(pipeRunResult.getResult().asString());
 		// System.out.println("Result [" + result + "]");
@@ -136,7 +136,7 @@ public class IbisConsoleTest {
 		showEnvironmentVariables.configure(pipeLine);
 		// session.put("configuration", "Ibis4Example");
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		session.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
+		session.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 		PipeRunResult pipeRunResult = showEnvironmentVariables.doPipe(null, session);
 		String result = transformShowEnvironmentVariablesXml(pipeRunResult.getResult().asString());
 		// System.out.println("Result [" + result + "]");

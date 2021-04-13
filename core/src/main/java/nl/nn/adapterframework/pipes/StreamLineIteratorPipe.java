@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PeekableDataIterator;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -40,7 +40,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 	private @Getter String endOfLineString;
 	private @Getter String startOfLineString;
 	
-	protected Reader getReader(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected Reader getReader(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("cannot obtain reader from null input");
 		}
@@ -52,7 +52,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 	}
 
 	@Override
-	protected IDataIterator<String> getIterator(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		return new PeekableDataIterator<>(new ReaderLineIterator(getReader(input,session, threadContext)));
 	}
 

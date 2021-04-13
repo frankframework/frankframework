@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -69,16 +69,16 @@ public class CmisEventDispatcher {
 	}
 
 	/**
-	 * Convenience method to create a IPipeLineSession and set the cmis CallContext
+	 * Convenience method to create a PipeLineSession and set the cmis CallContext
 	 */
 	public Element trigger(CmisEvent event, String message, CallContext callContext) {
-		IPipeLineSession context = new PipeLineSession();
+		PipeLineSession context = new PipeLineSession();
 		context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 
 		return trigger(event, message, context);
 	}
 
-	public Element trigger(CmisEvent event, String message, IPipeLineSession messageContext) {
+	public Element trigger(CmisEvent event, String message, PipeLineSession messageContext) {
 		if(!eventListeners.containsKey(event))
 			throw new CmisRuntimeException("event ["+event.name()+"] not registered");
 

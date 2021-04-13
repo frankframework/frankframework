@@ -34,7 +34,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -564,7 +564,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 			Message message = Message.asMessage(checkpoint.getMessage());
 			IAdapter adapter = ibisManager.getRegisteredAdapter(DELETE_ADAPTER);
 			if (adapter != null) {
-				IPipeLineSession pipeLineSession = new PipeLineSession();
+				PipeLineSession pipeLineSession = new PipeLineSession();
 				if(securityContext.getUserPrincipal() != null)
 					pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 				PipeLineResult processResult = adapter.processMessage(TestTool.getCorrelationId(), message, pipeLineSession);

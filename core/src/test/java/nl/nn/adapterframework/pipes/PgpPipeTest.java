@@ -11,7 +11,7 @@ import org.junit.runners.Parameterized;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -20,7 +20,7 @@ import nl.nn.adapterframework.stream.Message;
 @RunWith(Parameterized.class)
 public class PgpPipeTest {
 
-	private IPipeLineSession session;
+	private PipeLineSession session;
 
 	protected PGPPipe encryptPipe;
 	protected PGPPipe decryptPipe;

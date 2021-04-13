@@ -30,7 +30,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -135,7 +135,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			if (object != null) {
 				if (object instanceof HttpServletRequest) {
 					ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
-					context.put(IPipeLineSession.securityHandlerKey, securityHandler);
+					context.put(PipeLineSession.securityHandlerKey, securityHandler);
 				} else {
 					log.warn("No securityHandler added for httpRequest [" + object.getClass() + "]");
 				}

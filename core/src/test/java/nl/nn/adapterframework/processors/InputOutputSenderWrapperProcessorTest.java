@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -18,7 +18,7 @@ import nl.nn.adapterframework.stream.Message;
 
 public class InputOutputSenderWrapperProcessorTest {
 
-	private IPipeLineSession session; 
+	private PipeLineSession session; 
 	private String secondSenderOutput;
 	
 	@Before
@@ -33,7 +33,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		SenderWrapperProcessor target = new SenderWrapperProcessor() {
 
 			@Override
-			public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 				return senderWrapperBase.sendMessage(message, session);
 			}
 		};
@@ -51,7 +51,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		SenderSeries senderSeries = new SenderSeries();
 		senderSeries.setSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 				try {
 					return new Message("Sender 1: ["+message.asString()+"]");
 				} catch (IOException e) {
@@ -60,7 +60,7 @@ public class InputOutputSenderWrapperProcessorTest {
 			}});
 		senderSeries.setSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 				try {
 					secondSenderOutput = "Sender 2: ["+message.asString()+"]";
 					return new Message(secondSenderOutput);

@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -37,7 +37,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	protected FS fileSystem;
 	protected INamedObject owner;
-	private IPipeLineSession session;
+	private PipeLineSession session;
 
 
 	protected abstract FS createFileSystem();
@@ -251,7 +251,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -338,7 +338,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -363,7 +363,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -392,7 +392,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSession();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -1383,7 +1383,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	
 	
 	
-	protected ParameterValueList createParameterValueList(ParameterList paramList, Message input, IPipeLineSession session) throws ParameterException {
+	protected ParameterValueList createParameterValueList(ParameterList paramList, Message input, PipeLineSession session) throws ParameterException {
 		if (paramList==null) {
 			return null;
 		}

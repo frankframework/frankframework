@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.javascript;
 import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 import org.mozilla.javascript.*;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 
 public class Rhino implements JavascriptEngine<Context> {
@@ -60,7 +60,7 @@ public class Rhino implements JavascriptEngine<Context> {
 	}
 
 	@Override
-	public void registerCallback(ISender sender, IPipeLineSession session) {
+	public void registerCallback(ISender sender, PipeLineSession session) {
 		throw new UnsupportedOperationException("Rhino callback functionality not implemented");
 	}
 

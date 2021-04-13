@@ -25,7 +25,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.TextStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -112,7 +112,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			Message messageToStore=message;
 			if (sessionKeys != null) {

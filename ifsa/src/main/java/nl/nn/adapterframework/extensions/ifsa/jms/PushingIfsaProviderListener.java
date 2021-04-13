@@ -41,7 +41,7 @@ import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionRequirements;
@@ -219,7 +219,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String cid = (String) threadContext.get(IPipeLineSession.businessCorrelationIdKey);
+				String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
 				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
 			} else {
 				if (session==null) {

@@ -23,7 +23,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -40,7 +40,7 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
-	protected IPipeLineSession session;
+	protected PipeLineSession session;
 
 	public abstract S createSender() throws Exception;
 
@@ -49,8 +49,8 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 		session = new PipeLineSession();
 		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
 		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
-		session.put(IPipeLineSession.messageIdKey, messageId);
-		session.put(IPipeLineSession.technicalCorrelationIdKey, technicalCorrelationId);
+		session.put(PipeLineSession.messageIdKey, messageId);
+		session.put(PipeLineSession.technicalCorrelationIdKey, technicalCorrelationId);
 		sender = createSender();
 	}
 
@@ -68,7 +68,7 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 	public Message sendMessage(Message message) throws SenderException, TimeOutException {
 		return sendMessage(message, session);
 	}
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		return sender.sendMessage(message, session);
 	}
 }

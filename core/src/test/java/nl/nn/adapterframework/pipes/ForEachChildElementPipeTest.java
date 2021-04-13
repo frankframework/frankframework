@@ -19,7 +19,7 @@ import org.hamcrest.core.StringContains;
 import org.junit.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -100,7 +100,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			"<ns:sub name=\"r\" xmlns:ns=\"urn:test\">R</ns:sub>\n"+
 			"</result>\n</results>";
 
-	private IPipeLineSession session = new PipeLineSession();
+	private PipeLineSession session = new PipeLineSession();
 
 	@Override
 	public ForEachChildElementPipe createPipe() {
@@ -123,7 +123,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		EchoSender sender = new EchoSender() {
 
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 				if (sc!=null) sc.mark("out");
 				try {
 					if (message.asString().contains("error")) {

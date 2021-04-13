@@ -29,7 +29,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.HttpUtils;
@@ -51,7 +51,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return new PipeRunResult(getForward(), doGet(session));
@@ -64,11 +64,11 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 	}
 
 	@Override
-	protected String doGet(IPipeLineSession session) throws PipeRunException {
+	protected String doGet(PipeLineSession session) throws PipeRunException {
 		return retrieveFormInput(session, false);
 	}
 
-	private String doPost(IPipeLineSession session) throws PipeRunException {
+	private String doPost(PipeLineSession session) throws PipeRunException {
 		Object formLogIntermediaryResultsObject = session.get("logIntermediaryResults");
 		boolean formLogIntermediaryResults = ("on".equals((String) formLogIntermediaryResultsObject) ? true : false);
 		String formLogLevel = (String) session.get("logLevel");
@@ -76,7 +76,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		int formLengthLogRecords = (formLengthLogRecordsObject != null
 				? Integer.parseInt((String) formLengthLogRecordsObject) : -1);
 
-		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
+		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		String commandIssuedBy = HttpUtils.getCommandIssuedBy(httpServletRequest);
 
 		String msg = "LogLevel changed from [" + retrieveLogLevel() + "] to [" + formLogLevel
@@ -95,7 +95,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		return retrieveFormInput(session, true);
 	}
 
-	private String retrieveFormInput(IPipeLineSession session, boolean updated) {
+	private String retrieveFormInput(PipeLineSession session, boolean updated) {
 		IbisManager ibisManager = retrieveIbisManager();
 
 		String configurationName = retrieveConfigurationName(session);

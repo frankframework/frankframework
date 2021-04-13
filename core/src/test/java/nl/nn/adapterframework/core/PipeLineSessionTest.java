@@ -20,7 +20,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PipeLineSessionTest {
 
-	private IPipeLineSession session;
+	private PipeLineSession session;
 
 	@Before
 	public void setUp() throws Exception {

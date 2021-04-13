@@ -23,7 +23,7 @@ import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -84,7 +84,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
 			String correlationID = session==null ? "" : session.getMessageId();
 			ParameterValueList values = paramList.getValues(message, session);

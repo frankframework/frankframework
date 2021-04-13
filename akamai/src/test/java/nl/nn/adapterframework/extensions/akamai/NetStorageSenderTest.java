@@ -22,7 +22,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
@@ -42,7 +42,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public NetStorageSender createSender() {
 		return spy(new NetStorageSender() {
 			@Override
-			public Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+			public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 				return new Message( getResponseBodyAsString(responseHandler, true) );
 			}
 		});
@@ -71,7 +71,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		Message input = new Message("my/special/path/"); //Last slash should be removed!
 
 		try {
-			IPipeLineSession pls = new PipeLineSession(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setMethodType("GET");
 
@@ -96,7 +96,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		Message input = new Message("path/"); //Last slash should be removed!
 
 		try {
-			IPipeLineSession pls = new PipeLineSession(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setMethodType("GET");
 

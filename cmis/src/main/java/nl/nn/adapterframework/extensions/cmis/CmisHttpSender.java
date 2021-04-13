@@ -40,7 +40,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -55,7 +55,7 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList pvl, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList pvl, PipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
 		String methodType = (String) session.get("method");
@@ -139,7 +139,7 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		int responseCode = -1;
 		try {
 			StatusLine statusline = responseHandler.getStatusLine();
@@ -169,7 +169,7 @@ public class CmisHttpSender extends HttpSenderBase {
 
 		int responseCode = -1;
 
-		IPipeLineSession pls = new PipeLineSession();
+		PipeLineSession pls = new PipeLineSession();
 		pls.put("writer", writer);
 		pls.put("url", url);
 		pls.put("method", method);

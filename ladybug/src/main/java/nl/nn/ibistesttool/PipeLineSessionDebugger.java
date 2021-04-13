@@ -22,7 +22,7 @@ import java.util.Map.Entry;
 
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
@@ -32,15 +32,15 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PipeLineSessionDebugger implements MethodHandler {
 
-	private IPipeLineSession pipeLineSession;
+	private PipeLineSession pipeLineSession;
 	private IbisDebugger ibisDebugger;
 
-	private PipeLineSessionDebugger(IPipeLineSession pipeLineSession, IbisDebugger ibisDebugger) {
+	private PipeLineSessionDebugger(PipeLineSession pipeLineSession, IbisDebugger ibisDebugger) {
 		this.pipeLineSession = pipeLineSession;
 		this.ibisDebugger = ibisDebugger;
 	}
 	
-	public static PipeLineSession newInstance(IPipeLineSession pipeLineSession, IbisDebugger ibisDebugger) throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	public static PipeLineSession newInstance(PipeLineSession pipeLineSession, IbisDebugger ibisDebugger) throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		ProxyFactory factory = new ProxyFactory();
 		factory.setSuperclass(PipeLineSession.class);
 		PipeLineSessionDebugger handler = new PipeLineSessionDebugger(pipeLineSession, ibisDebugger);

@@ -6,7 +6,7 @@ import javax.mail.Session;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.mail.MailSenderTestBase;
@@ -34,7 +34,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			}
 
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 				super.sendMessage(message, session);
 				session.put("mailSession", mailSession);
 				String correlationID = session.getMessageId();

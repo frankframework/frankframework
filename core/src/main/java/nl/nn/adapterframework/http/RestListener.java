@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -98,8 +98,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern());
 	}
 
-	public String processRequest(String correlationId, String message, IPipeLineSession requestContext) throws ListenerException {
-		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(IPipeLineSession.HTTP_REQUEST_KEY);
+	public String processRequest(String correlationId, String message, PipeLineSession requestContext) throws ListenerException {
+		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(PipeLineSession.HTTP_REQUEST_KEY);
 		String response;
 		String contentType = (String) requestContext.get("contentType");
 

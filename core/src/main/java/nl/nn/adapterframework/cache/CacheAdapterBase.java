@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -83,7 +83,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IS
 	protected abstract V toValue(Message value);
 
 	@Override
-	public String transformKey(String input, IPipeLineSession session) {
+	public String transformKey(String input, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session!=null) {
 			input=(String)session.get(getKeyInputSessionKey());
 		}
@@ -105,7 +105,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IS
 	}
 
 	@Override
-	public V transformValue(Message value, IPipeLineSession session) {
+	public V transformValue(Message value, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && session!=null) {
 			value=Message.asMessage(session.get(getValueInputSessionKey()));
 		}

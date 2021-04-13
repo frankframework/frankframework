@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import org.junit.Test;
@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 
 public class CleanupOldFilesPipeTest extends PipeTestBase<CleanupOldFilesPipe> {
 
-	private IPipeLineSession session = new PipeLineSession();
+	private PipeLineSession session = new PipeLineSession();
 
 	@Override
 	public CleanupOldFilesPipe createPipe() {

@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
@@ -108,7 +108,7 @@ public class WebServiceSenderResultTest extends Mockito {
 	public void simpleSoapMultiPartResponseMocked() throws Exception {
 		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", "multipart/form-data", 200);
 
-		IPipeLineSession pls = new PipeLineSession();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
@@ -135,7 +135,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		thrown.expect(SenderException.class);
 		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", "multipart/form-data", 500);
 
-		IPipeLineSession pls = new PipeLineSession();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
@@ -149,7 +149,7 @@ public class WebServiceSenderResultTest extends Mockito {
 
 		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart2.txt", "multipart/form-data", 200);
 
-		IPipeLineSession pls = new PipeLineSession();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
@@ -164,7 +164,7 @@ public class WebServiceSenderResultTest extends Mockito {
 
 		WebServiceSender sender = createWebServiceSenderFromFile("soapFault.txt", "text/xml", 500);
 
-		IPipeLineSession pls = new PipeLineSession();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
@@ -176,7 +176,7 @@ public class WebServiceSenderResultTest extends Mockito {
 	public void simpleMtomResponseMockedHttpGet() throws Exception {
 		WebServiceSender sender = createWebServiceSenderFromFile("mtom-multipart2.txt", "multipart/related", 200);
 
-		IPipeLineSession pls = new PipeLineSession();
+		PipeLineSession pls = new PipeLineSession();
 
 		sender.configure();
 		sender.open();

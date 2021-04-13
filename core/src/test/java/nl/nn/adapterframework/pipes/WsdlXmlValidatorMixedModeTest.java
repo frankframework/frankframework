@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator;
@@ -33,7 +33,7 @@ public class WsdlXmlValidatorMixedModeTest {
     private static final String REQUEST_SOAP_BODY  = "GetPolicyDetails_Request";
     private static final String RESPONSE_SOAP_BODY  = "GetPolicyDetails_Response";
 
-    private IPipeLineSession session = new PipeLineSession();
+    private PipeLineSession session = new PipeLineSession();
 
     
     
