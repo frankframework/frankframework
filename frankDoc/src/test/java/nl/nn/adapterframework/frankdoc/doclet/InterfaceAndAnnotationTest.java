@@ -156,8 +156,12 @@ public class InterfaceAndAnnotationTest {
 	@Test
 	public void whenAbstractSuperclassHasMatchingInterfaceMethodWithAnnotationThenAnnotationFound() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "ChildOfAbstractImplementation");
-		assertEquals(1, clazz.getDeclaredMethods().length);
-		FrankMethod method = clazz.getDeclaredMethods()[0];
+		FrankMethod[] actualDeclaredMethods = clazz.getDeclaredMethods();
+		String actualDeclaredMethodsString = Arrays.asList(actualDeclaredMethods).stream()
+				.map(FrankMethod::getName)
+				.collect(Collectors.joining(", "));
+		assertEquals(String.format("Have methods [%s]",  actualDeclaredMethodsString), 1, actualDeclaredMethods.length);
+		FrankMethod method = actualDeclaredMethods[0];
 		assertEquals("annotatedMethod", method.getName());
 		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
 		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
