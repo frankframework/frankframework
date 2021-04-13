@@ -15,6 +15,7 @@
 		<j2v8.version>4.6.0</j2v8.version>
 		<cxf.version>3.1.18</cxf.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>net.arnx</groupId>
@@ -695,25 +696,19 @@
 			</dependencies>
 		</profile>
 		<profile>
-			<id>frankDoc</id>
-			<reporting>
+			<id>attachFrankDoc</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<version>3.2.0</version>
 						<inherited>false</inherited>
-						<reportSets>
-							<reportSet>
-								<reports>
-									<report>javadoc</report>
-								</reports>
-							</reportSet>
-						</reportSets>
 						<configuration>
-							<properties>
-								<site.logdir>${project.reporting.outputDirectory}/frankDoc/log{</site.logdir>
-							</properties>
+							<doclint>none</doclint>
 							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
@@ -721,31 +716,45 @@
 								<version>${project.version}</version>
 							</docletArtifact>
 							<additionalOptions>
-								-outputDir
-								${project.reporting.outputDirectory}/frankDoc
+								<additionalOption>-outputDir</additionalOption>
+								<additionalOption>${project.build.directory}/classes/xml/xsd</additionalOption>
 							</additionalOptions>
 							<source>1.8</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
-							<!-- <plugins> <plugin> <artifactId>maven-compiler-plugin</artifactId> 
-								<version>3.8.1</version> <configuration> <source>1.8</source> <target>1.8</target> 
-								</configuration> </plugin> </plugins> -->
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
 					</plugin>
 					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-project-info-reports-plugin</artifactId>
-						<version>3.1.0</version>
-						<reportSets>
-							<reportSet>
-								<reports>
-									<report>dependencies</report>
-								</reports>
-							</reportSet>
-						</reportSets>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok-maven-plugin</artifactId>
+						<version>1.18.16.0</version>
+						<executions>
+							<execution>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>delombok</goal>
+								</goals>
+								<configuration>
+									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+									<addOutputDirectory>false</addOutputDirectory>
+								</configuration>
+							</execution>
+						</executions>
 					</plugin>
 				</plugins>
-			</reporting>
+			</build>
 		</profile>
 	</profiles>
 </project>
