@@ -134,19 +134,27 @@ public class InterfaceAndAnnotationTest {
 	@Test
 	public void whenMatchingInterfaceMethodHasAnnotationThenAnnotationFound() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "DiamondImplementationOfCommonParent");
-		assertEquals(1, clazz.getDeclaredMethods().length);
-		FrankMethod method = clazz.getDeclaredMethods()[0];
+		List<FrankMethod> actualDeclaredMethods = getNonJacocoDeclaredMethods(clazz);
+		assertEquals(1, actualDeclaredMethods.size());
+		FrankMethod method = actualDeclaredMethods.get(0);
 		assertEquals("annotatedMethod", method.getName());
 		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
 		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
 		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}
 
+	private List<FrankMethod> getNonJacocoDeclaredMethods(FrankClass clazz) {
+		return Arrays.asList(clazz.getDeclaredMethods()).stream()
+				.filter(c -> ! c.getName().contains("jacoco"))
+				.collect(Collectors.toList());
+	}
+
 	@Test
 	public void whenSuperclassHasMatchingInterfaceMethodWithAnnotationThenAnnotationFound() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "GrandChild");
-		assertEquals(1, clazz.getDeclaredMethods().length);
-		FrankMethod method = clazz.getDeclaredMethods()[0];
+		List<FrankMethod> actualDeclaredMethods = getNonJacocoDeclaredMethods(clazz);
+		assertEquals(1, actualDeclaredMethods.size());
+		FrankMethod method = actualDeclaredMethods.get(0);
 		assertEquals("annotatedMethod", method.getName());
 		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
 		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
@@ -156,12 +164,12 @@ public class InterfaceAndAnnotationTest {
 	@Test
 	public void whenAbstractSuperclassHasMatchingInterfaceMethodWithAnnotationThenAnnotationFound() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "ChildOfAbstractImplementation");
-		FrankMethod[] actualDeclaredMethods = clazz.getDeclaredMethods();
-		String actualDeclaredMethodsString = Arrays.asList(actualDeclaredMethods).stream()
+		List<FrankMethod> actualDeclaredMethods = getNonJacocoDeclaredMethods(clazz);
+		String actualDeclaredMethodsString = actualDeclaredMethods.stream()
 				.map(FrankMethod::getName)
 				.collect(Collectors.joining(", "));
-		assertEquals(String.format("Have methods [%s]",  actualDeclaredMethodsString), 1, actualDeclaredMethods.length);
-		FrankMethod method = actualDeclaredMethods[0];
+		assertEquals(String.format("Have methods [%s]",  actualDeclaredMethodsString), 1, actualDeclaredMethods.size());
+		FrankMethod method = actualDeclaredMethods.get(0);
 		assertEquals("annotatedMethod", method.getName());
 		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
 		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
