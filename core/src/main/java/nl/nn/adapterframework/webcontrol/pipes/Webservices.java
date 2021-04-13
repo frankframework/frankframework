@@ -23,13 +23,13 @@ import java.util.SortedMap;
 import javax.naming.NamingException;
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListener;
@@ -53,7 +53,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class Webservices extends TimeoutGuardPipe {
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return new PipeRunResult(getForward(), doGet(session));
@@ -62,7 +62,7 @@ public class Webservices extends TimeoutGuardPipe {
 		}
 	}
 
-	private String doGet(IPipeLineSession session) throws PipeRunException {
+	private String doGet(PipeLineSession session) throws PipeRunException {
 		IbisManager ibisManager = RestListenerUtils.retrieveIbisManager(session);
 
 		String uri = (String) session.get("uri");
@@ -93,7 +93,7 @@ public class Webservices extends TimeoutGuardPipe {
 		}
 	}
 
-	private String list(IbisManager ibisManager, IPipeLineSession session) {
+	private String list(IbisManager ibisManager, PipeLineSession session) {
 		XmlBuilder webservicesXML = new XmlBuilder("webservices");
 
 		//RestListeners
@@ -164,11 +164,11 @@ public class Webservices extends TimeoutGuardPipe {
 		return webservicesXML.toXML();
 	}
 
-	private String retrieveGenerationInfo(IPipeLineSession session) throws IOException {
+	private String retrieveGenerationInfo(PipeLineSession session) throws IOException {
 		return "at " + RestListenerUtils.retrieveRequestURL(session);
 	}
 	
-	private void wsdl(Adapter adapter, IPipeLineSession session, String indent, String useIncludes) throws ConfigurationException, XMLStreamException, IOException, NamingException {
+	private void wsdl(Adapter adapter, PipeLineSession session, String indent, String useIncludes) throws ConfigurationException, XMLStreamException, IOException, NamingException {
 		WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), retrieveGenerationInfo(session));
 		if (indent != null) {
 			wsdl.setIndent(StringUtils.equalsIgnoreCase(indent, "true"));
@@ -180,7 +180,7 @@ public class Webservices extends TimeoutGuardPipe {
 		wsdl.wsdl(RestListenerUtils.retrieveServletOutputStream(session), RestListenerUtils.retrieveSOAPRequestURL(session));
 	}
 
-	private void zip(Adapter adapter, IPipeLineSession session) throws ConfigurationException, XMLStreamException, IOException, NamingException {
+	private void zip(Adapter adapter, PipeLineSession session) throws ConfigurationException, XMLStreamException, IOException, NamingException {
 		WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), retrieveGenerationInfo(session));
 		wsdl.setUseIncludes(true);
 		wsdl.init();

@@ -60,13 +60,11 @@
 		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 
-	<bean
-		name="adapterService"
-		class="nl.nn.adapterframework.configuration.JmxRegisteringAdapterService"
-		autowire="byName"
-		scope="prototype"
-		>
-	</bean>
+
+	<bean id="adapterLifecycleWrapper" autowire="byName" scope="prototype" abstract="true" />
+
+	<bean name="adapterFlowProcessor" class="nl.nn.adapterframework.extensions.graphviz.FlowDiagramAdapterWrapper" parent="adapterLifecycleWrapper"/>
+	<bean name="adapterJmxProcessor" class="nl.nn.adapterframework.jmx.JmxAdapterWrapper" parent="adapterLifecycleWrapper"/>
 
 	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
 		<property name="locateExistingServerIfPossible" value="true" /><!-- indicate to first look for a server -->
@@ -278,17 +276,19 @@
 	/>
 
 	<bean
+		name="namedThreadFactory"
+		class="nl.nn.adapterframework.scheduler.NamedThreadFactory"
+		scope="prototype"
+	>
+		<property name="ThreadGroupName" value="ControlTasks"/>
+	</bean>
+
+	<bean
 		name="taskExecutor"
 		class="org.springframework.core.task.SimpleAsyncTaskExecutor"
 		scope="singleton"
-	/>
-
-	<bean
-		name="concurrentTaskExecutor"
-		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"
-		scope="prototype"
 	>
-		<property name="WaitForTasksToCompleteOnShutdown" value="true" />
+		<property name="ThreadFactory" ref="namedThreadFactory"/>
 	</bean>
 
 	<bean

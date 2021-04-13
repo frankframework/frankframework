@@ -65,12 +65,12 @@ import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 
@@ -90,6 +90,7 @@ public class Misc {
 	private static Long responseBodySizeWarnByDefault = null;
 	private static Boolean forceFixedForwardingByDefault = null;
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+	public static final String LINE_SEPARATOR = System.lineSeparator();
 
 	/**
 	 * Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
@@ -817,7 +818,7 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map<String,Object> from, IPipeLineSession to) {
+	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to) {
 		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
 			StringTokenizer st = new StringTokenizer(keys,",;");
 			while (st.hasMoreTokens()) {

@@ -15,12 +15,12 @@
 */
 package nl.nn.adapterframework.extensions.javascript;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import javax.script.Invocable;
@@ -87,7 +87,7 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 	}
 
 	@Override
-	public void registerCallback(ISender sender, IPipeLineSession session) {
+	public void registerCallback(ISender sender, PipeLineSession session) {
 		CallbackInterface<String, String> method = (param) -> {
 			try {
 				Message msg = Message.asMessage(param);

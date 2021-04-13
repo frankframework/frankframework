@@ -22,12 +22,11 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -106,7 +105,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 				throw new ConfigurationException("cannot find resource ["+getFileName()+"]");
 			}
             try {
-				returnString = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+				returnString = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
             } catch (Throwable e) {
                 throw new ConfigurationException("got exception loading ["+getFileName()+"]", e);
             }
@@ -120,7 +119,7 @@ public class FixedResultPipe extends FixedForwardPipe {
     }
     
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result=returnString;
 		String fileName = null;
 		if (StringUtils.isNotEmpty(getFileNameSessionKey())) {
@@ -145,7 +144,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 				}
 			}
 			try {
-				result = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+				result = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+fileName+"]", e);
 			}

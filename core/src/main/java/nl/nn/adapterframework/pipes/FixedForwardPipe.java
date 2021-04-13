@@ -15,10 +15,10 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -63,7 +63,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	/**
 	 * called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
 	 */
-	public PipeRunResult doInitialPipe(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doInitialPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (isSkipOnEmptyInput() && (input == null || StringUtils.isEmpty(input.toString()))) {
 			return new PipeRunResult(getForward(), input);
 		}

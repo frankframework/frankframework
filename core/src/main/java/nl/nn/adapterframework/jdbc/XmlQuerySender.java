@@ -32,12 +32,12 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -230,7 +230,7 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		Element queryElement;
 		String tableName = null;
 		Vector<Column> columns = null;
@@ -288,7 +288,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		return result;
 	}
 
-	private PipeRunResult selectQuery(Connection connection, String tableName, Vector<Column> columns, String where, String order, IPipeLineSession session, IForwardTarget next) throws SenderException, JdbcException {
+	private PipeRunResult selectQuery(Connection connection, String tableName, Vector<Column> columns, String where, String order, PipeLineSession session, IForwardTarget next) throws SenderException, JdbcException {
 		String query = "SELECT ";
 		try {
 			if (columns != null) {

@@ -18,7 +18,7 @@ public class PipeLineSessionBaseTest {
 	protected Logger log = LogUtil.getLogger(this);
 
 	@Mock
-	private PipeLineSessionBase session = new PipeLineSessionBase();
+	private PipeLineSession session = new PipeLineSession();
 
 	private static final double DELTA = 1e-15;
 	private static final Object TEST_OBJECT = new Object();

@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 import javax.mail.internet.InternetAddress;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
 import microsoft.exchange.webservices.data.core.ExchangeService;
@@ -726,11 +726,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 
 	@Override
-	public void removeFolder(String folderName) throws FileSystemException {
+	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
 		ExchangeService exchangeService = getConnection();
 		try {
 			FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, false);
 			Folder folder = Folder.bind(exchangeService, folderId);
+			if(removeNonEmptyFolder) {
+				folder.empty(DeleteMode.HardDelete, true);
+			}
 			folder.delete(DeleteMode.HardDelete);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);

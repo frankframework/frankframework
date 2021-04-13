@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -100,7 +100,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		return sendMessage(message,null);
 	}
 
@@ -123,7 +123,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return getSapSystem(SapSystemName);
 	}
 
-	public JCoDestination getDestination(IPipeLineSession session, SapSystem sapSystem) throws SenderException, SapException, JCoException {
+	public JCoDestination getDestination(PipeLineSession session, SapSystem sapSystem) throws SenderException, SapException, JCoException {
 		JCoDestination result;
 		if (isSynchronous()) {
 			if (StringUtils.isNotEmpty(getLuwHandleSessionKey())) {

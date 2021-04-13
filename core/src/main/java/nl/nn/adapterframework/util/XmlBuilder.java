@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.CDATA;
@@ -152,8 +152,7 @@ public class XmlBuilder {
 		}
 	}
 
-	private Element buildElement(String value)
-			throws JDOMException, IOException {
+	private Element buildElement(String value) throws JDOMException, IOException {
 		StringReader stringReader = new StringReader(value);
 		SAXBuilder saxBuilder = new SAXBuilder();
 		Document document;

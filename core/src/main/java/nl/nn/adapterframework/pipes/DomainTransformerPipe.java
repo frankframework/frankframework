@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -102,7 +102,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message invoer, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message invoer, PipeLineSession session) throws PipeRunException {
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		StringBuffer buffer = new StringBuffer();

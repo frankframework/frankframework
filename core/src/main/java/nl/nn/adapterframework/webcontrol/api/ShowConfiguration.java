@@ -48,7 +48,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.xml.sax.SAXException;
 
@@ -166,19 +166,22 @@ public final class ShowConfiguration extends Base {
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
-		if(configuration == null){
+		if(configuration == null) {
 			throw new ApiException("Configuration not found!");
 		}
+		if(!configuration.isActive()) {
+			throw new ApiException("Configuration not active", configuration.getConfigurationException());
+		}
 
-		Map<String, Object> response = new HashMap<String, Object>();
-		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
-		List<String> errors = new ArrayList<String>();
+		Map<String, Object> response = new HashMap<>();
+		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
+		List<String> errors = new ArrayList<>();
 
 		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state.equals(RunStateEnum.STARTED)) {
-				for (Receiver receiver: adapter.getReceivers()) {
+				for (Receiver<?> receiver: adapter.getReceivers()) {
 					RunStateEnum rState = receiver.getRunState();
 	
 					if(!rState.equals(RunStateEnum.STARTED)) {

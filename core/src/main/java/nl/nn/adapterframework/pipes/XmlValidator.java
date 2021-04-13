@@ -32,7 +32,7 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.helpers.XMLFilterImpl;
 
@@ -41,7 +41,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeForward;
@@ -220,16 +220,16 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 * Validate the XML string
 	 * 
 	 * @param message   a String
-	 * @param session a {@link IPipeLineSession Pipelinesession}
+	 * @param session a {@link PipeLineSession Pipelinesession}
 	 * 
 	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
 	@Override
-	public final PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public final PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		return doPipe(message, session, false);
 	}
 
-	public PipeRunResult doPipe(Message input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode) throws PipeRunException {
 		String messageToValidate;
 		if (StringUtils.isNotEmpty(getSoapNamespace())) {
 			messageToValidate = getMessageToValidate(input, session);
@@ -249,11 +249,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	}
 
-	protected final PipeForward validate(String messageToValidate, IPipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	protected final PipeForward validate(String messageToValidate, PipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		return validate(messageToValidate, session, false);
 	}
 
-	protected PipeForward validate(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	protected PipeForward validate(String messageToValidate, PipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session, context);
 		XMLFilterImpl storeRootFilter = StringUtils.isNotEmpty(getRootElementSessionKey()) ? new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey(), null) : null;
@@ -264,7 +264,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return determineForward(resultEvent, session, responseMode);
 	}
 
-	protected PipeForward determineForward(String resultEvent, IPipeLineSession session, boolean responseMode) throws PipeRunException {
+	protected PipeForward determineForward(String resultEvent, PipeLineSession session, boolean responseMode) throws PipeRunException {
 		throwEvent(resultEvent);
 		if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
 			return getForward();
@@ -297,7 +297,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@Deprecated
-	private String getMessageToValidate(Message message, IPipeLineSession session) throws PipeRunException {
+	private String getMessageToValidate(Message message, PipeLineSession session) throws PipeRunException {
 		String input;
 		try {
 			input = message.asString();
@@ -485,7 +485,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 
 		@Override
-		public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 			return owner.doPipe(message, session, true);
 		}
 
@@ -585,7 +585,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@Override
-	public String getSchemasId(IPipeLineSession session) throws PipeRunException {
+	public String getSchemasId(PipeLineSession session) throws PipeRunException {
 		String schemaSessionKey = getSchemaSessionKey();
 		if (schemaSessionKey != null) {
 			if (session.containsKey(schemaSessionKey)) {
@@ -597,7 +597,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@Override
-	public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
+	public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
 		List<Schema> xsds = new ArrayList<Schema>();
 		String schemaLocation = getSchemasId(session);
 		if (getSchemaSessionKey() != null) {

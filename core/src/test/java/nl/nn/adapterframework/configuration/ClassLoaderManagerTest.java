@@ -23,7 +23,7 @@ import org.mockito.stubbing.Answer;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -34,6 +34,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
@@ -165,8 +166,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(ibisContext);
-		Configuration configuration = new Configuration();
-		configuration.setAdapterService(new DummyAdapterService());
+		Configuration configuration = new TestConfiguration();
 		configuration.setName("dummyConfiguration");
 		configuration.setVersion("1");
 		configuration.setIbisManager(ibisManager);
@@ -187,12 +187,12 @@ public class ClassLoaderManagerTest extends Mockito {
 		doAnswer(new Answer<PipeLineResult>() {
 			@Override
 			public PipeLineResult answer(InvocationOnMock invocation) throws Throwable {
-				IPipeLineSession session = (IPipeLineSession) invocation.getArguments()[2];
+				PipeLineSession session = (PipeLineSession) invocation.getArguments()[2];
 				URL file = this.getClass().getResource(JAR_FILE);
 				session.put("configurationJar", Misc.streamToBytes(file.openStream()));
 				return new PipeLineResult();
 			}
-		}).when(adapter).processMessage(anyString(), any(Message.class), any(IPipeLineSession.class));
+		}).when(adapter).processMessage(anyString(), any(Message.class), any(PipeLineSession.class));
 
 		adapter.setConfiguration(configuration);
 		configuration.registerAdapter(adapter);

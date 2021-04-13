@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 - 2019 Nationale-Nederlanden
+   Copyright 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,14 +55,14 @@ import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -338,7 +338,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		Session cmisSession = null;
 		try {
 			ParameterValueList pvl=null;
@@ -383,7 +383,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private Message sendMessageForActionGet(Session cmisSession, Message message, IPipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
+	private Message sendMessageForActionGet(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
 		if (Message.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -413,7 +413,7 @@ public class CmisSender extends SenderWithParametersBase {
 			}
 
 			if (isStreamResultToServlet()) {
-				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+				HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 
 				ContentStream contentStream = document.getContentStream();
 				InputStream inputStream = contentStream.getStream();
@@ -484,7 +484,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private Message sendMessageForActionCreate(Session cmisSession, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String fileName = (String) session.get(getFileNameSessionKey());
 
 		Object inputFromSessionKey;
@@ -625,7 +625,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private Message sendMessageForActionDelete(Session cmisSession, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	private Message sendMessageForActionDelete(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		if (Message.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -747,7 +747,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private Message sendMessageForDynamicActions(Session cmisSession, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	private Message sendMessageForDynamicActions(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 
 		XmlBuilder resultXml = new XmlBuilder("cmis");
 		Element requestElement = null;

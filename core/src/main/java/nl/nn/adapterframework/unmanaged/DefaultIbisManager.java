@@ -15,26 +15,21 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
-import org.quartz.SchedulerException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IAdapterService;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -44,7 +39,6 @@ import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -52,7 +46,6 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -67,10 +60,9 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 
 	private IbisContext ibisContext;
 	private List<Configuration> configurations = new ArrayList<Configuration>();
-	private SchedulerHelper schedulerHelper;
+	private @Getter @Setter SchedulerHelper schedulerHelper; //TODO remove this once implementations use an ApplicationContext
 	private PlatformTransactionManager transactionManager;
 	private ApplicationEventPublisher applicationEventPublisher;
-	private FlowDiagramManager flowDiagramManager;
 
 	@Override
 	public void setIbisContext(IbisContext ibisContext) {
@@ -107,34 +99,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	 */
 	@Override
 	public void startConfiguration(Configuration configuration) {
-		startAdapters(configuration);
-		startScheduledJobs(configuration);
-		updateFlowDiagram(configuration);
-	}
-
-	private void updateFlowDiagram(Configuration configuration) {
-		if (flowDiagramManager != null) {
-			try {
-				flowDiagramManager.generate(configuration);
-			} catch (IOException e) {
-				ConfigurationWarnings.add(configuration, log, "Error generating flow diagram for configuration ["+configuration.getName()+"]", e);
-			}
-		}
-	}
-
-	@Autowired(required = false)
-	@Qualifier("flowDiagramManager")
-	public void setFlowDiagramManager(FlowDiagramManager flowDiagramManager) {
-		this.flowDiagramManager = flowDiagramManager;
-	}
-
-	/**
-	 * Shut down the IBIS instance and clean up.
-	 */
-	@Override
-	public void shutdown() {
-		unload((String) null);
-		IbisCacheManager.shutdown();
+		configuration.start();
 	}
 
 	@Override
@@ -149,41 +114,18 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	private void unload(Configuration configuration) {
-		configuration.setUnloadInProgressOrDone(true);
-		while (configuration.getStartAdapterThreads().size() > 0) {
-			log.debug("Waiting for start threads to end: " + configuration.getStartAdapterThreads());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for start threads to end", e);
-			}
-		}
-		stopAdapters(configuration);
-		while (configuration.getStopAdapterThreads().size() > 0) {
-			log.debug("Waiting for stop threads to end: " + configuration.getStopAdapterThreads());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for stop threads to end", e);
-			}
-		}
-		while (configuration.getRegisteredAdapters().size() > 0) {
-			Adapter adapter = configuration.getRegisteredAdapter(0);
-			IAdapterService adapterService = configuration.getAdapterService();
-			adapterService.unRegisterAdapter(adapter);
-		}
-
-		//Remove all registered jobs
-		for (JobDef jobdef : configuration.getScheduledJobs()) {
-			try {
-				getSchedulerHelper().deleteTrigger(jobdef);
-			}
-			catch (SchedulerException se) {
-				log.error("unable to remove scheduled job ["+jobdef+"]", se);
-			}
-		}
+		configuration.close();
 
 		configurations.remove(configuration);
+	}
+
+	/**
+	 * Shut down the IBIS instance and clean up.
+	 */
+	@Override
+	public void shutdown() {
+		unload((String) null);
+		IbisCacheManager.shutdown();
 	}
 
 	/**
@@ -358,44 +300,15 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		}
 	}
 
-	public void startScheduledJobs(Configuration configuration) {
-		List<JobDef> scheduledJobs = configuration.getScheduledJobs();
-		for (Iterator<JobDef> iter = scheduledJobs.iterator(); iter.hasNext();) {
-			JobDef jobdef = iter.next();
-			try {
-				schedulerHelper.scheduleJob(this, jobdef);
-				log.info("job scheduled with properties :" + jobdef.toString());
-			} catch (Exception e) {
-				log.error("Could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
-			}
-		}
-		try {
-			schedulerHelper.startScheduler();
-			log.info("Scheduler started");
-		} catch (SchedulerException e) {
-			log.error("Could not start scheduler", e);
-		}
-	}
-
 	private void startAdapters(Configuration configuration) {
 		log.info("Starting all autostart-configured adapters for configuation " + configuration.getName());
-		for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
-			if (adapter.isAutoStart()) {
-				log.info("Starting adapter [" + adapter.getName() + "]");
-				adapter.startRunning();
-			}
-		}
+		configuration.getAdapterManager().start();
 	}
 
 	private void stopAdapters(Configuration configuration) {
 		configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
 		log.info("Stopping all adapters for configuation " + configuration.getName());
-		List<Adapter> adapters = new ArrayList<Adapter>(configuration.getAdapterService().getAdapters().values());
-		Collections.reverse(adapters);
-		for (Adapter adapter : adapters) {
-			log.info("Stopping adapter [" + adapter.getName() + "]");
-			adapter.stopRunning();
-		}
+		configuration.getAdapterManager().stop();
 	}
 
 	@Override
@@ -411,9 +324,11 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 
 	@Override
 	public List<Adapter> getRegisteredAdapters() {
-		List<Adapter> registeredAdapters = new ArrayList<Adapter>();
+		List<Adapter> registeredAdapters = new ArrayList<>();
 		for (Configuration configuration : configurations) {
-			registeredAdapters.addAll(configuration.getRegisteredAdapters());
+			if(configuration.isActive()) {
+				registeredAdapters.addAll(configuration.getRegisteredAdapters());
+			}
 		}
 		return registeredAdapters;
 	}
@@ -438,14 +353,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		}
 		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
 		return startedAdapters;
-	}
-
-	public void setSchedulerHelper(SchedulerHelper helper) {
-		schedulerHelper = helper;
-	}
-
-	public SchedulerHelper getSchedulerHelper() {
-		return schedulerHelper;
 	}
 
 	@Override

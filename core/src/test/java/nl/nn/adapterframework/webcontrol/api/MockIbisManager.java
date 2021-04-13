@@ -25,8 +25,6 @@ import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import nl.nn.adapterframework.configuration.IAdapterService;
-import nl.nn.adapterframework.configuration.DummyAdapterService;
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -37,6 +35,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.pipes.EchoPipe;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 public class MockIbisManager extends Mockito implements IbisManager {
@@ -44,7 +43,8 @@ public class MockIbisManager extends Mockito implements IbisManager {
 	private List<Configuration> configurations = new ArrayList<Configuration>();
 
 	public MockIbisManager() {
-		IAdapterService adapterService = new DummyAdapterService();
+		Configuration mockConfiguration = spy(new TestConfiguration());
+		mockConfiguration.setName("myConfiguration");
 		Adapter adapter = new Adapter();
 		adapter.setName("dummyAdapter");
 		try {
@@ -57,14 +57,11 @@ public class MockIbisManager extends Mockito implements IbisManager {
 			pipe.setName("myPipe");
 			pipeline.addPipe(pipe);
 			adapter.setPipeLine(pipeline);
-			adapterService.registerAdapter(adapter);
+			mockConfiguration.registerAdapter(adapter);
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
 			fail("error registering adapter ["+adapter+"] " + e.getMessage());
 		}
-		Configuration mockConfiguration = spy(new Configuration());
-		mockConfiguration.setAdapterService(adapterService);
-		mockConfiguration.setName("myConfiguration");
 		BaseConfigurationWarnings warnings = new BaseConfigurationWarnings();
 		warnings.add("hello I am a configuration warning!");
 		doReturn(warnings).when(mockConfiguration).getConfigurationWarnings();
@@ -153,7 +150,7 @@ public class MockIbisManager extends Mockito implements IbisManager {
 	public List<Adapter> getRegisteredAdapters() {
 		List<Adapter> registeredAdapters = new ArrayList<Adapter>();
 		for (Configuration configuration : configurations) {
-			registeredAdapters.addAll(configuration.getRegisteredAdapters());
+			registeredAdapters.addAll(configuration.getAdapterManager().getAdapterList());
 		}
 		return registeredAdapters;
 	}

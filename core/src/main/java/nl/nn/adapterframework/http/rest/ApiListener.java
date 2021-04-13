@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
@@ -101,7 +101,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
 	}
 
-	public Message processRequest(String correlationId, Message message, IPipeLineSession requestContext) throws ListenerException {
+	public Message processRequest(String correlationId, Message message, PipeLineSession requestContext) throws ListenerException {
 		Message result = super.processRequest(correlationId, message, requestContext);
 
 		//Return null when super.processRequest() returns an empty string

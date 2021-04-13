@@ -18,9 +18,9 @@ package nl.nn.adapterframework.extensions.cmis.server;
 import java.security.Principal;
 
 import org.apache.chemistry.opencmis.commons.server.CallContext;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.util.CredentialFactory;
 
@@ -39,12 +39,12 @@ public class CmisSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public boolean isUserInRole(String role, IPipeLineSession session) throws NotImplementedException {
+	public boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException {
 		return false;
 	}
 
 	@Override
-	public Principal getPrincipal(IPipeLineSession session) throws NotImplementedException {
+	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException {
 
 		return new Principal() {
 			@Override

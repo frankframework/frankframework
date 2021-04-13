@@ -21,11 +21,11 @@ import java.util.Map;
 import javax.xml.soap.SOAPException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWrapperPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -226,7 +226,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
 			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
 			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
@@ -299,7 +299,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return new PipeRunResult(getForward(), result);
 	}
 
-	protected String determineSoapNamespace(IPipeLineSession session) {
+	protected String determineSoapNamespace(PipeLineSession session) {
 		String soapNamespace = getSoapNamespace();
 		if (StringUtils.isEmpty(soapNamespace)) {
 			String savedSoapNamespace = (String)session.get(getSoapNamespaceSessionKey());
@@ -316,11 +316,11 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return soapNamespace;
 	}
 	
-	protected Message unwrapMessage(Message message, IPipeLineSession session) throws SAXException, TransformerException, IOException, SOAPException {
+	protected Message unwrapMessage(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException, SOAPException {
 		return soapWrapper.getBody(message, isAllowPlainXml(), session, getSoapNamespaceSessionKey());
 	}
 
-	protected Message wrapMessage(Message message, String soapHeader, IPipeLineSession session) throws DomBuilderException, TransformerException, IOException, SenderException {
+	protected Message wrapMessage(Message message, String soapHeader, PipeLineSession session) throws DomBuilderException, TransformerException, IOException, SenderException {
 		String soapNamespace = determineSoapNamespace(session);
 		if (soapNamespace==null) {
 			return message;

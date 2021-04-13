@@ -17,10 +17,10 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -65,14 +65,14 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		}
 	}
 	
-	protected void assertUserIsInRole(IPipeLineSession session, String role) throws SecurityException {
+	protected void assertUserIsInRole(PipeLineSession session, String role) throws SecurityException {
 		if (!session.isUserInRole(role)) {
 			throw new SecurityException(getLogPrefix(session)+"user is not in role ["+role+"]");
 		}
 	}
 	
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			if (StringUtils.isEmpty(getRole())) {
 				String inputString;

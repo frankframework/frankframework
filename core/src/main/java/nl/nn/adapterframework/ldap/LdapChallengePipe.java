@@ -17,11 +17,11 @@ package nl.nn.adapterframework.ldap;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -81,10 +81,10 @@ public class LdapChallengePipe extends AbstractPipe {
 
 	/** 
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
-	public PipeRunResult doPipe(Message msg, IPipeLineSession pls) throws PipeRunException {
+	public PipeRunResult doPipe(Message msg, PipeLineSession pls) throws PipeRunException {
 
 		LdapSender ldapSender = new LdapSender();
 		
@@ -150,7 +150,7 @@ public class LdapChallengePipe extends AbstractPipe {
 		return new PipeRunResult(findForward("success"), msg);
 	}
 	
-	protected void handleError(LdapSender ldapSender, IPipeLineSession session, int code, String message) {
+	protected void handleError(LdapSender ldapSender, PipeLineSession session, int code, String message) {
 		Throwable t = new ConfigurationException(LdapSender.LDAP_ERROR_MAGIC_STRING+code+"-"+message+"]");
 		ldapSender.storeLdapException(t, session);
 	}

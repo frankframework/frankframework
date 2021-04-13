@@ -22,10 +22,10 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -49,11 +49,11 @@ public class ZipWriter {
 		zipoutput=new ZipOutputStream(resultStream);
 	}
 
-	public static ZipWriter getZipWriter(IPipeLineSession session, String handlekey) {
+	public static ZipWriter getZipWriter(PipeLineSession session, String handlekey) {
 		return (ZipWriter)session.get(handlekey);
 	}
 
-	public static ZipWriter createZipWriter(IPipeLineSession session, String handlekey, OutputStream resultStream, boolean closeOnExit) {
+	public static ZipWriter createZipWriter(PipeLineSession session, String handlekey, OutputStream resultStream, boolean closeOnExit) {
 		ZipWriter handle=new ZipWriter(resultStream,closeOnExit);
 		session.put(handlekey,handle);
 		if (handle.log.isDebugEnabled()) handle.log.debug(handle.getLogPrefix(handlekey)+"opened new zipstream");

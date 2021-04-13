@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
@@ -31,13 +31,7 @@ public class StringResolver {
 	// Log4j2 uses StringResolver during instantiation.
 
 	public static final String DELIM_START = "${";
-	public static final char DELIM_STOP = '}';
-	private static final int DELIM_START_LEN = 2;
-	private static final int DELIM_STOP_LEN = 1;
-
-	public StringResolver() {
-		super();
-	}
+	public static final String DELIM_STOP = "}";
 
 	/**
 	 * Very similar to <code>System.getProperty</code> except that the
@@ -85,6 +79,10 @@ public class StringResolver {
 	 * 
 	 */
 	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide) throws IllegalArgumentException {
+		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP);
+	}
+	
+	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, String delimStart, String delimStop) throws IllegalArgumentException {
 
 		StringBuffer sbuf = new StringBuffer();
 
@@ -92,70 +90,68 @@ public class StringResolver {
 		int j, k;
 
 		while (true) {
-			j = val.indexOf(DELIM_START, i);
+			j = val.indexOf(delimStart, i);
 			if (j == -1) {
 				// no more variables
 				if (i == 0) { // this is a simple string
 					return val;
-				} else { // add the tail string which contains no variables and return the result.
-					sbuf.append(val.substring(i, val.length()));
-					return sbuf.toString();
 				}
-			} else {
-				sbuf.append(val.substring(i, j));
-				k = indexOfDelimStop(val, j);
-				if (k == -1) {
-					throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + j + "]");
+				// add the tail string which contains no variables and return the result.
+				sbuf.append(val.substring(i, val.length()));
+				return sbuf.toString();
+			}
+			sbuf.append(val.substring(i, j));
+			k = indexOfDelimStop(val, j, delimStart, delimStop);
+			if (k == -1) {
+				throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + j + "]");
+			}
+			String expression = val.substring(j, k + delimStop.length());
+			j += delimStart.length();
+			String key = val.substring(j, k);
+			if (key.contains(delimStart)) {
+				key = substVars(key, props1, props2);
+			}
+			// first try in System properties
+			String replacement = getSystemProperty(key, null);
+			// then try props parameter
+			if (replacement == null && props1 != null) {
+				if (props1 instanceof Properties) {
+					replacement = ((Properties) props1).getProperty(key);
 				} else {
-					String expression = val.substring(j, k + DELIM_STOP_LEN);
-					j += DELIM_START_LEN;
-					String key = val.substring(j, k);
-					if (key.contains(DELIM_START)) {
-						key = substVars(key, props1, props2);
+					Object replacementSource = props1.get(key);
+					if (replacementSource != null) {
+						replacement = replacementSource.toString();
 					}
-					// first try in System properties
-					String replacement = getSystemProperty(key, null);
-					// then try props parameter
-					if (replacement == null && props1 != null) {
-						if (props1 instanceof Properties) {
-							replacement = ((Properties) props1).getProperty(key);
-						} else {
-							Object replacementSource = props1.get(key);
-							if (replacementSource != null) {
-								replacement = replacementSource.toString();
-							}
-						}
-					}
-					if (replacement == null && props2 != null) {
-						if (props2 instanceof Properties) {
-							replacement = ((Properties) props2).getProperty(key);
-						} else {
-							Object replacementSource = props2.get(key);
-							if (replacementSource != null) {
-								replacement = replacementSource.toString();
-							}
-						}
-					}
-
-					if (replacement != null) {
-						if (propsToHide != null && propsToHide.contains(key)) {
-							replacement = Misc.hide(replacement);
-						}
-						// Do variable substitution on the replacement string
-						// such that we can solve "Hello ${x1}" as "Hello p2"
-						// the where the properties are
-						// x1=${x2}
-						// x2=p2
-						if (!replacement.equals(expression) && !replacement.contains(DELIM_START + key + DELIM_STOP)) {
-							String recursiveReplacement = substVars(replacement, props1, props2);
-							sbuf.append(recursiveReplacement);
-						} else {
-							sbuf.append(replacement);
-						}
-					}
-					i = k + DELIM_STOP_LEN;
 				}
 			}
+			if (replacement == null && props2 != null) {
+				if (props2 instanceof Properties) {
+					replacement = ((Properties) props2).getProperty(key);
+				} else {
+					Object replacementSource = props2.get(key);
+					if (replacementSource != null) {
+						replacement = replacementSource.toString();
+					}
+				}
+			}
+
+			if (replacement != null) {
+				if (propsToHide != null && propsToHide.contains(key)) {
+					replacement = Misc.hide(replacement);
+				}
+				// Do variable substitution on the replacement string
+				// such that we can solve "Hello ${x1}" as "Hello p2"
+				// the where the properties are
+				// x1=${x2}
+				// x2=p2
+				if (!replacement.equals(expression) && !replacement.contains(delimStart + key + delimStop)) {
+					String recursiveReplacement = substVars(replacement, props1, props2);
+					sbuf.append(recursiveReplacement);
+				} else {
+					sbuf.append(replacement);
+				}
+			}
+			i = k + delimStop.length();
 		}
 	}
 
@@ -169,30 +165,21 @@ public class StringResolver {
 
 	public static boolean needsResolution(String string) {
 		int j = string.indexOf(DELIM_START);
-		if (j == -1) {
-			return false;
-		} else {
-			int k = string.indexOf(DELIM_STOP, j);
-			if (k == -1) {
-				return false;
-			} else {
-				return true;
-			}
-		}
+		return j>=0 && string.indexOf(DELIM_START)>=0 && string.indexOf(DELIM_STOP, j) >= 0;
 	}
 
-	private static int indexOfDelimStop(String val, int startPos) {
+	private static int indexOfDelimStop(String val, int startPos, String delimStart, String delimStop) {
 		// if variable in variable then find the correct stop delimiter
-		int stopPos = startPos - DELIM_STOP_LEN;
+		int stopPos = startPos - delimStop.length();
 		int numEmbeddedStart = 0;
 		int numEmbeddedStop = 0;
 		do {
-			startPos += DELIM_START_LEN;
-			stopPos = val.indexOf(DELIM_STOP, stopPos + DELIM_STOP_LEN);
+			startPos += delimStart.length();
+			stopPos = val.indexOf(delimStop, stopPos + delimStop.length());
 			if (stopPos > 0) {
 				String key = val.substring(startPos, stopPos);
-				numEmbeddedStart = StringUtils.countMatches(key, DELIM_START);
-				numEmbeddedStop = StringUtils.countMatches(key, "" + DELIM_STOP);
+				numEmbeddedStart = StringUtils.countMatches(key, delimStart);
+				numEmbeddedStop = StringUtils.countMatches(key, delimStop);
 			}
 		} while (stopPos > 0 && numEmbeddedStart != numEmbeddedStop);
 		return stopPos;

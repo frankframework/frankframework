@@ -29,11 +29,11 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.FileUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Translate a record using an outputFields description. 
@@ -66,7 +66,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 	
 	@Override
-	public String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		StringBuffer output = new StringBuffer();
 		Stack<IOutputField> conditions = new Stack<>();
 		

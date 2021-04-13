@@ -28,7 +28,8 @@ import nl.nn.adapterframework.util.AppConstants;
 
 public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDataSource> implements IDataSourceFactory {
 
-	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty("jdbc.datasource.default");
+	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
+	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
 
 	public JndiDataSourceFactory() {
 		super(CommonDataSource.class);

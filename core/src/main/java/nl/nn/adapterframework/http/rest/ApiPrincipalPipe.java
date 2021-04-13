@@ -17,7 +17,7 @@
 package nl.nn.adapterframework.http.rest;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.lifecycle.ServletManager;
@@ -64,7 +64,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
@@ -76,14 +76,14 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 		}
 
 		if(getAction().equals("get")) {
-			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(IPipeLineSession.API_PRINCIPAL_KEY);
+			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
 
 			return new PipeRunResult(getForward(), userPrincipal.getData());
 		}
 		if(getAction().equals("set")) {
-			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(IPipeLineSession.API_PRINCIPAL_KEY);
+			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
 
@@ -110,7 +110,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 				ServletSecurity.TransportGuarantee currentGuarantee = ServletManager.getTransportGuarantee("servlet.ApiListenerServlet.transportGuarantee");
 				cookie.setSecure(currentGuarantee == ServletSecurity.TransportGuarantee.CONFIDENTIAL);
 
-				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+				HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 				response.addCookie(cookie);
 			}
 
@@ -119,7 +119,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			return new PipeRunResult(getForward(), token);
 		}
 		if(getAction().equals("remove")) {
-			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(IPipeLineSession.API_PRINCIPAL_KEY);
+			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
 

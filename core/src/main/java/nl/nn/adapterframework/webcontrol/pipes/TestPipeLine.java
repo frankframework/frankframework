@@ -25,13 +25,12 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -55,7 +54,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return new PipeRunResult(getForward(), doGet(session));
@@ -66,11 +65,11 @@ public class TestPipeLine extends TimeoutGuardPipe {
 		}
 	}
 
-	private String doGet(IPipeLineSession session) throws PipeRunException {
+	private String doGet(PipeLineSession session) throws PipeRunException {
 		return retrieveFormInput(session);
 	}
 
-	private String doPost(IPipeLineSession session) throws PipeRunException {
+	private String doPost(PipeLineSession session) throws PipeRunException {
 		Object form_file = session.get("file");
 		String form_message = null;
 		form_message = (String) session.get("message");
@@ -136,7 +135,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 		return "<dummy/>";
 	}
 
-	private String processZipFile(IPipeLineSession session, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {
+	private String processZipFile(PipeLineSession session, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {
 		String result = "";
 		String lastState = null;
 		ZipInputStream archive = new ZipInputStream(inputStream);
@@ -173,7 +172,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 
 	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
-		try (IPipeLineSession pls = new PipeLineSessionBase()) {
+		try (PipeLineSession pls = new PipeLineSession()) {
 			Map ibisContexts = XmlUtils.getIbisContext(message);
 			String technicalCorrelationId = null;
 			if (ibisContexts != null) {
@@ -184,7 +183,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 					if (log.isDebugEnabled()) {
 						contextDump = contextDump + "\n " + key + "=[" + value + "]";
 					}
-					if (key.equals(IPipeLineSession.technicalCorrelationIdKey)) {
+					if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
 						technicalCorrelationId = value;
 					} else {
 						pls.put(key, value);
@@ -195,7 +194,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 				}
 			}
 			Date now = new Date();
-			PipeLineSessionBase.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
+			PipeLineSession.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
 			if (writeSecLogMessage) {
 				secLog.info("message [" + message + "]");
 			}
@@ -213,7 +212,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 		}
 	}
 
-	private String retrieveFormInput(IPipeLineSession session) {
+	private String retrieveFormInput(PipeLineSession session) {
 		List<String> adapterNames = new ArrayList<String>();
 		adapterNames.add("-- select an adapter --");
 		adapterNames.addAll(RestListenerUtils.retrieveIbisManager(session) .getSortedStartedAdapterNames());

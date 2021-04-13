@@ -22,10 +22,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -51,7 +51,7 @@ public class Result2Filewriter extends ResultWriter {
 	}
 	
 	@Override
-	protected Writer createWriter(IPipeLineSession session, String streamId) throws Exception {
+	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
 		log.debug("create writer ["+streamId+"]");
 		String outputFilename = FileUtils.getFilename(null, session, new File(streamId), getFilenamePattern());
 		File outputFile = new File(outputDirectory, outputFilename);
@@ -63,12 +63,12 @@ public class Result2Filewriter extends ResultWriter {
 	}
 
 	@Override
-	public void closeDocument(IPipeLineSession session, String streamId) {
+	public void closeDocument(PipeLineSession session, String streamId) {
 		openFiles.remove(streamId);
 	}
 
 	@Override
-	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
 		log.debug("finalizeResult ["+streamId+"]");
 		super.finalizeResult(session,streamId, error);
 		super.closeDocument(session,streamId);

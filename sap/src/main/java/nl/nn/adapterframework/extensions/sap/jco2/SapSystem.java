@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import com.sap.mw.idoc.IDoc;
 import com.sap.mw.idoc.jco.JCoIDoc;

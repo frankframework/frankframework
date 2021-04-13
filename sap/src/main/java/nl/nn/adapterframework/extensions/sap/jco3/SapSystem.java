@@ -18,8 +18,8 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import com.sap.conn.idoc.IDocRepository;
 import com.sap.conn.idoc.jco.JCoIDoc;

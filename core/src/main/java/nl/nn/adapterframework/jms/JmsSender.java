@@ -30,12 +30,12 @@ import javax.jms.Session;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -141,11 +141,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		return sendMessage(message, session, null);
 	}
 
-	public Message sendMessage(Message message, IPipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
 		Session s = null;
 		MessageProducer mp = null;
 		String correlationID = session==null ? null : session.getMessageId();
@@ -281,7 +281,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 	}
 
-	public Destination getDestination(IPipeLineSession session, ParameterValueList pvl) throws JmsException, NamingException, JMSException {
+	public Destination getDestination(PipeLineSession session, ParameterValueList pvl) throws JmsException, NamingException, JMSException {
 		if (StringUtils.isNotEmpty(getDestinationParam())) {
 			String destinationName = pvl.getParameterValue(getDestinationParam()).asStringValue(null);
 			if (StringUtils.isNotEmpty(destinationName)) {

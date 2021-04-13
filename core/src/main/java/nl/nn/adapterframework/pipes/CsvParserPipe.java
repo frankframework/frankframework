@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -67,7 +67,7 @@ public class CsvParserPipe extends StreamingPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try (MessageOutputStream target=getTargetStream(session)) {
 			try (Reader reader = message.asReader()) {
 				try (SaxDocumentBuilder document = new SaxDocumentBuilder("csv", target.asContentHandler())) {

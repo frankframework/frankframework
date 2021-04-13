@@ -21,13 +21,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -93,7 +93,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 	
 	@Override
-	public List<String> parse(IPipeLineSession session, String record) {
+	public List<String> parse(PipeLineSession session, String record) {
 		if (inputFields.size() > 0) {
 			return parseUsingInputFields(record);
 		}
@@ -181,7 +181,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 	
 	@Override
-	public boolean isNewRecordType(IPipeLineSession session, boolean equalRecordHandlers, List<String> prevRecord, List<String> curRecord) {
+	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordHandlers, List<String> prevRecord, List<String> curRecord) {
 		if (getRecordIdentifyingFieldList().size() == 0) {
 			if (log.isTraceEnabled()) log.trace("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
 			return false;
