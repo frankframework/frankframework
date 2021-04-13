@@ -17,7 +17,8 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.doclet;
 
 public interface FrankType extends FrankProgramElement {
+	FrankAnnotation[] getAnnotations();
+	FrankAnnotation getAnnotation(String name);
 	boolean isPrimitive();
-	boolean isAnnotation();
 	boolean isEnum();
 }

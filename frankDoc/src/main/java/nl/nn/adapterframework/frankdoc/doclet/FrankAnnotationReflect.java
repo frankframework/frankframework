@@ -37,14 +37,6 @@ class FrankAnnotationReflect implements FrankAnnotation {
 		return Modifier.isPublic(annotation.annotationType().getModifiers());
 	}
 
-	public FrankAnnotation[] getAnnotations() {
-		return new FrankAnnotation[] {};
-	}
-
-	public FrankAnnotation getAnnotation(String name) {
-		return null;
-	}
-
 	@Override
 	public Object getValue() throws FrankDocException {
 		try {

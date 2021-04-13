@@ -1,5 +1,5 @@
 package nl.nn.adapterframework.frankdoc.testtarget.doclet;
 
-public interface MyInterfaceParent {
+public interface MyInterfaceParent extends MyInterfaceGrandParent {
 
 }

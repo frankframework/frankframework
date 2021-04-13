@@ -34,7 +34,8 @@ public class HighestCommonInterfaceTest {
 
 	@Before
 	public void setUp() {
-		model = FrankDocModel.populate("doc/role-inherit-digester-rules.xml", PACKAGE + "Master", FrankClassRepository.getReflectInstance());
+		FrankClassRepository repository = FrankClassRepository.getReflectInstance(PACKAGE);
+		model = FrankDocModel.populate("doc/role-inherit-digester-rules.xml", PACKAGE + "Master", repository);
 		founder = model.findElementType(PACKAGE + "IFounder");
 		interfaceParent = model.findElementType(PACKAGE + "IInterfaceParent");
 		interfaceElementType = model.findElementType(PACKAGE + "IInterface");

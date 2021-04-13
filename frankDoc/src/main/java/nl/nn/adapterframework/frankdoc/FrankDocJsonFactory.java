@@ -45,7 +45,7 @@ public class FrankDocJsonFactory {
 	private FrankDocModel model;
 	private JsonBuilderFactory bf;
 
-	FrankDocJsonFactory(FrankDocModel model) {
+	public FrankDocJsonFactory(FrankDocModel model) {
 		this.model = model;
 		bf = Json.createBuilderFactory(null);
 	}

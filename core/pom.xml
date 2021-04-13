@@ -694,5 +694,58 @@
 				</dependency>
 			</dependencies>
 		</profile>
+		<profile>
+			<id>frankDoc</id>
+			<reporting>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.2.0</version>
+						<inherited>false</inherited>
+						<reportSets>
+							<reportSet>
+								<reports>
+									<report>javadoc</report>
+								</reports>
+							</reportSet>
+						</reportSets>
+						<configuration>
+							<properties>
+								<site.logdir>${project.reporting.outputDirectory}/frankDoc/log{</site.logdir>
+							</properties>
+							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
+							<docletArtifact>
+								<groupId>org.ibissource</groupId>
+								<artifactId>ibis-adapterframework-frankDoc</artifactId>
+								<version>${project.version}</version>
+							</docletArtifact>
+							<additionalOptions>
+								-outputDir
+								${project.reporting.outputDirectory}/frankDoc
+							</additionalOptions>
+							<source>1.8</source>
+							<useStandardDocletOptions>false</useStandardDocletOptions>
+							<!-- <plugins> <plugin> <artifactId>maven-compiler-plugin</artifactId> 
+								<version>3.8.1</version> <configuration> <source>1.8</source> <target>1.8</target> 
+								</configuration> </plugin> </plugins> -->
+							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-project-info-reports-plugin</artifactId>
+						<version>3.1.0</version>
+						<reportSets>
+							<reportSet>
+								<reports>
+									<report>dependencies</report>
+								</reports>
+							</reportSet>
+						</reportSets>
+					</plugin>
+				</plugins>
+			</reporting>
+		</profile>
 	</profiles>
 </project>

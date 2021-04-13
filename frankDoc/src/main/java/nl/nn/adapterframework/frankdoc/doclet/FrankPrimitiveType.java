@@ -16,45 +16,13 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.doclet;
 
-public class FrankPrimitiveType implements FrankType {
-	private final String name;
-
+class FrankPrimitiveType extends FrankSimpleType {
 	FrankPrimitiveType(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public boolean isPublic() {
-		return true;
+		super(name);
 	}
 
 	@Override
 	public boolean isPrimitive() {
 		return true;
-	}
-
-	@Override
-	public boolean isAnnotation() {
-		return false;
-	}
-
-	@Override
-	public FrankAnnotation[] getAnnotations() {
-		return new FrankAnnotation[] {};
-	}
-
-	@Override
-	public FrankAnnotation getAnnotation(String name) {
-		return null;
-	}
-
-	@Override
-	public boolean isEnum() {
-		return false;
 	}
 }
