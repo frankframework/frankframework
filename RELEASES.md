@@ -57,13 +57,13 @@ Upcoming
 ### Non backwards compatible changes
 
 - Change HashPipe attribute encoding into charset. Its default has changed from ISO8859-1 into UTF-8
-- Log4j to Log4j2
-- Resteasy library is replaced with Apache-cxf
-- StaxParserFactory to enable XML 1.1 content
+- Logging library Log4j has been upgraded to Log4j2, versions are not backwards compatible!
+- The RESTEasy library has been replaced with Apache-CXF, this might enable jBoss hosted applications to cleanup their customized ClassLoader configuration
+- The StaxParserFactory has been configured to always enable XML 1.1 content. You can validate this on the Security Items page under XML Components.
 
 ### Breaking changes
 
-- It is highly recommended not to use any custom file which overrides a file from the framework itself. In case it is really required to override a file then do not forget to update that custom file by examining the changes made while upgrading the framework version. It is a good practice to keep the .orig suffixed original file also in the project to understand what are the changes in custom files. The changes in the custom file might have been included in the new version of the framework and the file may be no longer needed. If the changes are complicated to understand please consult with the core team.
+- It is highly recommended not to use any custom file which overrides a file from the framework itself. In case it was required to override a file, do not forget to update the changes when upgrading the framework version! It is a good practice to keep the `.orig` suffixed original file also in the project to understand what change have been made. The changes in the custom file might have been included in the new version of the framework and the file may be no longer needed. If the changes are complicated to understand please consult the Frank!Framework Team.
 
 7.5
 --------
