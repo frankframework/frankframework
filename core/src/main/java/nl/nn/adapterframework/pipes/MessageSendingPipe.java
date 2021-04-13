@@ -62,7 +62,6 @@ import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.processors.ListenerProcessor;
@@ -120,9 +119,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
  * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender,
  * if this is a {@link ISenderWithParameters ISenderWithParameters}.
- * When a parameter with the name stubFileName is present, it will <u>not</u> be handed to the sender 
- * and it is used at runtime instead of the stubFileName specified by the attribute. A lookup of the 
- * file for this stubFileName will be done at runtime, while the file for the stubFileName specified 
+ * When a parameter with the name stubFilename is present, it will <u>not</u> be handed to the sender 
+ * and it is used at runtime instead of the stubFilename specified by the attribute. A lookup of the 
+ * file for this stubFilename will be done at runtime, while the file for the stubFilename specified 
  * as an attribute will be done at configuration time.</td></tr>
  * <tr><td><code>inputValidator</code></td><td>specification of Pipe to validate input messages</td></tr>
  * <tr><td><code>outputValidator</code></td><td>specification of Pipe to validate output messages</td></tr>
@@ -143,7 +142,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  */
 
-public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics, EventThrowing {
+public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics {
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
 
@@ -158,7 +157,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private final static String PRESUMED_TIMEOUT_FORWARD = "presumedTimeout";
 	private final static String INTERRUPT_FORWARD = "interrupt";
 	
-	private final static String STUBFILENAME = "stubFileName";
+	private final static String STUBFILENAME = "stubFilename";
 
 	public static final int MIN_RETRY_INTERVAL=1;
 	public static final int MAX_RETRY_INTERVAL=600;
