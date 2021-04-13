@@ -11,25 +11,87 @@
 			/>
 		</receiver>
 
-		<pipeline transactionAttribute="Required" transactionTimeout="10">
+		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
 			
-			<pipe name="deleteFromIbisTemp">
+			<pipe name="deleteFromIbisTemp" transactionAttribute="RequiresNew" >
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="DELETE FROM IBISTEMP WHERE TKEY=999" />
 			</pipe>
-			<pipe name="insertIntoIbisTemp">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY,TCHAR) VALUES (999,'x')" />
+			<pipe name="insertIntoIbisTemp" transactionAttribute="RequiresNew">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY,TCHAR) VALUES (999,'a')" />
 			</pipe>
 
-			<pipe name="updateIbisTemp">
-				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='y' WHERE TKEY=999" />
-				</sender>
+			<pipe name="rollback" getInputFromSessionKey="originalMessage">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Work" />
 			</pipe>
+
 			<pipe name="selectFromIbisTemp">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TKEY,TCHAR FROM IBISTEMP WHERE TKEY=999" queryType="select"/>
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TCHAR FROM IBISTEMP WHERE TKEY=999" queryType="select" scalar="true" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	
+	<adapter name="TransactionHandlingMultiThread-Work" >
+		<receiver>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionHandlingMultiThread-Work"
+				throwException="false"
+			/>
+		</receiver>
+		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+
+		<pipeline transactionAttribute="RequiresNew" transactionTimeout="10">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="firstUpdate" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='b' WHERE TKEY=999" />
+			</pipe>
+
+			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" xpathExpression="*/@branch" />
+
+			<pipe name="update">
+				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
+					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			
+			<pipe name="rollback">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Sub" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="rollbackFromOtherThread">
+				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
+					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Sub" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	
+	
+	<adapter name="TransactionHandlingMultiThread-Sub" >
+		<receiver>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionHandlingMultiThread-Sub"
+				throwException="false"
+			/>
+		</receiver>
+		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+
+		<pipeline transactionAttribute="Required" transactionTimeout="10">
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+			<pipe name="rollbackInSub">
+				<sender className="nl.nn.adapterframework.senders.XsltSender" styleSheetNameSessionKey="nonExistent" />
+				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
