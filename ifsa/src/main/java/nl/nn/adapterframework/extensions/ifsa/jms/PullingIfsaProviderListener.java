@@ -46,7 +46,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -426,7 +426,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 					
 		}
 	
-		PipeLineSessionBase.setListenerParameters(threadContext, id, cid, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
 	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);

@@ -33,7 +33,7 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
@@ -240,7 +240,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 					try {
 						// Try with resource will make sure pipeLineSession is closed and all (possibly opened) streams
 						// are also closed and the generated report will not remain in progress
-						try (IPipeLineSession pipeLineSession = new PipeLineSessionBase()) {
+						try (IPipeLineSession pipeLineSession = new PipeLineSession()) {
 							while (checkpoints.size() > i + 1) {
 								i++;
 								checkpoint = checkpoints.get(i);

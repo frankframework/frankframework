@@ -2,7 +2,7 @@ package nl.nn.adapterframework.testtool;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
@@ -40,7 +40,7 @@ public class SenderThread extends Thread {
 	public void run() {
 		try {
 			if (session==null) {
-				session = new PipeLineSessionBase();
+				session = new PipeLineSession();
 			}
 			session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 			response = sender.sendMessage(new Message(request), session).asString();

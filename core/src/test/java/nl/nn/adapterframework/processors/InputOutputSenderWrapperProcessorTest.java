@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.SenderBase;
@@ -23,7 +23,7 @@ public class InputOutputSenderWrapperProcessorTest {
 	
 	@Before
 	public void setUp() {
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		secondSenderOutput = null;
 	}
 	

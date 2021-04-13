@@ -24,7 +24,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
@@ -211,7 +211,7 @@ public class WsdlXmlValidatorTest extends Mockito {
 		val.registerForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
-		IPipeLineSession pls = new PipeLineSessionBase();
+		IPipeLineSession pls = new PipeLineSession();
 		val.validate("<xml/>", pls);
 		List<String> lines = Arrays.asList(
 				((String) pls.get(val.getReasonSessionKey())).split("\\r?\\n"));

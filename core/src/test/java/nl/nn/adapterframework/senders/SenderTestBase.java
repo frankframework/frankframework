@@ -25,7 +25,7 @@ import org.mockito.Mockito;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
@@ -46,7 +46,7 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 
 	@Before
 	public void setUp() throws Exception {
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
 		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
 		session.put(IPipeLineSession.messageIdKey, messageId);

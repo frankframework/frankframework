@@ -41,7 +41,7 @@ import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
@@ -169,7 +169,7 @@ public class CmisHttpSender extends HttpSenderBase {
 
 		int responseCode = -1;
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		IPipeLineSession pls = new PipeLineSession();
 		pls.put("writer", writer);
 		pls.put("url", url);
 		pls.put("method", method);

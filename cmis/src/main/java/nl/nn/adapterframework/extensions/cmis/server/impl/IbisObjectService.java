@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
@@ -103,7 +103,7 @@ public class IbisObjectService implements ObjectService {
 			}
 			cmisXml.addSubElement(propertiesXml);
 
-			IPipeLineSession context = new PipeLineSessionBase();
+			IPipeLineSession context = new PipeLineSession();
 			context.put("ContentStream", contentStream.getStream());
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 			Element result = eventDispatcher.trigger(CmisEvent.CREATE_DOCUMENT, cmisXml.toXML(), context);
@@ -234,7 +234,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("includePolicies", includePolicyIds));
 			cmisXml.addSubElement(buildXml("includeAcl", includeAcl));
 
-			IPipeLineSession context = new PipeLineSessionBase();
+			IPipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_OBJECT, cmisXml.toXML(), context);
 
@@ -295,7 +295,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("includePolicyIds", includePolicyIds));
 			cmisXml.addSubElement(buildXml("includeAcl", includeAcl));
 
-			IPipeLineSession context = new PipeLineSessionBase();
+			IPipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_OBJECT_BY_PATH, cmisXml.toXML(), context);
 
@@ -398,7 +398,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(buildXml("offset", offset));
 			cmisXml.addSubElement(buildXml("length", length));
 
-			IPipeLineSession context = new PipeLineSessionBase();
+			IPipeLineSession context = new PipeLineSession();
 			context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CONTENTSTREAM, cmisXml.toXML(), context);
 

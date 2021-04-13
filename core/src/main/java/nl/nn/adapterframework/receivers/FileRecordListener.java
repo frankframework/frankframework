@@ -36,7 +36,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -196,7 +196,7 @@ public class FileRecordListener implements IPullingListener {
 	@Override
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = inputFileName + "-" + recordNo;
-		PipeLineSessionBase.setListenerParameters(threadContext, correlationId, correlationId, null, null);
+		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 	/**

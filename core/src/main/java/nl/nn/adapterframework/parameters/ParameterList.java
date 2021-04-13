@@ -21,7 +21,7 @@ import java.util.Iterator;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 
@@ -85,7 +85,7 @@ public class ParameterList extends ArrayList<Parameter> {
 			if ("*".equals(parmSessionKey)) {
 				String parmName = parm.getName();
 				for (String sessionKey: session.keySet()) {
-					if (!PipeLineSessionBase.tsReceivedKey.equals(sessionKey) && !PipeLineSessionBase.tsSentKey.equals(sessionKey)) {
+					if (!PipeLineSession.tsReceivedKey.equals(sessionKey) && !PipeLineSession.tsSentKey.equals(sessionKey)) {
 						if ((sessionKey.startsWith(parmName) || "*".equals(parmName))) {
 							Parameter newParm = new Parameter();
 							newParm.setName(sessionKey);

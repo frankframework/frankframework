@@ -28,7 +28,7 @@ import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.extensions.cmis.CmisEventListener;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
@@ -72,7 +72,7 @@ public class CmisEventDispatcher {
 	 * Convenience method to create a IPipeLineSession and set the cmis CallContext
 	 */
 	public Element trigger(CmisEvent event, String message, CallContext callContext) {
-		IPipeLineSession context = new PipeLineSessionBase();
+		IPipeLineSession context = new PipeLineSession();
 		context.put(CmisUtils.CMIS_CALLCONTEXT_KEY, callContext);
 
 		return trigger(event, message, context);

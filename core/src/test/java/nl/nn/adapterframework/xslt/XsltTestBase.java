@@ -18,7 +18,7 @@ import static org.hamcrest.CoreMatchers.not;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -45,7 +45,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	
 	@Override
 	public void setup() throws Exception {
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		super.setup();
 	}
 

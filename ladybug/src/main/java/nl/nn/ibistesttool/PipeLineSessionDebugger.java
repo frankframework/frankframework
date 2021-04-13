@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -40,11 +40,11 @@ public class PipeLineSessionDebugger implements MethodHandler {
 		this.ibisDebugger = ibisDebugger;
 	}
 	
-	public static PipeLineSessionBase newInstance(IPipeLineSession pipeLineSession, IbisDebugger ibisDebugger) throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	public static PipeLineSession newInstance(IPipeLineSession pipeLineSession, IbisDebugger ibisDebugger) throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		ProxyFactory factory = new ProxyFactory();
-		factory.setSuperclass(PipeLineSessionBase.class);
+		factory.setSuperclass(PipeLineSession.class);
 		PipeLineSessionDebugger handler = new PipeLineSessionDebugger(pipeLineSession, ibisDebugger);
-		return (PipeLineSessionBase)factory.create(new Class[0], new Object[0], handler);
+		return (PipeLineSession)factory.create(new Class[0], new Object[0], handler);
 	}
 
 	@Override

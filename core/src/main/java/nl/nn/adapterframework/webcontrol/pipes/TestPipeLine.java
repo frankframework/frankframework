@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -173,7 +173,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 
 	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
-		try (IPipeLineSession pls = new PipeLineSessionBase()) {
+		try (IPipeLineSession pls = new PipeLineSession()) {
 			Map ibisContexts = XmlUtils.getIbisContext(message);
 			String technicalCorrelationId = null;
 			if (ibisContexts != null) {
@@ -195,7 +195,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 				}
 			}
 			Date now = new Date();
-			PipeLineSessionBase.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
+			PipeLineSession.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
 			if (writeSecLogMessage) {
 				secLog.info("message [" + message + "]");
 			}

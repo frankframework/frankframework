@@ -21,7 +21,7 @@ import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -100,7 +100,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			"<ns:sub name=\"r\" xmlns:ns=\"urn:test\">R</ns:sub>\n"+
 			"</result>\n</results>";
 
-	private IPipeLineSession session = new PipeLineSessionBase();
+	private IPipeLineSession session = new PipeLineSession();
 
 	@Override
 	public ForEachChildElementPipe createPipe() {

@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -325,7 +325,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				messageId+="-"+DateUtils.format(fileSystem.getModificationTime(file));
 			}
 			if (threadContext!=null) {
-				PipeLineSessionBase.setListenerParameters(threadContext, messageId, messageId, null, null);
+				PipeLineSession.setListenerParameters(threadContext, messageId, messageId, null, null);
 				if (attributes!=null) {
 					threadContext.putAll(attributes);
 				}

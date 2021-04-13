@@ -33,7 +33,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -231,7 +231,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 				+ "] \n Message=[" + message.toString()
 				+ "]");
 		}    
-		PipeLineSessionBase.setListenerParameters(threadContext, id, cid, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
 		threadContext.put("timestamp",tsSent);
 		threadContext.put("replyTo",replyTo);
 		try {

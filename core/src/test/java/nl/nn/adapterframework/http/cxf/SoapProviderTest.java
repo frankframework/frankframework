@@ -48,7 +48,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -249,7 +249,7 @@ public class SoapProviderTest {
 	 */
 	public void sendMessageWithInputStreamAttachmentsTest() throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml");
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 
 		session.put("attachmentXmlSessionKey", MULTIPART_XML);
 		session.put("part_file", new ByteArrayInputStream(ATTACHMENT2_CONTENT.getBytes()));
@@ -274,7 +274,7 @@ public class SoapProviderTest {
 	 */
 	public void sendMessageWithStringAttachmentsTest() throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml");
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 
 		session.put("attachmentXmlSessionKey", MULTIPART_XML);
 		session.put("part_file", ATTACHMENT2_CONTENT);
@@ -299,7 +299,7 @@ public class SoapProviderTest {
 	 */
 	public void receiveAndSendMessageWithAttachmentsTest() throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml", true);
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 
 		session.put("attachmentXmlSessionKey", MULTIPART_XML);
 		session.put("part_file", ATTACHMENT2_CONTENT);

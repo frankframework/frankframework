@@ -42,26 +42,26 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public class PipeLineSessionBase extends HashMap<String,Object> implements IPipeLineSession {
+public class PipeLineSession extends HashMap<String,Object> implements IPipeLineSession {
 	private Logger log = LogUtil.getLogger(this);
 
 	private ISecurityHandler securityHandler = null;
 	
 	// Map that maps resources to wrapped versions of them. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	private Map<AutoCloseable,AutoCloseable> closeables = new HashMap<>(); 
-	public PipeLineSessionBase() {
+	public PipeLineSession() {
 		super();
 	}
 
-	public PipeLineSessionBase(int initialCapacity) {
+	public PipeLineSession(int initialCapacity) {
 		super(initialCapacity);
 	}
 
-	public PipeLineSessionBase(int initialCapacity, float loadFactor) {
+	public PipeLineSession(int initialCapacity, float loadFactor) {
 		super(initialCapacity, loadFactor);
 	}
 
-	public PipeLineSessionBase(Map<String, Object> t) {
+	public PipeLineSession(Map<String, Object> t) {
 		super(t);
 	}
 
@@ -131,8 +131,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	private String getString(String key) {
 		try {
 			return (String) get(key);
-		}
-		catch(Exception e) {
+		} catch(Exception e) {
 			return get(key).toString();
 		}
 	}
@@ -161,10 +160,10 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Boolean)
+		if(ob instanceof Boolean) {
 			return (Boolean) ob;
-		else
-			return this.getString(key).equalsIgnoreCase("true");
+		}
+		return this.getString(key).equalsIgnoreCase("true");
 	}
 
 	/**
@@ -177,10 +176,10 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Integer)
+		if(ob instanceof Integer) {
 			return (Integer) ob;
-		else
-			return Integer.parseInt(this.getString(key));
+		}
+		return Integer.parseInt(this.getString(key));
 	}
 
 	/**
@@ -193,10 +192,10 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Long)
+		if(ob instanceof Long) {
 			return (Long) ob;
-		else
-			return Long.parseLong(this.getString(key));
+		}
+		return Long.parseLong(this.getString(key));
 	}
 
 	/**
@@ -209,10 +208,10 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Double)
+		if(ob instanceof Double) {
 			return (Double) ob;
-		else
-			return Double.parseDouble(this.getString(key));
+		}
+		return Double.parseDouble(this.getString(key));
 	}
 	
 	@Override

@@ -21,7 +21,7 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -45,7 +45,7 @@ public class ServiceClassLoader extends JarBytesClassLoader {
 		}
 		IAdapter adapter = getIbisContext().getIbisManager().getRegisteredAdapter(adapterName);
 		if (adapter != null) {
-			try (IPipeLineSession pipeLineSession = new PipeLineSessionBase()) {
+			try (IPipeLineSession pipeLineSession = new PipeLineSession()) {
 				adapter.processMessage(getCorrelationId(), new Message(getConfigurationName()), pipeLineSession);
 				//TODO check result of pipeline
 				Object object = pipeLineSession.get("configurationJar");

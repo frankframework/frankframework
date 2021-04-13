@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
@@ -153,7 +153,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("GET");
 
@@ -169,7 +169,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("this is my dynamic url");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("GET");
 		sender.setEncodeMessages(true);
@@ -186,7 +186,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("GET"); //Make sure its a GET request
 		sender.setContentType("application/json");
@@ -203,7 +203,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("GET"); //Make sure its a GET request
 		sender.setContentType("application/json");
@@ -222,7 +222,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo this is my message");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
 
@@ -238,7 +238,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo dit is mijn bericht");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("Post"); //should handle both upper and lowercase methodtypes :)
 		sender.setEncodeMessages(true);
@@ -256,7 +256,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setUrl("http://127.0.0.1/something&dummy=true");
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
 
@@ -283,7 +283,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setUrl("http://127.0.0.1/something&dummy=true");
 		Message input = new Message("");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
 
@@ -309,7 +309,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("pUT"); //should handle a mix of upper and lowercase characters :)
 
@@ -325,7 +325,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		Parameter param1 = new Parameter();
 		param1.setName("key");
@@ -352,7 +352,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setUrl(null); //unset URL
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		Parameter urlParam = new Parameter();
 		urlParam.setName("url");
@@ -383,7 +383,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setCharSet("ISO-8859-1");
 		sender.setMethodType("POST");
@@ -400,7 +400,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		Parameter param1 = new Parameter();
 		param1.setName("key");
@@ -427,7 +427,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		Parameter param1 = new Parameter();
 		param1.setName("key");
@@ -455,7 +455,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		Parameter param1 = new Parameter();
 		param1.setName("key");
@@ -483,7 +483,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("{\"key\": \"value\"}");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("POST");
 		sender.setContentType("application/json");
@@ -501,7 +501,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); //Let's pretend this is a big JSON stream!
 		assertTrue("input message has to be of type binary", input.isBinary());
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("POST");
 		sender.setContentType("application/json");
@@ -521,7 +521,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message(url);
 		assertTrue("input message has to be a binary file", input.isBinary());
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("POST");
 		sender.setContentType("application/pdf");
@@ -539,7 +539,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("{\"key\": \"value\"}");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("PUT");
 		sender.setContentType("application/json");
@@ -557,7 +557,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); //Let's pretend this is a big JSON stream!
 		assertTrue("input message has to be of type binary", input.isBinary());
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("PUT");
 		sender.setContentType("application/json");
@@ -575,7 +575,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("POST");
 		sender.setParamsInUrl(false);
@@ -601,7 +601,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("POST");
 		sender.setPostType("FORMDATA");
@@ -627,7 +627,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("POST");
 		sender.setParamsInUrl(false);
@@ -654,7 +654,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("POST");
 		sender.setPostType("mtom");
@@ -681,7 +681,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("POST");
 		sender.setParamsInUrl(false);
@@ -719,7 +719,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		Parameter param1 = new Parameter();
 		param1.setName("url");
@@ -745,7 +745,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		Parameter param1 = new Parameter();
 		param1.setName("url");
@@ -771,7 +771,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		Parameter param1 = new Parameter();
 		param1.setName("url");
@@ -794,7 +794,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender();
 		Message input = new Message("paramterValue");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		Parameter param1 = new Parameter();
 		param1.setName("url");

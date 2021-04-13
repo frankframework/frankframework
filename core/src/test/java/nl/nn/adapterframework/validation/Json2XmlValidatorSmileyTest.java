@@ -11,7 +11,7 @@ import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FilePipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
@@ -44,7 +44,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		json2xml.registerForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
-		IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+		IPipeLineSession pipeLineSession = new PipeLineSession();
 		PipeRunResult prr = json2xml.doPipe(new Message(json),pipeLineSession);
 		return prr.getResult().asString();
 	}
@@ -63,7 +63,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		json2xml.registerForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
-		IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+		IPipeLineSession pipeLineSession = new PipeLineSession();
 		PipeRunResult prr = json2xml.doPipe(new Message(xml),pipeLineSession);
 		return prr.getResult().asString();
 	}

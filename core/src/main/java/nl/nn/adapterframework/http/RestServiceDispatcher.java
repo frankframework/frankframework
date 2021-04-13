@@ -44,7 +44,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.pipes.CreateRestViewPipe;
@@ -358,7 +358,7 @@ public class RestServiceDispatcher  {
 			pipe.registerForward(pipeForward);
 			pipe.configure();
 			pipe.start();
-			IPipeLineSession session = new PipeLineSessionBase();
+			IPipeLineSession session = new PipeLineSession();
 			session.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
 			session.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
 			String result = pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult().asString();

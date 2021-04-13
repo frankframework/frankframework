@@ -12,7 +12,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -29,7 +29,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 
 	@Before
 	public void populateSession() {
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		session.put("dummyString", DUMMY_DATA);
 		session.put("dummyByteArray", DUMMY_DATA.getBytes());
 		session.put("dummyStream", new ByteArrayInputStream(DUMMY_DATA.getBytes()));

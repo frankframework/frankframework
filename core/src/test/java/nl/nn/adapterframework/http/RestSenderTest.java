@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 public class RestSenderTest extends HttpSenderTestBase<RestSender> {
@@ -49,7 +49,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 		RestSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("GET");
 
@@ -65,7 +65,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 		RestSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo this is my message");
 
-		IPipeLineSession pls = new PipeLineSessionBase(session);
+		IPipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
 

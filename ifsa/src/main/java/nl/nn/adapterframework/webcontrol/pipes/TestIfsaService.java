@@ -26,7 +26,7 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -184,7 +184,7 @@ public class TestIfsaService extends TimeoutGuardPipe {
 		sender.setMessageProtocol(messageProtocol);
 		sender.configure();
 		sender.open();
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put(IPipeLineSession.messageIdKey, "testmsg_" + Misc.createUUID());
 		return sender.sendMessage(new Message(message), session).asString();
 	}

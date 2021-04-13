@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -194,7 +194,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 					if (log.isDebugEnabled()) {
 						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					PipeLineSessionBase pipeLineSession = new PipeLineSessionBase();
+					PipeLineSession pipeLineSession = new PipeLineSession();
 					pipeLineSession.put(IPipeLineSession.messageIdKey,cid);
 					getSender().sendMessage(plr.getResult(), pipeLineSession);
 				}

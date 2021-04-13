@@ -21,7 +21,7 @@ import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.filesystem.IFileHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -35,7 +35,7 @@ public abstract class FileHandlerTestBase {
 	public String TEST_TEMP_DIR="target";
 	
 	private IFileHandler handler;
-	private IPipeLineSession session=new PipeLineSessionBase();
+	private IPipeLineSession session=new PipeLineSession();
 
 
     protected abstract IFileHandler createFileHandler() throws IllegalAccessException, InstantiationException;

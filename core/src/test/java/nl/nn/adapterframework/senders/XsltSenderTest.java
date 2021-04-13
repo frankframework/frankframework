@@ -8,7 +8,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
@@ -127,7 +127,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.configure();
 		sender.open();
 
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		session.put("stylesheetName", "/Xslt/dynamicStylesheet/correctDummy.xsl");
 
 		Message input = TestFileUtils.getTestFileMessage("/Xslt/dynamicStylesheet/in.xml");
@@ -143,7 +143,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.configure();
 		sender.open();
 
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		session.put("stylesheetName", "/Xslt/dynamicStylesheet/correctDummy.xsl");
 
 		Message input = TestFileUtils.getTestFileMessage("/Xslt/dynamicStylesheet/in.xml");
@@ -160,7 +160,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.configure();
 		sender.open();
 
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 
 		Message input = TestFileUtils.getTestFileMessage("/Xslt/dynamicStylesheet/in.xml");
 		log.debug("inputfile ["+input+"]");
@@ -175,7 +175,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.configure();
 		sender.open();
 
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 
 		Message input = TestFileUtils.getTestFileMessage("/Xslt/dynamicStylesheet/in.xml");
 		log.debug("inputfile ["+input+"]");
@@ -191,7 +191,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.configure();
 		sender.open();
 
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		session.put("stylesheetName", "/Xslt/dynamicStylesheet/correctDummy.xsl");
 
 		Message input = TestFileUtils.getTestFileMessage("/Xslt/dynamicStylesheet/in.xml");
@@ -208,7 +208,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.configure();
 		sender.open();
 
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 
 		Message input = new Message("<result>dummy</result>");
 		String result = sender.sendMessage(input, session).asString();
@@ -224,7 +224,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.configure();
 		sender.open();
 
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		session.put("stylesheetName", "/Xslt/dynamicStylesheet/nonexistingDummy.xsl");
 
 		Message input = TestFileUtils.getTestFileMessage("/Xslt/dynamicStylesheet/in.xml");

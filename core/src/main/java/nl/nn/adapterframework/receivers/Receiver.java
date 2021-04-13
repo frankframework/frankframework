@@ -71,7 +71,7 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttributes;
@@ -328,7 +328,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	private IPipeLineSession createProcessingContext(String correlationId, Map<String,Object> threadContext, String messageId) {
-		IPipeLineSession pipelineSession = new PipeLineSessionBase();
+		IPipeLineSession pipelineSession = new PipeLineSession();
 		if (threadContext != null) {
 			pipelineSession.putAll(threadContext);
 			if (log.isDebugEnabled()) {
@@ -1012,7 +1012,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			context=new HashMap<>();
 		}
 
-		PipeLineSessionBase.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
+		PipeLineSession.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
 		String messageId = (String) context.get(IPipeLineSession.originalMessageIdKey);
 		return processMessageInAdapter(rawMessage, message, messageId, correlationId, context, waitingTime, false);
 	}

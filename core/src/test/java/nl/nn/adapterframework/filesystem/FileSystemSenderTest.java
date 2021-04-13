@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
@@ -68,7 +68,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwString", contents.getBytes());
 
 		Parameter p = new Parameter();
@@ -101,7 +101,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
 		Parameter p = new Parameter();
@@ -136,7 +136,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		}
 
 		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
 		Parameter p = new Parameter();
@@ -169,7 +169,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		Parameter param = new Parameter();
 		param.setName("filename");
@@ -212,7 +212,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -234,7 +234,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setBase64("encode");
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -269,7 +269,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -319,7 +319,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(folder);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -345,7 +345,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(folder);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -381,7 +381,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		Message message=new Message(folder);
 		Message result = fileSystemSender.sendMessage(message, session);
 
@@ -405,7 +405,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -438,7 +438,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		deleteFile(null, dest);
 
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -473,7 +473,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		String correlationId="fakecorrelationid";
 		Message message=new Message("");
 		Message result = fileSystemSender.sendMessage(message, session);
@@ -560,7 +560,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			_deleteFile(inputFolder, filename2);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("listWithInputFolderAsParameter", inputFolder);
 
 		Parameter p = new Parameter();

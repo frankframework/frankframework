@@ -29,7 +29,7 @@ import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -164,7 +164,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public String transformToJson(String message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
 		pipe.setDirection("xml2json");
-		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSessionBase());
+		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
 		try {
 			return pipeResult.getResult().asString();
 		} catch (IOException e) {
@@ -174,7 +174,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	public String transformToXml(String message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
-		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSessionBase());
+		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
 		try {
 			return pipeResult.getResult().asString();
 		} catch (IOException e) {

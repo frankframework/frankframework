@@ -22,7 +22,7 @@ import org.junit.runners.MethodSorters;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -251,7 +251,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -338,7 +338,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -363,7 +363,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -392,7 +392,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -572,7 +572,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwString", contents);
 
 		ParameterList params = new ParameterList();
@@ -610,7 +610,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
 		ParameterList params = new ParameterList();
@@ -650,7 +650,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
 		ParameterList params = new ParameterList();
@@ -690,7 +690,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 //		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		ParameterList paramlist = new ParameterList();
 		Parameter param = new Parameter();
@@ -733,7 +733,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
@@ -780,7 +780,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		createFile(null, filename, contents);
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterList params = new ParameterList();
 		
 		Parameter p = new Parameter();

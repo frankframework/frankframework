@@ -22,7 +22,7 @@ import java.io.ByteArrayInputStream;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 
@@ -39,7 +39,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			IPipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -69,7 +69,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			IPipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part name=\"dummy\" filename=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -99,7 +99,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			IPipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part name=\"dummy\" "
 					+ "value=\"{json:true}\" size=\"72833\" "
@@ -129,7 +129,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			IPipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -160,7 +160,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			IPipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part name=\"dummy\" filename=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -191,7 +191,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			IPipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part name=\"dummy\" "
 					+ "value=\"{json:true}\" size=\"72833\" "

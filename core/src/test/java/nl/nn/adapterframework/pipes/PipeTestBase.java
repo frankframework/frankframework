@@ -12,7 +12,7 @@ import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -22,7 +22,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class PipeTestBase<P extends IPipe> {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected IPipeLineSession session = new PipeLineSessionBase();
+	protected IPipeLineSession session = new PipeLineSession();
 
 	protected P pipe;
 	protected PipeLine pipeline;

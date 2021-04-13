@@ -78,7 +78,7 @@ import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpSender;
@@ -1497,7 +1497,7 @@ public class TestTool {
 						}
 						if (queues != null) {
 							try {
-								PipeLineSessionBase session = new PipeLineSessionBase();
+								PipeLineSession session = new PipeLineSession();
 								session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
@@ -1786,7 +1786,7 @@ public class TestTool {
 					if (StringUtils.isNotEmpty(styleSheetName)) {
 						httpSender.setStyleSheetName(styleSheetName);
 					}
-					session = new PipeLineSessionBase();
+					session = new PipeLineSession();
 					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
 					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 					while (parameterNameIterator.hasNext()) {
@@ -1838,7 +1838,7 @@ public class TestTool {
 				IbisJavaSender ibisJavaSender = new IbisJavaSender();
 				ibisJavaSender.setName("Test Tool IbisJavaSender");
 				ibisJavaSender.setServiceName(serviceName);
-				IPipeLineSession session = new PipeLineSessionBase();
+				IPipeLineSession session = new PipeLineSession();
 				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
 				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 				while (parameterNameIterator.hasNext()) {
@@ -2175,7 +2175,7 @@ public class TestTool {
 						 * (see also executeFixedQuerySenderRead() )
 						 */
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
-						PipeLineSessionBase session = new PipeLineSessionBase();
+						PipeLineSession session = new PipeLineSession();
 						session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
@@ -2757,7 +2757,7 @@ public class TestTool {
 			try {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
-				PipeLineSessionBase session = new PipeLineSessionBase();
+				PipeLineSession session = new PipeLineSession();
 				session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
@@ -2778,7 +2778,7 @@ public class TestTool {
 		if (newRecordFound) {
 			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 			try {
-				PipeLineSessionBase session = new PipeLineSessionBase();
+				PipeLineSession session = new PipeLineSession();
 				session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeOutException e) {

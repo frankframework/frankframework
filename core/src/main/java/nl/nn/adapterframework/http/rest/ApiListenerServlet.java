@@ -40,7 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
@@ -149,7 +149,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		/**
 		 * Initiate and populate messageContext
 		 */
-		try (PipeLineSessionBase messageContext = new PipeLineSessionBase()) {
+		try (PipeLineSession messageContext = new PipeLineSession()) {
 			messageContext.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
 			messageContext.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(IPipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
@@ -475,7 +475,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageId = messageIdHeader;
 					}
 				}
-				PipeLineSessionBase.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
+				PipeLineSession.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
 				Message result = listener.processRequest(null, body, messageContext);
 
 				/**

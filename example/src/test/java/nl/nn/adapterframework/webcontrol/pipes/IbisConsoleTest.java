@@ -27,7 +27,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.test.IbisTester;
@@ -51,7 +51,7 @@ public class IbisConsoleTest {
 	public void initXMLUnit() throws IOException {
 		XMLUnit.setIgnoreWhitespace(true);
 		XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		session.put("method", "GET");
 	}
 

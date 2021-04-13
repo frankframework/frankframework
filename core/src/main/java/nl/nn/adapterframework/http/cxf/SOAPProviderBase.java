@@ -50,7 +50,7 @@ import org.w3c.dom.Node;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -87,7 +87,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	@Override
 	public SOAPMessage invoke(SOAPMessage request) {
 		String result;
-		try (PipeLineSessionBase pipelineSession = new PipeLineSessionBase()) {
+		try (PipeLineSession pipelineSession = new PipeLineSession()) {
 			String correlationId = Misc.createSimpleUUID();
 			log.debug(getLogPrefix(correlationId)+"received message");
 			String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;

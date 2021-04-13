@@ -18,7 +18,7 @@ import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -34,7 +34,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	@Override
 	public void setup() throws Exception {
 		super.setup();
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 	}
 
 	@Test

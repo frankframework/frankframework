@@ -48,7 +48,7 @@ import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -410,7 +410,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 //			}
 //		}
 	
-		PipeLineSessionBase.setListenerParameters(threadContext, id, BIFname, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, BIFname, null, tsSent);
 	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);

@@ -12,7 +12,7 @@ import org.junit.runners.Parameterized;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -94,7 +94,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
    protected String runAndEvaluate(XmlValidator validator, String inputfile, String[] expectedFailureReasons) throws IOException  {
 	   System.out.println("inputfile ["+inputfile+"]");
        String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
-  		IPipeLineSession session=new PipeLineSessionBase();
+  		IPipeLineSession session=new PipeLineSession();
        try {
       		PipeRunResult result=validator.doPipe(new Message(testXml), session);
       		PipeForward forward=result.getPipeForward();
@@ -180,7 +180,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.start();
 
 		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		PipeRunResult result = validator.doPipe(new Message(testXml), session);
 		PipeForward forward = result.getPipeForward();
 

@@ -15,7 +15,7 @@ import org.junit.rules.ExpectedException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 public class ParameterTest {
@@ -31,7 +31,7 @@ public class ParameterTest {
 		p.setUserName("fakeUsername");
 		p.configure();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		
 		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
@@ -45,7 +45,7 @@ public class ParameterTest {
 		p.setPassword("fakePassword");
 		p.configure();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		
 		assertEquals("fakePassword", p.getValue(alreadyResolvedParameters, null, session, false));
@@ -58,7 +58,7 @@ public class ParameterTest {
 		p.setPattern("{sessionKey}");
 		p.configure();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		session.put("sessionKey", "fakeSessionVariable");
 		
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
@@ -73,7 +73,7 @@ public class ParameterTest {
 		p.setPattern("{siblingParameter}");
 		p.configure();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		Parameter siblingParameter = new Parameter();
@@ -95,7 +95,7 @@ public class ParameterTest {
 		p.configure();
 		
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		session.put("sessionKey", "fakeSessionVariable");
 		
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
@@ -115,7 +115,7 @@ public class ParameterTest {
 		p.setPattern("{unknown}");
 		p.configure();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		
@@ -129,7 +129,7 @@ public class ParameterTest {
 		p.setName("dummy");
 		p.configure();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		
 		Message message = new Message("fakeMessage");
@@ -145,7 +145,7 @@ public class ParameterTest {
 		p.setDefaultValue("");
 		p.configure();
 		
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		
 		Message message = new Message("fakeMessage");
@@ -163,7 +163,7 @@ public class ParameterTest {
 		p.setSessionKey(sessionKey);
 		p.configure();
 
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		session.put(sessionKey, new Message(sessionMessage));
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
@@ -183,7 +183,7 @@ public class ParameterTest {
 		p.setSessionKey(sessionKey);
 		p.configure();
 
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		session.put(sessionKey, new Message(is));
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
@@ -206,7 +206,7 @@ public class ParameterTest {
 		p.setXpathExpression("items/item");
 		p.configure();
 
-		IPipeLineSession session = new PipeLineSessionBase();
+		IPipeLineSession session = new PipeLineSession();
 		session.put(sessionKey, Arrays.asList(new String[] {"fiets", "bel", "appel"}));
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();

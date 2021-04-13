@@ -24,7 +24,7 @@ public class PipeLineSessionTest {
 
 	@Before
 	public void setUp() throws Exception {
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 
 		Map<String, Object> map = new HashMap<>();
 		map.put("1", 1);
