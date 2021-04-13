@@ -79,17 +79,17 @@ public class FixedResultSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 	    
-		if (StringUtils.isNotEmpty(filename)) {
+		if (StringUtils.isNotEmpty(getFilename())) {
 			try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this, filename), Misc.LINE_SEPARATOR);
+				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+filename+"]", e);
 			}
 		}
-		if ((StringUtils.isEmpty(filename)) && returnString==null) {  // allow an empty returnString to be specified
+		if ((StringUtils.isEmpty(getFilename())) && getReturnString()==null) {  // allow an empty returnString to be specified
 			throw new ConfigurationException("Pipe [" + getName() + "] has neither fileName nor returnString specified");
 		}
-		if (StringUtils.isNotEmpty(replaceFrom)) {
+		if (StringUtils.isNotEmpty(getReplaceFrom())) {
 			returnString = replace(returnString, replaceFrom, replaceTo );
 		}
 	}
@@ -179,7 +179,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
 	public void setFileName(String fileName) {
-		this.filename = fileName;
+		setFilename(fileName);
 	}
 
 	/**

@@ -692,7 +692,7 @@ public class FileHandler implements IScopeProvider {
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
 	public void setFileName(String filename) {
-		this.filename = filename;
+		setFilename(filename);
 	}
 	/**
 	 * Sets filename of the file that is written
@@ -708,7 +708,7 @@ public class FileHandler implements IScopeProvider {
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String filenameSessionKey) {
-		this.filenameSessionKey = filenameSessionKey;
+		setFilenameSessionKey(filenameSessionKey);
 	}
 
 	/**

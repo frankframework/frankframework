@@ -228,7 +228,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
     public void setFileName(String fileName) {
-        this.filename = fileName;
+		setFilename(fileName);
     }
 
 	/**
@@ -246,7 +246,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	@Deprecated
 	@ConfigurationWarning("attribute 'setFileNameSessionKey' is replaced with 'setFilenameSessionKey'")
 	public void setFileNameSessionKey(String fileNameSessionKey) {
-		this.filenameSessionKey = fileNameSessionKey;
+		setFilenameSessionKey(fileNameSessionKey);
 	}
 
 	/**

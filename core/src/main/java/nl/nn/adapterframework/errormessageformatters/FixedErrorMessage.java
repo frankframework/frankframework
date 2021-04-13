@@ -98,7 +98,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
 	public void setFileName(String fileName) {
-		this.filename = fileName;
+		setFilename(fileName);
 	}
 
 	@IbisDoc({"name of the file containing the resultmessage", ""})

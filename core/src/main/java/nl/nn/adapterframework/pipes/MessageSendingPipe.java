@@ -1343,7 +1343,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	@Deprecated
 	@ConfigurationWarning("attribute 'stubFileName' is replaced with 'stubFilename'")
 	public void setStubFileName(String fileName) {
-		stubFilename = fileName;
+		setStubFilename(fileName);
 	}
 
 	@IbisDoc({"25", "when set, the pipe returns a message from a file, instead of doing the regular process", ""})

@@ -104,7 +104,7 @@ public class FilePipe extends FixedForwardPipe {
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
 	public void setFileName(String filename) {
-		fileHandler.setFileName(filename);
+		setFilename(filename);
 	}
 
 	public void setFilename(String filename) {

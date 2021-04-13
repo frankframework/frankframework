@@ -147,7 +147,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String filenameSessionKey) {
-		this.filenameSessionKey = filenameSessionKey;
+		setFilenameSessionKey(filenameSessionKey);
 	}
 	
 	@IbisDoc({"the session key that contains the name of the file to use", ""})
