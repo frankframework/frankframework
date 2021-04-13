@@ -63,7 +63,7 @@ Upcoming
 
 ### Breaking changes
 
-- It is highly recommended not to use any custom file which overrides a file from the framework itself. In case it is really required to override a file then do not forget to update that custom file by examining the changes made while upgrading the framework version. It is a good exercise to keep the .orig suffixed original file also in the project to understand what are the changes in custom files. The changes in the custom file might have been included in the new version of the framework and the file may be no longer needed. If the changes are complicated to understand please consult with the core team.
+- It is highly recommended not to use any custom file which overrides a file from the framework itself. In case it is really required to override a file then do not forget to update that custom file by examining the changes made while upgrading the framework version. It is a good practice to keep the .orig suffixed original file also in the project to understand what are the changes in custom files. The changes in the custom file might have been included in the new version of the framework and the file may be no longer needed. If the changes are complicated to understand please consult with the core team.
 
 7.5
 --------
