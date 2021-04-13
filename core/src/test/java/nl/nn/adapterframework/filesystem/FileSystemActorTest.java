@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;

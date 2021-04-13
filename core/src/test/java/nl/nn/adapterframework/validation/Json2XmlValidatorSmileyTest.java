@@ -9,7 +9,6 @@ import org.xml.sax.SAXException;
 import junit.framework.TestCase;
 import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;

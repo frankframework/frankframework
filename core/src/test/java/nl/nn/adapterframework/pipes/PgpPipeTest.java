@@ -11,7 +11,6 @@ import org.junit.runners.Parameterized;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;

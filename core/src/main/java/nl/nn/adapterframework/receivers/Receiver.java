@@ -57,7 +57,6 @@ import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.IPullingListener;

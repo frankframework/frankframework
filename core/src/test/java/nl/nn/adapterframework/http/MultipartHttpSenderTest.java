@@ -22,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 

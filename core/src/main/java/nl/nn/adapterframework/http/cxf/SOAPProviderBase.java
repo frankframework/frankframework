@@ -47,7 +47,6 @@ import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;

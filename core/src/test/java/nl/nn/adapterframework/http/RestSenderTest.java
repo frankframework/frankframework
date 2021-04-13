@@ -21,7 +21,6 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 public class RestSenderTest extends HttpSenderTestBase<RestSender> {

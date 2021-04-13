@@ -8,7 +8,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;

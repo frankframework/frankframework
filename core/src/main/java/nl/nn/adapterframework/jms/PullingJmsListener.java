@@ -29,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;

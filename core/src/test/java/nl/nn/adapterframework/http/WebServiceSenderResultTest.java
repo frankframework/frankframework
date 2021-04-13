@@ -38,7 +38,6 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;

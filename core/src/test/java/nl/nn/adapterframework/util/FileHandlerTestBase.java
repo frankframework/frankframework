@@ -21,7 +21,6 @@ import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.filesystem.IFileHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;

@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;

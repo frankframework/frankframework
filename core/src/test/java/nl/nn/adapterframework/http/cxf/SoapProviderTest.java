@@ -48,7 +48,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;

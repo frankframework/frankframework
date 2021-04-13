@@ -28,7 +28,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;

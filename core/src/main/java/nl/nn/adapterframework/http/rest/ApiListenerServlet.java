@@ -40,7 +40,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;

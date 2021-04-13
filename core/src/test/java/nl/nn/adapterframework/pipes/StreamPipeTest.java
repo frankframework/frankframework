@@ -16,7 +16,6 @@ import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.junit.Test;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;

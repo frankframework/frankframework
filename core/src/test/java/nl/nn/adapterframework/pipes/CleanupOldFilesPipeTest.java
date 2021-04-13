@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import org.junit.Test;
 

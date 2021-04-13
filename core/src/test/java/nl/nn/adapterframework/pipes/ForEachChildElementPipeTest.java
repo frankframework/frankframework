@@ -19,7 +19,6 @@ import org.hamcrest.core.StringContains;
 import org.junit.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;

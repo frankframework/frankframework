@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 

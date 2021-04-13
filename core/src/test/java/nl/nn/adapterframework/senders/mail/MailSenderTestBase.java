@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import com.sun.mail.smtp.SMTPMessage;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;

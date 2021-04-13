@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;

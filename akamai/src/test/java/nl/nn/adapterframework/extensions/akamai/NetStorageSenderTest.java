@@ -23,7 +23,6 @@ import java.io.IOException;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderTestBase;
