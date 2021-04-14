@@ -26,10 +26,18 @@ public abstract class ConcurrentJdbcActionTester extends ConcurrentActionTester 
 		initAction(connection);
 	}
 
+	public void initAction(Connection conn) throws Exception {
+	}
+
+
 	@Override
 	public final void action() throws Exception {
 		action(connection);
 	}
+
+	public void action(Connection conn) throws Exception {
+	}
+
 
 	@Override
 	public final void finalizeAction() throws Exception {
@@ -40,12 +48,6 @@ public abstract class ConcurrentJdbcActionTester extends ConcurrentActionTester 
 				connection.close();
 			}
 		}
-	}
-	
-	public void initAction(Connection conn) throws Exception {
-	}
-
-	public void action(Connection conn) throws Exception {
 	}
 
 	public void finalizeAction(Connection conn) throws Exception {
