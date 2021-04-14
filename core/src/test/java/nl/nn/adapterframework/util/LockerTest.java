@@ -25,7 +25,7 @@ import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentManagedTransactionTester;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
-public class LockerTest2 extends TransactionManagerTestBase {
+public class LockerTest extends TransactionManagerTestBase {
 
 	private Locker locker;
 	
@@ -46,7 +46,7 @@ public class LockerTest2 extends TransactionManagerTestBase {
 		}
 	}
 
-	public LockerTest2(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException, NamingException {
+	public LockerTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException, NamingException {
 		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
 
 		locker = new Locker();
