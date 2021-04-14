@@ -1,0 +1,33 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+html {
+	height: 100%;
+}
+body {
+	font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	background-color: #2f4050;
+	font-size: 13px;
+	color: #676a6c;
+	overflow-x: hidden;
+	overflow-y: scroll !important;
+
+	display: flex;
+	flex-direction: row;
+	height: 100%;
+}
+.sidebar {
+	display: flex;
+	flex-direction: column;
+	border-right: 1px solid black;
+	min-width: 250px;
+	max-width: 250px;
+	padding-bottom: 10px;
+	padding: 10px;
+}
+.content {
+	width: 100%;
+	padding: 10px;
+	background-color: red;
+}

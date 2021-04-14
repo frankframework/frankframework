@@ -739,19 +739,6 @@
 					<plugin>
 						<groupId>org.projectlombok</groupId>
 						<artifactId>lombok-maven-plugin</artifactId>
-						<version>1.18.16.0</version>
-						<executions>
-							<execution>
-								<phase>generate-sources</phase>
-								<goals>
-									<goal>delombok</goal>
-								</goals>
-								<configuration>
-									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-									<addOutputDirectory>false</addOutputDirectory>
-								</configuration>
-							</execution>
-						</executions>
 					</plugin>
 				</plugins>
 			</build>

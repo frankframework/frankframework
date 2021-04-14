@@ -1,0 +1,7 @@
+<div class="sub-menu">
+	<ul>
+		<li ng-repeat="element in elements | matchElement:this">
+			<a ui-sref="element({category: category.name, element:element.name})"><span class="nav-label">{{element.name}}</span></a>
+		</li>
+	</ul>
+</div>

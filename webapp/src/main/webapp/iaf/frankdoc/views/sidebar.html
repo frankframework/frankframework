@@ -1,0 +1,9 @@
+<div class="sidebar">
+	<ul>
+		<li ng-repeat="category in categories">
+			<a ui-sref="category({category: category.name})"><span class="nav-label">{{category.name}}</span></a>
+		</li>
+	</ul>
+
+	<div ui-view></div>
+</div>
