@@ -20,7 +20,8 @@ public class ConfigChildTechnicalOverrideTest {
 
 	@BeforeClass
 	public static void setUp() {
-		model = FrankDocModel.populate(DIGESTER_RULES, PACKAGE + "Master", FrankClassRepository.getReflectInstance());
+		FrankClassRepository repository = FrankClassRepository.getReflectInstance(PACKAGE);
+		model = FrankDocModel.populate(DIGESTER_RULES, PACKAGE + "Master", repository);
 	}
 
 	@Test

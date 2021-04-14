@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
@@ -85,13 +85,13 @@ public class ResultBlock2Sender extends Result2StringWriter implements Configura
 	}
 
 	@Override
-	public void openDocument(IPipeLineSession session, String streamId) throws Exception {
+	public void openDocument(PipeLineSession session, String streamId) throws Exception {
 		counters.put(streamId,new Integer(0));
 		levels.put(streamId,new Integer(0));
 		super.openDocument(session, streamId);
 	}
 	@Override
-	public void closeDocument(IPipeLineSession session, String streamId) {
+	public void closeDocument(PipeLineSession session, String streamId) {
 		super.closeDocument(session,streamId);
 		counters.remove(streamId);
 		levels.remove(streamId);
@@ -144,12 +144,12 @@ public class ResultBlock2Sender extends Result2StringWriter implements Configura
 
 
 	@Override
-	public void openBlock(IPipeLineSession session, String streamId, String blockName) throws Exception {
+	public void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
 		super.openBlock(session,streamId,blockName);
 		incLevel(streamId);
 	}
 	@Override
-	public void closeBlock(IPipeLineSession session, String streamId, String blockName) throws Exception {
+	public void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
 		super.closeBlock(session,streamId,blockName);
 		int level=decLevel(streamId);
 		if (level==0) {

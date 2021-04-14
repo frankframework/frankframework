@@ -22,6 +22,7 @@ RUN set -eux \
 
 # Copy entrypoint script
 COPY src/scripts/*.sh /
+RUN chmod +x /*.sh
 
 # copy the frank framework
 COPY target/dependencies/ibis-adapterframework-webapp.war /usr/local/tomcat/webapps/iaf.war

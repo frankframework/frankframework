@@ -20,7 +20,7 @@ import java.io.Reader;
 import java.sql.ResultSet;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 
 	@Override
-	protected Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException {
+	protected Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException {
 		try {
 			InputStream blobStream=JdbcUtil.getBlobInputStream(querySender.getDbmsSupport(), rs ,1 , querySender.isBlobsCompressed());
 			return getReaderFactory().getReader(blobStream, charset, streamId, session);

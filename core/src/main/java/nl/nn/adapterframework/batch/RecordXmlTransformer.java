@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -76,7 +76,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 
 	@Override
-	public String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = getXml(parsedRecord);
 		if (transformerPool!=null) {
 			if (log.isDebugEnabled()) {

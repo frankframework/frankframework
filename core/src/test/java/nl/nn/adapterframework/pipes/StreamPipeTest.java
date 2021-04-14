@@ -16,10 +16,8 @@ import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.junit.Test;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -33,9 +31,9 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	}
 
 	@Override
-	public void setup() throws ConfigurationException {
+	public void setup() throws Exception {
 		super.setup();
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 	}
 
 	@Test
@@ -113,7 +111,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		return createMultipartHttpRequest(pipe, addAntiVirusParts, false);
 	}
 
-	private Parameter createHttpRequestParameter(MockMultipartHttpServletRequest request, IPipeLineSession session) {
+	private Parameter createHttpRequestParameter(MockMultipartHttpServletRequest request, PipeLineSession session) {
 		session.put("httpRequest", request);
 		Parameter parameter = new Parameter();
 		parameter.setName("httpRequest");

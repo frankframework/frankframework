@@ -30,12 +30,12 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.configuration.TestConfiguration;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.pipes.EchoPipe;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 public class MockIbisManager extends Mockito implements IbisManager {

@@ -11,7 +11,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -108,7 +108,7 @@ public abstract class ValidatorTestBase extends TestCase {
     	return validate(null, rootNamespace, schemaLocation, addNamespaceToSchema, ignoreUnknownNamespaces, inputFile, expectedFailureReasons);
     }
 
-    public void evaluateResult(String event, IPipeLineSession session, Exception e, String[] expectedFailureReasons) {
+    public void evaluateResult(String event, PipeLineSession session, Exception e, String[] expectedFailureReasons) {
         String failureReason=(String)(session.get("failureReason"));
         if (failureReason!=null) {
         	System.out.println("no failure reason");
@@ -224,12 +224,12 @@ public abstract class ValidatorTestBase extends TestCase {
 			}
 
 			@Override
-			public String getSchemasId(IPipeLineSession session) throws PipeRunException {
+			public String getSchemasId(PipeLineSession session) throws PipeRunException {
 				return null;
 			}
 
 			@Override
-			public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
+			public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
 				return null;
 			}
 

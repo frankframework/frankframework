@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 
@@ -39,7 +39,7 @@ public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactor
 	public void configure() throws ConfigurationException {
 	}
 
-	public Reader getReader(InputStream in, String charset, String streamId, IPipeLineSession session) throws SenderException {
+	public Reader getReader(InputStream in, String charset, String streamId, PipeLineSession session) throws SenderException {
 		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement()); 
 	}
 

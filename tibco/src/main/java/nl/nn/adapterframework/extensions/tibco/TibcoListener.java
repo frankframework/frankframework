@@ -20,7 +20,7 @@ import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.jms.MessagingSourceFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Dedicated Listener on Tibco JMS Destinations.
@@ -57,6 +57,7 @@ public class TibcoListener extends JmsListener {
 
 	private String serverUrl;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getServerUrl())) {
 			throw new ConfigurationException("serverUrl must be specified");
@@ -65,12 +66,14 @@ public class TibcoListener extends JmsListener {
 	}
 
 
+	@Override
 	protected MessagingSourceFactory getMessagingSourceFactory() {
 		return new TibcoMessagingSourceFactory(this, isUseTopicFunctions());
 	}
 	/*
 	 * Tibco uses serverUrl instead of connectionFactoryName.
 	 */
+	@Override
 	public String getConnectionFactoryName() throws JmsException {
 		return getServerUrl();
 	}

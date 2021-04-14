@@ -24,6 +24,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,11 +35,17 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
+import nl.nn.adapterframework.frankdoc.doclet.Environment;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 
+@RunWith(Parameterized.class)
 public class FrankDocModelTest {
 	private static final String SIMPLE = "nl.nn.adapterframework.frankdoc.testtarget.simple";
 	private static final String LISTENER = SIMPLE + ".IListener";
@@ -52,15 +61,27 @@ public class FrankDocModelTest {
 	private static final String REFERRER = "nl.nn.adapterframework.frankdoc.testtarget.ibisdocref.Referrer";
 	private static final String REFERRER_CHILD = "nl.nn.adapterframework.frankdoc.testtarget.ibisdocref.ReferrerChild";
 
-	private FrankClassRepository classRepository;
+	@Parameters(name = "{0}")
+	public static Collection<Object[]> data() {
+		final List<Object[]> result = new ArrayList<>();
+		Arrays.asList(Environment.values()).forEach(v -> result.add(new Object[] {v}));
+		return result;
+	}
+
+	@Parameter
+	public Environment environment;
+
+	FrankClassRepository classRepository;
+
 	private FrankDocModel instance;
-	private FrankElement fakeAttributeOwner;
+	private FrankElement attributeOwner;
 
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance();
+		List<String> allPackages = Arrays.asList(SIMPLE, IBISDOCREF, "nl.nn.adapterframework.frankdoc.testtarget.reflect");
+		classRepository = environment.getRepository(allPackages, allPackages, new ArrayList<String>(), new ArrayList<>());
 		instance = new FrankDocModel(classRepository);
-		fakeAttributeOwner = null;
+		attributeOwner = null;
 	}
 
 	@Test
@@ -223,8 +244,8 @@ public class FrankDocModelTest {
 	 * describingElement is only correct if it is parsed from an @IbisDocRef annotation.
 	 */
 	private Map<String, FrankAttribute> getAttributesOfClass(final String className) throws FrankDocException {
-		fakeAttributeOwner = new FrankElement("dummy.Dummy", "Dummy", false);
-		final List<FrankAttribute> attributes = instance.createAttributes(classRepository.findClass(className), fakeAttributeOwner);
+		attributeOwner = instance.findOrCreateFrankElement(className);
+		final List<FrankAttribute> attributes = instance.createAttributes(classRepository.findClass(className), attributeOwner);
 		return attributes.stream().collect(Collectors.toMap(att -> att.getName(), att -> att));		
 	}
 
@@ -237,6 +258,25 @@ public class FrankDocModelTest {
 	public void whenOnlySetterThenAttribute() throws FrankDocException {
 		FrankAttribute attribute = checkReflectAttributeCreated("attributeOnlySetter");
 		assertFalse(attribute.isDocumented());
+	}
+
+	/**
+	 * This test only has added value when testing with ClassDoc-s. This has
+	 * to do with method {@link nl.nn.adapterframework.frankdoc.Utils#isAttributeGetterOrSetter(FrankMethod)}.
+	 * That method filters method using {@link nl.nn.adapterframework.frankdoc.doclet.FrankMethod#isVarargs()}.
+	 * That filter is only needed when a varargs String argument appears as a String argument type.
+	 * This might be the case for ClassDoc but not for Java reflection. With reflection, a
+	 * varargs String appears as type String[].
+	 * <p>
+	 * Probably, vararg strings arguments only appear as simple String arguments for ClassDoc-s
+	 * if a doclet does not set the languageVersion to JAVA_1_5. There was no need to investigate
+	 * further, because the JAVA_1_5 language version is now set, see {@link nl.nn.adapterframework.frankdoc.front.DocletBuilder#languageVersion()}.
+	 * Furthermore, filtering with isVarargs() certainly does no harm.
+	 * @throws FrankDocException
+	 */
+	@Test
+	public void whenArgIsVarargThenNotAttribute() throws FrankDocException {
+		checkReflectAttributeOmitted("setNonAttributeVararg");
 	}
 
 	@Test
@@ -363,7 +403,8 @@ public class FrankDocModelTest {
 	@Test
 	public void testIbisDocRefAddsFrankElementsForReferredClassHierarchy() throws FrankDocException {
 		checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault");
-		assertEquals(3, instance.getAllElements().size());
+		assertEquals(4, instance.getAllElements().size());
+		assertTrue(instance.getAllElements().containsKey(REFERRER));
 		assertTrue(instance.getAllElements().containsKey(REFERRED_CHILD));
 		assertTrue(instance.getAllElements().containsKey(REFERRED_PARENT));
 		assertTrue(instance.getAllElements().containsKey("java.lang.Object"));
@@ -412,7 +453,7 @@ public class FrankDocModelTest {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
 		assertTrue(actual.isDocumented());
 		assertSame(instance.getAllElements().get(REFERRED_PARENT), actual.getDescribingElement());
-		assertSame(fakeAttributeOwner, actual.getOwningElement());
+		assertSame(attributeOwner, actual.getOwningElement());
 	}
 
 	@Test

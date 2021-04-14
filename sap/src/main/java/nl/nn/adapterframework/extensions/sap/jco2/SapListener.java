@@ -18,8 +18,8 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.sap.mw.idoc.IDoc.Document;
 import com.sap.mw.jco.JCO;
@@ -174,7 +174,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	/**
 	 * The <code>toString()</code> method retrieves its value
   	 * by reflection.
-  	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+  	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
   	 *
   	 **/
 	@Override

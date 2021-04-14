@@ -14,14 +14,15 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 
 public class FrankDocModelAttributeTypeTest {
-	private static final String CHILD = "nl.nn.adapterframework.frankdoc.testtarget.enumattr.Child";
-	private static final String MY_ENUM = "nl.nn.adapterframework.frankdoc.testtarget.enumattr.MyEnum";
+	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.enumattr.";
+	private static final String CHILD = PACKAGE + "Child";
+	private static final String MY_ENUM = PACKAGE + "MyEnum";
 
 	private FrankClassRepository classRepository;
 
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance();
+		classRepository = FrankClassRepository.getReflectInstance(PACKAGE);
 	}
 
 	@Test

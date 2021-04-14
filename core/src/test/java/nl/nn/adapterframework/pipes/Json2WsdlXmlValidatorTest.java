@@ -7,9 +7,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
@@ -21,7 +20,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 
 	WsdlXmlValidator validator;
 	
-    private IPipeLineSession session = new PipeLineSessionBase();
+    private PipeLineSession session = new PipeLineSession();
 	
 	@Override
 	public String validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,

@@ -30,7 +30,7 @@ import org.junit.Test;
 import com.testautomationguru.utility.PDFUtil;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -98,7 +98,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		URL input = TestFileUtils.getTestFileURL(fileToConvert);
 		pipe.doPipe(Message.asMessage(new File(input.toURI())), session);
 

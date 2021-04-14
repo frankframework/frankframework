@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -71,7 +71,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 
 	
 	@Override
-	public PipeRunResult doPipe (Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
 		
 		String result;
 		 try {

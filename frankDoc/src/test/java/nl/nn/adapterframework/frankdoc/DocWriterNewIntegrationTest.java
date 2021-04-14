@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.frankdoc;
 
-import static nl.nn.adapterframework.testutil.MatchUtils.jsonPretty;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.BufferedWriter;
@@ -33,16 +32,20 @@ import javax.xml.validation.Validator;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
+import nl.nn.adapterframework.frankdoc.model.FrankElementFilters;
 import nl.nn.adapterframework.frankdoc.model.FrankElementStatistics;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 public class DocWriterNewIntegrationTest {
 	private static Logger log = LogUtil.getLogger(DocWriterNewIntegrationTest.class);
@@ -50,9 +53,13 @@ public class DocWriterNewIntegrationTest {
 
 	private FrankClassRepository classRepository;
 
+	@ClassRule
+	public static TemporaryFolder testFolder = new TemporaryFolder();
+
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance();
+		classRepository = FrankClassRepository.getReflectInstance(
+				FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter(), FrankElementFilters.getExcludeFiltersForSuperclass());
 	}
 
 	@Test
@@ -109,7 +116,8 @@ public class DocWriterNewIntegrationTest {
 		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(rootClassName, version);
 		String xsdString = docWriter.getSchema();
-		File output = new File(outputSchemaFileName);
+
+		File output = new File(testFolder.getRoot(), outputSchemaFileName);
 		log.info("Output file of test xsd: " + output.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(output));
 		try {
@@ -127,7 +135,7 @@ public class DocWriterNewIntegrationTest {
 		FrankDocModel model = FrankDocModel.populate(classRepository);
 		FrankDocJsonFactory jsonFactory = new FrankDocJsonFactory(model);
 		JsonObject jsonObject = jsonFactory.getJson();
-		String jsonText = jsonPretty(jsonObject.toString());
+		String jsonText = Misc.jsonPretty(jsonObject.toString());
 		File output = new File("FrankConfig.json");
 		log.info("Output file of test json: " + output.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(output));

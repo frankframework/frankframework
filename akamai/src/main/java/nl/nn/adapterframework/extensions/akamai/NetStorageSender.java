@@ -40,7 +40,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -158,7 +158,7 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 
 		//The input of this sender is the path where to send or retrieve info from.
 		String path;
@@ -167,7 +167,7 @@ public class NetStorageSender extends HttpSenderBase {
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
-		//Store the input in the IPipeLineSession, so it can be resolved as ParameterValue.
+		//Store the input in the PipeLineSession, so it can be resolved as ParameterValue.
 		//See {@link HttpSenderBase#getURI getURI(..)} how this is resolved
 		session.put(URL_PARAM_KEY, path);
 
@@ -176,7 +176,7 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 
 		NetStorageAction netStorageAction = new NetStorageAction(getAction());
 		netStorageAction.setVersion(actionVersion);
@@ -244,7 +244,7 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	@Override
-	public Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		boolean ok = false;
@@ -270,7 +270,7 @@ public class NetStorageSender extends HttpSenderBase {
 
 		XmlBuilder result = new XmlBuilder("result");
 
-		HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+		HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 		if(response == null) {
 			XmlBuilder statuscode = new XmlBuilder("statuscode");
 			statuscode.setValue(statusCode + "");

@@ -12,7 +12,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mock;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.pipes.XmlValidator;
@@ -24,7 +24,7 @@ public abstract class SenderTestBase<S extends ISender> {
 	protected S sender;
 
 	@Mock
-	protected IPipeLineSession session;
+	protected PipeLineSession session;
 
 	public abstract S createSender() throws Exception;
 

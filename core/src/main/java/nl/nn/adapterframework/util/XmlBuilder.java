@@ -152,8 +152,7 @@ public class XmlBuilder {
 		}
 	}
 
-	private Element buildElement(String value)
-			throws JDOMException, IOException {
+	private Element buildElement(String value) throws JDOMException, IOException {
 		StringReader stringReader = new StringReader(value);
 		SAXBuilder saxBuilder = new SAXBuilder();
 		Document document;
