@@ -26,17 +26,14 @@ public class ConcurrentActionTester extends Thread {
 	public void run() {
 		try {
 			initAction();
+			if (initActionDone!=null) initActionDone.release();
 			try {
 				if (waitBeforeAction!=null) waitBeforeAction.acquire();
 				action();
-			} finally {
 				if (actionDone!=null) actionDone.release();
 				if (waitAfterAction!=null) waitAfterAction.acquire();
-				try {
-					finalizeAction();
-				} finally {
-					if (finalizeActionDone!=null) finalizeActionDone.release();
-				}
+			} finally {
+				finalizeAction();
 			}
 		
 		} catch (Exception e) {
