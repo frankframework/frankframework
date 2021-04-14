@@ -44,7 +44,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -274,7 +274,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	/**
 	 * determines the raw value 
 	 */
-	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, IPipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter ["+getName()+"]");
 		if (!configured) {
@@ -526,7 +526,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return hiddenString;
 	}
 
-	private String format(ParameterValueList alreadyResolvedParameters, IPipeLineSession session) throws ParameterException {
+	private String format(ParameterValueList alreadyResolvedParameters, PipeLineSession session) throws ParameterException {
 		int startNdx = -1;
 		int endNdx = 0;
 
@@ -563,7 +563,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return MessageFormat.format(formatPattern.toString(), params.toArray());
 	}
 
-	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, IPipeLineSession session, String name) throws ParameterException {
+	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String name) throws ParameterException {
 		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 

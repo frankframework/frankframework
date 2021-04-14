@@ -27,7 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnquirer;
@@ -95,7 +95,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	@Override
 	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String correlationId = rawMessage.toString();
-		PipeLineSessionBase.setListenerParameters(threadContext, correlationId, correlationId, null, null);
+		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 

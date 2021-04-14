@@ -19,7 +19,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
@@ -67,7 +67,7 @@ public class RecordXml2Sender extends RecordXmlTransformer implements Configurat
 	}
 
 	@Override
-	public String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = super.handleRecord(session,parsedRecord);
 		return getSender().sendMessage(new Message(xml), session).asString(); 
 	}

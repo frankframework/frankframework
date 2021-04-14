@@ -65,13 +65,18 @@ class FrankMethodReflect implements FrankMethod {
 		if(clazz.isPrimitive()) {
 			return new FrankPrimitiveType(clazz.getName());
 		} else {
-			return new FrankClassReflect(clazz);
+			return new FrankClassReflect(clazz, (FrankClassRepositoryReflect) ((FrankClassReflect) declaringClass).getRepository());
 		}
 	}
 
 	@Override
 	public int getParameterCount() {
 		return method.getParameterCount();
+	}
+
+	@Override
+	public boolean isVarargs() {
+		return method.isVarArgs();
 	}
 
 	@Override

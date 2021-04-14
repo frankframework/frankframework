@@ -31,7 +31,7 @@ import javax.xml.transform.TransformerException;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -197,7 +197,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
      * call the required proxy, transform the output (optionally)
      */
     @Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
     Writer proxyResult;
     String proxypreProc = null;

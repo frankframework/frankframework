@@ -27,7 +27,7 @@ import org.mockito.Mockito;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -55,7 +55,7 @@ public abstract class ListenerTestBase<S extends IListener<Object>> extends Mock
 			threadContext = new HashMap<>();
 		}
 
-		PipeLineSessionBase.setListenerParameters(threadContext, messageId, technicalCorrelationId, null, null);
+		PipeLineSession.setListenerParameters(threadContext, messageId, technicalCorrelationId, null, null);
 		listener = createListener();
 	}
 

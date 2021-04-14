@@ -44,7 +44,7 @@ import org.xml.sax.ContentHandler;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -233,7 +233,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return st.getGeneratedKeys();
 	}
 
-	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message, IPipeLineSession session) throws SenderException, SQLException, ParameterException, JdbcException {
+	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message, PipeLineSession session) throws SenderException, SQLException, ParameterException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
 		String query=getQuery(message);
 		if (isUseNamedParams()) {
@@ -259,7 +259,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 		return connection;
 	}
-	protected void closeConnectionForSendMessage(Connection connection, IPipeLineSession session) throws JdbcException, TimeOutException {
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeOutException {
 		if (isConnectionsArePooled() && connection!=null) {
 			try {
 				connection.close();
@@ -269,7 +269,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 	
-	protected QueryExecutionContext prepareStatementSet(H blockHandle, Connection connection, Message message, IPipeLineSession session) throws SenderException {
+	protected QueryExecutionContext prepareStatementSet(H blockHandle, Connection connection, Message message, PipeLineSession session) throws SenderException {
 		try {
 			QueryExecutionContext result = getQueryExecutionContext(connection, message, session);
 			if (getBatchSize()>0) {
@@ -280,7 +280,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
 	}
-	protected void closeStatementSet(QueryExecutionContext queryExecutionContext, IPipeLineSession session) {
+	protected void closeStatementSet(QueryExecutionContext queryExecutionContext, PipeLineSession session) {
 		try (PreparedStatement statement = queryExecutionContext.getStatement()) {
 			if (getBatchSize()>0) {
 				statement.executeBatch();
@@ -296,7 +296,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		try (JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
 			try {
@@ -312,7 +312,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
@@ -326,7 +326,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					clobSessionVar=session.get(getClobSessionKey());
 				}
 				if (isStreamResultToServlet()) {
-					HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+					HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 					String contentType = (String) session.get("contentType");
 					String contentDisposition = (String) session.get("contentDisposition");
 					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
@@ -461,7 +461,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null, null, null).getResult();
 	}
 
-	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, IPipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
+	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
 		if (isScalar()) {
 			String result=null;
 			if (resultset.next()) {
@@ -637,7 +637,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
@@ -680,11 +680,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, IPipeLineSession session, IForwardTarget next) throws SenderException{
+	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, PipeLineSession session, IForwardTarget next) throws SenderException{
 		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null, session, next);
 	}
 
-	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, IPipeLineSession session, IForwardTarget next) throws SenderException{
+	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws SenderException{
 		try {
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
@@ -781,7 +781,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected Message executeOtherQuery(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session) throws SenderException {
+	protected Message executeOtherQuery(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session) throws SenderException {
 		Connection connection = queryExecutionContext.getConnection(); 
 		PreparedStatement statement = queryExecutionContext.getStatement(); 
 		String query = queryExecutionContext.getQuery();
@@ -790,7 +790,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return executeOtherQuery(connection, statement, query, resStmt, message, session, parameterList);
 	}
 	
-	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, IPipeLineSession session, ParameterList parameterList) throws SenderException {
+	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {

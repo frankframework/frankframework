@@ -26,8 +26,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -95,7 +95,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 	}
  
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String result=returnString;
 		if (paramList!=null) {
 			ParameterValueList pvl;

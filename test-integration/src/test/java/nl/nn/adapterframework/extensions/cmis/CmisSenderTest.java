@@ -9,7 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -120,7 +120,7 @@ public class CmisSenderTest {
 		String id=id1;
 //		int expectedLength=length1;
 		String result;
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 	
 		int index=i % numSenders;
 		

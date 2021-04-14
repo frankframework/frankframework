@@ -34,7 +34,7 @@ import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
@@ -237,7 +237,7 @@ public class JdbcListener extends JdbcFacade implements IPeekableListener<Object
 			id = (String)rawMessage;
 		}
 		if (context!=null) {
-			PipeLineSessionBase.setListenerParameters(context, id, id, null, null);
+			PipeLineSession.setListenerParameters(context, id, id, null, null);
 		}
 		return id;
 	}

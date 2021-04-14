@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -104,7 +104,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
@@ -141,7 +141,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return sender.provideOutputStream(session, getNextPipe());
 	}
 

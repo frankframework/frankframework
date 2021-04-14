@@ -42,7 +42,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -164,11 +164,11 @@ public class FileHandler implements IScopeProvider {
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
 	
-//	public Object handle(Object input, IPipeLineSession session) throws Exception {
+//	public Object handle(Object input, PipeLineSession session) throws Exception {
 //		return handle(input, session, null);
 //	}
 	
-	public Object handle(Message input, IPipeLineSession session, ParameterList paramList) throws Exception {
+	public Object handle(Message input, PipeLineSession session, ParameterList paramList) throws Exception {
 		Object output = null;
 		if (input!=null) {
 			if (input.asObject() instanceof byte[]) {
@@ -202,7 +202,7 @@ public class FileHandler implements IScopeProvider {
 		if (output == null || "bytes".equals(outputType) || "base64".equals(outputType) || "stream".equals(outputType)) {
 			if ("stream".equals(outputType) && isStreamResultToServlet()) {
 				InputStream inputStream = (InputStream) output;
-				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+				HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 				String contentType = (String) session.get("contentType");
 				String contentDisposition = (String) session.get("contentDisposition");
 				if (StringUtils.isNotEmpty(contentType)) {
@@ -239,17 +239,17 @@ public class FileHandler implements IScopeProvider {
 		void configure() throws ConfigurationException;
 		/*
 		 * transform the in and return the result
-		 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+		 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
 		 */
-		byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception;
+		byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception;
 	}
 	
 	protected interface TransformerActionWithInputTypeStream extends TransformerAction {
-		byte[] go(InputStream in, IPipeLineSession session, ParameterList paramList) throws Exception;
+		byte[] go(InputStream in, PipeLineSession session, ParameterList paramList) throws Exception;
 	}
 	
 	protected interface TransformerActionWithOutputTypeStream extends TransformerAction {
-		InputStream go(byte[] in, IPipeLineSession session, ParameterList paramList, String outputType) throws Exception;
+		InputStream go(byte[] in, PipeLineSession session, ParameterList paramList, String outputType) throws Exception;
 	}
 	
 	/**
@@ -257,7 +257,7 @@ public class FileHandler implements IScopeProvider {
 	 */
 	private class Encoder implements TransformerAction {
 		public void configure() {}
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			return Base64.encodeBase64(in);
 		}
 	}
@@ -267,12 +267,12 @@ public class FileHandler implements IScopeProvider {
 	 */
 	private class Decoder implements TransformerAction {
 		public void configure() {}
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			return Base64.decodeBase64(in == null ? null : new String(in));
 		}
 	}
 
-	private String getEffectiveFileName(byte[] in, IPipeLineSession session) throws IOException {
+	private String getEffectiveFileName(byte[] in, PipeLineSession session) throws IOException {
 		String name = getFilename();
 		if (StringUtils.isEmpty(name)) {
 			name = Message.asString(session.get(filenameSessionKey));
@@ -283,7 +283,7 @@ public class FileHandler implements IScopeProvider {
 		return name;
 	}
 
-	private Object getEffectiveFile(byte[] in, IPipeLineSession session)
+	private Object getEffectiveFile(byte[] in, PipeLineSession session)
 			throws IOException {
 		String name = getEffectiveFileName(in, session);
 		if (fileSource.equals("classpath")) {
@@ -297,7 +297,7 @@ public class FileHandler implements IScopeProvider {
 		}
 	}
 
-	private File createFile(byte[] in, IPipeLineSession session, ParameterList paramList) throws IOException, ParameterException {
+	private File createFile(byte[] in, PipeLineSession session, ParameterList paramList) throws IOException, ParameterException {
 		File tmpFile;
 
 		String writeSuffix_work = null;
@@ -350,10 +350,10 @@ public class FileHandler implements IScopeProvider {
 				}
 			}
 		}
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			return go(new ByteArrayInputStream(in), session, paramList);
 		}
-		public byte[] go(InputStream in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(InputStream in, PipeLineSession session, ParameterList paramList) throws Exception {
 			File tmpFile=createFile(null, session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
@@ -387,7 +387,7 @@ public class FileHandler implements IScopeProvider {
 				}
 			}
 		}
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			File tmpFile=createFile(in, session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
@@ -441,7 +441,7 @@ public class FileHandler implements IScopeProvider {
 			}
 		}
 
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			InputStream inputStream =
 					getSkipBomAndDeleteFileAfterReadInputStream(in, session);
 			try {
@@ -453,13 +453,13 @@ public class FileHandler implements IScopeProvider {
 			}
 		}
 
-		public InputStream go(byte[] in, IPipeLineSession session, ParameterList paramList,
+		public InputStream go(byte[] in, PipeLineSession session, ParameterList paramList,
 				String outputType) throws Exception {
 			return getSkipBomAndDeleteFileAfterReadInputStream(in, session);
 		}
 
 		private InputStream getSkipBomAndDeleteFileAfterReadInputStream(
-				byte[] in, IPipeLineSession session) throws IOException {
+				byte[] in, PipeLineSession session) throws IOException {
 			InputStream inputStream;
 			File file = null;
 			Object object = getEffectiveFile(in, session);
@@ -492,7 +492,7 @@ public class FileHandler implements IScopeProvider {
 			}
 		}
 
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			// Can only return URL in case fileSource is classpath (which should
 			// have given a configuration warning before this method is called).
 			File file = (File)getEffectiveFile(in, session);
@@ -540,7 +540,7 @@ public class FileHandler implements IScopeProvider {
 			}
 		}
 
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			String name = getEffectiveFileName(in, session);
 
 			String dir = getDirectory();
@@ -575,7 +575,7 @@ public class FileHandler implements IScopeProvider {
 			}
 		}
 
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			File file = null;
 			Object object = getEffectiveFile(in, session);
 			if (object instanceof File) {
@@ -628,7 +628,7 @@ public class FileHandler implements IScopeProvider {
 
 	}
 
-	protected String getLogPrefix(IPipeLineSession session){
+	protected String getLogPrefix(PipeLineSession session){
 		StringBuilder sb = new StringBuilder();
 		sb.append(ClassUtils.nameOf(this)).append(' ');
 		if (this instanceof INamedObject) {
@@ -781,11 +781,11 @@ public class FileHandler implements IScopeProvider {
 	private class SkipBomAndDeleteFileAfterReadInputStream extends BufferedInputStream {
 		private File file;
 		private boolean deleteAfterRead;
-		private IPipeLineSession session;
+		private PipeLineSession session;
 		private boolean firstByteRead = false;
 
 		public SkipBomAndDeleteFileAfterReadInputStream(InputStream inputStream,
-				File file, boolean deleteAfterRead, IPipeLineSession session)
+				File file, boolean deleteAfterRead, PipeLineSession session)
 				throws FileNotFoundException {
 			super(inputStream);
 			this.file = file;

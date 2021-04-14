@@ -51,7 +51,11 @@
 				<exit path="ServerError" state="error" code="500" />
 			</exits>
 	
-			<pipe name="XmlSwitch2" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@path" />
+			<pipe name="XmlSwitch2" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@path" >
+				<forward name="forwardToExit" path="EXIT"/>
+				<forward name="forwardToNotModified" path="NotModified"/>
+				<forward name="forwardToBadRequest" path="BadRequest"/>
+			</pipe>
 			<pipe name="toExit" className="nl.nn.adapterframework.pipes.EchoPipe" >
 				<forward name="success" path="EXIT"/>
 			</pipe>

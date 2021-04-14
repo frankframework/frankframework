@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.batch;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
@@ -33,7 +33,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 	private @Getter String separator;
 	
 	@Override
-	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
+	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		int startNdx = -1, endNdx = -1;
 		int curField = 0;
 		while (curField++ != fieldNr) {

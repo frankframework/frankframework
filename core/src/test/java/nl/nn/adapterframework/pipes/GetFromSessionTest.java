@@ -11,8 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -23,13 +22,13 @@ import org.junit.Test;
 
 public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 
-	private IPipeLineSession session;
+	private PipeLineSession session;
 	
 	private final String DUMMY_DATA = "dummy data";
 
 	@Before
 	public void populateSession() {
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		session.put("dummyString", DUMMY_DATA);
 		session.put("dummyByteArray", DUMMY_DATA.getBytes());
 		session.put("dummyStream", new ByteArrayInputStream(DUMMY_DATA.getBytes()));

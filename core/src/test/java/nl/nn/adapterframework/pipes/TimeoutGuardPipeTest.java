@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -23,7 +23,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 		}
 
 		@Override
-		public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+		public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 			try {
 				long timeout = Long.parseLong(input.asString());
 				Thread.sleep(timeout);

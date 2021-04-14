@@ -67,7 +67,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
@@ -217,7 +217,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI url, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI url, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		if (isEncodeMessages()) {
 			try {
 				message = new Message(URLEncoder.encode(message.asString(), getCharSet()));
@@ -347,7 +347,7 @@ public class HttpSender extends HttpSenderBase {
 	/**
 	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
 	 */
-	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		HttpPost hmethod = new HttpPost(uri);
 
 		if (postType.equals(PostType.URLENCODED) && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
@@ -419,7 +419,7 @@ public class HttpSender extends HttpSenderBase {
 		return bodyPart.build();
 	}
 
-	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
@@ -492,7 +492,7 @@ public class HttpSender extends HttpSenderBase {
 		return entity.build();
 	}
 
-	protected FormBodyPart elementToFormBodyPart(Element element, IPipeLineSession session) {
+	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) {
 		String partName = element.getAttribute("name"); //Name of the part
 		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
 		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
@@ -526,7 +526,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		if (!validateResponseCode(statusCode)) {
@@ -545,7 +545,7 @@ public class HttpSender extends HttpSenderBase {
 
 		HttpServletResponse response = null;
 		if (isStreamResultToServlet())
-			response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+			response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 
 		if (response==null) {
 			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
@@ -604,16 +604,16 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	/**
-	 * return the first part as Message and put the other parts as InputStream in the IPipeLineSession
+	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
-	public static Message handleMultipartResponse(HttpResponseHandler httpHandler, IPipeLineSession session) throws IOException {
+	public static Message handleMultipartResponse(HttpResponseHandler httpHandler, PipeLineSession session) throws IOException {
 		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), session);
 	}
 
 	/**
-	 * return the first part as Message and put the other parts as InputStream in the IPipeLineSession
+	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
-	public static Message handleMultipartResponse(String mimeType, InputStream inputStream, IPipeLineSession session) throws IOException {
+	public static Message handleMultipartResponse(String mimeType, InputStream inputStream, PipeLineSession session) throws IOException {
 		Message result = null;
 		try {
 			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType, inputStream); //the entire InputStream will be read here!

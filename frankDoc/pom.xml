@@ -10,6 +10,21 @@
 	<artifactId>ibis-adapterframework-frankDoc</artifactId>
 	<name>Ibis AdapterFramework frankDoc</name>
 
+	<profiles>
+		<profile>
+			<id>ibissource</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<repositories>
+				<repository>
+					<id>ibissource</id>
+					<url>https://nexus.ibissource.org/content/groups/public</url>
+				</repository>
+			</repositories>
+		</profile>
+	</profiles>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -43,5 +58,34 @@
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.sun</groupId>
+			<artifactId>tools</artifactId>
+			<version>1.8</version>
+		</dependency>
 	</dependencies>
+
+	<build>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>build.properties</exclude>
+				</excludes>
+			</testResource>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<includes>
+					<include>build.properties</include>
+				</includes>
+				<filtering>true</filtering>
+			</testResource>
+		</testResources>
+	</build>
 </project>

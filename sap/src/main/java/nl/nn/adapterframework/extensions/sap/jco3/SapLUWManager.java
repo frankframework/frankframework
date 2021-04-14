@@ -21,7 +21,7 @@ import com.sap.conn.jco.JCoException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -97,7 +97,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	}
 
 	@Override
-	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, IPipeLineSession session) throws PipeRunException {
+	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, PipeLineSession session) throws PipeRunException {
 		try {
 			SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 		} catch (JCoException e) {
@@ -122,7 +122,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
 			try {
 				SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey(),true,getSapSystem(),false).begin();

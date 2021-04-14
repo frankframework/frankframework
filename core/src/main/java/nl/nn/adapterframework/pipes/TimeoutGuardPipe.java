@@ -15,7 +15,7 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -44,7 +44,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 	private int timeout = 30;
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
 			try {
@@ -105,7 +105,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 	/**
 	 * doPipe wrapped around a TimeoutGuard
 	 */
-	public abstract PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException;
+	public abstract PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException;
 
 	/**
 	 * optional implementation to kill additional threads if the pipe may have created those.

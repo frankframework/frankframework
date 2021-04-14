@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -169,7 +169,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
 			xmlStartTransfer_Action.addAttribute("xmlns", "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/"+retrieveStartTransferVersion());

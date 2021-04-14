@@ -29,7 +29,7 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Setter;
 import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
@@ -90,7 +90,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	protected abstract void   updateLob   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 	
 	@Override
-	protected Writer createWriter(IPipeLineSession session, String streamId) throws Exception {
+	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
 		querySender.sendMessage(new Message(streamId), session); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it? 
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
@@ -107,7 +107,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	}
 	
 	@Override
-	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
 		try {
 			return super.finalizeResult(session,streamId, error);
 		} finally {

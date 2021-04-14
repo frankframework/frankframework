@@ -17,7 +17,7 @@ package nl.nn.adapterframework.processors;
 
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.Locker;
 public class LockerPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		IExtendedPipe extendedPipe = null;
 		Locker locker = null;

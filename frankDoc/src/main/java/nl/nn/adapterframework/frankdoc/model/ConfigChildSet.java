@@ -24,8 +24,11 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Holds the list of all cumulative config children sharing some role name, say R, but
@@ -43,6 +46,8 @@ import lombok.Setter;
  *
  */
 public class ConfigChildSet {
+	private static Logger log = LogUtil.getLogger(ConfigChildSet.class);
+
 	private final @Getter List<ConfigChild> configChildren;
 	private @Getter @Setter ElementRoleSet elementRoleSet;
 
@@ -108,18 +113,36 @@ public class ConfigChildSet {
 	 */
 	public static Map<String, List<ElementRole>> getMemberChildren(
 			List<ElementRole> parents, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Predicate<FrankElement> elementFilter) {
+		if(log.isTraceEnabled()) {
+			log.trace("ConfigChildSet.getMemberChildren called with parents: [{}]", elementRolesToString(parents));
+		}
 		List<FrankElement> members = parents.stream()
 				.flatMap(role -> role.getMembers().stream())
 				.filter(elementFilter)
 				.distinct()
 				.collect(Collectors.toList());
+		if(log.isTraceEnabled()) {
+			String elementsString = members.stream().map(FrankElement::getSimpleName).collect(Collectors.joining(", "));
+			log.trace("Members of parents are: [{}]", elementsString);
+		}
 		List<ConfigChild> memberChildren = members.stream().flatMap(element -> element.getCumulativeConfigChildren(selector, rejector).stream())
 				.distinct()
 				.collect(Collectors.toList());
-		return promoteIfConflict(memberChildren.stream()
+		Map<String, List<ElementRole>> result = promoteIfConflict(memberChildren.stream()
 				.map(ConfigChild::getElementRole)
 				.distinct()
 				.collect(Collectors.groupingBy(ElementRole::getRoleName)));
+		if(log.isTraceEnabled()) {
+			log.trace("Here is the result:");
+			for(String roleName: result.keySet()) {
+				log.trace("  Role name {} has roles {}", roleName, elementRolesToString(result.get(roleName)));
+			}
+		}
+		return result;
+	}
+
+	private static String elementRolesToString(List<ElementRole> elementRoles) {
+		return elementRoles.stream().map(ElementRole::toString).collect(Collectors.joining(", "));
 	}
 
 	/**
