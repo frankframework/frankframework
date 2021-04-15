@@ -34,6 +34,7 @@
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
       "abstract": false,
       "deprecated": false,
+      "descriptionHeader": "This is the header of the JavaDoc of \\\"DescribedPossibleIChild\\\".",
       "elementNames": ["DescribedPossibleIRoleNameIChild"],
       "attributes": [
         {
@@ -130,6 +131,7 @@
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
       "abstract": false,
       "deprecated": false,
+      "descriptionHeader": "This is the header of the JavaDoc of \\\"TChild\\\".",
       "elementNames": ["RoleNameTChild"],
       "attributes": [],
       "children": []
