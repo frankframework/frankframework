@@ -143,6 +143,12 @@ public class InterfaceAndAnnotationTest {
 		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}
 
+	private List<FrankMethod> getNonJacocoDeclaredMethods(FrankClass clazz) {
+		return Arrays.asList(clazz.getDeclaredMethods()).stream()
+				.filter(c -> ! c.getName().contains("jacoco"))
+				.collect(Collectors.toList());
+	}
+
 	@Test
 	public void whenSuperclassHasMatchingInterfaceMethodWithAnnotationThenAnnotationFound() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "GrandChild");
@@ -153,12 +159,6 @@ public class InterfaceAndAnnotationTest {
 		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
 		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
 		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
-	}
-
-	private List<FrankMethod> getNonJacocoDeclaredMethods(FrankClass clazz) {
-		return Arrays.asList(clazz.getDeclaredMethods()).stream()
-				.filter(c -> ! c.getName().contains("jacoco"))
-				.collect(Collectors.toList());
 	}
 
 	@Test
