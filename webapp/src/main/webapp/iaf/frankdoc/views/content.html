@@ -1,1 +1,9 @@
-<div class="content">alle content komt hier!</div>
+<div class="content">
+	<h2>{{element.fullname}} - {{element.name}}</h2>
+
+	<div>
+		<p ng-repeat="attr in element.attributes">{{attr.name}}</p>
+	</div>
+
+	<div ng-if="element.parent" inherited-attributes="element.parent"></div>
+</div>

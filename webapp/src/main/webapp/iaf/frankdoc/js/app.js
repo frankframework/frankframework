@@ -42,9 +42,10 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		url: "/:category",
 		params: {
 			category: { value: '', squash: true},
+			element: { value: '', squash: true},
 		},
 		templateUrl: "views/category-sub-menu.html",
-		controller: function($scope, $state) {
+		controller: function($scope, $state, $rootScope) {
 			var categoryName = $state.params.category;
 			$scope.$watch('categories', function(categories) {
 				if(!categories || categories.length < 1) return;
@@ -55,8 +56,17 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 						$scope.category = category;
 					}
 				}
+
+				if($scope.category && $state.params && $state.params.element) {
+					var elementName = $state.params.element;
+					for(i in $scope.category.members) {
+						var fullName = $scope.category.members[i];
+						if($scope.elements[fullName].name == elementName) {
+							$rootScope.$broadcast('element', $scope.elements[fullName]);
+						}
+					}
+				}
 			}); //Fired once, when API call has been completed
-			console.log(5 , $state.params.element)
 		},
 		data: {
 			pageTitle: 'Overview'
@@ -64,13 +74,9 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 	})
 	.state('element', {
 		parent: "category",
-		url: "/a/:element",
+		url: "/:element",
 		params: {
 			element: { value: '', squash: true},
-		},
-		controller: function($rootScope, $state) {
-			console.log(5 , $state.params.element)
-			$rootScope.$broadcast('element', $state.params.element);
 		},
 		data: {
 			pageTitle: 'Overview'
@@ -126,17 +132,28 @@ angular.module('iaf.frankdoc').directive('sidebar', ['$rootScope', function($roo
 		restrict: 'E',
 		replace: true,
 		link: function(scope, element, attributes) {
-			console.error(element);
 		},
 		controller: 'content',
+		templateUrl: 'views/content.html'
+	};
+}]).directive('inheritedAttributes', ['$rootScope', function($rootScope) {
+	return {
+		restrict: 'A',
+		replace: true,
+		controller: 'inheritedAttributes',
 		templateUrl: 'views/content.html'
 	};
 }]);
 
 angular.module('iaf.frankdoc').controller('sidebar', ['$scope', function($scope) {
 	console.info('sidebar controller');
+}]).controller('inheritedAttributes', ['$scope', function($scope) {
+	if(!$scope.element || !$scope.element.parent) return;
+
+	$scope.element = $scope.elements[$scope.element.parent];
 }]).controller('content', ['$scope', function($scope) {
-	$scope.$on('element', function(element) {
-		console.log(element)
+	$scope.element = {};
+	$scope.$on('element', function(_, element) {
+		$scope.element = element;
 	});
 }]);
