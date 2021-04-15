@@ -23,6 +23,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 public class LockerTest extends TransactionManagerTestBase {
@@ -369,7 +370,7 @@ public class LockerTest extends TransactionManagerTestBase {
 				try {
 					try (Connection conn = txManagedDataSource.getConnection()) {
 						if (waitBeforeInsert!=null) waitBeforeInsert.acquire();
-						executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", "INSERT");
+						executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", QueryType.OTHER);
 						if (insertDone!=null) insertDone.release();
 						if (waitBeforeCommit!=null) waitBeforeCommit.acquire();
 					}

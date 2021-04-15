@@ -25,10 +25,10 @@ import java.util.Date;
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.DateUtils;
@@ -98,7 +98,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testNumericAsDouble() throws Exception {
 		String number = "1234.5678";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP(TKEY, TNUMBER) VALUES (3,?)", "other", null);
+		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP(TKEY, TNUMBER) VALUES (3,?)", QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		System.out.println("executing query ["+context.getQuery()+"]");
 		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery())) {
@@ -106,7 +106,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			stmt.execute();
 		}
 		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER FROM TEMP WHERE TKEY=3", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER FROM TEMP WHERE TKEY=3", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(resultSet.getString(1), StringStartsWith.startsWith(number));
@@ -117,7 +117,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testNumericAsFloat() throws Exception {
 		assumeFalse(dbmsSupport.getDbms()==Dbms.POSTGRESQL); // This fails on PostgreSQL, precision of setFloat appears to be too low"
 		String number = "1234.5677";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP(TKEY, TNUMBER) VALUES (4,?)", "other", null);
+		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP(TKEY, TNUMBER) VALUES (4,?)", QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		System.out.println("executing query ["+context.getQuery()+"]");
 		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery())) {
@@ -125,7 +125,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			stmt.execute();
 		}
 		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER FROM TEMP WHERE TKEY=4", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER FROM TEMP WHERE TKEY=4", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(resultSet.getString(1), StringStartsWith.startsWith(number));
@@ -144,7 +144,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			stmt.execute();
 		}
 		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertEquals(5,resultSet.getInt(1));
@@ -159,7 +159,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		String date = DateUtils.format(new Date(), DateUtils.shortIsoFormat);
 		
 		assumeFalse(dbmsSupport.getDbmsName().equals("Oracle")); // This fails on Oracle, cannot set a non-integer number via setString()
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)", "other", null);
+		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)", QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		System.out.println("executing query ["+context.getQuery()+"]");
 		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery())) {
@@ -170,7 +170,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			stmt.execute();
 		}
 		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM TEMP WHERE TKEY=5", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM TEMP WHERE TKEY=5", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(resultSet.getString(1), StringStartsWith.startsWith(number));
@@ -185,8 +185,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteAndReadClob() throws Exception {
 		String clobContents = "Dit is de content van de clob";
-		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TCLOB) VALUES (10,EMPTY_CLOB())", "other");
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=10 FOR UPDATE", "select for update")) {
+		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TCLOB) VALUES (10,EMPTY_CLOB())", QueryType.OTHER);
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=10 FOR UPDATE", QueryType.SELECT, true)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Object clobHandle = dbmsSupport.getClobHandle(resultSet, 1);
@@ -198,7 +198,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			}
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=10", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=10", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Reader clobReader = dbmsSupport.getClobReader(resultSet, 1);
@@ -211,9 +211,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 	@Test
 	public void testReadEmptyClob() throws Exception {
-		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TCLOB) VALUES (11,EMPTY_CLOB())", "other");
+		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TCLOB) VALUES (11,EMPTY_CLOB())", QueryType.OTHER);
 
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=11", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=11", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Reader clobReader = dbmsSupport.getClobReader(resultSet, 1);
@@ -225,9 +225,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 	@Test
 	public void testReadNullClob() throws Exception {
-		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY) VALUES (11)", "other");
+		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY) VALUES (11)", QueryType.OTHER);
 
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=11", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=11", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertNull(dbmsSupport.getClobReader(resultSet, 1));
@@ -240,14 +240,14 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteClobInOneStep() throws Exception {
 		String clobContents = "Dit is de content van de clob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TCLOB) VALUES (12,?)", "select for update", null);
+		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TCLOB) VALUES (12,?)", QueryType.SELECT, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
 			stmt.setString(1, clobContents);
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=12", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=12", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Reader clobReader = dbmsSupport.getClobReader(resultSet, 1);
@@ -263,7 +263,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		
 		JdbcUtil.executeStatement(connection, "INSERT INTO TEMP (TKEY,TCLOB) VALUES (13,"+dbmsSupport.emptyClobValue()+")");
 
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=13", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM TEMP WHERE TKEY=13", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(JdbcUtil.getClobAsString(dbmsSupport, resultSet, 1, false), IsEmptyString.isEmptyOrNullString() );
@@ -275,8 +275,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteAndReadBlob() throws Exception {
 		String blobContents = "Dit is de content van de blob";
-		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TBLOB) VALUES (20,EMPTY_BLOB())", "other");
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20 FOR UPDATE", "select for update")) {
+		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TBLOB) VALUES (20,EMPTY_BLOB())", QueryType.OTHER);
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20 FOR UPDATE", QueryType.SELECT, true)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Object blobHandle = dbmsSupport.getBlobHandle(resultSet, 1);
@@ -287,7 +287,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				resultSet.updateRow();
 			}
 		}		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				InputStream blobStream = dbmsSupport.getBlobInputStream(resultSet, 1);
@@ -302,8 +302,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteAndReadBlobCompressed() throws Exception {
 		String blobContents = "Dit is de content van de blob";
-		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TBLOB) VALUES (21,EMPTY_BLOB())", "other");
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=21 FOR UPDATE", "select for update")) {
+		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TBLOB) VALUES (21,EMPTY_BLOB())", QueryType.OTHER);
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=21 FOR UPDATE", QueryType.SELECT, true)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Object blobHandle = dbmsSupport.getBlobHandle(resultSet, 1);
@@ -315,7 +315,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				resultSet.updateRow();
 			}
 		}		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=21", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=21", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				String actual = JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", true, false, false);
@@ -327,9 +327,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 	@Test
 	public void testReadEmptyBlob() throws Exception {
-		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TBLOB) VALUES (22,EMPTY_BLOB())", "other");
+		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TBLOB) VALUES (22,EMPTY_BLOB())", QueryType.OTHER);
 
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=22", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=22", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				InputStream inputStream = dbmsSupport.getBlobInputStream(resultSet, 1);
@@ -341,9 +341,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 	@Test
 	public void testReadNullBlob() throws Exception {
-		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY) VALUES (23)", "other");
+		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY) VALUES (23)", QueryType.OTHER);
 
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=23", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=23", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertNull(dbmsSupport.getClobReader(resultSet, 1));
@@ -355,14 +355,14 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteBlobInOneStep() throws Exception {
 		String blobContents = "Dit is de content van de blob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TBLOB) VALUES (24,?)", "select for update", null);
+		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TBLOB) VALUES (24,?)", QueryType.SELECT, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=24", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=24", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				String actual = JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false);
@@ -377,7 +377,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		
 		JdbcUtil.executeStatement(connection, "INSERT INTO TEMP (TKEY,TBLOB) VALUES (25,"+dbmsSupport.emptyBlobValue()+")");
 
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=25", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=25", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false), IsEmptyString.isEmptyOrNullString() );
@@ -390,7 +390,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testReadBlobAndCLobUsingJdbcUtilGetValue() throws Exception {
 		String blobContents = "Dit is de content van de blob";
 		String clobContents = "Dit is de content van de clob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TBLOB,TCLOB) VALUES (24,?,?)", "select for update", null);
+		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TBLOB,TCLOB) VALUES (24,?,?)", QueryType.SELECT, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
@@ -398,7 +398,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB,TCLOB FROM TEMP WHERE TKEY=24", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB,TCLOB FROM TEMP WHERE TKEY=24", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				ResultSetMetaData rsmeta = resultSet.getMetaData();
 				resultSet.next();
@@ -415,8 +415,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 	
 	@Test
 	public void testBooleanHandling() throws Exception {
-		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT,TBOOLEAN) VALUES (30,99,"+dbmsSupport.getBooleanValue(false)+")", "other");
-		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT,TBOOLEAN) VALUES (31,99,"+dbmsSupport.getBooleanValue(true)+")", "other");
+		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT,TBOOLEAN) VALUES (30,99,"+dbmsSupport.getBooleanValue(false)+")", QueryType.OTHER);
+		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT,TBOOLEAN) VALUES (31,99,"+dbmsSupport.getBooleanValue(true)+")", QueryType.OTHER);
 		
 		assertEquals(30, JdbcUtil.executeIntQuery(connection, "SELECT TKEY FROM TEMP WHERE TINT=99 AND TBOOLEAN="+dbmsSupport.getBooleanValue(false)));
 		assertEquals(31, JdbcUtil.executeIntQuery(connection, "SELECT TKEY FROM TEMP WHERE TINT=99 AND TBOOLEAN="+dbmsSupport.getBooleanValue(true)));
@@ -432,7 +432,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	
 	@Test
 	public void testQueueHandling() throws Exception {
-		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (40,100)", "other");
+		executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (40,100)", QueryType.OTHER);
 
 		String selectQuery="SELECT TKEY FROM TEMP WHERE TINT=100";
 		assertEquals(40, JdbcUtil.executeIntQuery(connection, selectQuery));
@@ -470,7 +470,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 						}
 
 						// insert another record
-						executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (41,100)", "other");
+						executeTranslatedQuery(connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (41,100)", QueryType.OTHER);
 						if (testPeekFindsRecordsWhenTheyAreAvailable) assertTrue("second record should have been seen by peek query", peek(peekQueueQuery));// assert that record is seen
 						
 						try (Connection workConn2=getConnection()) {

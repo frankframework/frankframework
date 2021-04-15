@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
 
-	private String queryType = "other";
+	private QueryType queryType = QueryType.OTHER;
 	private int maxRows=-1; // return all rows
 	private int startRow=1;
 	private boolean scalar=false;
@@ -137,6 +137,14 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	
 	private String convertedResultQuery;
 
+	public enum QueryType {
+		SELECT,
+		UPDATEBLOB,
+		UPDATECLOB,
+		PACKAGE,
+		OTHER,
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -158,7 +166,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				columnsReturnedList[i] = tempList.get(i);
 			}
 		}
-		if (getBatchSize()>0 && !"other".equals(getQueryType())) {
+		if (getBatchSize()>0 && QueryType.OTHER != getQueryTypeEnum()) {
 			throw new ConfigurationException(getLogPrefix()+"batchSize>0 only valid for queryType 'other'");
 		}
 	}
@@ -182,7 +190,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		super.open();
 		if (StringUtils.isNotEmpty(getResultQuery())) {
 			try (Connection connection = getConnection()) {
-				QueryExecutionContext resultContext = new QueryExecutionContext(getResultQuery(), "select", null);
+				QueryExecutionContext resultContext = new QueryExecutionContext(getResultQuery(), QueryType.SELECT, null);
 				convertQuery(connection, resultContext);
 				if (log.isDebugEnabled()) log.debug("converted result query into [" + resultContext.getQuery() + "]");
 				convertedResultQuery = resultContext.getQuery();
@@ -217,7 +225,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (columnsReturned!=null) {
 			return prepareQueryWithColunmsReturned(con,query,columnsReturned);
 		}
-		boolean resultSetUpdateable = isLockRows() || "updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType()) || "updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType());
+		boolean resultSetUpdateable = isLockRows() || QueryType.UPDATEBLOB==queryExecutionContext.getQueryTypeEnum() || QueryType.UPDATECLOB==queryExecutionContext.getQueryTypeEnum();
 		return con.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,resultSetUpdateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
@@ -239,7 +247,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (isUseNamedParams()) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
-		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, getQueryType(), newParameterList);
+		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, getQueryTypeEnum(), newParameterList);
 		queryExecutionContext.setConnection(connection);
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
 		PreparedStatement statement = getStatement(connection, queryExecutionContext);
@@ -316,39 +324,40 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
-			if ("select".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				Object blobSessionVar=null;
-				Object clobSessionVar=null;
-				if (session!=null && StringUtils.isNotEmpty(getBlobSessionKey())) {
-					blobSessionVar=session.get(getBlobSessionKey());
-				}
-				if (session!=null && StringUtils.isNotEmpty(getClobSessionKey())) {
-					clobSessionVar=session.get(getClobSessionKey());
-				}
-				if (isStreamResultToServlet()) {
-					HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-					String contentType = (String) session.get("contentType");
-					String contentDisposition = (String) session.get("contentDisposition");
-					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
-				} else {
-					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);
-				}
-			} 
-			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				if (StringUtils.isNotEmpty(getBlobSessionKey())) {
-					return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:Message.asMessage(session.get(getBlobSessionKey()))));
-				} 
-				return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
-			} 
-			if ("updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				if (StringUtils.isNotEmpty(getClobSessionKey())) {
-					return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:Message.asMessage(session.get(getClobSessionKey()))));
-				} 
-				return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
-			} 
-			if ("package".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				return new PipeRunResult(null, executePackageQuery(queryExecutionContext));
+			switch(queryExecutionContext.getQueryTypeEnum()) {
+				case SELECT:
+					Object blobSessionVar=null;
+					Object clobSessionVar=null;
+					if (session!=null && StringUtils.isNotEmpty(getBlobSessionKey())) {
+						blobSessionVar=session.get(getBlobSessionKey());
+					}
+					if (session!=null && StringUtils.isNotEmpty(getClobSessionKey())) {
+						clobSessionVar=session.get(getClobSessionKey());
+					}
+					if (isStreamResultToServlet()) {
+						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
+						String contentType = (String) session.get("contentType");
+						String contentDisposition = (String) session.get("contentDisposition");
+						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
+					} else {
+						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);
+					}
+				case UPDATEBLOB:
+					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
+						return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:Message.asMessage(session.get(getBlobSessionKey()))));
+					} 
+					return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
+				case UPDATECLOB:
+					if (StringUtils.isNotEmpty(getClobSessionKey())) {
+						return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:Message.asMessage(session.get(getClobSessionKey()))));
+					} 
+					return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
+				case PACKAGE:
+					return new PipeRunResult(null, executePackageQuery(queryExecutionContext));
+				default:
+					break;
 			}
+
 			Message result = executeOtherQuery(queryExecutionContext, message, session);
 			if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
 				int results[]=statement.executeBatch();
@@ -654,7 +663,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (queryExecutionContext.getParameterList() != null) {
 				JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
 			}
-			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
+			if (QueryType.UPDATEBLOB==queryExecutionContext.getQueryTypeEnum()) {
 				BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
 				return new MessageOutputStream(this, blobOutputStream, next) {
 					@Override
@@ -664,7 +673,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				};
 			}
-			if ("updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
+			if (QueryType.UPDATECLOB==queryExecutionContext.getQueryTypeEnum()) {
 				ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
 				return new MessageOutputStream(this, clobWriter, next) {
 					@Override
@@ -674,7 +683,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				};
 			} 
-			throw new IllegalStateException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
+			throw new IllegalStateException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryTypeEnum()+"], must be 'updateBlob' or 'updateClob'");
 		} catch (JdbcException | SQLException | IOException | ParameterException e) {
 			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
 		}
@@ -945,14 +954,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			return packageContent;
 		}
 
-	/**
-	 * Controls wheter output is expected from the query. 
-	 * Possible values: 
-	 * <ul>
-	 * <li>select:</li> output is expected
-	 * <li><i>anything else</i>:</li> no output is expected, the number of rows affected is returned
-	 * </ul>
-	 */
 	@IbisDoc({"1", "One of: <ul>" 
 				+ "<li><code>select</code> for queries that return data</li>" 
 				+ "<li><code>updateBlob</code> for queries that update a BLOB</li>" 
@@ -961,9 +962,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				+ "<li><code>other</code> or anything else for queries that return no data.</li>" 
 				+ "</ul>", "<code>other</code>"})
 	public void setQueryType(String queryType) {
-		this.queryType = queryType;
+		this.queryType = Misc.parse(QueryType.class, "queryType", queryType);
 	}
-	public String getQueryType() {
+	public QueryType getQueryTypeEnum() {
 		return queryType;
 	}
 
