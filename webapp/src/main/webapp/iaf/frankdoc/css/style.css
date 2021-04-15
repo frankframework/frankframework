@@ -59,3 +59,16 @@ body {
 	background-color: white;
 	overflow-y: scroll;
 }
+
+.element__name {
+	margin-bottom: 1rem;
+}
+
+.element__name .label{
+	font-size: 1.25rem;
+	vertical-align: middle;
+}
+.element__fullname {
+	margin-top: 0;
+	margin-bottom: 2rem;
+}
