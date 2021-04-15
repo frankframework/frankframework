@@ -43,16 +43,24 @@ class Doclet {
 	private static final Logger log = LogUtil.getLogger(Doclet.class);
 
 	private final FrankDocModel model;
-	private final File outputDir;
+	private final File xsdStrictFile;
+	private final File xsdCompatibilityFile;
+	private final File jsonFile;
 
-	Doclet(ClassDoc[] classes, String outputDirString) throws FrankDocException {
-		log.info("Output directory is: [{}]", outputDirString);
+	Doclet(ClassDoc[] classes, FrankDocletOptions options) throws FrankDocException {
+		log.info("Output base directory is: [{}]", options.getOutputBaseDir());
 		try {
 			FrankClassRepository repository = FrankClassRepository.getDocletInstance(
 					classes, FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter(), FrankElementFilters.getExcludeFiltersForSuperclass());
 			model = FrankDocModel.populate(repository);
-			outputDir = new File(outputDirString);
-			outputDir.mkdirs();
+			File outputBaseDir = new File(options.getOutputBaseDir());
+			outputBaseDir.mkdirs();
+			xsdStrictFile = new File(outputBaseDir, options.getXsdStrictPath());
+			xsdStrictFile.getParentFile().mkdirs();
+			xsdCompatibilityFile = new File(outputBaseDir, options.getXsdCompatibilityPath());
+			xsdCompatibilityFile.getParentFile().mkdirs();
+			jsonFile = new File(outputBaseDir, options.getJsonOutputPath());
+			jsonFile.getParentFile().mkdirs();
 		} catch(SecurityException e) {
 			throw new FrankDocException("SecurityException occurred initializing the output directory", e);
 		}
@@ -69,9 +77,8 @@ class Doclet {
 		DocWriterNew docWriter = new DocWriterNew(model, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		docWriter.init(XsdVersion.STRICT);
 		String schemaText = docWriter.getSchema();
-		File outputFile = new File(outputDir, "strict.xsd");
-		log.info("Done calculating XSD without deprecated items that allows property references, writing it to file {}", outputFile.getAbsolutePath());
-		writeStringToFile(schemaText, outputFile);
+		log.info("Done calculating XSD without deprecated items that allows property references, writing it to file {}", xsdStrictFile.getAbsolutePath());
+		writeStringToFile(schemaText, xsdStrictFile);
 		log.info("Writing output file done");
 	}
 
@@ -99,9 +106,8 @@ class Doclet {
 		DocWriterNew docWriter = new DocWriterNew(model, AttributeTypeStrategy.VALUES_ONLY);
 		docWriter.init(XsdVersion.COMPATIBILITY);
 		String schemaText = docWriter.getSchema();
-		File outputFile = new File(outputDir, "compatibility.xsd");
-		log.info("Done calculating XSD with deprecated items that does not allow property references, writing it to file {}", outputFile.getAbsolutePath());
-		writeStringToFile(schemaText, outputFile);
+		log.info("Done calculating XSD with deprecated items that does not allow property references, writing it to file {}", xsdCompatibilityFile.getAbsolutePath());
+		writeStringToFile(schemaText, xsdCompatibilityFile);
 		log.info("Writing output file done");
 	}
 
@@ -110,9 +116,8 @@ class Doclet {
 		FrankDocJsonFactory jsonFactory = new FrankDocJsonFactory(model);
 		JsonObject jsonObject = jsonFactory.getJson();
 		String jsonText = Misc.jsonPretty(jsonObject.toString());
-		File output = new File(outputDir, "frankDoc.json");
-		log.info("Done calculating JSON file with documentation of the F!F, writing the text to file {}", output.getPath());
-		writeStringToFile(jsonText, output);
+		log.info("Done calculating JSON file with documentation of the F!F, writing the text to file {}", jsonFile.getAbsolutePath());
+		writeStringToFile(jsonText, jsonFile);
 		log.info("Writing output file done");
 	}
 }
