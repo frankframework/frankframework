@@ -35,7 +35,7 @@ public class XsltExceptionTest {
 			}
 		};
 		
-		TransformerFilter transformer = tp.getTransformerFilter(null, null, null, expectChildThreads, filter);
+		TransformerFilter transformer = tp.getTransformerFilter(null, null, null, null, expectChildThreads, filter);
 		
 		try {
 			try (SaxDocumentBuilder seb = new SaxDocumentBuilder("root", transformer)) {

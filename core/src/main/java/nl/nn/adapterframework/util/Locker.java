@@ -29,6 +29,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IbisTransaction;
@@ -87,7 +88,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private @Getter int transactionTimeout = 0;
 	private @Getter int lockWaitTimeout = 0;
 	
-	private PlatformTransactionManager txManager;
+	private @Getter @Setter PlatformTransactionManager txManager;
 	private @Getter TransactionDefinition txDef = null;
 	
 
@@ -334,13 +335,6 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	}
 	public boolean isIgnoreTableNotExist() {
 		return ignoreTableNotExist;
-	}
-
-	public void setTxManager(PlatformTransactionManager manager) {
-		txManager = manager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
 	}
 
 	@Override

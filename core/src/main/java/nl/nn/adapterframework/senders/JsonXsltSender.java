@@ -69,7 +69,7 @@ public class JsonXsltSender extends XsltSender {
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		ContentHandler handler = createHandler(null, session, target);
 		JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
-		return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, session);
+		return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, txManager, session);
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class JsonXsltSender extends XsltSender {
 			return super.createHandler(input, session, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener,session);
+		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener,txManager,session);
 		ContentHandler handler = super.createHandler(input, session, prev);
 		if (getXmlDebugger()!=null) {
 			handler = getXmlDebugger().inspectXml(session, "XML to be converted to JSON", handler);

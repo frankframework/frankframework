@@ -15,9 +15,11 @@
 */
 package nl.nn.adapterframework.xml;
 
+import org.springframework.transaction.PlatformTransactionManager;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import lombok.Lombok;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
@@ -26,9 +28,9 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 
 	private ThreadConnector threadConnector;
 	
-	public ThreadConnectingFilter(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, ContentHandler handler) {
+	public ThreadConnectingFilter(Object owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PlatformTransactionManager txManager, PipeLineSession session, ContentHandler handler) {
 		super(handler);
-		threadConnector=new ThreadConnector(owner, threadLifeCycleEventListener, session);
+		threadConnector=new ThreadConnector(owner, threadLifeCycleEventListener, txManager, session);
 	}
 
 	@Override
@@ -40,7 +42,7 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 		if (t instanceof Exception) {
 			throw new SaxException((Exception)t);
 		}
-		throw new RuntimeException(t);
+		throw Lombok.sneakyThrow(t);
 	}
 	
 	@Override

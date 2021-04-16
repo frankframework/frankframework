@@ -20,12 +20,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 public class ThreadConnector<T> {
 	protected Logger log = LogUtil.getLogger(this);
@@ -35,6 +38,9 @@ public class ThreadConnector<T> {
 	private T threadInfo;
 	private Set<String> hideRegex;
 
+	private SpringTxManagerProxy txManager;
+	private Object parentThreadTransaction;
+	
 	private Map<Object, Object> resources;
 	private List<TransactionSynchronization> synchronizations;
 	private String currentTransactionName;
@@ -42,17 +48,19 @@ public class ThreadConnector<T> {
 	private Integer currentTransactionIsolationLevel;
 	private Boolean actualTransactionActive;
 
+	private TransactionStatus txStatus;
 
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, String correlationId) {
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PlatformTransactionManager txManager, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
+		this.txManager = (SpringTxManagerProxy)txManager;
 		storeTransactionInfo();
 	}
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
-		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PlatformTransactionManager txManager, PipeLineSession session) {
+		this(owner, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId());
 	}
 	
 	public <M> M startThread(M input) {
@@ -75,10 +83,16 @@ public class ThreadConnector<T> {
 
 	public <M> M endThread(M response) {
 		try {
-			if (threadLifeCycleEventListener!=null) {
-				return threadLifeCycleEventListener.threadEnded(threadInfo, response);
+			try {
+				if (txManager!=null) {
+					txManager.commit(txStatus);
+				}
+			} finally {
+				if (threadLifeCycleEventListener!=null) {
+					return threadLifeCycleEventListener.threadEnded(threadInfo, response);
+				}
+				return response;
 			}
-			return response;
 		} finally {
 			IbisMaskingLayout.removeThreadLocalReplace();
 		}
@@ -86,49 +100,63 @@ public class ThreadConnector<T> {
 
 	public Throwable abortThread(Throwable t) {
 		try {
-			if (threadLifeCycleEventListener!=null) {
-				Throwable t2 = threadLifeCycleEventListener.threadAborted(threadInfo, t);
-				if (t2==null) {
-					log.warn("Exception ignored by threadLifeCycleEventListener ("+t.getClass().getName()+"): "+t.getMessage());
-				} else {
-					return t2;
+			try {
+				if (txManager!=null) {
+					txManager.commit(txStatus);
 				}
+			} finally {
+				if (threadLifeCycleEventListener!=null) {
+					Throwable t2 = threadLifeCycleEventListener.threadAborted(threadInfo, t);
+					if (t2==null) {
+						log.warn("Exception ignored by threadLifeCycleEventListener ("+t.getClass().getName()+"): "+t.getMessage());
+					} else {
+						return t2;
+					}
+				}
+				return t;
 			}
-			return t;
 		} finally {
 			IbisMaskingLayout.removeThreadLocalReplace();
 		}
 	}
 
 	public void storeTransactionInfo() {
-		resources = TransactionSynchronizationManager.getResourceMap();
-		if (TransactionSynchronizationManager.isSynchronizationActive()) {
-			synchronizations = TransactionSynchronizationManager.getSynchronizations();
+		if (txManager!=null) {
+			parentThreadTransaction = txManager.getCurrentTransaction();
 		}
-		currentTransactionName = TransactionSynchronizationManager.getCurrentTransactionName();
-		currentTransactionReadOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
-		currentTransactionIsolationLevel = TransactionSynchronizationManager.getCurrentTransactionIsolationLevel();
-		actualTransactionActive = TransactionSynchronizationManager.isActualTransactionActive();
+//		resources = TransactionSynchronizationManager.getResourceMap();
+//		if (TransactionSynchronizationManager.isSynchronizationActive()) {
+//			synchronizations = TransactionSynchronizationManager.getSynchronizations();
+//		}
+//		currentTransactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+//		currentTransactionReadOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
+//		currentTransactionIsolationLevel = TransactionSynchronizationManager.getCurrentTransactionIsolationLevel();
+//		actualTransactionActive = TransactionSynchronizationManager.isActualTransactionActive();
 	}
 	
 	public void applyTransactionInfo() {
-		if (resources!=null) {
-			resources.forEach((k,v) ->TransactionSynchronizationManager.bindResource(k, v));
+		if (txManager!=null) {
+			txManager.joinParentThreadsTransaction(parentThreadTransaction);
+			TransactionDefinition txDef = txManager.getTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS, 0);
+			txStatus = txManager.getTransaction(txDef);
 		}
-		if (synchronizations!=null && TransactionSynchronizationManager.isSynchronizationActive()) {
-			synchronizations.forEach( v ->TransactionSynchronizationManager.registerSynchronization(v));
-		}
-		if (currentTransactionName!=null) {
-			TransactionSynchronizationManager.setCurrentTransactionName(currentTransactionName);
-		}
-		if (currentTransactionReadOnly!=null) {
-			TransactionSynchronizationManager.setCurrentTransactionReadOnly(currentTransactionReadOnly);
-		}
-		if (currentTransactionIsolationLevel!=null) {
-			TransactionSynchronizationManager.setCurrentTransactionIsolationLevel(currentTransactionIsolationLevel);
-		}
-		if (actualTransactionActive!=null) {
-			TransactionSynchronizationManager.setActualTransactionActive(actualTransactionActive);
-		}
+//		if (resources!=null) {
+//			resources.forEach((k,v) ->TransactionSynchronizationManager.bindResource(k, v));
+//		}
+//		if (synchronizations!=null && TransactionSynchronizationManager.isSynchronizationActive()) {
+//			synchronizations.forEach( v ->TransactionSynchronizationManager.registerSynchronization(v));
+//		}
+//		if (currentTransactionName!=null) {
+//			TransactionSynchronizationManager.setCurrentTransactionName(currentTransactionName);
+//		}
+//		if (currentTransactionReadOnly!=null) {
+//			TransactionSynchronizationManager.setCurrentTransactionReadOnly(currentTransactionReadOnly);
+//		}
+//		if (currentTransactionIsolationLevel!=null) {
+//			TransactionSynchronizationManager.setCurrentTransactionIsolationLevel(currentTransactionIsolationLevel);
+//		}
+//		if (actualTransactionActive!=null) {
+//			TransactionSynchronizationManager.setActualTransactionActive(actualTransactionActive);
+//		}
 	}
 }

@@ -120,7 +120,7 @@ public class ShadowSender extends ParallelSenders {
 		for (Iterator<ISender> it = getExecutableSenders(); it.hasNext();) {
 			ISender sender = it.next();
 			guard.addResource();
-			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender), threadLifeCycleEventListener);
+			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender), threadLifeCycleEventListener, txManager);
 			executorMap.put(sender, pse);
 			executor.execute(pse);
 		}

@@ -25,8 +25,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.context.ApplicationListener;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.xml.sax.ContentHandler;
 
+import lombok.Setter;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -73,6 +75,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  */
 public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
 	protected Logger log = LogUtil.getLogger(this);
+	protected @Setter PlatformTransactionManager txManager;
 
 	// Contract for testtool state:
 	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
@@ -445,7 +448,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 
 		public Executor(RequestReplyExecutor requestReplyExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
 			this.requestReplyExecutor=requestReplyExecutor;
-			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, threadLifeCycleEventListener, requestReplyExecutor.getCorrelationID());
+			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, threadLifeCycleEventListener, txManager, requestReplyExecutor.getCorrelationID());
 		}
 		
 		@Override

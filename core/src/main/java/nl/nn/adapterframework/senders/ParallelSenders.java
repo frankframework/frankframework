@@ -21,13 +21,14 @@ import java.util.Map;
 
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.ConcurrencyThrottleSupport;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -58,6 +59,7 @@ public class ParallelSenders extends SenderSeries implements IThreadCreator {
 	private TaskExecutor executor;
 
 	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	protected @Setter PlatformTransactionManager txManager;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -91,7 +93,7 @@ public class ParallelSenders extends SenderSeries implements IThreadCreator {
 			// the message in parallel with 10 SenderWrappers (containing a
 			// XsltSender and IbisLocalSender).
 
-			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender), threadLifeCycleEventListener);
+			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender), threadLifeCycleEventListener, txManager);
 			executorMap.put(sender, pse);
 
 			executor.execute(pse);

@@ -22,11 +22,13 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -88,7 +90,9 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
 
-	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	protected @Setter PlatformTransactionManager txManager;
+
 	private boolean streamingXslt;
 
 
@@ -172,7 +176,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		ContentHandler handler = createHandler(null, session, target);
-		return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, session);
+		return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, txManager, session);
 	}
 
 	protected ContentHandler createHandler(Message input, PipeLineSession session, MessageOutputStream target) throws StreamingException {
@@ -253,7 +257,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 			
 
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt, handler);
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, txManager, session, streamingXslt, handler);
 			if (pvl!=null) {
 				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
 			}
@@ -420,11 +424,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
 		xsltVersion=b?2:1;
-	}
-
-	@Override
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
-		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 	}
 
 }

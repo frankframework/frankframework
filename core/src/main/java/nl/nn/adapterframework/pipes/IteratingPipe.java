@@ -27,15 +27,16 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.xml.sax.SAXException;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -156,6 +157,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe implements ITh
 
 	private Semaphore childThreadSemaphore=null;
 	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	protected @Setter PlatformTransactionManager txManager;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -331,7 +333,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe implements ITh
 						if (isCollectResults()) {
 							guard.addResource();
 						}
-						ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, message, session, childThreadSemaphore, guard, senderStatisticsKeeper, threadLifeCycleEventListener);
+						ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, message, session, childThreadSemaphore, guard, senderStatisticsKeeper, threadLifeCycleEventListener, txManager);
 						if (isCollectResults()) {
 							executorList.add(pse);
 						}

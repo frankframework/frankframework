@@ -313,7 +313,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		
 		if (getExtractElementsTp()!=null) {
 			if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt, result.inputHandler);
+			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, txManager, session, streamingXslt, result.inputHandler);
 			result.inputHandler=transformerFilter;
 			result.transformerErrorListener=(TransformerErrorListener)transformerFilter.getErrorListener();
 			result.errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
@@ -372,7 +372,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			Writer resultWriter = target.asWriter();
 			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
 			createHandler(handlerRecord, session, callback);
-			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, session);
+			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, txManager, session);
 		} catch (TransformerException e) {
 			throw new StreamingException(handlerRecord.errorMessage, e);
 		}

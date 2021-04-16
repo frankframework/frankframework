@@ -16,9 +16,10 @@
 package nl.nn.adapterframework.senders;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.transaction.PlatformTransactionManager;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
@@ -37,11 +38,11 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private StatisticsKeeper sk;
 	private ThreadConnector<?> threadConnector;
 
-	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Guard guard, StatisticsKeeper sk, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener) {
-		this(sender, message, session, null, guard, sk, threadLifeCycleEventListener);
+	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Guard guard, StatisticsKeeper sk, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener, PlatformTransactionManager txManager) {
+		this(sender, message, session, null, guard, sk, threadLifeCycleEventListener, txManager);
 	}
 	
-	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Guard guard, StatisticsKeeper sk, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener) {
+	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Guard guard, StatisticsKeeper sk, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener, PlatformTransactionManager txManager) {
 		super();
 		this.sender=sender;
 		request=message;
@@ -50,7 +51,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 		this.semaphore=semaphore;
 		this.sk=sk;
 		correlationID = session.getMessageId();
-		threadConnector = new ThreadConnector<>(sender, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector(sender, threadLifeCycleEventListener, txManager, session);
 	}
 
 	@Override

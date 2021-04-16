@@ -21,6 +21,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
+import org.springframework.transaction.PlatformTransactionManager;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
@@ -34,10 +35,10 @@ public class TransformerFilter extends FullXmlFilter {
 	private TransformerHandler transformerHandler;
 	private @Getter ErrorListener errorListener;
 	
-	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
+	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PlatformTransactionManager txManager, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
 		super();
 		if (expectChildThreads) {
-			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
+			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, txManager, session, handler);
 		}
 		SAXResult transformedStream = new SAXResult();
 		transformedStream.setHandler(handler);

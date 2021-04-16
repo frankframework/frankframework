@@ -15,15 +15,23 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.TransactionSystemException;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import nl.nn.adapterframework.jta.ThreadConnectorHelperTransactionManagerProxyHandler;
 
 /**
  * proxy class for transaction manager.
@@ -31,12 +39,13 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFactoryAware {
+public class SpringTxManagerProxy<T> implements PlatformTransactionManager, BeanFactoryAware {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
 	
-	private BeanFactory beanFactory;
-	private String realTxManagerBeanName;
+	private @Setter BeanFactory beanFactory;
+	private @Getter @Setter String realTxManagerBeanName;
 	private PlatformTransactionManager realTxManager;
+	private ThreadConnectorHelperTransactionManagerProxyHandler proxyHandler;
 
 	private boolean trace=false;
 
@@ -60,6 +69,18 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		return getRealTxManager().getTransaction(txDef);
 	}
 
+	public Object getCurrentTransaction() throws TransactionException {
+		try {
+			return getProxyHandler().doGetTransaction();
+		} catch (TransactionException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new TransactionSystemException("Cannot get current Transaction", e);
+		}
+	}
+	
+	public void joinParentThreadsTransaction(Object transaction) {
+		getProxyHandler().joinParentThreadsTransaction(transaction);
+	}
+
 	@Override
 	public void commit(TransactionStatus txStatus) throws TransactionException {
 		if (txStatus.isRollbackOnly()) {
@@ -76,6 +97,14 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		getRealTxManager().rollback(txStatus);
 	}
 
+	protected ThreadConnectorHelperTransactionManagerProxyHandler getProxyHandler() {
+		if (proxyHandler==null) {
+			getRealTxManager();
+		}
+		return proxyHandler;
+	}
+	
+	@SneakyThrows
 	public PlatformTransactionManager getRealTxManager() {
 		// This can be called from multiple threads, however
 		// not synchronized for performance-reasons.
@@ -84,22 +113,10 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		// Bean Factory and thus each thread should always
 		// get the same instance.
 		if (realTxManager == null) {
-			realTxManager = (PlatformTransactionManager) beanFactory.getBean(realTxManagerBeanName);
+			proxyHandler = new ThreadConnectorHelperTransactionManagerProxyHandler((AbstractPlatformTransactionManager) beanFactory.getBean(realTxManagerBeanName));
+			realTxManager = proxyHandler.getProxy();
 		}
 		return realTxManager;
-	}
-
-	public String getRealTxManagerBeanName() {
-		return realTxManagerBeanName;
-	}
-
-	public void setRealTxManagerBeanName(String string) {
-		realTxManagerBeanName = string;
-	}
-
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
 	}
 
 }
