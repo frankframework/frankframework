@@ -159,32 +159,32 @@ public class JWTEncodePipe extends FixedForwardPipe {
 		return new PipeRunResult(getForward(), jwt.getBody());
 	}
 
-	@IbisDoc({"1", "Issuer to verify the claim in token against when '" + PARAM_ISSUER + "' is not set, verification is skipped if not set", ""})
+	@IbisDoc({"1", "If set, the token must contain the 'issuer' claim with this value, override with parameter '" + PARAM_ISSUER + "'", ""})
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
 	}
 
-	@IbisDoc({"2", "Subject to verify the claim in token against when '" + PARAM_SUBJECT + "' is not set, verification is skipped if not set", ""})
+	@IbisDoc({"2", "If set, the token must contain the 'subject' claim with this value, override with parameter '" + PARAM_SUBJECT + "'", ""})
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
 
-	@IbisDoc({"3", "Audience to verify the claim in the token against when '" + PARAM_AUDIENCE + "' is not set, verification is skipped if not set", ""})
+	@IbisDoc({"3", "If set, the token must contain the 'audience' claim with this value, override with parameter '" + PARAM_AUDIENCE + "'", ""})
 	public void setAudience(String audience) {
 		this.audience = audience;
 	}
 
-	@IbisDoc({"4", "JWT ID to verify the claim in the token against when '" + PARAM_JTI + "' is not set, verification is skipped if not set", ""})
+	@IbisDoc({"4", "If set, the token must contain the JWT ID claim with this value, override with parameter '" + PARAM_JTI + "'", ""})
 	public void setJTI(String jti) {
 		this.jti = jti;
 	}
 
-	@IbisDoc({"5", "Verify if the token has not expired", "true"})
+	@IbisDoc({"5", "If set, the token must contain the 'expiration time' claim with a timestamp in the future", "true"})
 	public void setVerifyExpiration(boolean verifyExpiration) {
 		this.verifyExpiration = verifyExpiration;
 	}	
 
-	@IbisDoc({"6", "Verify if the token has may be used", "true"})
+	@IbisDoc({"6", "If set, the token must contain the not before claim with a timestamp in the past", "true"})
 	public void setVerifyNotBefore(boolean verifyNotBefore) {
 		this.verifyNotBefore = verifyNotBefore;
 	}
@@ -194,22 +194,22 @@ public class JWTEncodePipe extends FixedForwardPipe {
 		this.allowedClockSkew = allowedClockSkew;
 	}
 
-	@IbisDoc({"8", "Comma separated list of parameter names to verify the claims in the token against", ""})
+	@IbisDoc({"8", "Comma separated list of parameter names that contain claims that should be present in the token with the parameter value", ""})
 	public void setCustomClaimsParams(String customClaimsParams) {
 		this.customClaimsParams = customClaimsParams;
 	}
 
-	@IbisDoc({"9", "Secret to use to verify the signature", "" })
+	@IbisDoc({"9", "Secret for signature verification", "" })
 	public void setSecret(String secret) {
 		getEncoderSigningKeyResolver().setSecret(secret);
 	}
 
-	@IbisDoc({"10", "AuthAlias that contains the secret to use to verify the signature", "" })
+	@IbisDoc({"10", "Alias that contains the secret for signature verification", "" })
 	public void setAuthAlias(String authAlias) {
 		getEncoderSigningKeyResolver().setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({"11", "Truststore containing the certificate to use to verify the signature", "" })
+	@IbisDoc({"11", "Truststore containing the certificate for signature verification", "" })
 	public void setTruststore(String truststore) {
 		getEncoderSigningKeyResolver().setTruststoreUrl(ClassUtils.getResourceURL(this, truststore));
 	}
@@ -219,7 +219,7 @@ public class JWTEncodePipe extends FixedForwardPipe {
 		getEncoderSigningKeyResolver().setTruststoreType(truststoreType);
 	}
 
-	@IbisDoc({"13", "Alias of the certificate to use to verify the signature", "" })
+	@IbisDoc({"13", "Alias of the certificate to use", "" })
 	public void setTruststoreAlias(String truststoreAlias) {
 		getEncoderSigningKeyResolver().setTruststoreAlias(truststoreAlias);
 	}
@@ -229,7 +229,7 @@ public class JWTEncodePipe extends FixedForwardPipe {
 		getEncoderSigningKeyResolver().setTruststorePassword(truststorePassword);
 	}
 
-	@IbisDoc({"15", "AuthAlias containing the password of the truststore", "" })
+	@IbisDoc({"15", "Alias containing the password of the truststore", "" })
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		getEncoderSigningKeyResolver().setTruststoreAuthAlias(truststoreAuthAlias);
 	}
