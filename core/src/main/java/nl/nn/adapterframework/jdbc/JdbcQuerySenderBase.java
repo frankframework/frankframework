@@ -142,7 +142,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		UPDATEBLOB,
 		UPDATECLOB,
 		PACKAGE,
-		OTHER,
+		OTHER
 	}
 
 	@Override
@@ -166,7 +166,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				columnsReturnedList[i] = tempList.get(i);
 			}
 		}
-		if (getBatchSize()>0 && QueryType.OTHER != getQueryTypeEnum()) {
+		if (getBatchSize()>0 && getQueryTypeEnum() != QueryType.OTHER) {
 			throw new ConfigurationException(getLogPrefix()+"batchSize>0 only valid for queryType 'other'");
 		}
 	}
@@ -225,7 +225,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (columnsReturned!=null) {
 			return prepareQueryWithColunmsReturned(con,query,columnsReturned);
 		}
-		boolean resultSetUpdateable = isLockRows() || QueryType.UPDATEBLOB==queryExecutionContext.getQueryTypeEnum() || QueryType.UPDATECLOB==queryExecutionContext.getQueryTypeEnum();
+		boolean resultSetUpdateable = isLockRows() || queryExecutionContext.getQueryTypeEnum()==QueryType.UPDATEBLOB || queryExecutionContext.getQueryTypeEnum()==QueryType.UPDATECLOB;
 		return con.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,resultSetUpdateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
@@ -663,7 +663,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (queryExecutionContext.getParameterList() != null) {
 				JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
 			}
-			if (QueryType.UPDATEBLOB==queryExecutionContext.getQueryTypeEnum()) {
+			if (queryExecutionContext.getQueryTypeEnum()==QueryType.UPDATEBLOB) {
 				BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
 				return new MessageOutputStream(this, blobOutputStream, next) {
 					@Override
@@ -673,7 +673,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				};
 			}
-			if (QueryType.UPDATECLOB==queryExecutionContext.getQueryTypeEnum()) {
+			if (queryExecutionContext.getQueryTypeEnum()==QueryType.UPDATECLOB) {
 				ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
 				return new MessageOutputStream(this, clobWriter, next) {
 					@Override

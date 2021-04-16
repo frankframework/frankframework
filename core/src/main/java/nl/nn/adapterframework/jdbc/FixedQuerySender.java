@@ -66,8 +66,8 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 
 	@Override
 	public boolean canProvideOutputStream() {
-		return QueryType.UPDATECLOB==getQueryTypeEnum() && StringUtils.isEmpty(getClobSessionKey()) ||
-				QueryType.UPDATEBLOB==getQueryTypeEnum() && StringUtils.isEmpty(getBlobSessionKey());
+		return getQueryTypeEnum()==QueryType.UPDATECLOB && StringUtils.isEmpty(getClobSessionKey()) ||
+				getQueryTypeEnum()==QueryType.UPDATEBLOB && StringUtils.isEmpty(getBlobSessionKey());
 	}
 
 
