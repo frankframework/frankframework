@@ -101,6 +101,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			for(i in elements) {
 				var element = elements[i];
 				$scope.elements[element.fullName] = element;
+				$scope.elements[element.fullName].javaDocURL = 'https://javadoc.ibissource.org/latest/' + element.fullName.replaceAll(".", "/") + '.html';
 			}
 		}
 	});
