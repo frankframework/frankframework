@@ -16,19 +16,16 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.IncorrectClaimException;
 import io.jsonwebtoken.InvalidClaimException;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.PrematureJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.Getter;

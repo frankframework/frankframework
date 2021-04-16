@@ -1,25 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.Calendar;
-import java.util.Date;
-
-import javax.crypto.SecretKey;
-
 import org.junit.Test;
 
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.WeakKeyException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -78,7 +64,7 @@ public class JWTEncodePipeTest extends PipeTestBase<JWTEncodePipe> {
 		issuedAtParameter.setValue("2021-01-01 00:00:00");
 		issuedAtParameter.setType(TYPE_TIMESTAMP);
 		Parameter notBeforeParameter = new Parameter();
-		notBeforeParameter.setName("notBefore");
+		notBeforeParameter.setName(PARAM_NOTBEFORE);
 		notBeforeParameter.setValue("2020-01-01 00:00:00");
 		notBeforeParameter.setType(TYPE_TIMESTAMP);
 		Parameter expirationParameter = new Parameter();
