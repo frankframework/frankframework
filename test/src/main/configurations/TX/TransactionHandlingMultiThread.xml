@@ -57,28 +57,28 @@
 			
 			<pipe name="updateFromOtherThread">
 				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999" />
+					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			
 			<pipe name="updateFromMultipleOtherThreads">
 				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999" />
-					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999" />
-					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999" />
+					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
+					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
+					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			
 			<pipe name="rollback">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Sub" />
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Sub-Rollback" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 
 			<pipe name="rollbackFromOtherThread">
 				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Sub" />
+					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Sub-Rollback" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -86,11 +86,11 @@
 	</adapter>
 	
 	
-	<adapter name="TransactionHandlingMultiThread-Sub" >
+	<adapter name="TransactionHandlingMultiThread-Sub-Rollback" >
 		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
-				name="TransactionHandlingMultiThread-Sub"
+				name="TransactionHandlingMultiThread-Sub-Rollback"
 				throwException="false"
 			/>
 		</receiver>
