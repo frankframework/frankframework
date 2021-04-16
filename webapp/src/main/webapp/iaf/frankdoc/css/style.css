@@ -17,6 +17,9 @@ body {
 	height: 100%;
 	background-color: #19aa8d;
 }
+.table-sm tbody tr td {
+	padding: 5px 8px;
+}
 .sidebar {
 	display: flex;
 	flex-direction: column;
@@ -47,21 +50,24 @@ body {
 	border-bottom: 2px solid rgba(255,255,255,0.1);
 }
 .sidebar__elements {
-	overflow-y: scroll;
+	overflow-y: auto;
 }
 .sidebar__categories,
 .sidebar__elements {
 	padding: 10px 0;
 }
-.content {
+.element {
 	width: 100%;
-	padding: 10px;
+	padding: 0px 20px;
 	background-color: white;
 	overflow-y: scroll;
 }
+.sub__element {
+	padding-top: 2rem;
+}
 
 .element__name {
-	margin-bottom: 1rem;
+	margin-bottom: 0.5rem;
 }
 
 .element__name .label{

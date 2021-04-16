@@ -1,0 +1,13 @@
+<div class="element">
+	<h1 class="element__name">{{element.name}} <span class="label label-warning" ng-if="element.deprecated">Deprecated</span></h1>
+	<h4 class="element__fullname">
+		<a href="{{javaDocURL}}" target="_blank" rel="noreferrer">
+			{{element.fullName}}
+		</a>
+	</h4>
+	<br/>
+
+	<table ng-if="element.attributes" element-attributes></table>
+
+	<div ng-if="element.parent" parent-element="element.parent"></div>
+</div>

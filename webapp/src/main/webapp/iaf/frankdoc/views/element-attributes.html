@@ -1,0 +1,17 @@
+<table class="table table-sm table-striped">
+	<tr>
+		<th>Name</th>
+		<th>Description</th>
+		<th>Default value</th>
+		<th>Type</th>
+	</tr>
+	<tr ng-repeat="attr in element.attributes">
+		<td>
+			{{attr.name}} 
+			<span class="label label-warning" ng-if="attr.deprecated">Deprecated</span>
+		</td>
+		<td ng-bind-html="attr.description"></td>
+		<td>{{attr.default}}</td>
+		<td>{{attr.type}}</td>
+	</tr>
+</table>

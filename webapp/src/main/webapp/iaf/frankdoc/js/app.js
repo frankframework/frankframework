@@ -32,8 +32,6 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 	$stateProvider
 	.state('overview', {
 		url: "/",
-		templateUrl: "views/overview.html",
-//		controller: 'LoginCtrl',
 		data: {
 			pageTitle: 'Overview'
 		}
@@ -65,6 +63,8 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 							$rootScope.$broadcast('element', $scope.elements[fullName]);
 						}
 					}
+				} else {
+					$rootScope.$broadcast('element', null);
 				}
 			}); //Fired once, when API call has been completed
 		},
@@ -82,32 +82,9 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 			pageTitle: 'Overview'
 		}
 	});
-}]);
-
-angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'properties', function($scope, $http, properties) {
-	function getURI() {
-		return properties.server + "iaf/api/frankdoc/files/frankdoc.json";
-	}
-	$scope.categories = {};
-	$scope.elements = {};
-	var http = $http.get(getURI()).then(function(response) {
-		if(response && response.data) {
-			console.log(response)
-			var data = response.data
-			var elements = data.elements;
-
-			//map elements so we can search
-			$scope.categories = data.groups;
-			for(i in elements) {
-				var element = elements[i];
-				$scope.elements[element.fullName] = element;
-				$scope.elements[element.fullName].javaDocURL = 'https://javadoc.ibissource.org/latest/' + element.fullName.replaceAll(".", "/") + '.html';
-			}
-		}
-	});
 }])
 .filter('matchElement', function() {
-	return function(elements, $scope, a, b) {
+	return function(elements, $scope) {
 		if(!elements || elements.length < 1 || !$scope.category) return [];
 		var r = {};
 		var members = $scope.category.members;
@@ -118,43 +95,3 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		return r;
 	};
 });
-
-angular.module('iaf.frankdoc').directive('sidebar', ['$rootScope', function($rootScope) {
-	return {
-		restrict: 'E',
-		replace: true,
-		link: function(scope, element, attributes) {
-		},
-		controller: 'sidebar',
-		templateUrl: 'views/sidebar.html'
-	};
-}]).directive('content', ['$rootScope', function($rootScope) {
-	return {
-		restrict: 'E',
-		replace: true,
-		link: function(scope, element, attributes) {
-		},
-		controller: 'content',
-		templateUrl: 'views/content.html'
-	};
-}]).directive('inheritedAttributes', ['$rootScope', function($rootScope) {
-	return {
-		restrict: 'A',
-		replace: true,
-		controller: 'inheritedAttributes',
-		templateUrl: 'views/content.html'
-	};
-}]);
-
-angular.module('iaf.frankdoc').controller('sidebar', ['$scope', function($scope) {
-	console.info('sidebar controller');
-}]).controller('inheritedAttributes', ['$scope', function($scope) {
-	if(!$scope.element || !$scope.element.parent) return;
-
-	$scope.element = $scope.elements[$scope.element.parent];
-}]).controller('content', ['$scope', function($scope) {
-	$scope.element = {};
-	$scope.$on('element', function(_, element) {
-		$scope.element = element;
-	});
-}]);
