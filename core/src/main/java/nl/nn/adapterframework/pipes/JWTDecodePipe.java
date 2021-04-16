@@ -49,8 +49,16 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Pipe that performs JWT decoding, output is a JSON containing the JWT claims.
- *
- *
+ * 
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>default when the JWT has been decoded succesfully</td></tr>
+ * <tr><td>"expired"</td><td>token has the <code>Expiration Time</code> claim set to a time before the current time including allowed clock skew</td></tr>
+ * <tr><td>"premature"</td><td>token has the <code>Not Before</code> claim set to a time after the current time including allowed clock skew</td></tr>
+ * <tr><td>"failure"</td><td>one of the required claims did not match the required value</td></tr>
+ * </table>
+ * </p>
  * @since   7.7
  * @author  Ricardo van Holst
  */
@@ -192,27 +200,27 @@ public class JWTDecodePipe extends FixedForwardPipe {
 		return mapAsString.toString();
 	}
 
-	@IbisDoc({"1", "If set, the token must contain the 'issuer' claim with this value, override with parameter '" + PARAM_ISSUER + "'", ""})
+	@IbisDoc({"1", "If set, the token must contain the <code>Issuer</code> claim with this value, override with parameter '" + PARAM_ISSUER + "'", ""})
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
 	}
 
-	@IbisDoc({"2", "If set, the token must contain the 'subject' claim with this value, override with parameter '" + PARAM_SUBJECT + "'", ""})
+	@IbisDoc({"2", "If set, the token must contain the <code>Subject</code> claim with this value, override with parameter '" + PARAM_SUBJECT + "'", ""})
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
 
-	@IbisDoc({"3", "If set, the token must contain the 'audience' claim with this value, override with parameter '" + PARAM_AUDIENCE + "'", ""})
+	@IbisDoc({"3", "If set, the token must contain the <code>Audience</code> claim with this value, override with parameter '" + PARAM_AUDIENCE + "'", ""})
 	public void setAudience(String audience) {
 		this.audience = audience;
 	}
 
-	@IbisDoc({"4", "If set, the token must contain the JWT ID claim with this value, override with parameter '" + PARAM_JTI + "'", ""})
+	@IbisDoc({"4", "If set, the token must contain the <code>JWT ID</code> claim with this value, override with parameter '" + PARAM_JTI + "'", ""})
 	public void setJTI(String jti) {
 		this.jti = jti;
 	}
 
-	@IbisDoc({"5", "Allowed clock skew for Expiration and Not Before claims in seconds", "60"})
+	@IbisDoc({"5", "Allowed clock skew for <code>Expiration Time</code> and <code>Not Before</code> claims in seconds", "60"})
 	public void setAllowedClockSkew(int allowedClockSkew) {
 		this.allowedClockSkew = allowedClockSkew;
 	}

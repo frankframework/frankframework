@@ -236,37 +236,37 @@ public class JWTEncodePipe extends FixedForwardPipe {
 		this.algorithm = algorithm;
 	}
 	
-	@IbisDoc({"2", "If set, sets the 'issuer' claim with this value, override with parameter '" + PARAM_ISSUER + "'", ""})
+	@IbisDoc({"2", "If set, sets the <code>Issuer</code> claim with this value, override with parameter '" + PARAM_ISSUER + "'", ""})
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
 	}
 
-	@IbisDoc({"3", "If set, sets the 'subject' claim with this value, override with parameter '" + PARAM_SUBJECT + "'", ""})
+	@IbisDoc({"3", "If set, sets the <code>Subject</code> claim with this value, override with parameter '" + PARAM_SUBJECT + "'", ""})
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
 
-	@IbisDoc({"4", "If set, set the 'audience' claim with this value, override with parameter '" + PARAM_AUDIENCE + "'", ""})
+	@IbisDoc({"4", "If set, set the <code>Audience</code> claim with this value, override with parameter '" + PARAM_AUDIENCE + "'", ""})
 	public void setAudience(String audience) {
 		this.audience = audience;
 	}
 
-	@IbisDoc({"5", "If set, set the JWT ID claim with this value, override with parameter '" + PARAM_JTI + "'", ""})
+	@IbisDoc({"5", "If set, set the <code>JWT ID</code> claim with this value, override with parameter '" + PARAM_JTI + "'", ""})
 	public void setJTI(String jti) {
 		this.jti = jti;
 	}
 
-	@IbisDoc({"6", "If <code>true</code>, set the Issued At claim with the current time, override set time with '" + PARAM_ISSUEDAT + "'", "true"})
+	@IbisDoc({"6", "If <code>true</code>, set the <code>Issued At</code> claim with the current time, override set time with '" + PARAM_ISSUEDAT + "'", "true"})
 	public void setIssuedAtNow(boolean issuedAtNow) {
 		this.issuedAtNow = issuedAtNow;
 	}
 
-	@IbisDoc({"7", "If <code>notBeforeOffset &gt; 0</code>, set the 'Not Before' claim with the <code>current time - notBeforeOffset</code> in seconds, override set time with parameter '" + PARAM_NOTBEFORE + "'", "0"})
+	@IbisDoc({"7", "If <code>notBeforeOffset &gt; 0</code>, set the <code>Not Before</code> claim with the <code>current time - notBeforeOffset</code> in seconds, override set time with parameter '" + PARAM_NOTBEFORE + "'", "0"})
 	public void setNotBeforeOffset(int notBeforeOffset) {
 		this.notBeforeOffset = notBeforeOffset;
 	}
 
-	@IbisDoc({"8", "If <code>expirationOffset &gt; 0</code>, set the 'Expiration' claim with the <code>current time + expirationOffset</code> in seconds, override set time with parameter '" + PARAM_EXPIRATION + "'", "0"})
+	@IbisDoc({"8", "If <code>expirationOffset &gt; 0</code>, set the <code>Expiration</code> claim with the <code>current time + expirationOffset</code> in seconds, override set time with parameter '" + PARAM_EXPIRATION + "'", "0"})
 	public void setExpirationOffset(int expirationOffest) {
 		this.expirationOffset = expirationOffest;
 	}
