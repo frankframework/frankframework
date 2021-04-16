@@ -240,7 +240,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteClobInOneStep() throws Exception {
 		String clobContents = "Dit is de content van de clob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TCLOB) VALUES (12,?)", QueryType.SELECT, null);
+		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TCLOB) VALUES (12,?)", QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
 			stmt.setString(1, clobContents);
@@ -355,7 +355,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteBlobInOneStep() throws Exception {
 		String blobContents = "Dit is de content van de blob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TBLOB) VALUES (24,?)", QueryType.SELECT, null);
+		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TBLOB) VALUES (24,?)", QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
@@ -390,7 +390,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testReadBlobAndCLobUsingJdbcUtilGetValue() throws Exception {
 		String blobContents = "Dit is de content van de blob";
 		String clobContents = "Dit is de content van de clob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TBLOB,TCLOB) VALUES (24,?,?)", QueryType.SELECT, null);
+		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO TEMP (TKEY,TBLOB,TCLOB) VALUES (24,?,?)", QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));

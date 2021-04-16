@@ -354,22 +354,22 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
 				case PACKAGE:
 					return new PipeRunResult(null, executePackageQuery(queryExecutionContext));
+				case OTHER:
+					Message result = executeOtherQuery(queryExecutionContext, message, session);
+					if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
+						int results[]=statement.executeBatch();
+						int numRowsAffected=0;
+						for (int i:results) {
+							numRowsAffected+=i;
+						}
+						result = new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
+						statement.clearBatch();
+						queryExecutionContext.iteration=0;
+					}
+					return new PipeRunResult(null, result);
 				default:
-					break;
+					throw new IllegalStateException("Unsupported queryType: ["+queryExecutionContext.getQueryTypeEnum()+"]");
 			}
-
-			Message result = executeOtherQuery(queryExecutionContext, message, session);
-			if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
-				int results[]=statement.executeBatch();
-				int numRowsAffected=0;
-				for (int i:results) {
-					numRowsAffected+=i;
-				}
-				result = new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
-				statement.clearBatch();
-				queryExecutionContext.iteration=0;
-			}
-			return new PipeRunResult(null, result);
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
@@ -683,7 +683,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				};
 			} 
-			throw new IllegalStateException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryTypeEnum()+"], must be 'updateBlob' or 'updateClob'");
+			throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryTypeEnum()+"], must be 'updateBlob' or 'updateClob'");
 		} catch (JdbcException | SQLException | IOException | ParameterException e) {
 			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
 		}
@@ -959,7 +959,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				+ "<li><code>updateBlob</code> for queries that update a BLOB</li>" 
 				+ "<li><code>updateClob</code> for queries that update a CLOB</li>" 
 				+ "<li><code>package</code> to execute Oracle PL/SQL package</li>" 
-				+ "<li><code>other</code> or anything else for queries that return no data.</li>" 
+				+ "<li><code>other</code> for queries that return no data.</li>" 
 				+ "</ul>", "<code>other</code>"})
 	public void setQueryType(String queryType) {
 		this.queryType = Misc.parse(QueryType.class, "queryType", queryType);
