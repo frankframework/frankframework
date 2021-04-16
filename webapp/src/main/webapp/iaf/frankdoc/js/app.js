@@ -42,7 +42,7 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 			category: { value: '', squash: true},
 			element: { value: '', squash: true},
 		},
-		templateUrl: "views/category-sub-menu.html",
+		templateUrl: "views/sidebar-elements.html",
 		controller: function($scope, $state, $rootScope) {
 			var categoryName = $state.params.category;
 			$scope.$watch('categories', function(categories) {

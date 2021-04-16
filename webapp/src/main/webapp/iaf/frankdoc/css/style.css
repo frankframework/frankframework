@@ -4,14 +4,13 @@
 	box-sizing: border-box;
 }
 html {
-	height: 100%;	
+	height: 100%;
 }
 body {
 	font-size: 13px;
 	font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 	color: #676a6c;
-	overflow-x: hidden;
-	overflow-y: scroll !important;
+	overflow: hidden;
 	display: flex;
 	flex-direction: row;
 	height: 100%;

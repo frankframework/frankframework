@@ -21,8 +21,8 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 
 	$scope.element = null;
 	$scope.$on('element', function(_, element) {
-		console.warn(element)
 		$scope.element = element;
+
 		if(element != null) {
 			$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + element.fullName.replaceAll(".", "/") + '.html';
 		}
@@ -30,7 +30,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 }]).controller('sidebar', ['$scope', function($scope) {
 	console.info('sidebar controller');
 }]).controller('element', ['$scope', function($scope) {
-	console.info('element controller');
+	console.info('element controller', $scope.element);
 }]).controller('parent-element', ['$scope', function($scope) {
 	if(!$scope.element || !$scope.element.parent) return;
 
