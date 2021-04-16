@@ -32,9 +32,9 @@ public class DocletBuilder extends com.sun.javadoc.Doclet {
     public static boolean start(RootDoc root) {
     	printOptions(root);
     	ClassDoc classes[] = root.classes();
-    	FrankDocletOptions options = FrankDocletOptions.getInstance(root.options());
     	boolean result = true;
     	try {
+        	FrankDocletOptions options = FrankDocletOptions.getInstance(root.options());
     		new Doclet(classes, options).run();
     	}
     	catch(RuntimeException e) {
@@ -43,6 +43,11 @@ public class DocletBuilder extends com.sun.javadoc.Doclet {
     	}
     	catch(FrankDocException e) {
     		log.error("FrankDocException occurred while running Frank!Doc Doclet", e);
+    		result = false;
+    	}
+    	catch(InvalidDocletOptionsException e) {
+    		log.error("InvalidDocletOptionsException occurred", e);
+    		result = false;
     	}
     	return result;
     }

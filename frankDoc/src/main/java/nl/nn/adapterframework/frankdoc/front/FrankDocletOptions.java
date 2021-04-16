@@ -100,7 +100,7 @@ class FrankDocletOptions {
 		return optionString.substring(1);
 	}
 
-	static FrankDocletOptions getInstance(String[][] options) {
+	static FrankDocletOptions getInstance(String[][] options) throws InvalidDocletOptionsException {
 		log.info("Creating FrankDocletOptions object");
 		FrankDocletOptions result = new FrankDocletOptions();
 		result.fill(options);
@@ -108,7 +108,7 @@ class FrankDocletOptions {
 		return result;
 	}
 
-	private void fill(String[][] options) {
+	private void fill(String[][] options) throws InvalidDocletOptionsException {
 		for(int i = 0; i < options.length; ++i) {
 			String[] opt = options[i];
 			// Remove first "-" sign.
@@ -122,7 +122,7 @@ class FrankDocletOptions {
 		}
 	}
 
-	private void setOption(Option opt, String value) {
+	private void setOption(Option opt, String value) throws InvalidDocletOptionsException {
 		switch(opt) {
 		case BASE_OUTPUT_DIR:
 			outputBaseDir = value;
@@ -136,6 +136,8 @@ class FrankDocletOptions {
 		case JSON_REL_PATH:
 			jsonOutputPath = value;
 			break;
+		default:
+			throw new InvalidDocletOptionsException("Programming error. Switch over FrankDocletOptions.Option was supposed to cover all cases");
 		}
 	}
 }
