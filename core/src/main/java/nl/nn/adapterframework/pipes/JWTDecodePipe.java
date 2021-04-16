@@ -17,13 +17,18 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.IncorrectClaimException;
+import io.jsonwebtoken.InvalidClaimException;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.PrematureJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.Getter;
@@ -34,6 +39,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jwt.DecoderSigningKeyResolver;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -42,7 +48,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
- * Pipe that performs JWT encoding, output is the encoded JWT using the selected algorithm.
+ * Pipe that performs JWT decoding, output is a JSON containing the JWT claims.
  *
  *
  * @since   7.7
@@ -94,8 +100,13 @@ public class JWTDecodePipe extends FixedForwardPipe {
 		if (prematureForward==null)  {
 			throw new ConfigurationException("Forward [premature] must be specfied");
 		}
-				
-		getDecoderSigningKeyResolver().configure();
+	}
+	
+	@Override
+	public void start() throws PipeStartException {
+		super.start();
+		
+		getDecoderSigningKeyResolver().start();
 	}
 
 	@Override
@@ -155,18 +166,30 @@ public class JWTDecodePipe extends FixedForwardPipe {
 		try {
 			jwt = jwtParserBuilder.build().parse(message.asString());
 		} catch (SignatureException e) {
-			return new PipeRunResult(failureForward, "invalid signature");
+			throw new PipeRunException(this, getLogPrefix(session) + "invalid signature", e);
 		} catch (MalformedJwtException e) {
-			return new PipeRunResult(failureForward, "malformed token");
+			throw new PipeRunException(this, getLogPrefix(session) + "malformed JWT", e);
+		} catch (InvalidClaimException e) {
+			return new PipeRunResult(failureForward, claimsToString(e.getClaims()));
 		} catch (ExpiredJwtException e) {
-			return new PipeRunResult(expiredForward, e.getClaims().toString());
+			return new PipeRunResult(expiredForward, claimsToString(e.getClaims()));
 		} catch (PrematureJwtException e) {
-			return new PipeRunResult(prematureForward, e.getClaims().toString());
+			return new PipeRunResult(prematureForward, claimsToString(e.getClaims()));
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "error validating JWT", e);
 		}
 		
 		return new PipeRunResult(getForward(), jwt.getBody());
+	}
+	
+	private String claimsToString(Claims claims) {
+		StringBuilder mapAsString = new StringBuilder("{");
+		for (Iterator<String> it = claims.keySet().iterator(); it.hasNext();) {
+			String claim = it.next();
+			mapAsString.append(claim + "=" + claims.get(claim) + ", ");
+		}
+		mapAsString.delete(mapAsString.length()-2, mapAsString.length()).append("}");
+		return mapAsString.toString();
 	}
 
 	@IbisDoc({"1", "If set, the token must contain the 'issuer' claim with this value, override with parameter '" + PARAM_ISSUER + "'", ""})

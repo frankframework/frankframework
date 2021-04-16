@@ -20,6 +20,7 @@ import io.jsonwebtoken.SigningKeyResolverAdapter;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.PkiUtil;
 
@@ -35,11 +36,11 @@ public class DecoderSigningKeyResolver extends SigningKeyResolverAdapter {
 	
 	private @Getter SecretKey secretKey;
 	private @Getter PublicKey publicKey;
-	
-	public void configure() {
-		if (secret!=null || authAlias!=null) {
+		
+	public void start() throws PipeStartException {
+		if (getSecret()!=null || getAuthAlias()!=null) {
 			// set the secret key used for HMAC requests only if the secret is set;
-			CredentialFactory cf = new CredentialFactory(secret, "", authAlias);
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), "", getSecret());
 			String cfSecret = cf.getPassword();
 			secretKey = Keys.hmacShaKeyFor(cfSecret.getBytes(StandardCharsets.UTF_8));
 		}
@@ -49,12 +50,13 @@ public class DecoderSigningKeyResolver extends SigningKeyResolverAdapter {
 				if ("pem".equals(truststoreType)) {
 					certificate = PkiUtil.getCertificateFromPem(getTruststoreUrl());
 				} else {
-					KeyStore keystore = PkiUtil.createKeyStore(getTruststoreUrl(), truststorePassword, truststoreType, "Keys for verifying tokens");
-					certificate = keystore.getCertificate(truststoreAlias);
+					CredentialFactory cf = new CredentialFactory(getTruststoreAuthAlias(), "", getTruststorePassword());
+					KeyStore keystore = PkiUtil.createKeyStore(getTruststoreUrl(), cf.getPassword(), getTruststoreType(), "Keys for verifying tokens");
+					certificate = keystore.getCertificate(getTruststoreAlias());
 				}
 				publicKey = certificate.getPublicKey();
 			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-				//throw new PipeStartException("cannot get Public Key for verification in keystore ["+keystoreUrl+"]", e);
+				throw new PipeStartException("cannot get Public Key for verification in truststore ["+getTruststoreUrl()+"]", e);
 			}
 		}
 	}
