@@ -23,7 +23,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.PkiUtil;
 
-public class EncoderSigningKeyResolver extends SigningKeyResolverAdapter {
+public class DecoderSigningKeyResolver extends SigningKeyResolverAdapter {
 	private @Getter @Setter String secret;
 	private @Getter @Setter String authAlias;
 	private @Getter @Setter URL truststoreUrl;

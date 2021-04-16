@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -29,11 +30,12 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jwt.EncoderSigningKeyResolver;
+import nl.nn.adapterframework.jwt.DecoderSigningKeyResolver;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -46,7 +48,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since   7.7
  * @author  Ricardo van Holst
  */
-public class JWTEncodePipe extends FixedForwardPipe {
+public class JWTDecodePipe extends FixedForwardPipe {
 
 	private final static String PARAM_ISSUER = "issuer";
 	private final static String PARAM_SUBJECT = "subject";
@@ -59,15 +61,17 @@ public class JWTEncodePipe extends FixedForwardPipe {
 	private @Getter String jti;
 	private @Getter String customClaimsParams;
 	
-	private @Getter boolean verifyExpiration = true;
-	private @Getter boolean verifyNotBefore = true;
 	private @Getter int allowedClockSkew = 60;
 	
-	private @Getter @Setter EncoderSigningKeyResolver encoderSigningKeyResolver;
+	private @Getter @Setter DecoderSigningKeyResolver decoderSigningKeyResolver;
 	
-	public JWTEncodePipe() {
+	private PipeForward failureForward; // forward used when verification fails
+	private PipeForward expiredForward; // forward used when the token is expired
+	private PipeForward prematureForward; // forward used when the token is not yet valid
+	
+	public JWTDecodePipe() {
 		super();
-		setEncoderSigningKeyResolver(new EncoderSigningKeyResolver());
+		setDecoderSigningKeyResolver(new DecoderSigningKeyResolver());
 	}
 	
 	@Override
@@ -77,8 +81,21 @@ public class JWTEncodePipe extends FixedForwardPipe {
 		if (getAllowedClockSkew() < 0) {
 			throw new ConfigurationException(getLogPrefix(null)+"allowedClockSkew is set to ["+getAllowedClockSkew()+"], which is not enough for adequate operation");
 		}
+		
+		failureForward = findForward("failure");
+		if (failureForward==null)  {
+			throw new ConfigurationException("Forward [failure] must be specfied");
+		}
+		expiredForward = findForward("expired");
+		if (expiredForward==null)  {
+			throw new ConfigurationException("Forward [expired] must be specfied");
+		}
+		prematureForward = findForward("premature");
+		if (prematureForward==null)  {
+			throw new ConfigurationException("Forward [premature] must be specfied");
+		}
 				
-		getEncoderSigningKeyResolver().configure();
+		getDecoderSigningKeyResolver().configure();
 	}
 
 	@Override
@@ -109,8 +126,7 @@ public class JWTEncodePipe extends FixedForwardPipe {
 			jti_work = getJti();
 		}
 		
-		JwtParserBuilder jwtParserBuilder = Jwts.parserBuilder().setAllowedClockSkewSeconds(getAllowedClockSkew()).setSigningKeyResolver(getEncoderSigningKeyResolver());
-		Date now = new Date();
+		JwtParserBuilder jwtParserBuilder = Jwts.parserBuilder().setAllowedClockSkewSeconds(getAllowedClockSkew()).setSigningKeyResolver(getDecoderSigningKeyResolver());
 		
 		if (issuer_work!=null) {
 			jwtParserBuilder.requireIssuer(issuer_work);
@@ -123,12 +139,6 @@ public class JWTEncodePipe extends FixedForwardPipe {
 		}
 		if (jti_work!=null) {
 			jwtParserBuilder.requireId(jti_work);
-		}
-		if (isVerifyExpiration()) {
-			jwtParserBuilder.requireExpiration(now);
-		}
-		if (isVerifyNotBefore()) {
-			jwtParserBuilder.requireNotBefore(now);
 		}
 		if (getCustomClaimsParams() != null) {
 			StringTokenizer st = new StringTokenizer(getCustomClaimsParams(), ",");
@@ -145,14 +155,14 @@ public class JWTEncodePipe extends FixedForwardPipe {
 		try {
 			jwt = jwtParserBuilder.build().parse(message.asString());
 		} catch (SignatureException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "error validating JWT, invalid signature", e);
-		} catch (ExpiredJwtException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "error validating JWT, expired token", e);
+			return new PipeRunResult(failureForward, "invalid signature");
 		} catch (MalformedJwtException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "error validating JWT, malformed token", e);
+			return new PipeRunResult(failureForward, "malformed token");
+		} catch (ExpiredJwtException e) {
+			return new PipeRunResult(expiredForward, e.getClaims().toString());
 		} catch (PrematureJwtException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "error validating JWT, premature token", e);
-		} catch (Exception e) {
+			return new PipeRunResult(prematureForward, e.getClaims().toString());
+		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "error validating JWT", e);
 		}
 		
@@ -179,63 +189,53 @@ public class JWTEncodePipe extends FixedForwardPipe {
 		this.jti = jti;
 	}
 
-	@IbisDoc({"5", "If set, the token must contain the 'expiration time' claim with a timestamp in the future", "true"})
-	public void setVerifyExpiration(boolean verifyExpiration) {
-		this.verifyExpiration = verifyExpiration;
-	}	
-
-	@IbisDoc({"6", "If set, the token must contain the not before claim with a timestamp in the past", "true"})
-	public void setVerifyNotBefore(boolean verifyNotBefore) {
-		this.verifyNotBefore = verifyNotBefore;
-	}
-
-	@IbisDoc({"7", "Allowed clock skew for verifyExpiration and verifyNotBefore in seconds", "60"})
+	@IbisDoc({"5", "Allowed clock skew for Expiration and Not Before claims in seconds", "60"})
 	public void setAllowedClockSkew(int allowedClockSkew) {
 		this.allowedClockSkew = allowedClockSkew;
 	}
 
-	@IbisDoc({"8", "Comma separated list of parameter names that contain claims that should be present in the token with the parameter value", ""})
+	@IbisDoc({"6", "Comma separated list of parameter names that contain claims that should be present in the token with the parameter value", ""})
 	public void setCustomClaimsParams(String customClaimsParams) {
 		this.customClaimsParams = customClaimsParams;
 	}
 
-	@IbisDoc({"9", "Secret for signature verification", "" })
+	@IbisDoc({"7", "Secret for signature verification", "" })
 	public void setSecret(String secret) {
-		getEncoderSigningKeyResolver().setSecret(secret);
+		getDecoderSigningKeyResolver().setSecret(secret);
 	}
 
-	@IbisDoc({"10", "Alias that contains the secret for signature verification", "" })
+	@IbisDoc({"8", "Alias that contains the secret for signature verification", "" })
 	public void setAuthAlias(String authAlias) {
-		getEncoderSigningKeyResolver().setAuthAlias(authAlias);
+		getDecoderSigningKeyResolver().setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({"11", "Truststore containing the certificate for signature verification", "" })
+	@IbisDoc({"9", "Truststore containing the certificate for signature verification", "" })
 	public void setTruststore(String truststore) {
-		getEncoderSigningKeyResolver().setTruststoreUrl(ClassUtils.getResourceURL(this, truststore));
+		getDecoderSigningKeyResolver().setTruststoreUrl(ClassUtils.getResourceURL(this, truststore));
 	}
 
-	@IbisDoc({"12", "Type of the truststore", "pkcs12" })
+	@IbisDoc({"10", "Type of the truststore", "pkcs12" })
 	public void setTruststoreType(String truststoreType) {
-		getEncoderSigningKeyResolver().setTruststoreType(truststoreType);
+		getDecoderSigningKeyResolver().setTruststoreType(truststoreType);
 	}
 
-	@IbisDoc({"13", "Alias of the certificate to use", "" })
+	@IbisDoc({"11", "Alias of the certificate to use", "" })
 	public void setTruststoreAlias(String truststoreAlias) {
-		getEncoderSigningKeyResolver().setTruststoreAlias(truststoreAlias);
+		getDecoderSigningKeyResolver().setTruststoreAlias(truststoreAlias);
 	}
 
-	@IbisDoc({"14", "Password of the truststore", "" })
+	@IbisDoc({"12", "Password of the truststore", "" })
 	public void setTruststorePassword(String truststorePassword) {
-		getEncoderSigningKeyResolver().setTruststorePassword(truststorePassword);
+		getDecoderSigningKeyResolver().setTruststorePassword(truststorePassword);
 	}
 
-	@IbisDoc({"15", "Alias containing the password of the truststore", "" })
+	@IbisDoc({"13", "Alias containing the password of the truststore", "" })
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
-		getEncoderSigningKeyResolver().setTruststoreAuthAlias(truststoreAuthAlias);
+		getDecoderSigningKeyResolver().setTruststoreAuthAlias(truststoreAuthAlias);
 	}
 
-	@IbisDoc({"16", "", "" })
+	@IbisDoc({"14", "", "" })
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		getEncoderSigningKeyResolver().setTrustManagerAlgorithm(trustManagerAlgorithm);
+		getDecoderSigningKeyResolver().setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
 }
