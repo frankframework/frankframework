@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -97,8 +98,8 @@ public class FileHandler implements IScopeProvider {
 	protected String actions;
 	protected String directory;
 	protected String writeSuffix;
-	protected String fileName;
-	protected String fileNameSessionKey;
+	protected String filename;
+	protected String filenameSessionKey;
 	protected boolean createDirectory = false;
 	protected boolean writeLineSeparator = false;
 	protected boolean testExists = true;
@@ -272,9 +273,9 @@ public class FileHandler implements IScopeProvider {
 	}
 
 	private String getEffectiveFileName(byte[] in, PipeLineSession session) throws IOException {
-		String name = getFileName();
+		String name = getFilename();
 		if (StringUtils.isEmpty(name)) {
-			name = Message.asString(session.get(fileNameSessionKey));
+			name = Message.asString(session.get(filenameSessionKey));
 		}
 		if (in != null && StringUtils.isEmpty(name)) {
 			name = new String(in);
@@ -688,26 +689,37 @@ public class FileHandler implements IScopeProvider {
 		return writeSuffix;
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
+	public void setFileName(String filename) {
+		setFilename(filename);
+	}
 	/**
 	 * Sets filename of the file that is written
 	 */
 	@IbisDoc({"the name of the file to use", ""})
-	public void setFileName(String filename) {
-		this.fileName = filename;
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
-	public String getFileName() {
-		return fileName;
+	public String getFilename() {
+		return filename;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
+	public void setFileNameSessionKey(String filenameSessionKey) {
+		setFilenameSessionKey(filenameSessionKey);
 	}
 
 	/**
 	 * Sets filenameSessionKey the session key that contains the name of the file to be created
 	 */
 	@IbisDoc({"the session key that contains the name of the file to use (only used if filename is not set)", ""})
-	public void setFileNameSessionKey(String filenameSessionKey) {
-		this.fileNameSessionKey = filenameSessionKey;
+	public void setFilenameSessionKey(String filenameSessionKey) {
+		this.filenameSessionKey = filenameSessionKey;
 	}
-	public String getFileNameSessionKey() {
-		return fileNameSessionKey;
+	public String getFilenameSessionKey() {
+		return filenameSessionKey;
 	}
 
 	@IbisDoc({"test if the specified directory exists at configure()", "true"})

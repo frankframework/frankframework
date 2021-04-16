@@ -82,7 +82,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
     @Test
     public void testEmptyFileName() throws Exception{
-        exception.expectMessage("has neither fileName nor fileNameSessionKey nor returnString specified");
+        exception.expectMessage("has neither filename nor filenameSessionKey nor returnString specified");
         pipe.configure();
         fail("this should fail");
     }

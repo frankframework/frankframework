@@ -23,7 +23,7 @@
 				className="nl.nn.adapterframework.pipes.FilePipe"
 				directory="${testdata.dir}/MemoryLeak"
 				createDirectory="true"
-				fileName="startTimeStamp.txt"
+				filename="startTimeStamp.txt"
 				getInputFromSessionKey="systemDate">
 				<forward name="success" path="Echo" />
 			</pipe>
@@ -277,7 +277,7 @@
 				className="nl.nn.adapterframework.pipes.FilePipe"
 				getInputFromSessionKey="systemDate"
 				directory="${testdata.dir}/MemoryLeak"
-				fileName="endTimeStamp.txt">
+				filename="endTimeStamp.txt">
 				<forward name="success" path="Echo" />
 			</pipe>
 			<pipe name="Echo"
@@ -303,14 +303,14 @@
 			<pipe name="getStartTime" actions="read" 
 				className="nl.nn.adapterframework.pipes.FilePipe"
 				directory="${testdata.dir}/MemoryLeak"
-				fileName="startTimeStamp.txt"
+				filename="startTimeStamp.txt"
 				storeResultInSessionKey="startTime">
 				<forward name="success" path="getEndTime" />
 			</pipe>
 			<pipe name="getEndTime" actions="read"
 				className="nl.nn.adapterframework.pipes.FilePipe"
 				directory="${testdata.dir}/MemoryLeak"
-				fileName="endTimeStamp.txt"
+				filename="endTimeStamp.txt"
 				storeResultInSessionKey="endTime">
 				<forward name="success" path="StoreValues" />
 			</pipe>
