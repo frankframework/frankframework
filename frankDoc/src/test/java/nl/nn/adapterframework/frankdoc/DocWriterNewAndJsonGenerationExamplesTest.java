@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEqual;
+import static org.junit.Assume.assumeNotNull;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,8 +30,8 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
-import nl.nn.adapterframework.frankdoc.model.FrankElementFilters;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
+import nl.nn.adapterframework.frankdoc.model.FrankElementFilters;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -40,7 +41,8 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"},
-			{"examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"}
+			{"examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"},
+			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master", null, "deprecated.json"}
 		});
 	}
 
@@ -58,6 +60,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 
 	@Test
 	public void testXsd() throws Exception {
+		assumeNotNull(expectedXsdFileName);
 		FrankDocModel model = createModel();
 		DocWriterNew docWriter = new DocWriterNew(model, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		docWriter.init(startClassName, XsdVersion.STRICT);
