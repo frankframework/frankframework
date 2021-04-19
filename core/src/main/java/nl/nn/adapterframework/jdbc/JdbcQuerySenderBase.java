@@ -225,7 +225,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (columnsReturned!=null) {
 			return prepareQueryWithColunmsReturned(con,query,columnsReturned);
 		}
-		boolean resultSetUpdateable = isLockRows() || queryExecutionContext.getQueryTypeEnum()==QueryType.UPDATEBLOB || queryExecutionContext.getQueryTypeEnum()==QueryType.UPDATECLOB;
+		boolean resultSetUpdateable = isLockRows() || queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB || queryExecutionContext.getQueryType()==QueryType.UPDATECLOB;
 		return con.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,resultSetUpdateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
@@ -324,7 +324,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
-			switch(queryExecutionContext.getQueryTypeEnum()) {
+			switch(queryExecutionContext.getQueryType()) {
 				case SELECT:
 					Object blobSessionVar=null;
 					Object clobSessionVar=null;
@@ -368,7 +368,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 					return new PipeRunResult(null, result);
 				default:
-					throw new IllegalStateException("Unsupported queryType: ["+queryExecutionContext.getQueryTypeEnum()+"]");
+					throw new IllegalStateException("Unsupported queryType: ["+queryExecutionContext.getQueryType()+"]");
 			}
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
@@ -663,7 +663,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (queryExecutionContext.getParameterList() != null) {
 				JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
 			}
-			if (queryExecutionContext.getQueryTypeEnum()==QueryType.UPDATEBLOB) {
+			if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
 				BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
 				return new MessageOutputStream(this, blobOutputStream, next) {
 					@Override
@@ -673,7 +673,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				};
 			}
-			if (queryExecutionContext.getQueryTypeEnum()==QueryType.UPDATECLOB) {
+			if (queryExecutionContext.getQueryType()==QueryType.UPDATECLOB) {
 				ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
 				return new MessageOutputStream(this, clobWriter, next) {
 					@Override
@@ -683,7 +683,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				};
 			} 
-			throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryTypeEnum()+"], must be 'updateBlob' or 'updateClob'");
+			throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
 		} catch (JdbcException | SQLException | IOException | ParameterException e) {
 			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
 		}

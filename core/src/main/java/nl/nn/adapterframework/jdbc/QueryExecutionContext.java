@@ -21,7 +21,6 @@ import java.sql.PreparedStatement;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.util.Misc;
 
 public class QueryExecutionContext {
 
@@ -47,11 +46,11 @@ public class QueryExecutionContext {
 		this.query = query;
 	}
 
-	public QueryType getQueryTypeEnum() {
+	public QueryType getQueryType() {
 		return queryType;
 	}
-	public void setQueryType(String queryType) {
-		this.queryType = Misc.parse(QueryType.class, "queryType", queryType);
+	public void setQueryType(QueryType queryType) {
+		this.queryType = queryType;
 	}
 
 	public ParameterList getParameterList() {

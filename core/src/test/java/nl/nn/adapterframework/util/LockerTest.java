@@ -364,7 +364,7 @@ public class LockerTest extends TransactionManagerTestBase {
 		
 		@Override
 		public void action() throws Exception {
-			executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", "INSERT");
+			executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", QueryType.OTHER);
 		}
 
 		@Override
