@@ -51,9 +51,9 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when the JWT has been decoded succesfully</td></tr>
- * <tr><td>"expired"</td><td>token has the <code>Expiration Time</code> claim set to a time before the current time including allowed clock skew</td></tr>
- * <tr><td>"premature"</td><td>token has the <code>Not Before</code> claim set to a time after the current time including allowed clock skew</td></tr>
  * <tr><td>"failure"</td><td>one of the required claims did not match the required value</td></tr>
+ * <tr><td>"expired"</td><td>token has the <code>Expiration Time</code> claim set to a time before the current time including allowed clock skew. If "expired" is not specified, "failure" is used in such a case</td></tr>
+ * <tr><td>"premature"</td><td>token has the <code>Not Before</code> claim set to a time after the current time including allowed clock skew. If "premature" is not specified, "failure" is used in such a case</td></tr>
  * </table>
  * </p>
  * @since   7.7
@@ -99,11 +99,11 @@ public class JWTDecodePipe extends FixedForwardPipe {
 		}
 		expiredForward = findForward("expired");
 		if (expiredForward==null)  {
-			throw new ConfigurationException("Forward [expired] must be specfied");
+			expiredForward = failureForward;
 		}
 		prematureForward = findForward("premature");
 		if (prematureForward==null)  {
-			throw new ConfigurationException("Forward [premature] must be specfied");
+			prematureForward = failureForward;
 		}
 	}
 	
