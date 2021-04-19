@@ -25,8 +25,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 public class TransactionConnector {
 	protected Logger log = LogUtil.getLogger(this);

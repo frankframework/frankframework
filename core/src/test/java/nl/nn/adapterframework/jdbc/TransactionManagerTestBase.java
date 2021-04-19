@@ -11,7 +11,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.ResourceTransactionManager;
 
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
 

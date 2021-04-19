@@ -77,6 +77,7 @@ import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -96,7 +97,6 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 

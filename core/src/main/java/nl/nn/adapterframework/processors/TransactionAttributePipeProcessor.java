@@ -25,10 +25,10 @@ import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 /**
  * @author Jaco de Groot

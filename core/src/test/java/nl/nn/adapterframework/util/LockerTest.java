@@ -23,6 +23,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 public class LockerTest extends TransactionManagerTestBase {
