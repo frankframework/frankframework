@@ -42,7 +42,13 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 			category: { value: '', squash: true},
 			element: { value: '', squash: true},
 		},
-		templateUrl: "views/sidebar-elements.html",
+		templateUrl: function($scope) {
+			if($scope.element) {
+				return "views/element.html";
+			} else {
+				return "views/overview.html";
+			}
+		},
 		controller: function($scope, $state, $rootScope) {
 			var categoryName = $state.params.category;
 			$scope.$watch('categories', function(categories) {
@@ -51,7 +57,7 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 				for(i in categories) {
 					var category = $scope.categories[i];
 					if(category.name == categoryName) {
-						$scope.category = category;
+						$rootScope.category = category;
 					}
 				}
 
@@ -75,9 +81,6 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 	.state('element', {
 		parent: "category",
 		url: "/:element",
-		params: {
-			element: { value: '', squash: true},
-		},
 		data: {
 			pageTitle: 'Overview'
 		}

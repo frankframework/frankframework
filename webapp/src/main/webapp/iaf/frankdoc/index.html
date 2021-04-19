@@ -19,8 +19,7 @@
 <body ng-controller="main">
 
 	<sidebar></sidebar>
-	<overview ng-if="!element"></overview>
-	<content ng-if="element"></content>
+	<div class="element" ui-view></div>
 
 	<script src="js/angular.min.js" charset="utf-8"></script>
 	<script src="js/angular-sanitize.min.js"></script>

@@ -8,26 +8,18 @@ angular.module('iaf.frankdoc').directive('overview', [function() {
 	return {
 		restrict: 'E',
 		replace: true,
-		controller: 'sidebar',
 		templateUrl: 'views/sidebar.html'
 	};
-}]).directive('content', [function() {
+}]).directive('sidebarElements', [function() {
 	return {
 		restrict: 'E',
+		transclude: true,
 		replace: true,
-		controller: 'element',
-		templateUrl: 'views/element.html'
+		templateUrl: 'views/sidebar-elements.html'
 	};
 }]).directive('parentElement', [function() {
 	return {
 		restrict: 'E',
-		scope: {
-			parent: '='
-		},
-		link: function (scope, element, attrs) {
-			console.log("directive", scope.parent);
-		},
-		transclude: true,
 		replace: true,
 		controller: 'parent-element',
 		templateUrl: 'views/parent-element.html'
