@@ -25,18 +25,18 @@
 			<pipe name="ReadFile"
 				className="nl.nn.adapterframework.pipes.FixedResult"
 				storeResultInSessionKey="fileContent"
-				fileName="CreateLargeFile/input_small.txt">
+				filename="CreateLargeFile/input_small.txt">
 				<forward name="success" path="CreateFile" />
 			</pipe>
 			<pipe name="CreateFile" actions="create"
 				className="nl.nn.adapterframework.pipes.FilePipe"
-				directory="${log.dir}" fileName="input_big.xml">
+				directory="${log.dir}" filename="input_big.xml">
 				<forward name="success" path="WriteFile" />
 			</pipe>
 			<pipe name="WriteFile" actions="write"
 				className="nl.nn.adapterframework.pipes.FilePipe"
 				directory="${log.dir}" getInputFromFixedValue="&lt;dummy&gt;"
-				fileName="input_big.xml">
+				filename="input_big.xml">
 				<forward name="success" path="SetStartIndex" />
 			</pipe>
 			<pipe name="SetStartIndex"
@@ -58,7 +58,7 @@
 			</pipe>
 			<pipe name="AppendFile" actions="write_append"
 				className="nl.nn.adapterframework.pipes.FilePipe"
-				directory="${log.dir}" fileName="input_big.xml"
+				directory="${log.dir}" filename="input_big.xml"
 				getInputFromSessionKey="fileContent">
 				<forward name="success" path="IncrementIndex" />
 			</pipe>
@@ -69,7 +69,7 @@
 			</pipe>
 			<pipe name="AppendTag" actions="write_append"
 				className="nl.nn.adapterframework.pipes.FilePipe"
-				directory="${log.dir}" fileName="input_big.xml"
+				directory="${log.dir}" filename="input_big.xml"
 				getInputFromFixedValue="&lt;/dummy&gt;">
 				<forward name="success" path="IncrementIndex" />
 			</pipe>
@@ -101,7 +101,7 @@
 			</exits>
 			<pipe name="DeleteFile" actions="delete"
 				className="nl.nn.adapterframework.pipes.FilePipe"
-				directory="${log.dir}" fileName="input_big.xml">
+				directory="${log.dir}" filename="input_big.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 		</pipeline>
