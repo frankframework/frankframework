@@ -17,6 +17,7 @@ package nl.nn.adapterframework.frankdoc.model;
 
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL;
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.IN_XSD;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -333,41 +334,55 @@ public class FrankDocModelTest {
 	}
 
 	@Test
+	public void testSequenceOfAttributesMatchesSequenceOfSetterMethods() throws Exception {
+		String className = "nl.nn.adapterframework.frankdoc.testtarget.reflect.FrankAttributeTarget";
+		attributeOwner = instance.findOrCreateFrankElement(className);
+		List<String> actualAttributeNames = instance.createAttributes(classRepository.findClass(className), attributeOwner).stream()
+				.map(FrankAttribute::getName)
+				.collect(Collectors.toList());
+		String[] expectedAttributeNames = new String[] {"attributeSetterGetter", "attributeSetterIs", "attributeOnlySetter", "attributeOnlySetterInt",
+				"attributeOnlySetterIntBoxed", "attributeOnlySetterBoolBoxed", "attributeOnlySetterLongBoxed", "attributeOnlySetterByteBoxed",
+				"attributeOnlySetterShortBoxed", "ibisDockedOnlyDescription", "ibisDockedOrderDescription", "ibisDockedDescriptionDefault",
+				"ibisDockedOrderDescriptionDefault", "ibisDockedDeprecated"};
+		assertArrayEquals(expectedAttributeNames, actualAttributeNames.toArray(new String[] {}));
+	}
+
+	// TODO: This test may be superfluous
+	@Test
 	public void testIbisDockedOnlyDescription() throws FrankDocException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOnlyDescription");
 		assertTrue(actual.isDocumented());
-		assertEquals(Integer.MAX_VALUE, actual.getOrder());
 		assertEquals("Description of ibisDockedOnlyDescription", actual.getDescription());
 		assertNull(actual.getDefaultValue());
 		assertFalse(actual.isDeprecated());
 	}
 
+	// TODO: This test may be superfluous
 	@Test
 	public void testIbisDockedOrderDescription() throws FrankDocException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOrderDescription");
 		assertTrue(actual.isDocumented());
-		assertEquals(3, actual.getOrder());
 		assertEquals("Description of ibisDockedOrderDescription", actual.getDescription());
 		assertNull(actual.getDefaultValue());
 		assertFalse(actual.isDeprecated());
 	}
 
+	// TODO: This test may be superfluous
 	@Test
 	public void testIbisDockedDescriptionDefault() throws FrankDocException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedDescriptionDefault");
 		assertTrue(actual.isDocumented());
-		assertEquals(Integer.MAX_VALUE, actual.getOrder());
 		assertEquals("Description of ibisDockedDescriptionDefault", actual.getDescription());
 		assertEquals("Default of ibisDockedDescriptionDefault", actual.getDefaultValue());
 		assertFalse(actual.isDeprecated());
 		assertTrue(IN_XSD.test(actual));
 	}
 
+	// TODO: This test may be superfluous
 	@Test
 	public void testIbisDockedOrderDescriptionDefault() throws FrankDocException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOrderDescriptionDefault");
 		assertTrue(actual.isDocumented());
-		assertEquals(5, actual.getOrder());
 		assertEquals("Description of ibisDockedOrderDescriptionDefault", actual.getDescription());
 		assertEquals("Default of ibisDockedOrderDescriptionDefault", actual.getDefaultValue());
 		assertFalse(actual.isDeprecated());
@@ -423,11 +438,11 @@ public class FrankDocModelTest {
 		assertEquals("Description of ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited", actual.getDescription());
 	}
 
+	// TODO: This test may be superfluous
 	@Test
 	public void testOrderInsideIbisDocRefHasPreferenceOverReferredIbisDocOrder() throws FrankDocException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
 		assertTrue(actual.isDocumented());
-		assertEquals(10, actual.getOrder());
 	}
 
 	@Test

@@ -194,7 +194,7 @@ public class FrankDocModel {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
 		FrankMethod[] methods = clazz.getDeclaredMethods();
 		Map<String, FrankMethod> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
-		Map<String, FrankMethod> setterAttributes = getAttributeToMethodMap(methods, "set");
+		LinkedHashMap<String, FrankMethod> setterAttributes = getAttributeToMethodMap(methods, "set");
 		Map<String, FrankMethod> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
 		List<FrankAttribute> result = new ArrayList<>();
 		for(Entry<String, FrankMethod> entry: setterAttributes.entrySet()) {
@@ -213,7 +213,6 @@ public class FrankDocModel {
 			result.add(attribute);
 			log.trace("Attribute [{}] done", attributeName);
 		}
-		Collections.sort(result);
 		log.trace("Sorted the attributes and done creating attributes");
 		return result;
 	}
@@ -235,16 +234,14 @@ public class FrankDocModel {
      * The original order of the methods is preserved, which you get when you iterate
      * over the entrySet() of the returned Map.
 	 */
-	static Map<String, FrankMethod> getAttributeToMethodMap(FrankMethod[] methods, String prefix) {
+	static LinkedHashMap<String, FrankMethod> getAttributeToMethodMap(FrankMethod[] methods, String prefix) {
 		List<FrankMethod> methodList = Arrays.asList(methods);
 		methodList = methodList.stream()
 				.filter(FrankMethod::isPublic)
 				.filter(Utils::isAttributeGetterOrSetter)
 				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
 				.collect(Collectors.toList());
-		// The sort order determines the creation order of AttributeValues instances.
-		Collections.sort(methodList, Comparator.comparing(FrankMethod::getName));
-		Map<String, FrankMethod> result = new LinkedHashMap<>();
+		LinkedHashMap<String, FrankMethod> result = new LinkedHashMap<>();
 		for(FrankMethod method: methodList) {
 			String attributeName = attributeOf(method.getName(), prefix);
 			result.put(attributeName, method);
@@ -448,7 +445,6 @@ public class FrankDocModel {
 		}
 		log.trace("Removing duplicate config children of FrankElement [{}]", () -> parent.getFullName());
 		result = ConfigChild.removeDuplicates(result);
-		Collections.sort(result);
 		log.trace("Sorted config children are:");
 		if(log.isTraceEnabled()) {
 			result.forEach(c -> log.trace("{}", c.toString()));
@@ -468,7 +464,6 @@ public class FrankDocModel {
 			ConfigChild.SortNode sortNode = new ConfigChild.SortNode(setter);
 			sortNodes.add(sortNode);
 		}
-		Collections.sort(sortNodes);
 		return sortNodes;
 	}
 

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +42,7 @@ class FrankClassDoclet implements FrankClass {
 	private final ClassDoc clazz;
 	private final Set<String> childClassNames = new HashSet<>();
 	private final Map<String, FrankClass> interfaceImplementationsByName = new HashMap<>();
-	private final Map<MethodDoc, FrankMethod> frankMethodsByDocletMethod = new HashMap<>();
+	private final LinkedHashMap<MethodDoc, FrankMethod> frankMethodsByDocletMethod = new LinkedHashMap<>();
 	private final Map<String, FrankMethodDoclet> methodsBySignature = new HashMap<>();
 	private final Map<String, FrankAnnotation> frankAnnotationsByName;
 

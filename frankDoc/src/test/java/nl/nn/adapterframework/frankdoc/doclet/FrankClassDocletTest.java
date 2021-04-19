@@ -1,6 +1,11 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -23,5 +28,14 @@ public class FrankClassDocletTest {
 	@Test
 	public void testGetJavaDoc() {
 		assertEquals(EXPECTED_CLASSDOC, instance.getJavaDoc());
+	}
+
+	@Test
+	public void testMethodSequenceIsPreserved() {
+		List<String> actualMethodNames = Arrays.asList(instance.getDeclaredMethods()).stream()
+				.map(FrankMethod::getName)
+				.collect(Collectors.toList());
+		String[] expectedMethodNames = new String[] {"setInherited", "packagePrivateMethod", "setVarargMethod", "getMyInnerEnum", "myAnnotatedMethod"};
+		assertArrayEquals(expectedMethodNames, actualMethodNames.toArray(new String[] {}));
 	}
 }
