@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.jta;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -31,7 +31,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import nl.nn.adapterframework.jta.ThreadConnectorHelperTransactionManagerProxyHandler;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * proxy class for transaction manager.
