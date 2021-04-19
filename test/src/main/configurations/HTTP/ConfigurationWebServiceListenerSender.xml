@@ -313,40 +313,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	
-	<Adapter name="HttpSoapSender" description="Send Http request to the TestSoapActionListener.">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="HttpSoapSender">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4test-HttpSoapSender" />
-		</receiver>
-		<Pipeline firstPipe="sendRequest">
-			<exits>
-				<exit path="EXIT" state="success" />
-			</exits>
-			<pipe name="sendRequest">
-				<sender className="nl.nn.adapterframework.http.HttpSender"
-					methodType="POST"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/TestSoapAction"
-					headersParams="SOAPAction,Content-type" >
-					<Param name="SOAPAction" value="testActionFor1.1"/>
-					<Param name="Content-type" value="application/xml; action=testActionFor1.2"/>
-				</sender>
-				<Forward name="success" path="EXIT" />
-			</pipe>
-		</Pipeline>
-	</Adapter>
-	<Adapter name="TestSoapAction">
-		<Receiver name="TestSoapAction">
-			<WebServiceListener name="TestSoapAction" address="TestSoapAction" />
-		</Receiver >
-		<Pipeline firstPipe="Echo">
-			<EchoPipe name="Echo" getInputFromSessionKey="SOAPAction">
-				<Forward name="success" path="EXIT" />
-			</EchoPipe>
-			<exits>
-				<exit path="EXIT" state="success" />
-			</exits>
-		</Pipeline>
-	</Adapter>
 </module>

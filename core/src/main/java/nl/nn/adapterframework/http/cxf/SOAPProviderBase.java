@@ -167,11 +167,11 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 				} else if(soapProtocol.equals(SOAPConstants.SOAP_1_2_PROTOCOL)) {
 					String contentType = (String) webServiceContext.getMessageContext().get("Content-Type");
 					if(StringUtils.isNotEmpty(contentType) && contentType.contains("action=")) {
-						String action = findAction(contentType.indexOf("action="), contentType);
+						String action = findAction(contentType);
 						if(StringUtils.isNotEmpty(action)) {
 							pipelineSession.put(SoapBindingConstants.SOAP_ACTION, action);
 						} else {
-							log.warn(getLogPrefix(correlationId)+" no SOAPAction found!");
+							log.warn(getLogPrefix(correlationId)+"no SOAPAction found!");
 						}
 					}
 				}
@@ -308,17 +308,14 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		return xmlMimeHeaders;
 	}
 	
-	private String findAction(int start, String contentType) {
+	protected String findAction(String contentType) {
 		// extracts the value of action from contentType
-		if(start != -1) {
-			int end;
-			start += 7;
-			end = contentType.indexOf(';', start);
-			if (end == -1) {
-				end = contentType.length();
-			}
-			return contentType.substring(start, end);
+		int start = contentType.indexOf("action=") + 7;
+		int end;
+		end = contentType.indexOf(';', start);
+		if (end == -1) {
+			end = contentType.length();
 		}
-		return null;
+		return contentType.substring(start, end);
 	}
 }

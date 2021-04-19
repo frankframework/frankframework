@@ -325,6 +325,25 @@ public class SoapProviderTest {
 	}
 
 	@Test
+	public void noSoapActionInSessionKeySOAP1_1() throws Throwable {
+		// Soap protocol 1.1 
+		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
+		SOAPProvider.invoke(request);
+		assertNull(SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@Test
+	public void soap1_1MessageWithActionInContentTypeHeader() throws Throwable {
+		// Soap protocol 1.1 
+		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
+		String value = "ActionInContentTypeHeader";
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action="+value);
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertNull(SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@Test
 	public void soapActionInSessionKeySOAP1_2ActionIsTheLastItem() throws Throwable {
 		SOAPMessage request = createMessage("soapmsg1_2.xml");
 		String value = "SOAP1_2ActionIsTheLastItem";
@@ -355,9 +374,27 @@ public class SoapProviderTest {
 	}
 
 	@Test
-	public void noSoapActionInSessionKey() throws Throwable {
+	public void noSoapActionInSessionKey1_2() throws Throwable {
 		SOAPMessage request = createMessage("soapmsg1_2.xml");
 		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; somethingelse");
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertNull(SOAPProvider.getSession().get("SOAPAction"));
+	}
+	
+	@Test
+	public void emptySoapActionInSessionKey1_2() throws Throwable {
+		SOAPMessage request = createMessage("soapmsg1_2.xml");
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action=; somethingelse");
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertNull(SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@Test
+	public void soap1_2MessageWithSOAPActionHeader() throws Throwable {
+		SOAPMessage request = createMessage("soapmsg1_2.xml");
+		webServiceContext.getMessageContext().put("SOAPAction", "action");
 		SOAPProvider.invoke(request);
 		webServiceContext.getMessageContext().clear();
 		assertNull(SOAPProvider.getSession().get("SOAPAction"));
