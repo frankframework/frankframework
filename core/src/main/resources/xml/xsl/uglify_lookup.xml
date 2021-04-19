@@ -715,14 +715,9 @@
     <ClassName>nl.nn.adapterframework.pipes.JsonXsltPipe</ClassName>
   </Element>
   <Element>
-    <Name>JWTDecodePipe</Name>
+    <Name>JWTPipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.JWTDecodePipe</ClassName>
-  </Element>
-  <Element>
-    <Name>JWTEncodePipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.JWTEncodePipe</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.JWTPipe</ClassName>
   </Element>
   <Element>
     <Name>LabelFormatPipe</Name>
