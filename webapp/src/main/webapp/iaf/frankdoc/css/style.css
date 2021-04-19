@@ -16,8 +16,17 @@ body {
 	height: 100%;
 	background-color: #19aa8d;
 }
-.table-sm tbody tr td {
+table.table-sm tbody tr td {
 	padding: 5px 8px;
+}
+table.table thead th.tbl-10 {
+	width: 10%;
+}
+table.table thead th.tbl-15 {
+	width: 15%;
+}
+table.table thead th.tbl-65 {
+	width: 65%;
 }
 .sidebar {
 	display: flex;
@@ -44,9 +53,10 @@ body {
 	color: #fff;
 	border-left: 4px solid #19aa8d;
 	border-top: 1px solid #19aa8d;
+	background-color: #293846;
 }
 .sidebar__categories {
-	border-bottom: 2px solid rgba(255,255,255,0.1);
+	border-bottom: 2px solid rgba(255,255,255,0.5);
 }
 .sidebar__elements {
 	overflow-y: auto;
@@ -60,6 +70,13 @@ body {
 	padding: 0px 20px;
 	background-color: white;
 	overflow-y: scroll;
+}
+.sidebar__elements li.deprecated span {
+	text-decoration: line-through;
+}
+.sidebar__elements li.deprecated i {
+	color: #f0ad4e;
+	padding-left: 2px;
 }
 .sub__element {
 	padding-top: 2rem;
