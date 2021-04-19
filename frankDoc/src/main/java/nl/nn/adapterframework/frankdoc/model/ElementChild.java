@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.DocWriterNew;
@@ -79,7 +80,7 @@ public abstract class ElementChild {
 	/**
 	 * Different {@link ElementChild} of the same FrankElement are allowed to have the same order.
 	 */
-	private @Getter @Setter int order = Integer.MAX_VALUE;
+	private @Getter(AccessLevel.PACKAGE) @Setter(AccessLevel.PACKAGE) int order = Integer.MAX_VALUE;
 	private @Getter String description;
 	private @Getter String defaultValue;
 

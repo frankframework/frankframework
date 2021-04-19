@@ -48,6 +48,7 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
+import nl.nn.adapterframework.frankdoc.model.ConfigChild.SortNode;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -420,7 +421,9 @@ public class FrankDocModel {
 	private List<ConfigChild> createConfigChildren(FrankMethod[] methods, FrankElement parent) throws FrankDocException {
 		log.trace("Creating config children of FrankElement [{}]", () -> parent.getFullName());
 		List<ConfigChild> result = new ArrayList<>();
-		for(ConfigChild.SortNode sortNode: createSortNodes(methods, parent)) {
+		List<SortNode> sortNodes = createSortNodes(methods, parent);
+		for(int order = 0; order < sortNodes.size(); ++order) {
+			ConfigChild.SortNode sortNode = sortNodes.get(order);
 			log.trace("Have config child SortNode [{}]", () -> sortNode.getName());
 			ConfigChild configChild = new ConfigChild(parent, sortNode);
 			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(sortNode.getName());
@@ -440,6 +443,8 @@ public class FrankDocModel {
 			if(! StringUtils.isEmpty(configChild.getDefaultValue())) {
 				log.warn("Default value [{}] of config child [{}] of FrankElement [{}] is not used", () -> configChild.getDefaultValue(), () -> configChild.getKey().toString(), () -> parent.getFullName());
 			}
+			// The order is used to create ConfigChildSet-s. We overwrite the order obtained from @IbisDoc and @IbisDocRef
+			configChild.setOrder(order);
 			result.add(configChild);
 			log.trace("Done creating ConfigChild for SortNode [{}], order = [{}]", () -> sortNode.getName(), () -> configChild.getOrder());
 		}
