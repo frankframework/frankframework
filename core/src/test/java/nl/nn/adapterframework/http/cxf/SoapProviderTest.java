@@ -191,7 +191,7 @@ public class SoapProviderTest {
 	 * @throws Throwable
 	 */
 	public void simpleMessageTest() throws Throwable {
-		SOAPMessage request = createMessage("correct-soapmsg.xml", false, true);
+		SOAPMessage request = createMessage("correct-soapmsg.xml");
 
 		SOAPMessage message = SOAPProvider.invoke(request);
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
