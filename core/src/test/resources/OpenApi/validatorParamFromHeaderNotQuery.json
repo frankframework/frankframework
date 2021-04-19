@@ -12,21 +12,13 @@
         }
     ],
     "paths":{
-        "/pathParamQueryParamTest/{pattern}":{
+        "/validatorParamFromHeaderNotQuery":{
             "get":{
                 "summary":"get envelope adapter description",
                 "parameters":[
                     {
-                        "name":"pattern",
-                        "in":"path",
-                        "required":true,
-                        "schema":{
-                            "type":"string"
-                        }
-                    },
-                    {
                         "name":"parameter",
-                        "in":"query",
+                        "in":"header",
                         "schema":{
                             "type":"string"
                         }
@@ -36,27 +28,7 @@
                     "200":{
                         "description":"OK",
                         "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/EnvelopeResponse"
-                                }
-                            }
-                        }
-                    },
-                    "500":{
-                        "description":"Internal Server Error",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/EnvelopeResponse"
-                                }
-                            }
-                        }
-                    },
-                    "403":{
-                        "description":"Forbidden",
-                        "content":{
-                            "application/json":{
+                            "*/*":{
                                 "schema":{
                                     "$ref":"#/components/schemas/EnvelopeResponse"
                                 }
