@@ -45,10 +45,6 @@ public class DocletBuilder extends com.sun.javadoc.Doclet {
     		log.error("FrankDocException occurred while running Frank!Doc Doclet", e);
     		result = false;
     	}
-    	catch(InvalidDocletOptionsException e) {
-    		log.error("InvalidDocletOptionsException occurred", e);
-    		result = false;
-    	}
     	return result;
     }
 
