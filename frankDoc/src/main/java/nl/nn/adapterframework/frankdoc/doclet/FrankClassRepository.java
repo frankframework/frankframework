@@ -25,7 +25,7 @@ import com.sun.javadoc.ClassDoc;
 public interface FrankClassRepository {
 	FrankClass findClass(String fullName) throws FrankDocException;
 
-	public static FrankClassRepository getReflectInstance(String ...includeFilters) {
+	static FrankClassRepository getReflectInstance(String ...includeFilters) {
 		FrankClassRepositoryReflect result = new FrankClassRepositoryReflect();
 		result.setIncludeFilters(new HashSet<>(Arrays.asList(includeFilters)));
 		result.setExcludeFilters(new HashSet<>());
@@ -33,7 +33,7 @@ public interface FrankClassRepository {
 		return result;
 	}
 
-	public static FrankClassRepository getReflectInstance(Set<String> includeFilters, Set<String> excludeFilters, Set<String> excludeFiltersForSuperclass) {
+	static FrankClassRepository getReflectInstance(Set<String> includeFilters, Set<String> excludeFilters, Set<String> excludeFiltersForSuperclass) {
 		FrankClassRepositoryReflect result = new FrankClassRepositoryReflect();
 		result.setIncludeFilters(includeFilters);
 		result.setExcludeFilters(excludeFilters);

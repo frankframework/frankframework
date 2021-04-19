@@ -24,9 +24,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,17 +32,12 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
-import nl.nn.adapterframework.frankdoc.doclet.Environment;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
-@RunWith(Parameterized.class)
 public class FrankDocModelTest {
 	private static final String SIMPLE = "nl.nn.adapterframework.frankdoc.testtarget.simple";
 	private static final String LISTENER = SIMPLE + ".IListener";
@@ -61,16 +53,6 @@ public class FrankDocModelTest {
 	private static final String REFERRER = "nl.nn.adapterframework.frankdoc.testtarget.ibisdocref.Referrer";
 	private static final String REFERRER_CHILD = "nl.nn.adapterframework.frankdoc.testtarget.ibisdocref.ReferrerChild";
 
-	@Parameters(name = "{0}")
-	public static Collection<Object[]> data() {
-		final List<Object[]> result = new ArrayList<>();
-		Arrays.asList(Environment.values()).forEach(v -> result.add(new Object[] {v}));
-		return result;
-	}
-
-	@Parameter
-	public Environment environment;
-
 	FrankClassRepository classRepository;
 
 	private FrankDocModel instance;
@@ -78,8 +60,8 @@ public class FrankDocModelTest {
 
 	@Before
 	public void setUp() {
-		List<String> allPackages = Arrays.asList(SIMPLE, IBISDOCREF, "nl.nn.adapterframework.frankdoc.testtarget.reflect");
-		classRepository = environment.getRepository(allPackages, allPackages, new ArrayList<String>(), new ArrayList<>());
+		String[] allPackages = new String[] {SIMPLE, IBISDOCREF, "nl.nn.adapterframework.frankdoc.testtarget.reflect"};
+		classRepository = TestUtil.getClassRepository(allPackages);
 		instance = new FrankDocModel(classRepository);
 		attributeOwner = null;
 	}

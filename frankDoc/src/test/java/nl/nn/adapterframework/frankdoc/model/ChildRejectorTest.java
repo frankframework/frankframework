@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class ChildRejectorTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.walking";
@@ -37,7 +38,7 @@ public class ChildRejectorTest {
 
 	private void init(String modelPopulateClassSimpleName, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, String subject) throws Exception {
 		String rootClassName = PACKAGE + "." + modelPopulateClassSimpleName;
-		FrankClassRepository repository = FrankClassRepository.getReflectInstance(PACKAGE);
+		FrankClassRepository repository = TestUtil.getClassRepository(PACKAGE);
 		model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
 		instance = new ChildRejector<FrankAttribute>(
 				selector, rejector, FrankAttribute.class);

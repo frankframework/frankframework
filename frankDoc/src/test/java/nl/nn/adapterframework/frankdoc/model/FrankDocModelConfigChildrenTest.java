@@ -33,11 +33,13 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class FrankDocModelConfigChildrenTest {
-	private static String CONTAINER = "nl.nn.adapterframework.frankdoc.testtarget.children.Container";
-	private static String CONTAINER_DERIVED = "nl.nn.adapterframework.frankdoc.testtarget.children.ContainerDerived";
-	private static String CONTAINER_OTHER = "nl.nn.adapterframework.frankdoc.testtarget.children.ContainerOther";
+	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.children.";
+	private static String CONTAINER = PACKAGE + "Container";
+	private static String CONTAINER_DERIVED = PACKAGE + "ContainerDerived";
+	private static String CONTAINER_OTHER = PACKAGE + "ContainerOther";
 	
 	private FrankDocModel instance;
 	private FrankClassRepository classRepository;
@@ -46,7 +48,7 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Before
 	public void setUp() throws SAXException, IOException, FrankDocException {
-		classRepository = FrankClassRepository.getReflectInstance(CONTAINER);
+		classRepository = TestUtil.getClassRepository(PACKAGE);
 		instance = new FrankDocModel(classRepository);
 		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");
 		instance.findOrCreateElementType(classRepository.findClass(CONTAINER));

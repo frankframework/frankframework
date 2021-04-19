@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class FrankDocModelAttributeTypeTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.enumattr.";
@@ -22,7 +23,7 @@ public class FrankDocModelAttributeTypeTest {
 
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance(PACKAGE);
+		classRepository = TestUtil.getClassRepository(PACKAGE);
 	}
 
 	@Test

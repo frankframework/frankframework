@@ -22,7 +22,9 @@ import static nl.nn.adapterframework.frankdoc.model.ElementChild.IN_XSD;
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.NONE;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -33,7 +35,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.sun.javadoc.ClassDoc;
+
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 @RunWith(Parameterized.class)
 public class NavigationCumulativeTest {
@@ -67,9 +72,10 @@ public class NavigationCumulativeTest {
 	public List<String> childNames;
 
 	@Test
-	public void test() {
+	public void test() throws Exception {
+		ClassDoc[] classes = TestUtil.getClassDocs(PACKAGE);
 		String rootClassName = PACKAGE + "." + simpleClassName;
-		FrankClassRepository repository = FrankClassRepository.getReflectInstance(PACKAGE);
+		FrankClassRepository repository = FrankClassRepository.getDocletInstance(classes, new HashSet<>(Arrays.asList(PACKAGE)), new HashSet<>(), new HashSet<>());
 		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
 		FrankElement subject = model.findFrankElement(rootClassName);
 		List<String> actual = subject.getCumulativeAttributes(childSelector, childRejector).stream()

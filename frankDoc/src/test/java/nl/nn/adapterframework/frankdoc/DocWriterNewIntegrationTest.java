@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
@@ -35,16 +37,19 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.sun.javadoc.ClassDoc;
+
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
-import nl.nn.adapterframework.frankdoc.model.FrankElementFilters;
 import nl.nn.adapterframework.frankdoc.model.FrankElementStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class DocWriterNewIntegrationTest {
 	private static Logger log = LogUtil.getLogger(DocWriterNewIntegrationTest.class);
+	private static final String EXOTIC_PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.exotic.";
 	private static final String TEST_CONFIGURATION_FILE = "testConfiguration.xml";
 
 	private FrankClassRepository classRepository;
@@ -54,8 +59,9 @@ public class DocWriterNewIntegrationTest {
 
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance(
-				FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter(), FrankElementFilters.getExcludeFiltersForSuperclass());
+		ClassDoc[] classes = TestUtil.getClassDocs(EXOTIC_PACKAGE);
+		classRepository = FrankClassRepository.getDocletInstance(
+				classes, new HashSet<>(Arrays.asList(EXOTIC_PACKAGE)), new HashSet<>(), new HashSet<>());
 	}
 
 	@Ignore
@@ -96,7 +102,7 @@ public class DocWriterNewIntegrationTest {
 	@Test
 	public void testExotic() throws Exception {
 		String outputFileName = generateXsd(
-				XsdVersion.STRICT, "/doc/exotic-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.exotic.Master", "exotic.xsd", AttributeTypeStrategy.ALLOW_PROPERTY_REF);
+				XsdVersion.STRICT, "/doc/exotic-digester-rules.xml", EXOTIC_PACKAGE + "Master", "exotic.xsd", AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		validate(getSchemaFromSimpleFile(outputFileName), "testExotic.xml");
 		log.info("Validation of XML document against schema [{}] succeeded", outputFileName);
 	}
