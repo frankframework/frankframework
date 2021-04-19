@@ -6,5 +6,5 @@
 
 	<table ng-if="element.attributes" element-attributes></table>
 
-	<div ng-if="element.parent" parent-element="element.parent"></div>
+	<parent-element ng-if="element.parent" parent="element.parent"></parent-element>
 </div>

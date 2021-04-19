@@ -723,6 +723,13 @@
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>
+						<dependencies>
+							<dependency>
+								<groupId>org.ibissource</groupId>
+								<artifactId>ibis-adapterframework-core</artifactId>
+								<classifier>source</classifier>
+							</dependency>
+						</dependencies>
 						<executions>
 							<execution>
 								<id>attach-javadocs</id>

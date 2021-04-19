@@ -20,7 +20,14 @@ angular.module('iaf.frankdoc').directive('overview', [function() {
 	};
 }]).directive('parentElement', [function() {
 	return {
-		restrict: 'A',
+		restrict: 'E',
+		scope: {
+			parent: '='
+		},
+		link: function (scope, element, attrs) {
+			console.log("directive", scope.parent);
+		},
+		transclude: true,
 		replace: true,
 		controller: 'parent-element',
 		templateUrl: 'views/parent-element.html'
