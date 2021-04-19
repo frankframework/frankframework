@@ -36,7 +36,7 @@ public class FrankDocModelGroupsTest {
 	
 	@Before
 	public void setUp() throws SAXException, IOException, ReflectiveOperationException {
-		FrankClassRepository r = TestUtil.getClassRepository("nl.nn.adapterframework.frankdoc.testtarget.groups");
+		FrankClassRepository r = TestUtil.getFrankClassRepositoryDoclet("nl.nn.adapterframework.frankdoc.testtarget.groups");
 		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.groups.GroupContainer", r);
 	}
 

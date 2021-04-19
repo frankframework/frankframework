@@ -2,13 +2,8 @@ package nl.nn.adapterframework.frankdoc.doclet;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
 import org.junit.Before;
 import org.junit.Test;
-
-import com.sun.javadoc.ClassDoc;
 
 public class FrankClassDocletTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.doclet.";
@@ -21,8 +16,7 @@ public class FrankClassDocletTest {
 
 	@Before
 	public void setUp() throws FrankDocException {
-		ClassDoc[] classDocs = TestUtil.getClassDocs(PACKAGE);
-		FrankClassRepository repository = FrankClassRepository.getDocletInstance(classDocs, new HashSet<>(Arrays.asList(PACKAGE)), new HashSet<>(), new HashSet<>());
+		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		instance = repository.findClass(PACKAGE + "Child");
 	}
 

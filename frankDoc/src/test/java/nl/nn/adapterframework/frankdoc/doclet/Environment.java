@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -45,8 +44,7 @@ enum Environment {
 	private static class DocletDelegate extends Delegate {
 		@Override
 		FrankClassRepository getRepository(String packageName) {
-			ClassDoc[] classDocs = TestUtil.getClassDocs(packageName);
-			return FrankClassRepository.getDocletInstance(classDocs, new HashSet<>(Arrays.asList(packageName)), new HashSet<>(), new HashSet<>());
+			return TestUtil.getFrankClassRepositoryDoclet(packageName);
 		}
 
 		@Override

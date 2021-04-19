@@ -38,7 +38,7 @@ public class ChildRejectorTest {
 
 	private void init(String modelPopulateClassSimpleName, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, String subject) throws Exception {
 		String rootClassName = PACKAGE + "." + modelPopulateClassSimpleName;
-		FrankClassRepository repository = TestUtil.getClassRepository(PACKAGE);
+		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
 		instance = new ChildRejector<FrankAttribute>(
 				selector, rejector, FrankAttribute.class);

@@ -48,7 +48,7 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Before
 	public void setUp() throws SAXException, IOException, FrankDocException {
-		classRepository = TestUtil.getClassRepository(PACKAGE);
+		classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		instance = new FrankDocModel(classRepository);
 		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");
 		instance.findOrCreateElementType(classRepository.findClass(CONTAINER));

@@ -28,7 +28,7 @@ public final class TestUtil {
 		return null;
 	}
 
-	public static FrankClassRepository getClassRepository(String ...packages) {
+	public static FrankClassRepository getFrankClassRepositoryDoclet(String ...packages) {
 		ClassDoc[] classes = getClassDocs(packages);
 		return FrankClassRepository.getDocletInstance(classes, new HashSet<>(Arrays.asList(packages)), new HashSet<>(), new HashSet<>());
 	}

@@ -31,7 +31,7 @@ public class ElementRoleIntegrationTest {
 
 	@Before
 	public void setUp() {
-		FrankClassRepository repository = TestUtil.getClassRepository(PACKAGE);
+		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		model = FrankDocModel.populate("doc/role-digester-rules.xml", PACKAGE + "Master", repository);
 	}
 

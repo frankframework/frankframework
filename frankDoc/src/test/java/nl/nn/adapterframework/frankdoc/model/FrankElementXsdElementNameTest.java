@@ -34,7 +34,7 @@ public class FrankElementXsdElementNameTest {
 
 	@Before
 	public void setUp() {
-		classRepository = TestUtil.getClassRepository(PACKAGE);
+		classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		model = FrankDocModel.populate(DIGESTER_RULES, CONTAINER, classRepository);
 	}
 

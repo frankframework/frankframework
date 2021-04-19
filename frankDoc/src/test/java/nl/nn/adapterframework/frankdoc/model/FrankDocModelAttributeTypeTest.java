@@ -23,7 +23,7 @@ public class FrankDocModelAttributeTypeTest {
 
 	@Before
 	public void setUp() {
-		classRepository = TestUtil.getClassRepository(PACKAGE);
+		classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 	}
 
 	@Test

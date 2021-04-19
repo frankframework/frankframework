@@ -21,7 +21,7 @@ public class ConfigChildTechnicalOverrideTest {
 
 	@BeforeClass
 	public static void setUp() {
-		FrankClassRepository repository = TestUtil.getClassRepository(PACKAGE);
+		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		model = FrankDocModel.populate(DIGESTER_RULES, PACKAGE + "Master", repository);
 	}
 

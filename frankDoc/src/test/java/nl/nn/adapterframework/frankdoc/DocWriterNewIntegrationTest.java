@@ -20,8 +20,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.HashSet;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
@@ -36,8 +34,6 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import com.sun.javadoc.ClassDoc;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
@@ -59,9 +55,7 @@ public class DocWriterNewIntegrationTest {
 
 	@Before
 	public void setUp() {
-		ClassDoc[] classes = TestUtil.getClassDocs(EXOTIC_PACKAGE);
-		classRepository = FrankClassRepository.getDocletInstance(
-				classes, new HashSet<>(Arrays.asList(EXOTIC_PACKAGE)), new HashSet<>(), new HashSet<>());
+		classRepository = TestUtil.getFrankClassRepositoryDoclet(EXOTIC_PACKAGE);
 	}
 
 	@Ignore

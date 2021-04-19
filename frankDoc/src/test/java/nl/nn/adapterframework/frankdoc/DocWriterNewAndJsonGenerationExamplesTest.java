@@ -20,7 +20,6 @@ import static org.junit.Assume.assumeNotNull;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 
 import javax.json.JsonObject;
 
@@ -30,8 +29,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-
-import com.sun.javadoc.ClassDoc;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
@@ -83,9 +80,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	}
 
 	private FrankDocModel createModel() throws Exception {
-		ClassDoc[] classDocs = TestUtil.getClassDocs(packageOfClasses);
-		FrankClassRepository classRepository = FrankClassRepository.getDocletInstance(
-				classDocs, new HashSet<>(Arrays.asList(packageOfClasses)), new HashSet<>(), new HashSet<>());
+		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(packageOfClasses);
 		return FrankDocModel.populate(
 				getDigesterRulesPath(digesterRulesFileName), startClassName, classRepository);
 	}

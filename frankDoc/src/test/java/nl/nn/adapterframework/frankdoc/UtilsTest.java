@@ -40,7 +40,7 @@ public class UtilsTest {
 
 	@Before
 	public void setUp() {
-		repository = TestUtil.getClassRepository(SIMPLE);
+		repository = TestUtil.getFrankClassRepositoryDoclet(SIMPLE);
 	}
 
 	@Test

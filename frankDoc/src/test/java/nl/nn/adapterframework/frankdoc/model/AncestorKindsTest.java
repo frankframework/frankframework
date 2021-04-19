@@ -41,7 +41,7 @@ public class AncestorKindsTest {
 
 	@Before
 	public void setUp() {
-		FrankClassRepository classRepository = TestUtil.getClassRepository(PACKAGE);
+		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild", classRepository);
 	}
 
