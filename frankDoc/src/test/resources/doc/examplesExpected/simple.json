@@ -19,38 +19,29 @@
       "name": "AbstractParentOfStart",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart",
       "abstract": true,
-      "deprecated": false,
       "elementNames": [],
       "attributes": [{
         "name": "abstractParentOfStartAttribute",
-        "deprecated": false,
-        "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart",
-        "type": "string"
+        "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart"
       }],
       "children": []
     },
     {
       "name": "DescribedPossibleIChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
-      "abstract": false,
-      "deprecated": false,
       "descriptionHeader": "This is the header of the JavaDoc of \\\"DescribedPossibleIChild\\\".",
       "elementNames": ["DescribedPossibleIRoleNameIChild"],
       "attributes": [
         {
           "name": "firstAttribute",
-          "deprecated": false,
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
           "description": "First attribute of DescribedPossibleIChild.",
-          "default": "this default value",
-          "type": "string"
+          "default": "this default value"
         },
         {
           "name": "secondAttribute",
-          "deprecated": false,
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
-          "description": "Second attribute of DescribedPossibleIChild",
-          "type": "string"
+          "description": "Second attribute of DescribedPossibleIChild"
         }
       ],
       "children": []
@@ -58,15 +49,11 @@
     {
       "name": "NotDescribedPossibleIChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
-      "abstract": false,
-      "deprecated": false,
       "elementNames": ["NotDescribedPossibleIRoleNameIChild"],
       "attributes": [
         {
           "name": "firstAttribute",
-          "deprecated": false,
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
-          "type": "string",
           "values": [
             "ONE",
             "TWO"
@@ -74,13 +61,10 @@
         },
         {
           "name": "secondAttribute",
-          "deprecated": false,
-          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
-          "type": "string"
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild"
         },
         {
           "name": "thirdAttribute",
-          "deprecated": false,
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
           "type": "int"
         }
@@ -90,8 +74,6 @@
     {
       "name": "Object",
       "fullName": "java.lang.Object",
-      "abstract": false,
-      "deprecated": false,
       "elementNames": [],
       "attributes": [],
       "children": []
@@ -99,27 +81,19 @@
     {
       "name": "Start",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
-      "abstract": false,
-      "deprecated": false,
       "parent": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart",
       "elementNames": ["Start"],
       "attributes": [{
         "name": "attribute",
-        "deprecated": false,
-        "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
-        "type": "string"
+        "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"
       }],
       "children": [
         {
-          "deprecated": false,
-          "mandatory": false,
           "multiple": false,
           "roleName": "roleNameIChild",
           "group": "Child"
         },
         {
-          "deprecated": false,
-          "mandatory": false,
           "multiple": true,
           "roleName": "roleNameTChild",
           "group": "Other"
@@ -129,8 +103,6 @@
     {
       "name": "TChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
-      "abstract": false,
-      "deprecated": false,
       "descriptionHeader": "This is the header of the JavaDoc of \\\"TChild\\\".",
       "elementNames": ["RoleNameTChild"],
       "attributes": [],

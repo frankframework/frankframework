@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEqual;
+import static org.junit.Assume.assumeNotNull;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,7 +45,8 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"},
-			{"examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"}
+			{"examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"},
+			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master", null, "deprecated.json"}
 		});
 	}
 
@@ -70,6 +72,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 
 	@Test
 	public void testXsd() throws Exception {
+		assumeNotNull(expectedXsdFileName);
 		FrankDocModel model = createModel();
 		DocWriterNew docWriter = new DocWriterNew(model, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		docWriter.init(startClassName, XsdVersion.STRICT);

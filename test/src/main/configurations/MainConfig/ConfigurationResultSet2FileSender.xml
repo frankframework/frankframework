@@ -23,7 +23,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 				name="selectRecordIds">
 				<sender className="nl.nn.adapterframework.jdbc.ResultSet2FileSender"
-					fileNameSessionKey="fileName" jmsRealm="jdbc" lockRows="true"
+					filenameSessionKey="fileName" jmsRealm="jdbc" lockRows="true"
 					maxRecordsSessionKey="maxRecords"
 					query="SELECT TCLOB, TTIMESTAMP, TCHAR, TKEY FROM IBISTEMP WHERE TTIMESTAMP IS NULL ORDER BY TCHAR, TKEY"
 					statusFieldType="timestamp" />
@@ -31,7 +31,7 @@
 			</pipe>
 
 			<pipe name="readFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" fileNameSessionKey="fileName">
+				actions="read" filenameSessionKey="fileName">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

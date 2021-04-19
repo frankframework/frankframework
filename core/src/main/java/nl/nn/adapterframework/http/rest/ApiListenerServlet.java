@@ -127,7 +127,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		 * Generate an OpenApi json file
 		 */
 		if(uri.equalsIgnoreCase("/openapi.json")) {
-			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema();
+			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
 			returnJson(response, 200, jsonSchema);
 			return;
 		}
@@ -139,7 +139,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			uri = uri.substring(0, uri.lastIndexOf("/"));
 			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
 			if(apiConfig != null) {
-				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig);
+				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
 				returnJson(response, 200, jsonSchema);
 				return;
 			}
@@ -362,26 +362,27 @@ public class ApiListenerServlet extends HttpServletBase {
 				/**
 				 * Map headers into messageContext
 				 */
-				Enumeration<String> headers = request.getHeaderNames();
-				XmlBuilder headersXml = new XmlBuilder("headers");
-				while (headers.hasMoreElements()) {
-					String headerName = headers.nextElement().toLowerCase();
-					if(IGNORE_HEADERS.contains(headerName))
-						continue;
-	
-					String headerValue = request.getHeader(headerName);
-					try {
-						XmlBuilder headerXml = new XmlBuilder("header");
-						headerXml.addAttribute("name", headerName);
-						headerXml.setValue(headerValue);
-						headersXml.addSubElement(headerXml);
+				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
+					XmlBuilder headersXml = new XmlBuilder("headers");
+					String params[] = listener.getHeaderParams().split(",");
+					for (String headerParam : params) {
+						if(IGNORE_HEADERS.contains(headerParam)) {
+							continue;
+						}
+						String headerValue = request.getHeader(headerParam);
+						try {
+							XmlBuilder headerXml = new XmlBuilder("header");
+							headerXml.addAttribute("name", headerParam);
+							headerXml.setValue(headerValue);
+							headersXml.addSubElement(headerXml);
+						}
+						catch (Throwable t) {
+							log.info("unable to convert header to xml name["+headerParam+"] value["+headerValue+"]");
+						}
 					}
-					catch (Throwable t) {
-						log.info("unable to convert header to xml name["+headerName+"] value["+headerValue+"]");
-					}
+					messageContext.put("headers", headersXml.toXML());
 				}
-				messageContext.put("headers", headersXml.toXML());
-	
+
 				/**
 				 * Map multipart parts into messageContext
 				 */
@@ -475,6 +476,15 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 				PipeLineSession.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
+//				if(StringUtils.isNotEmpty(listener.getCookieParams())) {
+//					String params[] = listener.getCookieParams().split(",");
+//					for (String cookieParam : params) {
+//						Cookie cookie = CookieUtil.getCookie(request, cookieParam);
+//						if(cookie != null) {
+//							messageContext.put(cookieParam, cookie.getValue());
+//						}
+//					}
+//				}
 				Message result = listener.processRequest(null, body, messageContext);
 
 				/**
