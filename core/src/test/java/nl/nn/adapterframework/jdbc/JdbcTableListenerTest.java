@@ -19,6 +19,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Semaphore;
@@ -237,7 +238,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		
 		@Override
 		public void initAction(Connection conn) throws Exception {
-			context = new QueryExecutionContext("UPDATE TEMP SET TINT=3 WHERE TINT!=3 AND TKEY=10", "update", null);
+			context = new QueryExecutionContext("UPDATE TEMP SET TINT=3 WHERE TINT!=3 AND TKEY=10", QueryType.OTHER, null);
 			dbmsSupport.convertQuery(context, "Oracle");
 			connection.setAutoCommit(false);
 		}
