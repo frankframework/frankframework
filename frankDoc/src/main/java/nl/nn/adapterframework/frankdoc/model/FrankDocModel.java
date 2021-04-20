@@ -303,14 +303,17 @@ public class FrankDocModel {
 		attribute.setDeprecated(method.getAnnotation(FrankDocletConstants.DEPRECATED) != null);
 		attribute.setDocumented(
 				(method.getAnnotation(FrankDocletConstants.IBISDOC) != null)
-				|| (method.getAnnotation(FrankDocletConstants.IBISDOCREF) != null));
+				|| (method.getAnnotation(FrankDocletConstants.IBISDOCREF) != null)
+				|| (method.getJavaDoc() != null));
 		log.trace("Attribute: deprecated = [{}], documented = [{}]", () -> attribute.isDeprecated(), () -> attribute.isDocumented());
+		attribute.setJavaDocBasedDescription(method);
 		FrankAnnotation ibisDocRef = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOCREF);
 		if(ibisDocRef != null) {
 			log.trace("Found @IbisDocRef annotation");
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
 			FrankAnnotation ibisDoc = null;
 			if((parsed != null) && (parsed.getReferredMethod() != null)) {
+				attribute.setJavaDocBasedDescription(parsed.getReferredMethod());
 				ibisDoc = parsed.getReferredMethod().getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 				if(ibisDoc != null) {
 					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass().getName()));
@@ -435,6 +438,7 @@ public class FrankDocModel {
 			configChild.setElementRole(findOrCreateElementRole(
 					(FrankClass) sortNode.getElementType(), configChildDescriptor.getRoleName()));
 			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> sortNode.getName());
+			configChild.setJavaDocBasedDescription(sortNode.getMethod());
 			if(sortNode.getIbisDoc() == null) {
 				log.warn("No @IbisDoc annotation for config child [{}] of FrankElement [{}]", () -> configChild.getKey().toString(), () -> parent.getFullName());
 			} else if(! configChild.parseIbisDocAnnotation(sortNode.getIbisDoc())) {

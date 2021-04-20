@@ -84,4 +84,30 @@ public class FrankAttributeTarget extends FrankAttributeTargetParent {
 	@IbisDoc("Description of ibisDockedDeprecated")
 	public void setIbisDockedDeprecated(String value) {
 	}
+
+	/**
+	 * Attribute with JavaDoc
+	 */
+	public void setAttributeWithJavaDoc(String value) {
+	}
+
+	@Override
+	public void setAttributeWithInheritedJavaDoc(String value) {
+	}
+
+	/**
+	 * Superseeded Javadoc
+	 * @param value
+	 */
+	@IbisDoc({"100", "IbisDoc description that overrules JavaDoc"})
+	public void setAttributeWithIbisDocThatOverrulesJavadocDescription(String value) {
+	}
+
+	/**
+	 * JavaDoc for description that is selected because IbisDoc annotation lacks description.
+	 * @param value
+	 */
+	@IbisDoc("120")
+	public void setAttributeWithIbisDocLackingDescription(String value) {
+	}
 }

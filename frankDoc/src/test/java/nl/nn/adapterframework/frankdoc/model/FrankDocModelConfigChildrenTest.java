@@ -216,4 +216,30 @@ public class FrankDocModelConfigChildrenTest {
 		ConfigChild theConfigChild = instance.findOrCreateFrankElement(CONTAINER_OTHER).getConfigChildren(ElementChild.ALL).get(0);
 		assertFalse(theConfigChild.isDeprecated());
 	}
+
+	@Test
+	public void whenConfigChildHasJavadocThenDocumentedAndTakenAsDescription() throws Exception {
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadoc").getConfigChildren(ElementChild.ALL).get(0);
+		assertTrue(configChild.isDocumented());
+		assertEquals("JavaDoc of ContainerForConfigChildDescriptionJavadoc.setChild", configChild.getDescription());
+	}
+
+	@Test
+	public void whenConfigChildInheritsJavadocThenNotDocumentedButDescriptionTaken() throws Exception {
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadocDerived").getConfigChildren(ElementChild.ALL).get(0);
+		assertFalse(configChild.isDocumented());
+		assertEquals("JavaDoc of ContainerForConfigChildDescriptionJavadoc.setChild", configChild.getDescription());		
+	}
+
+	@Test
+	public void whenConfigChildHasIbisDocDescriptionThenJavadocOverruled() throws Exception {
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadocOverruled").getConfigChildren(ElementChild.ALL).get(0);
+		assertEquals("Description of ContainerForConfigChildDescriptionJavadocOverruled.setChild", configChild.getDescription());
+	}
+
+	@Test
+	public void whenConfigChildHasIbisDocWithoutDescriptionThenJavadocTaken() throws Exception {
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionIbisDocOmitsDescriptionJavadocTaken").getConfigChildren(ElementChild.ALL).get(0);
+		assertEquals("Description of ContainerForConfigChildDescriptionIbisDocOmitsDescriptionJavadocTaken.setChild", configChild.getDescription());
+	}
 }

@@ -14,4 +14,16 @@ public class Referrer {
 	@IbisDocRef({"10", "nl.nn.adapterframework.frankdoc.testtarget.ibisdocref.ChildTarget"})
 	public void setIbisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited(String value) {
 	}
+
+	@IbisDocRef({"100", "nl.nn.adapterframework.frankdoc.testtarget.ibisdocref.ChildTarget"})
+	public void setAttributeWithIbisDocRefReferringJavadoc(String value) {
+	}
+
+	@IbisDocRef({"110", "nl.nn.adapterframework.frankdoc.testtarget.ibisdocref.ChildTarget"})
+	public void setAttributeWithIbisDocRefThatGivesPreferenceToIbisDocDescriptionOverJavadoc(String value) {
+	}
+
+	@IbisDocRef({"120", "nl.nn.adapterframework.frankdoc.testtarget.ibisdocref.ChildTarget"})
+	public void setAttributeWithIbisDocRefReferringIbisDocWithoutDescriptionButWithJavadoc(String value) {
+	}
 }

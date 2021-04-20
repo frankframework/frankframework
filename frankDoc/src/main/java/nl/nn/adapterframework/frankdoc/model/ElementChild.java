@@ -26,6 +26,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.DocWriterNew;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
+import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -128,6 +129,18 @@ public abstract class ElementChild {
 
 	abstract boolean overrideIsMeaningful(ElementChild overriddenFrom);
 
+	void setJavaDocBasedDescription(FrankMethod method) {
+		try {
+			String value = method.getJavaDocIncludingInherited();
+			if(value != null) {
+				description = value;
+			}
+		} catch(FrankDocException e) {
+			log.warn("A FrankDocException occurred when searching the (inherited) javadoc of {}.{}",
+					method.getDeclaringClass().getSimpleName(), method.getName(), e);
+		}
+	}
+
 	boolean parseIbisDocAnnotation(FrankAnnotation ibisDoc) {
 		String[] ibisDocValues = null;
 		try {
@@ -136,7 +149,6 @@ public abstract class ElementChild {
 			log.warn("Could not parse FrankAnnotation of @IbisDoc", e);
 		}
 		boolean isIbisDocHasOrder = false;
-		description = "";
 		try {
 			order = Integer.parseInt(ibisDocValues[0]);
 			isIbisDocHasOrder = true;

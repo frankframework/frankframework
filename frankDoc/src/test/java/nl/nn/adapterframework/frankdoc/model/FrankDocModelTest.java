@@ -343,7 +343,9 @@ public class FrankDocModelTest {
 		String[] expectedAttributeNames = new String[] {"attributeSetterGetter", "attributeSetterIs", "attributeOnlySetter", "attributeOnlySetterInt",
 				"attributeOnlySetterIntBoxed", "attributeOnlySetterBoolBoxed", "attributeOnlySetterLongBoxed", "attributeOnlySetterByteBoxed",
 				"attributeOnlySetterShortBoxed", "ibisDockedOnlyDescription", "ibisDockedOrderDescription", "ibisDockedDescriptionDefault",
-				"ibisDockedOrderDescriptionDefault", "ibisDockedDeprecated"};
+				"ibisDockedOrderDescriptionDefault", "ibisDockedDeprecated", "attributeWithJavaDoc",
+				"attributeWithInheritedJavaDoc", "attributeWithIbisDocThatOverrulesJavadocDescription",
+				"attributeWithIbisDocLackingDescription"};
 		assertArrayEquals(expectedAttributeNames, actualAttributeNames.toArray(new String[] {}));
 	}
 
@@ -395,6 +397,32 @@ public class FrankDocModelTest {
 		assertEquals("Description of ibisDockedDeprecated", actual.getDescription());
 		assertTrue(actual.isDeprecated());
 		assertFalse(IN_XSD.test(actual));
+	}
+
+	@Test
+	public void whenAttributeHasJavaDocThenDocumentedAndDescription() throws Exception {
+		FrankAttribute actual = checkReflectAttributeCreated("attributeWithJavaDoc");
+		assertTrue(actual.isDocumented());
+		assertEquals("Attribute with JavaDoc", actual.getDescription());
+	}
+
+	@Test
+	public void whenAttributeHasInheritedJavaDocThenNotDocumentedButDescription() throws Exception {
+		FrankAttribute actual = checkReflectAttributeCreated("attributeWithInheritedJavaDoc");
+		assertFalse(actual.isDocumented());
+		assertEquals("JavaDoc of FrankAttributeTargetParent.setAttributeWithInheritedJavaDoc()", actual.getDescription());
+	}
+
+	@Test
+	public void whenIbisDocHasDescriptionThenJavadocOverruled() throws Exception {
+		FrankAttribute actual = checkReflectAttributeCreated("attributeWithIbisDocThatOverrulesJavadocDescription");
+		assertEquals("IbisDoc description that overrules JavaDoc", actual.getDescription());
+	}
+
+	@Test
+	public void whenIbisDocLacksDescriptionThenDescriptionFromJavadoc() throws Exception {
+		FrankAttribute actual = checkReflectAttributeCreated("attributeWithIbisDocLackingDescription");
+		assertEquals("JavaDoc for description that is selected because IbisDoc annotation lacks description.", actual.getDescription());
 	}
 
 	@Test
@@ -466,5 +494,25 @@ public class FrankDocModelTest {
 		assertNotNull(element);
 		assertFalse(element.isDeprecated());
 		assertTrue(element.getParent().isDeprecated());
+	}
+
+	@Test
+	public void whenIbisDocRefRefersMethodWithJavadocThenJavadocInDescription() throws Exception {
+		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("attributeWithIbisDocRefReferringJavadoc");
+		assertEquals("IbisDocRef'd JavaDoc of setAttributeWithIbisDocRefReferringJavadoc", actual.getDescription());
+	}
+
+	@Test
+	public void whenIbisDocRefRefersMethodWithJavaDocAndIbisDocThenDescriptionComesFromIbisDoc() throws Exception {
+		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("attributeWithIbisDocRefThatGivesPreferenceToIbisDocDescriptionOverJavadoc");
+		String expected = "IbisDoc description of setAttributeWithIbisDocRefThatGivesPreferenceToIbisDocDescriptionOverJavadoc";
+		assertEquals(expected, actual.getDescription());
+	}
+
+	@Test
+	public void whenIbisDocRefRefersMethodWithIbisDocWithoutDescriptionThenDescriptionFromJavadoc() throws Exception {
+		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("attributeWithIbisDocRefReferringIbisDocWithoutDescriptionButWithJavadoc");
+		String expected = "This Javadoc is the description, because the IbisDoc annotation lacks a description.";
+		assertEquals(expected, actual.getDescription());
 	}
 }

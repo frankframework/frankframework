@@ -58,17 +58,19 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 		private @Getter boolean deprecated;
 		private @Getter FrankType elementType;
 		private @Getter FrankAnnotation ibisDoc;
+		private @Getter FrankMethod method;
 
 		SortNode(FrankMethod method) {
 			this.name = method.getName();
-			this.documented = (method.getAnnotation(FrankDocletConstants.IBISDOC) != null);
+			this.documented = (method.getAnnotation(FrankDocletConstants.IBISDOC) != null) || (method.getJavaDoc() != null);
 			this.deprecated = isDeprecated(method);
 			this.elementType = method.getParameterTypes()[0];
 			try {
 				this.ibisDoc = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 			} catch(FrankDocException e) {
-				log.warn("Could not @IbisDoc annotation", e);
+				log.warn("Could not @IbisDoc annotation or could not obtain JavaDoc", e);
 			}
+			this.method = method;
 		}
 
 		private static boolean isDeprecated(FrankMethod m) {
