@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import java.util.Map;
 
 import javax.xml.transform.Transformer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -66,7 +66,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 				Transformer errorTransformer;
 
 				if (StringUtils.isNotEmpty(getStyleSheet())) {
-					URL url = ClassUtils.getResourceURL(getClassLoader(), styleSheet);
+					URL url = ClassUtils.getResourceURL(this, styleSheet);
 					errorTransformer = XmlUtils.createTransformer(url);
 				}
 				else {
@@ -87,7 +87,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 					Map<String, Object> parametervalues = null;
 					try {
-						parametervalues = params.getValues(new Message(errorMessage), new PipeLineSessionBase()).getValueMap();
+						parametervalues = params.getValues(new Message(errorMessage), new PipeLineSession()).getValueMap();
 					} catch (ParameterException e) {
 						log.error("got exception extracting parameters",e);
 					}

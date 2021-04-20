@@ -16,18 +16,18 @@
 package nl.nn.adapterframework.stream;
 
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 
 public interface IOutputStreamingSupport {
 
 //	/**
-//	 * When this returns <code>true</code> then a call to {{@link #provideOutputStream(String, IPipeLineSession, IOutputStreamingSupport) provideOutputStream()} 
+//	 * When this returns <code>true</code> then a call to {{@link #provideOutputStream(String, PipeLineSession, IOutputStreamingSupport) provideOutputStream()} 
 //	 * must return a {@link MessageOutputStream} that can be used to write a message to, that then will be processed in a streaming way.
 //	 */
 //	public boolean canProvideOutputStream();
 //	
 //	/**
-//	 * When this returns <code>true</code> then {@link #provideOutputStream(String, IPipeLineSession, IOutputStreamingSupport) provideOutputStream()} 
+//	 * When this returns <code>true</code> then {@link #provideOutputStream(String, PipeLineSession, IOutputStreamingSupport) provideOutputStream()} 
 //	 * must use {@link MessageOutputStream target} to stream its own output to. 
 //	 * N.B. A class should only return <code>true</code> from <code>requiresOutputStream</code> if that is the way the output can be produced efficiently
 //	 * in a streaming way. If the response data is already present in memory, e.g. as a String or byte array, it should send the data as is, requiresOutputStream
@@ -49,7 +49,7 @@ public interface IOutputStreamingSupport {
 	 * If the class cannot provide an outputstream, it must return null.
 	 * If the provider of an outputstream is a pipe itself, it must provide a proper pipeforward in the provided outputstream
 	 */
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException;
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException;
 	
 	
 }

@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
@@ -52,37 +53,18 @@ public final class ExecuteJdbcQuery extends ActionBase {
 		initAction(request);
 
 		IniDynaActionForm executeJdbcQueryForm = (IniDynaActionForm) form;
-		Cookie[] cookies = request.getCookies();
+		Cookie cookie = CookieUtil.getCookie(request, AppConstants.getInstance().getString("WEB_EXECJDBCCOOKIE_NAME", "WEB_EXECJDBCCOOKIE"));
+		if (null != cookie) {
+			StringTagger cs = new StringTagger(cookie.getValue());
 
-		if (null != cookies) {
-			for (int i = 0; i < cookies.length; i++) {
-				Cookie aCookie = cookies[i];
-
-				if (aCookie
-					.getName()
-					.equals(
-						AppConstants.getInstance().getString(
-							"WEB_EXECJDBCCOOKIE_NAME",
-							"WEB_EXECJDBCCOOKIE"))) {
-					StringTagger cs = new StringTagger(aCookie.getValue());
-
-					log.debug("restoring values from cookie: " + cs.toString());
-					try {
-						executeJdbcQueryForm.set(
-							"jmsRealm",
-							cs.Value("jmsRealm"));
-						executeJdbcQueryForm.set(
-							"queryType",
-							cs.Value("queryType"));
-						executeJdbcQueryForm.set(
-							"resultType",
-							cs.Value("resultType"));
-						executeJdbcQueryForm.set("query", cs.Value("query"));
-					} catch (Exception e) {
-						log.warn("could not restore Cookie value's", e);
-					}
-				}
-
+			log.debug("restoring values from cookie: " + cs.toString());
+			try {
+				executeJdbcQueryForm.set("jmsRealm", cs.Value("jmsRealm"));
+				executeJdbcQueryForm.set("queryType", cs.Value("queryType"));
+				executeJdbcQueryForm.set("resultType", cs.Value("resultType"));
+				executeJdbcQueryForm.set("query", cs.Value("query"));
+			} catch (Exception e) {
+				log.warn("could not restore Cookie value's", e);
 			}
 		}
 

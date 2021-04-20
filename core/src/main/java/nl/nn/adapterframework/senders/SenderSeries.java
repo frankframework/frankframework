@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -82,7 +82,7 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
@@ -106,11 +106,6 @@ public class SenderSeries extends SenderWrapperBase {
 			}
 		}
 		//hski.closeGroup(senderData);
-	}
-
-	@Override
-	public String getLogPrefix() {
-		return ClassUtils.nameOf(this)+" ["+getName()+"] ";
 	}
 
 	@Override

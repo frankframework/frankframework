@@ -3,10 +3,12 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -143,11 +145,13 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		if (files==null) {
 			throw new FileSystemException("files in folder ["+folderName+"] is null");
 		}
-		return FileSystemUtils.getDirectoryStream((Iterator<M>)files.values().iterator());
+		List<M> fileList = new ArrayList<M>();
+		fileList.addAll((Collection<? extends M>) files.values());
+		return FileSystemUtils.getDirectoryStream(fileList.iterator());
 	}
 
 	@Override
-	public boolean exists(MockFile f) throws FileSystemException {
+	public boolean exists(M f) throws FileSystemException {
 		checkOpen();
 		return f.getOwner()!=null 
 				&& (f.getOwner().getFiles().containsKey(f.getName()) 
@@ -208,8 +212,12 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 			destFolder = new MockFolder(destinationFolderName,this);
 			getFolders().put(destinationFolderName,destFolder);
 		}
-		destFolder.getFiles().put(f.getName(), f.getOwner().getFiles().remove(f.getName()));
-		f.setOwner(destFolder);
+		M destFile = (M)new MockFile(f.getName(),destFolder);
+		destFile.setAdditionalProperties(f.getAdditionalProperties());
+		destFile.setContents(f.getContents());
+		destFile.setLastModified(f.getLastModified());
+		destFolder.getFiles().put(f.getName(), destFile);
+		f.getOwner().getFiles().remove(f.getName());
 		return f;
 	}
 
@@ -282,7 +290,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public void removeFolder(String folder) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		checkOpen();
 		MockFolder cur = getFolders().get(folder);
 		if (cur==null) {
@@ -290,6 +298,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		}
 		if (!(cur instanceof MockFolder)) {
 				throw new FileSystemException("Entry is not a directory");
+		}
+		if(!removeNonEmptyFolder && !cur.getFiles().isEmpty() || !cur.getFolders().isEmpty()) {
+			throw new FileSystemException("Cannot remove folder");
 		}
 		getFolders().remove(folder);
 	}
@@ -304,8 +315,5 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	public String getPhysicalDestinationName() {
 		return "Mock!";
 	}
-
-
-
 
 }

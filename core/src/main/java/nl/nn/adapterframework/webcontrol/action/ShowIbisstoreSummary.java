@@ -27,7 +27,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -35,7 +35,7 @@ import org.apache.struts.action.ActionMapping;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -46,6 +46,7 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
@@ -73,16 +74,10 @@ public class ShowIbisstoreSummary extends ActionBase {
 
 		if (StringUtils.isEmpty(jmsRealm)) {
 			// get jmsRealm value from cookie
-			Cookie[] cookies = request.getCookies();
-			if (null != cookies) {
-				for (int i = 0; i < cookies.length; i++) {
-					Cookie aCookie = cookies[i];
-
-					if (aCookie.getName().equals(cookieName)) {
-						jmsRealm = aCookie.getValue();
-						log.debug("jmsRealm from cookie [" + jmsRealm +"]");
-					}
-				}
+			Cookie cookie = CookieUtil.getCookie(request, cookieName);
+			if (null != cookie) {
+				jmsRealm = cookie.getValue();
+				log.debug("jmsRealm from cookie [" + jmsRealm +"]");
 			}
 		}
 
@@ -199,7 +194,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, IPipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
+	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
 		XmlBuilder result = new XmlBuilder("result");
 		String previousType=null;
 		XmlBuilder typeXml=null;

@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -72,7 +72,7 @@ public class JdbcQueryListener extends JdbcListener {
 		setUpdateStatusQuery(ProcessState.ERROR, query);
 	}
 
-	@IbisDoc({"4", "SQL statement to set the status of a row to 'in process'. Must contain one parameter, that is set to the value of the key. Can be left emtpy if database has SKIP LOCKED functionality", ""})
+	@IbisDoc({"4", "SQL statement to set the status of a row to 'in process'. Must contain one parameter, that is set to the value of the key. Can be left emtpy if database has SKIP LOCKED functionality and the Receiver can be (and is) set to Required or RequiresNew.", ""})
 	public void setUpdateStatusToInProcessQuery(String query) {
 		setUpdateStatusQuery(ProcessState.INPROCESS, query);
 	}

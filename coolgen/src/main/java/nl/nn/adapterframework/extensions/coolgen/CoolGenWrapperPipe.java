@@ -31,7 +31,7 @@ import javax.xml.transform.TransformerException;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -129,7 +129,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         if (preProcStylesheetName != null) {
             try {
 
-                URL preprocUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), preProcStylesheetName);
+                URL preprocUrl = ClassUtils.getResourceURL(this, preProcStylesheetName);
 
                 if (preprocUrl == null)
                     throw new ConfigurationException("cannot find resource for preProcTransformer, URL-String [" + preProcStylesheetName + "]");
@@ -145,7 +145,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         if (postProcStylesheetName != null) {
             try {
 
-                URL postprocUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), postProcStylesheetName);
+                URL postprocUrl = ClassUtils.getResourceURL(this, postProcStylesheetName);
                 if (postprocUrl == null)
                     throw new ConfigurationException("cannot find resource for postProcTransformer, URL-String [" + postProcStylesheetName + "]");
 
@@ -160,7 +160,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 
         if (proxyInputSchema != null) {
             String stylesheet;
-            URL schemaUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), proxyInputSchema);
+            URL schemaUrl = ClassUtils.getResourceURL(this, proxyInputSchema);
 
             if (schemaUrl == null)
                 throw new ConfigurationException("cannot find resource for proxyInputSchema, URL-String [" + proxyInputSchema + "]");
@@ -197,7 +197,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
      * call the required proxy, transform the output (optionally)
      */
     @Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
     Writer proxyResult;
     String proxypreProc = null;

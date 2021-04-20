@@ -58,7 +58,27 @@ One-line messages are fine for small changes, but bigger changes should look lik
     > 
     > A paragraph describing what changed and its impact."
 
+When you have created a pull request, you can visit it on GitHub.
+If your work needs improvement, WeAreFrank! will add comments that
+are visible inside your pull request. For each comment, GitHub keeps
+a property whether the comment has been resolved. This is useful
+when a pull request goes through many iterations of improvements.
+When you want to follow-up on the latest comments, it is confusing
+to see comments that have been resolved already.
 
+What is our policy to setting comments to resolved? First, please
+always answer to the comment stating what you did with it. Even
+if you simply granted it, please say so.
+
+After answering, you can set the
+comment to resolved if it was clear and if you have fully granted
+it. If the comment was not clear to you or if you only partially
+granted it, then do not resolve the comment yourself. WeAreFrank!
+should resolve the comment when they are satisfied.
+
+If a comment you answered to is very old and if no additional
+answer has been added to the conversation for a long time, you
+can also set it to resolved to ease the review process.
 
 ## Coding conventions
 
@@ -66,12 +86,18 @@ Start reading our code and you'll get the hang of it. We optimize for readabilit
 
   * We indent using tabs, not spaces.
   * We ALWAYS put spaces after list items and method parameters (`[1, 2, 3]`, not `[1,2,3]`) and around operators (`x += 1`, not `x+=1`).
+  * When you have long method calls or method definitions, please keep them on one line. When you have many similar lines of long method calls,
+  they are easier to read without artificial line breaks. Lines are allowed to be as long as 150 characters.
   * This is open source software. Consider the people who will read your code, and make it look nice for them. It's sort of like driving a car: Perhaps you love doing donuts when you're alone, but with passengers the goal is to make the ride as smooth as possible.
   * Use Unix style newlines.
   * Each class that can be used in a configuration must contain the following documentation:
     - Class level IbisDoc, not larger then 5 to 10 lines
     - For each configurable attribute, IbisDoc must not be larger then 2 lines
     - Any examples and more detailed information, that has to be incorperated in to the IbisManual, should be provided as a separate file(s) attached to the pull request
+  * Please do not modify files purely for the sake of formatting, or do so in a dedicated pull request. Formatting changes make a pull request harder to understand for reviewers.
+  * You can experiment with Eclipse's formatting capabilities. In the preferences window, search for the string "tab". You will get an overview of all the options about formatting. The following options are interesting in particular:
+    - There are many screens in which you can define that you use tabs instead of spaces for indentation. Please visit them all to configure that you use tabs.
+    - In Java | Code Style, you can define your own named code style. When you open the dialog, you see many options on how to format Java code. You can set the maximum length of lines here, for example, to avoid artificial line breaks.
 
 WeAreFrank! has introduced [Project Lombok](https://projectlombok.org/) in this source code. Please keep the following in mind when using it:
 
@@ -122,6 +148,7 @@ eclipse.exe file.
 - Start Eclipse with Java 8. You might want to [use -vm in eclipse.ini](http://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM).
 - Close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
+- There are a few unit tests that only run when a JDK is available; a JRE is not sufficient for them. Let Eclipse run unit tests using a JDK, as follows. Go to Window | Preferences. Go to Java | Installed JREs. Press Add... and browse to an installation directory of a JDK. Finally, make it the default by clicking the checkbox.
 
 ### Import the source code
 

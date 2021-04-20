@@ -17,9 +17,9 @@ package nl.nn.adapterframework.webcontrol.pipes;
 
 import java.io.File;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
@@ -42,7 +42,7 @@ public class ShowFlowDiagram extends TimeoutGuardPipe {
 			.getResolvedProperty("flow.config.dir"));
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return new PipeRunResult(getForward(), doGet(session));
@@ -53,7 +53,7 @@ public class ShowFlowDiagram extends TimeoutGuardPipe {
 		}
 	}
 
-	private String doGet(IPipeLineSession session) throws PipeRunException {
+	private String doGet(PipeLineSession session) throws PipeRunException {
 		String adapterName = null;
 		String uri = (String) session.get("uri");
 		if (StringUtils.isNotEmpty(uri)) {

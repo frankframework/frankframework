@@ -304,6 +304,10 @@
 
 	<bean name="debugger,ibisDebugger" class="nl.nn.ibistesttool.Debugger" autowire="byName"/>
 
+	<bean name="messageEncoder" class="nl.nn.ibistesttool.MessageEncoder" autowire="byName"/>
+
+	<bean name="messageCapturer" class="nl.nn.ibistesttool.MessageCapturer" autowire="byName"/>
+
 	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
 
 	<import resource="springIbisDebuggerAdvice.xml"/>

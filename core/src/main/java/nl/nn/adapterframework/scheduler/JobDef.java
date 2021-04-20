@@ -26,16 +26,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -54,7 +59,7 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -72,7 +77,9 @@ import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -95,7 +102,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * Operation of scheduling:
  * <ul>
  *   <li>at configuration time {@link Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
- *   <li>this calls {@link SchedulerHelper#scheduleJob(IbisManager, JobDef) SchedulerHelper.scheduleJob()};</li>
+ *   <li>this calls {@link SchedulerHelper#scheduleJob(JobDef) SchedulerHelper.scheduleJob()};</li>
  *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
  *   <li>this job is scheduled using the cron expression</li> 
@@ -346,10 +353,13 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * 
  * @author  Johan  Verrips
  */
-public class JobDef extends TransactionAttributes {
+public class JobDef extends TransactionAttributes implements ApplicationContextAware {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter AdapterManager adapterManager;
+	private @Getter boolean configured;
 
 	private String name;
 	private String cronExpression;
@@ -433,16 +443,20 @@ public class JobDef extends TransactionAttributes {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
-	public void configure(Configuration config) throws ConfigurationException {
+	@Override
+	public void configure() throws ConfigurationException {
 		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
+		if (StringUtils.isEmpty(getName())) {
+			throw new ConfigurationException("jobdef function ["+getFunction()+"] name must be specified");
+		}
 		if (StringUtils.isEmpty(getFunction())) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
 		}
 
-		if(config != null && StringUtils.isEmpty(getJobGroup())) //If not explicitly set, configure this JobDef under the config it's specified in
-			setJobGroup(config.getName());
+		if(StringUtils.isEmpty(getJobGroup())) //If not explicitly set, configure this JobDef under the config it's specified in
+			setJobGroup(applicationContext.getId());
 
 		if (function.equals(JobDefFunctions.QUERY)) {
 			if (StringUtils.isEmpty(getJmsRealm())) {
@@ -452,19 +466,18 @@ public class JobDef extends TransactionAttributes {
 			if (StringUtils.isEmpty(getAdapterName())) {
 				throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a adapterName must be specified");
 			}
-			if (config != null && config.getRegisteredAdapter(getAdapterName()) == null) {
+			Adapter adapter = adapterManager.getAdapter(getAdapterName());
+			if(adapter == null) { //Make sure the adapter is registered in this configuration
 				String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
 				throw new ConfigurationException(msg);
 			}
-			if (function.isEqualToAtLeastOneOf(JobDefFunctions.STOP_RECEIVER, JobDefFunctions.START_RECEIVER)) {
+			if (function.isEqualToAtLeastOneOf(JobDefFunctions.STOP_RECEIVER, JobDefFunctions.START_RECEIVER, JobDefFunctions.SEND_MESSAGE)) {
 				if (StringUtils.isEmpty(getReceiverName())) {
 					throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a receiverName must be specified");
 				}
-				if (config != null && StringUtils.isNotEmpty(getReceiverName())){
-					if (! config.isRegisteredReceiver(getAdapterName(), getReceiverName())) {
-						String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
-						throw new ConfigurationException(msg);
-					}
+				if (adapter.getReceiverByName(getReceiverName()) == null) {
+					String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
+					throw new ConfigurationException(msg);
 				}
 			}
 		}
@@ -474,9 +487,11 @@ public class JobDef extends TransactionAttributes {
 
 		super.configure();
 		messageKeeper.add("job successfully configured");
+		configured = true;
 	}
 
-	public JobDetail getJobDetail(IbisManager ibisManager) {
+	public JobDetail getJobDetail() {
+		IbisManager ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
 
 		JobDetail jobDetail = IbisJobBuilder.fromJobDef(this)
 				.setIbisManager(ibisManager)
@@ -500,7 +515,7 @@ public class JobDef extends TransactionAttributes {
 					try {
 						objectId = getLocker().acquire(getMessageKeeper());
 					} catch (Exception e) {
-						messageKeeper.add(e.getMessage(), MessageKeeperLevel.ERROR);
+						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
 						log.error(getLogPrefix()+e.getMessage());
 					}
 					if (objectId!=null) {
@@ -523,6 +538,8 @@ public class JobDef extends TransactionAttributes {
 							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
 							log.warn(getLogPrefix()+msg);
 						}
+					} else {
+						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
 					}
 				} else {
 					runJob(ibisManager);
@@ -553,6 +570,7 @@ public class JobDef extends TransactionAttributes {
 
 	protected void runJob(IbisManager ibisManager) {
 		long startTime = System.currentTimeMillis();
+		getMessageKeeper().add("starting to run the job");
 
 		switch(function) {
 		case DUMPSTATS:
@@ -589,7 +607,9 @@ public class JobDef extends TransactionAttributes {
 		}
 
 		long endTime = System.currentTimeMillis();
-		statsKeeper.addValue(endTime - startTime);
+		long duration = endTime - startTime;
+		statsKeeper.addValue(duration);
+		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
 	}
 
 	/**
@@ -763,73 +783,71 @@ public class JobDef extends TransactionAttributes {
 			log.info(getLogPrefix() + msg);
 			return;
 		}
-		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 
-		if (StringUtils.isNotEmpty(configJmsRealm)) {
-			List<String> configNames = new ArrayList<String>();
-			List<String> configsToReload = new ArrayList<String>();
+		String dataSource = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+		List<String> configNames = new ArrayList<String>();
+		List<String> configsToReload = new ArrayList<String>();
 
-			FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-			qs.setJmsRealm(configJmsRealm);
-			qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
-			String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
-			String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = '"+booleanValueTrue+"' and AUTORELOAD = '"+booleanValueTrue+"'";
-			try {
-				qs.configure();
-				qs.open();
-				try (Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
-					for (Configuration configuration : ibisManager.getConfigurations()) {
-						String configName = configuration.getName();
-						configNames.add(configName);
-						if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
-							stmt.setString(1, configName);
-							try (ResultSet rs = stmt.executeQuery()) {
-								if (rs.next()) {
-									String ibisConfigVersion = rs.getString(1);
-									String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
-									if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
-										log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
-									}
-									else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
-										log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
-										configsToReload.add(configName);
-									}
+		FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+		qs.setDatasourceName(dataSource);
+		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
+		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = '"+booleanValueTrue+"' and AUTORELOAD = '"+booleanValueTrue+"'";
+		try {
+			qs.configure();
+			qs.open();
+			try (Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
+				for (Configuration configuration : ibisManager.getConfigurations()) {
+					String configName = configuration.getName();
+					configNames.add(configName);
+					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+						stmt.setString(1, configName);
+						try (ResultSet rs = stmt.executeQuery()) {
+							if (rs.next()) {
+								String ibisConfigVersion = rs.getString(1);
+								String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
+									log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
+								}
+								else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+									log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
+									configsToReload.add(configName);
 								}
 							}
 						}
 					}
 				}
-			} catch (Exception e) {
-				getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
-			} finally {
-				qs.close();
 			}
+		} catch (Exception e) {
+			getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
+		} finally {
+			qs.close();
+		}
 
-			if (!configsToReload.isEmpty()) {
-				for (String configToReload : configsToReload) {
-					ibisManager.getIbisContext().reload(configToReload);
-				}
+		if (!configsToReload.isEmpty()) {
+			for (String configToReload : configsToReload) {
+				ibisManager.getIbisContext().reload(configToReload);
 			}
-			
-			if (CONFIG_AUTO_DB_CLASSLOADER) {
-				// load new (activated) configs
-				List<String> dbConfigNames = null;
-				try {
-					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, true);
-				} catch (ConfigurationException e) {
-					getMessageKeeper().add("error while retrieving configuration names from database", e);
-				}
-				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
-					for (String currentDbConfigurationName : dbConfigNames) {
-						if (!configNames.contains(currentDbConfigurationName)) {
-							ibisManager.getIbisContext().load(currentDbConfigurationName);
-						}
+		}
+		
+		if (CONFIG_AUTO_DB_CLASSLOADER) {
+			// load new (activated) configs
+			List<String> dbConfigNames = null;
+			try {
+				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), dataSource, true);
+			} catch (ConfigurationException e) {
+				getMessageKeeper().add("error while retrieving configuration names from database", e);
+			}
+			if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
+				for (String currentDbConfigurationName : dbConfigNames) {
+					if (!configNames.contains(currentDbConfigurationName)) {
+						ibisManager.getIbisContext().load(currentDbConfigurationName);
 					}
-					// unload old (deactivated) configurations
-					for (String currentConfigurationName : configNames) {
-						if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
-							ibisManager.getIbisContext().unload(currentConfigurationName);
-						}
+				}
+				// unload old (deactivated) configurations
+				for (String currentConfigurationName : configNames) {
+					if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+						ibisManager.getIbisContext().unload(currentConfigurationName);
 					}
 				}
 			}
@@ -871,9 +889,8 @@ public class JobDef extends TransactionAttributes {
 		}
 
 		// Get all IbisSchedules that have been stored in the database
-		String configJmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-		FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(configJmsRealm);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 
 		try {
@@ -896,7 +913,7 @@ public class JobDef extends TransactionAttributes {
 							JobKey key = JobKey.jobKey(jobName, jobGroup);
 			
 							//Create a new JobDefinition so we can compare it with existing jobs
-							DatabaseJobDef jobdef = new DatabaseJobDef();
+							DatabaseJobDef jobdef = SpringUtils.createBean(applicationContext, DatabaseJobDef.class);
 							jobdef.setCronExpression(cronExpression);
 							jobdef.setName(jobName);
 							jobdef.setInterval(interval);
@@ -906,11 +923,11 @@ public class JobDef extends TransactionAttributes {
 							jobdef.setMessage(message);
 			
 							if(hasLocker) {
-								Locker locker = (Locker) ibisManager.getIbisContext().createBeanAutowireByName(Locker.class);
+								Locker locker = SpringUtils.createBean(applicationContext, Locker.class);
 			
 								locker.setName(lockKey);
 								locker.setObjectId(lockKey);
-								locker.setJmsRealm(configJmsRealm);
+								locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 								jobdef.setLocker(locker);
 							}
 			
@@ -926,7 +943,7 @@ public class JobDef extends TransactionAttributes {
 								if(!oldJobDetails.compareWith(jobdef)) {
 									log.debug("updating DatabaseSchedule ["+key+"]");
 									try {
-										sh.scheduleJob(ibisManager, jobdef);
+										sh.scheduleJob(jobdef);
 									} catch (SchedulerException e) {
 										getMessageKeeper().add("unable to update schedule ["+key+"]", e);
 									}
@@ -937,7 +954,7 @@ public class JobDef extends TransactionAttributes {
 								// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
 								log.debug("add DatabaseSchedule ["+key+"]");
 								try {
-									sh.scheduleJob(ibisManager, jobdef);
+									sh.scheduleJob(jobdef);
 								} catch (SchedulerException e) {
 									getMessageKeeper().add("unable to add schedule ["+key+"]", e);
 								}
@@ -1045,10 +1062,11 @@ public class JobDef extends TransactionAttributes {
 				if (adapter.configurationSucceeded()) {
 					startAdapter = adapter.isAutoStart(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
 				}
+
+				log.debug("finished recovering adapter [" + adapter.getName() + "]");
 			}
 
 			String message = "adapter [" + adapter.getName() + "] has state [" + adapterRunState + "]";
-			adapterRunState = adapter.getRunState();
 			if (adapterRunState.equals(RunStateEnum.STARTED)) {
 				countAdapterStateStarted++;
 				heartbeatLog.info(message);
@@ -1083,10 +1101,8 @@ public class JobDef extends TransactionAttributes {
 			}
 
 			if (startAdapter) { // can only be true if adapter was in error before and AutoStart is enabled
-				adapter.startRunning();
+				adapter.startRunning(); //ASync startup can still cause the Adapter to end up in an ERROR state
 			}
-
-			log.debug("finished recovering adapter [" + adapter.getName() + "]");
 		}
 		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunStateEnum.STARTED + "]");
 	}
@@ -1136,18 +1152,13 @@ public class JobDef extends TransactionAttributes {
 	}
 
 	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
-	public void setFunction(String function) throws ConfigurationException {
-		try {
-			this.function = JobDefFunctions.fromValue(function);
-		}
-		catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("jobdef ["+getName()+"] unknown function ["+function+"]. Must be one of "+ JobDefFunctions.getNames());
-		}
+	public void setFunction(String function) {
+		this.function = Misc.parseFromField(JobDefFunctions.class, "function", function, e -> e.getName());
 	}
 	public String getFunction() {
 		return function==null?null:function.getName();
 	}
-	public JobDefFunctions getJobDefFunction() {
+	public JobDefFunctions getFunctionEnum() {
 		return function;
 	}
 

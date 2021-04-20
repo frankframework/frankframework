@@ -15,9 +15,9 @@
  */
 package nl.nn.adapterframework.extensions.esb;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -39,7 +39,7 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 	protected final static String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message message, PipeLineSession session) throws PipeRunException {
 		Message result;
 
 		ParameterValueList pvl = null;

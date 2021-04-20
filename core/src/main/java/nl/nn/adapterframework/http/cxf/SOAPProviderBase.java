@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018, 2019, 2021 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.http.cxf;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,16 +41,15 @@ import javax.xml.ws.WebServiceException;
 import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.handler.MessageContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -88,143 +86,142 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	@Override
 	public SOAPMessage invoke(SOAPMessage request) {
 		String result;
-		PipeLineSessionBase pipelineSession = new PipeLineSessionBase();
-		String correlationId = Misc.createSimpleUUID();
-		log.debug(getLogPrefix(correlationId)+"received message");
-		String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;
-
-		if (request == null) {
-			String faultcode = "soap:Server";
-			String faultstring = "SOAPMessage is null";
-			String httpRequestMethod = (String)webServiceContext.getMessageContext()
-					.get(MessageContext.HTTP_REQUEST_METHOD);
-			if (!"POST".equals(httpRequestMethod)) {
-				faultcode = "soap:Client";
-				faultstring = "Request was send using '" + httpRequestMethod + "' instead of 'POST'";
-			}
-			result =
-					"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
-					"<soap:Body><soap:Fault>" +
-					"<faultcode>" + faultcode + "</faultcode>" +
-					"<faultstring>" + faultstring + "</faultstring>" +
-					"</soap:Fault></soap:Body></soap:Envelope>";
-		}
-		else {
-			// Make mime headers in request available as session key
-			@SuppressWarnings("unchecked")
-			Iterator<MimeHeader> mimeHeaders = request.getMimeHeaders().getAllHeaders();
-			String mimeHeadersXml = getMimeHeadersXml(mimeHeaders).toXML();
-			pipelineSession.put("mimeHeaders", mimeHeadersXml);
-
-			// Make attachments in request (when present) available as session keys
-			int i = 1;
-			XmlBuilder attachments = new XmlBuilder("attachments");
-			@SuppressWarnings("unchecked")
-			Iterator<AttachmentPart> attachmentParts = request.getAttachments();
-			while (attachmentParts.hasNext()) {
-				try {
-					InputStreamAttachmentPart attachmentPart = new InputStreamAttachmentPart(attachmentParts.next());
-
-					XmlBuilder attachment = new XmlBuilder("attachment");
-					attachments.addSubElement(attachment);
-					XmlBuilder sessionKey = new XmlBuilder("sessionKey");
-					sessionKey.setValue("attachment" + i);
-					attachment.addSubElement(sessionKey);
-					pipelineSession.put("attachment" + i, attachmentPart.getInputStream());
-					log.debug(getLogPrefix(correlationId)+"adding attachment [attachment" + i+"] to session");
-
-					@SuppressWarnings("unchecked")
-					Iterator<MimeHeader> attachmentMimeHeaders = attachmentPart.getAllMimeHeaders();
-					attachment.addSubElement(getMimeHeadersXml(attachmentMimeHeaders));
-				} catch (SOAPException e) {
-					log.warn("Could not store attachment in session key", e);
+		try (PipeLineSession pipelineSession = new PipeLineSession()) {
+			String correlationId = Misc.createSimpleUUID();
+			log.debug(getLogPrefix(correlationId)+"received message");
+			String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;
+	
+			if (request == null) {
+				String faultcode = "soap:Server";
+				String faultstring = "SOAPMessage is null";
+				String httpRequestMethod = (String)webServiceContext.getMessageContext()
+						.get(MessageContext.HTTP_REQUEST_METHOD);
+				if (!"POST".equals(httpRequestMethod)) {
+					faultcode = "soap:Client";
+					faultstring = "Request was send using '" + httpRequestMethod + "' instead of 'POST'";
 				}
-				i++;
+				result =
+						"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
+						"<soap:Body><soap:Fault>" +
+						"<faultcode>" + faultcode + "</faultcode>" +
+						"<faultstring>" + faultstring + "</faultstring>" +
+						"</soap:Fault></soap:Body></soap:Envelope>";
 			}
-			pipelineSession.put("attachments", attachments.toXML());
-
-			// Transform SOAP message to string
-			String message;
-			try {
-				SOAPPart part = request.getSOAPPart();
-				try {
-					if(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE.equals(part.getEnvelope().getNamespaceURI()))
-						soapProtocol = SOAPConstants.SOAP_1_2_PROTOCOL;
-				} catch (SOAPException e) {
-					log.error("unable to determine SOAP URI NS type, falling back to SOAP 1.1", e);
+			else {
+				// Make mime headers in request available as session key
+				@SuppressWarnings("unchecked")
+				Iterator<MimeHeader> mimeHeaders = request.getMimeHeaders().getAllHeaders();
+				String mimeHeadersXml = getMimeHeadersXml(mimeHeaders).toXML();
+				pipelineSession.put("mimeHeaders", mimeHeadersXml);
+	
+				// Make attachments in request (when present) available as session keys
+				int i = 1;
+				XmlBuilder attachments = new XmlBuilder("attachments");
+				@SuppressWarnings("unchecked")
+				Iterator<AttachmentPart> attachmentParts = request.getAttachments();
+				while (attachmentParts.hasNext()) {
+					try {
+						InputStreamAttachmentPart attachmentPart = new InputStreamAttachmentPart(attachmentParts.next());
+	
+						XmlBuilder attachment = new XmlBuilder("attachment");
+						attachments.addSubElement(attachment);
+						XmlBuilder sessionKey = new XmlBuilder("sessionKey");
+						sessionKey.setValue("attachment" + i);
+						attachment.addSubElement(sessionKey);
+						pipelineSession.put("attachment" + i, attachmentPart.getInputStream());
+						log.debug(getLogPrefix(correlationId)+"adding attachment [attachment" + i+"] to session");
+	
+						@SuppressWarnings("unchecked")
+						Iterator<MimeHeader> attachmentMimeHeaders = attachmentPart.getAllMimeHeaders();
+						attachment.addSubElement(getMimeHeadersXml(attachmentMimeHeaders));
+					} catch (SOAPException e) {
+						log.warn("Could not store attachment in session key", e);
+					}
+					i++;
 				}
-
-				message = XmlUtils.nodeToString(part);
-				log.debug(getLogPrefix(correlationId)+"transforming from SOAP message");
-			} catch (TransformerException e) {
-				String m = "Could not transform SOAP message to string";
-				log.error(m, e);
-				throw new WebServiceException(m, e);
+				pipelineSession.put("attachments", attachments.toXML());
+	
+				// Transform SOAP message to string
+				String message;
+				try {
+					SOAPPart part = request.getSOAPPart();
+					try {
+						if(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE.equals(part.getEnvelope().getNamespaceURI()))
+							soapProtocol = SOAPConstants.SOAP_1_2_PROTOCOL;
+					} catch (SOAPException e) {
+						log.error("unable to determine SOAP URI NS type, falling back to SOAP 1.1", e);
+					}
+	
+					message = XmlUtils.nodeToString(part);
+					log.debug(getLogPrefix(correlationId)+"transforming from SOAP message");
+				} catch (TransformerException e) {
+					String m = "Could not transform SOAP message to string";
+					log.error(m, e);
+					throw new WebServiceException(m, e);
+				}
+				pipelineSession.put("soapProtocol", soapProtocol);
+	
+				// Process message via WebServiceListener
+				ISecurityHandler securityHandler = new WebServiceContextSecurityHandler(webServiceContext);
+				pipelineSession.setSecurityHandler(securityHandler);
+				pipelineSession.put(PipeLineSession.HTTP_REQUEST_KEY, webServiceContext.getMessageContext().get(MessageContext.SERVLET_REQUEST));
+				pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, webServiceContext.getMessageContext().get(MessageContext.SERVLET_RESPONSE));
+	
+				try {
+					log.debug(getLogPrefix(correlationId)+"processing message");
+					result = processRequest(correlationId, new Message(message), pipelineSession).asString();
+				} catch (ListenerException | IOException e) {
+					String m = "Could not process SOAP message: " + e.getMessage();
+					log.error(m);
+					throw new WebServiceException(m, e);
+				}
 			}
-			pipelineSession.put("soapProtocol", soapProtocol);
-
-			// Process message via WebServiceListener
-			ISecurityHandler securityHandler = new WebServiceContextSecurityHandler(webServiceContext);
-			pipelineSession.setSecurityHandler(securityHandler);
-			pipelineSession.put(IPipeLineSession.HTTP_REQUEST_KEY, webServiceContext.getMessageContext()
-					.get(MessageContext.SERVLET_REQUEST));
-			pipelineSession.put(IPipeLineSession.HTTP_RESPONSE_KEY, webServiceContext.getMessageContext()
-					.get(MessageContext.SERVLET_RESPONSE));
-
+	
+			// Transform result string to SOAP message
+			SOAPMessage soapMessage = null;
 			try {
-				log.debug(getLogPrefix(correlationId)+"processing message");
-				result = processRequest(correlationId, new Message(message), pipelineSession).asString();
-			} catch (ListenerException | IOException e) {
-				String m = "Could not process SOAP message: " + e.getMessage();
+				log.debug(getLogPrefix(correlationId)+"transforming to SOAP message");
+				soapMessage = getMessageFactory(soapProtocol).createMessage();
+				StreamSource streamSource = new StreamSource(new StringReader(result));
+				soapMessage.getSOAPPart().setContent(streamSource);
+			} catch (SOAPException e) {
+				String m = "Could not transform string to SOAP message";
 				log.error(m);
 				throw new WebServiceException(m, e);
 			}
-		}
-
-		// Transform result string to SOAP message
-		SOAPMessage soapMessage = null;
-		try {
-			log.debug(getLogPrefix(correlationId)+"transforming to SOAP message");
-			soapMessage = getMessageFactory(soapProtocol).createMessage();
-			StreamSource streamSource = new StreamSource(new StringReader(result));
-			soapMessage.getSOAPPart().setContent(streamSource);
-		} catch (SOAPException e) {
-			String m = "Could not transform string to SOAP message";
-			log.error(m);
-			throw new WebServiceException(m, e);
-		}
-
-		String multipartXml = (String) pipelineSession.get(attachmentXmlSessionKey);
-		log.debug(getLogPrefix(correlationId)+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
-		if (StringUtils.isNotEmpty(multipartXml)) {
-			Element partsElement;
-			try {
-				partsElement = XmlUtils.buildElement(multipartXml);
-			}
-			catch (DomBuilderException e) {
-				String m = "error building multipart xml";
-				log.error(m, e);
-				throw new WebServiceException(m, e);
-			}
-			Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-			if (parts==null || parts.size()==0) {
-				log.warn(getLogPrefix(correlationId)+"no part(s) in multipart xml [" + multipartXml + "]");
-			}
-			else {
-				Iterator<Node> iter = parts.iterator();
-				while (iter.hasNext()) {
-					Element partElement = (Element) iter.next();
-					//String partType = partElement.getAttribute("type");
-					String partName = partElement.getAttribute("name");
-					String partSessionKey = partElement.getAttribute("sessionKey");
-					String partMimeType = partElement.getAttribute("mimeType");
-					Object partObject = pipelineSession.get(partSessionKey);
-					if (partObject instanceof InputStream) {
-						InputStream fis = (InputStream) partObject;
-
-						DataHandler dataHander = null;
+	
+			String multipartXml = (String) pipelineSession.get(attachmentXmlSessionKey);
+			log.debug(getLogPrefix(correlationId)+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
+			if (StringUtils.isNotEmpty(multipartXml)) {
+				Element partsElement;
+				try {
+					partsElement = XmlUtils.buildElement(multipartXml);
+				}
+				catch (DomBuilderException e) {
+					String m = "error building multipart xml";
+					log.error(m, e);
+					throw new WebServiceException(m, e);
+				}
+				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
+				if (parts==null || parts.size()==0) {
+					log.warn(getLogPrefix(correlationId)+"no part(s) in multipart xml [" + multipartXml + "]");
+				}
+				else {
+					Iterator<Node> iter = parts.iterator();
+					while (iter.hasNext()) {
+						Element partElement = (Element) iter.next();
+						//String partType = partElement.getAttribute("type");
+						String partName = partElement.getAttribute("name");
+						String partSessionKey = partElement.getAttribute("sessionKey");
+						String partMimeType = partElement.getAttribute("mimeType");
+						Message partObject = pipelineSession.getMessage(partSessionKey);
+						DataHandler dataHander;
 						try {
-							dataHander = new DataHandler(new ByteArrayDataSource(fis, partMimeType));
+							if (partObject.isBinary()) {
+								dataHander = new DataHandler(new ByteArrayDataSource(partObject.asByteArray(), partMimeType));
+							} else {
+								dataHander = new DataHandler(new ByteArrayDataSource(partObject.asString(), partMimeType));
+							}
 						} catch (IOException e) {
 							String m = "Unable to add session key '" + partSessionKey + "' as attachment";
 							log.error(m, e);
@@ -234,23 +231,13 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						attachmentPart.setContentId(partName);
 						soapMessage.addAttachmentPart(attachmentPart);
 
-						log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] with value ["+partObject+"] and name ["+partName+"]");
-					}
-					else { //String
-						String partValue = (String) partObject;
-
-						DataHandler dataHander = new DataHandler(new ByteArrayDataSource(partValue, partMimeType));
-						AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-						attachmentPart.setContentId(partName);
-						soapMessage.addAttachmentPart(attachmentPart);
-
-						log.debug(getLogPrefix(correlationId)+"appended stringpart ["+partSessionKey+"] with value ["+partValue+"]");
+						log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] name ["+partName+"]");
 					}
 				}
 			}
+	
+			return soapMessage;
 		}
-
-		return soapMessage;
 	}
 
 	/**
@@ -284,7 +271,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	 * @param pipelineSession messageContext (containing attachments if available)
 	 * @return response to send back
 	 */
-	abstract Message processRequest(String correlationId, Message message, IPipeLineSession pipelineSession) throws ListenerException;
+	abstract Message processRequest(String correlationId, Message message, PipeLineSession pipelineSession) throws ListenerException;
 
 	/**
 	 * SessionKey containing attachment information, or null if no attachments

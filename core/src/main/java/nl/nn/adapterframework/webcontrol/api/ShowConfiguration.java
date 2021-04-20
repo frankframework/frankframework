@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 WeAreFrank!
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.xml.sax.SAXException;
 
@@ -56,7 +56,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -166,19 +166,22 @@ public final class ShowConfiguration extends Base {
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
-		if(configuration == null){
+		if(configuration == null) {
 			throw new ApiException("Configuration not found!");
 		}
+		if(!configuration.isActive()) {
+			throw new ApiException("Configuration not active", configuration.getConfigurationException());
+		}
 
-		Map<String, Object> response = new HashMap<String, Object>();
-		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
-		List<String> errors = new ArrayList<String>();
+		Map<String, Object> response = new HashMap<>();
+		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
+		List<String> errors = new ArrayList<>();
 
 		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state.equals(RunStateEnum.STARTED)) {
-				for (Receiver receiver: adapter.getReceivers()) {
+				for (Receiver<?> receiver: adapter.getReceivers()) {
 					RunStateEnum rState = receiver.getRunState();
 	
 					if(!rState.equals(RunStateEnum.STARTED)) {
@@ -366,18 +369,21 @@ public final class ShowConfiguration extends Base {
 
 		fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
+		Map<String, String> result = new LinkedHashMap<String, String>();
 		try {
 			if(multiple_configs) {
 				try {
-					ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activate_config, automatic_reload, file, user);
+					result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activate_config, automatic_reload, file, user);
 				} catch (IOException e) {
 					throw new ApiException(e);
 				}
 			} else {
-				ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, fileName, file, user);
+				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, fileName, file, user);
+				if(configName != null) {
+					result.put(configName, "loaded");
+				}
 			}
-
-			return Response.status(Response.Status.CREATED).build();
+			return Response.status(Response.Status.CREATED).entity(result).build();
 		} catch (Exception e) {
 			throw new ApiException("Failed to upload Configuration", e);
 		}
@@ -423,18 +429,18 @@ public final class ShowConfiguration extends Base {
 	}
 
 
-	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String jmsRealm) {
+	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String dataSourceName) {
 		List<Map<String, Object>> returnMap = new ArrayList<Map<String, Object>>();
 
-		if (StringUtils.isEmpty(jmsRealm)) {
-			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(jmsRealm)) {
+		if (StringUtils.isEmpty(dataSourceName)) {
+			dataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+			if (StringUtils.isEmpty(dataSourceName)) {
 				return null;
 			}
 		}
 
 		FixedQuerySender qs = getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(jmsRealm);
+		qs.setDatasourceName(dataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {
 			qs.configure();

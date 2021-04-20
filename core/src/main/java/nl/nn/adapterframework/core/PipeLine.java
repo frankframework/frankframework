@@ -21,8 +21,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -98,7 +99,8 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author  Johan Verrips
  */
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics {
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IScopeProvider {
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private PipeLineProcessor pipeLineProcessor;
 
@@ -469,14 +471,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 
-//	public boolean isCongestionSensing() {
-//		return congestionSensors.isCongestionSensing();
-//	}
-//
-//	public INamedObject isCongested() throws SenderException {
-//		return congestionSensors.isCongested();
-//	}
-
 
 	/**
 	 * The <code>process</code> method does the processing of a message.<br/>
@@ -488,7 +482,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
-	public PipeLineResult process(String messageId, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeLineResult process(String messageId, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
 		if (transformNullMessage != null && message.isEmpty()) {
 			message = transformNullMessage;
 		}
@@ -517,7 +511,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 		IPipe nextPipe=getPipe(path);
 		if (nextPipe==null) {
-			throw new PipeRunException(pipe, "Pipeline of adapter ["+ getOwner().getName()+"] got an erroneous definition from pipe ["+pipe.getName()+"]. Pipe to execute ["+path+ "] is not defined.");
+			throw new PipeRunException(pipe, "Pipeline of adapter ["+ getOwner().getName()+"] got an erroneous definition from pipe ["+pipe.getName()+"]. Target to execute ["+path+ "] is not defined as a Pipe or an Exit.");
 		}
 		return nextPipe;
 	}

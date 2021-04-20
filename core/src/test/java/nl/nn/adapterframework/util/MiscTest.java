@@ -27,13 +27,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
  * Misc Tester.
@@ -302,6 +304,32 @@ public class MiscTest {
 		assertEquals("LeBron//James", res);
 	}
 
+	@Test
+	public void testConcatStringsFirstEmpty() throws Exception {
+		String a = "";
+		String b = "James";
+		String seperator = "//";
+		String res = Misc.concatStrings(a, seperator, b);
+		assertEquals("James", res);
+	}
+
+	@Test
+	public void testConcatStringsSecondEmpty() throws Exception {
+		String a = "LeBron";
+		String b = "";
+		String seperator = "//";
+		String res = Misc.concatStrings(a, seperator, b);
+		assertEquals("LeBron", res);
+	}
+	
+	@Test
+	public void testConcat() throws Exception {
+		String seperator = "|";
+		String res = Misc.concat(seperator, null, "a", "b", null, "c", null);
+		assertEquals("a|b|c", res);
+	}
+	
+	
 	/**
 	 * Method: hide(String string)
 	 */
@@ -389,13 +417,13 @@ public class MiscTest {
 	 */
 	@Test
 	public void testCopyContext() throws Exception {
-		Map<String, Object> context1 = new HashMap<>();
-		Map<String, Object> context2 = new HashMap<>();
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
 		String keys = "a,b";
-		context1.put("a", 15);
-		context1.put("b", 16);
-		Misc.copyContext(keys, context1, context2);
-		assertTrue(context1.equals(context2));
+		from.put("a", 15);
+		from.put("b", 16);
+		Misc.copyContext(keys, from, to);
+		assertTrue(from.equals(to));
 	}
 
 	/**

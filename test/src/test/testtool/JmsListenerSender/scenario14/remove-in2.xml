@@ -1,0 +1,5 @@
+<remove>
+	<jmsRealm>qcf</jmsRealm>
+	<destinationName>jms/i4testiaf_out</destinationName>
+	<destinationType>QUEUE</destinationType>
+</remove>

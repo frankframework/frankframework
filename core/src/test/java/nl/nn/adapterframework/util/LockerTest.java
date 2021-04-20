@@ -11,61 +11,49 @@ import java.sql.SQLException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.sql.DataSource;
+import javax.naming.NamingException;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+import org.springframework.transaction.support.ResourceTransactionManager;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.JdbcTestBase;
+import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
+import nl.nn.adapterframework.jdbc.dbms.ConcurrentManagedTransactionTester;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
-public class LockerTest extends JdbcTestBase {
+public class LockerTest extends TransactionManagerTestBase {
 
 	private Locker locker;
-	private TransactionAwareDataSourceProxy datasource;
-	private DataSourceTransactionManager transactionManager;
+	
+	private boolean tableCreated = false;
 	
 	@Before
-	public void setup() throws JdbcException, SQLException {
-		if(!dbmsSupport.isTablePresent(connection, "IBISLOCK")) {
+	public void setup() throws JdbcException {
+		if (!dbmsSupport.isTablePresent(connection, "IBISLOCK")) {
 			createDbTable();
+			tableCreated = true;
 		}
 	}
 
-	public LockerTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException {
+	@After
+	public void teardown() throws JdbcException {
+		if (tableCreated) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE IBISLOCK"); // drop the table if it was created, to avoid interference with Liquibase
+		}
+	}
+
+	public LockerTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException, NamingException {
 		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
 
-		locker = new Locker() {
-
-			@Override
-			protected DataSource getDatasource() {
-				return datasource;
-			}
-
-			@Override
-			public Connection getConnection() throws JdbcException {
-				try {
-					return getDbConnection(); //transactionManager.getDataSource().getConnection();
-				} catch (SQLException e) {
-					throw new JdbcException(e);
-				}
-			}
-
-		};
+		locker = new Locker();
+		locker.setDatasourceName(DEFAULT_DATASOURCE_NAME);
+		locker.setDataSourceFactory(dataSourceFactory);
 		locker.setFirstDelay(0);
-		DriverManagerDataSource dmds = new DriverManagerDataSource(url, userid, password);
-		datasource = new TransactionAwareDataSourceProxy(dmds);
-		transactionManager = new DataSourceTransactionManager(dmds);
-		transactionManager.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
 		
 	}
 
@@ -101,7 +89,7 @@ public class LockerTest extends JdbcTestBase {
 	public void testBasicLockWithTransactionManager() throws Exception {
 		cleanupLocks();
 		String objectId = null;
-		locker.setTxManager(transactionManager);
+		locker.setTxManager(txManager);
 		locker.setObjectId("myLocker");
 		locker.configure();
 		objectId = locker.acquire();
@@ -114,7 +102,7 @@ public class LockerTest extends JdbcTestBase {
 	public void testBasicLockWithTransactionManagerSecondFails() throws Exception {
 		cleanupLocks();
 		String objectId = null;
-		locker.setTxManager(transactionManager);
+		locker.setTxManager(txManager);
 		locker.setObjectId("myLocker");
 		locker.configure();
 		objectId = locker.acquire();
@@ -130,7 +118,7 @@ public class LockerTest extends JdbcTestBase {
 	@Test
 	public void testTakeLockBeforeExecutingInsertInOtherThread() throws Exception {
 		cleanupLocks();
-		locker.setTxManager(transactionManager);
+		locker.setTxManager(txManager);
 		locker.setObjectId("myLocker");
 		locker.configure();
 		
@@ -139,11 +127,11 @@ public class LockerTest extends JdbcTestBase {
 			Semaphore otherReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
 			Semaphore otherFinished = new Semaphore();
-			LockerTester lockerTester = new LockerTester();
+			LockerTester lockerTester = new LockerTester(txManager);
 
-			lockerTester.setBeginDone(otherReady);
-			lockerTester.setWaitBeforeInsert(otherContinue);
-			lockerTester.setCommitDone(otherFinished);
+			lockerTester.setInitActionDone(otherReady);
+			lockerTester.setWaitBeforeAction(otherContinue);
+			lockerTester.setFinalizeActionDone(otherFinished);
 			lockerTester.start();
 			
 			otherReady.acquire();
@@ -164,7 +152,7 @@ public class LockerTest extends JdbcTestBase {
 	@Test
 	public void testTakeLockFailsAfterExecutingInsertInOtherThread() throws Exception {
 		cleanupLocks();
-		locker.setTxManager(transactionManager);
+		locker.setTxManager(txManager);
 		locker.setObjectId("myLocker");
 		locker.configure();
 		
@@ -173,11 +161,11 @@ public class LockerTest extends JdbcTestBase {
 			Semaphore otherReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
 			Semaphore otherFinished = new Semaphore();
-			LockerTester lockerTester = new LockerTester();
+			LockerTester lockerTester = new LockerTester(txManager);
 
-			lockerTester.setInsertDone(otherReady);
-			lockerTester.setWaitBeforeCommit(otherContinue);
-			lockerTester.setCommitDone(otherFinished);
+			lockerTester.setActionDone(otherReady);
+			lockerTester.setWaitAfterAction(otherContinue);
+			lockerTester.setFinalizeActionDone(otherFinished);
 			lockerTester.start();
 			
 			otherReady.acquire();
@@ -204,7 +192,7 @@ public class LockerTest extends JdbcTestBase {
 	@Test
 	public void testLockWaitTimeout() throws Exception {
 		cleanupLocks();
-		locker.setTxManager(transactionManager);
+		locker.setTxManager(txManager);
 		locker.setObjectId("myLocker");
 		locker.setLockWaitTimeout(1);
 		locker.configure();
@@ -214,11 +202,11 @@ public class LockerTest extends JdbcTestBase {
 			Semaphore otherInsertReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
 			Semaphore otherFinished = new Semaphore();
-			LockerTester lockerTester = new LockerTester();
+			LockerTester lockerTester = new LockerTester(txManager);
 
-			lockerTester.setInsertDone(otherInsertReady);
-			lockerTester.setWaitBeforeCommit(otherContinue);
-			lockerTester.setCommitDone(otherFinished);
+			lockerTester.setActionDone(otherInsertReady);
+			lockerTester.setWaitAfterAction(otherContinue);
+			lockerTester.setFinalizeActionDone(otherFinished);
 			lockerTester.start();
 			
 			otherInsertReady.acquire();
@@ -243,7 +231,7 @@ public class LockerTest extends JdbcTestBase {
 	@Test
 	public void testNoInsertAfterInsert() throws Exception {
 		cleanupLocks();
-		locker.setTxManager(transactionManager);
+		locker.setTxManager(txManager);
 		locker.setObjectId("myLocker");
 		locker.configure();
 		
@@ -252,24 +240,24 @@ public class LockerTest extends JdbcTestBase {
 			Semaphore waitBeforeInsert = new Semaphore();
 			Semaphore insertDone = new Semaphore();
 			Semaphore waitBeforeCommit = new Semaphore();
-			LockerTester other = new LockerTester();
+			LockerTester other = new LockerTester(txManager);
 
-			other.setWaitBeforeInsert(waitBeforeInsert);
-			other.setInsertDone(insertDone);
-			other.setWaitBeforeCommit(waitBeforeCommit);
+			other.setWaitBeforeAction(waitBeforeInsert);
+			other.setActionDone(insertDone);
+			other.setWaitAfterAction(waitBeforeCommit);
 
 			other.start();
 			
 			IbisTransaction mainItx = null;
-			if (transactionManager!=null) {
+			if (txManager!=null) {
 				TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
 				
-				mainItx = new IbisTransaction(transactionManager, txdef, "locker ");
+				mainItx = new IbisTransaction(txManager, txdef, "locker ");
 			}
 
 			try {
 				try {
-					try (Connection conn = datasource.getConnection()) {
+					try (Connection conn = txManagedDataSource.getConnection()) {
 						
 						waitBeforeInsert.release(); // now this thread has started its transaction, let the other thread do its insert
 						insertDone.acquire();		// and wait that to be finished
@@ -288,8 +276,8 @@ public class LockerTest extends JdbcTestBase {
 								log.debug("lock inserted");
 								fail("should not be possible to do a second insert");
 							} catch (SQLException e) {
-								if (locker.getDbmsSupport().isConstraintViolation(e)) {
-									log.debug("Caught expected UniqueConstraintViolation ("+e.getClass().getName()+"): "+e.getMessage());
+								if (locker.getDbmsSupport().isConstraintViolation(e) || e.getMessage().toLowerCase().contains("timeout")) {
+									log.debug("Caught expected UniqueConstraintViolation or Timeout ("+e.getClass().getName()+"): "+e.getMessage());
 								} else {
 									fail("Expected UniqueConstraintViolation, but was: ("+e.getClass().getName()+"): "+e.getMessage());
 								}
@@ -319,41 +307,37 @@ public class LockerTest extends JdbcTestBase {
 	public void testLockerUnlock() throws Exception {
 		cleanupLocks();
 		String lockObjectId = null; 
-		try(Connection conn = getDbConnection()){
 
-			locker.setTxManager(transactionManager);
-			locker.setTransactionAttribute("Required");
-			locker.setDbmsSupport(dbmsSupport);
-			locker.setObjectId("myLocker");
-			locker.configure();
-			lockObjectId = locker.acquire();
+		locker.setTxManager(txManager);
+		locker.setTransactionAttribute("Required");
+		locker.setDbmsSupport(dbmsSupport);
+		locker.setObjectId("myLocker");
+		locker.configure();
 
-			assertNotNull(lockObjectId);
-			assertEquals(1, getRowCount());
+		lockObjectId = locker.acquire();
 
-			locker.release(lockObjectId);
-			assertEquals(0, getRowCount());
+		assertNotNull(lockObjectId);
+		assertEquals(1, getRowCount());
 
-			lockObjectId = locker.acquire();
+		locker.release(lockObjectId);
+		assertEquals(0, getRowCount());
 
-			assertNotNull(lockObjectId);
-			assertEquals(1, getRowCount());
-		}
+		lockObjectId = locker.acquire();
+
+		assertNotNull(lockObjectId);
+		assertEquals(1, getRowCount());
 
 	}
 
-	public Connection getDbConnection() throws SQLException {
-		return datasource.getConnection();
-	}
-	public void cleanupLocks() throws JdbcException, SQLException {
+	public void cleanupLocks() throws JdbcException {
 		JdbcUtil.executeStatement(connection, "DELETE FROM IBISLOCK");
 	}
 
-	public int getRowCount() throws JdbcException, SQLException {
+	public int getRowCount() throws JdbcException {
 		return JdbcUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
 	}
 
-	private void createDbTable() throws JdbcException, SQLException {
+	private void createDbTable() throws JdbcException {
 		JdbcUtil.executeStatement(connection,
 				"CREATE TABLE IBISLOCK(" + 
 				"OBJECTID "+dbmsSupport.getTextFieldType()+"(100) NOT NULL PRIMARY KEY, " + 
@@ -364,46 +348,35 @@ public class LockerTest extends JdbcTestBase {
 	}
 	
 	
-	private class LockerTester extends Thread {
+	private class LockerTester extends ConcurrentManagedTransactionTester {
 
-		private @Setter Semaphore beginDone;
-		private @Setter Semaphore waitBeforeInsert;
-		private @Setter Semaphore insertDone;
-		private @Setter Semaphore waitBeforeCommit;
-		private @Setter Semaphore commitDone;
-		
-		private @Getter Exception caught;
-		
+		private Connection conn;
 
-		@Override
-		public void run() {
-			try {
-				TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
-				IbisTransaction mainItx = IbisTransaction.getTransaction(transactionManager, txDef, "locker tester");
-
-				if (beginDone!=null) beginDone.release();
-
-				try {
-					try (Connection conn = datasource.getConnection()) {
-						if (waitBeforeInsert!=null) waitBeforeInsert.acquire();
-						executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", "INSERT");
-						if (insertDone!=null) insertDone.release();
-						if (waitBeforeCommit!=null) waitBeforeCommit.acquire();
-					}
-				} finally {
-					if(mainItx != null) {
-						mainItx.commit();
-					}
-				}
-			
-			} catch (Exception e) {
-				log.warn("Exception in lockerTester: "+ e.getMessage());
-				caught = e;
-			} finally {
-				if (commitDone!=null) commitDone.release();
-			}
+		public LockerTester(ResourceTransactionManager txManager) {
+			super(txManager);
 		}
 
+		@Override
+		public void initAction() throws Exception {
+			super.initAction();
+			conn = txManagedDataSource.getConnection();
+		}
+		
+		@Override
+		public void action() throws Exception {
+			executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", QueryType.OTHER);
+		}
+
+		@Override
+		public void finalizeAction() throws Exception {
+			try {
+				if (conn!=null) {
+					conn.close();
+				}
+			} finally {
+				super.finalizeAction();
+			}
+		}
 		
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@ import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.FilterReader;
+import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.function.Function;
 import java.util.zip.ZipOutputStream;
@@ -36,7 +38,17 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.io.input.TeeInputStream;
+import org.apache.commons.io.input.TeeReader;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.io.output.TeeOutputStream;
+import org.apache.commons.io.output.TeeWriter;
+import org.apache.commons.io.output.ThresholdingOutputStream;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import lombok.SneakyThrows;
 
 /**
  * Functions to read and write from one stream to another.
@@ -44,8 +56,13 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  */
 public class StreamUtil {
+
 	public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
+	public static final int DEFAULT_STREAM_CAPTURE_LIMIT=10000;
+
+	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
+	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
 	
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
@@ -220,24 +237,81 @@ public class StreamUtil {
 		return zipOutputStream;
 	}
 
-	public static InputStream closeOnClose(InputStream stream, AutoCloseable resource) {
-		class ResourceClosingInputStreamFilter extends FilterInputStream {
-			public ResourceClosingInputStreamFilter(InputStream in) {
-				super(in);
-			}
+	public static InputStream onClose(InputStream stream, Runnable onClose) {
+		return new FilterInputStream(stream) {
 			@Override
 			public void close() throws IOException {
-				try (AutoCloseable closeable = resource) {
+				try {
 					super.close();
-				} catch (Exception e) {
-					throw new IOException(e);
+				} finally {
+					onClose.run();
 				}
 			}
 		};
-
-		return new ResourceClosingInputStreamFilter(stream);
 	}
 
+	public static OutputStream onClose(OutputStream stream, Runnable onClose) {
+		return new FilterOutputStream(stream) {
+			@Override
+			public void close() throws IOException {
+				try {
+					super.close();
+				} finally {
+					onClose.run();
+				}
+			}
+		};
+	}
+	
+	public static Reader onClose(Reader reader, Runnable onClose) {
+		return new FilterReader(reader) {
+			@Override
+			public void close() throws IOException {
+				try {
+					super.close();
+				} finally {
+					onClose.run();
+				}
+			}
+		};
+	}
+
+	public static Writer onClose(Writer writer, Runnable onClose) {
+		return new FilterWriter(writer) {
+			@Override
+			public void close() throws IOException {
+				try {
+					super.close();
+				} finally {
+					onClose.run();
+				}
+			}
+		};
+	}
+
+	@SneakyThrows // throw the IOException thrown by resource.close(), without declaring it as a checked Exception (that would be incompatible with the use in lambda's below) 
+	private static void closeResource(AutoCloseable resource) {
+		resource.close();
+	}
+
+	public static InputStream closeOnClose(InputStream stream, AutoCloseable resource) {
+		return onClose(stream, () -> closeResource(resource));
+	}
+
+	public static OutputStream closeOnClose(OutputStream stream, AutoCloseable resource) {
+		return onClose(stream, () -> closeResource(resource));
+	}
+
+	public static Reader closeOnClose(Reader reader, AutoCloseable resource) {
+		return onClose(reader, () -> closeResource(resource));
+	}
+	
+	public static Writer closeOnClose(Writer writer, AutoCloseable resource) {
+		return onClose(writer, () -> closeResource(resource));
+	}
+
+	
+	
 	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {
 		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; }); 
 	}
@@ -329,41 +403,152 @@ public class StreamUtil {
 		return new WatchedInputStream(stream);
 	}
 
-
-	public static Reader closeOnClose(Reader reader, AutoCloseable resource) {
-		class ResourceClosingReaderFilter extends FilterReader {
-			public ResourceClosingReaderFilter(Reader in) {
-				super(in);
+	public static OutputStream limitSize(OutputStream stream, int maxSize) {
+		return new ThresholdingOutputStream(maxSize) {
+			
+			@Override
+			protected void thresholdReached() throws IOException {
+				stream.close();
 			}
+			
+			@Override
+			protected OutputStream getStream() throws IOException {
+				if (isThresholdExceeded()) {
+					return NullOutputStream.NULL_OUTPUT_STREAM;
+				}
+				return stream;
+			}
+
+		};
+	}
+
+	public static Writer limitSize(Writer writer, int maxSize) {
+		return new Writer() {
+			
+			private long written;
+
+			@Override
+			public void write(char[] buffer, int offset, int length) throws IOException {
+				if (written<maxSize) {
+					writer.write(buffer, offset, length);
+					if ((written+=length)>=maxSize) {
+						writer.close();
+					}
+				}
+			}
+
+			@Override
+			public void flush() throws IOException {
+				writer.flush();
+			}
+
 			@Override
 			public void close() throws IOException {
-				try (AutoCloseable closeable = resource) {
-					super.close();
-				} catch (Exception e) {
-					throw new IOException(e);
+				if (written<maxSize) {
+					writer.close();
 				}
 			}
 		};
+	}
 
-		return new ResourceClosingReaderFilter(reader);
+
+	public static InputStream captureInputStream(InputStream in, OutputStream capture) {
+		return captureInputStream(in, capture, 10000, true);
+	}
+	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize, boolean captureRemainingOnClose) {
+		
+		CountingInputStream counter = new CountingInputStream(in);
+		return new TeeInputStream(counter, limitSize(capture, maxSize), true) {
+			
+			@Override
+			public void close() throws IOException {
+				try {
+					if (counter.getByteCount()<maxSize && available()>0) {
+						// Make the bytes available for debugger even when the stream was not used (might be because the
+						// pipe or sender that normally consumes the stream is stubbed by the debugger)
+						int len = read(new byte[maxSize]);
+						if (log.isTraceEnabled()) log.trace(len+" bytes available at close");
+					}
+				} finally {
+					super.close();
+				}
+			}
+
+		};
+		
+	}
+
+	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture) {
+		return captureOutputStream(stream, capture, DEFAULT_STREAM_CAPTURE_LIMIT);
+	}
+	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture, int maxSize) {
+		return new TeeOutputStream(stream, limitSize(capture,maxSize));
 	}
 	
-	public static OutputStream closeOnClose(OutputStream stream, AutoCloseable resource) {
-		class ResourceClosingOutputStreamFilter extends FilterOutputStream {
-			public ResourceClosingOutputStreamFilter(OutputStream out) {
-				super(out);
+	private static interface ReadMethod {
+		int read() throws IOException;
+	}
+
+	public static Reader captureReader(Reader in, Writer capture) {
+		return captureReader(in, capture, 10000, true);
+	}
+	public static Reader captureReader(Reader in, Writer capture, int maxSize, boolean captureRemainingOnClose) {
+		return new TeeReader(in, limitSize(capture, maxSize), true) {
+			
+			private int charsRead;
+			
+			
+			private int readCounted(ReadMethod reader) throws IOException {
+				int len = reader.read();
+				if (len>0) {
+					charsRead+=len;
+				}
+				return len;
 			}
+			
+			@Override
+			public int read() throws IOException {
+				return readCounted(() -> super.read());
+			}
+
+			@Override
+			public int read(char[] chr) throws IOException {
+				return readCounted(() -> super.read(chr));
+			}
+
+			@Override
+			public int read(char[] chr, int st, int end) throws IOException {
+				return readCounted(() -> super.read(chr, st, end));
+			}
+
+			@Override
+			public int read(CharBuffer target) throws IOException {
+				return readCounted(() -> super.read(target));
+			}
+
 			@Override
 			public void close() throws IOException {
-				try (AutoCloseable closeable = resource) {
+				try {
+					if (charsRead<maxSize && ready()) {
+						// Make the bytes available for debugger even when the stream was not used (might be because the
+						// pipe or sender that normally consumes the stream is stubbed by the debugger)
+						int len = read(new char[maxSize]);
+						if (log.isTraceEnabled()) log.trace(len+" chararacters available at close");
+					}
+				} finally {
 					super.close();
-				} catch (Exception e) {
-					throw new IOException(e);
 				}
 			}
-		};
 
-		return new ResourceClosingOutputStreamFilter(stream);
+		};
 	}
+
+	public static Writer captureWriter(Writer writer, Writer capture) {
+		return captureWriter(writer, capture, DEFAULT_STREAM_CAPTURE_LIMIT);
+	}
+	public static Writer captureWriter(Writer writer, Writer capture, int maxSize) {
+		return new TeeWriter(writer, limitSize(capture,maxSize));
+	}
+
 
 }

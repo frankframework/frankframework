@@ -70,7 +70,14 @@ class InfoBuilderSource {
 
 	private static final Set<String> JAVA_BOXED = new HashSet<String>(Arrays.asList(new String[] {
 			JAVA_STRING, JAVA_INTEGER, JAVA_BOOLEAN, JAVA_LONG, JAVA_BYTE, JAVA_SHORT}));
-	
+
+	// All types that are accepted by method isGetterOrSetter() 
+	static final Set<String> ALLOWED_SETTER_TYPES = new HashSet<>();
+	static {
+		ALLOWED_SETTER_TYPES.addAll(primitiveToBoxed.keySet());
+		ALLOWED_SETTER_TYPES.addAll(JAVA_BOXED);
+	}
+
 	private static Logger log = LogUtil.getLogger(InfoBuilderSource.class);
 
 	static Map<String, String> ignores = new HashMap<String, String>();
@@ -142,6 +149,9 @@ class InfoBuilderSource {
 	static {
 		// Exclude classes that will give conflicts with existing, non-compatible bean definition of same name and class
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.esb\\.WsdlGeneratorPipe");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.SapSender");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.SapListener");
+		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.SapLUWManager");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapSender");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapListener");
 		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapLUWManager");
@@ -272,7 +282,9 @@ class InfoBuilderSource {
 				excludeFilter = excludeFilter.substring(0, excludeFilter.lastIndexOf('.') + 1) + ".*";
 				excludeFilters.add(excludeFilter);
 				addExcludeFilter(scanner, excludeFilter);
-				log.warn(excludeFilter + e.getMessage() + ": " + e.getStackTrace());
+				if(log.isWarnEnabled()) {
+					log.warn(excludeFilter, e);
+				}
 			}
 		}
 		String[] beans = beanDefinitionRegistry.getBeanDefinitionNames();
@@ -360,9 +372,9 @@ class InfoBuilderSource {
 	static List<ChildIbisBeanMapping> getChildIbisBeanMappings() throws IOException, SAXException {
 		IbisBeanMappingParser digesterRulesParser = new IbisBeanMappingParser();
 		try {
-			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL(IbisDocPipe.class, "digester-rules.xml")), digesterRulesParser);
+			XmlUtils.parseXml(Misc.resourceToString(ClassUtils.getResourceURL("digester-rules.xml")), digesterRulesParser);
 		} catch (Exception e) {
-			log.error("Could nog parse digester-rules.xml: " + e.getStackTrace());
+			log.error("Could nog parse digester-rules.xml", e);
 			throw e;
 		}
 		return digesterRulesParser.getChildIbisBeanMappings();

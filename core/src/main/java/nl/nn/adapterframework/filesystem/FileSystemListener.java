@@ -16,13 +16,13 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -84,6 +84,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	
 	private Set<ProcessState> knownProcessStates;
 	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
+	private String wildCard;
+	private String excludeWildCard;
 
 	protected abstract FS createFileSystem();
 
@@ -199,7 +201,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		FS fileSystem=getFileSystem();
-		try(DirectoryStream<F> ds = fileSystem.listFiles(getInputFolder())) {
+		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildCard(), getExcludeWildCard())) {
+			if (ds==null) {
+				return null;
+			}
 			Iterator<F> it = ds.iterator();
 			if (it==null || !it.hasNext()) {
 				return null;
@@ -217,10 +222,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 						continue;
 					}
 				}
-				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					if (threadContext!=null) threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
-					F inprocessFile = FileSystemUtils.moveFile(fileSystem, file, getInProcessFolder(), false, 0, isCreateFolders());
-					return inprocessFile;
+				if (threadContext!=null && StringUtils.isNotEmpty(getInProcessFolder())) {
+					threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
 				}
 				return file;
 			}
@@ -322,7 +325,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				messageId+="-"+DateUtils.format(fileSystem.getModificationTime(file));
 			}
 			if (threadContext!=null) {
-				PipeLineSessionBase.setListenerParameters(threadContext, messageId, messageId, null, null);
+				PipeLineSession.setListenerParameters(threadContext, messageId, messageId, null, null);
 				if (attributes!=null) {
 					threadContext.putAll(attributes);
 				}
@@ -340,12 +343,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	public boolean changeProcessState(F message, ProcessState toState, Map<String,Object> context) throws ListenerException {
+	public F changeProcessState(F message, ProcessState toState) throws ListenerException {
 		try {
-			if (knownProcessStates().contains(toState)) {
-				getFileSystem().moveFile(message, getStateFolder(toState), false);
+			if (!fileSystem.exists(message) || !knownProcessStates().contains(toState)) {
+				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
 			}
-			return false;
+			return getFileSystem().moveFile(message, getStateFolder(toState), false);
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message)+"]", e);
 		}
@@ -546,6 +549,22 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 	public boolean isDisableMessageBrowsers() {
 		return disableMessageBrowsers;
+	}
+
+	@IbisDoc({"16", "Filter of files to look for in inputFolder e.g. '*.inp'.", ""})
+	public void setWildCard(String wildCard) {
+		this.wildCard = wildCard;
+	}
+	public String getWildCard() {
+		return wildCard;
+	}
+
+	@IbisDoc({"17", "Filter of files to be excluded when looking in inputFolder.", ""})
+	public void setExcludeWildCard(String excludeWildCard) {
+		this.excludeWildCard = excludeWildCard;
+	}
+	public String getExcludeWildCard() {
+		return excludeWildCard;
 	}
 
 }

@@ -25,16 +25,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -99,66 +98,67 @@ public class RestListenerServlet extends HttpServlet {
 		if (log.isTraceEnabled()) log.trace("path ["+path+"] If-Match ["+ifMatch+"] If-None-Match ["+ifNoneMatch+"] contentType ["+contentType+"]");
 		
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-		IPipeLineSession messageContext= new PipeLineSessionBase();
-		messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
-
-		Enumeration paramnames=request.getParameterNames();
-		while (paramnames.hasMoreElements()) {
-			String paramname = (String)paramnames.nextElement();
-			String paramvalue = request.getParameter(paramname);
-			if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
-			messageContext.put(paramname, paramvalue);
-		}
-		if (!ServletFileUpload.isMultipartContent(request)) {
-			body=Misc.streamToString(request.getInputStream(),"\n",false);
-		}
-		try {
-			log.trace("RestListenerServlet calling service ["+path+"]");
-			String result=sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
-
-			if(result == null && messageContext.containsKey("exitcode") && messageContext.containsKey("validateEtag")) {
-				int status = Integer.parseInt( ""+ messageContext.get("exitcode"));
-				response.setStatus(status);
-				//TODO: overbodig?
-				if(log.isDebugEnabled()) log.trace("aborted request with status ["+status+"]");
-				return;
+		try (PipeLineSession messageContext= new PipeLineSession()) {
+			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
+	
+			Enumeration paramnames=request.getParameterNames();
+			while (paramnames.hasMoreElements()) {
+				String paramname = (String)paramnames.nextElement();
+				String paramvalue = request.getParameter(paramname);
+				if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
+				messageContext.put(paramname, paramvalue);
 			}
-
-			String etag=(String)messageContext.get("etag");
-			if (StringUtils.isNotEmpty(etag))
-				response.setHeader("etag", etag);
-
-			int statusCode = 0;
-			if(messageContext.containsKey("exitcode"))
-				statusCode = Integer.parseInt( ""+ messageContext.get("exitcode"));
-			if(statusCode > 0)
-				response.setStatus(statusCode);
-
-			if (StringUtils.isEmpty(result)) {
-				log.trace("RestListenerServlet finished with result set in pipeline");
-			} else {
-				contentType=(String)messageContext.get("contentType");
-				if (StringUtils.isNotEmpty(contentType)) {
-					response.setHeader("Content-Type", contentType);
-				}
-				String contentDisposition=(String)messageContext.get("contentDisposition");
-				if (StringUtils.isNotEmpty(contentDisposition)) {
-					response.setHeader("Content-Disposition", contentDisposition);
-				}
-				String allowedMethods=(String)messageContext.get("allowedMethods");
-				if (StringUtils.isNotEmpty(allowedMethods)) {
-					response.setHeader("Allow", allowedMethods);
-				}
-				response.getWriter().print(result);
-				log.trace("RestListenerServlet finished with result ["+result+"] etag ["+etag+"] contentType ["+contentType+"] contentDisposition ["+contentDisposition+"]");
+			if (!ServletFileUpload.isMultipartContent(request)) {
+				body=Misc.streamToString(request.getInputStream(),"\n",false);
 			}
-		} catch (ListenerException e) {
-			if (!response.isCommitted()) {
-				log.warn("RestListenerServlet caught exception, return internal server error",e);
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
-			} else {
-				log.warn("RestListenerServlet caught exception, response already committed",e);
-				throw new ServletException("RestListenerServlet caught exception, response already committed",e);
+			try {
+				log.trace("RestListenerServlet calling service ["+path+"]");
+				String result=sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
+	
+				if(result == null && messageContext.containsKey("exitcode") && messageContext.containsKey("validateEtag")) {
+					int status = Integer.parseInt( ""+ messageContext.get("exitcode"));
+					response.setStatus(status);
+					//TODO: overbodig?
+					if(log.isDebugEnabled()) log.trace("aborted request with status ["+status+"]");
+					return;
+				}
+	
+				String etag=(String)messageContext.get("etag");
+				if (StringUtils.isNotEmpty(etag))
+					response.setHeader("etag", etag);
+	
+				int statusCode = 0;
+				if(messageContext.containsKey("exitcode"))
+					statusCode = Integer.parseInt( ""+ messageContext.get("exitcode"));
+				if(statusCode > 0)
+					response.setStatus(statusCode);
+	
+				if (StringUtils.isEmpty(result)) {
+					log.trace("RestListenerServlet finished with result set in pipeline");
+				} else {
+					contentType=(String)messageContext.get("contentType");
+					if (StringUtils.isNotEmpty(contentType)) {
+						response.setHeader("Content-Type", contentType);
+					}
+					String contentDisposition=(String)messageContext.get("contentDisposition");
+					if (StringUtils.isNotEmpty(contentDisposition)) {
+						response.setHeader("Content-Disposition", contentDisposition);
+					}
+					String allowedMethods=(String)messageContext.get("allowedMethods");
+					if (StringUtils.isNotEmpty(allowedMethods)) {
+						response.setHeader("Allow", allowedMethods);
+					}
+					response.getWriter().print(result);
+					log.trace("RestListenerServlet finished with result ["+result+"] etag ["+etag+"] contentType ["+contentType+"] contentDisposition ["+contentDisposition+"]");
+				}
+			} catch (ListenerException e) {
+				if (!response.isCommitted()) {
+					log.warn("RestListenerServlet caught exception, return internal server error",e);
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
+				} else {
+					log.warn("RestListenerServlet caught exception, response already committed",e);
+					throw new ServletException("RestListenerServlet caught exception, response already committed",e);
+				}
 			}
 		}
 	}

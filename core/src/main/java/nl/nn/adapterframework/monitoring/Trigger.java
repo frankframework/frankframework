@@ -27,9 +27,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -363,9 +364,8 @@ public class Trigger {
 		return list;
 	}
 
-
 	public void setSeverity(String severity) {
-		setSeverityEnum((SeverityEnum)SeverityEnum.getEnumMap().get(severity));
+		setSeverityEnum(Misc.parse(SeverityEnum.class, severity));
 	}
 	public void setSeverityEnum(SeverityEnum enumeration) {
 		severity = enumeration;
@@ -374,7 +374,7 @@ public class Trigger {
 		return severity;
 	}
 	public String getSeverity() {
-		return severity==null?null:severity.getName();
+		return severity==null?null:severity.name();
 	}
 
 	public void setThreshold(int i) {

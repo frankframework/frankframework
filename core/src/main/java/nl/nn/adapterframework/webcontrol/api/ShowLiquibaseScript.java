@@ -62,13 +62,11 @@ public final class ShowLiquibaseScript extends Base {
 
 		String result = null;
 		Writer writer = new StringBuilderWriter();
-		try {
-			Migrator databaseMigrator = getIbisContext().getBean("jdbcMigrator", Migrator.class);
+		try(Migrator databaseMigrator = getIbisContext().getBean("jdbcMigrator", Migrator.class)) {
 			databaseMigrator.setIbisContext(getIbisContext());
 			databaseMigrator.setDatasourceName(datasource);
 			databaseMigrator.configure(getIbisManager().getConfiguration(configuration));
 			result = databaseMigrator.getUpdateSql(writer).toString();
-			databaseMigrator.close();
 		} catch (Exception e) {
 			throw new ApiException("Error generating SQL script", e);
 		}

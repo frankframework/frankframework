@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -123,7 +123,7 @@ public class SqlTranslator implements ISqlTranslator {
 		String sourceMatch=".source."+sourceDialect.replaceAll(" ", "_");
 		String targetMatch=".target."+targetDialect.replaceAll(" ", "_");
 
-		URL resourceUrl = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), PATTERN_FILE);
+		URL resourceUrl = ClassUtils.getResourceURL(PATTERN_FILE);
 
 		try (BufferedReader reader = new BufferedReader(ClassUtils.urlToReader(resourceUrl))) {
 			String line= reader.readLine();

@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -31,8 +31,8 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.core.task.TaskExecutor;
 
+import lombok.Getter;
 import nl.nn.adapterframework.cache.ICacheAdapter;
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -97,7 +97,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
 
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private String name;
 	private Configuration configuration;
@@ -579,7 +579,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public PipeLineResult processMessage(String messageId, Message message, IPipeLineSession pipeLineSession) {
+	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
 			return processMessageWithExceptions(messageId, message, pipeLineSession);
@@ -615,7 +615,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public PipeLineResult processMessageWithExceptions(String messageId, Message message, IPipeLineSession pipeLineSession) throws ListenerException {
+	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
 
 		PipeLineResult result = new PipeLineResult();
 
@@ -1109,14 +1109,5 @@ public class Adapter implements IAdapter, NamedBean {
 
 	public boolean isReplaceNullMessage() {
 		return replaceNullMessage;
-	}
-
-	/**
-	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
-	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
-	 */
-	@Override
-	public ClassLoader getConfigurationClassLoader() {
-		return configurationClassLoader;
 	}
 }

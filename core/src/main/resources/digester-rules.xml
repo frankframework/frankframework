@@ -6,10 +6,10 @@
 	<rule pattern="IOS-Adaptering" factory="null"/><!-- deprecated, use configuration or module instead -->
 	<rule pattern="configuration" factory="null"/>
 
-	<rule pattern="*/include" factory="nl.nn.adapterframework.configuration.ConfigurationDigesterFactory" selfRegisterMethod="include"/>
+	<rule pattern="*/include" factory="nl.nn.adapterframework.configuration.digester.ConfigurationDigesterFactory" selfRegisterMethod="include"/>
 
 
-	<rule pattern="*/jmsRealms" factory="nl.nn.adapterframework.configuration.JmsRealmsFactory"/>
+	<rule pattern="*/jmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
 	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm"/>
 
 	<rule pattern="*/sapSystem" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
@@ -20,8 +20,8 @@
 
 	<rule pattern="*/receiver" registerMethod="registerReceiver"/>
 	<rule pattern="*/sender" registerMethod="setSender"/>
-	<rule pattern="*/senders" registerMethod="registerSender"/> <!-- e.g. for ParallelSenders -->
-	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.ListenerFactory" registerMethod="setListener"/>
+	<rule pattern="*/sender" registerMethod="registerSender"/> <!-- to tell FrankDoc about multiplicity of SenderSeries and ParallelSenders. Duplicate pattern will be suppressed by core digester -->
+	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.digester.ListenerFactory" registerMethod="setListener"/>
 	<rule pattern="*/errorSender" registerMethod="setErrorSender"/>
 	<rule pattern="*/messageLog" registerMethod="setMessageLog"/>
 	<rule pattern="*/inProcessStorage" registerMethod="setInProcessStorage"/>
@@ -48,7 +48,7 @@
 	<!-- batch related rules -->
 	<rule pattern="*/readerFactory" registerMethod="setReaderFactory"/>
 	<rule pattern="*/manager" registerMethod="registerManager"/>
-	<rule pattern="*/manager/flow" factory="nl.nn.adapterframework.configuration.RecordHandlingFlowFactory" registerMethod="addHandler"/>
+	<rule pattern="*/manager/flow" factory="nl.nn.adapterframework.configuration.digester.RecordHandlingFlowFactory" registerMethod="addHandler"/>
 	<rule pattern="*/recordHandler" registerMethod="registerRecordHandler"/>
 	<rule pattern="*/resultHandler" registerMethod="registerResultHandler"/>
 

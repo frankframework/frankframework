@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.security.PermitAll;
@@ -49,7 +50,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -61,6 +62,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.ProcessState;
@@ -94,7 +96,6 @@ public final class ShowConfigurationStatus extends Base {
 	@Context Request request;
 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
-	private boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
 
 	private Adapter getAdapter(String adapterName) {
 		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
@@ -421,7 +422,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", null);
 			certElem.put("info", "*** ERROR ***");
@@ -444,7 +445,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
@@ -467,7 +468,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
@@ -628,50 +629,25 @@ public final class ShowConfigurationStatus extends Base {
 			if (listener instanceof HasSender) {
 				sender = ((HasSender)listener).getSender();
 			}
-			//receiverInfo.put("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-			IMessageBrowser<?> ts = receiver.getMessageBrowser(ProcessState.ERROR);
 
-			receiverInfo.put("hasErrorStorage", (ts!=null));
-			if (ts!=null) {
-				try {
-					if (showCountErrorStore) {
-						receiverInfo.put("errorStorageCount", ts.getMessageCount());
-					} else {
-						receiverInfo.put("errorStorageCount", "?");
+			Set<ProcessState> knownStates = receiver.knownProcessStates();
+			Map<ProcessState, Object> tsInfo = new LinkedHashMap<ProcessState, Object>();
+			for (ProcessState state : knownStates) {
+				IMessageBrowser<?> ts = receiver.getMessageBrowser(state);
+				if(ts != null) {
+					Map<String, Object> info = new HashMap<>();
+					try {
+						info.put("numberOfMessages", ts.getMessageCount());
+					} catch (Exception e) {
+						log.warn("Cannot determine number of messages in process state ["+state+"]", e);
+						info.put("numberOfMessages", "error");
 					}
-				} catch (Exception e) {
-					log.warn("Cannot determine number of messages in errorstore", e);
-					receiverInfo.put("errorStorageCount", "error");
+					info.put("name", state.getName());
+					tsInfo.put(state, info);
 				}
 			}
-			ts=receiver.getMessageBrowser(ProcessState.DONE);
-			receiverInfo.put("hasMessageLog", (ts!=null));
-			if (ts!=null) {
-				try {
-					if (showCountMessageLog) {
-						receiverInfo.put("messageLogCount", ts.getMessageCount());
-					} else {
-						receiverInfo.put("messageLogCount", "?");
-					}
-				} catch (Exception e) {
-					log.warn("Cannot determine number of messages in messageLog", e);
-					receiverInfo.put("messageLogCount", "error");
-				}
-			}
-			ts=receiver.getMessageBrowser(ProcessState.INPROCESS);
-			receiverInfo.put("hasInProcessLog", (ts!=null));
-			if (ts!=null) {
-				try {
-					if (showCountMessageLog) {
-						receiverInfo.put("inProcessLogCount", ts.getMessageCount());
-					} else {
-						receiverInfo.put("inProcessLogCount", "?");
-					}
-				} catch (Exception e) {
-					log.warn("Cannot determine number of messages in inProcessLog", e);
-					receiverInfo.put("inProcessLogCount", "error");
-				}
-			}
+			receiverInfo.put("transactionalStores", tsInfo);
+
 			boolean isRestListener = (listener instanceof RestListener);
 			listenerInfo.put("isRestListener", isRestListener);
 			if (isRestListener) {
@@ -690,7 +666,7 @@ public final class ShowConfigurationStatus extends Base {
 				jmsBrowser.setName("MessageBrowser_" + jlb.getName());
 				jmsBrowser.setJmsRealm(jlb.getJmsRealmName());
 				jmsBrowser.setDestinationName(jlb.getDestinationName());
-				jmsBrowser.setDestinationType(jlb.getDestinationType());
+				jmsBrowser.setDestinationTypeEnum(jlb.getDestinationTypeEnum());
 				String numMsgs;
 				try {
 					int messageCount = jmsBrowser.getMessageCount();
@@ -786,6 +762,35 @@ public final class ShowConfigurationStatus extends Base {
 		adapterInfo.put("messagesInProcess", adapter.getNumOfMessagesInProcess());
 		adapterInfo.put("messagesProcessed", adapter.getNumOfMessagesProcessed());
 		adapterInfo.put("messagesInError", adapter.getNumOfMessagesInError());
+
+		Iterator<Receiver<?>> it = adapter.getReceivers().iterator();
+		int errorStoreMessageCount = 0;
+		int messageLogMessageCount = 0;
+		while(it.hasNext()) {
+			Receiver rcv = it.next();
+			IMessageBrowser esmb = rcv.getMessageBrowser(ProcessState.ERROR);
+			if(esmb != null) {
+				try {
+					errorStoreMessageCount += esmb.getMessageCount();
+				} catch (ListenerException e) {
+					log.warn("Cannot determine number of messages in errorstore of ["+rcv.getName()+"]", e);
+				}
+			}
+			IMessageBrowser mlmb = rcv.getMessageBrowser(ProcessState.DONE);
+			if(mlmb != null) {
+				try {
+					messageLogMessageCount += mlmb.getMessageCount();
+				} catch (ListenerException e) {
+					log.warn("Cannot determine number of messages in messagelog of ["+rcv.getName()+"]", e);
+				}
+			}
+		}
+		if(errorStoreMessageCount != 0) {
+			adapterInfo.put("errorStoreMessageCount", errorStoreMessageCount);
+		}
+		if(messageLogMessageCount != 0) {
+			adapterInfo.put("messageLogMessageCount", messageLogMessageCount);
+		}
 
 		return adapterInfo;
 	}

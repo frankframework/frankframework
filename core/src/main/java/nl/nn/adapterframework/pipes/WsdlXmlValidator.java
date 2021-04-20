@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,22 +29,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.soap.SoapValidator;
-import nl.nn.adapterframework.soap.SoapVersion;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.validation.SchemaUtils;
-import nl.nn.adapterframework.validation.XSD;
 import javax.wsdl.Definition;
 import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.ExtensibilityElement;
@@ -53,6 +37,25 @@ import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLLocator;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
+import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.soap.SoapValidator;
+import nl.nn.adapterframework.soap.SoapVersion;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.validation.SchemaUtils;
+import nl.nn.adapterframework.validation.XSD;
 
 /**
  * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
@@ -90,7 +93,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		WSDLReader reader  = FACTORY.newWSDLReader();
 		reader.setFeature("javax.wsdl.verbose", false);
 		reader.setFeature("javax.wsdl.importDocuments", true);
-		ClassLoaderWSDLLocator wsdlLocator = new ClassLoaderWSDLLocator(getConfigurationClassLoader(), wsdl);
+		ClassLoaderWSDLLocator wsdlLocator = new ClassLoaderWSDLLocator(this, wsdl);
 		URL url = wsdlLocator.getUrl();
 		if (wsdlLocator.getUrl() == null) {
 			throw new ConfigurationException("Could not find WSDL: " + wsdl);
@@ -247,19 +250,19 @@ public class WsdlXmlValidator extends SoapValidator {
 		SoapVersion soapVersion = getSoapVersionEnum();
 		if (soapVersion == null || soapVersion==SoapVersion.SOAP11 || soapVersion==SoapVersion.AUTO) {
 			XSD xsd = new XSD();
-			xsd.initNamespace(SoapVersion.SOAP11.namespace, getConfigurationClassLoader(), SoapVersion.SOAP11.location);
+			xsd.initNamespace(SoapVersion.SOAP11.namespace, this, SoapVersion.SOAP11.location);
 			xsds.add(xsd);
 		}
 		if (soapVersion==SoapVersion.SOAP12 || soapVersion==SoapVersion.AUTO) {
 			XSD xsd = new XSD();
-			xsd.initNamespace(SoapVersion.SOAP12.namespace, getConfigurationClassLoader(), SoapVersion.SOAP12.location);
+			xsd.initNamespace(SoapVersion.SOAP12.namespace, this, SoapVersion.SOAP12.location);
 			xsds.add(xsd);
 		}
 		if (StringUtils.isNotEmpty(getSchemaLocationToAdd())) {
 			StringTokenizer st = new StringTokenizer(getSchemaLocationToAdd(), ", \t\r\n\f");
 			while (st.hasMoreTokens()) {
 				XSD xsd = new XSD();
-				xsd.initNamespace(st.nextToken(), getConfigurationClassLoader(), st.hasMoreTokens() ? st.nextToken():null);
+				xsd.initNamespace(st.nextToken(), this, st.hasMoreTokens() ? st.nextToken():null);
 				xsds.add(xsd);
 			}
 		}
@@ -312,7 +315,7 @@ public class WsdlXmlValidator extends SoapValidator {
 			xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 			xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 			xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-			xsd.initNamespace(StringUtils.isNotEmpty(getSchemaLocation())?filteredNamespaces.get(schema):null,getConfigurationClassLoader(), getWsdl());
+			xsd.initNamespace(StringUtils.isNotEmpty(getSchemaLocation())?filteredNamespaces.get(schema):null,this, getWsdl());
 			xsds.add(xsd);
 		}
 		return xsds;
@@ -341,17 +344,17 @@ public class WsdlXmlValidator extends SoapValidator {
 	}
 }
 
-class ClassLoaderWSDLLocator implements WSDLLocator {
-	private ClassLoader classLoader;
+class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
+	private @Getter ClassLoader configurationClassLoader = null;
 	private String wsdl;
 	private URL url;
 	private IOException ioException;
 	private String latestImportURI;
 
-	ClassLoaderWSDLLocator(ClassLoader classLoader, String wsdl) {
-		this.classLoader = classLoader;
+	ClassLoaderWSDLLocator(WsdlXmlValidator wsdlXmlValidator, String wsdl) {
+		configurationClassLoader = wsdlXmlValidator.getConfigurationClassLoader();
 		this.wsdl = wsdl;
-		url = ClassUtils.getResourceURL(classLoader, wsdl);
+		url = ClassUtils.getResourceURL(this, wsdl);
 	}
 
 	public URL getUrl() {
@@ -396,7 +399,7 @@ class ClassLoaderWSDLLocator implements WSDLLocator {
 	}
 
 	private InputSource getInputSource(String resource) {
-		return getInputSource(ClassUtils.getResourceURL(classLoader, resource));
+		return getInputSource(ClassUtils.getResourceURL(this, resource));
 	}
 
 	private InputSource getInputSource(URL url) {

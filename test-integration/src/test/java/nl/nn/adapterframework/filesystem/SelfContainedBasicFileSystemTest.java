@@ -23,7 +23,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 			fileSystem.createFolder(folderName);
 			assertTrue(fileSystem.folderExists(folderName));
 		} finally {
-			fileSystem.removeFolder(folderName);
+			fileSystem.removeFolder(folderName, false);
 			assertFalse(fileSystem.folderExists(folderName));
 		}
 	}
@@ -48,7 +48,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		String folderName2 = folderName+"-2";
 
 		if (fileSystem.folderExists(folderName)) {
-			fileSystem.removeFolder(folderName);
+			fileSystem.removeFolder(folderName, false);
 			assertFalse(fileSystem.folderExists(folderName));
 		}
 		fileSystem.createFolder(folderName);
@@ -89,18 +89,21 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		}
 		assertTrue(fileSystem.folderExists(folderName2));
 
+		F destFile1copy = fileSystem.toFile(folderName, fileSystem.getName(destFile1));
+		assertTrue(fileSystem.exists(destFile1copy));
+		
 		F destFile2 = fileSystem.moveFile(destFile1, folderName2, false);
 		assertTrue(fileSystem.exists(sourceFile));
-		//assertFalse("moved file should not exist in source folder anymore", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(destFile1)));
+		assertFalse("moved file should not exist in source folder anymore", fileSystem.exists(destFile1copy));
 		assertTrue(fileSystem.exists(destFile2));
 
 		fileSystem.deleteFile(destFile2);
 		assertFalse("file should not exist anymore after being deleted", fileSystem.exists(destFile2));
 
-		fileSystem.removeFolder(folderName2);
+		fileSystem.removeFolder(folderName2, false);
 		assertFalse(fileSystem.folderExists(folderName2));
 
-		fileSystem.removeFolder(folderName);
+		fileSystem.removeFolder(folderName, false);
 		assertFalse(fileSystem.folderExists(folderName));
 	}
 
@@ -109,7 +112,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		String folderName2 = folderName+"-2";
 
 		if (fileSystem.folderExists(folderName)) {
-			fileSystem.removeFolder(folderName);
+			fileSystem.removeFolder(folderName, false);
 			assertFalse(fileSystem.folderExists(folderName));
 		}
 		fileSystem.createFolder(folderName);
@@ -157,10 +160,10 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		fileSystem.deleteFile(destFile2);
 		assertFalse(fileSystem.exists(destFile2));
 
-		fileSystem.removeFolder(folderName2);
+		fileSystem.removeFolder(folderName2, false);
 		assertFalse(fileSystem.folderExists(folderName2));
 
-		fileSystem.removeFolder(folderName);
+		fileSystem.removeFolder(folderName, false);
 		assertFalse(fileSystem.folderExists(folderName));
 	}
 

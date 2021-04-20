@@ -167,6 +167,7 @@ public class IbisApplicationContext {
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
 		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
+		classPathapplicationContext.setId("IbisApplicationContext");
 
 		return classPathapplicationContext;
 	}
@@ -195,29 +196,13 @@ public class IbisApplicationContext {
 		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 
-	public void autowireBeanProperties(Object existingBean, int autowireMode, boolean dependencyCheck) {
-		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
-	}
-
-	public void initializeBean(Object existingBean, String beanName) {
-		applicationContext.getAutowireCapableBeanFactory().initializeBean(existingBean, beanName);
-	}
-
-	public String[] getBeanNamesForType(Class<?> beanClass) {
-		return applicationContext.getBeanNamesForType(beanClass);
-	}
-
-	public boolean isPrototype(String beanName) {
-		return applicationContext.isPrototype(beanName);
-	}
-
 	/**
 	 * Returns the Spring XML Bean Factory If non exists yet it will create one.
 	 * If initializing the context fails, it will return null
 	 * 
 	 * @return Spring XML Bean Factory or NULL
 	 */
-	public AbstractApplicationContext getApplicationContext() {
+	protected AbstractApplicationContext getApplicationContext() {
 		if(applicationContext == null)
 			createApplicationContext();
 

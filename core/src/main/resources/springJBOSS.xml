@@ -5,10 +5,15 @@
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
-		http://www.springframework.org/schema/util classpath:xml/xsd/spring-util-3.2.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 		"
 	>
+
+	<!-- SpringDataSourceFactory augments the datasource with LazyConnectionDataSourceProxy.
+		This will cause Jboss server to throw an exception with the following message: 'You cannot set autocommit during a managed transaction!'.
+		To avoid jboss server to throw an exception use JndiDataSourceFactory -->
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jndi.JndiDataSourceFactory" />
 
 	<!--
 	An open source transaction manager.
@@ -24,14 +29,4 @@
 			<util:constant static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"/>
 		</property>
 	</bean>
-
-	<bean
-		name="jndiContextPrefixPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
-		autowire="byName"
-		>
-		<property name="propertyName" value="jndiContextPrefix"/>
-		<property name="propertyValue" value="java:/"/>
-	</bean>
-
 </beans>

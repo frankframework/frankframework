@@ -58,13 +58,14 @@ import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.DatabaseJobDef;
@@ -76,6 +77,7 @@ import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs from the Scheduler.
@@ -517,7 +519,7 @@ public final class ShowScheduler extends Base {
 
 		//Make sure the receiver exists!
 		String receiverName = resolveStringFromMap(inputDataMap, "receiver");
-		Receiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found");
 		}
@@ -529,6 +531,8 @@ public final class ShowScheduler extends Base {
 		if(StringUtils.isEmpty(listenerName)) {
 			throw new ApiException("unable to determine listener for receiver ["+receiverName+"]");
 		}
+
+		Configuration applicationContext = adapter.getConfiguration();
 
 		String jobGroup = groupName;
 		if(StringUtils.isEmpty(jobGroup)) {
@@ -546,7 +550,7 @@ public final class ShowScheduler extends Base {
 		SchedulerHelper sh = manager.getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
-		DatabaseJobDef jobdef = new DatabaseJobDef();
+		DatabaseJobDef jobdef = SpringUtils.createBean(applicationContext, DatabaseJobDef.class);
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setAdapterName(adapterName);
@@ -556,31 +560,26 @@ public final class ShowScheduler extends Base {
 		jobdef.setDescription(description);
 		jobdef.setInterval(interval);
 
-		String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 		if(hasLocker) {
-			Locker locker = (Locker) getIbisContext().createBeanAutowireByName(Locker.class);
+			Locker locker = SpringUtils.createBean(applicationContext, Locker.class);
 			locker.setName(lockKey);
 			locker.setObjectId(lockKey);
-			locker.setJmsRealm(jmsRealm);
+			locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			jobdef.setLocker(locker);
 		}
 
 		try {
 			jobdef.configure();
-			sh.scheduleJob(manager, jobdef);
+			sh.scheduleJob(jobdef);
 		} catch (Exception e) {
 			throw new ApiException("Failed to add schedule", e);
 		}
 
 		//Save the job in the database
 		if(persistent && AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
-			if (StringUtils.isEmpty(jmsRealm)) {
-				throw new ApiException("no JmsRealm found!");
-			}
-
 			boolean success = false;
-			FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-			qs.setJmsRealm(jmsRealm);
+			FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+			qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 			try {
 				qs.configure();
@@ -655,14 +654,9 @@ public final class ShowScheduler extends Base {
 			IbisJobDetail jobDetail = (IbisJobDetail) scheduler.getJobDetail(jobKey);
 			if(jobDetail.getJobType() == JobType.DATABASE) {
 				boolean success = false;
-				String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-				if (StringUtils.isEmpty(jmsRealm)) {
-					throw new ApiException("no JmsRealm found!");
-				}
-
 				// remove from database
 				FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-				qs.setJmsRealm(jmsRealm);
+				qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 				qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 				try {
 					qs.configure();

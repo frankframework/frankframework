@@ -20,7 +20,7 @@ import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.MessagingSourceFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Dedicated sender on Tibco Destinations.
@@ -67,6 +67,7 @@ public class TibcoSender extends JmsSender {
 		setSoap(true);
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getServerUrl())) {
 			throw new ConfigurationException("serverUrl must be specified");
@@ -74,6 +75,7 @@ public class TibcoSender extends JmsSender {
 		super.configure();
 	}
 
+	@Override
 	protected MessagingSourceFactory getMessagingSourceFactory() {
 		return new TibcoMessagingSourceFactory(this, isUseTopicFunctions());
 	}
@@ -81,6 +83,7 @@ public class TibcoSender extends JmsSender {
 	 * 
 	 * Tibco uses serverUrl instead of connectionFactoryName.
 	 */
+	@Override
 	public String getConnectionFactoryName() throws JmsException {
 		return getServerUrl();
 	}

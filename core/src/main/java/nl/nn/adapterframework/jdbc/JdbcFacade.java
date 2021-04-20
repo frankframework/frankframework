@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,13 +19,15 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -38,7 +40,8 @@ import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
-import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.jndi.JndiBase;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -62,26 +65,26 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
+public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
 
+	private String datasourceName = null;
 	private String authAlias = null;
 	private String username = null;
 	private String password = null;
 
-	private Map<String,DataSource> proxiedDataSources = null;
-	private DataSource datasource = null;
-	private String datasourceName = null;
-
 	private boolean transacted = false;
-	private boolean connectionsArePooled=true;
+	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
 	
 	private IDbmsSupportFactory dbmsSupportFactoryDefault=null;
 	private IDbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
-	private boolean credentialsConfigured=false;
 	private CredentialFactory cf=null;
 	private StatisticsKeeper connectionStatistics;
 	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
+
+	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
+
+	private DataSource datasource = null;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -90,50 +93,29 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		configureCredentials();
-		connectionStatistics = new StatisticsKeeper("getConnection for "+getName());
-	}
-
-	public void configureCredentials() {
+		if (StringUtils.isEmpty(getDatasourceName())) {
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
+		}
+		try {
+			if (getDatasource() == null) {
+				throw new ConfigurationException(getLogPrefix() + "has no datasource");
+			}
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		}
 		if (StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getAuthAlias())) {
 			cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		}
-		credentialsConfigured=true;
-	}
-
-	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
-		this.proxiedDataSources = proxiedDataSources;
-	}
-
-	public String getDataSourceNameToUse() throws JdbcException {
-		String result = getDatasourceName();
-		if (StringUtils.isEmpty(result)) {
-			throw new JdbcException(getLogPrefix()+"no datasourceName specified");
-		}
-		return result;
+		connectionStatistics = new StatisticsKeeper("getConnection for "+getName());
 	}
 
 	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
-			String dsName = getDataSourceNameToUse();
-			if (proxiedDataSources != null && proxiedDataSources.containsKey(dsName)) {
-				log.debug(getLogPrefix()+"looking up proxied Datasource ["+dsName+"]");
-				datasource = (DataSource)proxiedDataSources.get(dsName);
-			} else {
-				if (proxiedDataSources != null) {
-					ConfigurationWarnings.add(this, log, "data source '" + dsName
-							+ "' isn't part of proxiedDataSources and is therefore probably not known to the transaction manager");
-				}
-				String prefixedDsName=getJndiContextPrefix()+dsName;
-				log.debug(getLogPrefix()+"looking up Datasource ["+prefixedDsName+"]");
-				if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
-					log.debug(getLogPrefix()+"using JNDI context prefix ["+getJndiContextPrefix()+"]");
-				}
-				try {
-					datasource =(DataSource) getContext().lookup( prefixedDsName );
-				} catch (NamingException e) {
-					throw new JdbcException("Could not find Datasource ["+prefixedDsName+"]", e);
-				}
+			String dsName = getDatasourceName();
+			try {
+				datasource = getDataSourceFactory().getDataSource(dsName, getJndiEnv());
+			} catch (NamingException e) {
+				throw new JdbcException("Could not find Datasource ["+dsName+"]", e);
 			}
 			if (datasource==null) {
 				throw new JdbcException("Could not find Datasource ["+dsName+"]");
@@ -143,6 +125,7 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 				dsinfo=datasource.toString();
 			}
 			log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
+			datasource = new TransactionAwareDataSourceProxy(datasource);
 		}
 		return datasource;
 	}
@@ -239,9 +222,6 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	public Connection getConnection() throws JdbcException {
 		long t0 = System.currentTimeMillis();
 		try {
-			if (!credentialsConfigured) { // 2020-01-15 have to use this hack here, as configure() method is introduced just now in JdbcFacade, and not all code is aware of it.
-				configureCredentials(); 
-			}
 			DataSource ds = getDatasource();
 			try {
 				if (cf!=null) {
@@ -249,7 +229,7 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 				}
 				return ds.getConnection();
 			} catch (SQLException e) {
-				throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDataSourceNameToUse()+"]", e);
+				throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDatasourceName()+"]", e);
 			}
 		} finally {
 			if (connectionStatistics!=null) {
@@ -300,7 +280,7 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 		return result;
 	}
 
-	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", ""})
+	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
@@ -315,6 +295,7 @@ public class JdbcFacade extends JNDIBase implements HasPhysicalDestination, IXAE
 	public String getAuthAlias() {
 		return authAlias;
 	}
+	
 	@IbisDoc({"4", "User name for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setUsername(String username) {
 		this.username = username;

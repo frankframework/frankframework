@@ -15,12 +15,11 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import nl.nn.adapterframework.configuration.IbisManager;
-
-import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import nl.nn.adapterframework.configuration.IbisManager;
 
 
 
@@ -45,7 +44,7 @@ import org.quartz.JobExecutionException;
  * @see nl.nn.adapterframework.core.IAdapter
  * @see nl.nn.adapterframework.configuration.Configuration
   */
-public class ConfiguredJob extends BaseJob implements Job {
+public class ConfiguredJob extends BaseJob {
 
 	public static final String MANAGER_KEY = "manager";
 	public static final String JOBDEF_KEY = "jobdef";

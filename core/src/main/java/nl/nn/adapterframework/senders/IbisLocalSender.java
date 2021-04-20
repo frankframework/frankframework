@@ -18,13 +18,13 @@ package nl.nn.adapterframework.senders;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -152,7 +152,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		Message result = null;
 		HashMap<String,Object> context = null;
@@ -241,8 +241,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 			}
 		}
-		String exitState = (String)context.remove(IPipeLineSession.EXIT_STATE_CONTEXT_KEY);
-		Object exitCode = context.remove(IPipeLineSession.EXIT_CODE_CONTEXT_KEY);
+		String exitState = (String)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 		if (exitState!=null && !exitState.equalsIgnoreCase(PipeLineExit.EXIT_STATE_SUCCESS)) {
 			context.put("originalResult", result);
 			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");

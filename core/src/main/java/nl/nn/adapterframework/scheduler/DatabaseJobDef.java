@@ -19,11 +19,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public class DatabaseJobDef extends JobDef {
 
+	@Override
 	public void configure() throws ConfigurationException {
-		try {
-			setFunction(JobDefFunctions.SEND_MESSAGE.getName());
-		} catch (ConfigurationException e) {}
-
-		super.configure(null);
+		setFunction(JobDefFunctions.SEND_MESSAGE.getName());
+		super.configure();
 	}
 }

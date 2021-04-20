@@ -21,8 +21,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.LogUtil;
@@ -100,8 +100,12 @@ public class JmsRealmFactory {
 	 * Register a Realm
 	 */
 	public void registerJmsRealm(JmsRealm jmsRealm) {
-		jmsRealms.put(jmsRealm.getRealmName(), jmsRealm);
-		log.debug("JmsRealmFactory registered realm [" + jmsRealm.toString() + "]");
+		String realmName = jmsRealm.getRealmName();
+		if(jmsRealms.containsKey(realmName)) {
+			log.warn("overwriting JmsRealm [" + jmsRealm.toString() + "]. Realm with name ["+realmName+"] already exists");
+		}
+		jmsRealms.put(realmName, jmsRealm);
+		log.debug("JmsRealmFactory registered realm [{}]", () -> jmsRealm.toString());
 	}
 
 	@Override
@@ -109,6 +113,7 @@ public class JmsRealmFactory {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
+	@Deprecated //remove with struts console
 	public String getFirstDatasourceJmsRealm() {
 		Iterator<String> it = getRegisteredRealmNames();
 		while (it.hasNext()) {
@@ -120,6 +125,7 @@ public class JmsRealmFactory {
 		return null;
 	}
 
+	@Deprecated //remove with struts console
 	public List<String> getRegisteredDatasourceRealmNamesAsList() {
 		Iterator<String> it = getRegisteredRealmNames();
 		List<String> result = new ArrayList<String>();

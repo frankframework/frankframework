@@ -19,6 +19,8 @@
 *.wsdd         text eol=lf
 *.md           text eol=lf
 *.yml          text eol=lf
+*.sh           text eol=lf
+*.conf         text eol=lf
 .gitattributes text eol=lf
 .gitignore     text eol=lf
 .project       text eol=lf

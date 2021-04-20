@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -69,7 +69,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwString", contents.getBytes());
 
 		Parameter p = new Parameter();
@@ -103,7 +103,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
 		Parameter p = new Parameter();
@@ -139,7 +139,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
 		Parameter p = new Parameter();
@@ -174,7 +174,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		//InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		//session.put("uploadActionTarget", stream);
 
 		Parameter param = new Parameter();
@@ -341,6 +341,41 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		assertFalse("Expected file [" + folder + "] " + "not to be present", actual);
 	}
 
+	@Test
+	public void fileSystemPipeRmNonEmptyDirActionTest() throws Exception {
+		String folder = DIR1;
+		String innerFolder = DIR1+"/innerFolder";
+		if (!_folderExists(DIR1)) {
+			_createFolder(folder);
+		}
+		if (!_folderExists(innerFolder)) {
+			_createFolder(innerFolder);
+		}
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "file"+i + FILE1;
+			createFile(folder, filename, "is not empty");
+			createFile(innerFolder, filename, "is not empty");
+		}
+		
+		fileSystemPipe.setRemoveNonEmptyFolder(true);
+		fileSystemPipe.setAction("rmdir");
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+		
+		Message message= new Message(folder);
+		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
+		String result=prr.getResult().asString();
+
+		// test
+		assertEquals("result of pipe should be name of removed folder",folder,result);
+		waitForActionToFinish();
+		
+		boolean actual = _fileExists(folder);
+		// test
+		assertFalse("Expected file [" + folder + "] " + "not to be present", actual);
+	}
+	
 	@Test
 	public void fileSystemPipeDeleteActionTest() throws Exception {
 		String filename = "tobedeleted" + FILE1;

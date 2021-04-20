@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.util.LinkedList;
@@ -46,8 +46,6 @@ public class BaseConfigurationWarnings extends LinkedList<String> {
 
 	/**
 	 * These are the exceptions thrown when a setter is invoked but the default value has not been changed.
-	 * @param key
-	 * @return
 	 */
 	public boolean containsDefaultValueException(String key) {
 		return defaultValueExceptions.contains(key);

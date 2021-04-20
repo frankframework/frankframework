@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
 
@@ -33,7 +35,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.WildCardFilter;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
@@ -45,8 +46,6 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String root;
-	private String wildcard;
-	private String excludeWildcard;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -81,14 +80,9 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public DirectoryStream<Path> listFiles(String folder) throws FileSystemException {
 		final Path dir = toFile(folder);
 
-		final WildCardFilter wildcardfilter =  StringUtils.isEmpty(getWildcard()) ? null : new WildCardFilter(getWildcard());
-		final WildCardFilter excludeFilter =  StringUtils.isEmpty(getExcludeWildcard()) ? null : new WildCardFilter(getExcludeWildcard());
-
 		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
 			public boolean accept(Path file) throws IOException {
-				return !Files.isDirectory(file) 
-						&& (wildcardfilter==null || wildcardfilter.accept(dir.toFile(), file.getFileName().toString()))
-						&& (excludeFilter==null || !excludeFilter.accept(dir.toFile(), file.getFileName().toString()));
+				return !Files.isDirectory(file);
 			}
 		};
 		try {
@@ -149,10 +143,17 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public void removeFolder(String folder) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (folderExists(folder)) {
 			try {
-				Files.delete(toFile(folder));
+				if(removeNonEmptyFolder) {
+					Files.walk(toFile(folder))
+						.sorted(Comparator.reverseOrder())
+						.map(Path::toFile)
+						.forEach(File::delete);
+				} else {
+					Files.delete(toFile(folder));
+				}
 			} catch (IOException e) {
 				throw new FileSystemException("Cannot remove folder ["+ folder +"]",e);
 			}
@@ -173,14 +174,14 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	@Override
 	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		try {
-			return Files.move(f, toFile(destinationFolder, f.getFileName().toString()));
+			return Files.move(f, toFile(destinationFolder, getName(f)));
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot move file ["+ f.toString() +"] to ["+ destinationFolder+"]", e);
 		}
 	}
 	@Override
 	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		Path target = toFile(destinationFolder, f.getFileName().toString());
+		Path target = toFile(destinationFolder, getName(f));
 		try {
 			Files.copy(f, target);
 		} catch (IOException e) {
@@ -200,7 +201,10 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public String getName(Path f) {
-		return f.getFileName().toString();
+		if(f.getFileName() != null) {
+			return f.getFileName().toString();
+		}
+		return null;
 	}
 
 	@Override
@@ -231,7 +235,6 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		return "root ["+(getRoot()==null?"":getRoot())+"]";
 	}
 
-
 	@IbisDoc({"1", "Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root. "+
 			"When the root is left unspecified, absolute paths to files and folders can be used", "" })
 	public void setRoot(String root) {
@@ -239,22 +242,6 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 	public String getRoot() {
 		return root;
-	}
-
-	@IbisDoc({"2", "filter of files to look for in inputdirectory, e.g. '*.inp'", ""})
-	public void setWildcard(String wildcard) {
-		this.wildcard = wildcard;
-	}
-	public String getWildcard() {
-		return wildcard;
-	}
-
-	@IbisDoc({"3", "filter of files to be excluded when looking in inputdirectory", ""})
-	public void setExcludeWildcard(String excludeWildcard) {
-		this.excludeWildcard = excludeWildcard;
-	}
-	public String getExcludeWildcard() {
-		return excludeWildcard;
 	}
 
 }

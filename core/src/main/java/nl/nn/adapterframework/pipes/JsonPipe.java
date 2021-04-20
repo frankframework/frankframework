@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.json.XML;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -41,7 +41,7 @@ public class JsonPipe extends FixedForwardPipe {
 	private String direction = "json2xml";
 	private String version = "1";
 	private boolean addXmlRootElement=true;
-	
+
 	private TransformerPool tpXml2Json;
 
 	@Override
@@ -55,12 +55,12 @@ public class JsonPipe extends FixedForwardPipe {
 			throw new ConfigurationException("illegal value for direction [" + dir + "], must be 'xml2json' or 'json2xml'");
 		}
 		if ("xml2json".equals(dir) && "2".equals(getVersion())) {
-			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), getConfigurationClassLoader(), "/xml/xsl/xml2json.xsl", 0);
+			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, "/xml/xsl/xml2json.xsl", 0);
 		}
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		if (message == null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null input");

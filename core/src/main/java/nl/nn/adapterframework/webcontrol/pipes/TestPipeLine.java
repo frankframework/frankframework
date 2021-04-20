@@ -25,13 +25,12 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -55,43 +54,37 @@ public class TestPipeLine extends TimeoutGuardPipe {
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return new PipeRunResult(getForward(), doGet(session));
 		} else if (method.equalsIgnoreCase("POST")) {
 			return new PipeRunResult(getForward(), doPost(session));
 		} else {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "illegal value for method [" + method
-					+ "], must be 'GET' or 'POST'");
+			throw new PipeRunException(this, getLogPrefix(session) + "illegal value for method [" + method + "], must be 'GET' or 'POST'");
 		}
 	}
 
-	private String doGet(IPipeLineSession session) throws PipeRunException {
+	private String doGet(PipeLineSession session) throws PipeRunException {
 		return retrieveFormInput(session);
 	}
 
-	private String doPost(IPipeLineSession session) throws PipeRunException {
+	private String doPost(PipeLineSession session) throws PipeRunException {
 		Object form_file = session.get("file");
 		String form_message = null;
 		form_message = (String) session.get("message");
 		if (form_file == null && (StringUtils.isEmpty(form_message))) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Nothing to send or test");
+			throw new PipeRunException(this, getLogPrefix(session) + "Nothing to send or test");
 		}
 
 		String form_adapterName = (String) session.get("adapterName");
 		if (StringUtils.isEmpty(form_adapterName)) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "No adapter selected");
+			throw new PipeRunException(this, getLogPrefix(session) + "No adapter selected");
 		}
 		IAdapter adapter = RestListenerUtils.retrieveIbisManager(session)
 				.getRegisteredAdapter(form_adapterName);
 		if (adapter == null) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Adapter with specified name [" + form_adapterName
-					+ "] could not be retrieved");
+			throw new PipeRunException(this, getLogPrefix(session) + "Adapter with specified name [" + form_adapterName + "] could not be retrieved");
 		}
 
 		boolean writeSecLogMessage = false;
@@ -112,27 +105,18 @@ public class TestPipeLine extends TimeoutGuardPipe {
 						} else {
 							fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 						}
-						if (StringUtils.endsWithIgnoreCase(form_fileName,
-								".zip")) {
+						if (StringUtils.endsWithIgnoreCase(form_fileName, ".zip")) {
 							try {
-								form_message = processZipFile(session,
-										inputStream, fileEncoding, adapter,
-										writeSecLogMessage);
+								form_message = processZipFile(session, inputStream, fileEncoding, adapter, writeSecLogMessage);
 							} catch (Exception e) {
-								throw new PipeRunException(
-										this,
-										getLogPrefix(session)
-												+ "exception on processing zip file",
-										e);
+								throw new PipeRunException(this, getLogPrefix(session) + "exception on processing zip file", e);
 							}
 						} else {
-							form_message = Misc.streamToString(inputStream,
-									"\n", fileEncoding, false);
+							form_message = Misc.streamToString(inputStream, "\n", fileEncoding, false);
 						}
 					}
 				} catch (IOException e) {
-					throw new PipeRunException(this, getLogPrefix(session)
-							+ "exception on converting stream to string", e);
+					throw new PipeRunException(this, getLogPrefix(session) + "exception on converting stream to string", e);
 				}
 			} else {
 				form_message = form_file.toString();
@@ -141,21 +125,17 @@ public class TestPipeLine extends TimeoutGuardPipe {
 		}
 		if (StringUtils.isNotEmpty(form_message)) {
 			try {
-				PipeLineResult plr = processMessage(adapter, form_message,
-						writeSecLogMessage);
+				PipeLineResult plr = processMessage(adapter, form_message, writeSecLogMessage);
 				session.put("state", plr.getState());
 				session.put("result", plr.getResult().asString());
 			} catch (Exception e) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "exception on sending message", e);
+				throw new PipeRunException(this, getLogPrefix(session) + "exception on sending message", e);
 			}
 		}
 		return "<dummy/>";
 	}
 
-	private String processZipFile(IPipeLineSession session,
-			InputStream inputStream, String fileEncoding, IAdapter adapter,
-			boolean writeSecLogMessage) throws IOException {
+	private String processZipFile(PipeLineSession session, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {
 		String result = "";
 		String lastState = null;
 		ZipInputStream archive = new ZipInputStream(inputStream);
@@ -179,8 +159,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 				if (StringUtils.isNotEmpty(result)) {
 					result += "\n";
 				}
-				lastState = processMessage(adapter, message, writeSecLogMessage)
-						.getState();
+				lastState = processMessage(adapter, message, writeSecLogMessage).getState();
 				result += name + ":" + lastState;
 			}
 			archive.closeEntry();
@@ -191,56 +170,52 @@ public class TestPipeLine extends TimeoutGuardPipe {
 		return "";
 	}
 
-	private PipeLineResult processMessage(IAdapter adapter, String message,
-			boolean writeSecLogMessage) {
+	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
-		IPipeLineSession pls = new PipeLineSessionBase();
-		Map ibisContexts = XmlUtils.getIbisContext(message);
-		String technicalCorrelationId = null;
-		if (ibisContexts != null) {
-			String contextDump = "ibisContext:";
-			for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
-				String key = (String) it.next();
-				String value = (String) ibisContexts.get(key);
+		try (PipeLineSession pls = new PipeLineSession()) {
+			Map ibisContexts = XmlUtils.getIbisContext(message);
+			String technicalCorrelationId = null;
+			if (ibisContexts != null) {
+				String contextDump = "ibisContext:";
+				for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
+					String key = (String) it.next();
+					String value = (String) ibisContexts.get(key);
+					if (log.isDebugEnabled()) {
+						contextDump = contextDump + "\n " + key + "=[" + value + "]";
+					}
+					if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
+						technicalCorrelationId = value;
+					} else {
+						pls.put(key, value);
+					}
+				}
 				if (log.isDebugEnabled()) {
-					contextDump = contextDump + "\n " + key + "=[" + value
-							+ "]";
-				}
-				if (key.equals(IPipeLineSession.technicalCorrelationIdKey)) {
-					technicalCorrelationId = value;
-				} else {
-					pls.put(key, value);
+					log.debug(contextDump);
 				}
 			}
-			if (log.isDebugEnabled()) {
-				log.debug(contextDump);
+			Date now = new Date();
+			PipeLineSession.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
+			if (writeSecLogMessage) {
+				secLog.info("message [" + message + "]");
 			}
-		}
-		Date now = new Date();
-		PipeLineSessionBase.setListenerParameters(pls, messageId,
-				technicalCorrelationId, now, now);
-		if (writeSecLogMessage) {
-			secLog.info("message [" + message + "]");
-		}
-
-		// Temporarily change threadName so logging for pipeline to test will
-		// not be suppressed (see property 'log.thread.rejectRegex')
-		String ctName = Thread.currentThread().getName();
-		String ntName = StringUtils.replace(ctName, "WebControlTestPipeLine",
-				"WCTestPipeLine");
-		try {
-			Thread.currentThread().setName(ntName);
-			return adapter.processMessage(messageId, new Message(message), pls);
-		} finally {
-			Thread.currentThread().setName(ctName);
+	
+			// Temporarily change threadName so logging for pipeline to test will
+			// not be suppressed (see property 'log.thread.rejectRegex')
+			String ctName = Thread.currentThread().getName();
+			String ntName = StringUtils.replace(ctName, "WebControlTestPipeLine", "WCTestPipeLine");
+			try {
+				Thread.currentThread().setName(ntName);
+				return adapter.processMessage(messageId, new Message(message), pls);
+			} finally {
+				Thread.currentThread().setName(ctName);
+			}
 		}
 	}
 
-	private String retrieveFormInput(IPipeLineSession session) {
+	private String retrieveFormInput(PipeLineSession session) {
 		List<String> adapterNames = new ArrayList<String>();
 		adapterNames.add("-- select an adapter --");
-		adapterNames.addAll(RestListenerUtils.retrieveIbisManager(session)
-				.getSortedStartedAdapterNames());
+		adapterNames.addAll(RestListenerUtils.retrieveIbisManager(session) .getSortedStartedAdapterNames());
 		XmlBuilder adaptersXML = new XmlBuilder("adapters");
 		for (int i = 0; i < adapterNames.size(); i++) {
 			XmlBuilder adapterXML = new XmlBuilder("adapter");

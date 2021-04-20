@@ -30,6 +30,13 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.transform.Transformer;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import bitronix.tm.BitronixTransactionManager;
+import bitronix.tm.TransactionManagerServices;
+import bitronix.tm.resource.jdbc.PoolingDataSource;
+import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
@@ -41,14 +48,6 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-
-import bitronix.tm.BitronixTransactionManager;
-import bitronix.tm.TransactionManagerServices;
-import bitronix.tm.resource.jdbc.PoolingDataSource;
-import bitronix.tm.resource.jms.PoolingConnectionFactory;
 
 /**
  * Some utilities for working with Esb.
@@ -223,8 +222,7 @@ public class EsbUtils {
 		return null;
 	}
 
-	public static PoolingDataSource getPoolingDataSource(
-			JdbcTransactionalStorage errorStorage) {
+	public static PoolingDataSource getPoolingDataSource(JdbcTransactionalStorage errorStorage) {
 		String dsUrl = null;
 		String dsUserName = null;
 		String dsPassword = null;
@@ -233,8 +231,7 @@ public class EsbUtils {
 		try {
 			errorStorageConnection = errorStorage.getConnection();
 		} catch (JdbcException e) {
-			log.warn("error occured during getting errorStorage connection: "
-					+ e.getMessage());
+			log.warn("error occured during getting errorStorage connection: " + e.getMessage());
 		}
 		if (errorStorageConnection == null) {
 			log.warn("could not get errorStorage connection");
@@ -246,8 +243,7 @@ public class EsbUtils {
 				// dsUserName = md.getUserName();
 				// dsPassword = md.getPassword();
 			} catch (SQLException e) {
-				log.warn("error occured during getting errorStorage metadata: "
-						+ e.getMessage());
+				log.warn("error occured during getting errorStorage metadata: " + e.getMessage());
 			}
 
 			if (dsUrl == null) {
@@ -260,33 +256,21 @@ public class EsbUtils {
 				try {
 					confResString = Misc.getConfigurationResources();
 					if (confResString != null) {
-						confResString = XmlUtils
-								.removeNamespaces(confResString);
+						confResString = XmlUtils.removeNamespaces(confResString);
 					}
 				} catch (IOException e) {
-					log.warn("error getting configuration resources: "
-							+ e.getMessage());
+					log.warn("error getting configuration resources: " + e.getMessage());
 				}
 				String authDataAlias = null;
 				if (confResString != null) {
-					String dsName = null;
-					try {
-						dsName = errorStorage.getDataSourceNameToUse();
-					} catch (JdbcException e) {
-						log.warn("error getting datasource name to use: "
-								+ e.getMessage());
-					}
+					String dsName = errorStorage.getDatasourceName();
 					if (dsName != null) {
-						String xpathExpression = "XMI/JDBCProvider/factories[@jndiName='"
-								+ dsName + "']/@authDataAlias";
+						String xpathExpression = "XMI/JDBCProvider/factories[@jndiName='" + dsName + "']/@authDataAlias";
 						try {
-							Transformer t = XmlUtils
-									.createXPathEvaluator(xpathExpression);
-							authDataAlias = XmlUtils.transformXml(t,
-									confResString);
+							Transformer t = XmlUtils.createXPathEvaluator(xpathExpression);
+							authDataAlias = XmlUtils.transformXml(t, confResString);
 						} catch (Exception e) {
-							log.warn("error getting datasource authDataAlias: "
-									+ e.getMessage());
+							log.warn("error getting datasource authDataAlias: " + e.getMessage());
 						}
 					}
 				}
@@ -294,8 +278,7 @@ public class EsbUtils {
 				if (StringUtils.isEmpty(authDataAlias)) {
 					log.warn("could not get errorStorage authDataAlias");
 				} else {
-					CredentialFactory cf = new CredentialFactory(authDataAlias,
-							null, null);
+					CredentialFactory cf = new CredentialFactory(authDataAlias, null, null);
 					dsUserName = cf.getUsername();
 					dsPassword = cf.getPassword();
 					return setupJdbcDataSource(dsUrl, dsUserName, dsPassword);
@@ -305,8 +288,7 @@ public class EsbUtils {
 		return null;
 	}
 
-	private static EsbConnectionFactoryInfo getEsbConnectionFactoryInfo(
-			EsbJmsListener esbJmsListener) {
+	private static EsbConnectionFactoryInfo getEsbConnectionFactoryInfo(EsbJmsListener esbJmsListener) {
 		String cfUrl = null;
 		String cfUserName = null;
 		String cfPassword = null;

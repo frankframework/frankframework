@@ -15,27 +15,14 @@
 */
 package nl.nn.adapterframework.batch;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * @author John Dekker
  */
 public class OutputfieldsPart {
-	private String value;
-	private String description;
+	private @Getter @Setter String value;
+	private @Getter @Setter String description;
 	
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String string) {
-		value = string;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String string) {
-		description = string;
-	}
-
 }

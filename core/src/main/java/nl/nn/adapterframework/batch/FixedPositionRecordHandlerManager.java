@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@ package nl.nn.adapterframework.batch;
 
 import java.util.Map;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import lombok.Getter;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
@@ -30,17 +31,17 @@ import nl.nn.adapterframework.doc.IbisDoc;
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
-	private int startPosition;
-	private int endPosition=-1;
+	private @Getter int startPosition;
+	private @Getter int endPosition=-1;
 	
 	@Override
-	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
+	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		String value = null;
 		if (startPosition >= record.length()) {
 			throw new Exception("Record size is smaller then the specified position of the recordtype within the record");
 		}
 		if (endPosition < 0) {
-			Map<String,RecordHandlingFlow> valueHandlersMap = getValueHandlersMap();
+			Map<String,RecordHandlingFlow> valueHandlersMap = getFlowMap();
 			RecordHandlingFlow rhf = null;
 			for(String name: valueHandlersMap.keySet()) {
 				if (log.isTraceEnabled()) log.trace("determining value for record ["+record+"] with key ["+name+"] and startPosition ["+startPosition+"]");
@@ -52,38 +53,30 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 				}
 			}
 			if (rhf == null) {
-				rhf =getValueHandlersMap().get("*");
+				rhf =getFlowMap().get("*");
 				if (rhf == null) {
 					throw new Exception("No handlers (flow) found for recordKey [" + value + "]");
 				}
 			}
 			return rhf;
+		} 
+		if (endPosition >= record.length()) {
+			value = record.substring(startPosition); 
 		} else {
-			if (endPosition >= record.length()) {
-				value = record.substring(startPosition); 
-			}
-			else {
-				value = record.substring(startPosition, endPosition);
-			}
-			
-			return super.getRecordHandlerByKey(value);
+			value = record.substring(startPosition, endPosition);
 		}
+		
+		return super.getRecordHandlerByKey(value);
 	}
 
 
-	@IbisDoc({"startposition of the field in the record that identifies the recordtype (first character is 0)", "0"})
+	@IbisDoc({"1", "Start position of the field in the record that identifies the recordtype (first character is 0)", "0"})
 	public void setStartPosition(int i) {
 		startPosition = i;
 	}
-	public int getStartPosition() {
-		return startPosition;
-	}
 
-	@IbisDoc({"if endposition >= 0 then this field contains the endposition of the recordtype field in the record; all characters beyond this position are ignored. else, if endposition < 0 then it depends on the length of the recordkey in the flow", "-1"})
+	@IbisDoc({"2", "If endposition >= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition < 0 then it depends on the length of the recordkey in the flow", "-1"})
 	public void setEndPosition(int i) {
 		endPosition = i;
-	}
-	public int getEndPosition() {
-		return endPosition;
 	}
 }

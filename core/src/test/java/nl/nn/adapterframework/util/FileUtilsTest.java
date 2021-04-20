@@ -11,7 +11,11 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -279,4 +283,90 @@ public class FileUtilsTest {
 		assertFalse(FileUtils.isFileBinaryEqual(file1, file2));
 	}
 
+	public File getRollingFile(String dir, int year, int month, int day) {
+		Date date = new GregorianCalendar(year, month, day).getTime();
+		return FileUtils.getRollingFile(dir, "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMAT, "", 0, date);
+	}
+	// Helper method to verify the filename
+	public boolean testWeeklyRollingFilename(String name) {
+		String[] nsplit = name.split("W");
+		if(Integer.valueOf(nsplit[1]) > 50) { // in case the week number is greater than 50 then the year must be 2020
+			return "2020".equals(nsplit[0]);
+		}
+		return "2021".equals(nsplit[0]);
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForTheLastWeekOfOldYear() throws Exception {
+		// The Last week of old year
+		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2020, 11, 31).getName()));
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForTheWeekBeforeTheLastWeekOfOldYear() throws Exception {
+		// The week before the last week of old year
+		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2020, 11, 25).getName()));
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForTheLastDayOfTheWeekBeforeTheLastWeekOfOldYear() throws Exception {
+		// The last day of the week before the last week of old year
+		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2020, 11, 27).getName()));
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForFewDaysOfTheNewYearFromTheLastWeekOfOldYear() throws Exception {
+		// Few days of the new year which are also in the last week of the old year
+		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2021, 0, 3).getName()));
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForTheFirstDayOfTheNewYear() throws Exception {
+		// The first day of the first week of the new year
+		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2021, 0, 4).getName()));
+	}
+
+	@Test
+	public void testWeeklyRollingFilenameForAdayFromTheSecondWeekOfTheNewYear() throws Exception {
+		// The first day of the first week of the new year
+		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2021, 0, 11).getName()));
+	}
+
+	@Test
+	public void testGetRollingFileDeleteExisting() throws IOException {
+		TemporaryFolder tempDir = new TemporaryFolder();
+		tempDir.create();
+		File tempDirRoot = tempDir.getRoot();
+		// get rolling file 2020W52
+		File test = getRollingFile(tempDirRoot.getAbsolutePath(), 2020, 11, 25);
+		Files.createFile(Paths.get(test.getAbsolutePath()));
+		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
+
+		test.setLastModified(new GregorianCalendar(2020, 11, 25).getTime().getTime()); // change the last modified date
+																						// for the file to be deleted.
+		test = FileUtils.getRollingFile(tempDirRoot.getAbsolutePath(), "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMAT,
+				"", 7, null);
+		Files.createFile(Paths.get(test.getAbsolutePath()));
+		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
+	}
+
+	@Test
+	public void testGetRollingFileTheSamefile() throws IOException {
+		TemporaryFolder tempDir = new TemporaryFolder();
+		tempDir.create();
+		File tempDirRoot = tempDir.getRoot();
+
+		// get rolling file 2020W52
+		File test = getRollingFile(tempDirRoot.getAbsolutePath(), 2020, 11, 25);
+		Files.createFile(Paths.get(test.getAbsolutePath()));
+		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
+
+		test = getRollingFile(tempDirRoot.getAbsolutePath(), 2020, 11, 25);
+		try {
+			Files.createFile(Paths.get(test.getAbsolutePath()));
+		} catch (Exception e) {
+			assertEquals(FileAlreadyExistsException.class, e.getClass());
+		}
+		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
+	}
 }

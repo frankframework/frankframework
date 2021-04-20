@@ -18,7 +18,7 @@ package nl.nn.adapterframework.monitoring;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -54,6 +54,7 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 		configure(); 
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		hostname=Misc.getHostname();
@@ -116,13 +117,14 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 			hostname+" "+
 			sourceId+" "+
 			subSource+" "+
-			eventType.getName()+" "+
-			severity.getName()+" "+
+			eventType.name()+" "+
+			severity.name()+" "+
 			dtapStage+" "+
 			message;
 		return result;
 	}
 
+	@Override
 	public void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		if (t!=null) {
 			if (StringUtils.isEmpty(message)) {

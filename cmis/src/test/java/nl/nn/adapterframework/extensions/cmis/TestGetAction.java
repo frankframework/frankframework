@@ -2,6 +2,7 @@ package nl.nn.adapterframework.extensions.cmis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +28,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -49,7 +50,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 	
 	private final static String GET_RESULT_FOR_INPUT= "dummy_stream";
 
-	private final static String GET_RESULT_TO_SERVLET= "";
+	private final static String GET_RESULT_TO_SERVLET= null;
 
 	private final static String GET_RESULT_FOR_GET_PROPERTIES = "<cmis><properties>"
 			+ "<property name=\"cmis:name\" type=\"id\">dummy</property>"
@@ -107,7 +108,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		sender.setKeepSession(false);
 
 		HttpServletResponse response = mock(HttpServletResponse.class);
-		session.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
+		session.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 		ServletOutputStream outputStream = mock(ServletOutputStream.class);
 		try {
 			doReturn(outputStream).when(response).getOutputStream();
@@ -170,7 +171,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 		String actualResult = sender.sendMessage(input, session).asString();
 		if(!getProperties && !resultToServlet) {
-			assertEquals("", actualResult);
+			assertNull(actualResult);
 		} else {
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
@@ -184,13 +185,24 @@ public class TestGetAction extends SenderBase<CmisSender>{
 	}
 
 	@Test
+	public void sendMessageStreamResult() throws ConfigurationException, SenderException, TimeOutException, IOException {
+		sender.setBindingType(bindingType);
+		sender.setAction(action);
+		sender.configure();
+
+		Message actualResult = sender.sendMessage(input, session);
+		assertTrue(actualResult.asObject() instanceof InputStream);
+		assertEquals(GET_RESULT_FOR_INPUT, actualResult.asString());
+	}
+
+	@Test
 	public void sendMessageFileContent() throws ConfigurationException, SenderException, TimeOutException, IOException {
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 
 		String actualResult = sender.sendMessage(input, session).asString();
 		if(!getProperties && !resultToServlet) {
-			assertEquals("", actualResult);
+			assertNull(actualResult);
 		} else {
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
@@ -210,7 +222,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 		String actualResult = sender.sendMessage(input, session).asString();
 		if(!getProperties && !resultToServlet) {
-			assertEquals("", actualResult);
+			assertNull(actualResult);
 		} else {
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
@@ -230,7 +242,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 		String actualResult = sender.sendMessage(input, session).asString();
 		if(!getProperties && !resultToServlet) {
-			assertEquals("", actualResult);
+			assertNull(actualResult);
 		} else {
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}

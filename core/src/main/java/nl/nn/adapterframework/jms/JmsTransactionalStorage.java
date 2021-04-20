@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,8 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
@@ -48,7 +47,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 
 	private String slotId=null;
 	private String type=null;
-	private boolean active=true;   
+	private boolean active=true;
 
 	private final String ITRANSACTIONALSTORAGE = "nl.nn.adapterframework.core.ITransactionalStorage";
 
@@ -56,12 +55,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		super();
 		setTransacted(true);
 		setPersistent(true);
-		setDestinationType("QUEUE");
-	}
-
-	@Override
-	public void configure() throws ConfigurationException {
-		// nothing special
+		setDestinationTypeEnum(DestinationType.QUEUE);
 	}
 
 	@Override
@@ -97,7 +91,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	public S browseMessage(String storageKey) throws ListenerException {
 		try {
 			ObjectMessage msg=browseJmsMessage(storageKey);
-			return(S)msg.getObject();
+			return (S) msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
@@ -107,7 +101,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	public S getMessage(String storageKey) throws ListenerException {
 		try {
 			ObjectMessage msg=getJmsMessage(storageKey);
-		return (S)msg.getObject();
+			return (S) msg.getObject();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}

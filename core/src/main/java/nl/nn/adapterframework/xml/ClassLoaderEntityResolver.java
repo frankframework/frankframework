@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,25 +22,30 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * @see org.xml.sax.EntityResolver
  * This class offers the resolveEntity method to resolve a systemId to a resource on the classpath.
+ * 
+ * It's important that the XMLEntityResolver does not return NULL, when it cannot find a resource.
+ * Returning NULL will cause the XmlReader to fall back to it's built in EntityResolver.
+ * 
  * @since 4.1.1
  */
 
 public class ClassLoaderEntityResolver implements EntityResolver {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader;
+	private IScopeProvider scopeProvider;
 
-	public ClassLoaderEntityResolver(ClassLoader classLoader) {
-		this.classLoader = classLoader;
+	public ClassLoaderEntityResolver(IScopeProvider scopeProvider) {
+		this.scopeProvider = scopeProvider;
 	}
 
 	public ClassLoaderEntityResolver(Resource resource) {
-		this(resource.getClassLoader());
+		this(resource.getScopeProvider());
 	}
 
 	/**
@@ -49,13 +54,14 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 	@Override
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 
-		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"] classloader ["+classLoader+"]");
-		Resource resource = Resource.getResource(classLoader, systemId);
+		if (log.isDebugEnabled()) log.debug("Resolving publicId [" + publicId +"] systemId [" + systemId +"] in scope ["+scopeProvider+"]");
+		Resource resource = Resource.getResource(scopeProvider, systemId);
 		if(resource != null) {
 			return resource.asInputSource();
 		}
-		// If nothing found, null is returned, for normal processing
-		return null;
-	}
 
+		// If nothing found, return a SAXException. If NULL is returned it can trigger default (fallback) behaviour using the internal EntityResolver.
+		String message = "Cannot get resource for publicId [" + publicId + "] with systemId [" + systemId + "] in scope ["+scopeProvider+"]";
+		throw new SAXException(message);
+	}
 }

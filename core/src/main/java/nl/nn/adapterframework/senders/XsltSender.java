@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.collections.map.LRUMap;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -30,7 +30,7 @@ import org.xml.sax.XMLReader;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -43,6 +43,7 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.stream.xml.XmlTap;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -50,7 +51,6 @@ import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SkipEmptyTagsFilter;
 import nl.nn.adapterframework.xml.TransformerFilter;
-import nl.nn.adapterframework.xml.XmlTap;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
@@ -100,7 +100,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		
-		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("xslt.streaming.default", false);
+		streamingXslt = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
 		
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
@@ -111,7 +111,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			if (omitXmlDeclaration==null) {
 				omitXmlDeclaration=true;
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(), this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
 			throw new ConfigurationException(getLogPrefix()+" one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
@@ -159,7 +159,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 
-	protected ContentHandler filterInput(ContentHandler input, IPipeLineSession session) {
+	protected ContentHandler filterInput(ContentHandler input, PipeLineSession session) {
 		if (isRemoveNamespaces()) {
 			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
 			return new NamespaceRemovingFilter(input);
@@ -169,13 +169,13 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	
 	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		ContentHandler handler = createHandler(null, session, target);
 		return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, session);
 	}
 
-	protected ContentHandler createHandler(Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(Message input, PipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -185,14 +185,19 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 
 			TransformerPool poolToUse = transformerPool;
-			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && session.get(styleSheetNameSessionKey) != null) {
-				String styleSheetNameToUse = session.get(styleSheetNameSessionKey).toString();
-			
-				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
-					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), getConfigurationClassLoader(), null, null, styleSheetNameToUse, null, true, getParameterList()));
-					poolToUse.open();
-				} else {
-					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+			if(StringUtils.isNotEmpty(styleSheetNameSessionKey)) {
+				if (session.get(styleSheetNameSessionKey) != null) {
+					String styleSheetNameToUse = session.get(styleSheetNameSessionKey).toString();
+				
+					if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+						dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameToUse, null, true, getParameterList()));
+						poolToUse.open();
+					} else {
+						poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+					}
+				} 
+				if (poolToUse == null) {
+					throw new SenderException("no XSLT stylesheet found from styleSheetNameSessionKey ["+session.get(styleSheetNameSessionKey)+"], and neither one statically configured");
 				}
 			}
 			
@@ -267,7 +272,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 	
 
-	protected XMLReader getXmlReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
+	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
 		return XmlUtils.getXMLReader(handler);
 	}
 	
@@ -276,7 +281,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 * alternative implementation of send message, that should do the same as the original, but reuses the streaming content handler
 	 */
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
@@ -292,7 +297,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 						}
 					};
 				}
-				XMLReader reader = getXmlReader(handler);
+				XMLReader reader = getXmlReader(session, handler);
 				InputSource source = message.asInputSource();
 				reader.parse(source);
 				return target.getPipeRunResult();
@@ -341,7 +346,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	@IbisDoc({"5", "omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
-	public void setOmitXmlDeclaration(boolean b) {
+	public void setOmitXmlDeclaration(Boolean b) {
 		omitXmlDeclaration = b;
 	}
 	public Boolean getOmitXmlDeclaration() { // can return null too
@@ -365,7 +370,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
-	public void setIndentXml(boolean b) {
+	public void setIndentXml(Boolean b) {
 		indentXml = b;
 	}
 	public Boolean getIndentXml() { // can return null too

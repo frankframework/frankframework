@@ -18,7 +18,7 @@ package nl.nn.adapterframework.jdbc;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -35,6 +35,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 public class JdbcTableListener extends JdbcListener implements IProvidesMessageBrowsers<Object> {
 	
 	private String tableName;
+	private String tableAlias="t";
 	private String statusField;
 	private String orderField;
 	private String timestampField;
@@ -62,14 +63,15 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.DONE))) {
 			throw new ConfigurationException(getLogPrefix()+"must specify statusValueProcessed");
 		}
+		String alias = StringUtils.isNotBlank(getTableAlias())?getTableAlias().trim():"";
 		setSelectQuery("SELECT "+getKeyField() + (StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
-						" FROM "+getTableName()+
+						" FROM "+getTableName()+" "+ alias +
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE))?
 						 "='"+getStatusValue(ProcessState.AVAILABLE)+"'":
 						 " NOT IN ('"+getStatusValue(ProcessState.ERROR)+"','"+getStatusValue(ProcessState.DONE)+(StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD))?"','"+getStatusValue(ProcessState.HOLD):"")+"')")+
 						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND ("+getSelectCondition()+")": "") +
-						 (StringUtils.isNotEmpty(getOrderField())? " ORDER BY "+getOrderField():""));
+						(StringUtils.isNotEmpty(getOrderField())? " ORDER BY "+getOrderField():""));
 		statusValues.forEach((state, value) -> setUpdateStatusQuery(state, createUpdateStatusQuery(value, null)));
 		super.configure();
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.INPROCESS)) && !getDbmsSupport().hasSkipLockedFunctionality()) {
@@ -83,7 +85,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 				" SET "+getStatusField()+"='"+fieldValue+"'"+
 				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"="+getDbmsSupport().getSysDate():"")+
 				(StringUtils.isNotEmpty(additionalSetClause)?","+additionalSetClause:"")+
-				" WHERE "+getKeyField()+"=?";
+				" WHERE "+getStatusField()+"!='"+fieldValue+"' AND "+getKeyField()+"=?";
 	}
 
 	@Override
@@ -130,6 +132,14 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		return tableName;
 	}
 
+	@IbisDoc({"2", "Alias of the table, that can be used in selectCondition", "t"})
+	public void setTableAlias(String string) {
+		tableAlias = string;
+	}
+	public String getTableAlias() {
+		return tableAlias;
+	}
+
 	@IbisDoc({"4", "Field containing the status of the message", ""})
 	public void setStatusField(String fieldname) {
 		statusField = fieldname;
@@ -169,7 +179,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		statusValues.put(ProcessState.DONE, string);
 	}
 
-	@IbisDoc({"10", "Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality; In that case the transactionAttribute of the Receiver should be set to Required or RequiresNew, to avoid messages being picked up by multiple threads", ""})
+	@IbisDoc({"10", "Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality and the Receiver can be (and is) set to Required or RequiresNew.", ""})
 	public void setStatusValueInProcess(String string) {
 		statusValues.put(ProcessState.INPROCESS, string);
 	}

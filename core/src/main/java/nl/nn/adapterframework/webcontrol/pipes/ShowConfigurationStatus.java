@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
@@ -121,7 +121,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	}
 
 	@Override
-	protected String doGet(IPipeLineSession session) throws PipeRunException {
+	protected String doGet(PipeLineSession session) throws PipeRunException {
 		IbisManager ibisManager = retrieveIbisManager();
 
 		String configurationName = null;
@@ -611,7 +611,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 						jmsBrowser.setName("MessageBrowser_" + jlb.getName());
 						jmsBrowser.setJmsRealm(jlb.getJmsRealmName());
 						jmsBrowser.setDestinationName(jlb.getDestinationName());
-						jmsBrowser.setDestinationType(jlb.getDestinationType());
+						jmsBrowser.setDestinationTypeEnum(jlb.getDestinationTypeEnum());
 						String numMsgs;
 						try {
 							int messageCount = jmsBrowser.getMessageCount();

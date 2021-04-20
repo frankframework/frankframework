@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -43,6 +43,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
@@ -184,7 +185,7 @@ public final class ShowSecurityItems extends ActionBase {
 							certElem.addAttribute("name", certificate);
 							String certificateAuthAlias = s.getCertificateAuthAlias();
 							certElem.addAttribute("authAlias", certificateAuthAlias);
-							URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+							URL certificateUrl = ClassUtils.getResourceURL(certificate);
 							if (certificateUrl == null) {
 								certElem.addAttribute("url", "");
 								pipeElem.addSubElement(certElem);
@@ -210,7 +211,7 @@ public final class ShowSecurityItems extends ActionBase {
 								certElem.addAttribute("name", certificate);
 								String certificateAuthAlias = s.getCertificateAuthAlias();
 								certElem.addAttribute("authAlias", certificateAuthAlias);
-								URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+								URL certificateUrl = ClassUtils.getResourceURL(certificate);
 								if (certificateUrl == null) {
 									certElem.addAttribute("url", "");
 									pipeElem.addSubElement(certElem);
@@ -236,7 +237,7 @@ public final class ShowSecurityItems extends ActionBase {
 									certElem.addAttribute("name", certificate);
 									String certificateAuthAlias = s.getCertificateAuthAlias();
 									certElem.addAttribute("authAlias", certificateAuthAlias);
-									URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
+									URL certificateUrl = ClassUtils.getResourceURL(certificate);
 									if (certificateUrl == null) {
 										certElem.addAttribute("url", "");
 										pipeElem.addSubElement(certElem);
@@ -377,9 +378,10 @@ public final class ShowSecurityItems extends ActionBase {
 				DirectQuerySender qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 				qs.setJmsRealm(jmsRealm);
 				try {
-					dsName = qs.getDataSourceNameToUse();
+					qs.configure();
+					dsName = qs.getDatasourceName();
 					dsInfo = qs.getDatasourceInfo();
-				} catch (JdbcException jdbce) {
+				} catch (JdbcException | ConfigurationException jdbce) {
 					dsInfo = jdbce.getMessage();
 					dsInfoError = true;
 				}

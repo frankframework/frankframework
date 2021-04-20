@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -30,12 +30,12 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Gets the contents of the {@link IPipeLineSession pipeLineSession} by a key specified by
+ * Gets the contents of the {@link PipeLineSession pipeLineSession} by a key specified by
  * <code>{@link #setSessionKey(String) sessionKey}</code>.
  *
  * @author Johan Verrips
  *
- * @see IPipeLineSession
+ * @see PipeLineSession
  */
 
 public class GetFromSession  extends FixedForwardPipe {
@@ -44,7 +44,7 @@ public class GetFromSession  extends FixedForwardPipe {
 	private String type = null;
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String key = getSessionKey();
 		if(StringUtils.isEmpty(key)) {
 			try {
@@ -80,7 +80,7 @@ public class GetFromSession  extends FixedForwardPipe {
 	}
 
 	/**
-	 * Returns the name of the key in the {@link IPipeLineSession pipeLineSession} to retrieve the input from
+	 * Returns the name of the key in the {@link PipeLineSession pipeLineSession} to retrieve the input from
 	 */
 	public String getSessionKey() {
 		return sessionKey;
@@ -88,7 +88,7 @@ public class GetFromSession  extends FixedForwardPipe {
 
 	/**
 	 * Sets the name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see IPipeLineSession
+	 * @see PipeLineSession
 	 */
 	@IbisDoc({"1", "Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable", ""})
 	public void setSessionKey(String sessionKey) {

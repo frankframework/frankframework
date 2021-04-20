@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<digester-rules>
-  <rule pattern="*/syntax1NameItemSingular" registerMethod="setItemSingular"/>
-  <rule pattern="*/syntax1NameItemPluralAdd" registerMethod="addItemPlural"/>
-  <rule pattern="*/syntax1NameItemPluralRegister" registerMethod="registerItemPlural"/>
-  <rule pattern="*/jmsRealms" factory="nl.nn.adapterframework.configuration.JmsRealmsFactory"/>
-</digester-rules>

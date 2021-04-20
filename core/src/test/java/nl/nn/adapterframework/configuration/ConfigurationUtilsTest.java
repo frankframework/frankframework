@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.configuration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -155,8 +156,8 @@ public class ConfigurationUtilsTest extends Mockito {
 		String filename = FilenameUtils.getName(zip.getFile());
 		assertNotNull("filename cannot be determined", filename);
 
-		boolean result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
-		assertTrue("file uploaded to mock database", result);
+		String result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
+		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
 		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
@@ -174,8 +175,8 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("filename cannot be determined", filename);
 
 		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SC";
-		boolean result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
-		assertTrue("file uploaded to mock database", result);
+		String result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
+		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
 		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
@@ -193,8 +194,8 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("filename cannot be determined", filename);
 
 		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SPECIAL";
-		boolean result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
-		assertTrue("file uploaded to mock database", result);
+		String result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
+		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
 		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
@@ -210,9 +211,9 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("multiConfig.zip not found", zip);
 
 		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
-		String result = ConfigurationUtils.processMultiConfigZipFile(ibisContext, "fakeDataSource", false, false, zip.openStream(), "user");
-		assertNotNull("file uploaded to mock database", result);
-		TestAssertions.assertEqualsIgnoreCRLF("buildInfoZip.jar:true\n" + "buildInfoZip2.jar:true\n" + "noBuildInfoZip.jar:false", result.trim());
+		Map<String, String> result = ConfigurationUtils.processMultiConfigZipFile(ibisContext, "fakeDataSource", false, false, zip.openStream(), "user");
+		assertNotEquals("file uploaded to mock database", 0, result.size());
+		assertEquals("{ConfigurationName: 001_20191002-1300=loaded, ConfigurationName: 002_20191002-1400=loaded, noBuildInfoZip.jar=no [BuildInfo.properties] present in configuration}",result.toString());
 
 		Map<String, Object> parameters = stmt.getNamedParameters(); //Test the 2nd file, because the 3rd result fails
 		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));

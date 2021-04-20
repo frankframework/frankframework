@@ -3,11 +3,14 @@
 
 name: Java CI with Maven
 
+env:
+  PROFILES: ibissource,codecoverage
+  USE_PROPRIETARY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
 on:
   push:
-    branches: [master, 7.5-release]
+    branches: [master, 7.5-release, 7.6-release]
   pull_request:
-    branches: [master, 7.5-release]
+    branches: [master, 7.5-release, 7.6-release]
 
 jobs:
   build:
@@ -38,15 +41,21 @@ jobs:
         java-version: 1.8
 
     - name: Create Maven settings.xml file
+      if: ${{ env.USE_PROPRIETARY == 'true' }}
       uses: s4u/maven-settings-action@v2.3.0
       with:
         servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
+
+    - name: Update maven profiles
+      if: ${{ env.USE_PROPRIETARY == 'true' }}
+      run: |
+        echo "PROFILES=ibissource,codecoverage,proprietary" >> $GITHUB_ENV
 
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
-      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -Pibissource,codecoverage,proprietary
+      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -P${{env.PROFILES}}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1

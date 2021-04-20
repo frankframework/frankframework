@@ -8,7 +8,7 @@
 		<receiver name="WebControlShowEnvironmentVariables-post">
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="WebControlShowEnvironmentVariables-post" uriPattern="showEnvironmentVariables"
-				method="POST" view="false" authRoles="IbisDataAdmin,IbisAdmin,IbisTester" />
+				method="POST" authRoles="IbisDataAdmin,IbisAdmin,IbisTester" />
 		</receiver>
 		<pipeline firstPipe="doShowEnvironmentVariables">
 			<exits>

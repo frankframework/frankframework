@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,24 +15,32 @@
 */
 package nl.nn.adapterframework.stream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.json.JsonTee;
+import nl.nn.adapterframework.stream.json.JsonWriter;
+import nl.nn.adapterframework.stream.xml.XmlTee;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream implements AutoCloseable {
@@ -40,7 +48,7 @@ public class MessageOutputStream implements AutoCloseable {
 	
 	private INamedObject owner;
 	protected Object requestStream;
-	private Object response;
+	private Message response;
 	private PipeForward forward;
 	
 	private MessageOutputStream nextStream;
@@ -77,19 +85,30 @@ public class MessageOutputStream implements AutoCloseable {
 		this.requestStream=writer;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, next);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session) {
+	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, nextStream);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
 	}
 	
+	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
+		this(owner, next);
+		this.requestStream=handler;
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+	}
+	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
+		this(owner, nextStream);
+		this.requestStream=handler;
+		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+	}
 
-	
+
+
 	private void connect(MessageOutputStream nextStream) {
 		this.nextStream=nextStream;
 		if (nextStream==null) {
@@ -132,6 +151,9 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 	}
 
+	public boolean isBinary() {
+		return requestStream instanceof OutputStream;
+	}
 
 	public Object asNative() {
 		return requestStream;
@@ -145,17 +167,25 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 	
 	public OutputStream asStream() throws StreamingException {
+		return asStream(null);
+	}
+	
+	public OutputStream asStream(String charset) throws StreamingException {
 		if (requestStream instanceof OutputStream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning OutputStream as OutputStream");
 			return (OutputStream) requestStream;
 		}
 		if (requestStream instanceof Writer) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning Writer as OutputStream");
-			return new WriterOutputStream((Writer) requestStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return new WriterOutputStream((Writer) requestStream, StringUtils.isNotEmpty(charset)?charset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		}
 		if (requestStream instanceof ContentHandler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning ContentHandler as OutputStream");
 			return new ContentHandlerOutputStream((ContentHandler) requestStream, threadConnector);
+		}
+		if (requestStream instanceof JsonEventHandler) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning JsonEventHandler as OutputStream");
+			return new JsonEventHandlerOutputStream((JsonEventHandler) requestStream, threadConnector);
 		}
 		return null;
 	}
@@ -181,6 +211,14 @@ public class MessageOutputStream implements AutoCloseable {
 				throw new StreamingException(e);
 			}
 		}
+		if (requestStream instanceof JsonEventHandler) {
+			try {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as Writer");
+				return new OutputStreamWriter(new JsonEventHandlerOutputStream((JsonEventHandler) requestStream, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			} catch (UnsupportedEncodingException e) {
+				throw new StreamingException(e);
+			}
+		}
 		return null;
 	}
 
@@ -188,6 +226,9 @@ public class MessageOutputStream implements AutoCloseable {
 		if (requestStream instanceof ContentHandler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning ContentHandler as ContentHandler");
 			return (ContentHandler) requestStream;
+		}
+		if (requestStream instanceof JsonEventHandler) {
+			throw new StreamingException("Cannot handle XML as JSON");
 		}
 		if (requestStream instanceof OutputStream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as ContentHandler");
@@ -200,18 +241,96 @@ public class MessageOutputStream implements AutoCloseable {
 			return new XmlWriter((Writer) requestStream);
 		}
 		return null;
-
 	}
 
+	public JsonEventHandler asJsonEventHandler() throws StreamingException {
+		if (requestStream instanceof JsonEventHandler) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as JsonEventHandler");
+			return (JsonEventHandler) requestStream;
+		}
+		if (requestStream instanceof ContentHandler) {
+			throw new StreamingException("Cannot handle JSON as XML");
+		}
+		if (requestStream instanceof OutputStream) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as JsonEventHandler");
+			return new JsonWriter((OutputStream) requestStream);
+		}
+		if (requestStream instanceof Writer) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as JsonEventHandler");
+			return new JsonWriter((Writer) requestStream);
+		}
+		return null;
+	}
+
+	public StringWriter captureCharacterStream() {
+		StringWriter result = new StringWriter();
+		captureCharacterStream(result);
+		return result;
+	}
+	public void captureCharacterStream(Writer writer) {
+		captureCharacterStream(writer, 10000);
+	}
+	@SuppressWarnings("resource")
+	public void captureCharacterStream(Writer writer, int maxSize) {
+		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
+		if (requestStream instanceof Writer) {
+			requestStream = StreamUtil.captureWriter((Writer)requestStream, writer, maxSize);
+			return;
+		}
+		if (requestStream instanceof ContentHandler) {
+			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(writer, maxSize))));
+			return;
+		}
+		if (requestStream instanceof JsonEventHandler) {
+			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamUtil.limitSize(writer, maxSize)));
+			return;
+		}
+		if (requestStream instanceof OutputStream) {
+			requestStream = StreamUtil.captureOutputStream((OutputStream)requestStream, new WriterOutputStream(writer,StreamUtil.DEFAULT_CHARSET), maxSize);
+			return;
+		}
+		log.warn("captureCharacterStream() called before stream is installed.");
+	}
+	
+	public ByteArrayOutputStream captureBinaryStream() {
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		captureBinaryStream(result);
+		return result;
+	}
+	public void captureBinaryStream(OutputStream outputStream) {
+		captureBinaryStream(outputStream, 10000);
+	}
+	@SuppressWarnings("resource")
+	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
+		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
+		if (requestStream instanceof OutputStream) {
+			requestStream = StreamUtil.captureOutputStream((OutputStream)requestStream, outputStream, maxSize);
+			return;
+		}
+		if (requestStream instanceof ContentHandler) {
+			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(outputStream, maxSize))));
+			return;
+		}
+		if (requestStream instanceof JsonEventHandler) {
+			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamUtil.limitSize(outputStream, maxSize)));
+			return;
+		}
+		if (requestStream instanceof Writer) {
+			requestStream = StreamUtil.captureWriter((Writer)requestStream, new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize);
+			return;
+		}
+		log.warn("captureBinaryStream() called before stream is installed.");
+	}
+	
 	/**
 	 * Response message, e.g. the filename, of the {IOutputStreamTarget target}
 	 * after processing the stream. It is the responsability of the
 	 * {@link MessageOutputStream target} to set this message.
 	 */
-	public void setResponse(Object response) {
+	public void setResponse(Message response) {
 		this.response = response;
 	}
-	public Object getResponse() {
+	public Message getResponse() {
 		return response;
 	}
 
@@ -221,8 +340,7 @@ public class MessageOutputStream implements AutoCloseable {
 
 
 	public PipeRunResult getPipeRunResult() {
-		Object response = tail.getResponse();
-		return new PipeRunResult(getForward(), response);
+		return new PipeRunResult(getForward(), tail.getResponse());
 	}
 
 	public PipeForward getForward() {
@@ -238,7 +356,7 @@ public class MessageOutputStream implements AutoCloseable {
 	/**
 	 * Provides a non-null MessageOutputStream, that the caller can use to obtain a Writer, OutputStream or ContentHandler.
 	 */
-	public static MessageOutputStream getTargetStream(INamedObject owner, IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public static MessageOutputStream getTargetStream(INamedObject owner, PipeLineSession session, IForwardTarget next) throws StreamingException {
 		IOutputStreamingSupport nextProvider=null;
 		if (next!=null && next instanceof IOutputStreamingSupport) {
 			nextProvider = (IOutputStreamingSupport)next;

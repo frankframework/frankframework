@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -37,7 +37,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.soap.Wsdl;
+import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Dir2Xml;
 import nl.nn.adapterframework.util.FileUtils;
@@ -49,10 +49,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 	private String sessionKey = "file";
 	private String propertiesFileName = "wsdl.properties";
-	private static final String WSDL_EXTENSION = ".wsdl";
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		InputStream inputStream = (InputStream) session.get("file");
 		if (inputStream == null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
@@ -120,9 +119,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			receiver.setListener(esbJmsListener);
 			adapter.registerReceiver(receiver);
 			pipeLine.setAdapter(adapter);
-			Wsdl wsdl = null;
+			WsdlGenerator wsdl = null;
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
-			wsdl = new Wsdl(pipeLine, generationInfo);
+			wsdl = new WsdlGenerator(pipeLine, generationInfo);
 			wsdl.setIndent(true);
 			wsdl.init();
 			File wsdlDir = FileUtils.createTempDir(tempDir);

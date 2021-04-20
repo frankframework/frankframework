@@ -33,7 +33,6 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.WebServiceListener;
@@ -73,7 +72,7 @@ public class WsdlTest {
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance("a", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "Test1");
-		Wsdl wsdl = new Wsdl(simple);
+		WsdlGenerator wsdl = new WsdlGenerator(simple);
 		wsdl.init();
 		test(wsdl, "WsdlTest/webservice1.test.wsdl");
 	}
@@ -83,7 +82,7 @@ public class WsdlTest {
 		XmlValidator inputValidator=getXmlValidatorInstance("a", "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
 		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "Test1");
-		Wsdl wsdl = new Wsdl(simple);
+		WsdlGenerator wsdl = new WsdlGenerator(simple);
 		wsdl.init();
 		test(wsdl, "WsdlTest/webservice1.test.wsdl");
 	}
@@ -94,7 +93,7 @@ public class WsdlTest {
 				getXmlValidatorInstance("a", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "IncludeXsds");
 
-		Wsdl wsdl = new Wsdl(simple);
+		WsdlGenerator wsdl = new WsdlGenerator(simple);
         wsdl.setUseIncludes(true);
         wsdl.init();
 		test(wsdl, "WsdlTest/includexsds.test.wsdl");
@@ -107,7 +106,7 @@ public class WsdlTest {
 		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "IncludeXsds");
 
-		Wsdl wsdl = new Wsdl(simple);
+		WsdlGenerator wsdl = new WsdlGenerator(simple);
         wsdl.setUseIncludes(true);
         wsdl.init();
 		test(wsdl, "WsdlTest/includexsds.test.wsdl");
@@ -121,7 +120,7 @@ public class WsdlTest {
 				getXmlValidatorInstance(null, "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "TestRootTag");
 
-		Wsdl wsdl = new Wsdl(simple);
+		WsdlGenerator wsdl = new WsdlGenerator(simple);
 		wsdl.setUseIncludes(true);
 		test(wsdl, "WsdlTest/noroottag.test.wsdl");
 	}
@@ -131,7 +130,7 @@ public class WsdlTest {
         PipeLine simple = mockPipeLine(
             getXmlValidatorInstance(null, "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
             getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "TestRootTag");
-        Wsdl wsdl = new Wsdl(simple);
+        WsdlGenerator wsdl = new WsdlGenerator(simple);
         wsdl.init();
         test(wsdl, "WsdlTest/noroottag.test.wsdl");
     }
@@ -141,7 +140,7 @@ public class WsdlTest {
 		XmlValidator inputValidator=getXmlValidatorInstance(null, "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
 		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "TestRootTag");
-        Wsdl wsdl = new Wsdl(simple);
+        WsdlGenerator wsdl = new WsdlGenerator(simple);
         wsdl.init();
         test(wsdl, "WsdlTest/noroottag.test.wsdl");
     }
@@ -159,7 +158,7 @@ public class WsdlTest {
                 "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response " +
 						"WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd"),
             "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
-        Wsdl wsdl = new Wsdl(pipe);
+        WsdlGenerator wsdl = new WsdlGenerator(pipe);
         wsdl.init();
         wsdl.setUseIncludes(true);
         test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
@@ -173,7 +172,7 @@ public class WsdlTest {
     	IValidator outputValidator = inputValidator.getResponseValidator();
     	PipeLine pipe = mockPipeLine(inputValidator, outputValidator, 
             "http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
-        Wsdl wsdl = new Wsdl(pipe);
+        WsdlGenerator wsdl = new WsdlGenerator(pipe);
         wsdl.init();
         wsdl.setUseIncludes(true);
         test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
@@ -187,7 +186,7 @@ public class WsdlTest {
             getXmlValidatorInstance("FindIntermediaryRLY", null, null,
                 "http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd"),
             "http://wub2nn.nn.nl/FindIntermediary", "WsdlTest/FindIntermediary");
-        Wsdl wsdl = new Wsdl(pipe);
+        WsdlGenerator wsdl = new WsdlGenerator(pipe);
         wsdl.init();
         wsdl.setUseIncludes(true);
         assertTrue(wsdl.isUseIncludes());
@@ -202,7 +201,7 @@ public class WsdlTest {
                 		"http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd");
     	IValidator outputValidator = inputValidator.getResponseValidator();
         PipeLine pipe = mockPipeLine(inputValidator, outputValidator, "http://wub2nn.nn.nl/FindIntermediary", "WsdlTest/FindIntermediary");
-        Wsdl wsdl = new Wsdl(pipe);
+        WsdlGenerator wsdl = new WsdlGenerator(pipe);
         wsdl.setUseIncludes(true);
         wsdl.init();
         assertTrue(wsdl.isUseIncludes());
@@ -211,7 +210,7 @@ public class WsdlTest {
         // assertEquals(2, wsdl.getXSDs(true).size()); TODO?
     }
 
-    protected void test(Wsdl wsdl, String testWsdl) throws IOException, SAXException, ParserConfigurationException, XMLStreamException, URISyntaxException, NamingException, ConfigurationException {
+    protected void test(WsdlGenerator wsdl, String testWsdl) throws IOException, SAXException, ParserConfigurationException, XMLStreamException, URISyntaxException, NamingException, ConfigurationException {
         wsdl.setDocumentation("test");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         wsdl.wsdl(out, "Test");
@@ -227,7 +226,7 @@ public class WsdlTest {
         zip(wsdl);
 
     }
-    protected void zip(Wsdl wsdl) throws IOException, XMLStreamException, URISyntaxException, NamingException, ConfigurationException {
+    protected void zip(WsdlGenerator wsdl) throws IOException, XMLStreamException, URISyntaxException, NamingException, ConfigurationException {
         File dir = new File(System.getProperty("java.io.tmpdir") + File.separator + "zipfiles");
         File zipFile = new File(dir, wsdl.getName() + ".zip");
 		zipFile.getParentFile().mkdirs();
@@ -269,6 +268,7 @@ public class WsdlTest {
         when(adp.getName()).thenReturn(adapterName);
         when(cfg.getClassLoader()).thenReturn(this.getClass().getClassLoader());
         when(adp.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
+        when(simple.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
         return simple;
     }
 

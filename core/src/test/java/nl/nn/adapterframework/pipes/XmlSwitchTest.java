@@ -5,7 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
@@ -118,7 +118,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.registerForward(new PipeForward("selectValue","SelectValue-Path"));
 		pipe.setSessionKey("selectKey");
-		session=new PipeLineSessionBase();
+		session=new PipeLineSession();
 		session.put("selectKey", "selectValue");
 		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
 		testSwitch(input,"selectValue");
@@ -131,7 +131,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.setSessionKey("selectKey");
 		String forwardName = "forwardName";
 		pipe.setStoreForwardInSessionKey(forwardName);
-		session=new PipeLineSessionBase();
+		session=new PipeLineSession();
 		session.put("selectKey", "selectValue");
 		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
 		testSwitch(input,"selectValue");

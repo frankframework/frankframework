@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -66,7 +67,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -95,6 +96,7 @@ import com.ctc.wstx.stax.WstxInputFactory;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -543,14 +545,14 @@ public class XmlUtils {
 	public static XMLReader getXMLReader(ContentHandler handler) throws ParserConfigurationException, SAXException {
 		return getXMLReader(null, handler);
 	}
-	
-	public static XMLReader getXMLReader(Configuration classLoaderProvider) throws ParserConfigurationException, SAXException {
-		return getXMLReader(true, classLoaderProvider.getClassLoader());
+
+	public static XMLReader getXMLReader(Configuration scopeProvider) throws ParserConfigurationException, SAXException {
+		return getXMLReader(true, scopeProvider);
 	}
 
 	
-	private static XMLReader getXMLReader(Resource classloaderProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
-		XMLReader xmlReader = getXMLReader(true, classloaderProvider);
+	private static XMLReader getXMLReader(Resource scopeProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
+		XMLReader xmlReader = getXMLReader(true, scopeProvider);
 		xmlReader.setContentHandler(handler);
 		if (handler instanceof LexicalHandler) {
 			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
@@ -561,16 +563,16 @@ public class XmlUtils {
 		return xmlReader;
 	}
 	
-	private static XMLReader getXMLReader(boolean namespaceAware, Resource classLoaderProvider) throws ParserConfigurationException, SAXException {
-		return getXMLReader(namespaceAware, classLoaderProvider==null?null:classLoaderProvider.getClassLoader());
+	private static XMLReader getXMLReader(boolean namespaceAware, Resource resource) throws ParserConfigurationException, SAXException {
+		return getXMLReader(namespaceAware, resource==null?null:resource.getScopeProvider());
 	}
 	
-	private static XMLReader getXMLReader(boolean namespaceAware, ClassLoader classLoader) throws ParserConfigurationException, SAXException {
+	private static XMLReader getXMLReader(boolean namespaceAware, IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
 		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-		if (classLoader!=null) {
-			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(classLoader));
+		if (scopeProvider!=null) {
+			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(scopeProvider));
 		} else {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
 		}
@@ -771,7 +773,7 @@ public class XmlUtils {
 
 		charset=defaultEncoding;
 		if (StringUtils.isEmpty(charset)) {
-			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 
 		String firstPart = new String(source,offset,length<100?length:100,charset);
@@ -1002,9 +1004,9 @@ public class XmlUtils {
 		return inputSourceToSAXSource(is, true, null);
 	}
 	
-	private static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource classloaderProvider) throws SAXException {
+	private static SAXSource inputSourceToSAXSource(InputSource is, boolean namespaceAware, Resource scopeProvider) throws SAXException {
 		try {
-			return new SAXSource(getXMLReader(namespaceAware, classloaderProvider), is);
+			return new SAXSource(getXMLReader(namespaceAware, scopeProvider), is);
 		} catch (ParserConfigurationException e) {
 			throw new SaxException(e);
 		}
@@ -1625,8 +1627,9 @@ public class XmlUtils {
 
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values.
+	 * @throws IOException 
 	 */
-	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) {
+	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) throws IOException {
 		t.clearParameters();
 		if (parameters == null) {
 			return;
@@ -1634,8 +1637,11 @@ public class XmlUtils {
 		for (String paramName:parameters.keySet()) {
 			Object value = parameters.get(paramName);
 			if (value != null) {
+				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[]) {
+					value = Message.asString(value);
+				}
 				t.setParameter(paramName, value);
-				log.debug("setting parameter [" + paramName+ "] on transformer");
+				log.debug("setting parameter [" + paramName+ "] on transformer from class ["+value.getClass().getTypeName()+"]");
 			}
 			else {
 				log.info("omitting setting of parameter ["+paramName+"] on transformer, as it has a null-value");
@@ -1683,6 +1689,10 @@ public class XmlUtils {
 	}
 
 	static public boolean isWellFormed(String input, String root) {
+		return isWellFormed(Message.asMessage(input), root);
+	}
+
+	static public boolean isWellFormed(Message input, String root) {
 		Set<List<String>> rootValidations = null;
 		if (StringUtils.isNotEmpty(root)) {
 			List<String> path = new ArrayList<String>();
@@ -1695,7 +1705,7 @@ public class XmlUtils {
 		xmlHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
 		try {
 			// set ErrorHandler to prevent message in System.err: [Fatal Error] :-1:-1: Premature end of file.
-			parseXml(Message.asInputSource(input), xmlHandler, xmlValidatorErrorHandler);
+			parseXml(input.asInputSource(), xmlHandler, xmlValidatorErrorHandler);
 		} catch (Exception e) {
 			return false;
 		}
@@ -1996,7 +2006,7 @@ public class XmlUtils {
 	}
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
-		URL xsltSource = ClassUtils.getResourceURL(XmlUtils.class, ADAPTERSITE_XSLT);
+		URL xsltSource = ClassUtils.getResourceURL(ADAPTERSITE_XSLT);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters != null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);

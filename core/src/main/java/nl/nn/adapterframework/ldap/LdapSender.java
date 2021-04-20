@@ -38,17 +38,17 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.commons.digester.Digester;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -240,7 +240,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @author Jaco de Groot
  */
-public class LdapSender extends JNDIBase implements ISenderWithParameters {
+public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -377,7 +377,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	public void storeLdapException(Throwable t, IPipeLineSession session) {
+	public void storeLdapException(Throwable t, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getErrorSessionKey()) && session!=null && t!=null) {
 			XmlBuilder ldapError=new XmlBuilder("ldapError");
 			ldapError.addAttribute("class",ClassUtils.nameOf(t));
@@ -463,7 +463,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 
-	private String performOperationRead(String entryName, IPipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
+	private String performOperationRead(String entryName, PipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try{
 			dirContext = getDirContext(paramValueMap);
@@ -485,7 +485,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationUpdate(String entryName, IPipeLineSession session, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+	private String performOperationUpdate(String entryName, PipeLineSession session, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		String entryNameAfter = entryName;
 		if (paramValueMap != null){
 			String newEntryName = (String)paramValueMap.get("newEntryName");
@@ -597,7 +597,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationCreate(String entryName, IPipeLineSession session, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+	private String performOperationCreate(String entryName, PipeLineSession session, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
 			String result=null;
 			NamingEnumeration na = attrs.getAll();
@@ -692,7 +692,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		
 	}
 	
-	private String performOperationDelete(String entryName, IPipeLineSession session, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
+	private String performOperationDelete(String entryName, PipeLineSession session, Map paramValueMap, Attributes attrs) throws SenderException, ParameterException {
 		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
 			String result=null;
 			NamingEnumeration na = attrs.getAll();
@@ -788,7 +788,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 //		retobj - If true, return the object bound to the name of the entry; if false, do not return object.
 //		attrs - The identifiers of the attributes to return along with the entry. If null, return all attributes. If empty return no attributes.
 
-	private String performOperationSearch(String entryName, IPipeLineSession session, Map paramValueMap, String filterExpression, int scope) throws SenderException, ParameterException {
+	private String performOperationSearch(String entryName, PipeLineSession session, Map paramValueMap, String filterExpression, int scope) throws SenderException, ParameterException {
 		int timeout=getSearchTimeout();
 		SearchControls controls = new SearchControls(scope, getMaxEntriesReturned(), timeout, 
 													 getAttributesReturnedParameter(), false, false);
@@ -810,7 +810,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationGetSubContexts(String entryName, IPipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
+	private String performOperationGetSubContexts(String entryName, PipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
@@ -824,7 +824,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 		
-	private String performOperationGetTree(String entryName, IPipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
+	private String performOperationGetTree(String entryName, PipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
@@ -834,7 +834,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationChallenge(String principal, IPipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
+	private String performOperationChallenge(String principal, PipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
 		DirContext dirContext = null;
 		try{
 			// Use loopkupDirContext instead of getDirContext to prevent
@@ -858,7 +858,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationChangeUnicodePwd(String entryName, IPipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
+	private String performOperationChangeUnicodePwd(String entryName, PipeLineSession session, Map paramValueMap) throws SenderException, ParameterException {
 		ModificationItem[] modificationItems = new ModificationItem[2];
 		modificationItems[0] = new ModificationItem(
 				DirContext.REMOVE_ATTRIBUTE,
@@ -893,7 +893,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 *  
 	 * @return - Depending on operation, DEFAULT_RESULT or read/search result (always XML)
 	 */
-	public String performOperation(Message message, IPipeLineSession session) throws SenderException, ParameterException {
+	public String performOperation(Message message, PipeLineSession session) throws SenderException, ParameterException {
 		Map<String,Object> paramValueMap = null;
 		String entryName = null;
 		if (paramList != null){
@@ -934,7 +934,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 * Return xml element containing all of the subcontexts of the parent context with their attributes. 
 	 * @return tree xml.
 	 */ 
-	private XmlBuilder getTree(DirContext parentContext, String context, IPipeLineSession session, Map paramValueMap)
+	private XmlBuilder getTree(DirContext parentContext, String context, PipeLineSession session, Map paramValueMap)
 	{
 		XmlBuilder contextElem = new XmlBuilder("context");
 		contextElem.addAttribute("name", context);
@@ -985,7 +985,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 * Return a list of all of the subcontexts of the current context, which is relative to parentContext. 
 	 * @return an array of Strings containing a list of the subcontexts for a current context.
 	 */ 
-	public String[] getSubContextList (DirContext parentContext, String relativeContext, IPipeLineSession session) {
+	public String[] getSubContextList (DirContext parentContext, String relativeContext, PipeLineSession session) {
 		String[] retValue = null;
 
 		try {
@@ -1046,7 +1046,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			return new Message(performOperation(message, session));
 		} catch (Exception e) {

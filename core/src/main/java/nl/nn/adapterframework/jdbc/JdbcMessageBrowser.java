@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +26,9 @@ import java.util.Date;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
@@ -49,33 +48,28 @@ import nl.nn.adapterframework.util.Misc;
  */
 public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser<M> {
 
-	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
-	
-	private String keyField=null;
-	private String idField=null;
-	private String correlationIdField=null;
-	private String dateField=null;
-	private String commentField=null;
-	private String messageField=null;
-	protected String slotIdField=null;
-	private String expiryDateField=null;
-	private String labelField=null;
-	protected String slotId=null;
-	protected String typeField=null;
-	private String type = "";
-	private String hostField=null;
+	private @Getter String keyField=null;
+	private @Getter String idField=null;
+	private @Getter String correlationIdField=null;
+	private @Getter String dateField=null;
+	private @Getter String commentField=null;
+	private @Getter String messageField=null;
+	private @Getter String slotIdField=null;
+	private @Getter String expiryDateField=null;
+	private @Getter String labelField=null;
+	private @Getter String prefix="";
+	private @Getter String slotId=null;
+	private @Getter String type = "";
+	private @Getter String typeField=null;
+	private @Getter String hostField=null;
 
-	private String prefix="";
-
-	private String hideRegex = null;
-	private String hideMethod = "all";
+	private @Getter @Setter String hideRegex = null;
+	private @Getter @Setter String hideMethod = "all";
 
 	private SortOrder sortOrder = null;
 	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
 	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
-
-	protected PlatformTransactionManager txManager;
 
 	protected String deleteQuery;
 	protected String selectContextQuery;
@@ -130,9 +124,6 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	
 	@Override
-	/**
-	 * Creates a connection, checks if the table is existing and creates it when necessary
-	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
 		setOperationControls();
@@ -469,118 +460,75 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 
-
-
-
-	/**
-	 * Sets the name of the column messageids are stored in.
-	 */
-	@IbisDoc({"the name of the column messageids are stored in", "messageid"})
-	public void setIdField(String idField) {
-		this.idField = idField;
-	}
-	public String getIdField() {
-		return idField;
-	}
-
-	/**
-	 * Sets the name of the column message themselves are stored in.
-	 */
-	@IbisDoc({"the name of the column message themselves are stored in", "message"})
-	public void setMessageField(String messageField) {
-		this.messageField = messageField;
-	}
-	public String getMessageField() {
-		return messageField;
-	}
-
-	public String getCommentField() {
-		return commentField;
-	}
-
-	public String getDateField() {
-		return dateField;
-	}
-
-	public String getExpiryDateField() {
-		return expiryDateField;
-	}
-
-	public String getLabelField() {
-		return labelField;
-	}
-
-	@IbisDoc({"the name of the column comments are stored in", "comments"})
-	public void setCommentField(String string) {
-		commentField = string;
-	}
-
-	@IbisDoc({"the name of the column the timestamp is stored in", "messagedate"})
-	public void setDateField(String string) {
-		dateField = string;
-	}
-
-	@IbisDoc({"the name of the column the timestamp for expiry is stored in", "expirydate"})
-	public void setExpiryDateField(String string) {
-		expiryDateField = string;
-	}
-
-	@IbisDoc({"the name of the column labels are stored in", "label"})
-	public void setLabelField(String string) {
-		labelField = string;
-	}
-
-	public String getCorrelationIdField() {
-		return correlationIdField;
-	}
-
-	@IbisDoc({"the name of the column correlation-ids are stored in", "correlationid"})
-	public void setCorrelationIdField(String string) {
-		correlationIdField = string;
-	}
-
-
-	public String getKeyField() {
-		return keyField;
-	}
-
-	@IbisDoc({"the name of the column that contains the primary key of the table", "messagekey"})
+	@IbisDoc({"1", "The name of the column that contains the primary key of the table", "MESSAGEKEY"})
 	public void setKeyField(String string) {
 		keyField = string;
 	}
 
+	@IbisDoc({"2", "The name of the column messageIds are stored in", "MESSAGEID"})
+	public void setIdField(String idField) {
+		this.idField = idField;
+	}
 
-	protected String getSlotId() {
-		return slotId;
+	@IbisDoc({"3", "The name of the column correlation-ids are stored in", "CORRELATIONID"})
+	public void setCorrelationIdField(String string) {
+		correlationIdField = string;
 	}
-	protected String getSlotIdField() {
-		return slotIdField;
+
+	@IbisDoc({"4", "The name of the column message themselves are stored in", "MESSAGE"})
+	public void setMessageField(String messageField) {
+		this.messageField = messageField;
 	}
-	protected void setType(String type) {
-		this.type = type;
+
+	@IbisDoc({"5", "The name of the column the timestamp is stored in", "MESSAGEDATE"})
+	public void setDateField(String string) {
+		dateField = string;
 	}
-	protected String getType() {
-		return type;
+
+	@IbisDoc({"6", "The name of the column comments are stored in", "COMMENTS"})
+	public void setCommentField(String string) {
+		commentField = string;
 	}
-	public String getTypeField() {
-		return typeField;
+
+	@IbisDoc({"7", "The name of the column the timestamp for expiry is stored in", "EXPIRYDATE"})
+	public void setExpiryDateField(String string) {
+		expiryDateField = string;
+	}
+
+	@IbisDoc({"8", "The name of the column labels are stored in", "LABEL"})
+	public void setLabelField(String string) {
+		labelField = string;
+	}
+
+	protected void setSlotIdField(String string) {
+		slotIdField = string;
+	}
+	protected void setTypeField(String typeField) {
+		this.typeField = typeField;
 	}
 
 	protected void setHostField(String hostField) {
 		this.hostField = hostField;
 	}
-	protected String getHostField() {
-		return hostField;
+
+	@IbisDoc({"9", "prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema", ""})
+	public void setPrefix(String string) {
+		prefix = string;
 	}
+
+	protected void setSlotId(String string) {
+		slotId = string;
+	}
+
+	protected void setType(String type) {
+		this.type = type;
+	}
+
+
 
 
 	public void setOrder(String string) {
-		if(StringUtils.isNotEmpty(string)) {
-			sortOrder = SortOrder.valueOf(string.trim());
-		}
-	}
-	public String getOrder() {
-		return getOrderEnum().name();
+		sortOrder = Misc.parse(SortOrder.class, "sortOrder", string);
 	}
 
 	public SortOrder getOrderEnum() {
@@ -592,42 +540,6 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 			}
 		}
 		return sortOrder;
-	}
-
-
-	public void setTxManager(PlatformTransactionManager manager) {
-		txManager = manager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
-	}
-
-	@IbisDoc({"prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different oracle schema", ""})
-	public void setPrefix(String string) {
-		prefix = string;
-	}
-	public String getPrefix() {
-		return prefix;
-	}
-
-
-
-	@Override
-	public void setHideRegex(String hideRegex) {
-		this.hideRegex = hideRegex;
-	}
-	@Override
-	public String getHideRegex() {
-		return hideRegex;
-	}
-
-	@Override
-	public void setHideMethod(String hideMethod) {
-		this.hideMethod = hideMethod;
-	}
-	@Override
-	public String getHideMethod() {
-		return hideMethod;
 	}
 
 }

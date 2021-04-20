@@ -15,7 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.transformer;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -86,9 +86,9 @@ public class QueryOutputToJson extends AbstractQueryOutputTransformer {
 		for(int i = 0; i < atts.getLength(); i ++) {
 			output
 					.append("\t\t\t\"")
-					.append(StringEscapeUtils.escapeJavaScript(atts.getLocalName(i)))
+					.append(StringEscapeUtils.escapeEcmaScript(atts.getLocalName(i)))
 					.append("\":\"")
-					.append(StringEscapeUtils.escapeJavaScript(atts.getValue(i)))
+					.append(StringEscapeUtils.escapeEcmaScript(atts.getValue(i)))
 					.append("\",\n");
 		}
 		// Delete last comma
@@ -102,9 +102,9 @@ public class QueryOutputToJson extends AbstractQueryOutputTransformer {
 	protected void addField(String fieldName, String value) {
 		output
 				.append("\t\t\t\"")
-				.append(StringEscapeUtils.escapeJavaScript(fieldName))
+				.append(StringEscapeUtils.escapeEcmaScript(fieldName))
 				.append("\":\"")
-				.append(StringEscapeUtils.escapeJavaScript(value))
+				.append(StringEscapeUtils.escapeEcmaScript(value))
 				.append("\",\n");
 	}
 }

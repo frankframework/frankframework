@@ -24,12 +24,12 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IteratingPipe;
@@ -82,13 +82,13 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	private class ZipStreamIterator implements IDataIterator<String> {
 		
 		ZipInputStream source; 
-		IPipeLineSession session;
+		PipeLineSession session;
 
 		boolean nextRead=false;
 		boolean currentOpen=false;
 		ZipEntry current;
 		
-		ZipStreamIterator(ZipInputStream source, IPipeLineSession session) {
+		ZipStreamIterator(ZipInputStream source, PipeLineSession session) {
 			super();
 			this.source=source;
 			this.session=session;
@@ -160,7 +160,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 		}
 	}
 	
-	protected ZipInputStream getZipInputStream(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected ZipInputStream getZipInputStream(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply String (Filename), File or InputStream as input");
 		}
@@ -187,7 +187,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	}
 	
 	@Override
-	protected IDataIterator<String> getIterator(Message input, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		ZipInputStream source=getZipInputStream(input, session, threadContext);
 		if (source==null) {
 			throw new SenderException(getLogPrefix(session)+"no ZipInputStream found");

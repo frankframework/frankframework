@@ -133,7 +133,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * If any IOExceptions on the stream occur, the connection is invalidated.
 	 */
 	protected InputStream pendingRelease(InputStream stream, C connection) {
-		return StreamUtil.watch(stream, () -> { releaseConnection(connection); } , () -> { invalidateConnection(connection); });
+		return StreamUtil.watch(stream, () -> releaseConnection(connection) , () -> invalidateConnection(connection));
 	}
 
 	private void openPool() {

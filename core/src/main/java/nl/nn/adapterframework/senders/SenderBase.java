@@ -15,15 +15,18 @@
 */
 package nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Baseclass for senders.
@@ -31,11 +34,11 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderBase implements ISender {
+public abstract class SenderBase implements ISender, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ApplicationContext applicationContext;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -49,6 +52,17 @@ public abstract class SenderBase implements ISender {
 	public void close() throws SenderException {
 	}
 
+	/**
+	 * final method to ensure nobody overrides this...
+	 */
+	@Override
+	public final void setApplicationContext(ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext;
+	}
+
+	protected <T> T createBean(Class<T> beanClass) {
+		return SpringUtils.createBean(applicationContext, beanClass);
+	}
 
 	@Override
 	public boolean isSynchronous() {
@@ -73,13 +87,5 @@ public abstract class SenderBase implements ISender {
 	@Override
 	public String getName() {
 		return name;
-	}
-
-	/**
-	 * This ClassLoader is set upon creation of the sender, used to retrieve resources configured by the Ibis application.
-	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
-	 */
-	public ClassLoader getConfigurationClassLoader() {
-		return configurationClassLoader;
 	}
 }

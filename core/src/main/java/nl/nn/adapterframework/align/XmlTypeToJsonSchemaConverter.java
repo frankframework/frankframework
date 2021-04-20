@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -295,7 +295,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		if (term instanceof XSElementDeclaration) {
 			XSElementDeclaration elementDeclaration = (XSElementDeclaration)term;
 			if (elementDeclaration.getScope()==XSConstants.SCOPE_GLOBAL) {
-				JsonObject typeDefininition = Json.createObjectBuilder().add("$ref", "#/definitions/"+elementDeclaration.getName()).build();
+				JsonObject typeDefininition = Json.createObjectBuilder().add("$ref", definitionsPath+elementDeclaration.getName()).build();
 				if (multiOccurring) {
 					JsonObjectBuilder arrayBuilder = Json.createObjectBuilder();
 					arrayBuilder.add("type", "array");

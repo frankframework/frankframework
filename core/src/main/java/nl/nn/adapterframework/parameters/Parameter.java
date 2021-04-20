@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,17 +33,18 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -91,9 +92,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.    
  * @author Gerrit van Brakel
  */
-public class Parameter implements INamedObject, IWithParameters {
+public class Parameter implements IConfigurable, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public final static String TYPE_XML="xml";
 	public final static String TYPE_NODE="node";
@@ -165,6 +166,8 @@ public class Parameter implements INamedObject, IWithParameters {
 	public ParameterList getParameterList() {
 		return paramList;
 	}
+
+	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getSessionKey()) && StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			throw new ConfigurationException("Parameter ["+getName()+"] cannot have both sessionKey and sessionKeyXPath specified");
@@ -176,7 +179,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			String outputType=TYPE_XML.equalsIgnoreCase(getType()) || TYPE_NODE.equalsIgnoreCase(getType()) || TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
 			
-			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ",configurationClassLoader,getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,getXsltVersion());
+			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ", this, getNamespaceDefs(),getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList,getXsltVersion());
 		} else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
@@ -186,7 +189,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,false);
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
-			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", configurationClassLoader, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
+			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", this, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
 		}
 		if (TYPE_DATE.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATE_PATTERN);
@@ -271,7 +274,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	/**
 	 * determines the raw value 
 	 */
-	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, IPipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter ["+getName()+"]");
 		if (!configured) {
@@ -523,7 +526,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		return hiddenString;
 	}
 
-	private String format(ParameterValueList alreadyResolvedParameters, IPipeLineSession session) throws ParameterException {
+	private String format(ParameterValueList alreadyResolvedParameters, PipeLineSession session) throws ParameterException {
 		int startNdx = -1;
 		int endNdx = 0;
 
@@ -560,12 +563,19 @@ public class Parameter implements INamedObject, IWithParameters {
 		return MessageFormat.format(formatPattern.toString(), params.toArray());
 	}
 
-	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, IPipeLineSession session, String name) throws ParameterException {
+	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String name) throws ParameterException {
 		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
-		  
+
 		if (substitutionValue == null) {
 			substitutionValue = session.get(name);
+		}
+		if (substitutionValue instanceof Message) {
+			try {
+				substitutionValue = ((Message)substitutionValue).asString();
+			} catch (IOException e) {
+				throw new ParameterException("Cannot get substitution value", e);
+			}
 		}
 		if (substitutionValue == null) {
 			String namelc=name.toLowerCase();

@@ -38,6 +38,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.EnumUtils;
+
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
@@ -46,6 +48,7 @@ import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.monitoring.Trigger;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Shows all monitors.
@@ -133,8 +136,8 @@ public final class ShowMonitors extends Base {
 
 		returnMap.put("monitors", monitors);
 		returnMap.put("enabled", new Boolean(mm.isEnabled()));
-		returnMap.put("severities", SeverityEnum.getNames());
-		returnMap.put("eventTypes", EventTypeEnum.getNames());
+		returnMap.put("severities", EnumUtils.getEnumList(SeverityEnum.class));
+		returnMap.put("eventTypes", EnumUtils.getEnumList(EventTypeEnum.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
@@ -214,7 +217,7 @@ public final class ShowMonitors extends Base {
 				name = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("type")) {
-				type = EventTypeEnum.getEnum(entry.getValue().toString());
+				type = Misc.parse(EventTypeEnum.class, entry.getValue().toString());
 			}
 			if(key.equalsIgnoreCase("destinations")) {
 				try {

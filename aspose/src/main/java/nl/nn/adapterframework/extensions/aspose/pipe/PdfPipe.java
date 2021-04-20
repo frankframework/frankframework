@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -86,7 +86,7 @@ public class PdfPipe extends FixedForwardPipe {
 		if (StringUtils.isEmpty(license)) {
 			ConfigurationWarnings.add(this, log, "Aspose License is not configured. There will be evaluation watermarks on the converted documents. There are also some restrictions in the API use. License field should be set with a valid information to avoid this. ");
 		} else {
-			URL licenseUrl = ClassUtils.getResourceURL(PdfPipe.class.getClassLoader(), license);
+			URL licenseUrl = ClassUtils.getResourceURL(license);
 			if(licenseUrl == null) {
 				throw new ConfigurationException("specified file for aspose license is not found");
 			}
@@ -136,7 +136,7 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		try (InputStream binaryInputStream = input.asInputStream(charset)) {
 
 			if ("combine".equalsIgnoreCase(action)) {

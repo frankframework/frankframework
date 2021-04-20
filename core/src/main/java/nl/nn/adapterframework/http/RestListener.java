@@ -22,14 +22,13 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -74,7 +73,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (getView()==null) {
-			if (StringUtils.isEmpty(getMethod()) || getMethod().equalsIgnoreCase("GET")) {
+			if (StringUtils.isEmpty(getMethod()) || "GET".equalsIgnoreCase(getMethod())) {
 				setView(true);
 			} else {
 				setView(false);
@@ -98,8 +97,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		RestServiceDispatcher.getInstance().unregisterServiceClient(getUriPattern());
 	}
 
-	public String processRequest(String correlationId, String message, IPipeLineSession requestContext) throws ListenerException {
-		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(IPipeLineSession.HTTP_REQUEST_KEY);
+	public String processRequest(String correlationId, String message, PipeLineSession requestContext) throws ListenerException {
+		HttpServletRequest httpServletRequest = (HttpServletRequest) requestContext.get(PipeLineSession.HTTP_REQUEST_KEY);
 		String response;
 		String contentType = (String) requestContext.get("contentType");
 
@@ -164,7 +163,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public String transformToJson(String message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
 		pipe.setDirection("xml2json");
-		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSessionBase());
+		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
 		try {
 			return pipeResult.getResult().asString();
 		} catch (IOException e) {
@@ -174,7 +173,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	public String transformToXml(String message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
-		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSessionBase());
+		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
 		try {
 			return pipeResult.getResult().asString();
 		} catch (IOException e) {
@@ -184,9 +183,9 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	@Override
 	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
-		if ("view".equals(attributeName)) {
-			if (attributes.get("method").equalsIgnoreCase("GET")) {
-				return true;
+		if ("view".equals(attributeName)) { // if attribute view is present
+			if (attributes.get("method") == null || "GET".equalsIgnoreCase(attributes.get("method"))) {// if view="true" AND no method has been supplied, or it's set to GET
+				return true; //Then the default is TRUE
 			} else {
 				return false;
 			}
@@ -244,7 +243,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	@IbisDoc({"Indicates whether this listener supports a view (and a link should be put in the ibis console)", "if <code>method=get</code> then <code>true</code>, else <code>false</code>"})
-	public void setView(boolean b) {
+	public void setView(Boolean b) {
 		view = b;
 	}
 	public Boolean getView() {

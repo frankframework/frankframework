@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.core;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * The PipeRunResult is a type to store both the result of the processing of a message
- * in {@link IPipe#doPipe(Message, IPipeLineSession) doPipe()} as well as the exitState.
+ * in {@link IPipe#doPipe(Message, PipeLineSession) doPipe()} as well as the exitState.
  * <br/>
  * <b>Responsibility:</b><br/>
  * <ul><li>keeper of the result of the execution of a <code>Pipe</code></li>

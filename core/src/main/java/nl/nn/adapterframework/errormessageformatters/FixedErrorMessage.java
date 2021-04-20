@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.errormessageformatters;
 import java.io.IOException;
 import java.net.URL;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -27,8 +28,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import javax.xml.transform.Transformer;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * ErrorMessageFormatter that returns a fixed message with replacements.
@@ -37,8 +37,7 @@ import org.apache.commons.lang.SystemUtils;
  * @since   4.3
  */
 public class FixedErrorMessage extends ErrorMessageFormatter {
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-	private String fileName = null;
+	private String filename = null;
 	private String returnString = null;
 	private String replaceFrom = null;
 	private String replaceTo = null;
@@ -53,7 +52,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 		}
 		if (StringUtils.isNotEmpty(getFileName())) {
 			try {
-				messageToReturn = new Message(messageToReturn.asString() + Misc.resourceToString(ClassUtils.getResourceURL(classLoader, getFileName()), SystemUtils.LINE_SEPARATOR));
+				messageToReturn = new Message(messageToReturn.asString() + Misc.resourceToString(ClassUtils.getResourceURL(this, getFileName()), Misc.LINE_SEPARATOR));
 			} catch (Throwable e) {
 				log.error("got exception loading error message file [" + getFileName() + "]", e);
 			}
@@ -71,7 +70,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL xsltSource = ClassUtils.getResourceURL(classLoader, styleSheetName);
+			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
 			if (xsltSource!=null) {
 				try{
 					String xsltResult = null;
@@ -96,15 +95,19 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 		return returnString;
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
+	public void setFileName(String fileName) {
+		setFilename(fileName);
+	}
 
 	@IbisDoc({"name of the file containing the resultmessage", ""})
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 	public String getFileName() {
-		return fileName;
+		return filename;
 	}
-
 
 	public void setReplaceFrom (String replaceFrom){
 		this.replaceFrom=replaceFrom;

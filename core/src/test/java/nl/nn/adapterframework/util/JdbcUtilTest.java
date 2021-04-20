@@ -41,6 +41,15 @@ public class JdbcUtilTest {
 		connection.createStatement().execute("CREATE TABLE TEMP(TKEY INT PRIMARY KEY, TVARCHAR VARCHAR(100), TVARCHAR2 VARCHAR(100), TINT INT, TDATETIME DATETIME)");
 	}
 
+	@After
+	public void closeDatabase() throws SQLException {
+		if (connection != null) {
+			connection.createStatement().execute("DROP TABLE TEMP");
+			connection.close();
+		}
+	}
+
+
 	
 	@Test
 	public void test() throws Exception {
@@ -125,12 +134,4 @@ public class JdbcUtilTest {
 		return warning1;
 	}
 	
-	@After
-	public void closeDatabase() throws SQLException {
-		if (connection != null) {
-			connection.createStatement().execute("DROP TABLE TEMP");
-			connection.close();
-		}
-	}
-
 }

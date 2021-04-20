@@ -28,8 +28,8 @@ setJVMSystemProperty( 'strutsConsole.enabled', 'true')
 setJVMSystemProperty( 'scenariosroot1.directory', '/opt/frank/testtool')
 setJVMSystemProperty( 'scenariosroot1.description', 'embedded testtool directory /opt/frank/testtool')
 setJVMSystemProperty( 'scenariosroot2.directory', '/opt/frank/testtool-ext')
-setJVMSystemProperty( 'scenariosroot2.description', 'external testtool directory')
-setJVMSystemProperty( 'jdbc.dbms.default', 'oracle-docker')
+setJVMSystemProperty( 'scenariosroot2.description', 'external testtool directory /opt/frank/testtool-ext')
+setJVMSystemProperty( 'jdbc.dbms.default', 'oracle')
 setJVMSystemProperty( 'active.jms', 'false')
 setJVMSystemProperty( 'active.tibco', 'false')
 setJVMSystemProperty( 'active.ifsa', 'false')
@@ -37,6 +37,9 @@ setJVMSystemProperty( 'log.dir.match', '(?i)(([cd]:[\\\\/]temp)|(${SERVER_LOG_RO
 setJVMSystemProperty( 'test.alias', 'testAuthAlias')
 setJVMSystemProperty( 'APPSERVER_ROOT_DIR', '${USER_INSTALL_ROOT}') # APPSERVER_ROOT_DIR is a NN standard custom property for WAS
 setJVMSystemProperty( 'com.ibm.websphere.java2secman.norethrow', 'true')
+
+#setJVMSystemProperty( 'javax.net.debug', 'ssl,handshake,data,trustmanager')
+#setJVMSystemProperty( 'javax.net.debug', 'all')
 
 setSecurityProperty('enforceJava2Security', 'true')
 

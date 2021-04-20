@@ -20,8 +20,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -45,20 +44,20 @@ public class ServiceClassLoader extends JarBytesClassLoader {
 		}
 		IAdapter adapter = getIbisContext().getIbisManager().getRegisteredAdapter(adapterName);
 		if (adapter != null) {
-			IPipeLineSession pipeLineSession = new PipeLineSessionBase();
-			adapter.processMessage(getCorrelationId(), new Message(getConfigurationName()), pipeLineSession);
-			//TODO check result of pipeline
-			Object object = pipeLineSession.get("configurationJar");
-			if (object != null) {
-				if (object instanceof byte[]) {
-					return readResources((byte[])object);
+			try (PipeLineSession pipeLineSession = new PipeLineSession()) {
+				adapter.processMessage(getCorrelationId(), new Message(getConfigurationName()), pipeLineSession);
+				//TODO check result of pipeline
+				Object object = pipeLineSession.get("configurationJar");
+				if (object != null) {
+					if (object instanceof byte[]) {
+						return readResources((byte[])object);
+					} else {
+						throw new ConfigurationException("SessionKey configurationJar not a byte array");
+					}
 				} else {
-					throw new ConfigurationException("SessionKey configurationJar not a byte array");
+					throw new ConfigurationException("SessionKey configurationJar not found");
 				}
-			} else {
-				throw new ConfigurationException("SessionKey configurationJar not found");
-			}
-			
+			}			
 		} else {
 			throw new ConfigurationException("Could not find adapter: " + adapterName);
 		}

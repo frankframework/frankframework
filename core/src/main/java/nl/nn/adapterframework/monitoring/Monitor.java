@@ -27,9 +27,10 @@ import java.util.StringTokenizer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -292,10 +293,10 @@ public class Monitor {
 	}
 
 	public void setType(String eventType) {
-		setTypeEnum((EventTypeEnum)EventTypeEnum.getEnumMap().get(eventType));
+		setTypeEnum(Misc.parse(EventTypeEnum.class, eventType));
 	}
 	public String getType() {
-		return type==null?null:type.getName();
+		return type==null?null:type.name();
 	}
 	public void setTypeEnum(EventTypeEnum enumeration) {
 		type = enumeration;
@@ -312,7 +313,7 @@ public class Monitor {
 	}
 
 	public String getAlarmSeverity() {
-		return alarmSeverity==null?null:alarmSeverity.getName();
+		return alarmSeverity==null?null:alarmSeverity.name();
 	}
 	public void setAlarmSeverityEnum(SeverityEnum enumeration) {
 		alarmSeverity = enumeration;

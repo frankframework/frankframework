@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 WeAreFrank!
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -38,6 +39,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -73,7 +75,8 @@ import nl.nn.adapterframework.util.RunStateEnum;
 @Path("/")
 public class ServerStatistics extends Base {
 
-	@Context Request request;
+	@Context private SecurityContext securityContext;
+	@Context private Request rsRequest;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
 	@GET
@@ -138,6 +141,11 @@ public class ServerStatistics extends Base {
 		String dtapSide = appConstants.getProperty("dtap.side");
 		returnMap.put("dtap.side", dtapSide);
 
+		Principal userPrincipal = securityContext.getUserPrincipal();
+		if(userPrincipal != null) {
+			returnMap.put("userName", userPrincipal.getName());
+		}
+
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
 		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
@@ -178,9 +186,9 @@ public class ServerStatistics extends Base {
 			}
 
 			//ErrorStore count
-			if (showCountErrorStore) {
+			if (configuration.isActive() && showCountErrorStore) {
 				long esr = 0;
-				for (Adapter adapter : configuration.getAdapterService().getAdapters().values()) {
+				for (Adapter adapter : configuration.getRegisteredAdapters()) {
 					for (Receiver<?> receiver: adapter.getReceivers()) {
 						IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
 						if (errorStorage != null) {
@@ -241,7 +249,7 @@ public class ServerStatistics extends Base {
 		EntityTag etag = new EntityTag(returnMap.hashCode() + "");
 
 		//Verify if it matched with etag available in http request
-		response = request.evaluatePreconditions(etag);
+		response = rsRequest.evaluatePreconditions(etag);
 
 		//If ETag matches the response will be non-null; 
 		if (response != null) {

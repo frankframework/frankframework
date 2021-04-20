@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -115,13 +115,13 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return actor.provideOutputStream(session, getNextPipe());
 	}
 
 
 	@Override
-	public PipeRunResult doPipe (Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterValueList pvl=null;
 		try {
@@ -222,4 +222,18 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		actor.setBase64(base64);
 	}
 
+	@IbisDocRef({"10", FILESYSTEMACTOR})
+	public void setWildCard(String wildCard) {
+		actor.setWildCard(wildCard);
+	}
+
+	@IbisDocRef({"11", FILESYSTEMACTOR})
+	public void setExcludeWildCard(String excludeWildCard) {
+		actor.setExcludeWildCard(excludeWildCard);
+	}
+
+	@IbisDocRef({"12", FILESYSTEMACTOR})
+	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
+		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
+	}
 }

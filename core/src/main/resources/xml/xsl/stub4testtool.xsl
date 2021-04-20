@@ -17,8 +17,8 @@
 		- stub the pipe element GetPrincipalPipe by a pipe element FixedResultPipe with attribute returnString set to tst9
 		- stub the pipe element IsUserInRolePipe by a pipe element EchoPipe
 		- stub the pipe element UUIDGeneratorPipe by a pipe element FixedResultPipe with attribute returnString set to 1234567890123456789012345678901 if type='numeric' and 0a4544b6-37489ec0_15ad0f006ae_-7ff3 otherwise
-		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe, LdapFindGroupMembershipsPipe and SendTibcoMessage by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
-		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe and ForEachChildElementPipe
+		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe, LdapFindGroupMembershipsPipe and SendTibcoMessage by a pipe element SenderPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
+		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements SenderPipe, GenericMessageSendingPipe and ForEachChildElementPipe
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request/Action' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 	-->
@@ -44,6 +44,7 @@
 	
 	<!-- All receivers are disabled except those with listeners in the list below -->
 	<xsl:template match="receiver[listener[@className='nl.nn.adapterframework.jdbc.JdbcQueryListener'
+										or @className='nl.nn.adapterframework.jdbc.JdbcTableListener'
 										or @className='nl.nn.adapterframework.receivers.DirectoryListener'
 										or @className='nl.nn.adapterframework.receivers.JavaListener'
 										or @className='nl.nn.adapterframework.http.WebServiceListener'
@@ -91,10 +92,34 @@
 					<xsl:attribute name="throwException">false</xsl:attribute>
 				</xsl:if>
 			</xsl:element>
-			<xsl:copy-of select="errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			<xsl:call-template name="stubNameForStorage">
+				<xsl:with-param name="store" select="errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			</xsl:call-template>
 			<xsl:copy-of select="errorSender[@className='nl.nn.adapterframework.senders.IbisLocalSender']"/>
-			<xsl:copy-of select="messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			<xsl:call-template name="stubNameForStorage">
+				<xsl:with-param name="store" select="messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			</xsl:call-template>
 		</xsl:element>
+	</xsl:template>
+
+	<xsl:template name="stubNameForStorage">
+		<xsl:param name="store"/>
+		
+		<xsl:if test="not(empty($store))">
+			<xsl:variable name="elementName" select="name($store)"/>
+			<xsl:element name="{$elementName}">
+				<xsl:for-each select="$store/@*">
+					<xsl:choose>
+						<xsl:when test="name()='slotId'">
+							<xsl:attribute name="{name()}"><xsl:value-of select="concat('stubbed-',.)"/></xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:for-each>
+			</xsl:element>
+		</xsl:if>
 	</xsl:template>
 	
 	<!-- All senders are stubbed except those in the list below -->
@@ -297,7 +322,7 @@
 							or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
-			<xsl:attribute name="className">nl.nn.adapterframework.pipes.GenericMessageSendingPipe</xsl:attribute>
+			<xsl:attribute name="className">nl.nn.adapterframework.pipes.SenderPipe</xsl:attribute>
 			<xsl:element name="sender">
 				<xsl:attribute name="className">nl.nn.adapterframework.senders.IbisJavaSender</xsl:attribute>
 				<xsl:attribute name="serviceName">
@@ -309,7 +334,8 @@
 	</xsl:template>
 	
 	<xsl:template match="pipe[ @className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe' 
-							or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe']">
+							or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe'
+							or @className='nl.nn.adapterframework.pipes.SenderPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="timeOutOnResult">[timeout]</xsl:attribute>

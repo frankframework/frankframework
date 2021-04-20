@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilterInputStream;
-import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -43,6 +43,8 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -55,7 +57,8 @@ public class Message implements Serializable {
 	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
-	private String charset; // representing a charset of byte typed requests
+	private Object wrappedRequest;
+	private @Getter String charset; // representing a charset of byte typed requests
 
 	private Message(Object request, String charset) {
 		if (request instanceof Message) {
@@ -69,7 +72,7 @@ public class Message implements Serializable {
 	}
 
 	public Message(String request) {
-		this((Object)request, null);
+		this(request, null);
 	}
 
 	public Message(byte[] request, String charset) {
@@ -80,7 +83,7 @@ public class Message implements Serializable {
 	}
 
 	public Message(Reader request) {
-		this((Object)request, null);
+		this(request, null);
 	}
 
 	public Message(InputStream request, String charset) {
@@ -158,11 +161,29 @@ public class Message implements Serializable {
 		return request instanceof String || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
 	}
 	
+	/**
+	 * If true, the Message should preferably be read using a streaming method, i.e. asReader() or asInputStream(), to avoid copying it into memory.
+	 */
 	public boolean requiresStream() {
 		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof Reader;
 	}
 	
-	
+	public void closeOnCloseOf(PipeLineSession session) {
+		if (request instanceof InputStream) {
+			request = session.scheduleCloseOnSessionExit((InputStream)request);
+			return;
+		}
+		if (request instanceof Reader) {
+			request = session.scheduleCloseOnSessionExit((Reader)request);
+			return;
+		}
+	}
+
+	public void unregisterCloseable(PipeLineSession session) {
+		if (request instanceof InputStream || request instanceof Reader) {
+			session.unscheduleCloseOnSessionExit((AutoCloseable)request);
+		}
+	}
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -334,7 +355,10 @@ public class Message implements Serializable {
 		if (request==null) {
 			return "null";
 		}
-		return request.getClass().getSimpleName()+": "+request.toString();
+		if (wrappedRequest == null) {
+			return super.toString()+": "+request.getClass().getTypeName()+": "+request.toString();
+		} 
+		return super.toString()+": "+wrappedRequest.getClass().getTypeName()+": "+wrappedRequest.toString();
 	}
 
 	public static Message asMessage(Object object) {
@@ -342,6 +366,13 @@ public class Message implements Serializable {
 			return (Message) object;
 		}
 		return new Message(object, null);
+	}
+
+	public static Object asObject(Object object) {
+		if (object instanceof Message) {
+			return ((Message) object).asObject();
+		}
+		return object;
 	}
 
 	public static Reader asReader(Object object) throws IOException {
@@ -479,120 +510,65 @@ public class Message implements Serializable {
 	}
 	
 	/**
-	 * Can be called to be able to retrieve a String representation of the inputStream or reader that 
-	 * is in this message, after the stream has been closed.
+	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
+	 * message, after the stream has been closed. Primarily for debugging purposes.
 	 */
-	public StringWriter captureStream() throws IOException {
-		return captureStream(new StringWriter());
+	public ByteArrayOutputStream captureBinaryStream() {
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		captureBinaryStream(result);
+		return result;
 	}
-	public <W extends Writer> W captureStream(W writer) throws IOException {
-		return captureStream(10000, writer);
+	public void captureBinaryStream(OutputStream outputStream) {
+		captureBinaryStream(outputStream, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
-	public <W extends Writer> W captureStream(int maxSize, W writer) {
-		if (!requiresStream()) {
-			return null;
-		}
+	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
-		if (isBinary()) {
-			OutputStream stream = new WriterOutputStream(writer, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-			try {
-				request = new FilterInputStream(asInputStream()) {
-					
-					int pos;
-					
-					@Override
-					public int read() throws IOException {
-						if (log.isTraceEnabled()) log.trace("FilterInputStream.read");
-						int result = super.read();
-						if (result>=0 && pos++<maxSize) {
-							stream.write((byte)result);
-							if (log.isTraceEnabled()) log.trace("captured byte ["+result+"]");
-						}
-						return result;
-					}
-
-					@Override
-					public int read(byte[] b, int off, int len) throws IOException {
-						if (log.isTraceEnabled()) log.trace("FilterInputStream.read");
-						int result = super.read(b, off, len);
-						if (result>=0 && pos<maxSize) {
-							pos+=result;
-							stream.write(b, off, result);
-							if (log.isTraceEnabled()) log.trace("captured ["+result+"] bytes");
-						}
-						return result;
-					}
-
-					@Override
-					public void close() throws IOException {
-						if (log.isTraceEnabled()) log.trace("FilterInputStream.close");
-						if (available()>0) {
-							if (log.isTraceEnabled()) log.trace("bytes available at close");
-							stream.write("(--MoreBytesAvailable--)[".getBytes());
-							read(new byte[1000]);
-							stream.write("]".getBytes());
-							if (read()>0) {
-								stream.write("...".getBytes());
-							}
-						}
-						super.close();
-						stream.close();
-					}
-
-				};
-			} catch (IOException e) {
-				log.warn("Cannot capture stream", e);
-				return null;
+		try {
+			if (isRepeatable()) {
+				log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
 			}
-		} else {
-			try {
-				request = new FilterReader(asReader()) {
-
-					int pos;
-					
-					@Override
-					public int read() throws IOException {
-						if (log.isTraceEnabled()) log.trace("FilterReader.read");
-						int result = super.read();
-						if (result>=0 && pos++<maxSize) {
-							writer.write((char)result);
-						}
-						return result;
-					}
-
-					@Override
-					public int read(char[] cbuf, int off, int len) throws IOException {
-						if (log.isTraceEnabled()) log.trace("FilterReader.read");
-						int result = super.read(cbuf, off, len);
-						if (result>=0 && pos<maxSize) {
-							pos+=result;
-							writer.write(cbuf, off, result);
-						}
-						return result;
-					}
-
-					@Override
-					public void close() throws IOException {
-						if (log.isTraceEnabled()) log.trace("FilterReader.close");
-						try {
-							char buf[] = new char[1000];
-							int len = read(buf);
-							if (len>0) {
-								writer.write("(--read "+len+" more characters at close() --)");
-							}
-						} catch (Exception e) {
-							log.warn("Caught exception while trying to read more characters at close()", e);
-						}
-						super.close();
-					}
-				};
-			} catch (IOException e) {
-				log.warn("Cannot capture reader", e);
-				return null;
+			wrappedRequest = request;
+			if (isBinary()) {
+				request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
+			} else {
+				request = StreamUtil.captureReader(asReader(), new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize, true);
 			}
-			
+		} catch (IOException e) {
+			log.warn("Cannot capture stream", e);
 		}
-		return writer;
 	}
 	
+	/**
+	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
+	 * message, after the stream has been closed. Primarily for debugging purposes.
+	 * 
+	 * When isBinary() is true the Message's charset is used when present to create a Reader that reads the InputStream.
+	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
+	 */
+	public StringWriter captureCharacterStream() {
+		StringWriter result = new StringWriter();
+		captureCharacterStream(result);
+		return result;
+	}
+	public void captureCharacterStream(Writer writer) {
+		captureCharacterStream(writer, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
+	}
+	public void captureCharacterStream(Writer writer, int maxSize) {
+		log.debug("creating capture of "+ClassUtils.nameOf(request));
+		try {
+			if (isRepeatable()) {
+				log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
+			}
+			wrappedRequest = request;
+			if (!isBinary()) {
+				request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
+			} else {
+				String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+				request = StreamUtil.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
+			}
+		} catch (IOException e) {
+			log.warn("Cannot capture reader", e);
+		}
+	}
+
 }

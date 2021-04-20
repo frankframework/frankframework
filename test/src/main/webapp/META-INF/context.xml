@@ -16,22 +16,21 @@
 	/>
 
 	<Resource
-		name="jdbc/ibis4test-oracle"
+		name="jdbc/ibis4test-oracle-xe"
 		type="javax.sql.DataSource"
 		driverClassName="oracle.jdbc.driver.OracleDriver"
 		url="jdbc:oracle:thin:@localhost:1521:xe"
 		username="testiaf_user"
 		password="testiaf_user"
-		maxActive="10"
-		maxIdle="2"
-		maxWait="5000"
+		maxTotal="10"
+		maxWaitMillis="5000"
 	/>
 
 	<Resource
-		name="jdbc/ibis4test-oracle-docker"
+		name="jdbc/ibis4test-oracle"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="oracle.jdbc.xa.client.OracleXADataSource"
-		URL="jdbc:oracle:thin:@localhost:1521:ORCLCDB"
+		URL="jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB"
 		user="testiaf_user"
 		password="testiaf_user00"
 	/>
@@ -41,7 +40,7 @@
 		auth="Container" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
-		URL="jdbc:sqlserver://localhost:1433;database=testiaf"
+		URL="jdbc:sqlserver://host.docker.internal:1433;database=testiaf"
 		user="testiaf_user"
 		password="testiaf_user00"
 		sendStringParametersAsUnicode="false"
@@ -63,7 +62,7 @@
 		name="jdbc/ibis4test-mysql"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		url="jdbc:mysql://localhost:3307/testiaf"
+		url="jdbc:mysql://host.docker.internal:3307/testiaf"
 		user="testiaf_user"
 		password="testiaf_user00"
 		sslMode="DISABLED"
@@ -79,7 +78,7 @@
 		name="jdbc/ibis4test-mariadb"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		url="jdbc:mysql://localhost:3306/testiaf"
+		url="jdbc:mysql://host.docker.internal:3306/testiaf"
 		user="testiaf_user"
 		password="testiaf_user00"
 		sslMode="DISABLED"
@@ -94,7 +93,7 @@
 		type="org.mariadb.jdbc.MariaDbDataSource"
 		user="testiaf_user"
 		password="testiaf_user00"
-		url="jdbc:mariadb://${databaseHost}:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
+		url="jdbc:mariadb://host.docker.internal:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
 	/>
  -->
  	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
@@ -104,7 +103,7 @@
 		name="jdbc/ibis4test-postgres-xa" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.postgresql.xa.PGXADataSource" 
-		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
+		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
 		user="testiaf_user" 
 		password="testiaf_user00" 
 	/>
@@ -112,12 +111,24 @@
  	<Resource name="jdbc/ibis4test-postgres" auth="Container"
 		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"
-		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
+		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
 		username="testiaf_user"
 		password="testiaf_user00" 
-		maxActive="20" maxIdle="10" maxWait="5000" 
+		maxTotal="10"
+		maxWaitMillis="5000"
 	/>	
-		
+
+	<Resource name="mongodb/ibis4test" 
+		type="com.mongodb.MongoClient" 
+		factory="com.mongodb.client.MongoClientFactory" 
+		auth="Container"
+		closeMethod="close"
+		singleton="true"
+		connectionString="mongodb://host.docker.internal" 
+		username="testiaf_user"
+		password="testiaf_user00" 
+	/>
+
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="org.apache.naming.factory.BeanFactory"
@@ -143,6 +154,13 @@
 		SSLEnableVerifyHostName="false"
 		SSLTrace="false"
 		SSLDebugTrace="false"
+	/>
+
+	<Resource
+		name="jms/qcf-activemq"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.apache.activemq.ActiveMQXAConnectionFactory"
+		brokerURL="vm://localhost"
 	/>
 	
 </Context>

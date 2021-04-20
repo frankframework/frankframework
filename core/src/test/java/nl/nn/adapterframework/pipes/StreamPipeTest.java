@@ -16,10 +16,8 @@ import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.junit.Test;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -33,9 +31,9 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	}
 
 	@Override
-	public void setup() throws ConfigurationException {
+	public void setup() throws Exception {
 		super.setup();
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 	}
 
 	@Test
@@ -93,7 +91,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	public void doPipeHttpRequestCheckAntiVirusFailedTest() throws Exception {
 		pipe.setCheckAntiVirus(true);
 		PipeForward pipeAntiVirusFailedForward = new PipeForward();
-		pipeAntiVirusFailedForward.setName(pipe.ANTIVIRUS_FAILED_FORWARD);
+		pipeAntiVirusFailedForward.setName(StreamPipe.ANTIVIRUS_FAILED_FORWARD);
 		pipe.registerForward(pipeAntiVirusFailedForward);
 		MockMultipartHttpServletRequest request = createMultipartHttpRequest(pipe, true, true);
 		pipe.addParameter(createHttpRequestParameter(request, session));
@@ -113,7 +111,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		return createMultipartHttpRequest(pipe, addAntiVirusParts, false);
 	}
 
-	private Parameter createHttpRequestParameter(MockMultipartHttpServletRequest request, IPipeLineSession session) {
+	private Parameter createHttpRequestParameter(MockMultipartHttpServletRequest request, PipeLineSession session) {
 		session.put("httpRequest", request);
 		Parameter parameter = new Parameter();
 		parameter.setName("httpRequest");
@@ -128,7 +126,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		String string = "<hello>test</hello>";
 		StringPart stringPart = new StringPart("string1", string);
 		parts.add(stringPart);
-		URL url = ClassUtils.getResourceURL(this, "/Documents/doc001.pdf");
+		URL url = ClassUtils.getResourceURL("/Documents/doc001.pdf");
 		File file = new File(url.toURI());
 		FilePart filePart = new FilePart("file1", file.getName(), file);
 		parts.add(filePart);
@@ -138,7 +136,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 					pipe.getAntiVirusPassedMessage());
 			parts.add(antiVirusPassedPart);
 		}
-		URL url2 = ClassUtils.getResourceURL(this, "/Documents/doc002.pdf");
+		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
 		File file2 = new File(url2.toURI());
 		FilePart filePart2 = new FilePart("file2", file2.getName(), file2);
 		parts.add(filePart2);

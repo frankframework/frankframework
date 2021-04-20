@@ -683,7 +683,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	   	
     	Properties ldapProperties = new Properties();
     	try {
-    		URL url=ClassUtils.getResourceURL(LdapClient.class,resourceName);
+    		URL url=ClassUtils.getResourceURL(resourceName);
     		if (url!=null) {
         		log.info("LDAP properties loading from file ["+url.toString()+"]");
     			InputStream propertyStream = ClassUtils.urlToStream(url,10000);

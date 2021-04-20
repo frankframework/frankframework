@@ -8,12 +8,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -29,8 +33,9 @@ public abstract class JdbcTestBase {
 	protected String password;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked; // Avoid 'Peek should skip records already locked'-error. if it doesn't, it is not really a problem: Peeking is then only effective when the listener is idle
 	
-	
-	protected static Connection connection;
+
+	protected static Connection connection; // only to be used for setup and teardown like actions
+	protected DataSource targetDataSource;
 	protected IDbmsSupport dbmsSupport;
 
 	
@@ -38,7 +43,7 @@ public abstract class JdbcTestBase {
 	public static Iterable<Object[]> data() {
 		Object[][] datasources = {
 			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
-			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=3000", null, null, false },
+			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=1000", null, null, false },
 			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false }, 
 			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false }, 
 			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver", "testiaf_user", "testiaf_user00", true }, 
@@ -70,6 +75,7 @@ public abstract class JdbcTestBase {
 		this.testPeekShouldSkipRecordsAlreadyLocked = testPeekDoesntFindRecordsAlreadyLocked;
 
 		connection = getConnection();
+		targetDataSource = new DriverManagerDataSource(url, userid, password);
 		DbmsSupportFactory factory = new DbmsSupportFactory();
 		dbmsSupport = factory.getDbmsSupport(connection);
 		try {
@@ -108,23 +114,29 @@ public abstract class JdbcTestBase {
 
 	@AfterClass
 	public static void stopDatabase() throws SQLException {
-		try  {
+		try {
 			connection.createStatement().execute("DROP TABLE TEMP");
 		} finally {
 			connection.close();
 		}
 	}
 	
-	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, String queryType) throws JdbcException, SQLException {
+	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
+		return executeTranslatedQuery(connection, query, queryType, false);
+		
+	}
+	
+	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
 		QueryExecutionContext context = new QueryExecutionContext(query, queryType, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		log.debug("executing translated query ["+context.getQuery()+"]");
-		if (queryType.equals("select")) {
-			return  connection.prepareStatement(context.getQuery());
-		}
-		if (queryType.equals("select for update")) {
-			return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-		}
+		if (queryType==QueryType.SELECT) {
+			if(!selectForUpdate) {
+				return  connection.prepareStatement(context.getQuery());
+			} else {
+				return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			}
+		}	
 		JdbcUtil.executeStatement(connection, context.getQuery());
 		return null;
 	}

@@ -3,22 +3,29 @@
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
-		http://www.springframework.org/schema/util classpath:xml/xsd/spring-util-3.2.xsd
-		http://www.springframework.org/schema/jdbc classpath:xml/xsd/spring-jdbc-3.2.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 		"
 	>
 
 	<bean id="txManagerReal" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource">
-			<ref bean="ibisTestDataSource"/>
+			<ref bean="defaultDataSource"/>
 		</property>
 		<property name="transactionSynchronization">
 			<util:constant static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"/>
 		</property>
+	</bean>
+
+	<bean
+		id="defaultDataSource"
+		factory-bean="dataSourceFactory"
+		factory-method="add"
+		>
+		<constructor-arg ref="ibisTestDataSource" />
+		<constructor-arg value="${jdbc.datasource.default}" />
 	</bean>
 
 	<bean id="ibisTestDataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
@@ -30,16 +37,6 @@
 	<bean id="h2DataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="org.h2.Driver"/>
 		<property name="url" value="jdbc:h2:mem:ibisTestDataSource;DB_CLOSE_DELAY=-1"/>
-	</bean>
-
-	<bean id="proxiedDataSources" class="java.util.HashMap">
-		<constructor-arg>
-			<map>
-				<entry key="${jdbc.datasource.default}">
-					<ref bean="ibisTestDataSource"/>
-				</entry>
-			</map>
-		</constructor-arg>
 	</bean>
 
 	<!-- used by WebServiceListeners to register on a local bus -->

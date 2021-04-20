@@ -19,7 +19,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -66,7 +66,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 			if (properties == null) {
 				properties = new Properties();
 			}
-			properties.load(ClassUtils.getResourceURL(getClass().getClassLoader(), AMAZONS3_PROPERTIES).openStream());	 
+			properties.load(ClassUtils.getResourceURL(AMAZONS3_PROPERTIES).openStream());	 
 			accessKey = properties.getProperty("accessKey");
 			secretKey = properties.getProperty("secretKey");
 			proxyHost = properties.getProperty("proxyHost");
@@ -146,7 +146,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 
 		fileSystemSender.setAction("copy");
 		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		String dest = "copiedObject.txt";
 		session.put("destinationFileName", dest);
 

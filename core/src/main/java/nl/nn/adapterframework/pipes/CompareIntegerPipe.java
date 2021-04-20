@@ -17,7 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -29,7 +29,7 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Pipe that compares the two integer values read from {@link Parameter the parameters} <code>operand1</code> and <code>operand2</code>.
@@ -80,7 +80,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
 			try {
@@ -102,16 +102,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 
 	}
 
-	/**
-	 * @param pvl
-	 * @param operandName
-	 * @param sessionkey
-	 * @param message
-	 * @param session
-	 * @return
-	 * @throws PipeRunException 
-	 */
-	private Integer getOperandValue(ParameterValueList pvl, String operandName, String sessionkey, Message message, IPipeLineSession session) throws PipeRunException {
+	private Integer getOperandValue(ParameterValueList pvl, String operandName, String sessionkey, Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValue pv = pvl.getParameterValue(operandName);
 		Integer operand = null;
 		if(pv != null && pv.getValue() != null) {

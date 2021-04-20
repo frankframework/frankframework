@@ -15,30 +15,31 @@
  */
 package nl.nn.adapterframework.webcontrol.pipes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import org.apache.logging.log4j.Level;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Shows the environment variables.
@@ -50,7 +51,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return new PipeRunResult(getForward(), doGet(session));
@@ -63,11 +64,11 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 	}
 
 	@Override
-	protected String doGet(IPipeLineSession session) throws PipeRunException {
+	protected String doGet(PipeLineSession session) throws PipeRunException {
 		return retrieveFormInput(session, false);
 	}
 
-	private String doPost(IPipeLineSession session) throws PipeRunException {
+	private String doPost(PipeLineSession session) throws PipeRunException {
 		Object formLogIntermediaryResultsObject = session.get("logIntermediaryResults");
 		boolean formLogIntermediaryResults = ("on".equals((String) formLogIntermediaryResultsObject) ? true : false);
 		String formLogLevel = (String) session.get("logLevel");
@@ -75,7 +76,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		int formLengthLogRecords = (formLengthLogRecordsObject != null
 				? Integer.parseInt((String) formLengthLogRecordsObject) : -1);
 
-		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
+		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		String commandIssuedBy = HttpUtils.getCommandIssuedBy(httpServletRequest);
 
 		String msg = "LogLevel changed from [" + retrieveLogLevel() + "] to [" + formLogLevel
@@ -94,7 +95,7 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		return retrieveFormInput(session, true);
 	}
 
-	private String retrieveFormInput(IPipeLineSession session, boolean updated) {
+	private String retrieveFormInput(PipeLineSession session, boolean updated) {
 		IbisManager ibisManager = retrieveIbisManager();
 
 		String configurationName = retrieveConfigurationName(session);
@@ -144,8 +145,6 @@ public class ShowEnvironmentVariables extends ConfigurationBase {
 		} catch (Throwable t) {
 			log.warn("caught Throwable while getting EnvironmentVariables", t);
 		}
-
-		addPropertiesToXmlBuilder(environmentVariablesXml, JdbcUtil.retrieveJdbcPropertiesFromDatabase(), "Jdbc Properties", propsToHide);
 
 		storeConfiguration(session, configAll, configuration);
 

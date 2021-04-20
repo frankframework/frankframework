@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ package nl.nn.adapterframework.jdbc;
 
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -28,9 +29,10 @@ import nl.nn.adapterframework.util.Misc;
 
 public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 
-	private String tableName=null;
-	private String indexName=null;
+	private @Getter String tableName="IBISSTORE";
+	private @Getter String indexName="IX_IBISSTORE";
 	private String selectCondition=null;
+	
 	private JdbcFacade parent=null;
 	
 
@@ -127,11 +129,13 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		if(order.equals(SortOrder.NONE)) { //If no order has been set, use the default (DESC for messages and ASC for errors)
 			order = getOrderEnum();
 		}
-
 		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause()+ getWhereClause(whereClause,false)+
-		  " ORDER BY "+getDateField()+(" "+order.name()+" ")+provideTrailingFirstRowsHint(dbmsSupport);
+				(StringUtils.isNotEmpty(getDateField())? " ORDER BY "+getDateField()+ " "+order.name():"")+provideTrailingFirstRowsHint(dbmsSupport);
 	}
 
+	
+	
+	
 	@Override
 	protected String createSelector() {
 		return Misc.concatStrings(super.createSelector()," AND ",selectCondition);
@@ -167,26 +171,15 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	}
 
 
-	/**
-	 * Sets the name of the table messages are stored in.
-	 */
-	@IbisDoc({"Name of the table messages are stored in", ""})
+	@IbisDoc({"1", "Name of the table messages are stored in", "IBISSTORE"})
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}
-	public String getTableName() {
-		return tableName;
-	}
 
 
-	@IbisDoc({"Name of the index, to be used in hints for query optimizer too (only for oracle)", ""})
+	@IbisDoc({"2", "Name of the index, to be used in hints for query optimizer too (only for Oracle)", "IX_IBISSTORE"})
 	public void setIndexName(String string) {
 		indexName = string;
 	}
-	public String getIndexName() {
-		return indexName;
-	}
-
-
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,7 +52,8 @@ public final class AppConstants extends Properties implements Serializable {
 	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
 	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
-	private final static String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
+	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
+	public final static String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 
 	private VariableExpander variableExpander;
 	private static Properties additionalProperties = new Properties();
@@ -63,15 +64,6 @@ public final class AppConstants extends Properties implements Serializable {
 		super();
 
 		load(classLoader, APP_CONSTANTS_PROPERTIES_FILE, true);
-
-		//TODO Make sure this to happens only once, and store all the properties in 'additionalProperties' to be loaded for each AppConstants instance
-		//TODO JdbcUtil has static references to AppConstants causing it to load twice!
-		if(classLoader instanceof IConfigurationClassLoader && getBoolean(JDBC_PROPERTIES_KEY, false)) { //Order matters here, first check if it's not the rootinstance
-			Properties databaseProperties = JdbcUtil.retrieveJdbcPropertiesFromDatabase();
-			if (databaseProperties!=null) {
-				putAll(databaseProperties);
-			}
-		}
 
 		//Add all ibis properties
 		putAll(additionalProperties);
@@ -184,6 +176,10 @@ public final class AppConstants extends Properties implements Serializable {
 		}
 		if (value != null) {
 			try {
+				if (value.contains(StringResolver.DELIM_START+key+StringResolver.DELIM_STOP)) {
+					log.warn("cyclic property definition key [{}] value [{}]", key, value);
+					return value;
+				}
 				String result=StringResolver.substVars(value, this);
 				if (log.isTraceEnabled()) {
 					if (!value.equals(result)){

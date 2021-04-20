@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019, 2020 WeAreFrank!
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.transformer.AbstractQueryOutputTransformer;
-import nl.nn.adapterframework.jdbc.transformer.QueryOutputToCSV;
-import nl.nn.adapterframework.jdbc.transformer.QueryOutputToJson;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -36,12 +34,13 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import nl.nn.adapterframework.jdbc.transformer.AbstractQueryOutputTransformer;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToCSV;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToJson;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Executes a query.
@@ -63,23 +62,9 @@ public final class ExecuteJdbcQuery extends Base {
 	public Response getJdbcInfo() throws ApiException {
 
 		Map<String, Object> result = new HashMap<String, Object>();
-		JmsRealmFactory realmFactory = JmsRealmFactory.getInstance();
 
-		List<String> jmsRealms = realmFactory.getRegisteredDatasourceRealmNamesAsList();
-		List<String> datasources = new ArrayList<>();
-		if (jmsRealms.size() == 0) {
-			datasources.add("no datasources found in jmsRealms");
-		} else {
-			for (String jmsRealm : jmsRealms) {
-				JmsRealm realm = realmFactory.getJmsRealm(jmsRealm);
-				String datasourceName = realm.getDatasourceName();
-				if(!datasources.contains(datasourceName)) { //It's possible multiple realms use the same datasourceName
-					datasources.add(datasourceName);
-				}
-			}
-		}
-
-		result.put("datasources", datasources);
+		IDataSourceFactory dataSourceFactory = getIbisContext().getBean("dataSourceFactory", IDataSourceFactory.class);
+		result.put("datasources", dataSourceFactory.getDataSourceNames());
 
 		List<String> resultTypes = new ArrayList<String>();
 		resultTypes.add("csv");
@@ -160,6 +145,7 @@ public final class ExecuteJdbcQuery extends Base {
 			qs.setTrimSpaces(trimSpaces);
 			qs.setAvoidLocking(avoidLocking);
 			qs.setBlobSmartGet(true);
+			qs.setPrettyPrint(true);
 			qs.configure(true);
 			qs.open();
 			Message message = qs.sendMessage(new Message(query), null);

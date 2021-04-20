@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.6-SNAPSHOT</version>
+		<version>7.7-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ibis-adapterframework-core</artifactId>
@@ -15,6 +15,7 @@
 		<j2v8.version>4.6.0</j2v8.version>
 		<cxf.version>3.1.18</cxf.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>net.arnx</groupId>
@@ -98,13 +99,18 @@
 		</dependency>
 		<!-- commons -->
 		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 			<version>3.2.2</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -117,6 +123,15 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.8</version>
 		</dependency>
 		<!-- Requirement for Jboss 7.5 -->
 		<dependency>
@@ -231,6 +246,11 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
 			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>4.2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -405,11 +425,19 @@
 			<artifactId>htmlcleaner</artifactId>
 			<version>2.7</version>
 		</dependency>
+
+		<!-- TransactionManagers: BTM + NARAYANA -->
 		<dependency>
 			<groupId>com.github.marcus-nl.btm</groupId>
 			<artifactId>btm</artifactId>
 			<version>3.0.0-mk1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jboss.narayana.jta</groupId>
+			<artifactId>narayana-jta</artifactId>
+			<version>5.11.0.Final</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -424,11 +452,6 @@
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>2.8</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mozilla</groupId>
@@ -448,7 +471,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>3.5.3</version>
+			<version>3.5.3</version><!-- beware, Liquibase checksum generation is not consistent over liquibase versions, see https://liquibase.jira.com/browse/CORE-3204 -->
 		</dependency>
 
 		<dependency>
@@ -671,6 +694,67 @@
 					<optional>true</optional>
 				</dependency>
 			</dependencies>
+		</profile>
+		<profile>
+			<id>attachFrankDoc</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.2.0</version>
+						<inherited>false</inherited>
+						<configuration>
+							<doclint>none</doclint>
+							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
+							<docletArtifact>
+								<groupId>org.ibissource</groupId>
+								<artifactId>ibis-adapterframework-frankDoc</artifactId>
+								<version>${project.version}</version>
+							</docletArtifact>
+							<additionalOptions>
+								<additionalOption>-outputDir</additionalOption>
+								<additionalOption>${project.build.directory}/classes/xml/xsd</additionalOption>
+							</additionalOptions>
+							<source>1.8</source>
+							<useStandardDocletOptions>false</useStandardDocletOptions>
+							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
+						</configuration>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok-maven-plugin</artifactId>
+						<version>1.18.16.0</version>
+						<executions>
+							<execution>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>delombok</goal>
+								</goals>
+								<configuration>
+									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+									<addOutputDirectory>false</addOutputDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>

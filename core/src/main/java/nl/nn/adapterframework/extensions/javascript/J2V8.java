@@ -27,7 +27,7 @@ import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -101,7 +101,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 	}
 
 	@Override
-	public void registerCallback(final ISender sender, final IPipeLineSession session) {
+	public void registerCallback(final ISender sender, final PipeLineSession session) {
 		v8.registerJavaMethod(new JavaCallback() {
 			@Override
 			public Object invoke(V8Object receiver, V8Array parameters) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,11 +42,11 @@ import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -56,6 +56,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.PkiUtil;
 
 public class SignaturePipe extends FixedForwardPipe {
@@ -98,7 +99,7 @@ public class SignaturePipe extends FixedForwardPipe {
 		if (StringUtils.isEmpty(getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
 		}
-		keystoreUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), getKeystore());
+		keystoreUrl = ClassUtils.getResourceURL(this, getKeystore());
 		if (keystoreUrl == null) {
 			throw new ConfigurationException("cannot find URL for keystore resource ["+getKeystore()+"]");
 		}
@@ -117,13 +118,14 @@ public class SignaturePipe extends FixedForwardPipe {
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
+		CredentialFactory credentialFactory = new CredentialFactory(getKeystoreAuthAlias(), null, getKeystorePassword());
 		if (getAction().equals(ACTION_SIGN)) {
 			try {
 				if ("pem".equals(getKeystoreType())) {
 					privateKey = PkiUtil.getPrivateKeyFromPem(keystoreUrl);
 				} else {
-					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystorePassword, keystoreType, "Keys for action ["+getAction()+"]");
-					KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, keystorePassword, keyManagerAlgorithm);
+					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, credentialFactory.getPassword(), keystoreType, "Keys for action ["+getAction()+"]");
+					KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, credentialFactory.getPassword(), keyManagerAlgorithm);
 					if (keymanagers==null || keymanagers.length==0) {
 						throw new PipeStartException("No keymanager found for keystore ["+keystoreUrl+"]");
 					}
@@ -142,7 +144,7 @@ public class SignaturePipe extends FixedForwardPipe {
 				if ("pem".equals(getKeystoreType())) {
 					certificate = PkiUtil.getCertificateFromPem(keystoreUrl);
 				} else {
-					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystorePassword, keystoreType, "Keys for action ["+getAction()+"]");
+					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, credentialFactory.getPassword(), keystoreType, "Keys for action ["+getAction()+"]");
 					TrustManager[] trustmanagers = PkiUtil.createTrustManagers(keystore, keyManagerAlgorithm);
 					if (trustmanagers==null || trustmanagers.length==0) {
 						throw new PipeStartException("No trustmanager for keystore ["+keystoreUrl+"]");
@@ -163,7 +165,7 @@ public class SignaturePipe extends FixedForwardPipe {
 
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			Signature dsa = StringUtils.isNotEmpty(getProvider()) ? Signature.getInstance(getAlgorithm(), getProvider()) : Signature.getInstance(getAlgorithm());
 			if (getAction().equals(ACTION_SIGN)) {
@@ -180,7 +182,7 @@ public class SignaturePipe extends FixedForwardPipe {
 				}
 			}
 			if (getAction().equals(ACTION_SIGN)) {
-				return new PipeRunResult(getForward(), isSignatureBase64() ? Base64.encodeBase64(dsa.sign()):dsa.sign());
+				return new PipeRunResult(getForward(), isSignatureBase64() ? Base64.encodeBase64String(dsa.sign()):dsa.sign());
 			} else {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				Message signatureMsg = Message.asMessage(pvl.getValueMap().get(PARAMETER_SIGNATURE));

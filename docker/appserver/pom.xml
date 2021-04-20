@@ -10,13 +10,14 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-docker</artifactId>
-		<version>7.6-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 
 
 	<modules>
 		<module>Tomcat</module>
 		<module>WebSphere</module>
+		<module>Jboss-WildFly</module>
 	</modules>
 
 

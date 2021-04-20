@@ -23,7 +23,7 @@ import java.util.Properties;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -36,6 +36,7 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 
 	private Properties dbmsSupportMap; 
 
+	@Override
 	public IDbmsSupport getDbmsSupport(Connection conn) {
 		String product;
 		String productVersion;

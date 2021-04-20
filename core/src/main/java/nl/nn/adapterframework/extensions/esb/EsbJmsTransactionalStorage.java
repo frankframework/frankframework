@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,7 +67,6 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author Peter Leeuwenburgh
  */
 public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTransactionalStorage<S> {
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	private TransformerPool exceptionLogTp = null;
 	private TransformerPool auditLogTp = null;
 
@@ -77,7 +76,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 		String exceptionLogString = "/xml/xsl/esb/exceptionLog.xsl";
 		String auditLogString = "/xml/xsl/esb/auditLog.xsl";
 		try {
-			Resource exceptionLogResource = Resource.getResource(classLoader, exceptionLogString);
+			Resource exceptionLogResource = Resource.getResource(this, exceptionLogString);
 			if (exceptionLogResource == null) {
 				throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet [" + exceptionLogString + "]");
 			}
@@ -88,7 +87,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 			throw new ConfigurationException(getLogPrefix() + "got error creating transformer from file [" + exceptionLogString + "]", te);
 		}
 		try {
-			Resource auditLogResource =Resource.getResource(classLoader, auditLogString);
+			Resource auditLogResource =Resource.getResource(this, auditLogString);
 			if (auditLogResource == null) {
 				throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet [" + auditLogString + "]");
 			}
