@@ -30,14 +30,17 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.JWTPipe.Direction;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.PkiUtil;
 
 public class JWTKeyResolver extends SigningKeyResolverAdapter {
 	
-	private @Getter @Setter Direction direction = Direction.ENCODE;
+	private @Getter Direction direction = Direction.ENCODE;
+	private @Getter SignatureAlgorithm algorithm;
 	
 	private @Getter @Setter String secret;
 	private @Getter @Setter String authAlias;
@@ -60,6 +63,18 @@ public class JWTKeyResolver extends SigningKeyResolverAdapter {
 			keystoreUrl = ClassUtils.getResourceURL(scopeProvider, getKeystore());
 			if (keystoreUrl == null) {
 				throw new ConfigurationException("cannot find URL for resource ["+getKeystore()+"]");
+			}
+		}
+		
+		if (StringUtils.isEmpty(getSecret()) && StringUtils.isEmpty(getAuthAlias()) && StringUtils.isEmpty(getKeystore())) {
+			throw new ConfigurationException("has neither secret nor authAlias nor keystore set");
+		}
+		
+		if (getAlgorithm()!= null && getDirection()==Direction.ENCODE ) {
+			if (getAlgorithm().isHmac() && (StringUtils.isEmpty(getSecret()) || StringUtils.isEmpty(getAuthAlias()))) {
+				throw new ConfigurationException("has HMAC-algorithm [" + getAlgorithm().getValue() + "] but neither secret nor authAlias set");
+			} else if ((getAlgorithm().isRsa() || getAlgorithm().isEllipticCurve()) && StringUtils.isEmpty(getKeystore())) {
+				throw new ConfigurationException("has RSA/EC-algorithm [" + getAlgorithm().getValue() + "] but no keystore set");
 			}
 		}
 	}
@@ -101,7 +116,7 @@ public class JWTKeyResolver extends SigningKeyResolverAdapter {
 						privateKey = keyManager.getPrivateKey(getKeystoreAlias());
 					}
 				} catch (KeyStoreException  | NoSuchAlgorithmException | CertificateException | IOException | UnrecoverableKeyException | InvalidKeySpecException e) {
-					throw new PipeStartException("cannot get Secret Key for verification in keystore ["+keystoreUrl+"]", e);
+					throw new PipeStartException("cannot get Private Key for signing in keystore ["+keystoreUrl+"]", e);
 				}
 			}
 		}
@@ -128,5 +143,13 @@ public class JWTKeyResolver extends SigningKeyResolverAdapter {
 			return getSecretKey();
 		}
 		return null;
+	}
+	
+	public void setDirection(String direction) {
+		this.direction = Misc.parse(Direction.class, direction);
+	}
+	
+	public void setAlgorithm(String algorithm) {
+		this.algorithm = Misc.parse(SignatureAlgorithm.class, algorithm);
 	}
 }

@@ -252,7 +252,6 @@ public class JWTPipe extends FixedForwardPipe {
 				
 				jwtBuilder.setNotBefore(notBefore.getTime());
 			}
-			
 			if (getCustomClaimsParams() != null) {
 				StringTokenizer st = new StringTokenizer(getCustomClaimsParams(), ",");
 				while (st.hasMoreElements()) {
@@ -293,11 +292,13 @@ public class JWTPipe extends FixedForwardPipe {
 	@IbisDoc({"1", "Either <code>encode</code> or <code>decode</code>", "encode"})
 	public void setDirection(String direction) {
 		this.direction = Misc.parse(Direction.class, direction);
+		getJWTKeyResolver().setDirection(direction);
 	}
 	
 	@IbisDoc({"2", "(Only used when direction=encode) Algorithm to use for signing the token, default the application attempts to determine the algorithm. Must be one of HS256, HS384, HS512, ES256, ES384, RS512, RS256, RS384, RS512, PS256, PS384, PS512", ""})
 	public void setAlgorithm(String algorithm) {
 		this.algorithm = Misc.parse(SignatureAlgorithm.class, algorithm);
+		getJWTKeyResolver().setAlgorithm(algorithm);
 	}
 
 	@IbisDoc({"3", "If direction=encode: If set, sets the <code>Issuer</code> claim with this value"+
