@@ -26,7 +26,7 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 
 	// Automatically create a key for the test
 	private final static String SECRET = "TESTKEYTHATISLONGENOUGHTOPASSVALIDATION1234";
-	private final static String ISSUER = "JWTEncodePipeTest";
+	private final static String ISSUER = "JWTPipeTest";
 	private final static String SUBJECT = "UnitTest";
 	private final static String AUDIENCE = "Framework";
 	private final static String JTI = "1234";
@@ -36,11 +36,16 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 	private final static String PARAM_NOTBEFORE = "notBefore";
 	private final static String PARAM_EXPIRATION = "expiration";
 	
+	private final static String PARAM_ISSUER = "issuer";
+	private final static String PARAM_SUBJECT = "subject";
+	private final static String PARAM_AUDIENCE = "audience";
+	private final static String PARAM_JTI = "jti";
+	
 	private String failureForwardName = "failure";
 	private String expiredForwardName = "expired";
 	private String prematureForwardName = "premature";
 	
-	private String decodedToken = "{aud=Framework, jti=1234, iss=JWTEncodePipeTest, sub=UnitTest}";
+	private String decodedToken = "{aud=Framework, jti=1234, iss=JWTPipeTest, sub=UnitTest}";
 	
 	@Override
 	public JWTPipe createPipe() {
@@ -64,12 +69,12 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 				
 		PipeRunResult prr = doPipe(new Message(""));
 
-		assertEquals("eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJKV1RFbmNvZGVQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9.g81w22zb9XKO5bLAjspVSsKjgaglc_OfjdIpi8eCEI4", prr.getResult().asString());
+		assertEquals("eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9.IizVZV_opGPInFVPaCs8LoHxve5o7kzF93yMzOdxt80", prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}
 	
 	@Test
-	public void testEncodeParams() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+	public void testEncodeTimeParams() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
 		pipe.setDirection("encode");
 		pipe.setIssuer(ISSUER);
 		pipe.setSubject(SUBJECT);
@@ -100,7 +105,40 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 				
 		PipeRunResult prr = doPipe(new Message(""));
 
-		assertEquals("eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJKV1RFbmNvZGVQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCIsImlhdCI6MTYwOTQ1NTYwMCwiZXhwIjoxNjQwOTkxNjAwLCJuYmYiOjE1Nzc4MzMyMDB9.coRoVx3QaNjLkqu1H3xD6Kd2u55PHbq_h-R8rIllR-M", prr.getResult().asString());
+		assertEquals("eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCIsImlhdCI6MTYwOTQ1NTYwMCwiZXhwIjoxNjQwOTkxNjAwLCJuYmYiOjE1Nzc4MzMyMDB9.JOJZK3oqbQg3TLNUgH-CE-3BSrDLxDMhd5xDs6l0Oc0", prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+	}
+	
+	@Test
+	public void testEncodeParams() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+		pipe.setDirection("encode");
+		pipe.setIssuer(ISSUER);
+		pipe.setSubject(SUBJECT);
+		pipe.setAudience(AUDIENCE);
+		pipe.setJTI(JTI);
+		
+		Parameter issuerParameter = new Parameter();
+		issuerParameter.setName(PARAM_ISSUER);
+		issuerParameter.setValue("OtherJWTPipeTest");
+		Parameter subjectParameter = new Parameter();
+		subjectParameter.setName(PARAM_SUBJECT);
+		subjectParameter.setValue("OtherSubject");
+		Parameter audienceParameter = new Parameter();
+		audienceParameter.setName(PARAM_AUDIENCE);
+		audienceParameter.setValue("OTHERAudience");
+		Parameter jtiParameter = new Parameter();
+		jtiParameter.setName(PARAM_JTI);
+		jtiParameter.setValue("OTHERJTI");
+		pipe.addParameter(issuerParameter);
+		pipe.addParameter(subjectParameter);
+		pipe.addParameter(audienceParameter);
+		pipe.addParameter(jtiParameter);
+		
+		configureAndStartPipe();
+				
+		PipeRunResult prr = doPipe(new Message(""));
+
+		assertEquals("eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPdGhlckpXVFBpcGVUZXN0Iiwic3ViIjoiT3RoZXJTdWJqZWN0IiwiYXVkIjoiT1RIRVJBdWRpZW5jZSIsImp0aSI6Ik9USEVSSlRJIn0.HcjImu_ZFodmlNZOAyDvbKVcT1qXJgHO9_Ef-PzWn9k", prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}
 	
@@ -205,12 +243,31 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 	
 	@Test
 	public void testWrongSecret() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
-		pipe.setDirection("decode");
 		exception.expect(PipeRunException.class);
+		pipe.setDirection("decode");
 		pipe.setSecret("ThisIsNotTheCorrectSecretAndItIsLongEnough");
 		configureAndStartPipe();
 
 		doPipe(new Message(createToken(null, null)));
+	}
+	
+	@Test
+	public void testConfigurationFailureNoSecrets() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+		exception.expect(ConfigurationException.class);
+		exception.expectMessage("has neither secret nor authAlias nor keystore set");
+		pipe.setDirection("encode");
+		pipe.setSecret(null);
+		configureAndStartPipe();
+	}
+	
+	
+	@Test
+	public void testConfigurationFailureHMACNoSecret() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+		exception.expect(ConfigurationException.class);
+		exception.expectMessage("has HMAC-algorithm [HS256] but neither secret nor authAlias set");
+		pipe.setDirection("encode");
+		pipe.setAlgorithm("HS256");
+		configureAndStartPipe();
 	}
 	
 	private String createToken(Date expiration, Date notBefore) {
