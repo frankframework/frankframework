@@ -23,12 +23,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
+import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
@@ -74,6 +76,14 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 		setDocumented(isDocumented(method));
 		setDeprecated(isDeprecated(method));
 		this.methodName = method.getName();
+		setJavaDocBasedDescription(method);
+		FrankAnnotation ibisDoc = getIbisDoc(method);
+		if(ibisDoc != null) {
+			parseIbisDocAnnotation(ibisDoc);
+		}
+		if(! StringUtils.isEmpty(getDefaultValue())) {
+			log.warn("Default value [{}] of config child [{}] of FrankElement [{}] is not used", () -> getDefaultValue(), () -> getKey().toString(), () -> getOwningElement().getFullName());
+		}
 	}
 
 	private static boolean isDocumented(FrankMethod m) {
@@ -83,6 +93,16 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	private static boolean isDeprecated(FrankMethod m) {
 		FrankAnnotation deprecated = m.getAnnotation(FrankDocletConstants.DEPRECATED);
 		return (deprecated != null);
+	}
+
+	private static FrankAnnotation getIbisDoc(FrankMethod method) {
+		FrankAnnotation result = null;
+		try {
+			result = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
+		} catch(FrankDocException e) {
+			log.warn("Could not @IbisDoc annotation or could not obtain JavaDoc", e);
+		}
+		return result;
 	}
 
 	@Override

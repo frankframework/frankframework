@@ -423,7 +423,11 @@ public class FrankDocModel {
 	private List<ConfigChild> createConfigChildren(FrankMethod[] methods, FrankElement parent) throws FrankDocException {
 		log.trace("Creating config children of FrankElement [{}]", () -> parent.getFullName());
 		List<ConfigChild> result = new ArrayList<>();
-		List<FrankMethod> frankMethods = selectConfigChildSetters(methods);
+		List<FrankMethod> frankMethods = Arrays.asList(methods).stream()
+				.filter(FrankMethod::isPublic)
+				.filter(Utils::isConfigChildSetter)
+				.filter(m -> configChildDescriptors.get(m.getName()) != null)
+				.collect(Collectors.toList());
 		for(int order = 0; order < frankMethods.size(); ++order) {
 			FrankMethod frankMethod = frankMethods.get(order);
 			log.trace("Have config child setter [{}]", () -> frankMethod.getName());
@@ -437,15 +441,6 @@ public class FrankDocModel {
 			FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
 			configChild.setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
 			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
-			configChild.setJavaDocBasedDescription(frankMethod);
-			if(getIbisDoc(frankMethod) == null) {
-				log.warn("No @IbisDoc annotation for config child [{}] of FrankElement [{}]", () -> configChild.getKey().toString(), () -> parent.getFullName());
-			} else if(! configChild.parseIbisDocAnnotation(getIbisDoc(frankMethod))) {
-				log.warn("@IbisDoc annotation for config child [{}] of FrankElement [{}] does not specify a sort order", () -> configChild.getKey().toString(), () -> parent.getFullName());
-			}
-			if(! StringUtils.isEmpty(configChild.getDefaultValue())) {
-				log.warn("Default value [{}] of config child [{}] of FrankElement [{}] is not used", () -> configChild.getDefaultValue(), () -> configChild.getKey().toString(), () -> parent.getFullName());
-			}
 			// The order is used to create ConfigChildSet-s. We overwrite the order obtained from @IbisDoc and @IbisDocRef
 			configChild.setOrder(order);
 			result.add(configChild);
@@ -459,24 +454,6 @@ public class FrankDocModel {
 		}
 		log.trace("Done creating config children of FrankElement [{}]", () -> parent.getFullName());
 		return result;
-	}
-
-	private static FrankAnnotation getIbisDoc(FrankMethod method) {
-		FrankAnnotation result = null;
-		try {
-			result = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
-		} catch(FrankDocException e) {
-			log.warn("Could not @IbisDoc annotation or could not obtain JavaDoc", e);
-		}
-		return result;
-	}
-
-	private List<FrankMethod> selectConfigChildSetters(FrankMethod[] methods) {
-		return Arrays.asList(methods).stream()
-				.filter(FrankMethod::isPublic)
-				.filter(Utils::isConfigChildSetter)
-				.filter(m -> configChildDescriptors.get(m.getName()) != null)
-				.collect(Collectors.toList());
 	}
 
 	ElementRole findOrCreateElementRole(FrankClass elementTypeClass, String roleName) throws FrankDocException {
