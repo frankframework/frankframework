@@ -136,21 +136,20 @@ public abstract class ElementChild {
 				description = value;
 			}
 		} catch(FrankDocException e) {
-			log.warn("A FrankDocException occurred when searching the (inherited) javadoc of {}.{}",
-					method.getDeclaringClass().getSimpleName(), method.getName(), e);
+			log.warn("A FrankDocException occurred when searching the (inherited) javadoc of {}", method.toString(), e);
 		}
 	}
 
-	boolean parseIbisDocAnnotation(FrankAnnotation ibisDoc) {
+	void parseIbisDocAnnotation(FrankAnnotation ibisDoc) throws FrankDocException {
 		String[] ibisDocValues = null;
 		try {
 			ibisDocValues = (String[]) ibisDoc.getValue();
 		} catch(FrankDocException e) {
-			log.warn("Could not parse FrankAnnotation of @IbisDoc", e);
+			throw new FrankDocException("Could not parse FrankAnnotation of @IbisDoc", e);
 		}
 		boolean isIbisDocHasOrder = false;
 		try {
-			order = Integer.parseInt(ibisDocValues[0]);
+			Integer.parseInt(ibisDocValues[0]);
 			isIbisDocHasOrder = true;
 		} catch (NumberFormatException e) {
 			isIbisDocHasOrder = false;
@@ -168,7 +167,6 @@ public abstract class ElementChild {
 				defaultValue = ibisDocValues[1];
 			}
 		}
-		return isIbisDocHasOrder;
 	}
 
 	@Override

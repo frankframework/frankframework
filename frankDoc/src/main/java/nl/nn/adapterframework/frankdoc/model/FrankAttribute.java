@@ -16,13 +16,11 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.model;
 
-import java.util.Comparator;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-public class FrankAttribute extends ElementChild implements Comparable<FrankAttribute> {
+public class FrankAttribute extends ElementChild {
 	@EqualsAndHashCode(callSuper = false)
 	static class Key extends AbstractKey {
 		private String name;
@@ -62,13 +60,4 @@ public class FrankAttribute extends ElementChild implements Comparable<FrankAttr
 	boolean overrideIsMeaningful(ElementChild overriddenFrom) {
 		return false;
 	}
-
-	@Override
-	public int compareTo(FrankAttribute other) {
-		return FRANK_ATTRIBUTE_COMPARATOR.compare(this, (FrankAttribute) other);
-	}
-
-	private static final Comparator<FrankAttribute> FRANK_ATTRIBUTE_COMPARATOR =
-			Comparator.comparing(FrankAttribute::getOrder)
-			.thenComparing(FrankAttribute::getName);
 }

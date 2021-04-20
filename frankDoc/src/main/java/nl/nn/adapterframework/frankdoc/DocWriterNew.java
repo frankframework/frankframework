@@ -583,6 +583,9 @@ public class DocWriterNew {
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
 		log.trace("Adding config child [{}]", () -> child.toString());
+		if(child.getDescription() == null) {
+			log.warn("No description available for config child {}", child);
+		}
 		ElementRole theRole = model.findElementRole(child);
 		if(isNoElementTypeNeeded(theRole)) {
 			addConfigChildSingleReferredElement(context, child);
@@ -868,6 +871,7 @@ public class DocWriterNew {
 			log.trace("Adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
 			ThreadContext.push(String.format("Owning element [%s], ConfigChildSet [%s]", frankElement.getSimpleName(), configChildSet.toString()));
 		}
+		checkConfigChildDescriptionsAvailable(configChildSet);
 		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
 		if((roles.size() == 1) && isNoElementTypeNeeded(roles.get(0))) {
 			log.trace("Config child set appears as element reference");
@@ -880,6 +884,17 @@ public class DocWriterNew {
 		if(log.isTraceEnabled()) {
 			ThreadContext.pop();
 			log.trace("Done adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
+		}
+	}
+
+	private void checkConfigChildDescriptionsAvailable(ConfigChildSet configChildSet) {
+		List<ConfigChild> withoutDescription = configChildSet.getConfigChildren().stream()
+				.filter(c -> c.getDescription() == null)
+				.collect(Collectors.toList());
+		if(withoutDescription.isEmpty()) {
+			for(ConfigChild c: withoutDescription) {
+				log.warn("No description available for config child {}", c.toString());
+			}
 		}
 	}
 
@@ -951,6 +966,7 @@ public class DocWriterNew {
 	}
 
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> frankAttributes) {
+		checkDescriptionAvailable(frankAttributes);
 		for(FrankAttribute frankAttribute: frankAttributes) {
 			log.trace("Adding attribute [{}]", () -> frankAttribute.getName());
 			XmlBuilder attribute = null;
@@ -967,6 +983,15 @@ public class DocWriterNew {
 				addDocumentation(attribute, getDocumentationText(frankAttribute));
 			}
 		}		
+	}
+
+	void checkDescriptionAvailable(List<FrankAttribute> attributes) {
+		List<FrankAttribute> withoutDescription = attributes.stream()
+				.filter(a -> a.getDescription() == null)
+				.collect(Collectors.toList());
+		for(FrankAttribute a: withoutDescription) {
+			log.warn("No description available for attribute {} of FrankElement {}", a.getName(), a.getOwningElement().getFullName());
+		}
 	}
 
 	private XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {

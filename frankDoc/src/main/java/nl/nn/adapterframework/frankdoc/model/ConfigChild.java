@@ -35,13 +35,8 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
+public class ConfigChild extends ElementChild {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
-
-	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
-			Comparator.comparingInt(ConfigChild::getOrder)
-			.thenComparing(c -> c.getElementRole().getRoleName())
-			.thenComparing(c -> c.getElementRole().getElementType().getFullName());
 
 	private static final Comparator<ConfigChild> SINGLE_ELEMENT_ONLY =
 			Comparator.comparing(c -> ! c.isAllowMultiple());
@@ -75,11 +70,16 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 		super(owningElement);
 		setDocumented(isDocumented(method));
 		setDeprecated(isDeprecated(method));
+		log.trace("ConfigChild of method {} has documented={}, deprecated={}", () -> method.toString(), () -> isDocumented(), () -> isDeprecated());
 		this.methodName = method.getName();
 		setJavaDocBasedDescription(method);
 		FrankAnnotation ibisDoc = getIbisDoc(method);
 		if(ibisDoc != null) {
-			parseIbisDocAnnotation(ibisDoc);
+			try {
+				parseIbisDocAnnotation(ibisDoc);
+			} catch(FrankDocException e) {
+				log.warn("Could not parse IbisDoc annotation of method {}", method.toString(), e);
+			}
 		}
 		if(! StringUtils.isEmpty(getDefaultValue())) {
 			log.warn("Default value [{}] of config child [{}] of FrankElement [{}] is not used", () -> getDefaultValue(), () -> getKey().toString(), () -> getOwningElement().getFullName());
@@ -100,7 +100,7 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 		try {
 			result = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 		} catch(FrankDocException e) {
-			log.warn("Could not @IbisDoc annotation or could not obtain JavaDoc", e);
+			log.warn("Could not @IbisDoc annotation or could not obtain JavaDoc for method {}", method, e);
 		}
 		return result;
 	}
@@ -116,11 +116,6 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 
 	public ElementType getElementType() {
 		return elementRole.getElementType();
-	}
-
-	@Override
-	public int compareTo(ConfigChild other) {
-		return CONFIG_CHILD_COMPARATOR.compare(this, other);
 	}
 
 	/**

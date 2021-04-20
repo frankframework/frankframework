@@ -260,4 +260,9 @@ class FrankClassDoclet implements FrankClass {
 	public String getJavaDoc() {
 		return clazz.commentText();
 	}
+
+	@Override
+	public String toString() {
+		return getName();
+	}
 }

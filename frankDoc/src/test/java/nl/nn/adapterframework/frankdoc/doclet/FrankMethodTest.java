@@ -129,4 +129,11 @@ public class FrankMethodTest extends TestBase {
 		assertNotNull(annotation);
 		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}
+
+	@Test
+	public void testToString() throws Exception {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
+		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "myAnnotatedMethod");
+		assertEquals("Child.myAnnotatedMethod", method.toString());
+	}
 }

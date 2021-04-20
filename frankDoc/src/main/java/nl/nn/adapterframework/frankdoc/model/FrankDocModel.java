@@ -199,21 +199,24 @@ public class FrankDocModel {
 		List<FrankAttribute> result = new ArrayList<>();
 		for(Entry<String, FrankMethod> entry: setterAttributes.entrySet()) {
 			String attributeName = entry.getKey();
-			log.trace("Attribute [{}]", attributeName);
+			log.trace("Attribute [{}]", () -> attributeName);
 			FrankMethod method = entry.getValue();
 			if(getterAttributes.containsKey(attributeName)) {
 				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
 			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
 			attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
+			log.trace("Attribute {} has type {}", () -> attributeName, () -> attribute.getAttributeType().toString());
 			documentAttribute(attribute, method, attributeOwner);
+			log.trace("Default [{}]", () -> attribute.getDefaultValue());
 			if(enumGettersByAttributeName.containsKey(attributeName)) {
+				log.trace("Attribute {} has enum values", () -> attributeName);
 				attribute.setAttributeValues(findOrCreateAttributeValues((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
 			}
 			result.add(attribute);
-			log.trace("Attribute [{}] done", attributeName);
+			log.trace("Attribute [{}] done", () -> attributeName);
 		}
-		log.trace("Sorted the attributes and done creating attributes");
+		log.trace("Done creating attributes for {}", attributeOwner.getFullName());
 		return result;
 	}
 
@@ -318,13 +321,7 @@ public class FrankDocModel {
 					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass().getName()));
 					log.trace("Describing element of attribute [{}].[{}] is [{}]",
 							() -> attributeOwner.getFullName(), () -> attribute.getName(), () -> attribute.getDescribingElement().getFullName());
-					if(! attribute.parseIbisDocAnnotation(ibisDoc)) {
-						log.warn("FrankAttribute [{}] of FrankElement [{}] does not have a configured order", () -> attribute.getName(), () -> attributeOwner.getFullName());
-					}
-					if(parsed.hasOrder) {
-						attribute.setOrder(parsed.getOrder());
-						log.trace("Attribute [{}] has order from @IbisDocRef: [{}]", () -> attribute.getName(), () -> attribute.getOrder());
-					}
+					attribute.parseIbisDocAnnotation(ibisDoc);
 					log.trace("Done documenting attribute [{}]", () -> attribute.getName());
 					return;
 				}				
@@ -336,7 +333,6 @@ public class FrankDocModel {
 		if(ibisDoc != null) {
 			log.trace("For attribute [{}], have @IbisDoc without @IbisDocRef", attribute);
 			attribute.parseIbisDocAnnotation(ibisDoc);
-			log.trace("Order [{}], default [{}]", () -> attribute.getOrder(), () -> attribute.getDefaultValue());
 		}
 		else {
 			log.warn("No documentation available for FrankElement [{}], attribute [{}]", () -> attributeOwner.getSimpleName(), () -> attribute.getName());
@@ -441,14 +437,13 @@ public class FrankDocModel {
 			FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
 			configChild.setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
 			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
-			// The order is used to create ConfigChildSet-s. We overwrite the order obtained from @IbisDoc and @IbisDocRef
 			configChild.setOrder(order);
 			result.add(configChild);
-			log.trace("Done creating ConfigChild for SortNode [{}], order = [{}]", () -> frankMethod.getName(), () -> configChild.getOrder());
+			log.trace("Done creating config child {}, the order is is {}", () -> configChild.toString(), () -> configChild.getOrder());
 		}
 		log.trace("Removing duplicate config children of FrankElement [{}]", () -> parent.getFullName());
 		result = ConfigChild.removeDuplicates(result);
-		log.trace("Sorted config children are:");
+		log.trace("The config children are (sequence follows sequence of Java methods):");
 		if(log.isTraceEnabled()) {
 			result.forEach(c -> log.trace("{}", c.toString()));
 		}

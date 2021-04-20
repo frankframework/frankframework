@@ -30,4 +30,8 @@ public interface FrankMethod extends FrankProgramElement {
 	FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException;
 	String getJavaDoc();
 	String getJavaDocIncludingInherited() throws FrankDocException;
+
+	default String toStringImpl() {
+		return String.format("%s.%s", getDeclaringClass().getSimpleName(), getName());
+	}
 }

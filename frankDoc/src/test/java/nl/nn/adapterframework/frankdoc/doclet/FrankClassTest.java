@@ -182,4 +182,12 @@ public class FrankClassTest extends TestBase {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child" + ".MyInnerEnum");
 		assertEquals("MyInnerEnum", clazz.getSimpleName());
 	}
+
+	@Test
+	public void testToString() throws Exception {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Child" + ".MyInnerEnum");
+		// This method is just for logging. There is no point in ensuring we get a "." instead of a "$".
+		String actual = clazz.toString().replace("$", ".");
+		assertEquals(PACKAGE + "Child" + ".MyInnerEnum", actual);
+	}
 }
