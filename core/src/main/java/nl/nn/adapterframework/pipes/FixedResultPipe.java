@@ -27,6 +27,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -72,8 +73,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	private final static String FILE_NOT_FOUND_FORWARD = "filenotfound";
 	
 	AppConstants appConstants;
-    private String fileName;
-    private String fileNameSessionKey;
+    private String filename;
+    private String filenameSessionKey;
     private String returnString;
     private boolean substituteVars=false;
 	private String replaceFrom = null;
@@ -83,9 +84,9 @@ public class FixedResultPipe extends FixedForwardPipe {
 	private boolean replaceFixedParams=false;
 	
     /**
-     * checks for correct configuration, and translates the fileName to
+     * checks for correct configuration, and translates the filename to
      * a file, to check existence. 
-     * If a fileName or fileNameSessionKey was specified, the contents of the file is put in the
+     * If a filename or filenameSessionKey was specified, the contents of the file is put in the
      * <code>returnString</code>, so that the <code>returnString</code>
      * may always be returned.
      * @throws ConfigurationException
@@ -94,24 +95,24 @@ public class FixedResultPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
-		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
+		if (StringUtils.isNotEmpty(getFilename()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(this, getFileName());
+				resource = ClassUtils.getResourceURL(this, getFilename());
 			} catch (Throwable e) {
-				throw new ConfigurationException("got exception searching for ["+getFileName()+"]", e);
+				throw new ConfigurationException("got exception searching for ["+getFilename()+"]", e);
 			}
 			if (resource==null) {
-				throw new ConfigurationException("cannot find resource ["+getFileName()+"]");
+				throw new ConfigurationException("cannot find resource ["+getFilename()+"]");
 			}
             try {
 				returnString = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
             } catch (Throwable e) {
-                throw new ConfigurationException("got exception loading ["+getFileName()+"]", e);
+                throw new ConfigurationException("got exception loading ["+getFilename()+"]", e);
             }
         }
-        if ((StringUtils.isEmpty(fileName)) && (StringUtils.isEmpty(fileNameSessionKey)) && returnString==null) {  // allow an empty returnString to be specified
-            throw new ConfigurationException("has neither fileName nor fileNameSessionKey nor returnString specified");
+        if ((StringUtils.isEmpty(getFilename())) && (StringUtils.isEmpty(getFilenameSessionKey())) && returnString==null) {  // allow an empty returnString to be specified
+            throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
         }
 		if (StringUtils.isNotEmpty(replaceFrom)) {
 			returnString = replace(returnString, replaceFrom, replaceTo );
@@ -121,32 +122,32 @@ public class FixedResultPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result=returnString;
-		String fileName = null;
-		if (StringUtils.isNotEmpty(getFileNameSessionKey())) {
-			fileName = (String)session.get(fileNameSessionKey);
+		String filename = null;
+		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
+			filename = (String)session.get(getFilenameSessionKey());
 		}
-		if (fileName == null && StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
-			fileName = getFileName();
+		if (filename == null && StringUtils.isNotEmpty(getFilename()) && isLookupAtRuntime()) {
+			filename = getFilename();
 		}
-		if (StringUtils.isNotEmpty(fileName)) {
+		if (StringUtils.isNotEmpty(filename)) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(this, fileName);
+				resource = ClassUtils.getResourceURL(this, filename);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+fileName+"]", e);
+				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+filename+"]", e);
 			}
 			if (resource == null) {
 				PipeForward fileNotFoundForward = findForward(FILE_NOT_FOUND_FORWARD);
 				if (fileNotFoundForward != null) {
 					return new PipeRunResult(fileNotFoundForward, message);
 				} else {
-					throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+fileName+"]");
+					throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+filename+"]");
 				}
 			}
 			try {
 				result = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+fileName+"]", e);
+				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+filename+"]", e);
 			}
 		}
 		if (getParameterList()!=null) {
@@ -224,27 +225,39 @@ public class FixedResultPipe extends FixedForwardPipe {
 		return this.substituteVars;
 	}
 
-    /**
-     * Sets the name of the filename. The fileName should not be specified
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
+    public void setFileName(String fileName) {
+		setFilename(fileName);
+    }
+
+	/**
+     * Sets the name of the filename. The filename should not be specified
      * as an absolute path, but as a resource in the classpath.
      */
 	@IbisDoc({"name of the file containing the resultmessage", ""})
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+	public void setFilename(String filename) {
+        this.filename = filename;
     }
-	public String getFileName() {
-		return fileName;
+	public String getFilename() {
+		return filename;
 	}
-	
+
+	@Deprecated
+	@ConfigurationWarning("attribute 'setFileNameSessionKey' is replaced with 'setFilenameSessionKey'")
+	public void setFileNameSessionKey(String fileNameSessionKey) {
+		setFilenameSessionKey(fileNameSessionKey);
+	}
+
 	/**
 	 * @param filenameSessionKey the session key that contains the name of the file
 	 */
 	@IbisDoc({"name of the session key containing the file name of the file containing the result message", ""})
-	public void setFileNameSessionKey(String filenameSessionKey) {
-		this.fileNameSessionKey = filenameSessionKey;
+	public void setFilenameSessionKey(String filenameSessionKey) {
+		this.filenameSessionKey = filenameSessionKey;
 	}
-	public String getFileNameSessionKey() {
-		return fileNameSessionKey;
+	public String getFilenameSessionKey() {
+		return filenameSessionKey;
 	}
 
 	@IbisDoc({"returned message", ""})

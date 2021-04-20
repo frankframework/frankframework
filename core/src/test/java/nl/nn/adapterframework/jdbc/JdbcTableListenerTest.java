@@ -15,10 +15,14 @@ import javax.sql.DataSource;
 
 import org.junit.Test;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
+import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.Semaphore;
 import oracle.jdbc.pool.OracleDataSource;
 
 public class JdbcTableListenerTest extends JdbcTestBase {
@@ -167,6 +171,90 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			assertEquals("11",rawMessage2);
 			
 		}
+	}
+
+	public void testParallelChangeProcessState(boolean mainThreadFirst) throws Exception {
+		listener.configure();
+		listener.open();
+		
+		JdbcUtil.executeStatement(dbmsSupport,connection, "DELETE FROM TEMP WHERE TKEY=10", null);
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,1)", null);
+		ChangeProcessStateTester changeProcessStateTester = new ChangeProcessStateTester(() -> getConnection());
+		Object rawMessage1;
+		Semaphore waitBeforeUpdate = new Semaphore();
+		Semaphore updateDone = new Semaphore();
+		Semaphore waitBeforeCommit = new Semaphore();
+		Semaphore commitDone = new Semaphore();
+		try (Connection conn = getConnection()) {
+			conn.setAutoCommit(false);
+			try {
+				changeProcessStateTester.setWaitBeforeAction(waitBeforeUpdate);
+				changeProcessStateTester.setActionDone(updateDone);
+				changeProcessStateTester.setWaitAfterAction(waitBeforeCommit);
+				changeProcessStateTester.setFinalizeActionDone(commitDone);
+				changeProcessStateTester.start();
+				if (!mainThreadFirst) {
+					waitBeforeUpdate.release();
+					updateDone.acquire();
+				}
+				rawMessage1 = listener.changeProcessState(conn, "10", ProcessState.ERROR);
+				if (mainThreadFirst) {
+					waitBeforeUpdate.release();
+				} else {
+					waitBeforeCommit.release();
+					commitDone.acquire();
+					commitDone.release();
+				}
+				assertEquals(mainThreadFirst, rawMessage1!=null);
+			} finally {
+				waitBeforeCommit.release();
+				conn.commit();
+			}
+		}
+		commitDone.acquire();
+		assertTrue(changeProcessStateTester.numRowsUpdated>=0);
+		assertTrue(changeProcessStateTester.numRowsUpdated<=1);
+		assertEquals(mainThreadFirst, changeProcessStateTester.numRowsUpdated==0);
+	}
+
+	@Test
+	public void testParallelChangeProcessStateMainThreadFirst() throws Exception {
+		testParallelChangeProcessState(true);
+	}
+	
+	@Test
+	public void testParallelChangeProcessStateMainThreadSecond() throws Exception {
+		testParallelChangeProcessState(false);
+	}
+	
+	private class ChangeProcessStateTester extends ConcurrentJdbcActionTester {
+
+		private @Getter int numRowsUpdated=-1;
+		private QueryExecutionContext context;
+
+		public ChangeProcessStateTester(ConnectionSupplier connectionSupplier) {
+			super(connectionSupplier);
+		}
+		
+		@Override
+		public void initAction(Connection conn) throws Exception {
+			context = new QueryExecutionContext("UPDATE TEMP SET TINT=3 WHERE TINT!=3 AND TKEY=10", QueryType.OTHER, null);
+			dbmsSupport.convertQuery(context, "Oracle");
+			connection.setAutoCommit(false);
+		}
+
+		@Override
+		public void action(Connection conn) throws Exception {
+			try (PreparedStatement statement = conn.prepareStatement(context.getQuery())) {
+				numRowsUpdated = statement.executeUpdate();
+			}
+		}
+
+		@Override
+		public void finalizeAction(Connection conn) throws Exception {
+			connection.commit();
+		}
+
 	}
 
 	@Test

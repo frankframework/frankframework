@@ -12,14 +12,37 @@
         }
     ],
     "paths":{
-        "/path/validator":{
+        "/cookieplusheaderparams":{
             "get":{
                 "summary":"description4simple-get",
+                "parameters":[
+                    {
+                        "name":"headerparam",
+                        "in":"header",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name":"envelopeId",
+                        "in":"cookie",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name":" envelopeType",
+                        "in":"cookie",
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                ],
                 "responses":{
                     "200":{
                         "description":"OK",
                         "content":{
-                            "application/json":{
+                            "*/*":{
                                 "schema":{
                                     "$ref":"#/components/schemas/user"
                                 }
@@ -29,7 +52,7 @@
                     "500":{
                         "description":"Internal Server Error",
                         "content":{
-                            "application/json":{
+                            "*/*":{
                                 "schema":{
                                     "$ref":"#/components/schemas/user"
                                 }

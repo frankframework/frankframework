@@ -22,7 +22,7 @@
             <pipe 
                 className="nl.nn.adapterframework.pipes.FixedResult"
                 name="fixedresult" 
-                fileName="cache/resultTemplate.xml"
+                filename="cache/resultTemplate.xml"
             >
 				<param name="input" />
                  <forward name="success" path="READY"/>
@@ -52,7 +52,7 @@
             <pipe 
                 className="nl.nn.adapterframework.pipes.FixedResult"
                 name="fixedresult" 
-                fileName="cache/resultTemplate.xml"
+                filename="cache/resultTemplate.xml"
             >
 				<param name="input" />
                  <forward name="success" path="READY"/>
