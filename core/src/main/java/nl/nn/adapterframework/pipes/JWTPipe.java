@@ -376,7 +376,7 @@ public class JWTPipe extends FixedForwardPipe {
 	}
 
 	@IbisDoc({"16", "Alias of the key/certificate to use", "" })
-	public void setTrustkeystoreAlias(String keystoreAlias) {
+	public void setKeystoreAlias(String keystoreAlias) {
 		getJWTKeyResolver().setKeystoreAlias(keystoreAlias);
 	}
 
