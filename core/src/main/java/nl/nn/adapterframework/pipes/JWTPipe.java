@@ -85,8 +85,8 @@ public class JWTPipe extends FixedForwardPipe {
 	// Encode properties
 	private @Getter SignatureAlgorithm algorithm;
 	private @Getter boolean issuedAtNow = true;
-	private @Getter int notBeforeOffset = 0;
-	private @Getter int expirationOffset = 0;
+	private @Getter Integer notBeforeOffset;
+	private @Getter Integer expirationOffset;
 		
 	// Decode properties
 	private @Getter int allowedClockSkew = 60;
@@ -238,7 +238,7 @@ public class JWTPipe extends FixedForwardPipe {
 			}
 			if (pvl.getParameterValue(PARAM_EXPIRATION)!=null) {
 				jwtBuilder.setExpiration((Date)pvl.getValue(PARAM_EXPIRATION));
-			} else if (getExpirationOffset()>0) {
+			} else if (getExpirationOffset()!=null) {
 				Calendar expiration = now;
 				expiration.add(Calendar.SECOND, getExpirationOffset());
 				
@@ -246,9 +246,9 @@ public class JWTPipe extends FixedForwardPipe {
 			}
 			if (pvl.getParameterValue(PARAM_NOTBEFORE)!=null) {
 				jwtBuilder.setNotBefore((Date)pvl.getValue(PARAM_NOTBEFORE));
-			} else if (getNotBeforeOffset()>0) {
+			} else if (getNotBeforeOffset()!=null) {
 				Calendar notBefore = now;
-				notBefore.add(Calendar.SECOND, -getNotBeforeOffset());
+				notBefore.add(Calendar.SECOND, getNotBeforeOffset());
 				
 				jwtBuilder.setNotBefore(notBefore.getTime());
 			}
@@ -339,12 +339,12 @@ public class JWTPipe extends FixedForwardPipe {
 		this.issuedAtNow = issuedAtNow;
 	}
 
-	@IbisDoc({"9", "(Only used when direction=encode) If <code>notBeforeOffset &gt; 0</code>, set the <code>Not Before</code> claim with the <code>current time - notBeforeOffset</code> in seconds, override set time with parameter '" + PARAM_NOTBEFORE + "'", "0"})
+	@IbisDoc({"9", "(Only used when direction=encode) If set, set the <code>Not Before</code> claim with the <code>current time + notBeforeOffset</code> in seconds, override set time with parameter '" + PARAM_NOTBEFORE + "'", ""})
 	public void setNotBeforeOffset(int notBeforeOffset) {
 		this.notBeforeOffset = notBeforeOffset;
 	}
 
-	@IbisDoc({"10", "(Only used when direction=encode) If <code>expirationOffset &gt; 0</code>, set the <code>Expiration</code> claim with the <code>current time + expirationOffset</code> in seconds, override set time with parameter '" + PARAM_EXPIRATION + "'", "0"})
+	@IbisDoc({"10", "(Only used when direction=encode) If set, set the <code>Expiration</code> claim with the <code>current time + expirationOffset</code> in seconds, override set time with parameter '" + PARAM_EXPIRATION + "'", ""})
 	public void setExpirationOffset(int expirationOffest) {
 		this.expirationOffset = expirationOffest;
 	}
