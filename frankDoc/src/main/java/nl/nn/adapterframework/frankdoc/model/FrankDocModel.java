@@ -48,7 +48,6 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
-import nl.nn.adapterframework.frankdoc.model.ConfigChild.SortNode;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -424,24 +423,24 @@ public class FrankDocModel {
 	private List<ConfigChild> createConfigChildren(FrankMethod[] methods, FrankElement parent) throws FrankDocException {
 		log.trace("Creating config children of FrankElement [{}]", () -> parent.getFullName());
 		List<ConfigChild> result = new ArrayList<>();
-		List<SortNode> sortNodes = createSortNodes(methods, parent);
-		for(int order = 0; order < sortNodes.size(); ++order) {
-			ConfigChild.SortNode sortNode = sortNodes.get(order);
-			log.trace("Have config child SortNode [{}]", () -> sortNode.getName());
-			ConfigChild configChild = new ConfigChild(parent, sortNode);
-			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(sortNode.getName());
+		List<FrankMethod> frankMethods = selectConfigChildSetters(methods);
+		for(int order = 0; order < frankMethods.size(); ++order) {
+			FrankMethod frankMethod = frankMethods.get(order);
+			log.trace("Have config child setter [{}]", () -> frankMethod.getName());
+			ConfigChild configChild = new ConfigChild(parent, frankMethod);
+			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(frankMethod.getName());
 			log.trace("Have ConfigChildSetterDescriptor, methodName = [{}], roleName = [{}], mandatory = [{}], allowMultiple = [{}]",
 					() -> configChildDescriptor.getMethodName(), () -> configChildDescriptor.getRoleName(), () -> configChildDescriptor.isMandatory(), () -> configChildDescriptor.isAllowMultiple());
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
-			log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> sortNode.getName());
-			configChild.setElementRole(findOrCreateElementRole(
-					(FrankClass) sortNode.getElementType(), configChildDescriptor.getRoleName()));
-			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> sortNode.getName());
-			configChild.setJavaDocBasedDescription(sortNode.getMethod());
-			if(sortNode.getIbisDoc() == null) {
+			log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
+			FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
+			configChild.setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
+			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
+			configChild.setJavaDocBasedDescription(frankMethod);
+			if(getIbisDoc(frankMethod) == null) {
 				log.warn("No @IbisDoc annotation for config child [{}] of FrankElement [{}]", () -> configChild.getKey().toString(), () -> parent.getFullName());
-			} else if(! configChild.parseIbisDocAnnotation(sortNode.getIbisDoc())) {
+			} else if(! configChild.parseIbisDocAnnotation(getIbisDoc(frankMethod))) {
 				log.warn("@IbisDoc annotation for config child [{}] of FrankElement [{}] does not specify a sort order", () -> configChild.getKey().toString(), () -> parent.getFullName());
 			}
 			if(! StringUtils.isEmpty(configChild.getDefaultValue())) {
@@ -450,7 +449,7 @@ public class FrankDocModel {
 			// The order is used to create ConfigChildSet-s. We overwrite the order obtained from @IbisDoc and @IbisDocRef
 			configChild.setOrder(order);
 			result.add(configChild);
-			log.trace("Done creating ConfigChild for SortNode [{}], order = [{}]", () -> sortNode.getName(), () -> configChild.getOrder());
+			log.trace("Done creating ConfigChild for SortNode [{}], order = [{}]", () -> frankMethod.getName(), () -> configChild.getOrder());
 		}
 		log.trace("Removing duplicate config children of FrankElement [{}]", () -> parent.getFullName());
 		result = ConfigChild.removeDuplicates(result);
@@ -462,18 +461,22 @@ public class FrankDocModel {
 		return result;
 	}
 
-	private List<ConfigChild.SortNode> createSortNodes(FrankMethod[] methods, FrankElement parent) {
-		List<FrankMethod> configChildSetters = Arrays.asList(methods).stream()
+	private static FrankAnnotation getIbisDoc(FrankMethod method) {
+		FrankAnnotation result = null;
+		try {
+			result = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
+		} catch(FrankDocException e) {
+			log.warn("Could not @IbisDoc annotation or could not obtain JavaDoc", e);
+		}
+		return result;
+	}
+
+	private List<FrankMethod> selectConfigChildSetters(FrankMethod[] methods) {
+		return Arrays.asList(methods).stream()
 				.filter(FrankMethod::isPublic)
 				.filter(Utils::isConfigChildSetter)
 				.filter(m -> configChildDescriptors.get(m.getName()) != null)
 				.collect(Collectors.toList());
-		List<ConfigChild.SortNode> sortNodes = new ArrayList<>();
-		for(FrankMethod setter: configChildSetters) {
-			ConfigChild.SortNode sortNode = new ConfigChild.SortNode(setter);
-			sortNodes.add(sortNode);
-		}
-		return sortNodes;
 	}
 
 	ElementRole findOrCreateElementRole(FrankClass elementTypeClass, String roleName) throws FrankDocException {

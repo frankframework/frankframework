@@ -29,10 +29,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
-import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
-import nl.nn.adapterframework.frankdoc.doclet.FrankType;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
@@ -48,41 +46,6 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 
 	private static final Comparator<ConfigChild> REMOVE_DUPLICATES_COMPARATOR =
 			SINGLE_ELEMENT_ONLY.thenComparing(c -> ! c.isMandatory());
-
-	static final class SortNode implements Comparable<SortNode> {
-		private static final Comparator<SortNode> SORT_NODE_COMPARATOR =
-				Comparator.comparing(SortNode::getName).thenComparing(sn -> sn.getElementType().getName());
-
-		private @Getter String name;
-		private @Getter boolean documented;
-		private @Getter boolean deprecated;
-		private @Getter FrankType elementType;
-		private @Getter FrankAnnotation ibisDoc;
-		private @Getter FrankMethod method;
-
-		SortNode(FrankMethod method) {
-			this.name = method.getName();
-			this.documented = (method.getAnnotation(FrankDocletConstants.IBISDOC) != null) || (method.getJavaDoc() != null);
-			this.deprecated = isDeprecated(method);
-			this.elementType = method.getParameterTypes()[0];
-			try {
-				this.ibisDoc = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
-			} catch(FrankDocException e) {
-				log.warn("Could not @IbisDoc annotation or could not obtain JavaDoc", e);
-			}
-			this.method = method;
-		}
-
-		private static boolean isDeprecated(FrankMethod m) {
-			FrankAnnotation deprecated = m.getAnnotation(FrankDocletConstants.DEPRECATED);
-			return (deprecated != null);
-		}
-
-		@Override
-		public int compareTo(SortNode other) {
-			return SORT_NODE_COMPARATOR.compare(this, other);
-		}
-	}
 
 	@EqualsAndHashCode(callSuper = false)
 	static final class Key extends AbstractKey {
@@ -106,11 +69,20 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	private String methodName;
 	private boolean isOverrideMeaningfulLogged = false;
 
-	ConfigChild(FrankElement owningElement, SortNode sortNode) {
+	ConfigChild(FrankElement owningElement, FrankMethod method) {
 		super(owningElement);
-		setDocumented(sortNode.isDocumented());
-		setDeprecated(sortNode.isDeprecated());
-		this.methodName = sortNode.name;
+		setDocumented(isDocumented(method));
+		setDeprecated(isDeprecated(method));
+		this.methodName = method.getName();
+	}
+
+	private static boolean isDocumented(FrankMethod m) {
+		return (m.getAnnotation(FrankDocletConstants.IBISDOC) != null) || (m.getJavaDoc() != null);
+	}
+
+	private static boolean isDeprecated(FrankMethod m) {
+		FrankAnnotation deprecated = m.getAnnotation(FrankDocletConstants.DEPRECATED);
+		return (deprecated != null);
 	}
 
 	@Override
