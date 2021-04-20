@@ -2,7 +2,11 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -21,6 +25,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.PkiUtil;
 
 public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 
@@ -45,7 +51,7 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 	private String expiredForwardName = "expired";
 	private String prematureForwardName = "premature";
 	
-	private String decodedToken = "{aud=Framework, jti=1234, iss=JWTPipeTest, sub=UnitTest}";
+	private String decodedToken = "{aud=Framework, jti=1234, iss=JWTPipeTest, sub=UnitTest, CustomClaim1=CustomClaim1Value, CustomClaim2=CustomClaim2Value}";
 	
 	@Override
 	public JWTPipe createPipe() {
@@ -70,6 +76,41 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		PipeRunResult prr = doPipe(new Message(""));
 
 		assertEquals("eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9.IizVZV_opGPInFVPaCs8LoHxve5o7kzF93yMzOdxt80", prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+	}
+	
+	@Test
+	public void testEncodeKeystore() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+		pipe.setDirection("encode");
+		pipe.setIssuer(ISSUER);
+		pipe.setSubject(SUBJECT);
+		pipe.setAudience(AUDIENCE);
+		pipe.setJTI(JTI);
+		pipe.setKeystore("/JWT/certificate.pfx");
+		pipe.setKeystorePassword("geheim");
+		pipe.setKeystoreAlias("1");
+		configureAndStartPipe();
+				
+		PipeRunResult prr = doPipe(new Message(""));
+
+		assertEquals("eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9.U1VsMoITf5kUEHtzfgJTyRWEDZ2gjtTuQI3DVRrJcpden2pjCsAWwl4VOr6McmQkcndZj0GPvN4w3NkJR712ltlsIXw1zMm67vuFY0_id7TP2zIJh3jMkKrTuSPE-SBXZyVnIq22Q54R1VMnOTjO6spbrbYowIzyyeAC7U1RzyB3aKxTgeYJS6auLBaiR3-SWoXs_hBnbIIgYT7AC2e76ICpMlFPQS_e2bcqe1B-yz69se8ZlJgwWK-YhqHMoOCA9oQy3t_cObQI0KSzg7cYDkkQ17cWF3SoyTSTs6Cek_Y97Z17lJX2RVBayPc2uI_oWWuaIUbukxAOIUkgpgtf6g", prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+	}
+	
+	@Test
+	public void testEncodePEM() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+		pipe.setDirection("encode");
+		pipe.setIssuer(ISSUER);
+		pipe.setSubject(SUBJECT);
+		pipe.setAudience(AUDIENCE);
+		pipe.setJTI(JTI);
+		pipe.setKeystore("/JWT/privateKey.key");
+		pipe.setKeystoreType("pem");
+		configureAndStartPipe();
+				
+		PipeRunResult prr = doPipe(new Message(""));
+
+		assertEquals("eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9.U1VsMoITf5kUEHtzfgJTyRWEDZ2gjtTuQI3DVRrJcpden2pjCsAWwl4VOr6McmQkcndZj0GPvN4w3NkJR712ltlsIXw1zMm67vuFY0_id7TP2zIJh3jMkKrTuSPE-SBXZyVnIq22Q54R1VMnOTjO6spbrbYowIzyyeAC7U1RzyB3aKxTgeYJS6auLBaiR3-SWoXs_hBnbIIgYT7AC2e76ICpMlFPQS_e2bcqe1B-yz69se8ZlJgwWK-YhqHMoOCA9oQy3t_cObQI0KSzg7cYDkkQ17cWF3SoyTSTs6Cek_Y97Z17lJX2RVBayPc2uI_oWWuaIUbukxAOIUkgpgtf6g", prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}
 	
@@ -143,6 +184,46 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 	}
 	
 	@Test
+	public void testEncodeCustomClaims() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+		pipe.setDirection("encode");
+		pipe.setIssuer(ISSUER);
+		pipe.setSubject(SUBJECT);
+		pipe.setAudience(AUDIENCE);
+		pipe.setJTI(JTI);
+		pipe.setCustomClaimsParams("CustomClaim1,CustomClaim2");
+		Parameter customClaim1 = new Parameter();
+		customClaim1.setName("CustomClaim1");
+		customClaim1.setValue("CustomClaim1Value");
+		Parameter customClaim2 = new Parameter();
+		customClaim2.setName("CustomClaim2");
+		customClaim2.setValue("CustomClaim1Value");
+		pipe.addParameter(customClaim1);
+		pipe.addParameter(customClaim2);
+		configureAndStartPipe();
+				
+		PipeRunResult prr = doPipe(new Message(""));
+
+		assertEquals("eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCIsIkN1c3RvbUNsYWltMSI6IkN1c3RvbUNsYWltMVZhbHVlIiwiQ3VzdG9tQ2xhaW0yIjoiQ3VzdG9tQ2xhaW0xVmFsdWUifQ.ML2cPQjKMtjwyiZlkAfvlY8qY4o1MIJ54Rq7M_aZ7mk", prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+	}
+	
+	@Test
+	public void testEncodeNonExistingCustomClaims() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+		pipe.setDirection("encode");
+		pipe.setIssuer(ISSUER);
+		pipe.setSubject(SUBJECT);
+		pipe.setAudience(AUDIENCE);
+		pipe.setJTI(JTI);
+		pipe.setCustomClaimsParams("CustomClaim");
+		configureAndStartPipe();
+				
+		PipeRunResult prr = doPipe(new Message(""));
+
+		assertEquals("eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9.IizVZV_opGPInFVPaCs8LoHxve5o7kzF93yMzOdxt80", prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+	}
+	
+	@Test
 	public void testInvalidSecret() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
 		exception.expect(WeakKeyException.class);
 		pipe.setDirection("encode");
@@ -158,10 +239,46 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		pipe.setIssuer(ISSUER);
 		pipe.setSubject(SUBJECT);
 		pipe.setAudience(AUDIENCE);
-		pipe.setJTI(JTI);
+		pipe.setJTI(JTI);		
+		pipe.setCustomClaimsParams("CustomClaim1,CustomClaim2");
+		Parameter customClaim1 = new Parameter();
+		customClaim1.setName("CustomClaim1");
+		customClaim1.setValue("CustomClaim1Value");
+		Parameter customClaim2 = new Parameter();
+		customClaim2.setName("CustomClaim2");
+		customClaim2.setValue("CustomClaim2Value");
+		pipe.addParameter(customClaim1);
+		pipe.addParameter(customClaim2);
 		configureAndStartPipe();
 				
-		PipeRunResult prr = doPipe(new Message(createToken(null, null)));
+		PipeRunResult prr = doPipe(new Message(createTokenWithSecret(null, null)));
+
+		assertEquals(decodedToken, prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+	}
+	
+	@Test
+	public void testDecodeKeystore() throws ConfigurationException, PipeStartException, PipeRunException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+		pipe.setDirection("decode");
+		pipe.setKeystore("/JWT/certificate.pfx");
+		pipe.setKeystorePassword("geheim");
+		pipe.setKeystoreAlias("1");
+		configureAndStartPipe();
+				
+		PipeRunResult prr = doPipe(new Message(createTokenWithPK(null, null)));
+
+		assertEquals(decodedToken, prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+	}
+	
+	@Test
+	public void testDecodePEM() throws ConfigurationException, PipeStartException, PipeRunException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+		pipe.setDirection("decode");
+		pipe.setKeystore("/JWT/certificate.crt");
+		pipe.setKeystoreType("pem");
+		configureAndStartPipe();
+				
+		PipeRunResult prr = doPipe(new Message(createTokenWithPK(null, null)));
 
 		assertEquals(decodedToken, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
@@ -173,7 +290,7 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		pipe.setIssuer("WrongIssuer");
 		configureAndStartPipe();
 		
-		PipeRunResult prr = doPipe(new Message(createToken(null, null)));
+		PipeRunResult prr = doPipe(new Message(createTokenWithSecret(null, null)));
 
 		assertEquals(decodedToken, prr.getResult().asString());
 		assertEquals("failure", prr.getPipeForward().getName());
@@ -185,7 +302,7 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		pipe.setAudience("WrongAudience");
 		configureAndStartPipe();
 		
-		PipeRunResult prr = doPipe(new Message(createToken(null, null)));
+		PipeRunResult prr = doPipe(new Message(createTokenWithSecret(null, null)));
 
 		assertEquals(decodedToken, prr.getResult().asString());
 		assertEquals("failure", prr.getPipeForward().getName());
@@ -197,7 +314,7 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		pipe.setJTI("WrongJTI");
 		configureAndStartPipe();
 		
-		PipeRunResult prr = doPipe(new Message(createToken(null, null)));
+		PipeRunResult prr = doPipe(new Message(createTokenWithSecret(null, null)));
 
 		assertEquals(decodedToken, prr.getResult().asString());
 		assertEquals("failure", prr.getPipeForward().getName());
@@ -209,7 +326,7 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		pipe.setSubject("WrongSubject");
 		configureAndStartPipe();
 		
-		PipeRunResult prr = doPipe(new Message(createToken(null, null)));
+		PipeRunResult prr = doPipe(new Message(createTokenWithSecret(null, null)));
 
 		assertEquals(decodedToken, prr.getResult().asString());
 		assertEquals("failure", prr.getPipeForward().getName());
@@ -223,7 +340,7 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		Calendar notBefore = Calendar.getInstance();
 		notBefore.add(Calendar.MINUTE, 5);
 		
-		PipeRunResult prr = doPipe(new Message(createToken(null, notBefore.getTime())));
+		PipeRunResult prr = doPipe(new Message(createTokenWithSecret(null, notBefore.getTime())));
 
 		assertEquals("premature", prr.getPipeForward().getName());
 	}
@@ -236,7 +353,7 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		Calendar expiration = Calendar.getInstance();
 		expiration.add(Calendar.MINUTE, -5);
 		
-		PipeRunResult prr = doPipe(new Message(createToken(expiration.getTime(), null)));
+		PipeRunResult prr = doPipe(new Message(createTokenWithSecret(expiration.getTime(), null)));
 
 		assertEquals("expired", prr.getPipeForward().getName());
 	}
@@ -248,7 +365,7 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		pipe.setSecret("ThisIsNotTheCorrectSecretAndItIsLongEnough");
 		configureAndStartPipe();
 
-		doPipe(new Message(createToken(null, null)));
+		doPipe(new Message(createTokenWithSecret(null, null)));
 	}
 	
 	@Test
@@ -270,8 +387,8 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		configureAndStartPipe();
 	}
 	
-	private String createToken(Date expiration, Date notBefore) {
-		JwtBuilder jwtBuilder = Jwts.builder().setAudience(AUDIENCE).setId(JTI).setIssuer(ISSUER).setSubject(SUBJECT);
+	private String createTokenWithSecret(Date expiration, Date notBefore) {
+		JwtBuilder jwtBuilder = Jwts.builder().setAudience(AUDIENCE).setId(JTI).setIssuer(ISSUER).setSubject(SUBJECT).claim("CustomClaim1", "CustomClaim1Value").claim("CustomClaim2", "CustomClaim2Value");
 		if (expiration != null) {
 			jwtBuilder.setExpiration(expiration);
 		}
@@ -280,6 +397,20 @@ public class JWTPipeTest extends PipeTestBase<JWTPipe> {
 		}
 		
 		SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+		
+		return jwtBuilder.signWith(key).compact();
+	}	
+	
+	private String createTokenWithPK(Date expiration, Date notBefore) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
+		JwtBuilder jwtBuilder = Jwts.builder().setAudience(AUDIENCE).setId(JTI).setIssuer(ISSUER).setSubject(SUBJECT).claim("CustomClaim1", "CustomClaim1Value").claim("CustomClaim2", "CustomClaim2Value");
+		if (expiration != null) {
+			jwtBuilder.setExpiration(expiration);
+		}
+		if (notBefore != null) {
+			jwtBuilder.setNotBefore(notBefore);
+		}
+		
+		PrivateKey key = PkiUtil.getPrivateKeyFromPem(TestFileUtils.getTestFileURL("/JWT/privateKey.key"));
 		
 		return jwtBuilder.signWith(key).compact();
 	}
