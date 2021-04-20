@@ -19,8 +19,10 @@ package nl.nn.adapterframework.frankdoc.doclet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.sun.javadoc.AnnotationDesc;
@@ -62,6 +64,18 @@ class FrankMethodDoclet implements FrankMethod {
 	@Override
 	public FrankAnnotation getAnnotation(String name) {
 		return frankAnnotationsByName.get(name);
+	}
+
+	@Override
+	public String getJavaDoc() {
+		String result = method.commentText();
+		// We need null when there is no JavaDoc, not the empty string.
+		// We use the null result in getJavaDocIncludingInherited() to
+		// continue searching.
+		if(StringUtils.isBlank(result)) {
+			return null;
+		}
+		return result;
 	}
 
 	@Override
@@ -116,22 +130,33 @@ class FrankMethodDoclet implements FrankMethod {
 
 	@Override
 	public FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException {
-		FrankAnnotation result = searchAnnotationExcludingImplementedInterfaces(name);
+		Function<FrankMethodDoclet, FrankAnnotation> getter = m -> m.getAnnotation(name);
+		return searchIncludingInherited(getter);
+	}
+
+	@Override
+	public String getJavaDocIncludingInherited() throws FrankDocException {
+		Function<FrankMethodDoclet, String> getter = m -> m.getJavaDoc();
+		return searchIncludingInherited(getter);
+	}
+
+	private <T> T searchIncludingInherited(Function<FrankMethodDoclet, T> getter) throws FrankDocException {
+		T result = searchExcludingImplementedInterfaces(getter);
 		if(result == null) {
-			result = searchImplementedInterfacesForAnnotation(this.getDeclaringClass(), this.getSignature(), name);
+			result = searchImplementedInterfaces(this.getDeclaringClass(), this.getSignature(), getter);
 		}
 		return result;
 	}
 
-	private FrankAnnotation searchAnnotationExcludingImplementedInterfaces(String name) throws FrankDocException {
-		FrankAnnotation result = getAnnotation(name);
+	private <T> T searchExcludingImplementedInterfaces(Function<FrankMethodDoclet, T> getter) throws FrankDocException {
+		T result = getter.apply(this);
 		if(result != null) {
 			return result;
 		}
 		MethodDoc overriddenMethodDoc = method.overriddenMethod();
 		if(overriddenMethodDoc != null) {
 			FrankMethodDoclet overriddenMethod = (FrankMethodDoclet) declaringClass.recursivelyFindFrankMethod(overriddenMethodDoc);
-			return overriddenMethod.searchAnnotationExcludingImplementedInterfaces(name);
+			return overriddenMethod.searchExcludingImplementedInterfaces(getter);
 		}
 		return null;
 	}
@@ -145,16 +170,17 @@ class FrankMethodDoclet implements FrankMethod {
 		return components.stream().collect(Collectors.joining(", "));
 	}
 
-	private FrankAnnotation searchImplementedInterfacesForAnnotation(FrankClass clazz, String methodSignature, String annotationName) throws FrankDocException {
-		TransitiveImplementedInterfaceBrowser<FrankAnnotation> interfaceBrowser = new TransitiveImplementedInterfaceBrowser<>(clazz);
-		FrankAnnotation result = interfaceBrowser.search(interfaze -> ((FrankClassDoclet) interfaze).getMethodAnnotationFromSignature(methodSignature, annotationName));
+	private <T> T searchImplementedInterfaces(FrankClass clazz, String methodSignature, Function<FrankMethodDoclet, T> getter) throws FrankDocException {
+		TransitiveImplementedInterfaceBrowser<T> interfaceBrowser = new TransitiveImplementedInterfaceBrowser<>((FrankClassDoclet) clazz);
+		Function<FrankClass, T> classGetter = interfaze -> ((FrankClassDoclet) interfaze).getMethodItemFromSignature(methodSignature, getter);
+		T result = interfaceBrowser.search(classGetter);
 		if(result != null) {
 			return result;
 		}
 		if(clazz.getSuperclass() == null) {
 			return null;
 		}
-		return searchImplementedInterfacesForAnnotation(clazz.getSuperclass(), methodSignature, annotationName);
+		return searchImplementedInterfaces(clazz.getSuperclass(), methodSignature, getter);
 	}
 
 	void removeOverriddenFrom(Map<MethodDoc, FrankMethod> methodRepository) {
