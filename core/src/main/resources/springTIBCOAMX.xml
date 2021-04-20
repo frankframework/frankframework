@@ -10,7 +10,7 @@
 
 	<bean
 		id="txManagerReal"
-		class="org.springframework.transaction.jta.JtaTransactionManager"
+		class="nl.nn.adapterframework.jta.ThreadConnectingJtaTransactionManager"
 		lazy-init="true"
 		>
 		<property name="transactionSynchronization">

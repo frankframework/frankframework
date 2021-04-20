@@ -143,8 +143,14 @@ public class MessageOutputStream implements AutoCloseable {
 			closeRequestStream();
 		} finally {
 			try {
-				if (nextStream!=null) {
-					nextStream.close();
+				try {
+					if (nextStream!=null) {
+						nextStream.close();
+					}
+				} finally {
+					if (threadConnector!=null) {
+						threadConnector.close();
+					}
 				}
 			} finally {
 				afterClose();

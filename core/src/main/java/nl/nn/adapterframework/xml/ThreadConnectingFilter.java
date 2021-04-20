@@ -53,7 +53,15 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 
 	@Override
 	public void endDocument() throws SAXException {
-		super.endDocument();
-		threadConnector.endThread(null);
+		try {
+			super.endDocument();
+			threadConnector.endThread(null);
+		} finally {
+			try {
+				threadConnector.close();
+			} catch (Exception e) {
+				log.warn("Exception closing thread connector", e);
+			}
+		}
 	}
 }

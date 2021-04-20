@@ -13,7 +13,7 @@
 
 	<bean
 		name="txManagerReal"
-		class="org.springframework.transaction.jta.JtaTransactionManager"
+		class="nl.nn.adapterframework.jta.ThreadConnectingJtaTransactionManager"
 		>
 		<property name="transactionManager" ref="btmTransactionManager"/>
 		<property name="userTransaction" ref="btmTransactionManager"/>

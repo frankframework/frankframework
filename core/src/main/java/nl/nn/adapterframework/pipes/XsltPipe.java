@@ -16,7 +16,9 @@
 package nl.nn.adapterframework.pipes;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -54,6 +56,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	private String sessionKey=null;
 	
 	private XsltSender sender = createXsltSender();
+	protected @Setter PlatformTransactionManager txManager;
 	
 	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
@@ -74,6 +77,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		sender.setName(getName());
+		sender.setTxManager(txManager);
 		sender.configure();
 	}
 

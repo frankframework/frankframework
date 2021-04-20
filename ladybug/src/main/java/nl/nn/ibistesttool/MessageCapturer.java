@@ -15,16 +15,22 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.function.Consumer;
 
+import org.apache.logging.log4j.Logger;
+
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.testtool.TestTool;
 
 public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private @Setter @Getter TestTool testTool;
 
@@ -43,10 +49,22 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 		return StreamingType.NONE;
 	}
 
+	@SneakyThrows
 	@Override
 	public <T> T toWriter(T message, Writer writer) {
 		if (message instanceof Message) {
-			((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
+//			try {
+				((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
+//			} catch (IOException e) {
+//				String msg = "Could not capture message";
+//				log.warn(msg, e);
+//				msg += ": ("+ e.getClass().getTypeName()+") "+e.getMessage();
+//				try (Writer w=writer) {
+//					w.append(msg);
+//				} catch (IOException e1) {
+//					log.warn("Could not write error message to Debugger",e1);
+//				}
+//			}
 			return message;
 		} 
 		if (message instanceof WriterPlaceHolder) {
@@ -57,12 +75,24 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 		return message;
 	}
 
+	@SneakyThrows
 	@Override
 	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier) {
 		if (message instanceof Message) {
 			Message m = (Message)message;
 			charsetNotifier.accept(m.getCharset());
-			((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
+//			try {
+				((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
+//			} catch (IOException e) {
+//				String msg = "Could not capture message";
+//				log.warn(msg, e);
+//				msg += ": ("+ e.getClass().getTypeName()+") "+e.getMessage();
+//				try (Writer w=new OutputStreamWriter(outputStream)) {
+//					w.append(msg);
+//				} catch (IOException e1) {
+//					log.warn("Could not write error message to Debugger",e1);
+//				}
+//			}
 			return message;
 		}
 		return message;

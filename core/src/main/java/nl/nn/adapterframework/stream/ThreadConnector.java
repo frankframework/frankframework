@@ -21,10 +21,12 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.jta.TransactionConnector;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Semaphore;
 
-public class ThreadConnector<T> {
+public class ThreadConnector<T> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private ThreadLifeCycleEventListener<T> threadLifeCycleEventListener;
@@ -33,6 +35,8 @@ public class ThreadConnector<T> {
 	private Set<String> hideRegex;
 
 	private TransactionConnector transactionConnector;
+	
+	private Semaphore threadCompleted;
 
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PlatformTransactionManager txManager, String correlationId) {
 		super();
@@ -41,6 +45,7 @@ public class ThreadConnector<T> {
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
 		transactionConnector = new TransactionConnector(txManager);
+		threadCompleted = new Semaphore();
 	}
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PlatformTransactionManager txManager, PipeLineSession session) {
 		this(owner, threadLifeCycleEventListener, txManager, session==null?null:session.getMessageId());
@@ -49,6 +54,7 @@ public class ThreadConnector<T> {
 	public <M> M startThread(M input) {
 		Thread currentThread = Thread.currentThread();
 		if (currentThread!=parentThread) {
+			log.debug("startThread");
 			currentThread.setName(parentThread.getName()+"/"+currentThread.getName());
 			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
 			transactionConnector.applyTransactionInfo();
@@ -56,6 +62,7 @@ public class ThreadConnector<T> {
 				return threadLifeCycleEventListener.threadCreated(threadInfo, input);
 			}
 		} else {
+			log.debug("cancelChildThread");
 			if (threadLifeCycleEventListener!=null) {
 				threadLifeCycleEventListener.cancelChildThread(threadInfo);
 				threadLifeCycleEventListener=null;
@@ -67,8 +74,10 @@ public class ThreadConnector<T> {
 	public <M> M endThread(M response) {
 		try {
 			try {
+				log.debug("endThread closing transactionConnector.commit()");
 				transactionConnector.commit();
 			} finally {
+				threadCompleted.release();
 				if (threadLifeCycleEventListener!=null) {
 					return threadLifeCycleEventListener.threadEnded(threadInfo, response);
 				}
@@ -82,8 +91,10 @@ public class ThreadConnector<T> {
 	public Throwable abortThread(Throwable t) {
 		try {
 			try {
+				log.debug("abortThread closing transactionConnector.rollback()");
 				transactionConnector.rollback();
 			} finally {
+				threadCompleted.release();
 				if (threadLifeCycleEventListener!=null) {
 					Throwable t2 = threadLifeCycleEventListener.threadAborted(threadInfo, t);
 					if (t2==null) {
@@ -99,5 +110,18 @@ public class ThreadConnector<T> {
 		}
 	}
 
-	
+	// close() to be called from parent thread
+	@Override
+	public void close() {
+		if (transactionConnector!=null) {
+			log.debug("waiting to finish");
+			try {
+				threadCompleted.acquire();
+			} catch (InterruptedException e) {
+				log.warn("Interrupted waiting for child thread to complete", e);
+			}
+			threadCompleted.release();
+		}
+		transactionConnector.close();
+	}
 }

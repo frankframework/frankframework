@@ -87,6 +87,8 @@
 	<Loggers>
 		<Logger name="liquibase" level="INFO" />
 		<Logger name="nl.nn.adapterframework.testtool" level="WARN" />
+		<Logger name="nl.nn.adapterframework.jta.ThreadConnectingJtaTransactionManager" level="INFO" />
+		<Logger name="nl.nn.adapterframework.jta.ThreadConnectingDataSourceTransactionManager" level="INFO" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
 		<Logger name="org.apache.cxf" level="WARN" />

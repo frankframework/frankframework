@@ -158,7 +158,8 @@ public class Message implements Serializable {
 	}
 	
 	public boolean isRepeatable() {
-		return request instanceof String || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
+		return false;
+		//return request instanceof String || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
 	}
 	
 	/**
@@ -512,29 +513,26 @@ public class Message implements Serializable {
 	/**
 	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
 	 * message, after the stream has been closed. Primarily for debugging purposes.
+	 * @throws IOException 
 	 */
-	public ByteArrayOutputStream captureBinaryStream() {
+	public ByteArrayOutputStream captureBinaryStream() throws IOException {
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		captureBinaryStream(result);
 		return result;
 	}
-	public void captureBinaryStream(OutputStream outputStream) {
+	public void captureBinaryStream(OutputStream outputStream) throws IOException {
 		captureBinaryStream(outputStream, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
-	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
+	public void captureBinaryStream(OutputStream outputStream, int maxSize) throws IOException {
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
-		try {
-			if (isRepeatable()) {
-				log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
-			}
-			wrappedRequest = request;
-			if (isBinary()) {
-				request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
-			} else {
-				request = StreamUtil.captureReader(asReader(), new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize, true);
-			}
-		} catch (IOException e) {
-			log.warn("Cannot capture stream", e);
+		if (isRepeatable()) {
+			log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
+		}
+		wrappedRequest = request;
+		if (isBinary()) {
+			request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
+		} else {
+			request = StreamUtil.captureReader(asReader(), new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize, true);
 		}
 	}
 	
@@ -544,30 +542,27 @@ public class Message implements Serializable {
 	 * 
 	 * When isBinary() is true the Message's charset is used when present to create a Reader that reads the InputStream.
 	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
+	 * @throws IOException 
 	 */
-	public StringWriter captureCharacterStream() {
+	public StringWriter captureCharacterStream() throws IOException {
 		StringWriter result = new StringWriter();
 		captureCharacterStream(result);
 		return result;
 	}
-	public void captureCharacterStream(Writer writer) {
+	public void captureCharacterStream(Writer writer) throws IOException {
 		captureCharacterStream(writer, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
-	public void captureCharacterStream(Writer writer, int maxSize) {
+	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
-		try {
-			if (isRepeatable()) {
-				log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
-			}
-			wrappedRequest = request;
-			if (!isBinary()) {
-				request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
-			} else {
-				String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-				request = StreamUtil.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
-			}
-		} catch (IOException e) {
-			log.warn("Cannot capture reader", e);
+		if (isRepeatable()) {
+			log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
+		}
+		wrappedRequest = request;
+		if (!isBinary()) {
+			request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
+		} else {
+			String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			request = StreamUtil.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
 		}
 	}
 

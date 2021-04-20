@@ -70,10 +70,22 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 			long t2 = System.currentTimeMillis();
 			sk.addValue(t2-t1);
 		} finally {
-			if (semaphore!=null) {
-				semaphore.release();
+			try {
+				threadConnector.close();
+			} catch (Exception e) {
+				threadConnector.abortThread(e);
+				if (throwable==null) {
+					throwable = e;
+				} else {
+					throwable.addSuppressed(e);
+				}
+				log.warn("SenderExecutor caught exception while closing thread connector", e);
+			} finally {
+				if (semaphore!=null) {
+					semaphore.release();
+				}
+				guard.releaseResource();
 			}
-			guard.releaseResource();
 		}
 	}
 
