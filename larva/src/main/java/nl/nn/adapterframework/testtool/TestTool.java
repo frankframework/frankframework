@@ -1443,7 +1443,7 @@ public class TestTool {
 						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						deleteQuerySender.setName("Test Tool pre delete query sender");
 						deleteQuerySender.setDatasourceName(datasourceName);
-						deleteQuerySender.setQueryType("Other");
+						deleteQuerySender.setQueryType("delete");
 						deleteQuerySender.setQuery("delete from " + preDelete);
 						try {
 							deleteQuerySender.configure();				 		

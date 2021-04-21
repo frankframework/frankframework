@@ -84,7 +84,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 			try {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(form_jmsRealm);
-				qs.setQueryType("Other");
+				qs.setQueryType("insert");
 				if (StringUtils.isEmpty(remoteUser)) {
 					qs.setQuery(
 							"INSERT INTO IBISPROP (NAME, VALUE, LASTMODDATE) VALUES (?, ?, CURRENT_TIMESTAMP)");
@@ -121,7 +121,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 			try {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(form_jmsRealm);
-				qs.setQueryType("Other");
+				qs.setQueryType("update");
 				qs.setQuery(
 						"UPDATE IBISPROP SET VALUE=?, LASTMODDATE=CURRENT_TIMESTAMP, LASTMODBY=? WHERE NAME=?");
 				Parameter param = new Parameter();
@@ -153,7 +153,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 			try {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(form_jmsRealm);
-				qs.setQueryType("Other");
+				qs.setQueryType("delete");
 				qs.setQuery("DELETE IBISPROP WHERE NAME=?");
 				Parameter param = new Parameter();
 				param.setName("name");
