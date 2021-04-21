@@ -43,7 +43,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Insert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" transactionAttribute="RequiresNew">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TNUMBER) VALUES (SEQ_IBISTEMP.NEXTVAL, 'X', ${jdbc.querylistener.key})" queryType="insert" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TNUMBER) VALUES (SEQ_IBISTEMP.NEXTVAL, 'X', ${jdbc.querylistener.key})" queryType="other" jmsRealm="jdbc" />
 				<forward name="success" path="Select" />
 			</pipe>
 			<pipe name="Select" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">

@@ -31,7 +31,7 @@
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TCLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_CLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
-					queryType="insert" jmsRealm="jdbc" />
+					queryType="other" jmsRealm="jdbc" />
 				<forward name="success" path="insertBigClob2" />
 			</pipe>
 
@@ -73,7 +73,7 @@
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
-					queryType="insert" jmsRealm="jdbc" />
+					queryType="other" jmsRealm="jdbc" />
 				<forward name="success" path="insertBigBlobText2" />
 			</pipe>
 
@@ -110,7 +110,7 @@
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
-					queryType="insert" jmsRealm="jdbc" />
+					queryType="other" jmsRealm="jdbc" />
 				<forward name="success" path="insertBigBlobBinary2" />
 			</pipe>
 

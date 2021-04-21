@@ -31,7 +31,7 @@
 			</pipe>
 			<!-- fixedInsert -->
 			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="other" jmsRealm="jdbc">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -41,7 +41,7 @@
 				<forward name="success" path="doDirectInsert" />
 			</pipe>
 			<pipe name="doDirectInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="insert" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="other" jmsRealm="jdbc" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- directInsertWithNamedParams -->
@@ -49,7 +49,7 @@
 				<forward name="success" path="doDirectInsertWithNamedParams" />
 			</pipe>
 			<pipe name="doDirectInsertWithNamedParams" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="insert" jmsRealm="jdbc" useNamedParams="true">
+				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="other" jmsRealm="jdbc" useNamedParams="true">
 					<param name="dummy1" value="value1" />
 					<param name="value" sessionKey="originalMessage" xpathExpression="request/value" />
 					<param name="lastmodby" sessionKey="originalMessage" xpathExpression="request/lastmodby" />
@@ -60,17 +60,17 @@
 			</pipe>
 			<!-- fixedInsertRollback -->
 			<pipe name="fixedInsertRollback" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="other" jmsRealm="jdbc">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="fixedInsertRollback2" />
 			</pipe>
 			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME','Peter',NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME','Peter',NULL,NULL)" queryType="other" jmsRealm="jdbc" />
 				<forward name="success" path="fixedInsertRollback3" />
 			</pipe>
 			<pipe name="fixedInsertRollback3" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="other" jmsRealm="jdbc" />
 				<forward name="success" path="generateException" />
 			</pipe>
 			<pipe name="generateException" className="nl.nn.adapterframework.pipes.ExceptionPipe">

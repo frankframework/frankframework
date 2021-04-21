@@ -19,7 +19,7 @@
 			</exits>
 
 			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" jmsRealm="jdbc" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="other" jmsRealm="jdbc" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
@@ -51,7 +51,7 @@
 			</exits>
 
 			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" jmsRealm="jdbc" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="other" jmsRealm="jdbc" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
@@ -81,7 +81,7 @@
 			</exits>
 
 			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" jmsRealm="jdbc" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="other" jmsRealm="jdbc" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>

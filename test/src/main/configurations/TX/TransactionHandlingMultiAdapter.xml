@@ -40,7 +40,7 @@
 			</pipe>
 
 			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" transactionAttribute="Required">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="other" jmsRealm="jdbc">
 					<param name="value" value="test1" />
 				</sender>
 				<forward name="success" path="Send transacted message to required subadapter with exception" />
@@ -60,7 +60,7 @@
 			</pipe>
 
 			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="other" jmsRealm="jdbc" />
 				<forward name="success" path="this should fail because of a tx error" />
 			</pipe>
 
