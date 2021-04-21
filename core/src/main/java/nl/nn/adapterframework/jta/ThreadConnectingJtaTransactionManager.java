@@ -15,8 +15,10 @@
 */
 package nl.nn.adapterframework.jta;
 
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.jta.JtaTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 public class ThreadConnectingJtaTransactionManager extends JtaTransactionManager implements IThreadConnectingTransactionManager {
 
@@ -24,9 +26,9 @@ public class ThreadConnectingJtaTransactionManager extends JtaTransactionManager
 	public Object getCurrentTransaction() throws TransactionException {
 		return doGetTransaction();
 	}
-	
+		
 	@Override
-	public Object getCurrentSynchronizedResources(Object transaction) throws TransactionException{
+	public SuspendedResourcesHolder getCurrentSynchronizedResources(Object transaction) throws TransactionException{
 		SuspendedResourcesHolder resources = suspend(transaction);
 		resume(transaction, resources);
 		return resources;
@@ -34,7 +36,21 @@ public class ThreadConnectingJtaTransactionManager extends JtaTransactionManager
 
 	@Override
 	public void joinParentThreadsTransaction(Object transaction, Object resources) {
+		doBegin(transaction, new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS));
+		SuspendedResourcesHolder resources0 = suspend(transaction);
 		resume(transaction, (SuspendedResourcesHolder)resources);
+	}
+
+	@Override
+	public SuspendedResourcesHolder suspendTransaction(Object transaction) {
+		return suspend(transaction);
+		
+	}
+
+	@Override
+	public void resumeTransaction(Object transaction, Object resources) {
+		resume(transaction, (SuspendedResourcesHolder)resources);
+		
 	}
 
 }

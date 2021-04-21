@@ -22,4 +22,9 @@ public interface IThreadConnectingTransactionManager<T,S> {
 	public T getCurrentTransaction() throws TransactionException;
 	public S getCurrentSynchronizedResources(T transaction) throws TransactionException;
 	public void joinParentThreadsTransaction(T transaction, S resources) throws TransactionException;
+	
+	public S suspendTransaction(T transaction);
+	
+	public void resumeTransaction(T transaction, S resources);
+	
 }

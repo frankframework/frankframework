@@ -29,8 +29,10 @@ public class TransactionConnector implements AutoCloseable {
 
 	private SpringTxManagerProxy txManager;
 	private Object parentThreadTransaction;
-	private Object resources;
+	private Object parentResources;
 	
+	private Object childThreadTransaction;
+	private Object childResources;
 
 	private TransactionStatus parentTxStatus;
 	private TransactionStatus childTxStatus;
@@ -44,40 +46,48 @@ public class TransactionConnector implements AutoCloseable {
 		if (txManager==null) {
 			throw new IllegalStateException("txManager is null");
 		}
-		txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS, 0);
-		parentTxStatus = txManager.getTransaction(txDef);
+		txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 0);
+		//parentTxStatus = txManager.getTransaction(txDef);
 		parentThreadTransaction = this.txManager.getCurrentTransaction();
-		resources = this.txManager.getCurrentSynchronizedResources(parentThreadTransaction);
+		//parentResources = this.txManager.getCurrentSynchronizedResources(parentThreadTransaction);
+		parentResources = this.txManager.suspendTransaction(parentThreadTransaction);
 	}
 
 	
 	public void applyTransactionInfo() {
 		if (txManager!=null) {
-			txManager.joinParentThreadsTransaction(parentThreadTransaction, resources);
+			childTxStatus = txManager.getTransaction(txDef);
 		}
 		if (txManager!=null) {
-			childTxStatus = txManager.getTransaction(txDef);
+			childThreadTransaction = this.txManager.getCurrentTransaction();
+			childResources = txManager.suspendTransaction(childThreadTransaction);
+			//txManager.joinParentThreadsTransaction(parentThreadTransaction, parentResources);
+			txManager.resumeTransaction(parentThreadTransaction, parentResources);
 		}
 	}
 	
 	public void commit() {
-//		if (childTxStatus!=null) {
-//			try {
-//				log.debug("commit");
-//				txManager.commit(childTxStatus);
-//			} catch (UnexpectedRollbackException e) {
-//				rolledBack=true;
-//				throw e;
-//			}
-//		}
+		parentResources = this.txManager.suspendTransaction(parentThreadTransaction);
+		txManager.resumeTransaction(childThreadTransaction, childResources);
+		if (childTxStatus!=null) {
+			try {
+				log.debug("commit");
+				txManager.commit(childTxStatus);
+			} catch (UnexpectedRollbackException e) {
+				rolledBack=true;
+				throw e;
+			}
+		}
 	}
 
 	public void rollback() {
-//		if (childTxStatus!=null) {
-//			log.debug("rollback");
-//			rolledBack=true;
-//			txManager.rollback(childTxStatus);
-//		}
+		parentResources = this.txManager.suspendTransaction(parentThreadTransaction);
+		txManager.resumeTransaction(childThreadTransaction, childResources);
+		if (childTxStatus!=null) {
+			log.debug("rollback");
+			rolledBack=true;
+			txManager.rollback(childTxStatus);
+		}
 	}
 	
 	public boolean isRollbackOnly() {
@@ -88,12 +98,16 @@ public class TransactionConnector implements AutoCloseable {
 	// close() to be called from parent thread
 	@Override
 	public void close() {
-		if (rolledBack || isRollbackOnly()) {
-			log.debug("close rolling back parent transaction");
-			txManager.rollback(parentTxStatus);
-		} else {
-			log.debug("close commit parent transaction");
-			txManager.commit(parentTxStatus);
+		txManager.resumeTransaction(parentThreadTransaction, parentResources);
+		//txManager.joinParentThreadsTransaction(childThreadTransaction, childResources);
+		if (parentTxStatus!=null) {
+			if (rolledBack || isRollbackOnly()) {
+				log.debug("close rolling back parent transaction");
+				txManager.rollback(parentTxStatus);
+			} else {
+				log.debug("close commit parent transaction");
+				txManager.commit(parentTxStatus);
+			}
 		}
 	}
 }

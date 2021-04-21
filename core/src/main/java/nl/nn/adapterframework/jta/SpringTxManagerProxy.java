@@ -68,7 +68,6 @@ public class SpringTxManagerProxy<T> implements PlatformTransactionManager, Bean
 
 	public Object getCurrentTransaction() throws TransactionException {
 		if (getRealTxManager() instanceof IThreadConnectingTransactionManager) {
-			System.out.println("IThreadConnectingTransactionManager.getCurrentTransaction" );
 			return ((IThreadConnectingTransactionManager)getRealTxManager()).getCurrentTransaction();
 		}
 		return null;
@@ -82,7 +81,6 @@ public class SpringTxManagerProxy<T> implements PlatformTransactionManager, Bean
 	@Override
 	public Object getCurrentSynchronizedResources(Object transaction) throws TransactionException {
 		if (getRealTxManager() instanceof IThreadConnectingTransactionManager) {
-			System.out.println("IThreadConnectingTransactionManager.getCurrentSynchronizedResources" );
 			return ((IThreadConnectingTransactionManager)getRealTxManager()).getCurrentSynchronizedResources(transaction);
 		}
 		return null;
@@ -97,13 +95,6 @@ public class SpringTxManagerProxy<T> implements PlatformTransactionManager, Bean
 			return;
 		}
 		return;
-//		getProxyHandler().joinParentThreadsTransaction(transaction);
-//		PlatformTransactionManager platformTxManager = getRealTxManager();
-//		if (platformTxManager instanceof IThreadConnectingTransactionManager) {
-//			System.out.println("--> found IThreadConnectingTransactionManager "+platformTxManager.getClass().getTypeName());
-//			IThreadConnectingTransactionManager threadConnectingTransactionManager = (IThreadConnectingTransactionManager)platformTxManager;
-//			threadConnectingTransactionManager.joinParentThreadsTransaction(transaction);
-//		}
 	}
 
 	@Override
@@ -122,13 +113,6 @@ public class SpringTxManagerProxy<T> implements PlatformTransactionManager, Bean
 		getRealTxManager().rollback(txStatus);
 	}
 
-//	protected ThreadConnectorHelperTransactionManagerProxyHandler getProxyHandler() {
-//		if (proxyHandler==null) {
-//			getRealTxManager();
-//		}
-//		return proxyHandler;
-//	}
-	
 	@SneakyThrows
 	public PlatformTransactionManager getRealTxManager() {
 		// This can be called from multiple threads, however
@@ -138,19 +122,28 @@ public class SpringTxManagerProxy<T> implements PlatformTransactionManager, Bean
 		// Bean Factory and thus each thread should always
 		// get the same instance.
 		if (realTxManager == null) {
-			AbstractPlatformTransactionManager txManager = (AbstractPlatformTransactionManager) beanFactory.getBean(realTxManagerBeanName);
-//			if (txManager instanceof IThreadConnectingTransactionManager) {
-				realTxManager = txManager;
-//			} else {
-//				proxyHandler = new ThreadConnectorHelperTransactionManagerProxyHandler(txManager);
-//				if (txManager instanceof JtaTransactionManager) {
-//					realTxManager = proxyHandler.getJtaProxy();
-//				} else {
-//					realTxManager = proxyHandler.getProxy();
-//				}
-//			}
+			realTxManager = (AbstractPlatformTransactionManager) beanFactory.getBean(realTxManagerBeanName);
 		}
 		return realTxManager;
+	}
+
+
+	@Override
+	public Object suspendTransaction(Object transaction) {
+		if (getRealTxManager() instanceof IThreadConnectingTransactionManager) {
+			System.out.println("IThreadConnectingTransactionManager.suspendTransaction" );
+			return ((IThreadConnectingTransactionManager)getRealTxManager()).suspendTransaction(transaction);
+		}
+		return null;
+	}
+
+
+	@Override
+	public void resumeTransaction(Object transaction, Object resources) {
+		if (getRealTxManager() instanceof IThreadConnectingTransactionManager) {
+			System.out.println("IThreadConnectingTransactionManager.resumeTransaction" );
+			((IThreadConnectingTransactionManager)getRealTxManager()).resumeTransaction(transaction, resources);
+		}
 	}
 
 

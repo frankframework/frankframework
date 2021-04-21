@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jta;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.TransactionException;
 
@@ -35,6 +36,16 @@ public class ThreadConnectingDataSourceTransactionManager extends DataSourceTran
 	@Override
 	public void joinParentThreadsTransaction(Object transaction, Object resources) {
 		resume(transaction, (SuspendedResourcesHolder)resources);
+	}
+
+	@Override
+	public Object suspendTransaction(Object transaction) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void resumeTransaction(Object transaction, Object resources) {
+		throw new NotImplementedException();
 	}
 
 }
