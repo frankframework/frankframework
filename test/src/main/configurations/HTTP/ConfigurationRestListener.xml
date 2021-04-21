@@ -14,7 +14,7 @@
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
-					queryType="other" jmsRealm="jdbc"
+					queryType="insert" jmsRealm="jdbc"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true">
 					<param name="TVARCHAR" sessionKey="fileName" />
 					<param name="message" sessionKey="file" type="inputstream" />

@@ -121,7 +121,7 @@
 				getInputFromSessionKey="originalMessage">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)"
-					queryType="other" jmsRealm="jdbc">
+					queryType="insert" jmsRealm="jdbc">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="switchAction" />
@@ -133,7 +133,7 @@
 				getInputFromSessionKey="originalMessage" transactionAttribute="NotSupported">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('FIRSTNAME',?,NULL,NULL)"
-					queryType="other" jmsRealm="jdbc">
+					queryType="insert" jmsRealm="jdbc">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="exception" />

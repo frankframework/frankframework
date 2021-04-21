@@ -39,7 +39,7 @@
 			</pipe>
 
 			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" transactionAttribute="Required">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="other" jmsRealm="jdbc">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc">
 					<param name="value" value="test1" />
 				</sender>
 				<forward name="success" path="EXIT" />
