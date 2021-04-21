@@ -32,7 +32,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  *
  * @since   4.7
  */
-public class JdbcTableListener extends JdbcListener implements IProvidesMessageBrowsers<Object> {
+public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMessageBrowsers<M> {
 	
 	private String tableName;
 	private String tableAlias="t";
@@ -56,9 +56,6 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 		}
 		if (StringUtils.isEmpty(getMessageField())) {
 			log.info(getLogPrefix()+"has no messageField specified. Will use keyField as messageField, too");
-		}
-		if (StringUtils.isEmpty(getStatusValue(ProcessState.ERROR))) {
-			throw new ConfigurationException(getLogPrefix()+"must specify statusValueError");
 		}
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.DONE))) {
 			throw new ConfigurationException(getLogPrefix()+"must specify statusValueProcessed");
@@ -89,11 +86,11 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	}
 
 	@Override
-	public IMessageBrowser<Object> getMessageBrowser(ProcessState state) {
+	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
 		if (!knownProcessStates().contains(state)) {
 			return null;
 		}
-		return new JdbcTableMessageBrowser<Object>(this, getStatusValue(state), getStorageType(state));
+		return new JdbcTableMessageBrowser<M>(this, getStatusValue(state), getStorageType(state));
 	}
 
 
