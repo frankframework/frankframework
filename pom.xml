@@ -604,30 +604,11 @@
 								</goals>
 								<configuration>
 									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-<!-- 									<outputDirectory>${project.basedir}/target/generated-sources/delombok</outputDirectory> -->
 									<addOutputDirectory>false</addOutputDirectory>
 								</configuration>
 							</execution>
 						</executions>
 					</plugin>
-<!-- 					<plugin> -->
-<!-- 						<groupId>org.codehaus.mojo</groupId> -->
-<!-- 						<artifactId>build-helper-maven-plugin</artifactId> -->
-<!-- 						<version>3.2.0</version> -->
-<!-- 						<executions> -->
-<!-- 							<execution> -->
-<!-- 								<phase>generate-sources</phase> -->
-<!-- 								<goals> -->
-<!-- 									<goal>add-source</goal> -->
-<!-- 								</goals> -->
-<!-- 								<configuration> -->
-<!-- 									<sources> -->
-<!-- 										<source>target/generated-sources/delombok</source> -->
-<!-- 									</sources> -->
-<!-- 								</configuration> -->
-<!-- 							</execution> -->
-<!-- 						</executions> -->
-<!-- 					</plugin> -->
 					<plugin>
 <!-- 						<groupId>org.apache.maven.plugins</groupId> -->
 <!-- 						<artifactId>maven-javadoc-plugin</artifactId> -->
@@ -635,7 +616,7 @@
 						<groupId>org.ibissource</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
 						<version>0.1-SNAPSHOT</version>
-<!-- 						<inherited>false</inherited> Only run the Frank!Doc once -->
+						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
 							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
@@ -644,34 +625,45 @@
 								<artifactId>ibis-adapterframework-frankDoc</artifactId>
 								<version>${project.version}</version>
 							</docletArtifact>
-<!-- 							<docletPath>${project.basedir}/frankDoc/target/ibis-adapterframework-frankDoc-${project.version}.jar</docletPath> -->
-<!-- 							<additionalOptions> -->
-<!-- 								<additionalOption>-outputDir</additionalOption> -->
-<!-- 								<additionalOption>${project.build.directory}/frankdoc</additionalOption> -->
-<!-- 							</additionalOptions> -->
+							<additionalOptions>
+								<additionalOption>-outputDirectory</additionalOption>
+								<additionalOption>${project.build.directory}/frankdoc</additionalOption>
+							</additionalOptions>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
 							<source>1.8</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
-<!-- 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath> -->
-<!-- 							<includeDependencySources>true</includeDependencySources> -->
 						</configuration>
-<!-- 						<dependencies> -->
-<!-- 							<dependency> -->
-<!-- 								<groupId>org.ibissource</groupId> -->
-<!-- 								<artifactId>ibis-adapterframework-core</artifactId> -->
-<!-- 								<version>${project.version}</version> -->
-<!-- 								<classifier>source</classifier> -->
-<!-- 							</dependency> -->
-<!-- 						</dependencies> -->
 						<executions>
 							<execution>
 								<id>attach-frankdoc</id>
 								<phase>process-sources</phase>
 								<goals>
-									<goal>aggregate</goal>
+									<goal>aggregate-jar</goal>
 								</goals>
 								<configuration>
 									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<version>3.2.0</version>
+						<executions>
+							<execution>
+								<id>copy-resources</id>
+								<phase>process-sources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${basedir}/core/target/classes</outputDirectory>
+									<resources>
+										<resource>
+											<directory>${project.build.directory}/frankdoc</directory>
+											<filtering>false</filtering>
+										</resource>
+									</resources>
 								</configuration>
 							</execution>
 						</executions>
