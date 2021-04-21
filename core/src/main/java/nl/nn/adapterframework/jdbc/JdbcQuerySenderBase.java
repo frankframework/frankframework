@@ -962,7 +962,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				+ "<li><code>other</code> for queries that return no data.</li>" 
 				+ "</ul>", "<code>other</code>"})
 	public void setQueryType(String queryType) {
-		this.queryType = Misc.parse(QueryType.class, "queryType", queryType);
+		if ("insert".equalsIgnoreCase(queryType) || "delete".equalsIgnoreCase(queryType) || "update".equalsIgnoreCase(queryType)) {
+			this.queryType=QueryType.OTHER;
+		} else {
+			this.queryType = Misc.parse(QueryType.class, "queryType", queryType);
+		}
 	}
 	public QueryType getQueryTypeEnum() {
 		return queryType;
