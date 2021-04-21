@@ -22,13 +22,13 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 
 	@Override
 	public MessageStoreListener<M> createListener() throws Exception {
-		MessageStoreListener<M> listener = spy(new MessageStoreListener<M>() {
+		MessageStoreListener listener = spy(new MessageStoreListener() {
 			@Override
-			protected M getRawMessage(Connection conn, Map<String, Object> threadContext) throws ListenerException {
+			protected Object getRawMessage(Connection conn, Map threadContext) throws ListenerException {
 				MessageWrapper<Object> mw = new MessageWrapper<>(); //super class JdbcListener always wraps this in a MessageWrapper
 				mw.setMessage(Message.asMessage(threadContext.get(STUB_RESULT_KEY)));
 				mw.setId(""+threadContext.get(PipeLineSession.originalMessageIdKey));
-				return (M)mw;
+				return mw;
 			}
 		});
 		DatabaseMetaData md = mock(DatabaseMetaData.class);
