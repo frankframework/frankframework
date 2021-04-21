@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019, 2021 Nationale-Nederlanden
+   Copyright 2018-2021 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
 import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.w3c.dom.Element;
@@ -160,7 +161,21 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 					throw new WebServiceException(m, e);
 				}
 				pipelineSession.put("soapProtocol", soapProtocol);
-	
+				if(soapProtocol.equals(SOAPConstants.SOAP_1_1_PROTOCOL)) {
+					String soapAction = (String) webServiceContext.getMessageContext().get(SoapBindingConstants.SOAP_ACTION);
+					pipelineSession.put(SoapBindingConstants.SOAP_ACTION, soapAction);
+				} else if(soapProtocol.equals(SOAPConstants.SOAP_1_2_PROTOCOL)) {
+					String contentType = (String) webServiceContext.getMessageContext().get("Content-Type");
+					if(StringUtils.isNotEmpty(contentType) && contentType.contains("action=")) {
+						String action = findAction(contentType);
+						if(StringUtils.isNotEmpty(action)) {
+							pipelineSession.put(SoapBindingConstants.SOAP_ACTION, action);
+						} else {
+							log.warn(getLogPrefix(correlationId)+"no SOAPAction found!");
+						}
+					}
+				}
+
 				// Process message via WebServiceListener
 				ISecurityHandler securityHandler = new WebServiceContextSecurityHandler(webServiceContext);
 				pipelineSession.setSecurityHandler(securityHandler);
@@ -291,5 +306,16 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 			xmlMimeHeaders.addSubElement(xmlMimeHeader);
 		}
 		return xmlMimeHeaders;
+	}
+	
+	protected String findAction(String contentType) {
+		// extracts the value of action from contentType
+		int start = contentType.indexOf("action=") + 7;
+		int end;
+		end = contentType.indexOf(';', start);
+		if (end == -1) {
+			end = contentType.length();
+		}
+		return contentType.substring(start, end);
 	}
 }

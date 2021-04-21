@@ -244,7 +244,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	@Deprecated
-	@ConfigurationWarning("attribute 'setFileNameSessionKey' is replaced with 'setFilenameSessionKey'")
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String fileNameSessionKey) {
 		setFilenameSessionKey(fileNameSessionKey);
 	}
