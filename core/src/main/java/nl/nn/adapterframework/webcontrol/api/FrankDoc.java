@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 @Path("frankdoc/files/")
 public final class FrankDoc extends Base {
 
-	public static final String FRANKDOC_JSON = "xml/xsd/frankDoc.json";
+	public static final String FRANKDOC_JSON = "js/frankdoc.json";
 	public static final String FRANKDOC_XSD  = "xml/xsd/strict.xsd";
 
 	@GET
