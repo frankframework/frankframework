@@ -716,8 +716,14 @@
 								<version>${project.version}</version>
 							</docletArtifact>
 							<additionalOptions>
-								<additionalOption>-outputDir</additionalOption>
-								<additionalOption>${project.build.directory}/classes/xml/xsd</additionalOption>
+								<additionalOption>-outputDirectory</additionalOption>
+								<additionalOption>${project.build.directory}/classes/</additionalOption>
+								<additionalOption>-strictPath</additionalOption>
+								<additionalOption>xml/xsd/frankdoc.xsd</additionalOption>
+								<additionalOption>-compatibilityPath</additionalOption>
+								<additionalOption>xml/xsd/frankdoc-compatibility.xsd</additionalOption>
+								<additionalOption>-jsonPath</additionalOption>
+								<additionalOption>js/frankdoc.json</additionalOption>
 							</additionalOptions>
 							<source>1.8</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
