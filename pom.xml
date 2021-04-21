@@ -287,10 +287,6 @@
 					<packagingExcludes>.gitignore</packagingExcludes>
 				</configuration>
 			</plugin>
-<!-- 			<plugin> -->
-<!-- 				<groupId>org.projectlombok</groupId> -->
-<!-- 				<artifactId>lombok-maven-plugin</artifactId> -->
-<!-- 			</plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -544,10 +540,10 @@
 			</activation>
 			<build>
 				<plugins>
-<!-- 					<plugin> -->
-<!-- 						<groupId>org.projectlombok</groupId> -->
-<!-- 						<artifactId>lombok-maven-plugin</artifactId> -->
-<!-- 					</plugin> -->
+					<plugin>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok-maven-plugin</artifactId>
+					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
@@ -596,23 +592,8 @@
 					<plugin>
 						<groupId>org.projectlombok</groupId>
 						<artifactId>lombok-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>generate-sources</phase>
-								<goals>
-									<goal>delombok</goal>
-								</goals>
-								<configuration>
-									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-									<addOutputDirectory>false</addOutputDirectory>
-								</configuration>
-							</execution>
-						</executions>
 					</plugin>
 					<plugin>
-<!-- 						<groupId>org.apache.maven.plugins</groupId> -->
-<!-- 						<artifactId>maven-javadoc-plugin</artifactId> -->
-<!-- 						<version>3.2.1-SNAPSHOT</version> -->
 						<groupId>org.ibissource</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
 						<version>0.1-SNAPSHOT</version>
