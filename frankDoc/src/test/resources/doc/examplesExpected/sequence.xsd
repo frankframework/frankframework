@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
   <xs:element name="Master">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master - We test here that the sequence of groups, config children and attributes is right.
+ It is important that the sequences in @IbisDoc annotations, in the alphabetic order
+ and in the order of appearance are all different.</xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="RoleAlphaElementGroup" minOccurs="0" maxOccurs="1" />
@@ -16,6 +21,9 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="RoleEpsilon">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque</xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence />
       <xs:attribute name="elementRole" type="xs:string" fixed="roleEpsilon" use="prohibited" />

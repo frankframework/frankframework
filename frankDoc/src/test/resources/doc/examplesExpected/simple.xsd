@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
   <xs:element name="Start">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start</xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="RoleNameIChildElementGroup" minOccurs="0" maxOccurs="1" />
@@ -12,6 +15,9 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="RoleNameTChild">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild - This is the header of the JavaDoc of "TChild".</xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence />
       <xs:attribute name="elementRole" type="xs:string" fixed="roleNameTChild" use="prohibited" />
@@ -36,6 +42,11 @@
   <xs:group name="RoleNameIChildElementGroupBase">
     <xs:choice>
       <xs:element name="DescribedPossibleIRoleNameIChild">
+        <xs:annotation>
+          <xs:documentation>DescribedPossibleIRoleNameIChild - nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild used as RoleNameIChild
+
+This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="DescribedPossibleIChildType">
@@ -46,6 +57,9 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="NotDescribedPossibleIRoleNameIChild">
+        <xs:annotation>
+          <xs:documentation>NotDescribedPossibleIRoleNameIChild - nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild used as RoleNameIChild</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="NotDescribedPossibleIChildType">

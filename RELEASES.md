@@ -12,7 +12,7 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
-
+- 'fileName' in attributes is replaced with 'filename'
 
 
 7.6-RC1

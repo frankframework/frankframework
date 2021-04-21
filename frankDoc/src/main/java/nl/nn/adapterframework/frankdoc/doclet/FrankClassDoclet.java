@@ -253,4 +253,9 @@ class FrankClassDoclet implements FrankClass {
 	boolean isTopLevel() {
 		return clazz.containingClass() == null;
 	}
+
+	@Override
+	public String getJavaDoc() {
+		return clazz.commentText();
+	}
 }
