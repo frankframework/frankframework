@@ -49,7 +49,6 @@
 	<!ENTITY JsonPipe SYSTEM "./ConfigurationJsonPipe.xml">
 	<!ENTITY MultipleSessionKeys SYSTEM "./ConfigurationMultipleSessionKeys.xml">
 	<!ENTITY CreateLargeFile SYSTEM "./ConfigurationCreateLargeFile.xml">
-	<!ENTITY CopyLargeFile SYSTEM "./ConfigurationCopyLargeFile.xml">
 	<!ENTITY MemoryLeak SYSTEM "./ConfigurationMemoryLeak.xml">
 	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
 	<!ENTITY Parameters SYSTEM "./ConfigurationParameters.xml">
@@ -111,7 +110,6 @@
 	&JsonPipe;
 	&MultipleSessionKeys;
 	&CreateLargeFile;
-	&CopyLargeFile;
 	&MemoryLeak; 
 	&Javascript;
 	&Parameters;
