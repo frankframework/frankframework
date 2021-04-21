@@ -9,7 +9,7 @@ import com.sun.javadoc.ClassDoc;
 
 import nl.nn.adapterframework.frankdoc.doclet.classdocs.EasyDoclet;
 
-final class TestUtil {
+public final class TestUtil {
 	private static final Properties BUILD_PROPERTIES = new TestUtil().loadBuildProperties();
 	private static final File TEST_SOURCE_DIRECTORY = new File(BUILD_PROPERTIES.getProperty("testSourceDirectory"));
 

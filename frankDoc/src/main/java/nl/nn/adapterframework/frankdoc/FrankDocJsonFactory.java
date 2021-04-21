@@ -28,6 +28,7 @@ import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.frankdoc.model.AttributeType;
@@ -42,6 +43,8 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankDocJsonFactory {
 	private static Logger log = LogUtil.getLogger(FrankDocJsonFactory.class);
+
+	private static final String DESCRIPTION_HEADER = "descriptionHeader";
 
 	private FrankDocModel model;
 	private JsonBuilderFactory bf;
@@ -103,6 +106,7 @@ public class FrankDocJsonFactory {
 		if(frankElement.isDeprecated()) {
 			result.add("deprecated", frankElement.isDeprecated());
 		}
+		addDescriptionHeader(result, frankElement.getDescriptionHeader());
 		addIfNotNull(result, "parent", getParentOrNull(frankElement));
 		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
 		frankElement.getXmlElementNames().forEach(xmlElementNames::add);
@@ -152,6 +156,12 @@ public class FrankDocJsonFactory {
 	private void addIfNotNull(JsonObjectBuilder builder, String field, String value) {
 		if(value != null) {
 			builder.add(field, value);
+		}
+	}
+
+	private void addDescriptionHeader(JsonObjectBuilder builder, String value) {
+		if(! StringUtils.isBlank(value)) {
+			builder.add(DESCRIPTION_HEADER, value.replaceAll("\"", "\\\\\\\""));
 		}
 	}
 
