@@ -129,11 +129,15 @@ public abstract class ElementChild {
 
 	abstract boolean overrideIsMeaningful(ElementChild overriddenFrom);
 
-	void setJavaDocBasedDescription(FrankMethod method) {
+	void setJavaDocBasedDescriptionAndDefault(FrankMethod method) {
 		try {
 			String value = method.getJavaDocIncludingInherited();
 			if(value != null) {
 				description = value;
+			}
+			value = method.getDefaultValueFromJavadocIncludingInherited();
+			if(value != null) {
+				defaultValue = value;
 			}
 		} catch(FrankDocException e) {
 			log.warn("A FrankDocException occurred when searching the (inherited) javadoc of {}", method.toString(), e);

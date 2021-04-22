@@ -110,4 +110,22 @@ public class FrankAttributeTarget extends FrankAttributeTargetParent {
 	@IbisDoc("120")
 	public void setAttributeWithIbisDocLackingDescription(String value) {
 	}
+
+	/**
+	 * @frankdoc.default My default value
+	 */
+	public void setAttributeWithJavaDocDefault(String value) {
+	}
+
+	@Override
+	public void setAttributeWithInheritedJavaDocDefault(String value) {
+	}
+
+	/**
+	 * @frankdoc.default My overruled default value
+	 */
+	@IbisDoc({"50", "Dummy description", "The default from the IbisDoc annotation"})
+	public void setAttributeWithIbisDocThatOverrulesJavadocDefault(String value) {
+		
+	}
 }

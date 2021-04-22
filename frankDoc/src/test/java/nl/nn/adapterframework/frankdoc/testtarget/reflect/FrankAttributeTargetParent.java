@@ -21,4 +21,10 @@ public class FrankAttributeTargetParent {
 	 */
 	public void setAttributeWithInheritedJavaDoc(String value) {
 	}
+
+	/**
+	 * @frankdoc.default My inherited default value
+	 */
+	public void setAttributeWithInheritedJavaDocDefault(String value) {
+	}
 }

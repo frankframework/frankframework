@@ -52,4 +52,16 @@ public class FrankMethodDocletTest {
 		FrankMethod method = getMethodByName(innerClass, "myAnnotatedMethod");
 		assertEquals("This is the javadoc of \"myAnnotatedMethod\".", method.getJavaDocIncludingInherited());		
 	}
+
+	@Test
+	public void whenMethodHasDefaultThenReturnedByGetDefaultValueFromJavadoc() {
+		FrankMethod method = getMethodByName(clazz, "setInherited");
+		assertEquals("DefaultValue", method.getDefaultValueFromJavadoc());
+	}
+
+	@Test
+	public void whenMethodInheritsDefaultThenReturnedByGetDefaultValueFromJavadocIncludingInherited() throws FrankDocException {
+		FrankMethod method = getMethodByName(innerClass, "myAnnotatedMethod");
+		assertEquals("InheritedDefault", method.getDefaultValueFromJavadocIncludingInherited());		
+	}
 }

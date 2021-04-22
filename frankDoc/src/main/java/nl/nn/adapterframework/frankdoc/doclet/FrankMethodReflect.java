@@ -131,6 +131,16 @@ class FrankMethodReflect implements FrankMethod {
 	}
 
 	@Override
+	public String getDefaultValueFromJavadoc() {
+		return null;
+	}
+
+	@Override
+	public String getDefaultValueFromJavadocIncludingInherited() {
+		return null;
+	}
+
+	@Override
 	public String toString() {
 		return toStringImpl();
 	}

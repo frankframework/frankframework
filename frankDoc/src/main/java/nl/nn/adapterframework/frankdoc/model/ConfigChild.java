@@ -72,7 +72,7 @@ public class ConfigChild extends ElementChild {
 		setDeprecated(isDeprecated(method));
 		log.trace("ConfigChild of method {} has documented={}, deprecated={}", () -> method.toString(), () -> isDocumented(), () -> isDeprecated());
 		this.methodName = method.getName();
-		setJavaDocBasedDescription(method);
+		setJavaDocBasedDescriptionAndDefault(method);
 		FrankAnnotation ibisDoc = getIbisDoc(method);
 		if(ibisDoc != null) {
 			try {

@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.Parameter;
+import com.sun.javadoc.Tag;
 import com.sun.javadoc.Type;
 
 import nl.nn.adapterframework.util.LogUtil;
@@ -190,6 +191,22 @@ class FrankMethodDoclet implements FrankMethod {
 
 	void addToRepository(Map<MethodDoc, FrankMethod> methodRepository) {
 		methodRepository.put(method, this);
+	}
+
+	@Override
+	public String getDefaultValueFromJavadoc() {
+		Tag[] tags = method.tags(FrankMethod.JAVADOC_DEFAULT_VALUE_TAG);
+		if((tags == null) || (tags.length == 0)) {
+			return null;
+		}
+		// The Doclet API trims the value.
+		return tags[0].text();
+	}
+
+	@Override
+	public String getDefaultValueFromJavadocIncludingInherited() throws FrankDocException {
+		Function<FrankMethodDoclet, String> getter = m -> m.getDefaultValueFromJavadoc();
+		return searchIncludingInherited(getter);		
 	}
 
 	@Override

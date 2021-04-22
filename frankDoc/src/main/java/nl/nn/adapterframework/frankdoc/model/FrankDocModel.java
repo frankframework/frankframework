@@ -306,16 +306,17 @@ public class FrankDocModel {
 		attribute.setDocumented(
 				(method.getAnnotation(FrankDocletConstants.IBISDOC) != null)
 				|| (method.getAnnotation(FrankDocletConstants.IBISDOCREF) != null)
-				|| (method.getJavaDoc() != null));
+				|| (method.getJavaDoc() != null)
+				|| (method.getDefaultValueFromJavadoc() != null));
 		log.trace("Attribute: deprecated = [{}], documented = [{}]", () -> attribute.isDeprecated(), () -> attribute.isDocumented());
-		attribute.setJavaDocBasedDescription(method);
+		attribute.setJavaDocBasedDescriptionAndDefault(method);
 		FrankAnnotation ibisDocRef = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOCREF);
 		if(ibisDocRef != null) {
 			log.trace("Found @IbisDocRef annotation");
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
 			FrankAnnotation ibisDoc = null;
 			if((parsed != null) && (parsed.getReferredMethod() != null)) {
-				attribute.setJavaDocBasedDescription(parsed.getReferredMethod());
+				attribute.setJavaDocBasedDescriptionAndDefault(parsed.getReferredMethod());
 				ibisDoc = parsed.getReferredMethod().getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 				if(ibisDoc != null) {
 					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass().getName()));

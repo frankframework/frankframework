@@ -345,7 +345,8 @@ public class FrankDocModelTest {
 				"attributeOnlySetterShortBoxed", "ibisDockedOnlyDescription", "ibisDockedOrderDescription", "ibisDockedDescriptionDefault",
 				"ibisDockedOrderDescriptionDefault", "ibisDockedDeprecated", "attributeWithJavaDoc",
 				"attributeWithInheritedJavaDoc", "attributeWithIbisDocThatOverrulesJavadocDescription",
-				"attributeWithIbisDocLackingDescription"};
+				"attributeWithIbisDocLackingDescription", "attributeWithJavaDocDefault",
+				"attributeWithInheritedJavaDocDefault", "attributeWithIbisDocThatOverrulesJavadocDefault"};
 		assertArrayEquals(expectedAttributeNames, actualAttributeNames.toArray(new String[] {}));
 	}
 
@@ -407,6 +408,13 @@ public class FrankDocModelTest {
 	}
 
 	@Test
+	public void whenAttributeHasJavaDocDefaultThenDocumentedAndDefault() throws Exception {
+		FrankAttribute actual = checkReflectAttributeCreated("attributeWithJavaDocDefault");
+		assertTrue(actual.isDocumented());
+		assertEquals("My default value", actual.getDefaultValue());
+	}
+	
+	@Test
 	public void whenAttributeHasInheritedJavaDocThenNotDocumentedButDescription() throws Exception {
 		FrankAttribute actual = checkReflectAttributeCreated("attributeWithInheritedJavaDoc");
 		assertFalse(actual.isDocumented());
@@ -414,9 +422,22 @@ public class FrankDocModelTest {
 	}
 
 	@Test
+	public void whenAttributeHasInheritedJavaDocDefaultThenNotDocumentedButDefault() throws Exception {
+		FrankAttribute actual = checkReflectAttributeCreated("attributeWithInheritedJavaDocDefault");
+		assertFalse(actual.isDocumented());
+		assertEquals("My inherited default value", actual.getDefaultValue());
+	}
+
+	@Test
 	public void whenIbisDocHasDescriptionThenJavadocOverruled() throws Exception {
 		FrankAttribute actual = checkReflectAttributeCreated("attributeWithIbisDocThatOverrulesJavadocDescription");
 		assertEquals("IbisDoc description that overrules JavaDoc", actual.getDescription());
+	}
+
+	@Test
+	public void whenIbisDocHasDefaultThenJavadocDefaultOverruled() throws Exception {
+		FrankAttribute actual = checkReflectAttributeCreated("attributeWithIbisDocThatOverrulesJavadocDefault");
+		assertEquals("The default from the IbisDoc annotation", actual.getDefaultValue());
 	}
 
 	@Test
