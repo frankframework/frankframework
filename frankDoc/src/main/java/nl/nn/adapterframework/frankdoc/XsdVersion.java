@@ -63,7 +63,7 @@ public enum XsdVersion {
 			if(attribute.getDescription() != null) {
 				return;
 			}
-			log.warn("Attribute [%s] lacks description", attribute.toString());
+			log.warn("Attribute [{}] lacks description", attribute.toString());
 		}
 
 		@Override
@@ -71,7 +71,7 @@ public enum XsdVersion {
 			if(configChild.getDescription() != null) {
 				return;
 			}
-			log.warn("Config child [%s] lacks description", configChild.toString());
+			log.warn("Config child [{}] lacks description", configChild.toString());
 		}
 	}
 

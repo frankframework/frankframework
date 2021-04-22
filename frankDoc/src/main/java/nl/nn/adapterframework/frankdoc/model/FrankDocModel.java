@@ -219,7 +219,7 @@ public class FrankDocModel {
 				// discovers type mismatches.
 				attribute.typeCheckDefaultValue();
 			} catch(FrankDocException e) {
-				log.warn("Attribute [%s] has an invalid default value, [%s]", attribute.toString(), attribute.getDefaultValue(), e);
+				log.warn("Attribute [{}] has an invalid default value, [{}]", attribute.toString(), attribute.getDefaultValue(), e);
 			}
 			result.add(attribute);
 			log.trace("Attribute [{}] done", () -> attributeName);
@@ -342,9 +342,6 @@ public class FrankDocModel {
 		if(ibisDoc != null) {
 			log.trace("For attribute [{}], have @IbisDoc without @IbisDocRef", attribute);
 			attribute.parseIbisDocAnnotation(ibisDoc);
-		}
-		else {
-			log.warn("No documentation available for FrankElement [{}], attribute [{}]", () -> attributeOwner.getSimpleName(), () -> attribute.getName());
 		}
 		log.trace("Done documenting attribute [{}]", () -> attribute.getName());
 	}
