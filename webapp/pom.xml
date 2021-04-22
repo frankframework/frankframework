@@ -20,12 +20,6 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-parent</artifactId>
-			<version>${project.version}</version>
-			<classifier>frankdoc</classifier>
-		</dependency>
 		<!--  copy META-INF/services from the core module so it can be found by application servers -->
 		<!-- 
 		<dependency>
