@@ -34,9 +34,19 @@ public class AttributeValues {
 	AttributeValues(String fullName, String simpleName, List<String> values, int seq) {
 		this.fullName = fullName;
 		this.values = values;
-		this.valueSet = new HashSet<>(values);
+		this.valueSet = getValueSet(values);
 		this.simpleName = simpleName;
 		this.seq = seq;
+	}
+
+	private static Set<String> getValueSet(List<String> values) {
+		// Value null does not make sense, but allowing it is useful for unit tests
+		// that are not concerned with the values.
+		if(values == null) {
+			return new HashSet<>();
+		} else {
+			return new HashSet<>(values);
+		}
 	}
 
 	public String getUniqueName(String groupWord) {
