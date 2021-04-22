@@ -1,10 +1,6 @@
 <Configuration>
   <Adapter>
-    <Receiver>
-      <JavaListener name="myListener"/>
-    </Receiver>
     <Pipeline firstPipe="myPipe">
-      <Exit path="EXIT" state="success" code="200"/>
       <!-- Setting property "name" is not allowed -->
       <FixedResultPipe returnString="HelloWorld">
         <Forward name="success" path="next" />
@@ -13,6 +9,12 @@
         <Forward name="success" path="EXIT" />
       </FixedResultPipe>
       <Pipe className="my.proprietary.pipe"/>
+      <Exit path="EXIT" state="success" code="200"/>
     </Pipeline>
+    <!-- TODO: Receiver should be above Pipeline, but Martijn does not want to correct that on April 22 2021.
+         Fix this by rearranging methods in class Adapter -->
+    <Receiver>
+      <JavaListener name="myListener"/>
+    </Receiver>
   </Adapter>
 </Configuration>
