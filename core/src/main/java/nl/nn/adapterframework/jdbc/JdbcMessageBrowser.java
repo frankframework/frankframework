@@ -291,9 +291,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		}
 	}
 
-	protected M retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
-		return (M)rs.getString(columnIndex); //TODO shouldn't this be getObject(columnIndex, M)?
-	}
+	protected abstract M retrieveObject(ResultSet rs, int columnIndex) throws SQLException, JdbcException;
 
 	@Override
 	public int getMessageCount() throws ListenerException {
