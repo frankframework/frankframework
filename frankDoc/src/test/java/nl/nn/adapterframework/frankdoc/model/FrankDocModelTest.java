@@ -350,7 +350,6 @@ public class FrankDocModelTest {
 		assertArrayEquals(expectedAttributeNames, actualAttributeNames.toArray(new String[] {}));
 	}
 
-	// TODO: This test may be superfluous
 	@Test
 	public void testIbisDockedOnlyDescription() throws FrankDocException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOnlyDescription");
@@ -360,17 +359,16 @@ public class FrankDocModelTest {
 		assertFalse(actual.isDeprecated());
 	}
 
-	// TODO: This test may be superfluous
 	@Test
 	public void testIbisDockedOrderDescription() throws FrankDocException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOrderDescription");
 		assertTrue(actual.isDocumented());
+		// We do not use the order obtained from the annotation. We use the order of the Java methods instead.
 		assertEquals("Description of ibisDockedOrderDescription", actual.getDescription());
 		assertNull(actual.getDefaultValue());
 		assertFalse(actual.isDeprecated());
 	}
 
-	// TODO: This test may be superfluous
 	@Test
 	public void testIbisDockedDescriptionDefault() throws FrankDocException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedDescriptionDefault");
@@ -381,11 +379,11 @@ public class FrankDocModelTest {
 		assertTrue(IN_XSD.test(actual));
 	}
 
-	// TODO: This test may be superfluous
 	@Test
 	public void testIbisDockedOrderDescriptionDefault() throws FrankDocException {
 		FrankAttribute actual = checkReflectAttributeCreated("ibisDockedOrderDescriptionDefault");
 		assertTrue(actual.isDocumented());
+		// We do not use the order from the annotation. We use the order of the Java methods instead.
 		assertEquals("Description of ibisDockedOrderDescriptionDefault", actual.getDescription());
 		assertEquals("Default of ibisDockedOrderDescriptionDefault", actual.getDefaultValue());
 		assertFalse(actual.isDeprecated());
@@ -471,6 +469,13 @@ public class FrankDocModelTest {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault");
 		assertTrue(actual.isDocumented());
 		assertEquals("Description of ibisDocRefClassNoOrderRefersIbisDocOrderDescriptionDefault", actual.getDescription());
+	}
+
+	@Test
+	public void testReferredJavaDocDefaultAppearsInFrankAttribute() throws FrankDocException {
+		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefRefersJavaDocDefault");
+		assertTrue(actual.isDocumented());
+		assertEquals("setIbisDocRefRefersJavaDocDefault default value", actual.getDefaultValue());		
 	}
 
 	@Test

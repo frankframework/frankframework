@@ -26,4 +26,8 @@ public class Referrer {
 	@IbisDocRef({"120", "nl.nn.adapterframework.frankdoc.testtarget.ibisdocref.ChildTarget"})
 	public void setAttributeWithIbisDocRefReferringIbisDocWithoutDescriptionButWithJavadoc(String value) {
 	}
+
+	@IbisDocRef("nl.nn.adapterframework.frankdoc.testtarget.ibisdocref.ChildTarget")
+	public void setIbisDocRefRefersJavaDocDefault(String value) {
+	}
 }

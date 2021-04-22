@@ -32,4 +32,10 @@ public class ChildTarget extends ParentTarget {
 	@IbisDoc("200")
 	public void setAttributeWithIbisDocRefReferringIbisDocWithoutDescriptionButWithJavadoc(String value) {
 	}
+
+	/**
+	 * @frankdoc.default setIbisDocRefRefersJavaDocDefault default value
+	 */
+	public void setIbisDocRefRefersJavaDocDefault(String value) {
+	}
 }
