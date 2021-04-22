@@ -29,15 +29,13 @@ import nl.nn.adapterframework.util.LogUtil;
 public class DocletBuilder extends com.sun.javadoc.Doclet {
 	private static final Logger log = LogUtil.getLogger(DocletBuilder.class);
 
-	private static final String OPT_OUTPUT_DIR = "-outputDir";
-	private static String outputDir = null;
-
     public static boolean start(RootDoc root) {
     	printOptions(root);
     	ClassDoc classes[] = root.classes();
     	boolean result = true;
     	try {
-    		new Doclet(classes, outputDir).run();
+        	FrankDocletOptions options = FrankDocletOptions.getInstance(root.options());
+    		new Doclet(classes, options).run();
     	}
     	catch(RuntimeException e) {
     		e.printStackTrace();
@@ -45,6 +43,7 @@ public class DocletBuilder extends com.sun.javadoc.Doclet {
     	}
     	catch(FrankDocException e) {
     		log.error("FrankDocException occurred while running Frank!Doc Doclet", e);
+    		result = false;
     	}
     	return result;
     }
@@ -67,33 +66,17 @@ public class DocletBuilder extends com.sun.javadoc.Doclet {
 	}
 
     public static int optionLength(String option) {
-        if(option.equals(OPT_OUTPUT_DIR)) {
-            return 2;
-        }
-        return 0;
+    	return FrankDocletOptions.optionLength(option);
     }
 
     public static boolean validOptions(String options[][], DocErrorReporter reporter) {
-        boolean foundOutputDirOption = false;
-        for (int i = 0; i < options.length; i++) {
-            String[] opt = options[i];
-            if (opt[0].equals(OPT_OUTPUT_DIR)) {
-                if (foundOutputDirOption) {
-                    reporter.printError(String.format("Only one %s option allowed.", OPT_OUTPUT_DIR));
-                    return false;
-                } else { 
-                    foundOutputDirOption = true;
-                    outputDir = opt[1];
-                }
-            } 
-        }
-        if (!foundOutputDirOption) {
-            reporter.printError(String.format("Option %s is missing. Please add it like "
-            		+ "<additionalOptions> %s directory-to-store-frank-doc-in</additionalOptions>"
-            		+ " in the pom.xml",
-            		OPT_OUTPUT_DIR, OPT_OUTPUT_DIR));
-        }
-        return foundOutputDirOption;
+    	try {
+    		FrankDocletOptions.validateOptions(options);
+    		return true;
+    	} catch(InvalidDocletOptionsException e) {
+    		reporter.printError(e.getMessage());
+    		return false;
+    	}
     }
 
     public static LanguageVersion languageVersion() {
