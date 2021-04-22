@@ -291,9 +291,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		}
 	}
 
-	protected M retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
-		return (M)rs.getString(columnIndex); //TODO shouldn't this be getObject(columnIndex, M)?
-	}
+	protected abstract M retrieveObject(ResultSet rs, int columnIndex) throws SQLException, JdbcException;
 
 	@Override
 	public int getMessageCount() throws ListenerException {
@@ -460,42 +458,42 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 
-	@IbisDoc({"1", "The name of the column that contains the primary key of the table", "messagekey"})
+	@IbisDoc({"1", "The name of the column that contains the primary key of the table", "MESSAGEKEY"})
 	public void setKeyField(String string) {
 		keyField = string;
 	}
 
-	@IbisDoc({"2", "The name of the column message themselves are stored in", "message"})
-	public void setMessageField(String messageField) {
-		this.messageField = messageField;
-	}
-
-	@IbisDoc({"3", "The name of the column messageIds are stored in", "messageid"})
+	@IbisDoc({"2", "The name of the column messageIds are stored in", "MESSAGEID"})
 	public void setIdField(String idField) {
 		this.idField = idField;
 	}
 
-	@IbisDoc({"4", "The name of the column correlation-ids are stored in", "correlationid"})
+	@IbisDoc({"3", "The name of the column correlation-ids are stored in", "CORRELATIONID"})
 	public void setCorrelationIdField(String string) {
 		correlationIdField = string;
 	}
 
-	@IbisDoc({"5", "The name of the column comments are stored in", "comments"})
-	public void setCommentField(String string) {
-		commentField = string;
+	@IbisDoc({"4", "The name of the column message themselves are stored in", "MESSAGE"})
+	public void setMessageField(String messageField) {
+		this.messageField = messageField;
 	}
 
-	@IbisDoc({"6", "The name of the column the timestamp is stored in", "messagedate"})
+	@IbisDoc({"5", "The name of the column the timestamp is stored in", "MESSAGEDATE"})
 	public void setDateField(String string) {
 		dateField = string;
 	}
 
-	@IbisDoc({"7", "The name of the column the timestamp for expiry is stored in", "expirydate"})
+	@IbisDoc({"6", "The name of the column comments are stored in", "COMMENTS"})
+	public void setCommentField(String string) {
+		commentField = string;
+	}
+
+	@IbisDoc({"7", "The name of the column the timestamp for expiry is stored in", "EXPIRYDATE"})
 	public void setExpiryDateField(String string) {
 		expiryDateField = string;
 	}
 
-	@IbisDoc({"8", "The name of the column labels are stored in", "label"})
+	@IbisDoc({"8", "The name of the column labels are stored in", "LABEL"})
 	public void setLabelField(String string) {
 		labelField = string;
 	}
@@ -511,7 +509,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		this.hostField = hostField;
 	}
 
-	@IbisDoc({"9", "prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different oracle schema", ""})
+	@IbisDoc({"9", "prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema", ""})
 	public void setPrefix(String string) {
 		prefix = string;
 	}
@@ -528,12 +526,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 
 	public void setOrder(String string) {
-		if(StringUtils.isNotEmpty(string)) {
-			sortOrder = SortOrder.valueOf(string.trim());
-		}
-	}
-	public String getOrder() {
-		return getOrderEnum().name();
+		sortOrder = Misc.parse(SortOrder.class, "sortOrder", string);
 	}
 
 	public SortOrder getOrderEnum() {
