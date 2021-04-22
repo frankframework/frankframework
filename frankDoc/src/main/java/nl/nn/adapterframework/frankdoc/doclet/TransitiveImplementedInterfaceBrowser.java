@@ -32,7 +32,7 @@ class TransitiveImplementedInterfaceBrowser<T> {
 	}
 
 	private void uniquelyEnqueueSuperInterfaces(FrankClass clazz) {
-		Arrays.asList(clazz.getInterfaces()).stream().forEach(this::enqueueUniquely);
+		Arrays.asList(clazz.getInterfaces()).forEach(this::enqueueUniquely);
 	}
 
 	private void enqueueUniquely(FrankClass clazz) {

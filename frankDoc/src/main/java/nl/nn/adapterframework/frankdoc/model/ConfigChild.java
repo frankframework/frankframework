@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.EqualsAndHashCode;
@@ -80,9 +79,6 @@ public class ConfigChild extends ElementChild {
 			} catch(FrankDocException e) {
 				log.warn("Could not parse IbisDoc annotation of method {}", method.toString(), e);
 			}
-		}
-		if(! StringUtils.isEmpty(getDefaultValue())) {
-			log.warn("Default value [{}] of config child [{}] of FrankElement [{}] is not used", () -> getDefaultValue(), () -> getKey().toString(), () -> getOwningElement().getFullName());
 		}
 	}
 

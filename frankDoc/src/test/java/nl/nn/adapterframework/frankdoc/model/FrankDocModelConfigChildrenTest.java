@@ -113,21 +113,6 @@ public class FrankDocModelConfigChildrenTest {
 	}
 
 	@Test
-	public void whenIbisDocOnDerivedMethodThenStillOrderFromIbisDoc() {
-		ConfigChild actual = selectChild("roleNameInheritedChildDocOnDerived");
-		assertEquals("roleNameInheritedChildDocOnDerived", actual.getRoleName());
-		assertEquals("Container", actual.getOwningElement().getSimpleName());
-		assertEquals("InheritedChildDocOnDerived", actual.getElementType().getSimpleName());
-		assertTrue(actual.isDocumented());
-		assertFalse(actual.isAllowMultiple());
-		assertFalse(actual.isMandatory());
-		assertFalse(actual.isDeprecated());
-		// The method in the parent is protected, so not overridden
-		assertNull(actual.getOverriddenFrom());
-		assertFalse(actual.isTechnicalOverride());
-	}
-
-	@Test
 	public void whenIbisDocBothOnParentAndDerivedThenDerivedValueTaken() {
 		ConfigChild actual = selectChild("roleNameInheritedChildDocWithOrderOverride");
 		assertEquals("roleNameInheritedChildDocWithOrderOverride", actual.getRoleName());
@@ -151,12 +136,6 @@ public class FrankDocModelConfigChildrenTest {
 				.collect(Collectors.counting())
 				.longValue() == 0;
 		assertTrue(result);
-	}
-
-	// TODO: This test is superfluous
-	@Test
-	public void onlyWantedConfigChildrenProduced() {
-		assertEquals(7, configChildren.size());
 	}
 
 	@Test

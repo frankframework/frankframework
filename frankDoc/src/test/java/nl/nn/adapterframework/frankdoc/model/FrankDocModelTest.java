@@ -492,14 +492,8 @@ public class FrankDocModelTest {
 	public void testReferredIbisDocDescriptiondWithOrderAndInheritance() throws FrankDocException {
 		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
 		assertTrue(actual.isDocumented());
+		// We do not use the order, because the order of the Java methods is used.
 		assertEquals("Description of ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited", actual.getDescription());
-	}
-
-	// TODO: This test may be superfluous
-	@Test
-	public void testOrderInsideIbisDocRefHasPreferenceOverReferredIbisDocOrder() throws FrankDocException {
-		FrankAttribute actual = checkIbisdocrefInvestigatedFrankAttribute("ibisDocRefClassWithOrderRefersIbisDocOrderDescriptionDefaultInherited");
-		assertTrue(actual.isDocumented());
 	}
 
 	@Test
