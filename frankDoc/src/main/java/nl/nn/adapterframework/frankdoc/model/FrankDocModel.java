@@ -213,6 +213,14 @@ public class FrankDocModel {
 				log.trace("Attribute {} has enum values", () -> attributeName);
 				attribute.setAttributeValues(findOrCreateAttributeValues((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
 			}
+			try {
+				// Method FrankAttribute.typeCheckDefaultValue() does not write the warning
+				// but only throws an exception. This allows us to test that method
+				// discovers type mismatches.
+				attribute.typeCheckDefaultValue();
+			} catch(FrankDocException e) {
+				log.warn("Attribute [%s] has an invalid default value, [%s]", attribute.toString(), attribute.getDefaultValue(), e);
+			}
 			result.add(attribute);
 			log.trace("Attribute [{}] done", () -> attributeName);
 		}

@@ -19,6 +19,7 @@ package nl.nn.adapterframework.frankdoc.model;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 
 public class FrankAttribute extends ElementChild {
 	@EqualsAndHashCode(callSuper = false)
@@ -59,5 +60,19 @@ public class FrankAttribute extends ElementChild {
 	@Override
 	boolean overrideIsMeaningful(ElementChild overriddenFrom) {
 		return false;
+	}
+
+	void typeCheckDefaultValue() throws FrankDocException {
+		if(getDefaultValue() != null) {
+			attributeType.typeCheck(getDefaultValue());
+			if((attributeType == AttributeType.STRING) && (attributeValues != null)) {
+				attributeValues.typeCheck(getDefaultValue());
+			}
+		}
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s.%s", getOwningElement().getSimpleName(), name);
 	}
 }

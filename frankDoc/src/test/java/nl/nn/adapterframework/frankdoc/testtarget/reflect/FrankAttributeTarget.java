@@ -5,6 +5,8 @@ import java.util.List;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 public class FrankAttributeTarget extends FrankAttributeTargetParent {
+	public static enum FrankAttributeTargetEnum {ONE, TWO};
+
 	public void setAttributeSetterGetter(String value) {
 	}
 
@@ -126,6 +128,28 @@ public class FrankAttributeTarget extends FrankAttributeTargetParent {
 	 */
 	@IbisDoc({"50", "Dummy description", "The default from the IbisDoc annotation"})
 	public void setAttributeWithIbisDocThatOverrulesJavadocDefault(String value) {
-		
 	}
+
+	/**
+	 * @frankdoc.default This is a string, not an integer
+	 */
+	public void setIntAttributeWithStringDefault(int value) {
+	}
+
+	/**
+	 * @frankdoc.default This is a string, not a Boolean
+	 */
+	public void setBoolAttributeWithStringDefault(boolean value) {
+	}
+
+	/**
+	 * @frankdoc.default String that does not match enum values.
+	 */
+	public void setEnumAttributeWithInvalidDefault(String value) {
+	}
+
+	public FrankAttributeTargetEnum getEnumAttributeWithInvalidDefaultEnum() {
+		return null;
+	}
+
 }

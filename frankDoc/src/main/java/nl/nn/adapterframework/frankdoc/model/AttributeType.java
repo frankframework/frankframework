@@ -18,11 +18,16 @@ package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
+
 public enum AttributeType {
-	STRING, BOOL, INT;
+	STRING(new TypeCheckerString()),
+	BOOL(new TypeCheckerBool()),
+	INT(new TypeCheckerInt());
 
 	private static final Map<String, AttributeType> JAVA_TO_TYPE = new HashMap<>();
 	static {
@@ -49,5 +54,47 @@ public enum AttributeType {
 					Arrays.asList(AttributeType.values()).stream().map(Enum::name).collect(Collectors.joining(", ")), javaType));
 		}
 		return result;
+	}
+
+	private final TypeChecker typeChecker;
+
+	private AttributeType(TypeChecker typeChecker) {
+		this.typeChecker = typeChecker;
+	}
+
+	private static abstract class TypeChecker {
+		abstract void typeCheck(String value) throws FrankDocException;
+	}
+
+	void typeCheck(String value) throws FrankDocException {
+		typeChecker.typeCheck(value);
+	}
+
+	private static class TypeCheckerString extends TypeChecker {
+		@Override
+		void typeCheck(String value) throws FrankDocException {
+		}
+	}
+
+	private static class TypeCheckerInt extends TypeChecker {
+		@Override
+		void typeCheck(String value) throws FrankDocException {
+			try {
+				Integer.parseInt(value);
+			} catch(Exception e) {
+				throw new FrankDocException(String.format("Value [%s] is not integer", value), e);
+			}
+		}		
+	}
+
+	private static final HashSet<String> BOOLEANS = new HashSet<>(Arrays.asList("false", "true"));
+
+	private static class TypeCheckerBool extends TypeChecker {
+		@Override
+		void typeCheck(String value) throws FrankDocException {
+			if(! BOOLEANS.contains(value)) {
+				throw new FrankDocException(String.format("Value [%s] is not Boolean", value), null);
+			}
+		}
 	}
 }
