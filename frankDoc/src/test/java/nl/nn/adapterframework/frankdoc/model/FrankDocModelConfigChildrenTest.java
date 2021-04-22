@@ -114,10 +114,11 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void whenIbisDocBothOnParentAndDerivedThenDerivedValueTaken() {
-		ConfigChild actual = selectChild("roleNameInheritedChildDocWithOrderOverride");
-		assertEquals("roleNameInheritedChildDocWithOrderOverride", actual.getRoleName());
+		ConfigChild actual = selectChild("roleNameInheritedChildDocWithDescriptionOverride");
+		assertEquals("roleNameInheritedChildDocWithDescriptionOverride", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
-		assertEquals("InheritedChildDocWithOrderOverride", actual.getElementType().getSimpleName());
+		assertEquals("InheritedChildDocWithDescriptionOverride", actual.getElementType().getSimpleName());
+		assertEquals("Description of Container.setInheritedChildDocWithDescriptionOverride", actual.getDescription());
 		assertTrue(actual.isDocumented());
 		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
@@ -143,14 +144,14 @@ public class FrankDocModelConfigChildrenTest {
 		List<String> actualConfigChildNames = configChildren.stream().map(ConfigChild::toString).collect(Collectors.toList());
 		String[] expectedConfigChildNames = new String[] {"Container.setChild(Child)", "Container.setDeprecatedChild(Child)",
 				"Container.registerInheritedChilds(InheritedChild)", "Container.setInheritedChildDocOnDerived(InheritedChildDocOnDerived)",
-				"Container.setInheritedChildDocWithOrderOverride(InheritedChildDocWithOrderOverride)", "Container.setInheritedChildNonSelected(InheritedChildNonSelected)",
+				"Container.setInheritedChildDocWithDescriptionOverride(InheritedChildDocWithDescriptionOverride)", "Container.setInheritedChildNonSelected(InheritedChildNonSelected)",
 				"Container.setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated)"};
 		assertArrayEquals(expectedConfigChildNames, actualConfigChildNames.toArray(new String[] {}));
 	}
 
 	@Test
 	public void whenConfigChildOverriddenTwiceTheGrandparentTaken() {
-		ConfigChild grandChild = checkAndFindGrandChild("roleNameInheritedChildDocWithOrderOverride");
+		ConfigChild grandChild = checkAndFindGrandChild("roleNameInheritedChildDocWithDescriptionOverride");
 		assertEquals("Container", grandChild.getOverriddenFrom().getSimpleName());
 	}
 
@@ -183,6 +184,7 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("roleNameChildOverriddenOnlyParentAnnotated", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("ChildOverriddenOnlyParentAnnotated", actual.getElementType().getSimpleName());
+		assertEquals("Description of ContainerParent.setChildOverriddenOnlyParentAnnotated", actual.getDescription());
 		assertFalse(actual.isDocumented());
 		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());

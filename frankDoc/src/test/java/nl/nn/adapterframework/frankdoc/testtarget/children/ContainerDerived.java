@@ -2,7 +2,7 @@ package nl.nn.adapterframework.frankdoc.testtarget.children;
 
 public class ContainerDerived extends Container {
 	@Override
-	public void setInheritedChildDocWithOrderOverride(InheritedChildDocWithOrderOverride child) {
+	public void setInheritedChildDocWithDescriptionOverride(InheritedChildDocWithDescriptionOverride child) {
 	}
 
 	@Override

@@ -5,7 +5,7 @@
   <rule pattern="*/roleNameInheritedChilds" registerMethod="registerInheritedChilds"/>
   <rule pattern="*/roleNameInheritedChildDocOnDerived" registerMethod="setInheritedChildDocOnDerived"/>
   <rule pattern="*/roleNameChildNoDoc" registerMethod="setChildNoDoc"/>
-  <rule pattern="*/roleNameInheritedChildDocWithOrderOverride" registerMethod="setInheritedChildDocWithOrderOverride"/>
+  <rule pattern="*/roleNameInheritedChildDocWithDescriptionOverride" registerMethod="setInheritedChildDocWithDescriptionOverride"/>
   <rule pattern="*/roleNameInheritedWithoutOverride" registerMethod="setInheritedWithoutOverride"/>
   <rule pattern="*/roleNameInheritedChildNonSelected" registerMethod="setInheritedChildNonSelected"/>
   <rule pattern="*/roleNameChildOverriddenOnlyParentAnnotated" registerMethod="setChildOverriddenOnlyParentAnnotated"/>
