@@ -219,7 +219,7 @@ public class FrankDocModel {
 				// discovers type mismatches.
 				attribute.typeCheckDefaultValue();
 			} catch(FrankDocException e) {
-				log.warn("Attribute [{}] has an invalid default value, [{}]", attribute.toString(), attribute.getDefaultValue(), e);
+				log.warn("Attribute [{}] has an invalid default value, [{}, detail {}]", attribute.toString(), attribute.getDefaultValue(), e.getMessage());
 			}
 			result.add(attribute);
 			log.trace("Attribute [{}] done", () -> attributeName);
