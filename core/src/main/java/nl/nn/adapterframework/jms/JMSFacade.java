@@ -15,11 +15,14 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
@@ -681,7 +684,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/**
 	 * Extracts string from message obtained from getRawMessage(Map). May also extract
 	 * other parameters from the message and put those in the threadContext.
-	 * @return String  input message for adapter.
 	 */
 	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 //		TextMessage message = null;
@@ -699,8 +701,48 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			message = ((IMessageWrapper)rawMessage).getMessage();
 		} else if (rawMessage instanceof TextMessage) {
 			message = new Message(((TextMessage)rawMessage).getText());
+		} else if (rawMessage instanceof BytesMessage) {
+			BytesMessage bytesMsg = (BytesMessage)rawMessage;
+			InputStream input = new InputStream() {
+
+				@Override
+				public int read() throws IOException {
+					try {
+						return bytesMsg.readByte();
+					} catch (JMSException e) {
+						throw new IOException("Cannot read JMS message", e);
+					}
+				}
+
+				@Override
+				public int read(byte[] b) throws IOException {
+					try {
+						return bytesMsg.readBytes(b);
+					} catch (JMSException e) {
+						throw new IOException("Cannot read JMS message", e);
+					}
+				}
+
+				@Override
+				public int read(byte[] b, int off, int len) throws IOException {
+					try {
+						byte readbuf[] = new byte[len];
+						int result = bytesMsg.readBytes(readbuf);
+						if (result>0) {
+							System.arraycopy(readbuf, 0, b, off, result);
+						}
+						return result;
+					} catch (JMSException e) {
+						throw new IOException("Cannot read JMS message", e);
+					}
+				}
+				
+			};
+			message = new Message(new BufferedInputStream(input));
+		} else if (rawMessage == null) {
+			message = Message.nullMessage();
 		} else {
-			message = new Message((String)rawMessage);
+			message = Message.asMessage(rawMessage);
 		}
 		if (!soap) {
 			return message;
@@ -719,22 +761,22 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	@Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append(super.toString());
-        if (useTopicFunctions) {
-            sb.append("[topicName=" + destinationName + "]");
-	        sb.append("[topicConnectionFactoryName=" + topicConnectionFactoryName + "]");
-        } else {
-            sb.append("[queueName=" + destinationName + "]");
-	        sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
-        }
-	//  sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
-        sb.append("[ackMode=" + ackMode + "]");
-        sb.append("[persistent=" + getPersistent() + "]");
-        sb.append("[transacted=" + transacted + "]");
-        return sb.toString();
-    }
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(super.toString());
+		if (useTopicFunctions) {
+			sb.append("[topicName=" + destinationName + "]");
+			sb.append("[topicConnectionFactoryName=" + topicConnectionFactoryName + "]");
+		} else {
+			sb.append("[queueName=" + destinationName + "]");
+			sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
+		}
+		// sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
+		sb.append("[ackMode=" + ackMode + "]");
+		sb.append("[persistent=" + getPersistent() + "]");
+		sb.append("[transacted=" + transacted + "]");
+		return sb.toString();
+	}
 
 	/**
 	 * The name of the destination, this may be a <code>queue</code> or <code>topic</code> name.
