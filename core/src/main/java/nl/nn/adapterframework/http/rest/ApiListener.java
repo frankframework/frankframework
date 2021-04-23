@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
@@ -59,6 +59,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
+	private String headerParams = null;
+//	private String cookieParams = null;
 	private String charset = null;
 
 	public enum AuthenticationMethods {
@@ -101,7 +103,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
 	}
 
-	public Message processRequest(String correlationId, Message message, IPipeLineSession requestContext) throws ListenerException {
+	public Message processRequest(String correlationId, Message message, PipeLineSession requestContext) throws ListenerException {
 		Message result = super.processRequest(correlationId, message, requestContext);
 
 		//Return null when super.processRequest() returns an empty string
@@ -285,6 +287,22 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	public String getOperationId() {
 		return operationId;
 	}
+
+	@IbisDoc({"12", "Comma separated list of parameters passed as http header. Parameters will be stored in 'headers' sessionkey.", ""})
+	public void setHeaderParams(String headerParams) {
+		this.headerParams = headerParams;
+	}
+	public String getHeaderParams() {
+		return headerParams;
+	}
+
+//	@IbisDoc({"13", "Comma separated list of parameters passed as cookie.", ""})
+//	public void setCookieParams(String cookieParams) {
+//		this.cookieParams = cookieParams;
+//	}
+//	public String getCookieParams() {
+//		return cookieParams;
+//	}
 
 	@Override
 	public String toString() {

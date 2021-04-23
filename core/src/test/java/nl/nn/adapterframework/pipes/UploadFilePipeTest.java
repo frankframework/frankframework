@@ -81,7 +81,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeWrongInputFormat() throws Exception {
@@ -97,7 +97,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeSuccess() throws Exception {
@@ -112,7 +112,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeFailWrongExtension() throws Exception {
@@ -130,7 +130,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeSuccessWithDirectorySessionKey() throws Exception {
@@ -146,7 +146,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeSuccessWithoutDirectory() throws Exception {
@@ -163,7 +163,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	}
 
 	/**
-	 * Method: doPipe(Object input, IPipeLineSession session)
+	 * Method: doPipe(Object input, PipeLineSession session)
 	 */
 	@Test
 	public void testDoPipeCreateNonExistingDirectory() throws Exception {

@@ -17,6 +17,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -120,16 +121,22 @@ public abstract class JdbcTestBase {
 		}
 	}
 	
-	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, String queryType) throws JdbcException, SQLException {
+	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
+		return executeTranslatedQuery(connection, query, queryType, false);
+		
+	}
+	
+	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
 		QueryExecutionContext context = new QueryExecutionContext(query, queryType, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		log.debug("executing translated query ["+context.getQuery()+"]");
-		if (queryType.equals("select")) {
-			return  connection.prepareStatement(context.getQuery());
-		}
-		if (queryType.equals("select for update")) {
-			return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-		}
+		if (queryType==QueryType.SELECT) {
+			if(!selectForUpdate) {
+				return  connection.prepareStatement(context.getQuery());
+			} else {
+				return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			}
+		}	
 		JdbcUtil.executeStatement(connection, context.getQuery());
 		return null;
 	}

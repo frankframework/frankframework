@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.stream.Message;
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		Message senderInput=message;
 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
 			senderInput=Message.asMessage(session.get(senderWrapperBase.getGetInputFromSessionKey()));

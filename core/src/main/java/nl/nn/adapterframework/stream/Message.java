@@ -44,7 +44,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -168,7 +168,7 @@ public class Message implements Serializable {
 		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof Reader;
 	}
 	
-	public void closeOnCloseOf(IPipeLineSession session) {
+	public void closeOnCloseOf(PipeLineSession session) {
 		if (request instanceof InputStream) {
 			request = session.scheduleCloseOnSessionExit((InputStream)request);
 			return;
@@ -179,7 +179,7 @@ public class Message implements Serializable {
 		}
 	}
 
-	public void unregisterCloseable(IPipeLineSession session) {
+	public void unregisterCloseable(PipeLineSession session) {
 		if (request instanceof InputStream || request instanceof Reader) {
 			session.unscheduleCloseOnSessionExit((AutoCloseable)request);
 		}

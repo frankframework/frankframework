@@ -40,7 +40,8 @@ public class AncestorKindsTest {
 
 	@Before
 	public void setUp() {
-		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild", FrankClassRepository.getReflectInstance());
+		FrankClassRepository classRepository = FrankClassRepository.getReflectInstance(PACKAGE);
+		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild", classRepository);
 	}
 
 	@Test

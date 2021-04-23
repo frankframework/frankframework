@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -43,7 +43,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	private Map<String,RecordHandlingFlow> flowMap = new LinkedHashMap<>();
 
 	@Override
-	public IRecordHandlerManager getRecordFactoryUsingFilename(IPipeLineSession session, String inputFilename) {
+	public IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String inputFilename) {
 		return this;
 	}
 
@@ -77,7 +77,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	}
 	
 	@Override
-	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
+	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		return flowMap.get("*");
 	}
 

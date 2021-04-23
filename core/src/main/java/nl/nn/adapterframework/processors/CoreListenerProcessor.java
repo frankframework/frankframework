@@ -21,7 +21,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class CoreListenerProcessor implements ListenerProcessor {
 	private Logger log = LogUtil.getLogger(this);
 
-	public Message getMessage(ICorrelatedPullingListener listener, String correlationID, IPipeLineSession pipeLineSession) throws ListenerException, TimeOutException {
+	public Message getMessage(ICorrelatedPullingListener listener, String correlationID, PipeLineSession pipeLineSession) throws ListenerException, TimeOutException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(listener, pipeLineSession) + "starts listening for return message with correlationID ["+ correlationID	+ "]");
 		Message result;
 		Map threadContext=new HashMap();
@@ -57,7 +57,7 @@ public class CoreListenerProcessor implements ListenerProcessor {
 		return result;
 	}
 
-	protected String getLogPrefix(ICorrelatedPullingListener listener, IPipeLineSession session){
+	protected String getLogPrefix(ICorrelatedPullingListener listener, PipeLineSession session){
 		  StringBuffer sb=new StringBuffer();
 		  sb.append("Listener ["+listener.getName()+"] ");
 		  if (session!=null) {

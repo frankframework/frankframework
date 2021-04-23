@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.Utils;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
@@ -45,6 +46,8 @@ public class FrankElement implements Comparable<FrankElement> {
 	private static final Comparator<FrankElement> COMPARATOR =
 			Comparator.comparing(FrankElement::getSimpleName).thenComparing(FrankElement::getFullName);
 
+	private static JavadocStrategy javadocStrategy = JavadocStrategy.USE_JAVADOC;
+
 	private final @Getter String fullName;
 	private final @Getter String simpleName;
 	private final @Getter boolean isAbstract;
@@ -57,11 +60,14 @@ public class FrankElement implements Comparable<FrankElement> {
 	private @Getter List<String> xmlElementNames;
 	private @Getter FrankElementStatistics statistics;
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
+	private @Getter @Setter String description;
+	private @Getter @Setter String descriptionHeader;
 
 	FrankElement(FrankClass clazz) {
 		this(clazz.getName(), clazz.getSimpleName(), clazz.isAbstract());
 		isDeprecated = clazz.getAnnotation(FrankDocletConstants.DEPRECATED) != null;
 		configChildSets = new LinkedHashMap<>();
+		javadocStrategy.completeFrankElement(this, clazz);
 	}
 
 	/**

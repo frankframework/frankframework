@@ -32,7 +32,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
@@ -121,7 +121,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	}
 
 	@Override
-	protected String doGet(IPipeLineSession session) throws PipeRunException {
+	protected String doGet(PipeLineSession session) throws PipeRunException {
 		IbisManager ibisManager = retrieveIbisManager();
 
 		String configurationName = null;

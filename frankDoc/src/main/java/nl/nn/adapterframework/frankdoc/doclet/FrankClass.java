@@ -24,14 +24,15 @@ public interface FrankClass extends FrankType {
 		return false;
 	}
 
-	@Override
-	default boolean isAnnotation() {
-		return false;
-	}
-
 	String getSimpleName();
+	String getPackageName();
 	FrankClass getSuperclass();
+
+	/**
+	 * Get super interfaces of an interface, or interfaces implemented by a class.
+	 */
 	FrankClass[] getInterfaces();
+
 	boolean isAbstract();
 	boolean isInterface();
 	boolean isPublic();
@@ -45,4 +46,5 @@ public interface FrankClass extends FrankType {
 	FrankMethod[] getDeclaredAndInheritedMethods();
 
 	String[] getEnumConstants();
+	String getJavaDoc();
 }

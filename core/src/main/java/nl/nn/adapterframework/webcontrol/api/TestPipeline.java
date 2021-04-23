@@ -39,9 +39,8 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -159,7 +158,7 @@ public final class TestPipeline extends Base {
 	@SuppressWarnings("rawtypes")
 	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
-		try (IPipeLineSession pls = new PipeLineSessionBase()) {
+		try (PipeLineSession pls = new PipeLineSession()) {
 			Map ibisContexts = XmlUtils.getIbisContext(message);
 			String technicalCorrelationId = null;
 			if (ibisContexts != null) {
@@ -170,7 +169,7 @@ public final class TestPipeline extends Base {
 					if (log.isDebugEnabled()) {
 						contextDump = contextDump + "\n " + key + "=[" + value + "]";
 					}
-					if (key.equals(IPipeLineSession.technicalCorrelationIdKey)) {
+					if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
 						technicalCorrelationId = value;
 					} else {
 						pls.put(key, value);
@@ -181,7 +180,7 @@ public final class TestPipeline extends Base {
 				}
 			}
 			Date now = new Date();
-			PipeLineSessionBase.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
+			PipeLineSession.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
 	
 			secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
 	

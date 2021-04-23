@@ -1,6 +1,6 @@
 <ibis>
 	<adapter name="JdbcListener" description="Test the functioning of the JdbcQueryListener and JdbcTableListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+		<receiver
 				name="JdbcQueryListener"
 				maxRetries="4"
 				transactionAttribute="Required"
@@ -9,17 +9,18 @@
 			<listener name="JdbcQueryListener for ibis4test"
 						className="nl.nn.adapterframework.jdbc.JdbcQueryListener"
 						jmsRealm="jdbc"
-						selectQuery="SELECT TKEY
+						selectQuery="SELECT TKEY, TVARCHAR
 										FROM IBISTEMP
 										WHERE TCHAR = '1'
 										AND TNUMBER=${jdbc.querylistener.key}"
 						updateStatusToProcessedQuery="UPDATE IBISTEMP SET TCHAR='2' WHERE TKEY=?"
 						updateStatusToErrorQuery="UPDATE IBISTEMP SET TCHAR='3' WHERE TKEY=?"
-						keyField="tkey"/>
+						keyField="tkey"
+						messageField="TVARCHAR"/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/JdbcQueryListener" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/JdbcQueryListener" retention="-1" />
 		</receiver>
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
+		<receiver
 				name="JdbcTableListener"
 				maxRetries="4"
 				transactionAttribute="Required"
@@ -36,25 +37,19 @@
 						statusValueProcessed="6"
 						statusValueError="7"
 						statusValueInProcess="8"
-						keyField="tkey"/>
+						keyField="tkey"
+						messageField="TVARCHAR"/>
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Insert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" transactionAttribute="RequiresNew">
+			<pipe name="Insert" transactionAttribute="RequiresNew">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TNUMBER) VALUES (SEQ_IBISTEMP.NEXTVAL, 'X', ${jdbc.querylistener.key})" queryType="insert" jmsRealm="jdbc" />
-				<forward name="success" path="Select" />
 			</pipe>
-			<pipe name="Select" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TVARCHAR FROM IBISTEMP WHERE TKEY=?" queryType="select" jmsRealm="jdbc">
-					<param name="value" sessionKey="originalMessage" />
-				</sender>
-				<forward name="success" path="SwitchAction" />
-			</pipe>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="result/rowset/row/field[@name='TVARCHAR']='success'">
-				<forward name="false" path="do_error" />
-				<forward name="true" path="do_success" />
+			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="originalMessage">
+				<forward name="success" path="do_success" />
+				<forward name="error" path="do_error" />
 			</pipe>
 			<pipe
 				name="do_error"
@@ -70,8 +65,7 @@
 	</adapter>
 	<adapter name="JdbcListenerDatabaseMiddleware" 
 		description="Used as a middleware in JdbcListener scenarios to prevent other nodes processing the message">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JdbcListenerDatabaseMiddleware">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JdbcListenerDatabaseMiddleware" />
 		</receiver>
@@ -81,20 +75,20 @@
 			</exits> 
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" 
 				xpathExpression="request/@action"></pipe>
-			<pipe name="DeleteIbistemp" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="DeleteIbistemp">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" 
 					query="DELETE FROM IBISTEMP WHERE TNUMBER = ${jdbc.querylistener.key}" 
 				/>
 				<forward name="success" path="do_success" />
 			</pipe>
-			<pipe name="DeleteIbisstore" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="DeleteIbisstore">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" 
 					query="DELETE FROM IBISSTORE WHERE SLOTID = ?" 
 				/>
 					<param name="slotid" xpathExpression="request/@slotId"/>
 				<forward name="success" path="do_success" />
 			</pipe>
-			<pipe name="InsertIbistemp" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="InsertIbistemp">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" 
 					query="INSERT INTO IBISTEMP (tkey, tchar, tvarchar, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, ?, ${jdbc.querylistener.key}, SYSDATE)" 
 				>
@@ -117,7 +111,7 @@
 				<param name="slotid" value="${applicationId}/JdbcTableListener"/>
 				<forward name="success" path="Exec_Query"/>
 			</pipe>
-			<pipe name="Exec_Query" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe name="Exec_Query"
 				storeResultInSessionKey="xml">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ManageDatabase" />
 				<forward name="success" path="AddIgnores"/>
@@ -132,7 +126,7 @@
 				name="do_success"
 				getInputFromFixedValue="&lt;result&gt;ok&lt;/result&gt;"
 				className="nl.nn.adapterframework.pipes.EchoPipe">
-			   <forward name="success" path="EXIT" />
+				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>

@@ -46,7 +46,7 @@ import lombok.Lombok;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -144,13 +144,13 @@ public class MongoDbSender extends StreamingSenderBase {
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		return null;
 	}
 
 
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		message.closeOnCloseOf(session);
 		MongoAction mngaction = getActionEnum();
 		try (MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? next : null)) {

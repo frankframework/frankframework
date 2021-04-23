@@ -22,6 +22,9 @@ public class FrankAttributeTarget extends FrankAttributeTargetParent {
 	public void setAttributeOnlySetter(String value) {
 	}
 
+	public void setNonAttributeVararg(String ...value) {
+	}
+
 	public void setAttributeOnlySetterInt(int value) {
 	}
 

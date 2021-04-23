@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.cache;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -35,13 +35,13 @@ public interface ICacheAdapter<K,V> {
 	 * Transform the the current request message to a key in the cache-map.
 	 * Allows for instance XPath translations.
 	 */
-	K transformKey(String input, IPipeLineSession session);
+	K transformKey(String input, PipeLineSession session);
 	
 	/**
 	 * Transform the the current response message to a value in the cache-map.
 	 * Allows for instance XPath translations.
 	 */
-	V transformValue(Message input, IPipeLineSession session);
+	V transformValue(Message input, PipeLineSession session);
 	
 
 	/**

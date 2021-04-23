@@ -24,7 +24,7 @@ import java.util.Set;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -92,7 +92,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	}
 	
 	@Override
-	protected IDataIterator<A> getIterator(Message message, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<A> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		
 		FS ifs = getFileSystem();
 		

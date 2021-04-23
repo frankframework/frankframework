@@ -15,6 +15,7 @@
 		<j2v8.version>4.6.0</j2v8.version>
 		<cxf.version>3.1.18</cxf.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>net.arnx</groupId>
@@ -693,6 +694,73 @@
 					<optional>true</optional>
 				</dependency>
 			</dependencies>
+		</profile>
+		<profile>
+			<id>attachFrankDoc</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.2.0</version>
+						<inherited>false</inherited>
+						<configuration>
+							<doclint>none</doclint>
+							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
+							<docletArtifact>
+								<groupId>org.ibissource</groupId>
+								<artifactId>ibis-adapterframework-frankDoc</artifactId>
+								<version>${project.version}</version>
+							</docletArtifact>
+							<additionalOptions>
+								<additionalOption>-outputDirectory</additionalOption>
+								<additionalOption>${project.build.directory}/classes/</additionalOption>
+								<additionalOption>-strictPath</additionalOption>
+								<additionalOption>xml/xsd/frankdoc.xsd</additionalOption>
+								<additionalOption>-compatibilityPath</additionalOption>
+								<additionalOption>xml/xsd/frankdoc-compatibility.xsd</additionalOption>
+								<additionalOption>-jsonPath</additionalOption>
+								<additionalOption>js/frankdoc.json</additionalOption>
+							</additionalOptions>
+							<source>1.8</source>
+							<useStandardDocletOptions>false</useStandardDocletOptions>
+							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
+						</configuration>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok-maven-plugin</artifactId>
+						<version>1.18.16.0</version>
+						<executions>
+							<execution>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>delombok</goal>
+								</goals>
+								<configuration>
+									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+									<addOutputDirectory>false</addOutputDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>

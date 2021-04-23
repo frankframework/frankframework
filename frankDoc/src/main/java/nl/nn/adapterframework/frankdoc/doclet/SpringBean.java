@@ -18,7 +18,7 @@ package nl.nn.adapterframework.frankdoc.doclet;
 
 import lombok.Getter;
 
-public class SpringBean implements Comparable<SpringBean> {
+class SpringBean implements Comparable<SpringBean> {
 	private @Getter String name;
 	private @Getter Class<?> clazz;
 

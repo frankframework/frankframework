@@ -22,7 +22,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -62,12 +62,12 @@ public class SchemasProviderImpl implements SchemasProvider {
     }
 
     @Override
-    public String getSchemasId(IPipeLineSession session) throws PipeRunException {
+    public String getSchemasId(PipeLineSession session) throws PipeRunException {
     	return null;
     }
 
     @Override
-    public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
+    public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
     	return null;
     }
 }

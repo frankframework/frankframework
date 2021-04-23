@@ -7,23 +7,17 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-public class FrankMethodReflectTest {
-	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.doclet.";
-	private static final String STRING = "java.lang.String";
-
-	private FrankClassRepository classRepository;
-
-	@Before
-	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance();
-	}
-
+@RunWith(Parameterized.class)
+public class FrankMethodTest extends TestBase {
 	@Test
 	public void testMethod() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Parent");
@@ -46,7 +40,7 @@ public class FrankMethodReflectTest {
 		assertEquals(1, parameters.length);
 		FrankType parameter = parameters[0];
 		assertFalse(parameter.isPrimitive());
-		assertEquals(STRING, parameter.getName());
+		assertEquals(FrankDocletConstants.STRING, parameter.getName());
 		annotation = setter.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 		assertNotNull(annotation);
 		assertEquals(FrankDocletConstants.IBISDOC, annotation.getName());
@@ -101,5 +95,38 @@ public class FrankMethodReflectTest {
 				.collect(Collectors.toList());
 		assertEquals(1, getters.size());
 		return getters.get(0);
+	}
+
+	@Test
+	public void whenMethodHasVarargsThenIsVarargs() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
+		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "setVarargMethod");
+		assertTrue(method.isVarargs());
+		assertEquals(1, method.getParameterCount());
+		FrankType parameter = method.getParameterTypes()[0];
+		// We use the parameter type to check whether we have a setter or not.
+		// If a method has a vararg argument, then it is not a setter.
+		// In this case the exact type of the parameter is not needed.
+		Set<String> stringOrStringArray = new HashSet<>(Arrays.asList(FrankDocletConstants.STRING, "[L" + FrankDocletConstants.STRING + ";"));
+		assertTrue(stringOrStringArray.contains(parameter.getName()));
+	}
+
+	@Test
+	public void whenMethodDoesNotHaveVarargsThenNotVarargs() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
+		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "setInherited");
+		assertFalse(method.isVarargs());
+		assertEquals(1, method.getParameterCount());
+		FrankType parameter = method.getParameterTypes()[0];
+		assertEquals(FrankDocletConstants.STRING, parameter.getName());		
+	}
+
+	@Test
+	public void annotationCanBeInheritedFromImplementedInterface() throws FrankDocException {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
+		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "myAnnotatedMethod");
+		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
+		assertNotNull(annotation);
+		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}
 }
