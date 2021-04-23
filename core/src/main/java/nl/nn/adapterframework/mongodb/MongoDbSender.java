@@ -30,6 +30,12 @@ import javax.naming.NamingException;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonValue;
 import org.bson.Document;
+import org.bson.codecs.DocumentCodec;
+import org.bson.codecs.Encoder;
+import org.bson.codecs.EncoderContext;
+import org.bson.json.JsonMode;
+import org.bson.json.JsonWriter;
+import org.bson.json.JsonWriterSettings;
 import org.xml.sax.SAXException;
 
 import com.mongodb.client.FindIterable;
@@ -239,14 +245,17 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 				writer.write(Integer.toString(count));
 				return;
 			}
+			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+			Encoder<Document> encoder = new DocumentCodec();
 			writer.write("[");
 			boolean firstElementSeen = false;
 			for (Document doc : findResults) {
 				if (firstElementSeen) {
 					writer.write(",");
 				}
-				writer.write(doc.toJson());
-				}
+				JsonWriter jsonWriter = new JsonWriter(writer, writerSettings);
+				encoder.encode(jsonWriter, doc, EncoderContext.builder().build());
+			}
 			writer.write("]");
 		} catch (Exception e) {
 			throw new StreamingException("Could not render collection", e);
