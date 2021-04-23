@@ -108,7 +108,7 @@
 		password="testiaf_user00" 
 	/>
 
- 	<Resource name="jdbc/ibis4test-postgres" auth="Container"
+	<Resource name="jdbc/ibis4test-postgres" auth="Container"
 		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
@@ -116,17 +116,16 @@
 		password="testiaf_user00" 
 		maxTotal="10"
 		maxWaitMillis="5000"
-	/>	
+	/>
 
-	<Resource name="mongodb/ibis4test" 
-		type="com.mongodb.MongoClient" 
-		factory="com.mongodb.client.MongoClientFactory" 
+	<Resource 
+		name="mongodb/ibis4test"
+		type="com.mongodb.MongoClient"
+		factory="com.mongodb.client.MongoClientFactory"
+		connectionString="mongodb://testiaf_user:testiaf_user00@host.docker.internal"
 		auth="Container"
 		closeMethod="close"
 		singleton="true"
-		connectionString="mongodb://host.docker.internal" 
-		username="testiaf_user"
-		password="testiaf_user00" 
 	/>
 
 	<Resource

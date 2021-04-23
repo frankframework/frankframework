@@ -15,6 +15,7 @@
 	<!ENTITY QuerySender SYSTEM "./ConfigurationQuerySender.xml">
 	<!ENTITY ClobAndBlob SYSTEM "./ConfigurationClobAndBlob.xml">
 	<!ENTITY BigClobAndBlob SYSTEM "./ConfigurationBigClobAndBlob.xml">
+	<!ENTITY MongoDbSender SYSTEM "./ConfigurationMongoDbSender.xml">
 	<!ENTITY BatchFileTransformerPipe SYSTEM "./ConfigurationBatchFileTransformerPipe.xml">
 	<!ENTITY IfsaRequesterSender SYSTEM "./ConfigurationIfsaRequesterSender.xml">
 	<!ENTITY LinkMethodMessageId SYSTEM "./ConfigurationLinkMethodMessageId.xml">
@@ -77,6 +78,7 @@
 	&ClobAndBlob;
 	&BigClobAndBlob;
 	&BatchFileTransformerPipe;
+	&MongoDbSender;
 	&IfsaRequesterSender;
 	&LinkMethodMessageId;
 	&ReturnedSessionKeys;

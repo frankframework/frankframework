@@ -78,6 +78,18 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	}
 
 	@Test
+	public void testInsertOneNoObjectId() throws Exception {
+		sender.setAction("InsertOne");
+		sender.setCollection("Students");
+		sender.configure();
+		sender.open();
+
+		Message result = sendMessage("{ \"student_id\": \"KarelV\", \"class_id\": \"first\", \"grades\": [ 4, 5, 6] }");
+		System.out.println(result.asString());
+		assertThat(result.asString(),StringContains.containsString("\"insertedId\":"));
+	}
+
+	@Test
 	public void testInsertMany() throws Exception {
 		sender.setAction("InsertMany");
 		sender.setCollection("Students");

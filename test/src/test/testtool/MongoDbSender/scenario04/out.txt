@@ -1,0 +1,1 @@
+[{"_id": {"$oid": "6082b080e50b3d3895e9a14a"}, "student_id": "Karel", "class_id": "first", "grades": [4, 5, 6]}{"_id": {"$oid": "6082b080e50b3d3895e9a14b"}, "student_id": "Klaas", "class_id": "first"}{"_id": {"$oid": "6082b080e50b3d3895e9a14c"}, "student_id": "Harry", "class_id": "first"}]

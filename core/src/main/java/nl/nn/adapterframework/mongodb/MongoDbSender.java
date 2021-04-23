@@ -40,14 +40,16 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
+import com.mongodb.connection.ServerDescription;
 
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -55,6 +57,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
@@ -64,7 +67,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
 
-public class MongoDbSender extends StreamingSenderBase {
+public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDestination {
 
 	public final String PARAM_DATABASE="database";
 	public final String PARAM_COLLECTION="collection";
@@ -118,7 +121,10 @@ public class MongoDbSender extends StreamingSenderBase {
 		if (getOutputFormatEnum()==DocumentFormat.XML && (getActionEnum()==MongoAction.FINDONE || getActionEnum()==MongoAction.FINDMANY )) {
 			throw new ConfigurationException("outputFormat "+getOutputFormatEnum()+" not supported for FIND-actions");
 		}
- 	}
+		if ((getLimit()>0 || (getParameterList()!=null && getParameterList().findParameter(PARAM_LIMIT)!=null)) && getActionEnum()!=MongoAction.FINDMANY) {
+			throw new ConfigurationException("attribute limit or parameter "+PARAM_LIMIT+" can only be used for action "+MongoAction.FINDMANY);
+		}
+	}
 
 	@Override
 	public void open() throws SenderException {
@@ -153,7 +159,7 @@ public class MongoDbSender extends StreamingSenderBase {
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		message.closeOnCloseOf(session);
 		MongoAction mngaction = getActionEnum();
-		try (MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? next : null)) {
+		try (MessageOutputStream target = mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? MessageOutputStream.getTargetStream(this, session, next) : new MessageOutputStreamCap(this, next)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
 			MongoCollection<Document> mongoCollection = getCollection(mongoDatabase, pvl);
@@ -199,7 +205,7 @@ public class MongoDbSender extends StreamingSenderBase {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "insertOneResult", target)) {
 			builder.add("acknowledged", insertOneResult.wasAcknowledged());
 			if (insertOneResult.wasAcknowledged()) {
-				builder.add("insertedId", insertOneResult.getInsertedId().asString().getValue());
+				builder.add("insertedId", insertOneResult.getInsertedId().asObjectId().getValue().toString());
 			}
 		}
 	}
@@ -213,7 +219,7 @@ public class MongoDbSender extends StreamingSenderBase {
 					
 					insertedIds.forEach((k,v)->{
 						try {
-							objectBuilder.add(Integer.toString(k), v.asString().getValue());
+							objectBuilder.add(Integer.toString(k), v.asObjectId().getValue().toString());
 						} catch (SAXException e) {
 							throw Lombok.sneakyThrow(e);
 						}
@@ -269,7 +275,7 @@ public class MongoDbSender extends StreamingSenderBase {
 	
 	protected void addOptionalValue(ObjectBuilder builder, String name, BsonValue bsonValue) throws SAXException {
 		if (bsonValue!=null) {
-			builder.add(name, bsonValue.asString().getValue());
+			builder.add(name, bsonValue.isObjectId()? bsonValue.asObjectId().getValue().toString() : bsonValue.asString().getValue());
 		}	
 	}
 	
@@ -322,6 +328,18 @@ public class MongoDbSender extends StreamingSenderBase {
 		return getParameterOverriddenAttributeValue(pvl, PARAM_LIMIT, getLimit());
 	}
 
+	@Override
+	public String getPhysicalDestinationName() {
+		String result = "datasource ["+getDatasourceName()+"]";
+		if (mongoClient!=null) {
+			List<ServerDescription> serverDescriptions = mongoClient.getClusterDescription().getServerDescriptions();
+			if (!serverDescriptions.isEmpty()) {
+				result += " server ["+serverDescriptions.get(0).getAddress()+"]";
+			}
+		}
+		return result;
+	}
+	
 
 	@IbisDoc({"1", "The MongoDB datasource", "${"+JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
 	public void setDatasourceName(String datasourceName) {
@@ -368,5 +386,5 @@ public class MongoDbSender extends StreamingSenderBase {
 	public DocumentFormat getOutputFormatEnum() {
 		return outputFormat;
 	}
-	
+
 }

@@ -1,0 +1,3 @@
+<request action="InsertMany">
+	<json>[{ "student_id": "Klaas", "class_id": "first" }, { "student_id": "Harry", "class_id": "first" }, { "student_id": "Joop", "class_id": "first" }, { "student_id": "Evert", "class_id": "second" }]</json>
+</request>
