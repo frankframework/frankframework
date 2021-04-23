@@ -60,6 +60,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -80,8 +81,8 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	public final String PARAM_FILTER="filter";
 	public final String PARAM_LIMIT="limit";
 
-	public final String NAMED_PARAM_START="?{";
-	public final String NAMED_PARAM_END="}";
+	public final String NAMED_PARAM_START=JdbcQuerySenderBase.UNP_START;
+	public final String NAMED_PARAM_END=JdbcQuerySenderBase.UNP_END;
 
 
 	private @Getter String datasourceName;
