@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2018, 2020 WeAreFrank!
+   Copyright 2017-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -32,6 +29,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.entity.ContentType;
 import org.apache.http.util.EntityUtils;
+
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class HttpResponseHandler {
 	private HttpResponse httpResponse;
@@ -92,7 +92,7 @@ public class HttpResponseHandler {
 
 	public String getCharset() {
 		ContentType contentType = getContentType();
-		String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+		String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		if(contentType != null && contentType.getCharset() != null)
 			charSet = contentType.getCharset().displayName();
 		return charSet;

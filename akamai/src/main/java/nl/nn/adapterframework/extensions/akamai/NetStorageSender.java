@@ -322,7 +322,7 @@ public class NetStorageSender extends HttpSenderBase {
 		String charset = responseHandler.getCharset();
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 
-		Message response = new Message(responseHandler.getResponse(), charset);
+		Message response = responseHandler.getResponseMessage();
 
 		String responseBody = null;
 		try {

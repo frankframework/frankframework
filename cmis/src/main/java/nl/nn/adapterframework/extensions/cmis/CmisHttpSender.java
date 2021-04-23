@@ -145,14 +145,17 @@ public class CmisHttpSender extends HttpSenderBase {
 			StatusLine statusline = responseHandler.getStatusLine();
 			responseCode = statusline.getStatusCode();
 
+			Message responseMessage = responseHandler.getResponseMessage();
+			responseMessage.closeOnCloseOf(session);
+
 			InputStream responseStream = null;
 			InputStream errorStream = null;
 			Map<String, List<String>> headerFields = responseHandler.getHeaderFields();
 			if (responseCode == 200 || responseCode == 201 || responseCode == 203 || responseCode == 206) {
-				responseStream = responseHandler.getResponse();
+				responseStream = responseMessage.asInputStream();
 			}
 			else {
-				errorStream = responseHandler.getResponse();
+				errorStream = responseMessage.asInputStream();
 			}
 			Response response = new Response(responseCode, statusline.toString(), headerFields, responseStream, errorStream);
 			session.put("response", response);
