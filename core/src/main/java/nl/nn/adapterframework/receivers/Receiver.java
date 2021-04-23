@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1079,7 +1081,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		String messageId = (String)threadContext.get(PipeLineSession.originalMessageIdKey);
 		long endExtractingMessage = System.currentTimeMillis();
 		messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
-		processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
+		Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
+		try {
+			if(output.asObject() instanceof Closeable) {
+				((Closeable) output.asObject()).close();
+			}
+		} catch (IOException e) {
+			// Ignore if already closed!
+		}
 	}
 
 	
