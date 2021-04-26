@@ -18,7 +18,7 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 
 @Deprecated
-@ConfigurationWarning("has been renamed to FixedResultPipe")
+@ConfigurationWarning("Use FixedResultPipe instead")
 public class FixedResult extends FixedResultPipe {
 
 }

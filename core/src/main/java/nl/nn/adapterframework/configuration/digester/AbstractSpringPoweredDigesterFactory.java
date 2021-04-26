@@ -165,7 +165,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		Object currObj = createBeanFromClassName(className);
 
 //		checkDeprecation(currObj);
-		checkAttributes(currObj, attrs);
+//		checkAttributes(currObj, attrs);
 		return currObj;
 	}
 

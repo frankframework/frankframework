@@ -35,7 +35,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	private Digester digester;
 	private RulesBinder rulesBinder;
 	private @Setter ApplicationContext applicationContext; //Autowired ByType
-	private Rule attributeChecker = new AttributeCheckingRule();
+	private Rule attributeChecker;
 	private Set<String> parsedPatterns = new HashSet<String>();
 
 	public DigesterRulesParser(Digester digester, RulesBinder rulesBinder) {
@@ -74,8 +74,8 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		if(rule.getSelfRegisterMethod() != null) { //set the register method (set-top-rule)
 			ruleBuilder.setTop(rule.getSelfRegisterMethod());
 		}
-		ruleBuilder.setProperties(); //set the set-properties-rule
-		ruleBuilder.addRule(attributeChecker); //Add the attribute checker
+		//ruleBuilder.setProperties(); //set the set-properties-rule
+		ruleBuilder.addRule(getAttributeChecker()); //Add the attribute checker
 	}
 
 	/**
@@ -103,6 +103,14 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		}
 		if(log.isTraceEnabled()) log.trace("no factory specified, returing default ["+GenericFactory.class.getCanonicalName()+"]");
 		return autoWireAndInitializeBean(GenericFactory.class); //Wire the factory through Spring
+	}
+
+	//TODO get rid of this and autowire it
+	private Rule getAttributeChecker() {
+		if(attributeChecker == null) {
+			attributeChecker = autoWireAndInitializeBean(ValidateAttributeRule.class);
+		}
+		return attributeChecker;
 	}
 
 	protected <T> T autoWireAndInitializeBean(Class<T> clazz) {

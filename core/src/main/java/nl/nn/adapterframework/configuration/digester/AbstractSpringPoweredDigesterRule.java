@@ -1,12 +1,24 @@
+/*
+   Copyright 2021 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.configuration.digester;
 
-import java.beans.PropertyDescriptor;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -25,7 +37,7 @@ public abstract class AbstractSpringPoweredDigesterRule extends Rule {
 	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
 	 * ClassUtils.getUserClass() makes sure the original class will be returned.
 	 */
-	private String getObjectName() {
+	protected String getObjectName() {
 		Object o = getBean();
 		String result = ClassUtils.getUserClass(o).getSimpleName();
 		if (o instanceof INamedObject) { //This assumes that setName has already been called
@@ -37,10 +49,16 @@ public abstract class AbstractSpringPoweredDigesterRule extends Rule {
 		return result;
 	}
 
-	protected final void addWarning(String beanName, String message) {
+	protected final void addLocalWarning(String message) {
 		Locator loc = getDigester().getDocumentLocator();
-		String msg = getObjectName()+ " on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+message;
+		String msg = getObjectName()+ " on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
 		System.out.println(msg);
+	}
+
+	protected final void addGlobalWarning(String message) {
+		String className = ClassUtils.getUserClass(getBean()).getSimpleName();
+		String msg = className + " " + message;
+		System.err.println(msg);
 	}
 
 	protected final Object getBean() {
@@ -55,17 +73,19 @@ public abstract class AbstractSpringPoweredDigesterRule extends Rule {
 	public final void begin(String uri, String elementName, Attributes attributes) throws Exception {
 		Object top = getBean();
 
-		handleBean(elementName, top);
-
 		Map<String, String> map = copyAttrsToMap(attributes);
-		map.get("name")//TODO
+		if(top instanceof INamedObject) { //We must set the name first, to improve logging and configuration warnings
+			String name = map.remove("name");
+			BeanUtils.setProperty(top, "name", name);
+		}
+
+		handleBean();
+
 		for (String attribute : map.keySet()) {
-			if(!attribute.equals("name")) { //We must set the name first, to improve logging and configuration warnings
-				if (log.isTraceEnabled()) {
-					log.trace("checking attribute ["+attribute+"] on bean ["+getObjectName()+"]");
-				}
-				handleAttribute(attribute, map.get(attribute), map);
+			if (log.isTraceEnabled()) {
+				log.trace("checking attribute ["+attribute+"] on bean ["+getObjectName()+"]");
 			}
+			handleAttribute(attribute, map.get(attribute), map);
 		}
 	}
 
@@ -86,9 +106,8 @@ public abstract class AbstractSpringPoweredDigesterRule extends Rule {
 
 	/**
 	 * @param beanName
-	 * @param top
 	 */
-	protected abstract void handleBean(String beanName, Object bean);
+	protected abstract void handleBean();
 
 	/**
 	 * @param pd may be null

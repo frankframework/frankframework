@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.configuration.digester;
 
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -33,16 +32,13 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StringResolver;
 
 /**
- * Helper class to check that each attribute set from the configuration is available on the 
- * object being configured. 
- * 
- * @author  Gerrit van Brakel
+ * @author Niels Meijer
  */
 public class ValidateAttributeRule extends AbstractSpringPoweredDigesterRule {
 	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
 
 	@Override
-	protected void handleBean(String beanName, Object bean) {
+	protected void handleBean() {
 		if(!suppressDeprecationWarnings) {
 			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 			if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEPRECATION_SUPPRESS_KEY, null, classLoader)) {
@@ -51,14 +47,13 @@ public class ValidateAttributeRule extends AbstractSpringPoweredDigesterRule {
 				if(warning != null) {
 					String msg = "";
 					if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
-						msg += " is deprecated";
+						msg += "is deprecated";
 					}
 					if(StringUtils.isNotEmpty(warning.value())) {
-						msg += ": " + warning.value();
+						msg += ": "+warning.value();
 					}
-					//Only print it once per deprecated class
-					addWarning(msg);
-//					ConfigurationWarnings.addGlobalWarning(log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, classLoader);
+
+					addGlobalWarning(msg); //Only print it once per deprecated class
 				}
 			}
 		}
@@ -72,17 +67,22 @@ public class ValidateAttributeRule extends AbstractSpringPoweredDigesterRule {
 			m = PropertyUtils.getWriteMethod(pd);
 		}
 		if (m==null) { //validate if the attribute exists
-			addWarning("does not have an attribute ["+name+"] to set to value ["+value+"]");
-//			ConfigurationWarnings.add(null, log, msg); //We need to use this as it's a configuration specific warning
+			addLocalWarning("does not have an attribute ["+name+"] to set to value ["+value+"]");
 		} else {
-			checkDeprecation(name, m); //check if the setter has been deprecated
+			checkDeprecationAndConfigurationWarning(name, m); //check if the setter has been deprecated
 
 			if(!value.startsWith(StringResolver.DELIM_START) && !value.endsWith(StringResolver.DELIM_STOP)) {
 				checkReadMethodType(pd, name, value, attributes); //check if the default value is changed
+			} else {
+				value = resolveValue(value);
 			}
 
 			BeanUtils.setProperty(getBean(), name, value);
 		}
+	}
+
+	private String resolveValue(String value) {
+		return StringResolver.substVars(value, AppConstants.getInstance());
 	}
 
 	protected void checkReadMethodType(PropertyDescriptor pd, String name, String value, Map<String, String> attrs) {
@@ -96,19 +96,16 @@ public class ValidateAttributeRule extends AbstractSpringPoweredDigesterRule {
 				}
 				if (dv!=null) {
 					if (value.length()==0) {
-						addWarning("attribute ["+name+"] has no value");
-						throw new AttributeValidationException(getBean(), ) // "XsltSender [pietjePuk] on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+message;
+						addLocalWarning("attribute ["+name+"] has no value");
 					} else if (equals(dv, value)) {
-						addWarning("attribute ["+name+"] already has a default value ["+value+"]");
-					} else {
-						addWarning("unable to parse attribute ["+name+"] value ["+value+"] to type ["+rm.getReturnType()+"]");
+						addLocalWarning("attribute ["+name+"] already has a default value ["+value+"]");
 					}
 				}
 			} catch (NumberFormatException e) {
-				addWarning("attribute ["+ name+"] with value ["+value+"] cannot be converted to a number: "+e.getMessage());
+				addLocalWarning("attribute ["+ name+"] with value ["+value+"] cannot be converted to a number: "+e.getMessage());
 			} catch (Throwable t) {
-				t.printStackTrace();
-//				log.warn("Error on getting default for object [" + getObjectName(currObj, beanName) + "] with method [" + rm.getName() + "]", t);
+				addLocalWarning("is unable to parse attribute ["+name+"] value ["+value+"] to method ["+rm.getName()+"] with type ["+rm.getReturnType()+"]");
+				log.warn("Error on getting default for object [" + getObjectName() + "] with method [" + rm.getName() + "] attribute ["+name+"] value ["+value+"]", t);
 			}
 		}
 	}
@@ -120,7 +117,7 @@ public class ValidateAttributeRule extends AbstractSpringPoweredDigesterRule {
 				(dv instanceof Long && Long.valueOf(value).equals(dv));
 	}
 
-	private void checkDeprecation(String name, Method m) {
+	private void checkDeprecationAndConfigurationWarning(String name, Method m) {
 		ConfigurationWarning warning = AnnotationUtils.findAnnotation(m, ConfigurationWarning.class);
 		if(warning != null) {
 			String msg = "attribute ["+name+"]";
@@ -135,7 +132,7 @@ public class ValidateAttributeRule extends AbstractSpringPoweredDigesterRule {
 			}
 
 			if(!(suppressDeprecationWarnings && isDeprecated)) { //Don't log if deprecation warnings are suppressed and it is deprecated
-				addWarning(msg);
+				addLocalWarning(msg);
 			}
 		}
 	}

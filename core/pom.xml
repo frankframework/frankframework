@@ -748,6 +748,7 @@
 						<version>1.18.16.0</version>
 						<executions>
 							<execution>
+								<?m2e execute?>
 								<phase>generate-sources</phase>
 								<goals>
 									<goal>delombok</goal>
