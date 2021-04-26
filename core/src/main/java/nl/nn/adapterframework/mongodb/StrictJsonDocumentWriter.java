@@ -85,55 +85,6 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 	}
 
 	@Override
-	public void writeStartObject(final String name) {
-		writeName(name);
-		writeStartObject();
-	}
-
-	@Override
-	public void writeStartArray(final String name) {
-		writeName(name);
-		writeStartArray();
-	}
-
-	@Override
-	public void writeBoolean(final String name, final boolean value) {
-		notNull("name", name);
-		writeName(name);
-		writeBoolean(value);
-	}
-
-	@Override
-	public void writeNumber(final String name, final String value) {
-		notNull("name", name);
-		notNull("value", value);
-		writeName(name);
-		writeNumber(value);
-	}
-
-	@Override
-	public void writeString(final String name, final String value) {
-		notNull("name", name);
-		notNull("value", value);
-		writeName(name);
-		writeString(value);
-	}
-
-	@Override
-	public void writeRaw(final String name, final String value) {
-		notNull("name", name);
-		notNull("value", value);
-		writeName(name);
-		writeRaw(value);
-	}
-
-	@Override
-	public void writeNull(final String name) {
-		writeName(name);
-		writeNull();
-	}
-
-	@Override
 	public void writeName(final String name) {
 		notNull("name", name);
 		checkState(State.NAME);
@@ -144,74 +95,6 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		}
 
 		state = State.VALUE;
-	}
-
-	@Override
-	public void writeBoolean(final boolean value) {
-		checkState(State.VALUE);
-		
-		try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
-			nodeBuilder.setValue(value ? Boolean.TRUE: Boolean.FALSE );
-		} catch (SAXException e) {
-			throwBSONException(e);
-		}
-		
-		setNextState();
-	}
-
-	@Override
-	public void writeNumber(final String value) {
-		notNull("value", value);
-		checkState(State.VALUE);
-		try {
-			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
-				nodeBuilder.setValue(Long.parseLong(value));
-			}
-		} catch (SAXException e) {
-			throwBSONException(e);
-		}
-		setNextState();
-	}
-
-	@Override
-	public void writeString(final String value) {
-		notNull("value", value);
-		checkState(State.VALUE);
-		try {
-			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
-				nodeBuilder.setValue(value);
-			}
-		} catch (SAXException e) {
-			throwBSONException(e);
-		}
-		setNextState();
-	}
-
-	@Override
-	public void writeRaw(final String value) {
-		notNull("value", value);
-		checkState(State.VALUE);
-		try {
-			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
-				nodeBuilder.setValue(value);
-			}
-		} catch (SAXException e) {
-			throwBSONException(e);
-		}
-		setNextState();
-	}
-
-	@Override
-	public void writeNull() {
-		checkState(State.VALUE);
-		try {
-			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
-				nodeBuilder.setValue(null);
-			}
-		} catch (SAXException e) {
-			throwBSONException(e);
-		}
-		setNextState();
 	}
 
 	@Override
@@ -227,6 +110,11 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		}
 		context = new StrictJsonContext(context, JsonContextType.DOCUMENT, settings.getIndentCharacters());
 		state = State.NAME;
+	}
+	@Override
+	public void writeStartObject(final String name) {
+		writeName(name);
+		writeStartObject();
 	}
 
 	@Override
@@ -258,6 +146,12 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		context = new StrictJsonContext(context, JsonContextType.ARRAY, settings.getIndentCharacters());
 		state = State.VALUE;
 	}
+	@Override
+	public void writeStartArray(final String name) {
+		writeName(name);
+		writeStartArray();
+	}
+
 
 	@Override
 	public void writeEndArray() {
@@ -280,6 +174,113 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 			setNextState();
 		}
 	}
+	
+	
+
+
+	@Override
+	public void writeBoolean(final boolean value) {
+		checkState(State.VALUE);
+		
+		try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
+			nodeBuilder.setValue(value ? Boolean.TRUE: Boolean.FALSE );
+		} catch (SAXException e) {
+			throwBSONException(e);
+		}
+		
+		setNextState();
+	}
+	@Override
+	public void writeBoolean(final String name, final boolean value) {
+		notNull("name", name);
+		writeName(name);
+		writeBoolean(value);
+	}
+
+
+	@Override
+	public void writeNumber(final String value) {
+		notNull("value", value);
+		checkState(State.VALUE);
+		try {
+			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
+				nodeBuilder.setValue(Long.parseLong(value));
+			}
+		} catch (SAXException e) {
+			throwBSONException(e);
+		}
+		setNextState();
+	}
+	@Override
+	public void writeNumber(final String name, final String value) {
+		notNull("name", name);
+		notNull("value", value);
+		writeName(name);
+		writeNumber(value);
+	}
+
+
+	@Override
+	public void writeString(final String value) {
+		notNull("value", value);
+		checkState(State.VALUE);
+		try {
+			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
+				nodeBuilder.setValue(value);
+			}
+		} catch (SAXException e) {
+			throwBSONException(e);
+		}
+		setNextState();
+	}
+	@Override
+	public void writeString(final String name, final String value) {
+		notNull("name", name);
+		notNull("value", value);
+		writeName(name);
+		writeString(value);
+	}
+
+	@Override
+	public void writeRaw(final String value) {
+		notNull("value", value);
+		checkState(State.VALUE);
+		try {
+			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
+				nodeBuilder.setValue(value);
+			}
+		} catch (SAXException e) {
+			throwBSONException(e);
+		}
+		setNextState();
+	}
+	@Override
+	public void writeRaw(final String name, final String value) {
+		notNull("name", name);
+		notNull("value", value);
+		writeName(name);
+		writeRaw(value);
+	}
+
+	@Override
+	public void writeNull() {
+		checkState(State.VALUE);
+		try {
+			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
+				nodeBuilder.setValue(null);
+			}
+		} catch (SAXException e) {
+			throwBSONException(e);
+		}
+		setNextState();
+	}
+	@Override
+	public void writeNull(final String name) {
+		writeName(name);
+		writeNull();
+	}
+
+
 	
 	/**
 	 * Return true if the output has been truncated due to exceeding the length
@@ -368,7 +369,7 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 
 
 	private void checkState(final State requiredState) {
-		if (state != requiredState) {
+		if (state.equals(requiredState)) {
 			throw new BsonInvalidOperationException("Invalid state " + state);
 		}
 	}
