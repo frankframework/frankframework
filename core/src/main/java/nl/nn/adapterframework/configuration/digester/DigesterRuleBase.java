@@ -31,7 +31,9 @@ import org.xml.sax.Locator;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringResolver;
 
 public abstract class DigesterRuleBase extends Rule implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
@@ -54,27 +56,56 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		return result;
 	}
 
+	/**
+	 * Add a configuration warning message to the current configuration
+	 */
 	protected final void addLocalWarning(String message) {
 		Locator loc = getDigester().getDocumentLocator();
 		String msg = getObjectName()+ " on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
 		ConfigurationWarnings.add(null, log, msg); //TODO fix this
 	}
 
+	/**
+	 * Add a global message to the application
+	 */
 	protected final void addGlobalWarning(String message) {
 		String msg = getBeanClass() + " " + message;
 		ConfigurationWarnings.addGlobalWarning(log, msg); //TODO fix this
 	}
 
+	/**
+	 * @return an {@link nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader IConfigurationClassLoader}.
+	 */
 	protected final ClassLoader getClassLoader() {
+		if(applicationContext == null) {
+			throw new IllegalStateException("ApplicationContext not set");
+		}
+
 		return applicationContext.getClassLoader();
 	}
 
+	/**
+	 * @return the currently handled object, aka TOP object
+	 */
 	protected final Object getBean() {
 		return getDigester().peek();
 	}
 
+	/**
+	 * @return the resolved class of the current object
+	 */
 	protected final Class<?> getBeanClass() {
 		return ClassUtils.getUserClass(getBean());
+	}
+
+	/**
+	 * @param value or values to resolve
+	 * @return The resolved value(s) using the configuration AppConstants
+	 */
+	protected final String resolveValue(String value) {
+		String result = StringResolver.substVars(value, AppConstants.getInstance(getClassLoader()));
+		log.trace("resolved [{}] to [{}] using ClassLoader [{}]", ()->value, ()->result, ()->getClassLoader());
+		return result;
 	}
 
 	@Override
@@ -112,13 +143,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		return map;
 	}
 
-	/**
-	 * @param beanName
-	 */
 	protected abstract void handleBean();
 
-	/**
-	 * @param pd may be null
-	 */
 	protected abstract void handleAttribute(String name, String value, Map<String, String> attributes) throws Exception;
 }

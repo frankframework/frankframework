@@ -77,10 +77,6 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		}
 	}
 
-	private String resolveValue(String value) {
-		return StringResolver.substVars(value, AppConstants.getInstance(getClassLoader()));
-	}
-
 	protected void checkReadMethodType(PropertyDescriptor pd, String name, String value, Map<String, String> attrs) {
 		Method rm = PropertyUtils.getReadMethod(pd);
 		if (rm!=null) {
