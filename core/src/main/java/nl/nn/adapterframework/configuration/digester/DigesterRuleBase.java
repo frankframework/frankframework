@@ -22,15 +22,20 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
 
-public abstract class AbstractSpringPoweredDigesterRule extends Rule {
+public abstract class DigesterRuleBase extends Rule implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Setter ApplicationContext applicationContext;
 
 	/**
 	 * Returns the name of the object. In case a Spring proxy is being used, 
@@ -52,13 +57,16 @@ public abstract class AbstractSpringPoweredDigesterRule extends Rule {
 	protected final void addLocalWarning(String message) {
 		Locator loc = getDigester().getDocumentLocator();
 		String msg = getObjectName()+ " on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
-		System.out.println(msg);
+		ConfigurationWarnings.add(null, log, msg); //TODO fix this
 	}
 
 	protected final void addGlobalWarning(String message) {
-		String className = ClassUtils.getUserClass(getBean()).getSimpleName();
-		String msg = className + " " + message;
-		System.err.println(msg);
+		String msg = getBeanClass() + " " + message;
+		ConfigurationWarnings.addGlobalWarning(log, msg); //TODO fix this
+	}
+
+	protected final ClassLoader getClassLoader() {
+		return applicationContext.getClassLoader();
 	}
 
 	protected final Object getBean() {
@@ -89,7 +97,7 @@ public abstract class AbstractSpringPoweredDigesterRule extends Rule {
 		}
 	}
 
-	protected Map<String, String> copyAttrsToMap(Attributes attrs) {
+	private Map<String, String> copyAttrsToMap(Attributes attrs) {
 		Map<String, String> map = new LinkedHashMap<>(attrs.getLength());
 		for (int i = 0; i < attrs.getLength(); ++i) {
 			String name = attrs.getLocalName(i);

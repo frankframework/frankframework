@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.util.AppConstants;
@@ -34,27 +33,24 @@ import nl.nn.adapterframework.util.StringResolver;
 /**
  * @author Niels Meijer
  */
-public class ValidateAttributeRule extends AbstractSpringPoweredDigesterRule {
+public class ValidateAttributeRule extends DigesterRuleBase {
 	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
 
 	@Override
 	protected void handleBean() {
 		if(!suppressDeprecationWarnings) {
-			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEPRECATION_SUPPRESS_KEY, null, classLoader)) {
-				Class<?> clazz = getBeanClass();
-				ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
-				if(warning != null) {
-					String msg = "";
-					if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
-						msg += "is deprecated";
-					}
-					if(StringUtils.isNotEmpty(warning.value())) {
-						msg += ": "+warning.value();
-					}
-
-					addGlobalWarning(msg); //Only print it once per deprecated class
+			Class<?> clazz = getBeanClass();
+			ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
+			if(warning != null) {
+				String msg = "";
+				if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
+					msg += "is deprecated";
 				}
+				if(StringUtils.isNotEmpty(warning.value())) {
+					msg += ": "+warning.value();
+				}
+
+				addGlobalWarning(msg); //Only print it once per deprecated class
 			}
 		}
 	}
@@ -82,7 +78,7 @@ public class ValidateAttributeRule extends AbstractSpringPoweredDigesterRule {
 	}
 
 	private String resolveValue(String value) {
-		return StringResolver.substVars(value, AppConstants.getInstance());
+		return StringResolver.substVars(value, AppConstants.getInstance(getClassLoader()));
 	}
 
 	protected void checkReadMethodType(PropertyDescriptor pd, String name, String value, Map<String, String> attrs) {

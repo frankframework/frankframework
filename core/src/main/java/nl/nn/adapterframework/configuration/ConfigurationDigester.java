@@ -20,13 +20,9 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.DigesterLoader;
@@ -35,8 +31,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -87,18 +81,15 @@ import nl.nn.adapterframework.xml.XmlWriter;
 public class ConfigurationDigester implements ApplicationContextAware {
 	private final Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private final Logger configLogger = LogUtil.getLogger("CONFIG");
-	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private static final String CONFIGURATION_VALIDATION_KEY = "configurations.validate";
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
-	private static final String ATTRIBUTEGETTER_XSLT = "xml/xsl/AttributesGetter.xsl";
-
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	String lastResolvedEntity = null;
-	private boolean preparse = true;
+	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private Configuration configuration;
@@ -189,15 +180,18 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			String original = resolveEntitiesAndProperties(configurationResource, appConstants);
 
-//			fillConfigWarnDefaultValueExceptions(XmlUtils.stringToSource(original)); // must use 'original', cannot use configurationResource, because EntityResolver will not be properly set
 			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<>();
 			String propertiesHideString = appConstants.getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 			}
-//			String loaded = StringResolver.substVars(original, appConstants);
-			String loaded = original; //TODO
+
+			String loaded = original;
+			if(!preparse) {
+				loaded = StringResolver.substVars(original, appConstants);
+			}
+
 			String loadedHide = StringResolver.substVars(original, appConstants, null, propsToHide);
 			loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
 			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
@@ -241,33 +235,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 		XmlUtils.parseXml(resource, resolver);
 		return resolver.toString();
-	}
-
-	private void fillConfigWarnDefaultValueExceptions(Source configurationSource) throws Exception {
-		URL xsltSource = ClassUtils.getResourceURL(ATTRIBUTEGETTER_XSLT);
-		if (xsltSource == null) {
-			throw new ConfigurationException("cannot find resource ["+ATTRIBUTEGETTER_XSLT+"]");
-		}
-		Transformer transformer = XmlUtils.createTransformer(xsltSource);
-		String attributes = XmlUtils.transformXml(transformer, configurationSource);
-		Element attributesElement = XmlUtils.buildElement(attributes);
-		Collection<Node> attributeElements = XmlUtils.getChildTags(attributesElement, "attribute");
-		Iterator<Node> iter = attributeElements.iterator();
-		while (iter.hasNext()) {
-			Element attributeElement = (Element)iter.next();
-			Element valueElement = XmlUtils.getFirstChildTag(attributeElement, "value");
-			String value = XmlUtils.getStringValue(valueElement);
-			if (value.startsWith("${") && value.endsWith("}")) {
-				Element keyElement = XmlUtils.getFirstChildTag(attributeElement, "key");
-				String key = XmlUtils.getStringValue(keyElement);
-				Element elementElement = XmlUtils.getFirstChildTag(attributeElement, "element");
-				String element = XmlUtils.getStringValue(elementElement);
-				Element nameElement = XmlUtils.getFirstChildTag(attributeElement, "name");
-				String name = XmlUtils.getStringValue(nameElement);
-				String mergedKey = element + "/" + (name==null?"":name) + "/" + key;
-				configWarnings.addDefaultValueExceptions(mergedKey);
-			}
-		}
 	}
 
 	public void setDigesterRules(String string) {
