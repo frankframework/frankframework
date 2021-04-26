@@ -34,7 +34,6 @@ import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.Encoder;
 import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonMode;
-import org.bson.json.JsonWriter;
 import org.bson.json.JsonWriterSettings;
 import org.xml.sax.SAXException;
 
@@ -67,8 +66,11 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.stream.document.ArrayBuilder;
 import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.stream.document.IDocumentBuilder;
+import nl.nn.adapterframework.stream.document.INodeBuilder;
 import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
@@ -125,9 +127,6 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		if (getActionEnum()==null) {
 			throw new ConfigurationException("attribute action not specified");
 		}
-		if (getOutputFormatEnum()==DocumentFormat.XML && (getActionEnum()==MongoAction.FINDONE || getActionEnum()==MongoAction.FINDMANY )) {
-			throw new ConfigurationException("outputFormat "+getOutputFormatEnum()+" not supported for FIND-actions");
-		}
 		if ((getLimit()>0 || (getParameterList()!=null && getParameterList().findParameter(PARAM_LIMIT)!=null)) && getActionEnum()!=MongoAction.FINDMANY) {
 			throw new ConfigurationException("attribute limit or parameter "+PARAM_LIMIT+" can only be used for action "+MongoAction.FINDMANY);
 		}
@@ -178,10 +177,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 				renderResult(mongoCollection.insertMany(getDocuments(message)), target);
 				break;
 			case FINDONE:
-				try (Writer writer = target.asWriter()) {
-					Document findOne = mongoCollection.find(getFilter(pvl, message)).first();
-					writer.write(findOne.toJson());
-				}
+				renderResult(mongoCollection.find(getFilter(pvl, message)).first(), target);
 				break;
 			case FINDMANY:
 				renderResult(mongoCollection.find(getFilter(pvl, message)).limit(getLimit(pvl)), target);
@@ -212,7 +208,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "insertOneResult", target)) {
 			builder.add("acknowledged", insertOneResult.wasAcknowledged());
 			if (insertOneResult.wasAcknowledged()) {
-				builder.add("insertedId", insertOneResult.getInsertedId().asObjectId().getValue().toString());
+				builder.add("insertedId", renderField(insertOneResult.getInsertedId()));
 			}
 		}
 	}
@@ -226,7 +222,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 					
 					insertedIds.forEach((k,v)->{
 						try {
-							objectBuilder.add(Integer.toString(k), v.asObjectId().getValue().toString());
+							objectBuilder.add(Integer.toString(k), renderField(v));
 						} catch (SAXException e) {
 							throw Lombok.sneakyThrow(e);
 						}
@@ -235,29 +231,40 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			}
 		}
 	}
-
-	protected void renderResult(FindIterable<Document> findResults, MessageOutputStream target) throws StreamingException {
-		try (Writer writer = target.asWriter()) {
-			if (isCountOnly()) {
-				int count=0;
-				for (Document doc : findResults) {
-					count++;
-				}
-				writer.write(Integer.toString(count));
-				return;
-			}
+	
+	protected void renderResult(Document findResult, MessageOutputStream target) throws StreamingException {
+		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormatEnum(), "FindOneResult", target)) {
 			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 			Encoder<Document> encoder = new DocumentCodec();
-			writer.write("[");
-			boolean firstElementSeen = false;
-			for (Document doc : findResults) {
-				if (firstElementSeen) {
-					writer.write(",");
+			JsonDocumentWriter jsonWriter = new JsonDocumentWriter(builder, writerSettings, false);
+			encoder.encode(jsonWriter, findResult, EncoderContext.builder().build());
+		} catch (Exception e) {
+			throw new StreamingException("Could not render collection", e);
+		}
+	}
+	
+	protected void renderResult(FindIterable<Document> findResults, MessageOutputStream target) throws StreamingException {
+		try {
+			if (isCountOnly()) {
+				try (Writer writer = target.asWriter()) {
+					int count=0;
+					for (Document doc : findResults) {
+						count++;
+					}
+					writer.write(Integer.toString(count));
 				}
-				JsonWriter jsonWriter = new JsonWriter(writer, writerSettings);
-				encoder.encode(jsonWriter, doc, EncoderContext.builder().build());
+				return;
+			} 
+			try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormatEnum(), "FindManyResult", "item", target)) {
+				JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+				Encoder<Document> encoder = new DocumentCodec();
+				for (Document doc : findResults) {
+					try (INodeBuilder element = builder.addElement()) {
+						JsonDocumentWriter jsonWriter = new JsonDocumentWriter(element, writerSettings, false);
+						encoder.encode(jsonWriter, doc, EncoderContext.builder().build());
+					}
+				}
 			}
-			writer.write("]");
 		} catch (Exception e) {
 			throw new StreamingException("Could not render collection", e);
 		}
@@ -283,6 +290,16 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		}
 	}
 	
+	private String renderField(BsonValue bsonValue) {
+		if (bsonValue.isObjectId()) {
+			return bsonValue.asObjectId().getValue().toString();
+		}
+		if (bsonValue.isString()) {
+			return bsonValue.asString().getValue().toString();
+		}
+		return bsonValue.toString();
+	}
+
 	protected void addOptionalValue(ObjectBuilder builder, String name, BsonValue bsonValue) throws SAXException {
 		if (bsonValue!=null) {
 			builder.add(name, bsonValue.isObjectId()? bsonValue.asObjectId().getValue().toString() : bsonValue.asString().getValue());
