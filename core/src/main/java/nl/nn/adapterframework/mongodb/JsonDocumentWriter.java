@@ -48,7 +48,7 @@ public class JsonDocumentWriter extends AbstractBsonWriter {
 	 * @param nodeBuilder the writer to write JSON to.
 	 */
 	public JsonDocumentWriter(final INodeBuilder nodeBuilder) {
-		this(nodeBuilder, JsonWriterSettings.builder().build(), true);
+		this(nodeBuilder, JsonWriterSettings.builder().build());
 	}
 
 	/**
@@ -58,7 +58,7 @@ public class JsonDocumentWriter extends AbstractBsonWriter {
 	 * @param nodeBuilder   the handler to write JSON to.
 	 * @param settings the settings to apply to this writer.
 	 */
-	public JsonDocumentWriter(final INodeBuilder nodeBuilder, final JsonWriterSettings settings, boolean topLevel) {
+	public JsonDocumentWriter(final INodeBuilder nodeBuilder, final JsonWriterSettings settings) {
 		super(settings);
 		this.settings = settings;
 		setContext(new Context(null, BsonContextType.TOP_LEVEL));

@@ -36,6 +36,13 @@ import nl.nn.adapterframework.stream.document.IObjectBuilder;
  */
 public class StrictJsonDocumentWriter implements StrictJsonWriter {
 
+	private Stack<AutoCloseable> stack = new Stack<>();
+ 	private final StrictCharacterStreamJsonWriterSettings settings;
+	private StrictJsonContext context = new StrictJsonContext(null, JsonContextType.TOP_LEVEL, "");
+	private State state = State.INITIAL;
+	private int curLength; // not yet handled
+	private boolean isTruncated; // not yet handled
+	
 	private enum JsonContextType {
 		TOP_LEVEL, DOCUMENT, ARRAY,
 	}
@@ -48,7 +55,6 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		private final StrictJsonContext parentContext;
 		private final JsonContextType contextType;
 		private final String indentation;
-		private boolean hasElements;
 
 		StrictJsonContext(final StrictJsonContext parentContext, final JsonContextType contextType,
 				final String indentChars) {
@@ -58,13 +64,6 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		}
 	}
 
-	private Stack<AutoCloseable> stack = new Stack<>();
- 	private final StrictCharacterStreamJsonWriterSettings settings;
-	private StrictJsonContext context = new StrictJsonContext(null, JsonContextType.TOP_LEVEL, "");
-	private State state = State.INITIAL;
-	private int curLength;
-	private boolean isTruncated;
-	
 	/**
 	 * Construct an instance.
 	 *

@@ -236,7 +236,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormatEnum(), "FindOneResult", target)) {
 			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 			Encoder<Document> encoder = new DocumentCodec();
-			JsonDocumentWriter jsonWriter = new JsonDocumentWriter(builder, writerSettings, false);
+			JsonDocumentWriter jsonWriter = new JsonDocumentWriter(builder, writerSettings);
 			encoder.encode(jsonWriter, findResult, EncoderContext.builder().build());
 		} catch (Exception e) {
 			throw new StreamingException("Could not render collection", e);
@@ -260,7 +260,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 				Encoder<Document> encoder = new DocumentCodec();
 				for (Document doc : findResults) {
 					try (INodeBuilder element = builder.addElement()) {
-						JsonDocumentWriter jsonWriter = new JsonDocumentWriter(element, writerSettings, false);
+						JsonDocumentWriter jsonWriter = new JsonDocumentWriter(element, writerSettings);
 						encoder.encode(jsonWriter, doc, EncoderContext.builder().build());
 					}
 				}

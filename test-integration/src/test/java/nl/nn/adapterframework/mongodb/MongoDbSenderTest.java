@@ -9,7 +9,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.bson.types.ObjectId;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
