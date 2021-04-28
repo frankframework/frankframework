@@ -835,12 +835,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@Override
-	public M changeProcessState(Object message, ProcessState toState) throws ListenerException {
+	public M changeProcessState(Object message, ProcessState toState, String reason) throws ListenerException {
 		if (toState==ProcessState.AVAILABLE) {
 			String id = getListener().getIdFromRawMessage((M)message, null);
 			resetProblematicHistory(id);
 		}
-		return ((IHasProcessState<M>)getListener()).changeProcessState((M)message, toState); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
+		return ((IHasProcessState<M>)getListener()).changeProcessState((M)message, toState, reason); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
 	}
 
 	@Override
@@ -895,6 +895,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				log.warn("problem sending result:"+sendMsg);
 			}
 		}
+		if (origin instanceof IHasProcessState) {
+			ProcessState targetState = knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
+			changeProcessState(rawMessage, targetState, comments);
+		}
 		origin.afterMessageProcessed(plr, rawMessage, threadContext);
 	}
 
@@ -919,18 +923,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (errorSender!=null) {
 				errorSender.sendMessage(message, null);
 			}
-			// processState change is currently handled in listener.afterMessageProcessed()
-//			ProcessState targetState = null;
-//			if (knownProcessStates.contains(ProcessState.ERROR)) {
-//				targetState = ProcessState.ERROR;
-//			} else {
-//				if (knownProcessStates.contains(ProcessState.DONE)) {
-//					targetState = ProcessState.DONE;
-//				}
-//			}
-//			if (targetState !=null && getListener() instanceof IHasProcessState) {
-//				changeProcessState(rawMessage, targetState);
-//			}
+			ProcessState targetState = null;
+			if (knownProcessStates.contains(ProcessState.ERROR)) {
+				targetState = ProcessState.ERROR;
+			} else {
+				if (knownProcessStates.contains(ProcessState.DONE)) {
+					targetState = ProcessState.DONE;
+				}
+			}
+			if (targetState !=null && getListener() instanceof IHasProcessState) {
+				changeProcessState(rawMessage, targetState, comments);
+			}
 			if (errorStorage!=null) {
 				Serializable sobj;
 				if (rawMessage == null) {
@@ -1371,6 +1374,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						threadContext.putAll(pipelineSession);
 					}
 					try {
+						if (getListener() instanceof IHasProcessState) {
+							ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
+							changeProcessState(rawMessageOrWrapper, targetState, errorMessage);
+						}
 						getListener().afterMessageProcessed(pipeLineResult, rawMessageOrWrapper, afterMessageProcessedMap);
 					} catch (Exception e) {
 						if (manualRetry) {
