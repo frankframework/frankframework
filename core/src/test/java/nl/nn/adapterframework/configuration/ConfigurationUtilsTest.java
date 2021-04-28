@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -231,39 +232,36 @@ public class ConfigurationUtilsTest extends Mockito {
 		//This field is pretty obsolete, check if it's been set
 		assertNotNull("FILENAME not set", parameters.get("FILENAME"));
 	}
-	
-	@Test 
+
 	public void testCanonicalize1(String configFile) throws Exception {
 		String configurationSource = TestFileUtils.getTestFile(configFile);
-		Configuration configuration = new Configuration();
-		
+
 		String expected = configurationSource;
-		String actual = ConfigurationUtils.getCanonicalizedConfiguration(configuration, configurationSource);
+		String actual = ConfigurationUtils.getCanonicalizedConfiguration(configurationSource);
 		
 		MatchUtils.assertXmlEquals(configFile, expected, actual);
 	}
 
 	public void testCanonicalize2(String configFile) throws Exception {
 		String configurationSource = TestFileUtils.getTestFile(configFile);
-		Configuration configuration = new Configuration();
-		
+
 		String expected = configurationSource;
-		String actual = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, configurationSource, new XmlErrorHandler());
+		String actual = ConfigurationUtils.getCanonicalizedConfiguration2(configurationSource, new XmlErrorHandler());
 		
 		MatchUtils.assertXmlEquals(configFile, expected, actual);
 	}
-	
-	@Test 
+
+	@Test
 	public void testCanonicalize1a() throws Exception {
 		testCanonicalize1("/IAF_Util/ConfigurationManageDatabase.xml");
 	}
 
-	@Test 
+	@Test
+	@Ignore
 	public void testCanonicalize2a() throws Exception {
 		testCanonicalize2("/IAF_Util/ConfigurationManageDatabase.xml");
 	}
 
-	
 	private class XmlErrorHandler implements ErrorHandler  {
 
 		@Override
@@ -279,6 +277,4 @@ public class ConfigurationUtilsTest extends Mockito {
 			System.out.println("FatalError at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 	}
-
-
 }

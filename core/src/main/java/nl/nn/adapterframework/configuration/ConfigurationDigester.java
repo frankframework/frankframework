@@ -21,8 +21,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.DigesterLoader;
@@ -40,6 +42,10 @@ import org.xml.sax.XMLReader;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.digester.FrankDigesterRules;
+import nl.nn.adapterframework.configuration.filters.ElementRoleFilter;
+import nl.nn.adapterframework.configuration.filters.InitialCapsFilter;
+import nl.nn.adapterframework.configuration.filters.OnlyActiveFilter;
+import nl.nn.adapterframework.configuration.filters.SkipContainersFilter;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.AppConstants;
@@ -90,7 +96,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	String lastResolvedEntity = null;
 	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", true);
-	private boolean canonicalizeByXsd = AppConstants.getInstance().getBoolean("configuration.canonicalize.byxsd", true);
+	private boolean canonicalizeByXsd = AppConstants.getInstance().getBoolean("configuration.canonicalize.byxsd", false);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private Configuration configuration;
@@ -181,37 +187,28 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-			String original = resolveEntitiesAndProperties(configurationResource, appConstants);
 
-			configuration.setOriginalConfiguration(original);
 			List<String> propsToHide = new ArrayList<>();
 			String propertiesHideString = appConstants.getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 			}
 
+			String original = resolveEntitiesAndProperties(configurationResource, appConstants);
+			configuration.setOriginalConfiguration(original);
 			String loaded = original;
-			if(!preparse) {
-				loaded = StringResolver.substVars(original, appConstants);
-			}
 
-			if (canonicalizeByXsd) {
-				loaded = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, loaded, new XmlErrorHandler(configuration, ConfigurationUtils.FRANK_CONFIG_XSD));
-			} else {
-				loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
-			}
-			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
 			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
 				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
 			}
 
 			String loadedHide = StringResolver.substVars(original, appConstants, null, propsToHide);
 			if (canonicalizeByXsd) {
-				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, loadedHide, new XmlErrorHandler(configuration, ConfigurationUtils.FRANK_CONFIG_XSD));
+				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration2(loadedHide, new XmlErrorHandler(configuration, ConfigurationUtils.FRANK_CONFIG_XSD));
 			} else {
-				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
+				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(loadedHide);
 			}
-			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
+			loadedHide = ConfigurationUtils.getActivatedConfiguration(loadedHide);
 			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
 				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}
@@ -235,21 +232,49 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	}
 
 	/**
-	 * 
 	 * Performs an Identity-transform, which resolves entities with content from files found on the ClassPath.
 	 * Resolve all non-attribute properties
-	 * @param appConstants 
 	 */
-	private String resolveEntitiesAndProperties(Resource resource, AppConstants appConstants) throws  IOException, SAXException {
-		ContentHandler resolver;
+	public String resolveEntitiesAndProperties(Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException {
 		if(preparse) {
-			resolver = new ElementPropertyResolver(appConstants);
-		} else {
-			resolver = new XmlWriter();
-		}
+			XmlWriter writer = new ElementPropertyResolver(appConstants);
+//			ContentHandler handler = getCanonicalizedConfiguration(writer);
+			ContentHandler onlyActive = new OnlyActiveFilter(writer, appConstants);
 
-		XmlUtils.parseXml(resource, resolver);
-		return resolver.toString();
+			XmlUtils.parseXml(resource, onlyActive);
+			log.debug("Canonicalized configuration ["+writer.toString()+"]");
+//			return writer.toString();
+			return ConfigurationUtils.getCanonicalizedConfiguration(writer.toString());
+		}
+		else {
+			XmlWriter resolver = new XmlWriter();
+			XmlUtils.parseXml(resource, resolver);
+
+			String configuration = resolver.toString();
+			configuration = StringResolver.substVars(configuration, appConstants);
+			configuration = ConfigurationUtils.getCanonicalizedConfiguration(configuration);
+			return ConfigurationUtils.getActivatedConfiguration(configuration);
+		}
+	}
+
+	public ContentHandler getCanonicalizedConfiguration(ContentHandler writer) throws IOException, SAXException {
+		String frankConfigXSD = ConfigurationUtils.FRANK_CONFIG_XSD;
+		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(null, frankConfigXSD));
+	}
+
+	public ContentHandler getCanonicalizedConfiguration(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException, SAXException {
+		try {
+			ElementRoleFilter elementRoleFilter = new ElementRoleFilter(handler);
+			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassUtils.getResourceURL(frankConfigXSD));
+			validatorHandler.setContentHandler(elementRoleFilter);
+			if (errorHandler != null) {
+				validatorHandler.setErrorHandler(errorHandler);
+			}
+			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(validatorHandler);
+			return new InitialCapsFilter(skipContainersFilter);
+		} catch (SAXException e) {
+			throw new IOException("Cannot get canonicalizer using ["+ConfigurationUtils.FRANK_CONFIG_XSD+"]", e);
+		}
 	}
 
 	public void setDigesterRules(String string) {

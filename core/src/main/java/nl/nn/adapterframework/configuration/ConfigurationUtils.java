@@ -100,18 +100,18 @@ public class ConfigurationUtils {
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
 		parameters.put("disableValidators", AppConstants.getInstance(configuration.getClassLoader()).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
-		return transformConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
+		return transformConfiguration(originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 
-	public static String getActivatedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return transformConfiguration(configuration, originalConfig, ACTIVE_XSLT, null);
+	public static String getActivatedConfiguration(String originalConfig) throws ConfigurationException {
+		return transformConfiguration(originalConfig, ACTIVE_XSLT, null);
 	}
 
-	public static String getCanonicalizedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return transformConfiguration(configuration, originalConfig, CANONICALIZE_XSLT, null);
+	public static String getCanonicalizedConfiguration(String originalConfig) throws ConfigurationException {
+		return transformConfiguration(originalConfig, CANONICALIZE_XSLT, null);
 	}
 
-	public static String getCanonicalizedConfiguration2(Configuration configuration, String originalConfig, ErrorHandler errorHandler) throws ConfigurationException {
+	public static String getCanonicalizedConfiguration2(String originalConfig, ErrorHandler errorHandler) throws ConfigurationException {
 		XmlWriter writer = new XmlWriter();
 		ContentHandler handler;
 		try {
@@ -127,7 +127,7 @@ public class ConfigurationUtils {
 		} catch (SAXException e) {
 			throw new ConfigurationException("Cannot get canonicalizer using ["+FRANK_CONFIG_XSD+"]", e);
 		}
-			
+
 		try {
 			XmlUtils.parseXml(originalConfig, handler);
 			log.debug("Canonicalized configuration ["+writer.toString()+"]");
@@ -137,7 +137,7 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static String transformConfiguration(Configuration configuration, String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
+	public static String transformConfiguration(String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
 		URL xsltSource = ClassUtils.getResourceURL(xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + xslt + "]");

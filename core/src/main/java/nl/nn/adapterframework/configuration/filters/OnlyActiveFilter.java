@@ -15,35 +15,65 @@
 */
 package nl.nn.adapterframework.configuration.filters;
 
-import java.util.Stack;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.xml.AttributesWrapper;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 
 public class OnlyActiveFilter extends FullXmlFilter {
-	
-	private final String ACTIVE_ATTRIBUTE = "active";
-	
-	int suppressLevel = 0;
 
-	Stack<String> elementNames = new Stack<>();
-	
+	private final String ACTIVE_ATTRIBUTE = "active";
+	private Properties properties;
+	private int suppressLevel = 0;
+
+	/**
+	 * Filter out elements which have an ACTIVE attribute set to false
+	 */
+	public OnlyActiveFilter(ContentHandler resolver) {
+		this(resolver, null);
+	}
+
+	/**
+	 * Filter out elements which have an ACTIVE attribute set to false.
+	 * Attempt to resolve the active attribute using provided Properties
+	 */
+	public OnlyActiveFilter(ContentHandler resolver, Properties properties) {
+		super(resolver);
+		this.properties = properties;
+	}
+
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if (suppressLevel>0) {
 			suppressLevel++;
 			return;
 		}
- 		String active = atts.getValue(ACTIVE_ATTRIBUTE);
-		if (StringUtils.isNotEmpty(active) && !active.equalsIgnoreCase("true") && !active.equalsIgnoreCase("!false")) {
+
+		String active = atts.getValue(ACTIVE_ATTRIBUTE);
+		if(StringUtils.isNotEmpty(active) && properties != null) {
+			active = StringResolver.substVars(active, properties);
+		}
+
+		if (StringUtils.isNotEmpty(active) && !(active.equalsIgnoreCase("true") || active.equalsIgnoreCase("!false"))) {
 			suppressLevel = 1;
 			return;
 		}
-		super.startElement(uri, localName, qName, new AttributesWrapper(atts,ACTIVE_ATTRIBUTE));
+
+		super.startElement(uri, localName, qName, new AttributesWrapper(atts, ACTIVE_ATTRIBUTE));
+	}
+
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		if (suppressLevel>0) {
+			return;
+		}
+		super.characters(ch, start, length);
 	}
 
 	@Override
@@ -52,7 +82,7 @@ public class OnlyActiveFilter extends FullXmlFilter {
 			suppressLevel--;
 			return;
 		}
+
 		super.endElement(uri, localName, qName);
 	}
-
 }
