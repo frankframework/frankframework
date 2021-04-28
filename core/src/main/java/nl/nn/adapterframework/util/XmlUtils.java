@@ -61,6 +61,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.ValidatorHandler;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -1664,8 +1667,7 @@ public class XmlUtils {
 	}
 
 
-	public static String transformXml(Transformer t, Source s)
-		throws TransformerException, IOException {
+	public static String transformXml(Transformer t, Source s) throws TransformerException, IOException {
 
 		StringWriter out = new StringWriter(getBufSize());
 		transformXml(t,s,out);
@@ -2118,4 +2120,18 @@ public class XmlUtils {
 			return new org.apache.xpath.jaxp.XPathFactoryImpl();
 		}
 	}
+
+
+	public static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(schemaURL); 
+		return schema.newValidatorHandler();
+	}
+
+	public static ValidatorHandler getValidatorHandler(Source schemaSource) throws SAXException {
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(schemaSource); 
+		return schema.newValidatorHandler();
+	}
+
 }

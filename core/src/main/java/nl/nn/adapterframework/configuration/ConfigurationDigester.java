@@ -90,23 +90,26 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	String lastResolvedEntity = null;
 	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", true);
+	private boolean canonicalizeByXsd = AppConstants.getInstance().getBoolean("configuration.canonicalize.byxsd", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private Configuration configuration;
-		public XmlErrorHandler(Configuration configuration) {
+		private String schema;
+		public XmlErrorHandler(Configuration configuration, String schema) {
 			this.configuration = configuration;
+			this.schema = schema;
 		}
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "Warning when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(configuration, log, "Warning when validating against schema ["+schema+"] in ["+exception.getSystemId()+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "Error when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(configuration, log, "Error when validating against schema ["+schema+"] in ["+exception.getSystemId()+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "FatalError when validating against schema ["+CONFIGURATION_VALIDATION_SCHEMA+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			ConfigurationWarnings.add(configuration, log, "FatalError when validating against schema ["+schema+"] in ["+exception.getSystemId()+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 	}
 
@@ -150,7 +153,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
 			}
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
-			XmlErrorHandler xeh = new XmlErrorHandler(configuration);
+			XmlErrorHandler xeh = new XmlErrorHandler(configuration, CONFIGURATION_VALIDATION_SCHEMA);
 			digester.setErrorHandler(xeh);
 		}
 
@@ -192,15 +195,27 @@ public class ConfigurationDigester implements ApplicationContextAware {
 				loaded = StringResolver.substVars(original, appConstants);
 			}
 
-			String loadedHide = StringResolver.substVars(original, appConstants, null, propsToHide);
-			loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
-			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
+			if (canonicalizeByXsd) {
+				loaded = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, loaded, new XmlErrorHandler(configuration, ConfigurationUtils.FRANK_CONFIG_XSD));
+			} else {
+				loaded = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loaded);
+			}
 			loaded = ConfigurationUtils.getActivatedConfiguration(configuration, loaded);
-			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
 			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
 				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
+			}
+
+			String loadedHide = StringResolver.substVars(original, appConstants, null, propsToHide);
+			if (canonicalizeByXsd) {
+				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration2(configuration, loadedHide, new XmlErrorHandler(configuration, ConfigurationUtils.FRANK_CONFIG_XSD));
+			} else {
+				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(configuration, loadedHide);
+			}
+			loadedHide = ConfigurationUtils.getActivatedConfiguration(configuration, loadedHide);
+			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
 				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}
+
 			configuration.setLoadedConfiguration(loadedHide);
 			configLogger.info(loadedHide);
 			digester.parse(new StringReader(loaded));

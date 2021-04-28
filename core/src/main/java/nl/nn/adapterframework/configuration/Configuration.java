@@ -37,6 +37,8 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -409,6 +411,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	public BaseConfigurationWarnings getConfigurationWarnings() {
 		return configurationWarnings;
+	}
+	
+	public void registerJmsRealm(JmsRealm realm) {
+		JmsRealmFactory.getInstance().registerJmsRealm(realm);
 	}
 
 	@Override
