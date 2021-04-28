@@ -14,7 +14,7 @@
                         <name>tchar</name>
                     </column>
                     <column>
-                        <name>tvarchar</name>
+                        <name>tclob</name>
                     </column>
                     <column>
                         <name>tnumber</name>

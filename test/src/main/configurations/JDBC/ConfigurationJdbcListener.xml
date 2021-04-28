@@ -9,14 +9,14 @@
 			<listener name="JdbcQueryListener for ibis4test"
 						className="nl.nn.adapterframework.jdbc.JdbcQueryListener"
 						jmsRealm="jdbc"
-						selectQuery="SELECT TKEY, TVARCHAR
+						selectQuery="SELECT TKEY, TCLOB
 										FROM IBISTEMP
 										WHERE TCHAR = '1'
 										AND TNUMBER=${jdbc.querylistener.key}"
 						updateStatusToProcessedQuery="UPDATE IBISTEMP SET TCHAR='2' WHERE TKEY=?"
 						updateStatusToErrorQuery="UPDATE IBISTEMP SET TCHAR='3' WHERE TKEY=?"
 						keyField="tkey"
-						messageField="TVARCHAR"/>
+						messageField="TCLOB"/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/JdbcQueryListener" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/JdbcQueryListener" retention="-1" />
 		</receiver>
@@ -32,13 +32,14 @@
 						tableName="IBISTEMP"
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
+						commentField="TVARCHAR"
 						selectCondition="TNUMBER=${jdbc.querylistener.key}"
 						statusValueAvailable="5"
 						statusValueProcessed="6"
 						statusValueError="7"
 						statusValueInProcess="8"
 						keyField="tkey"
-						messageField="TVARCHAR"/>
+						messageField="TCLOB"/>
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
@@ -90,7 +91,7 @@
 			</pipe>
 			<pipe name="InsertIbistemp">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" 
-					query="INSERT INTO IBISTEMP (tkey, tchar, tvarchar, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, ?, ${jdbc.querylistener.key}, SYSDATE)" 
+					query="INSERT INTO IBISTEMP (tkey, tchar, tclob, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, ?, ${jdbc.querylistener.key}, SYSDATE)" 
 				>
 					<param name="status" xpathExpression="request/@status"/>
 					<param name="string" xpathExpression="request/@string"/>

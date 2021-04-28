@@ -71,6 +71,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		setBlobSmartGet(true);
 		setStatusField("TYPE");
 		setTimestampField("MESSAGEDATE");
+		setCommentField("COMMENTS");
 		setStatusValueAvailable(IMessageBrowser.StorageType.MESSAGESTORAGE.getCode());
 		setStatusValueProcessed(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
 		setStatusValueError(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
@@ -88,7 +89,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 			}
 		}
 		if (isMoveToMessageLog()) {
-			String setClause = "COMMENTS = '" + Receiver.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
+			String setClause = "EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
 			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE),setClause));
 		} else {
 			String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
@@ -120,7 +121,6 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
 		if (browser!=null && browser instanceof JdbcTableMessageBrowser) {
 			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)browser;
-			jtmb.setCommentField("COMMENTS");
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
 		}
