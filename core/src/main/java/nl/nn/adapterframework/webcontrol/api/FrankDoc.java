@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 public final class FrankDoc extends Base {
 
 	public static final String FRANKDOC_JSON = "js/frankdoc.json";
-	public static final String FRANKDOC_XSD  = "xml/xsd/strict.xsd";
+	public static final String FRANKDOC_XSD  = "xml/xsd/FrankConfig-strict.xsd";
 
 	@GET
 	@PermitAll
