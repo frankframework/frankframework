@@ -177,7 +177,7 @@ public class SoapWrapperTest {
 	}
 
 	private String replaceDynamicElements(String result) throws IOException, TransformerException, SAXException {
-		Transformer transformer = XmlUtils.createTransformer(TestFileUtils.getTestFileURL("/soap/ignoreElements.xsl"));
+		Transformer transformer = XmlUtils.createTransformer(TestFileUtils.getTestFileURL("/Soap/ignoreElements.xsl"));
 		return XmlUtils.transformXml(transformer, result);
 	}
 	
