@@ -1402,6 +1402,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			} finally {
 				if (pipelineSession != null ) {
+					if(!Message.isEmpty(result) && result.requiresStream()) {
+						try {
+							result.preserve(); //Preserve the return message (if any) to prevent it from being closed by PipeLineSession.close()
+						} catch (IOException e) {
+							log.warn("unable to preserve result message, all streams will be closed", e);
+						}
+					}
 					pipelineSession.close();
 				}
 			}
@@ -1416,7 +1423,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			threadContext.put(IPipeLineSession.EXIT_CODE_CONTEXT_KEY, code);
 		}
 	}
-	
+
 	@SuppressWarnings("synthetic-access")
 	private synchronized void cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
 		ProcessResultCacheItem cacheItem=getCachedProcessResult(messageId);
