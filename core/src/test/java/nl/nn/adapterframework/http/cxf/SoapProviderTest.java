@@ -164,16 +164,15 @@ public class SoapProviderTest {
 		Iterator<?> attachmentParts = message.getAttachments();
 		while (attachmentParts.hasNext()) {
 			AttachmentPart soapAttachmentPart = (AttachmentPart)attachmentParts.next();
-			InputStreamAttachmentPart attachmentPart = new InputStreamAttachmentPart(soapAttachmentPart);
-			String attachment = Misc.streamToString(attachmentPart.getInputStream());
+			String attachment = Misc.streamToString(soapAttachmentPart.getRawContent());
 			//ContentID should be equal to the filename
-			assertEquals(ATTACHMENT2_NAME, attachmentPart.getContentId());
+			assertEquals(ATTACHMENT2_NAME, soapAttachmentPart.getContentId());
 
 			//Validate the attachment's content
 			assertEquals(ATTACHMENT2_CONTENT, attachment);
 
 			//Make sure at least the content-type header has been set
-			Iterator<?> headers = attachmentPart.getAllMimeHeaders();
+			Iterator<?> headers = soapAttachmentPart.getAllMimeHeaders();
 			String contentType = null;
 			while (headers.hasNext()) {
 				MimeHeader header = (MimeHeader) headers.next();
