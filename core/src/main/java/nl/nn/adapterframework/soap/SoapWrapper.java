@@ -20,7 +20,6 @@ import java.util.StringTokenizer;
 
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPEnvelope;
-import javax.xml.soap.SOAPFactory;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -253,16 +252,8 @@ public class SoapWrapper {
 			WSSConfig config = secEngine.getWssConfig();
 			config.setPrecisionInMilliSeconds(false);
 
-			// create context
-//			AxisClient tmpEngine = new AxisClient(new NullProvider());
-//			MessageContext msgContext = new MessageContext(tmpEngine);
-//
-//			org.apache.axis.Message msg = new org.apache.axis.Message(soapMessage.asInputStream());
-//			msg.setMessageContext(msgContext);
-
 			SOAPMessage msg = MessageFactory.newInstance().createMessage(null, soapMessage.asInputStream());
-			
-			
+
 			// create unsigned envelope
 			SOAPEnvelope unsignedEnvelope = msg.getSOAPPart().getEnvelope();
 			Document doc = unsignedEnvelope.getOwnerDocument();

@@ -152,7 +152,7 @@ public class SoapWrapperTest {
 	public void signSoap11Message() throws ConfigurationException, IOException, TransformerException, SAXException {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
 		String soapMessage = soapMessageSoap11;
-		String expectedSoapBody = TestFileUtils.getTestFile("/soap/signedSoap1_1.xml");;
+		String expectedSoapBody = TestFileUtils.getTestFile("/soap/signedSoap1_1.xml");
 		String soapBody = null;
 		try {
 			soapBody = soapWrapper.signMessage(new Message(soapMessage), "test", "test", false).asString();
