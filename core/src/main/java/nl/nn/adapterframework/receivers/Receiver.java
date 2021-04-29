@@ -1401,12 +1401,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			} finally {
 				if (pipelineSession != null ) {
-					if(!Message.isEmpty(result) && result.requiresStream()) {
-						try {
-							result.preserve(); //Preserve the return message (if any) to prevent it from being closed by PipeLineSession.close()
-						} catch (IOException e) {
-							log.warn("unable to preserve result message, all streams will be closed", e);
-						}
+					if(!Message.isEmpty(result)) { //Don't close Message in case it's passed to a 'parent' adapter or ServiceDispatcher.
+						result.unregisterCloseable(pipelineSession);
 					}
 					pipelineSession.close();
 				}
