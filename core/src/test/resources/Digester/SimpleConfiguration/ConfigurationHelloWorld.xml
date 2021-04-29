@@ -19,7 +19,7 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<scheduler>
+	<scheduler active="false">
 		<job
 			name="HelloWorld"
 			adapterName="HelloWorld"

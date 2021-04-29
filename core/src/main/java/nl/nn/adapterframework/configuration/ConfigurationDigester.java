@@ -48,6 +48,7 @@ import nl.nn.adapterframework.configuration.filters.OnlyActiveFilter;
 import nl.nn.adapterframework.configuration.filters.SkipContainersFilter;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -238,13 +239,13 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	public String resolveEntitiesAndProperties(Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException {
 		if(preparse) {
 			XmlWriter writer = new ElementPropertyResolver(appConstants);
-//			ContentHandler handler = getCanonicalizedConfiguration(writer);
-			ContentHandler onlyActive = new OnlyActiveFilter(writer, appConstants);
+			ContentHandler handler = getCanonicalizedConfiguration(writer);
+			ContentHandler onlyActive = new OnlyActiveFilter(handler, appConstants);
 
 			XmlUtils.parseXml(resource, onlyActive);
 			log.debug("Canonicalized configuration ["+writer.toString()+"]");
-//			return writer.toString();
-			return ConfigurationUtils.getCanonicalizedConfiguration(writer.toString());
+			return writer.toString();
+//			return ConfigurationUtils.getCanonicalizedConfiguration(writer.toString());
 		}
 		else {
 			XmlWriter resolver = new XmlWriter();
@@ -265,8 +266,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	public ContentHandler getCanonicalizedConfiguration(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException, SAXException {
 		try {
 			ElementRoleFilter elementRoleFilter = new ElementRoleFilter(handler);
+			XmlTee tee = new XmlTee(elementRoleFilter, new XmlWriter(System.err));
 			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassUtils.getResourceURL(frankConfigXSD));
-			validatorHandler.setContentHandler(elementRoleFilter);
+			validatorHandler.setContentHandler(tee);
 			if (errorHandler != null) {
 				validatorHandler.setErrorHandler(errorHandler);
 			}

@@ -80,7 +80,7 @@ public class ConfigurationUtils {
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
 	private static final String CANONICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
-	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-strict.xsd";
+	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);

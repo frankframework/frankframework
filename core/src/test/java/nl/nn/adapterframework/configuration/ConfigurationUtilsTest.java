@@ -257,7 +257,6 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 
 	@Test
-	@Ignore
 	public void testCanonicalize2a() throws Exception {
 		testCanonicalize2("/IAF_Util/ConfigurationManageDatabase.xml");
 	}

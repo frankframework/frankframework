@@ -19,13 +19,13 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 			/>
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld">
+			<Exit path="EXIT" state="success"/>
 			<FixedResultPipe
 				name="HelloBeautifulWorld"
 				returnString="Hello Beautiful World"
 				>
 				<Forward name="success" path="EXIT"/>
 			</FixedResultPipe>
-			<Exit path="EXIT" state="success"/>
 		</Pipeline>
 	</Adapter>
 </root>

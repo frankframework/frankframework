@@ -43,7 +43,7 @@ public class ConfigurationDigesterTest {
 		MatchUtils.assertXmlEquals(expected, result);
 	}
 
-	private class XmlErrorHandler implements ErrorHandler  {
+	private class XmlErrorHandler implements ErrorHandler {
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
 			System.err.println("Warning at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
