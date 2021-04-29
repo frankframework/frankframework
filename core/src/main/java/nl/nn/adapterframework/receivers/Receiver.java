@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1080,7 +1082,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		String messageId = (String)threadContext.get(IPipeLineSession.originalMessageIdKey);
 		long endExtractingMessage = System.currentTimeMillis();
 		messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
-		processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
+		Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
+		try {
+			if(output.asObject() instanceof Closeable) {
+				((Closeable) output.asObject()).close();
+			}
+		} catch (IOException e) {
+			// Ignore if already closed!
+		}
 	}
 
 	
@@ -1393,6 +1402,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			} finally {
 				if (pipelineSession != null ) {
+					if(!Message.isEmpty(result)) { //Don't close Message in case it's passed to a 'parent' adapter or ServiceDispatcher.
+						result.unregisterCloseable(pipelineSession);
+					}
 					pipelineSession.close();
 				}
 			}
@@ -1407,7 +1419,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			threadContext.put(IPipeLineSession.EXIT_CODE_CONTEXT_KEY, code);
 		}
 	}
-	
+
 	@SuppressWarnings("synthetic-access")
 	private synchronized void cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
 		ProcessResultCacheItem cacheItem=getCachedProcessResult(messageId);

@@ -548,22 +548,27 @@ public class HttpSender extends HttpSenderBase {
 			response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
 
 		if (response==null) {
+			Message responseMessage = responseHandler.getResponseMessage();
+			if(!Message.isEmpty(responseMessage)) {
+				responseMessage.closeOnCloseOf(session);
+			}
+
 			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
 				try {
 					String fileName = Message.asString(session.get(getStreamResultToFileNameSessionKey()));
 					File file = new File(fileName);
-					Misc.streamToFile(responseHandler.getResponse(), file);
+					Misc.streamToFile(responseMessage.asInputStream(), file);
 					return new Message(fileName);
 				} catch (IOException e) {
 					throw new SenderException("cannot find filename to stream result to", e);
 				}
 			} else if (isBase64()) { //This should be removed in a future iteration
-				return getResponseBodyAsBase64(responseHandler.getResponse());
+				return getResponseBodyAsBase64(responseMessage.asInputStream());
 			} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
-				session.put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
+				session.put(getStoreResultAsStreamInSessionKey(), responseMessage.asInputStream());
 				return Message.nullMessage();
 			} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
-				session.put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
+				session.put(getStoreResultAsByteArrayInSessionKey(), responseMessage.asByteArray());
 				return Message.nullMessage();
 			} else if (BooleanUtils.isTrue(getMultipartResponse()) || responseHandler.isMultipart()) {
 				if(BooleanUtils.isFalse(getMultipartResponse())) {
@@ -592,9 +597,6 @@ public class HttpSender extends HttpSenderBase {
 			return Message.asMessage(headersXml.toXML());
 		}
 
-		if (responseHandler.isMultipart()) {
-			log.error("message body is not handled as a multipart");
-		}
 		return responseHandler.getResponseMessage();
 	}
 
