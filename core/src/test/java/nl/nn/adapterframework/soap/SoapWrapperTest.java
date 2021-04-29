@@ -3,6 +3,7 @@ package nl.nn.adapterframework.soap;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.net.URL;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -137,7 +138,7 @@ public class SoapWrapperTest {
 	public void signSoap11MessageDigestPassword() throws ConfigurationException, IOException, TransformerException, SAXException {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
 		String soapMessage = soapMessageSoap11;
-		String expectedSoapBody = TestFileUtils.getTestFile("/soap/signedSoap1_1_passwordDigest.xml");
+		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_passwordDigest.xml");
 		String soapBody = null;
 		try {
 			soapBody = soapWrapper.signMessage(new Message(soapMessage), "digestPassword", "digestPassword", true).asString();
@@ -152,7 +153,7 @@ public class SoapWrapperTest {
 	public void signSoap11Message() throws ConfigurationException, IOException, TransformerException, SAXException {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
 		String soapMessage = soapMessageSoap11;
-		String expectedSoapBody = TestFileUtils.getTestFile("/soap/signedSoap1_1.xml");
+		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1.xml");
 		String soapBody = null;
 		try {
 			soapBody = soapWrapper.signMessage(new Message(soapMessage), "test", "test", false).asString();
@@ -177,7 +178,8 @@ public class SoapWrapperTest {
 	}
 
 	private String replaceDynamicElements(String result) throws IOException, TransformerException, SAXException {
-		Transformer transformer = XmlUtils.createTransformer(TestFileUtils.getTestFileURL("/Soap/ignoreElements.xsl"));
+		URL url = TestFileUtils.getTestFileURL("/Soap/ignoreElements.xsl");
+		Transformer transformer = XmlUtils.createTransformer(url);
 		return XmlUtils.transformXml(transformer, result);
 	}
 	
