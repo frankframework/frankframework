@@ -1,38 +1,27 @@
 <configuration name="SimpleConfiguration">
-	<module>
-		<scheduler>
-			<job name="HelloWorld" adapterName="HelloWorld" receiverName="HelloWorld" interval="0" function="sendMessage"/>
-		</scheduler>
-		<adapter name="HelloUniverse">
-			<receiver name="HelloUniverse">
-				<listener name="HelloUniverse" className="nl.nn.adapterframework.receivers.JavaListener"/>
-				<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${instance.name}/HelloUniverse_In"/>
-			</receiver>
-			<pipeline firstPipe="HelloUniverse">
-				<exits>
-					<exit path="EXIT" state="success"/>
-				</exits>
-				<pipe name="HelloUniverse" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-					<sender className="nl.nn.adapterframework.senders.FixedResultSender" returnString="Hello, Universe!"/>
-					<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${instance.name}/HelloUniverse_Out"/>
-					<forward name="success" path="EXIT"/>
-				</pipe>
-			</pipeline>
-		</adapter>
-	</module>
-	<root name="My first beautiful configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-		<adapter name="HelloBeautifulWorld">
-			<receiver name="HelloBeautifulWorld">
-				<listener className="nl.nn.adapterframework.receivers.JavaListener" name="HelloBeautifulWorld"/>
-			</receiver>
-			<pipeline firstPipe="HelloBeautifulWorld">
-				<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="HelloBeautifulWorld" returnString="Hello Beautiful World">
-					<forward name="success" path="EXIT"/>
-				</pipe>
-				<exits>
-					<exit path="EXIT" state="success"/>
-				</exits>
-			</pipeline>
-		</adapter>
-	</root>
+	<adapter name="HelloUniverse">
+		<receiver name="HelloUniverse">
+			<listener name="HelloUniverse" className="nl.nn.adapterframework.receivers.JavaListener"/>
+			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${instance.name}/HelloUniverse_In"/>
+		</receiver>
+		<pipeline firstPipe="HelloUniverse">
+			<exit path="EXIT" state="success"/>
+			<pipe name="HelloUniverse" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.senders.FixedResultSender" returnString="Hello, Universe!"/>
+				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${instance.name}/HelloUniverse_Out"/>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="HelloBeautifulWorld" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+		<receiver name="HelloBeautifulWorld">
+			<listener name="HelloBeautifulWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
+		</receiver>
+		<pipeline firstPipe="HelloBeautifulWorld">
+			<exit path="EXIT" state="success"/>
+			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World" className="nl.nn.adapterframework.pipes.FixedResultPipe">
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
 </configuration>

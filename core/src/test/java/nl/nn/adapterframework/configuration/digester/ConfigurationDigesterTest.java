@@ -1,6 +1,12 @@
 package nl.nn.adapterframework.configuration.digester;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.net.URL;
 import java.util.Properties;
+
+import javax.xml.validation.ValidatorHandler;
 
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
@@ -41,6 +47,38 @@ public class ConfigurationDigesterTest {
 
 		String expected = TestFileUtils.getTestFile("/Digester/resolvedConfiguration2.xml");
 		MatchUtils.assertXmlEquals(expected, result);
+	}
+
+	@Test
+	public void simpleXsdWithDefaultAndFixedAttributed() throws Exception {
+		URL schemaURL = TestFileUtils.getTestFileURL("/Digester/resolveDefaultAttribute.xsd");
+		ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(schemaURL);
+
+		XmlWriter writer = new XmlWriter();
+		validatorHandler.setContentHandler(writer);
+		validatorHandler.setErrorHandler(new XmlErrorHandler());
+
+		Resource resource = Resource.getResource("/Digester/resolveAttributes.xml");
+		XmlUtils.parseXml(resource, validatorHandler);
+
+		assertEquals("<note one=\"1\" two=\"2\"/>", writer.toString().trim());
+	}
+
+	@Test
+	public void frankConfigXsdWithFixedAttributed() throws Exception {
+		URL schemaURL = TestFileUtils.getTestFileURL(ConfigurationUtils.FRANK_CONFIG_XSD);
+		ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(schemaURL);
+
+		XmlWriter writer = new XmlWriter();
+		validatorHandler.setContentHandler(writer);
+		validatorHandler.setErrorHandler(new XmlErrorHandler());
+
+		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/PreParsedConfiguration.xml");
+		assertNotNull(resource);
+		XmlUtils.parseXml(resource, validatorHandler);
+
+		String expected = TestFileUtils.getTestFile("/Digester/resolvedPreParsedConfiguration.xml");
+		assertEquals(expected, writer.toString().trim());
 	}
 
 	private class XmlErrorHandler implements ErrorHandler {

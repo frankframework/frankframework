@@ -48,7 +48,6 @@ import nl.nn.adapterframework.configuration.filters.OnlyActiveFilter;
 import nl.nn.adapterframework.configuration.filters.SkipContainersFilter;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -97,7 +96,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	String lastResolvedEntity = null;
 	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", true);
-	private boolean canonicalizeByXsd = AppConstants.getInstance().getBoolean("configuration.canonicalize.byxsd", false);
+	private boolean canonicalizeByXsd = AppConstants.getInstance().getBoolean("configuration.canonicalize.byxsd", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private Configuration configuration;
@@ -245,7 +244,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			XmlUtils.parseXml(resource, onlyActive);
 			log.debug("Canonicalized configuration ["+writer.toString()+"]");
 			return writer.toString();
-//			return ConfigurationUtils.getCanonicalizedConfiguration(writer.toString());
 		}
 		else {
 			XmlWriter resolver = new XmlWriter();
@@ -266,9 +264,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	public ContentHandler getCanonicalizedConfiguration(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException, SAXException {
 		try {
 			ElementRoleFilter elementRoleFilter = new ElementRoleFilter(handler);
-			XmlTee tee = new XmlTee(elementRoleFilter, new XmlWriter(System.err));
 			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassUtils.getResourceURL(frankConfigXSD));
-			validatorHandler.setContentHandler(tee);
+			validatorHandler.setContentHandler(elementRoleFilter);
 			if (errorHandler != null) {
 				validatorHandler.setErrorHandler(errorHandler);
 			}
