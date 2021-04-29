@@ -1,0 +1,1 @@
+[{"_id":{"$oid":"6086602b2ac64b6e7c4390a1"},"student_id":"Karel","class_id":"first","grades":[4,5,6]},{"_id":{"$oid":"6086602b2ac64b6e7c4390a2"},"student_id":"Klaas","class_id":"first"},{"_id":{"$oid":"6086602b2ac64b6e7c4390a3"},"student_id":"Harry","class_id":"first"}]
