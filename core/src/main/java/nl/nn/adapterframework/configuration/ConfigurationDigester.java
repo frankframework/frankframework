@@ -96,7 +96,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	String lastResolvedEntity = null;
 	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", true);
-	private boolean canonicalizeByXsd = AppConstants.getInstance().getBoolean("configuration.canonicalize.byxsd", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private Configuration configuration;
@@ -203,12 +202,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			}
 
 			String loadedHide = StringResolver.substVars(original, appConstants, null, propsToHide);
-			if (canonicalizeByXsd) {
-				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration2(loadedHide, new XmlErrorHandler(configuration, ConfigurationUtils.FRANK_CONFIG_XSD));
-			} else {
-				loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(loadedHide);
-			}
-			loadedHide = ConfigurationUtils.getActivatedConfiguration(loadedHide);
 			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
 				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}

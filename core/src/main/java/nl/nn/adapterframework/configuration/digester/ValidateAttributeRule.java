@@ -67,10 +67,10 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		} else {
 			checkDeprecationAndConfigurationWarning(name, m); //check if the setter has been deprecated
 
-			if(!value.startsWith(StringResolver.DELIM_START) && !value.endsWith(StringResolver.DELIM_STOP)) {
-				checkReadMethodType(pd, name, value, attributes); //check if the default value is changed
-			} else {
+			if(value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { //If value contains a property, resolve it
 				value = resolveValue(value);
+			} else { //Only check for default values for non-property values
+				checkReadMethodType(pd, name, value, attributes);
 			}
 
 			BeanUtils.setProperty(getBean(), name, value);
