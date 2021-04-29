@@ -1,26 +1,26 @@
-<configuration name="SimpleConfiguration">
-	<adapter name="HelloUniverse">
-		<receiver name="HelloUniverse">
+<configuration name="SimpleConfiguration" className="nl.nn.adapterframework.configuration.Configuration">
+	<adapter name="HelloUniverse" className="nl.nn.adapterframework.core.Adapter">
+		<receiver name="HelloUniverse" className="nl.nn.adapterframework.receivers.Receiver">
 			<listener name="HelloUniverse" className="nl.nn.adapterframework.receivers.JavaListener"/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${instance.name}/HelloUniverse_In"/>
 		</receiver>
-		<pipeline firstPipe="HelloUniverse">
-			<exit path="EXIT" state="success"/>
+		<pipeline firstPipe="HelloUniverse" className="nl.nn.adapterframework.core.PipeLine">
+			<exit path="EXIT" state="success" className="nl.nn.adapterframework.core.PipeLineExit"/>
 			<pipe name="HelloUniverse" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender" returnString="Hello, Universe!"/>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${instance.name}/HelloUniverse_Out"/>
-				<forward name="success" path="EXIT"/>
+				<forward name="success" path="EXIT" className="nl.nn.adapterframework.core.PipeForward"/>
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="HelloBeautifulWorld" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-		<receiver name="HelloBeautifulWorld">
+	<adapter name="HelloBeautifulWorld" className="nl.nn.adapterframework.core.Adapter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+		<receiver name="HelloBeautifulWorld" className="nl.nn.adapterframework.receivers.Receiver">
 			<listener name="HelloBeautifulWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
 		</receiver>
-		<pipeline firstPipe="HelloBeautifulWorld">
-			<exit path="EXIT" state="success"/>
+		<pipeline firstPipe="HelloBeautifulWorld" className="nl.nn.adapterframework.core.PipeLine">
+			<exit path="EXIT" state="success" className="nl.nn.adapterframework.core.PipeLineExit"/>
 			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World" className="nl.nn.adapterframework.pipes.FixedResultPipe">
-				<forward name="success" path="EXIT"/>
+				<forward name="success" path="EXIT" className="nl.nn.adapterframework.core.PipeForward"/>
 			</pipe>
 		</pipeline>
 	</adapter>
