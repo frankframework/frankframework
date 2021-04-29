@@ -15,17 +15,22 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.function.Consumer;
 
+import org.apache.logging.log4j.Logger;
+
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.testtool.TestTool;
 
 public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
-	
+	private Logger log = LogUtil.getLogger(this);
+
 	private @Setter @Getter TestTool testTool;
 
 	@Override
@@ -44,10 +49,18 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 	}
 
 	@Override
-	public <T> T toWriter(T message, Writer writer) {
+	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message) {
-			((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
-			return message;
+			try {
+				((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
+			} catch (Throwable t) {
+				exceptionNotifier.accept(t);
+				try {
+					writer.close();
+				} catch (IOException e) {
+					log.error("Could not close writer", e);
+				}
+			}
 		} 
 		if (message instanceof WriterPlaceHolder) {
 			WriterPlaceHolder writerPlaceHolder = (WriterPlaceHolder)message;
@@ -58,12 +71,20 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 	}
 
 	@Override
-	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier) {
+	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message) {
 			Message m = (Message)message;
 			charsetNotifier.accept(m.getCharset());
-			((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
-			return message;
+			try {
+				((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
+			} catch (Throwable t) {
+				exceptionNotifier.accept(t);
+				try {
+					outputStream.close();
+				} catch (IOException e) {
+					log.error("Could not close output stream", e);
+				}
+			}
 		}
 		return message;
 	}
