@@ -923,17 +923,18 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (errorSender!=null) {
 				errorSender.sendMessage(message, null);
 			}
-			ProcessState targetState = null;
-			if (knownProcessStates.contains(ProcessState.ERROR)) {
-				targetState = ProcessState.ERROR;
-			} else {
-				if (knownProcessStates.contains(ProcessState.DONE)) {
-					targetState = ProcessState.DONE;
-				}
-			}
-			if (targetState !=null && getListener() instanceof IHasProcessState) {
-				changeProcessState(rawMessage, targetState, comments);
-			}
+			// processState change is currently handled just before listener.afterMessageProcessed() is called
+//			ProcessState targetState = null;
+//			if (knownProcessStates.contains(ProcessState.ERROR)) {
+//				targetState = ProcessState.ERROR;
+//			} else {
+//				if (knownProcessStates.contains(ProcessState.DONE)) {
+//					targetState = ProcessState.DONE;
+//				}
+//			}
+//			if (targetState !=null && getListener() instanceof IHasProcessState) {
+//				changeProcessState(rawMessage, targetState, comments);
+//			}
 			if (errorStorage!=null) {
 				Serializable sobj;
 				if (rawMessage == null) {
@@ -1422,7 +1423,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			threadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, code);
 		}
 	}
-	
+
 	@SuppressWarnings("synthetic-access")
 	private synchronized void cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
 		ProcessResultCacheItem cacheItem=getCachedProcessResult(messageId);
@@ -1473,26 +1474,25 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 				resetRetryInterval();
 				return false;
-			} else {
-				threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
-				if (getMaxRetries()<0) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times; maxRetries=["+getMaxRetries()+"]");
-					return false;
-				}
-				if (prci.receiveCount<=getMaxRetries()) {
-					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
-					resetRetryInterval();
-					return false;
-				}
-				warn("message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
-				String comments="too many retries";
-				if (prci.receiveCount>getMaxRetries()+1) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+prci.receiveCount+"]; maxRetries=["+getMaxRetries()+"]");
-				}
-				moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, message, threadContext, prci, comments); // cast to M is done only if !manualRetry
-				prci.receiveCount++; // make sure that the next time this message is seen, the retry interval will be increased
-				return true;
 			}
+			threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
+			if (getMaxRetries()<0) {
+				increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times; maxRetries=["+getMaxRetries()+"]");
+				return false;
+			}
+			if (prci.receiveCount<=getMaxRetries()) {
+				log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
+				resetRetryInterval();
+				return false;
+			}
+			warn("message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
+			String comments="too many retries";
+			if (prci.receiveCount>getMaxRetries()+1) {
+				increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+prci.receiveCount+"]; maxRetries=["+getMaxRetries()+"]");
+			}
+			moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, message, threadContext, prci, comments); // cast to M is done only if !manualRetry
+			prci.receiveCount++; // make sure that the next time this message is seen, the retry interval will be increased
+			return true;
 		} 
 		return isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId);
 	}

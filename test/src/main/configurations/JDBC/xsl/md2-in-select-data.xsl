@@ -19,6 +19,9 @@
                     <column>
                         <name>tnumber</name>
                     </column>
+                    <column>
+                        <name>tvarchar</name>
+                    </column>
                 </columns>
                 <where>tnumber=<xsl:value-of select="$tnumber"/></where>
                 <order>tkey</order>

@@ -46,6 +46,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	private String timestampField;
 	private String commentField;
 	private String selectCondition;
+	private int maxCommentSize=-1;
 	
 	private Map<ProcessState, String> statusValues = new HashMap<>();
 
@@ -101,7 +102,11 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		String key=getIdFromRawMessage(rawMessage, null);
 		List<String> parameters = new ArrayList<>();
 		if (StringUtils.isNotEmpty(getCommentField()) && query.substring(query.indexOf('?')+1).contains("?")) {
-			parameters.add(reason);
+			if (getMaxCommentSize()>=0 && reason.length()>getMaxCommentSize()) {
+				parameters.add(reason.substring(0, getMaxCommentSize()));
+			} else {
+				parameters.add(reason);
+			}
 		}
 		parameters.add(key);
 		return execute(connection, query, parameters.toArray(new String[parameters.size()])) ? rawMessage : null;
@@ -196,6 +201,14 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 	public String getCommentField() {
 		return commentField;
+	}
+
+	@IbisDoc({"6", "(optional) Maximum length of strings to be stored in commentField", "-1 (unlimited)"})
+	public void setMaxCommentSize(int maxCommentSize) {
+		this.maxCommentSize = maxCommentSize;
+	}
+	public int getMaxCommentSize() {
+		return maxCommentSize;
 	}
 
 	@IbisDoc({"7", "(optional) Value of statusField indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.", ""})
