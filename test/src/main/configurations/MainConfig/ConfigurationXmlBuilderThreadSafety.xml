@@ -1,7 +1,6 @@
 <module>
 	<adapter name="XmlBuilderThreadSafety">
-		<receiver
-			>
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XmlBuilderThreadSafety"
