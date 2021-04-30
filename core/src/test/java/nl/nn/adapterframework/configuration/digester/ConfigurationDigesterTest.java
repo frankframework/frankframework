@@ -11,6 +11,7 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -26,6 +27,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
+@Ignore
 public class ConfigurationDigesterTest {
 
 	@Test
