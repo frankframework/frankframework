@@ -1,0 +1,10 @@
+<!DOCTYPE foo [
+	<!ENTITY entry1 "<data1/>">
+	<!ENTITY entry2 "<data2/>">
+	<!ENTITY entry3 "<data3/>">
+]>
+<data name="attr">
+	&entry1;
+	&entry3;
+	&entry2;
+</data>
