@@ -70,8 +70,7 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<!--adapter description="Actuver Http" name="StartActuverHttp"> <receiver 
-		className="nl.nn.adapterframework.receivers.GenericReceiver" name="StartActuverHttp"> 
+	<!--adapter description="Actuver Http" name="StartActuverHttp"> <receiver> 
 		<listener className="nl.nn.adapterframework.receivers.JavaListener" name="StartActuverHttp"/> 
 		</receiver> <pipeline firstPipe="ActuverHttpSend"> <exits> <exit path="READY" 
 		state="success"/> </exits> <pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" 

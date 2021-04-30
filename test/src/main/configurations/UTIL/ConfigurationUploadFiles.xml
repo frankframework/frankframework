@@ -1,8 +1,6 @@
 <module>
 	<adapter name="UploadFiles-get">
-		<receiver name="UploadFiles-get"
-				className="nl.nn.adapterframework.receivers.GenericReceiver"
-				>
+		<receiver>
 				<listener name="UploadFiles-get" 
 					className="nl.nn.adapterframework.http.RestListener"
 					uriPattern="upload" 
@@ -27,9 +25,7 @@
 	</adapter>
 	
 	<adapter name="UploadFiles-post">
-		<receiver name="UploadFiles-post" 
-				className="nl.nn.adapterframework.receivers.GenericReceiver"
-				>
+		<receiver>
 				<listener name="UploadFiles-post"
 					className="nl.nn.adapterframework.http.RestListener"
 					uriPattern="upload" 

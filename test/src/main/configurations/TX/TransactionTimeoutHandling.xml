@@ -4,8 +4,6 @@
 		description="Adapter for testing transactionTimeout handling. (Transacted)"
 	>
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GenericReceiverTransactionTimeoutHandlingTransacted"
 			transactionTimeout="2"
 			transactionAttribute="Required"
 		>
@@ -75,8 +73,6 @@
 		description="Adapter for testing transactionTimeout handling. (Non transacted)"
 	>
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GenericReceiverTransactionTimeoutHandlingNonTransacted"
 			transactionTimeout="2"
 		>
 			<listener

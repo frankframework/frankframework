@@ -1,9 +1,7 @@
 <module>
 	<adapter name="GetStartTimeStamp" active="${MemoryLeak.active}"
 		description="gets the start time stamp">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GetStartTimeStamp">
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-GetStartTimeStamp" />
@@ -36,8 +34,7 @@
 	</adapter>
 	<adapter name="MemoryLeak" active="${MemoryLeak.active}"
 		description="Pass a message through 10 adapters">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakAdapterListener"
 				serviceName="ibis4test-MemoryLeak"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
@@ -59,8 +56,7 @@
 	<adapter name="MemoryLeakSubAdapter1"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener1"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -82,8 +78,7 @@
 	<adapter name="MemoryLeakSubAdapter2"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener2"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -104,8 +99,7 @@
 	<adapter name="MemoryLeakSubAdapter3"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener3"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -126,8 +120,7 @@
 	<adapter name="MemoryLeakSubAdapter4"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener4"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -148,8 +141,7 @@
 	<adapter name="MemoryLeakSubAdapter5"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener5"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -170,8 +162,7 @@
 	<adapter name="MemoryLeakSubAdapter6"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener6"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -192,8 +183,7 @@
 	<adapter name="MemoryLeakSubAdapter7"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener7"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -214,8 +204,7 @@
 	<adapter name="MemoryLeakSubAdapter8"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener8"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -236,8 +225,7 @@
 	<adapter name="MemoryLeakSubAdapter9"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener9"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -255,9 +243,7 @@
 	</adapter>
 	<adapter name="GetEndTimeStamp" active="${MemoryLeak.active}"
 		description="gets the end time stamp">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GetEndTimeStamp">
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-GetEndTimeStamp" />
@@ -289,9 +275,7 @@
 	</adapter>
 	<adapter name="CompareDuration" active="${MemoryLeak.active}"
 		description="compares the actual duration with the expected duration if actual is longer than expected fails">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="CompareDuration">
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-CompareDuration" />
