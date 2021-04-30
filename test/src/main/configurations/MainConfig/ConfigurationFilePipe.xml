@@ -14,7 +14,7 @@
 			</pipe>
 			
 			<!-- get file text from sample file -->
-			<pipe name="setFileData" className="nl.nn.adapterframework.pipes.FixedResult" filename="/FilePipe/sample.txt">
+			<pipe name="setFileData" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="/FilePipe/sample.txt">
 			  <forward name="success" path="write file"/>
 			</pipe>
 			

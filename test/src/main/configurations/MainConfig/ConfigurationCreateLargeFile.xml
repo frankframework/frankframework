@@ -23,7 +23,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="ReadFile"
-				className="nl.nn.adapterframework.pipes.FixedResult"
+				className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				storeResultInSessionKey="fileContent"
 				filename="CreateLargeFile/input_small.txt">
 				<forward name="success" path="CreateFile" />

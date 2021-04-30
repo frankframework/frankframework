@@ -7,7 +7,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="ResolveString" className="nl.nn.adapterframework.pipes.FixedResult" filename="StringResolver/result.xml" substituteVars="true">
+			<pipe name="ResolveString" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="StringResolver/result.xml" substituteVars="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

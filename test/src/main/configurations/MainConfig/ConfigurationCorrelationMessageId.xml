@@ -8,7 +8,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="ResolveString" className="nl.nn.adapterframework.pipes.FixedResult" filename="CorrelationMessageId/result.xml" substituteVars="true">
+			<pipe name="ResolveString" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="CorrelationMessageId/result.xml" substituteVars="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -26,7 +26,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="ResolveString" className="nl.nn.adapterframework.pipes.FixedResult" filename="CorrelationMessageId/result.xml" substituteVars="true">
+			<pipe name="ResolveString" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="CorrelationMessageId/result.xml" substituteVars="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

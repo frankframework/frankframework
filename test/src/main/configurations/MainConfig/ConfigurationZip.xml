@@ -40,7 +40,7 @@
 			
 			<pipe
 				name="ReCreateZip"
-				className="nl.nn.adapterframework.pipes.FixedResult" 
+				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/recreated.zip"
 				>
 				<forward name="success" path="ReCreateZip2"/>
@@ -75,7 +75,7 @@
 
 			<pipe
 				name="SimpleZip"
-				className="nl.nn.adapterframework.pipes.FixedResult" 
+				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/simple.zip"
 				>
 				<forward name="success" path="SimpleZip2"/>
@@ -106,7 +106,7 @@
 			
 			<pipe
 				name="SimpleZipX"
-				className="nl.nn.adapterframework.pipes.FixedResult" 
+				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/simple.zip"
 				>
 				<forward name="success" path="SimpleZipX2"/>

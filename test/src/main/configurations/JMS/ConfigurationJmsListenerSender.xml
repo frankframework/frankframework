@@ -139,7 +139,7 @@
 					jmsRealm="jdbc" slotId="${applicationId}/JmsFFSenderWithRead" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				returnString="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -161,7 +161,7 @@
 					<param name="destination" sessionKey="originalMessage" xpathExpression="*/@destination" />
 				</sender>
 			</pipe>
-			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				returnString="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>

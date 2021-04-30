@@ -31,7 +31,7 @@
 				<messageLog className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/MessageStoreListener2" type="M" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

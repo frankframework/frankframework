@@ -47,7 +47,7 @@
 					value="ESB.HumanResources.BS.AccessRightsManagement.AccessRightsManagement.1.GetUserAndOfficeDataIntermediary.1.Response" />
 			</outputWrapper>
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				filename="WsdlGenerator/xml/fixedReply.xml">
 				<forward name="success" path="READY" />
 			</pipe>
@@ -93,7 +93,7 @@
 				schemaLocation="http://nn.nl/XSD/PropertyAndCasualtyRetail/Vehicle/PropertyAndCasualtyRetailVehicle/1/FindVehicle/1 /WsdlGenerator/xsd/XSD_FindVehicleType_Reply.xsd"
 				soapBody="FindVehicleTypeRLY" throwException="true" />
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				filename="WsdlGenerator/xml/fixedReply2.xml">
 				<forward name="success" path="READY" />
 			</pipe>
@@ -141,7 +141,7 @@
 					value="ESB.CustomerAdministration.TS.Party.Party.1.FindBPPensions.1.Response" />
 			</outputWrapper>
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				filename="WsdlGenerator/xml/fixedReply3.xml">
 				<forward name="success" path="READY" />
 			</pipe>
@@ -197,7 +197,7 @@
 				<param name="destination" value="ESB.AccountInformation.BS.AccountInformation.1.GetPaymentReferenceAndPayLink.1.Response"/>
 			</outputWrapper>
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				filename="WsdlGenerator/xml/fixedReply4.xml">
 				<forward name="success" path="READY" />
 			</pipe>
