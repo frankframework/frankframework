@@ -22,9 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import javax.xml.XMLConstants;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;

@@ -26,11 +26,11 @@ import nl.nn.adapterframework.xml.AttributesWrapper;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 
 public class ElementRoleFilter extends FullXmlFilter {
-	
+
 	private final String ELEMENTROLE_ATTRIBUTE = "elementRole";
 
-	Stack<String> elementNames = new Stack<>();
-	
+	private Stack<String> elementNames = new Stack<>();
+
 	public ElementRoleFilter() {
 		super();
 	}

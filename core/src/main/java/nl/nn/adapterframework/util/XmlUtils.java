@@ -109,7 +109,6 @@ import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.SaxException;
-import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Some utilities for working with XML.
