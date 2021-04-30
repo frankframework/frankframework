@@ -194,6 +194,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			setName("Receiver ["+receiver.getName()+"]");
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {
 			IPullingListener<M> listener = null;
@@ -284,7 +285,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							if (txStatus != null) {
 								if (txStatus.isRollbackOnly()) {
 									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-									rollBack(txStatus, rawMessage, "pipeline processing ended with status RollbackOnly");
+									rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
 								} else {
 									txManager.commit(txStatus);
 								}
@@ -306,7 +307,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
-							rollBack(txStatus, rawMessage, "Rollback because transaction has unexpectedly not completed");
+							rollBack(txStatus, rawMessage, "Rollback because transaction has terminated unexpectedly");
 						}
 					}
 				}
