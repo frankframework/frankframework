@@ -18,21 +18,21 @@ package nl.nn.adapterframework.configuration.digester;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.digester3.Rule;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.ClassUtils;
-import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
-
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.digester3.Rule;
+import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.ClassUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
 
 /**
  * Helper class to check that each attribute set from the configuration is available on the 

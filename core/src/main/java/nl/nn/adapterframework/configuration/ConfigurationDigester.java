@@ -48,6 +48,7 @@ import nl.nn.adapterframework.configuration.filters.OnlyActiveFilter;
 import nl.nn.adapterframework.configuration.filters.SkipContainersFilter;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -95,7 +96,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	String lastResolvedEntity = null;
-	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", true);
+	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", false);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private Configuration configuration;
@@ -186,22 +187,16 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+			String loaded = resolveEntitiesAndProperties(configuration, configurationResource, appConstants);
 
 			List<String> propsToHide = new ArrayList<>();
 			String propertiesHideString = appConstants.getString("properties.hide", null);
 			if (propertiesHideString != null) {
 				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 			}
-
-			String original = resolveEntitiesAndProperties(configurationResource, appConstants);
-			configuration.setOriginalConfiguration(original);
-			String loaded = original;
-
-			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
-				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
-			}
-
-			String loadedHide = StringResolver.substVars(original, appConstants, null, propsToHide);
+			String loadedHide = StringResolver.substVars(configuration.getOriginalConfiguration(), appConstants, null, propsToHide);
+			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(loadedHide);
+			loadedHide = ConfigurationUtils.getActivatedConfiguration(loadedHide);
 			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
 				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}
@@ -224,29 +219,44 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
+	private String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException {
+		return resolveEntitiesAndProperties(configuration, resource, appConstants, preparse);
+	}
+
 	/**
 	 * Performs an Identity-transform, which resolves entities with content from files found on the ClassPath.
 	 * Resolve all non-attribute properties
 	 */
-	public String resolveEntitiesAndProperties(Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException {
+	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean preparse) throws IOException, SAXException, ConfigurationException {
+		XmlWriter writer;
+		ContentHandler handler;
 		if(preparse) {
-			XmlWriter writer = new ElementPropertyResolver(appConstants);
-			ContentHandler handler = getCanonicalizedConfiguration(writer);
-			ContentHandler onlyActive = new OnlyActiveFilter(handler, appConstants);
-
-			XmlUtils.parseXml(resource, onlyActive);
-			log.debug("Canonicalized configuration ["+writer.toString()+"]");
-			return writer.toString();
+			writer = new ElementPropertyResolver(appConstants);
+			handler = getCanonicalizedConfiguration(writer);
+			handler = new OnlyActiveFilter(handler, appConstants);
+		} else {
+			writer = new XmlWriter();
+			handler = writer;
 		}
-		else {
-			XmlWriter resolver = new XmlWriter();
-			XmlUtils.parseXml(resource, resolver);
 
-			String configuration = resolver.toString();
-			configuration = StringResolver.substVars(configuration, appConstants);
-			configuration = ConfigurationUtils.getCanonicalizedConfiguration(configuration);
-			return ConfigurationUtils.getActivatedConfiguration(configuration);
+		XmlWriter originalConfigWriter = new XmlWriter();
+		handler = new XmlTee(handler, originalConfigWriter);
+
+		XmlUtils.parseXml(resource, handler);
+		configuration.setOriginalConfiguration(originalConfigWriter.toString());
+		String loaded = writer.toString();
+
+		if(!preparse) {
+			loaded = StringResolver.substVars(loaded, appConstants);
+			loaded = ConfigurationUtils.getCanonicalizedConfiguration(loaded);
+			loaded = ConfigurationUtils.getActivatedConfiguration(loaded);
 		}
+
+		if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
+			loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
+		}
+
+		return loaded;
 	}
 
 	public ContentHandler getCanonicalizedConfiguration(ContentHandler writer) throws IOException, SAXException {

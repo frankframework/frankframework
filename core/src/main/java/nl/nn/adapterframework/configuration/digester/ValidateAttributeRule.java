@@ -82,14 +82,14 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		if (rm!=null) {
 			try {
 				Object bean = getBean();
-				Object dv = rm.invoke(bean, new Object[0]);
+				Object defaultValue = rm.invoke(bean, new Object[0]);
 				if (bean instanceof HasSpecialDefaultValues) {
-					dv = ((HasSpecialDefaultValues)bean).getSpecialDefaultValue(name, dv, attrs);
+					defaultValue = ((HasSpecialDefaultValues)bean).getSpecialDefaultValue(name, defaultValue, attrs);
 				}
-				if (dv!=null) {
+				if (defaultValue!=null) {
 					if (value.length()==0) {
 						addLocalWarning("attribute ["+name+"] has no value");
-					} else if (equals(dv, value)) {
+					} else if (equals(defaultValue, value)) {
 						addLocalWarning("attribute ["+name+"] already has a default value ["+value+"]");
 					}
 				}
@@ -102,11 +102,14 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		}
 	}
 
-	private boolean equals(Object dv, String value) {
-		return	(dv instanceof String && value.equals(dv)) ||
-				(dv instanceof Boolean && Boolean.valueOf(value).equals(dv)) ||
-				(dv instanceof Integer && Integer.valueOf(value).equals(dv)) ||
-				(dv instanceof Long && Long.valueOf(value).equals(dv));
+	/**
+	 * Fancy equals that type-checks one value against another.
+	 */
+	private boolean equals(Object defaultValue, String value) {
+		return	(defaultValue instanceof String && value.equals(defaultValue)) ||
+				(defaultValue instanceof Boolean && Boolean.valueOf(value).equals(defaultValue)) ||
+				(defaultValue instanceof Integer && Integer.valueOf(value).equals(defaultValue)) ||
+				(defaultValue instanceof Long && Long.valueOf(value).equals(defaultValue));
 	}
 
 	private void checkDeprecationAndConfigurationWarning(String name, Method m) {

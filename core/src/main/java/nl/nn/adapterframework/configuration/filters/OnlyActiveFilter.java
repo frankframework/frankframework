@@ -17,7 +17,6 @@ package nl.nn.adapterframework.configuration.filters;
 
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -56,11 +55,12 @@ public class OnlyActiveFilter extends FullXmlFilter {
 		}
 
 		String active = atts.getValue(ACTIVE_ATTRIBUTE);
-		if(StringUtils.isNotEmpty(active) && properties != null) {
+		if(active != null && properties != null) {
 			active = StringResolver.substVars(active, properties);
 		}
 
-		if (StringUtils.isNotEmpty(active) && !(active.equalsIgnoreCase("true") || active.equalsIgnoreCase("!false"))) {
+		//If an active property is present but EMPTY, assume false.
+		if (active != null && !(active.equalsIgnoreCase("true") || active.equalsIgnoreCase("!false"))) {
 			suppressLevel = 1;
 			return;
 		}

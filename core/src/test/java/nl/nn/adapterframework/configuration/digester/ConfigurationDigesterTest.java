@@ -2,21 +2,26 @@ package nl.nn.adapterframework.configuration.digester;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 import java.util.Properties;
 
 import javax.xml.validation.ValidatorHandler;
 
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXParseException;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -24,7 +29,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
 public class ConfigurationDigesterTest {
 
 	@Test
-	public void simpleConfigurationResolver() throws Exception {
+	public void testNewCanonicalizer() throws Exception {
 		XmlWriter writer = new XmlWriter();
 		ConfigurationDigester digester = new ConfigurationDigester();
 		ContentHandler handler = digester.getCanonicalizedConfiguration(writer, ConfigurationUtils.FRANK_CONFIG_XSD, new XmlErrorHandler());
@@ -32,21 +37,54 @@ public class ConfigurationDigesterTest {
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		XmlUtils.parseXml(resource, handler);
 		String result = writer.toString();
-		String expected = TestFileUtils.getTestFile("/Digester/resolvedConfiguration.xml");
+		String expected = TestFileUtils.getTestFile("/Digester/Resolved/SimpleConfiguration.xml");
 		MatchUtils.assertXmlEquals(expected, result);
 	}
 
+	//Both OLD and NEW configuration parsers should output the same!!
 	@Test
-	public void normalConfigurationResolver() throws Exception {
+	public void testConfigurationPreParser() throws Exception {
 		ConfigurationDigester digester = new ConfigurationDigester();
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		Properties properties = new Properties();
 		properties.setProperty("HelloWorld.active", "false");
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
-		String result = digester.resolveEntitiesAndProperties(resource, properties);
+		Configuration configuration = new TestConfiguration();
+		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 
-		String expected = TestFileUtils.getTestFile("/Digester/resolvedConfiguration2.xml");
+		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfiguration.xml");
 		MatchUtils.assertXmlEquals(expected, result);
+
+		String original = TestFileUtils.getTestFile("/Digester/Original/SimpleConfiguration.xml");
+		MatchUtils.assertXmlEquals(original, configuration.getOriginalConfiguration());
+	}
+
+	//Both OLD and NEW configuration parsers should output the same!!
+	@Test
+	public void testOldSchoolConfigurationParser() throws Exception {
+		ConfigurationDigester digester = new ConfigurationDigester();
+		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
+		Properties properties = new Properties();
+		properties.setProperty("HelloWorld.active", "false");
+		properties.setProperty("HelloBeautifulWorld.active", "!false");
+		Configuration configuration = new TestConfiguration();
+		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
+
+		//Unfortunately we need to cleanup the result a bit...
+		result = result.replaceAll("(</?module>)", "");//Remove the modules root tag
+		result = result.replaceAll("(</?exits>)", "");//Remove the exits tag
+		result = result.replace("<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">", "").replace("</root>", "");//Remove the root tag
+
+		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfiguration.xml");
+
+		result = MatchUtils.xmlPretty(result, true);
+		expected = MatchUtils.xmlPretty(expected, true);
+
+		Diff diff = XMLUnit.compareXML(expected, result); //We need to use XML Compare as the order is different in the old canonical xslt
+		assertTrue(diff.toString(), diff.similar());
+
+		String original = TestFileUtils.getTestFile("/Digester/Original/SimpleConfiguration.xml");
+		MatchUtils.assertXmlEquals(original, configuration.getOriginalConfiguration());
 	}
 
 	@Test
@@ -65,7 +103,7 @@ public class ConfigurationDigesterTest {
 	}
 
 	@Test
-	public void frankConfigXsdWithFixedAttributed() throws Exception {
+	public void testFixedValueAttributeResolverWithFrankConfig() throws Exception {
 		URL schemaURL = TestFileUtils.getTestFileURL(ConfigurationUtils.FRANK_CONFIG_XSD);
 		ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(schemaURL);
 
@@ -73,7 +111,7 @@ public class ConfigurationDigesterTest {
 		validatorHandler.setContentHandler(writer);
 		validatorHandler.setErrorHandler(new XmlErrorHandler());
 
-		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/PreParsedConfiguration.xml");
+		Resource resource = Resource.getResource("/Digester/PreParsedConfiguration.xml");
 		assertNotNull(resource);
 		XmlUtils.parseXml(resource, validatorHandler);
 

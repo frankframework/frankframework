@@ -25,7 +25,7 @@
       <xs:attribute name="allowCircularReferences" type="xs:boolean" />
       <xs:attribute name="displayName" type="xs:string" />
       <xs:attribute name="id" type="xs:string" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.Configuration" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.Configuration" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="Adapter">
@@ -83,7 +83,7 @@
       <xs:attribute name="requestReplyLogging" type="xs:boolean" />
       <xs:attribute name="targetDesignDocument" type="xs:string" />
       <xs:attribute name="elementRole" type="xs:string" fixed="adapter" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.Adapter" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.Adapter" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="Receiver">
@@ -258,7 +258,7 @@
       </xs:attribute>
       <xs:attribute name="transacted" type="xs:boolean" />
       <xs:attribute name="elementRole" type="xs:string" fixed="receiver" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.Receiver" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.Receiver" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="Param">
@@ -395,7 +395,7 @@
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="elementRole" type="xs:string" fixed="param" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.parameters.Parameter" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.parameters.Parameter" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="Pipeline">
@@ -477,7 +477,7 @@
       </xs:attribute>
       <xs:attribute name="transacted" type="xs:boolean" />
       <xs:attribute name="elementRole" type="xs:string" fixed="pipeline" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeLine" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeLine" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="Forward">
@@ -497,7 +497,7 @@
       <xs:attribute name="name" type="xs:string" />
       <xs:attribute name="path" type="xs:string" />
       <xs:attribute name="elementRole" type="xs:string" fixed="forward" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeForward" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeForward" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="Locker">
@@ -633,7 +633,7 @@
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="elementRole" type="xs:string" fixed="locker" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.util.Locker" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.util.Locker" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="Exit">
@@ -669,7 +669,7 @@
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="elementRole" type="xs:string" fixed="exit" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeLineExit" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeLineExit" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="Flow">
@@ -859,7 +859,7 @@
       </xs:attribute>
       <xs:attribute name="transacted" type="xs:boolean" />
       <xs:attribute name="elementRole" type="xs:string" fixed="job" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.JobDef" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.JobDef" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="DirectoryCleaner">

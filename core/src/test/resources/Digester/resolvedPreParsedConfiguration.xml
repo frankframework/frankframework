@@ -1,12 +1,12 @@
-<Configuration xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd" name="My first beautiful configuration" className="nl.nn.adapterframework.configuration.Configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<Adapter name="HelloBeautifulWorld" elementRole="adapter" className="nl.nn.adapterframework.core.Adapter">
-		<Receiver name="HelloBeautifulWorld" elementRole="receiver" className="nl.nn.adapterframework.receivers.Receiver">
+<Configuration xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd" name="My first beautiful configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Adapter name="HelloBeautifulWorld" elementRole="adapter">
+		<Receiver name="HelloBeautifulWorld" elementRole="receiver">
 			<JavaListener name="HelloBeautifulWorld" elementRole="listener" className="nl.nn.adapterframework.receivers.JavaListener"/>
 		</Receiver>
-		<Pipeline firstPipe="HelloBeautifulWorld" elementRole="pipeline" className="nl.nn.adapterframework.core.PipeLine">
-			<Exit path="EXIT" state="success" elementRole="exit" className="nl.nn.adapterframework.core.PipeLineExit"/>
+		<Pipeline firstPipe="HelloBeautifulWorld" elementRole="pipeline">
+			<Exit path="EXIT" state="success" elementRole="exit"/>
 			<FixedResultPipe name="HelloBeautifulWorld" returnString="Hello Beautiful World" elementRole="pipe" className="nl.nn.adapterframework.pipes.FixedResultPipe">
-				<Forward name="success" path="EXIT" elementRole="forward" className="nl.nn.adapterframework.core.PipeForward"/>
+				<Forward name="success" path="EXIT" elementRole="forward"/>
 			</FixedResultPipe>
 		</Pipeline>
 	</Adapter>

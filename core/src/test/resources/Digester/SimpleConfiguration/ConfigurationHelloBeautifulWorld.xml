@@ -8,7 +8,6 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 <root
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd"
-	name="My first beautiful configuration"
 	>
 	<Adapter name="HelloBeautifulWorld" active="${HelloBeautifulWorld.active}">
 		<Receiver
