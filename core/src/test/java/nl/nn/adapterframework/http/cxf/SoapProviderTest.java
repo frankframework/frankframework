@@ -53,6 +53,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.stream.Message;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SoapProviderTest {
@@ -145,10 +146,10 @@ public class SoapProviderTest {
 		//Retrieve sessionkey the attachment was stored in
 		String sessionKey = XmlUtils.getChildTagAsString(attachment, "sessionKey");
 		assertNotNull(sessionKey);
-		InputStream attachmentStream = (InputStream) session.get(sessionKey);
+		Message attachmentMessage = (Message) session.get(sessionKey);
 
 		//Verify that the attachment sent, was received properly
-		assertEquals(ATTACHMENT_CONTENT, Misc.streamToString(attachmentStream));
+		assertEquals(ATTACHMENT_CONTENT, Misc.streamToString(attachmentMessage.asInputStream()));
 
 		//Verify the content type
 		Element mimeTypes = XmlUtils.getFirstChildTag(attachment, "mimeHeaders");
