@@ -1,7 +1,6 @@
 <module>
 	<adapter name="WebServiceListener" description="Test the functioning of the WebServiceListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListener">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				name="urn:ws" />
 		</receiver>
@@ -16,8 +15,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerError"
 		description="Test the functioning of the WebServiceListener (error)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerError">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				name="urn:ws_error" />
 		</receiver>
@@ -32,8 +30,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerTimeout"
 		description="Test the functioning of the WebServiceListener (timeout)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeout">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				name="urn:ws_timeout" />
 		</receiver>
@@ -48,8 +45,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="WebServiceSender" description="Test the functioning of the WebServiceSender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSender" />
 		</receiver>
@@ -70,8 +66,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderError"
 		description="Test the functioning of the WebServiceSender (error)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderError">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderError" />
 		</receiver>
@@ -91,8 +86,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderTimeoutGlobalForward"
 		description="Test the functioning of the WebServiceSender in combination with global-forward">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderTimeoutGlobalForward">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderTimeoutGlobalForward" />
 		</receiver>
@@ -146,8 +140,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderTimeout"
 		description="Test the functioning of the WebServiceSender (timeout)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderTimeout">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderTimeout" />
 		</receiver>

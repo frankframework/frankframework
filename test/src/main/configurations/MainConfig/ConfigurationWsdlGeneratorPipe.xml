@@ -1,7 +1,6 @@
 <module>
 	<adapter name="WsdlGeneratorPipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WsdlGeneratorPipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlGeneratorPipe" />
 		</receiver>

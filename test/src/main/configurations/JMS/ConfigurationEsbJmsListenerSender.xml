@@ -1,8 +1,7 @@
 <module>
 	<adapter name="EsbJmsRRSender" description="Test the functioning of the EsbJmsSender (RR)"
 		active="${active.tibco}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="EsbJmsRRSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-EsbJmsRRSender" />
 		</receiver>
@@ -34,8 +33,7 @@
 		active="${active.tibco}">
 		<errorMessageFormatter
 			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="EsbJmsRRListener">
+		<receiver>
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
 				destinationName="jms/GetMessageRequest" jmsRealm="qcf_tibco_esb_rr"
 				messageProtocol="RR" 
@@ -59,8 +57,7 @@
 	</adapter>
 	<adapter name="EsbJmsFFSender" description="Test the functioning of the EsbJmsSender (FF)"
 		active="${active.tibco}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="EsbJmsFFSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-EsbJmsFFSender" />
 		</receiver>
@@ -94,8 +91,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="EsbJmsFFSenderWithDatasource" active="${active.tibco}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="EsbJmsFFSenderWithDatasource">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-EsbJmsFFSenderWithDatasource" />
 		</receiver>
@@ -148,8 +144,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="EsbJmsFFSenderWithRead" active="${active.tibco}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="EsbJmsFFSenderWithRead">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-EsbJmsFFSenderWithRead" />
 		</receiver>
@@ -179,8 +174,7 @@
 	</adapter>
 	<adapter name="EsbJmsFFListener" description="Test the functioning of the EsbJmsListener (FF)"
 		active="${active.tibco}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="EsbJmsFFListener" transactionAttribute="Required" maxRetries="0">
+		<receiver transactionAttribute="Required" maxRetries="0">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
 				destinationName="jms/UpdateMessageAction" jmsRealm="qcf_tibco_esb_ff"
 				messageProtocol="FF" messageSelector="SOURCE='${hostname}_FF3'" />
@@ -231,8 +225,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="EsbJmsFFListener_subcall" active="${active.tibco}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="EsbJmsFFListener_subcall">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				name="EsbJmsFFListener_subcall" serviceName="ibis4test-EsbJmsFFListener_subcall" />
 		</receiver>

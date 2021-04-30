@@ -1,7 +1,6 @@
 <ibis>
 	<adapter name="ResultSet2FileSender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="ResultSet2FileSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-ResultSet2FileSender" />
 		</receiver>
