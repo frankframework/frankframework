@@ -146,6 +146,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
+		// skip moving message to DONE or ERROR, as this is now performed by Receiver calling changeProcessState()
 	}
 
 	@Override
