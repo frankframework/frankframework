@@ -129,7 +129,9 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						XmlBuilder sessionKey = new XmlBuilder("sessionKey");
 						sessionKey.setValue("attachment" + i);
 						attachment.addSubElement(sessionKey);
-						pipelineSession.put("attachment" + i, attachmentPart.getRawContent());
+						Message rawContent = new Message(attachmentPart.getRawContent());
+						rawContent.closeOnCloseOf(pipelineSession);
+						pipelineSession.put("attachment" + i, rawContent);
 						log.debug(getLogPrefix(correlationId)+"adding attachment [attachment" + i+"] to session");
 	
 						@SuppressWarnings("unchecked")
