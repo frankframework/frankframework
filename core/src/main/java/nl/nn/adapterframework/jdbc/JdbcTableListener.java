@@ -57,6 +57,9 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		if (StringUtils.isEmpty(getMessageField())) {
 			log.info(getLogPrefix()+"has no messageField specified. Will use keyField as messageField, too");
 		}
+		if (StringUtils.isEmpty(getStatusValue(ProcessState.ERROR))) {
+			throw new ConfigurationException(getLogPrefix()+"must specify statusValueError");
+		}
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.DONE))) {
 			throw new ConfigurationException(getLogPrefix()+"must specify statusValueProcessed");
 		}
