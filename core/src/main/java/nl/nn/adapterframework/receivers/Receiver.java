@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1083,11 +1081,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
 		Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 		try {
-			if(output.asObject() instanceof Closeable) {
-				((Closeable) output.asObject()).close();
+			if(output.asObject() instanceof AutoCloseable) {
+				output.close();
 			}
-		} catch (IOException e) {
-			// Ignore if already closed!
+		} catch (Exception e) {
+			log.warn("Could not close result message ["+output+"]", e);
 		}
 	}
 
@@ -1401,7 +1399,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			} finally {
 				if (pipelineSession != null ) {
-					if(!Message.isEmpty(result)) { //Don't close Message in case it's passed to a 'parent' adapter or ServiceDispatcher.
+					if(!Message.isEmpty(result) && result.isScheduledForCloseOnExitOf(pipelineSession)) { //Don't close Message in case it's passed to a 'parent' adapter or ServiceDispatcher.
+						log.debug("unscheduling result message ["+result+"] from close on exit");
 						result.unregisterCloseable(pipelineSession);
 					}
 					pipelineSession.close();
