@@ -412,7 +412,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public BaseConfigurationWarnings getConfigurationWarnings() {
 		return configurationWarnings;
 	}
-	
+
+	// Dummy setter to allow JmsRealms being added to Configurations via FrankDoc.xsd
 	public void registerJmsRealm(JmsRealm realm) {
 		JmsRealmFactory.getInstance().registerJmsRealm(realm);
 	}
