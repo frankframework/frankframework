@@ -36,7 +36,7 @@ class FrankDocletOptions {
 		STRICT_REL_PATH("strictPath"),
 		COMPATIBILITY_REL_PATH("compatibilityPath"),
 		JSON_REL_PATH("jsonPath");
-		
+
 		private @Getter String mavenName;
 
 		private Option(String mavenName) {
@@ -47,42 +47,34 @@ class FrankDocletOptions {
 	private static Map<String, Option> optionsByName;
 
 	private @Getter String outputBaseDir;
-	private @Getter String xsdStrictPath;
-	private @Getter String xsdCompatibilityPath;
-	private @Getter String jsonOutputPath;
+	private @Getter String xsdStrictPath = "xml/xsd/FrankConfig-strict.xsd";
+	private @Getter String xsdCompatibilityPath = "xml/xsd/FrankConfig-compatibility.xsd";
+	private @Getter String jsonOutputPath = "js/frankdoc.json";
 
 	static {
-		optionsByName = Arrays.asList(Option.values()).stream()
-				.collect(Collectors.toMap(Option::getMavenName, Function.identity()));
+		optionsByName = Arrays.asList(Option.values()).stream().collect(Collectors.toMap(Option::getMavenName, Function.identity()));
 	}
 
 	static void validateOptions(String[][] options) throws InvalidDocletOptionsException {
 		Set<Option> foundOptions = EnumSet.noneOf(Option.class);
-        for (int i = 0; i < options.length; i++) {
-            String[] commandLineOption = options[i];
-            String optionMavenName = getOptionMavenName(commandLineOption);
-			if (optionsByName.keySet().contains(optionMavenName)) {
-            	Option option = optionsByName.get(optionMavenName);
-            	if(foundOptions.contains(option)) {
-            		throw new InvalidDocletOptionsException(String.format("Duplicate option [%s]", "-" + option.getMavenName()));
-            	}
-            	if(commandLineOption.length != 2) {
-            		throw new InvalidDocletOptionsException(String.format("Only one value is allowed for option [%s], but got [%s]",
-            				Arrays.asList(commandLineOption).subList(1, commandLineOption.length).stream().collect(Collectors.joining(", "))));
-            	}
-            	foundOptions.add(option);
-            } 
-        }
-        Set<Option> omittedOptions = EnumSet.allOf(Option.class);
-        omittedOptions.removeAll(foundOptions);
-        if(! omittedOptions.isEmpty()) {
-        	throw new InvalidDocletOptionsException(String.format("Some required options are missing: [%s]",
-        			omittedOptions.stream().map(o -> "-" + o.getMavenName()).collect(Collectors.joining(", "))));
-        }
+		for(int i = 0; i < options.length; i++) {
+			String[] commandLineOption = options[i];
+			String optionMavenName = getOptionMavenName(commandLineOption);
+			if(optionsByName.keySet().contains(optionMavenName)) {
+				Option option = optionsByName.get(optionMavenName);
+				if(foundOptions.contains(option)) {
+					throw new InvalidDocletOptionsException(String.format("Duplicate option [%s]", "-" + option.getMavenName()));
+				}
+				if(commandLineOption.length != 2) {
+					throw new InvalidDocletOptionsException(String.format("Only one value is allowed for option [%s], but got [%s]", Arrays.asList(commandLineOption).subList(1, commandLineOption.length).stream().collect(Collectors.joining(", "))));
+				}
+				foundOptions.add(option);
+			}
+		}
 	}
 
 	static int optionLength(String option) {
-		if(! option.startsWith("-")) {
+		if(!option.startsWith("-")) {
 			return 0;
 		}
 		String key = option.substring(1);
@@ -94,7 +86,7 @@ class FrankDocletOptions {
 
 	private static String getOptionMavenName(String[] commandLineOption) throws InvalidDocletOptionsException {
 		String optionString = commandLineOption[0];
-		if(! optionString.substring(0, 1).equals("-")) {
+		if(!optionString.substring(0, 1).equals("-")) {
 			throw new InvalidDocletOptionsException(String.format("Option does not begin with \"-\": [%s]", optionString));
 		}
 		return optionString.substring(1);
@@ -123,7 +115,7 @@ class FrankDocletOptions {
 	}
 
 	private void setOption(Option opt, String value) {
-		switch(opt) {
+		switch (opt) {
 		case BASE_OUTPUT_DIR:
 			outputBaseDir = value;
 			break;
