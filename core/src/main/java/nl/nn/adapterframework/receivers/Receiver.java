@@ -373,7 +373,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
 				Object value = pipelineSession.get(key);
-				Message.asMessage(value).unregisterCloseable(pipelineSession);
+				Message.asMessage(value).unscheduleFromCloseOnExitOf(pipelineSession);
 				if (log.isDebugEnabled()) {
 					log.debug(getLogPrefix()+"returning session key [" + key + "] value [" + value + "]");
 				}
@@ -1081,9 +1081,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
 		Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 		try {
-			if(output.asObject() instanceof AutoCloseable) {
-				output.close();
-			}
+			output.close();
 		} catch (Exception e) {
 			log.warn("Could not close result message ["+output+"]", e);
 		}
@@ -1400,8 +1398,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			} finally {
 				if (pipelineSession != null ) {
 					if(!Message.isEmpty(result) && result.isScheduledForCloseOnExitOf(pipelineSession)) { //Don't close Message in case it's passed to a 'parent' adapter or ServiceDispatcher.
-						log.debug("unscheduling result message ["+result+"] from close on exit");
-						result.unregisterCloseable(pipelineSession);
+						log.debug("unscheduling result message from close on exit");
+						result.unscheduleFromCloseOnExitOf(pipelineSession);
 					}
 					pipelineSession.close();
 				}

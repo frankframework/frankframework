@@ -185,13 +185,13 @@ public class Message implements Serializable {
 		if (request instanceof InputStream) {
 			request = StreamUtil.onClose((InputStream)request, () -> {
 				if (log.isDebugEnabled()) log.debug("closed InputStream and unregistering Message ["+this+"] from close on exit");
-				unregisterCloseable(session);
+				unscheduleFromCloseOnExitOf(session);
 			});
 		}
 		if (request instanceof Reader) {
 			request = StreamUtil.onClose((Reader)request, () -> {
 				if (log.isDebugEnabled()) log.debug("closed Reader and unregistering Message ["+this+"] from close on exit");
-				unregisterCloseable(session);
+				unscheduleFromCloseOnExitOf(session);
 			});
 		}
 		session.scheduleCloseOnSessionExit(this);
@@ -201,7 +201,7 @@ public class Message implements Serializable {
 		return session.isScheduledForCloseOnExit(this);
 	}
 
-	public void unregisterCloseable(PipeLineSession session) {
+	public void unscheduleFromCloseOnExitOf(PipeLineSession session) {
 		session.unscheduleCloseOnSessionExit(this);
 	}
 	

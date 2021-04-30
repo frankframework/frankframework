@@ -189,7 +189,7 @@ public class PipeLineSessionBaseTest {
 		assertFalse(mb.isScheduledForCloseOnExitOf(session));
 
 		log.debug("test unschedule wrapped(c)");
-		mc.unregisterCloseable(session);
+		mc.unscheduleFromCloseOnExitOf(session);
 		
 		session.close();
 		

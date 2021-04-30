@@ -291,7 +291,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
+			// create a dummy Message, to be able to schedule the writer for close on exit of session
 			Message writerMessage = new Message(new StringReader("inspectXml")) {
+				@Override
 				public void close() throws IOException {
 					writer.close();
 				}

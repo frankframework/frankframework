@@ -185,7 +185,7 @@ public final class TestPipeline extends Base {
 			secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
 	
 			PipeLineResult plr = adapter.processMessage(messageId, new Message(message), pls);
-			plr.getResult().unregisterCloseable(pls);
+			plr.getResult().unscheduleFromCloseOnExitOf(pls);
 			return plr;
 		}
 	}
