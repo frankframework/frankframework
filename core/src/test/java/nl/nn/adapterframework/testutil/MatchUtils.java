@@ -72,18 +72,18 @@ public class MatchUtils {
 		}
 	}
 
-	public static void assertXmlEquals(String xmlExp, String xmlAct) {
+	public static void assertXmlEquals(String xmlExp, String xmlAct) throws IOException {
 		assertXmlEquals(null, xmlExp, xmlAct);
 	}
 
-	public static void assertXmlEquals(String description, String xmlExp, String xmlAct) {
+	public static void assertXmlEquals(String description, String xmlExp, String xmlAct) throws IOException {
 		assertXmlEquals(description, xmlExp, xmlAct, false);
 	}
 	
-	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces) {
+	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces) throws IOException {
 		String xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces);
 		String xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces);
-		assertEquals(description,xmlExpPretty,xmlActPretty);
+		TestAssertions.assertEqualsIgnoreWhitespaces(description,xmlExpPretty,xmlActPretty);
 	}
 	
 	public static JsonStructure string2Json(String json) {
@@ -91,8 +91,8 @@ public class MatchUtils {
 		return jsonStructure;
 	}
 
-	public static void assertJsonEqual(String description, String jsonExp, String jsonAct) {
-		assertEquals(description, Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct));
+	public static void assertJsonEqual(String description, String jsonExp, String jsonAct) throws IOException {
+		TestAssertions.assertEqualsIgnoreWhitespaces(description, Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct));
 	}
 
 	public static void assertTestFileEquals(String file1, URL url) throws IOException {

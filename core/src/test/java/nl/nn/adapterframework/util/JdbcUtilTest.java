@@ -2,6 +2,7 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -103,14 +104,14 @@ public class JdbcUtilTest {
 	}
 
 	@Test
-	public void testWarningsToString() {
+	public void testWarningsToString() throws IOException {
 		String expected = getExpectedWarningXml();
 		String actual = JdbcUtil.warningsToString(getWarnings());
 		MatchUtils.assertXmlEquals(expected,actual);
 	}
 
 	@Test
-	public void testWarningsToXml() throws SAXException {
+	public void testWarningsToXml() throws SAXException, IOException {
 		String expected = getExpectedWarningXml();
 		XmlWriter writer = new XmlWriter();
 		PrettyPrintFilter ppf = new PrettyPrintFilter(writer);

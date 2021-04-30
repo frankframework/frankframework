@@ -38,9 +38,9 @@ public class DocumentBuilderTest {
 			objectField.add("o2", 10);
 		}
 	}
-	
+
 	@Test
-	public void testXmlDocumentBuilder() throws SAXException {
+	public void testXmlDocumentBuilder() throws Exception {
 		
 		String expected = expectedXml;
 		XmlWriter writer = new XmlWriter();
@@ -62,7 +62,7 @@ public class DocumentBuilderTest {
 		//MatchUtils.assertJsonEqual("", expected, root.getRoot().toString());
 		assertEquals(expected, writer.toString());
 	}
-	
+
 	@Test
 	public void testJsonDocumentBuilderDefault() throws SAXException {
 		
