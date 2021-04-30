@@ -1,6 +1,6 @@
 <ibis>
 	<adapter name="CorrelationMessageId">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="CorrelationMessageId">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CorrelationMessageId" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/CorrelationMessageId" />
 		</receiver>

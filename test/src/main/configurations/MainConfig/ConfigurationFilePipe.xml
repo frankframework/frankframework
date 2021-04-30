@@ -1,6 +1,6 @@
 <ibis>
 	<adapter name="FilePipe" description="Test the functioning of the FilePipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="FilePipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-FilePipe" />
 		</receiver>
 		<pipeline firstPipe="setFilename">

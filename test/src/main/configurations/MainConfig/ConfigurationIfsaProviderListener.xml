@@ -54,7 +54,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="IfsaFFProviderListener_gpoa" active="${active.ifsa}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="IfsaFFProviderListener_gpoa">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="IfsaFFProviderListener_gpoa" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/IfsaFFProviderListener_gpoa_in" retention="-1" />
 		</receiver>

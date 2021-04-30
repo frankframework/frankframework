@@ -92,7 +92,7 @@
 	</adapter>
 
 	<adapter name="CallApiListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CallApiListener" />
 		</receiver>
 		<pipeline firstPipe="callApiListener">

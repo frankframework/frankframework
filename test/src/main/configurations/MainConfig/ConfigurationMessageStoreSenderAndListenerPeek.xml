@@ -13,7 +13,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="MessageStoreSender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="MessageStoreSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-MessageStoreSender" />
 		</receiver>
 		<pipeline firstPipe="switchAction">

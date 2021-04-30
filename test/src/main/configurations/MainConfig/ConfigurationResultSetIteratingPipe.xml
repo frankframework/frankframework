@@ -24,7 +24,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="ResultSetIteratingPipe_Record">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ResultSetIteratingPipe_Record">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ResultSetIteratingPipe_Record" />
 		</receiver>
 		<pipeline firstPipe="echo">

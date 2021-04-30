@@ -1,6 +1,6 @@
 <module>
 	<adapter name="ApiWsdlGenerator">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ApiWsdlGenerator">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ApiWsdlGenerator" />
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
@@ -16,7 +16,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="ApiWsdlGeneratorMultipart">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ApiWsdlGeneratorMultipart">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ApiWsdlGeneratorMultipart" />
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
