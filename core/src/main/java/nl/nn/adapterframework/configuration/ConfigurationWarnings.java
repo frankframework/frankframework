@@ -97,7 +97,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	private static void add(IConfigurable object, Logger log, String message, Throwable t, String messageSuffixForLog) {
 		String msg = (object==null?"":ClassUtils.nameOf(object) +" ["+object.getName()+"]")+" "+message;
 
-		ConfigWarning.add(getInstance().activeConfiguration, object, message);
+		ConfigWarning.getInstance(getInstance().activeConfiguration).add(object, message, t);
 		getInstance().doAdd(log, msg, t, messageSuffixForLog);
 	}
 
@@ -107,7 +107,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	public static void add(INamedObject object, Logger log, String message, Throwable t) {
 		String msg = (object==null?"":ClassUtils.nameOf(object) +" ["+object.getName()+"] ")+message;
 
-		ConfigWarning.add(getInstance().activeConfiguration, object, message);
+		ConfigWarning.getInstance(getInstance().activeConfiguration).add(object, message, t);
 		getInstance().doAdd(log, msg, t, null);
 	}
 

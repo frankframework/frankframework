@@ -21,36 +21,24 @@ import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class ConfigWarning extends ApplicationWarnings {
 
 	/**
 	 * Add configuration warning with INamedObject prefix
+	 * Automatically tries to resolve the Logger through the INamedObject
 	 */
 	public void add(INamedObject source, String message) {
 		add(source, message, (Throwable) null);
 	}
 
-	public static void add(ApplicationContext configuration, INamedObject source, String message) {
-		if(configuration != null) {
-			ConfigWarning cw = configuration.getBean("configurationWarnings", ConfigWarning.class);
-			cw.add(source, message);
-		} else {
-			throw new IllegalStateException("cannot add INamedObject warning without ApplicationContext");
-		} 
-	}
-
 	/**
 	 * Add configuration warning with INamedObject prefix and log the exception stack
+	 * Automatically tries to resolve the Logger through the INamedObject
 	 */
 	public void add(INamedObject source, String message, Throwable t) {
-		addWithNamedObjectPrefix(source, getLogger(source), message, null, t);
-	}
-
-	private Logger getLogger(INamedObject source) {
-		return LogUtil.getLogger(source); //HashTable key lookup
+		add(source, getLogger(source), message, t);
 	}
 
 	public void add(INamedObject source, String message, SuppressKeys suppressionKey) {
@@ -72,26 +60,35 @@ public class ConfigWarning extends ApplicationWarnings {
 					hint = ". This warning can be suppressed globally by setting the property '"+suppressionKey.getKey()+"=true'";
 				}
 			}
-			addWithNamedObjectPrefix(source, log, message, hint, null);
+
+			String logMsg = StringUtils.isNotEmpty(hint) ? message + hint : message;
+			doAdd(source, log, logMsg, null);
 		}
 	}
 
-	private void addWithNamedObjectPrefix(INamedObject source, Logger log, String message, String messageSuffixForLog, Throwable t) {
-		String msg = (source==null?"":ClassUtils.nameOf(source) +" ["+source.getName()+"]")+" "+message;
-		doAdd(log, msg, messageSuffixForLog, t);
+
+
+
+	public static ConfigWarning getInstance(ApplicationContext applicationContext) {
+		if(applicationContext == null) {
+			throw new IllegalArgumentException("ApplicationContext may not be NULL");
+		}
+
+		return applicationContext.getBean("configurationWarnings", ConfigWarning.class);
 	}
 
-	private void doAdd(Logger log, String msg, String logHint, Throwable t) {
-		String logMsg = StringUtils.isNotEmpty(logHint) ? msg + logHint : msg;
-		doAdd(log, logMsg, t);
+	private Logger getLogger(INamedObject source) {
+		if(source == null) {
+			throw new IllegalArgumentException("source object may not be NULL");
+		}
+		return LogUtil.getLogger(source); //HashTable key lookup
 	}
 
 	public boolean isSuppressed(SuppressKeys key, IAdapter adapter) {
 		if(key == null) {
-			return false;
+			throw new IllegalArgumentException("SuppressKeys may not be NULL");
 		}
 
-		return key.isAllowGlobalSuppression() && getAppConstants().getBoolean(key.getKey(), false) // warning is suppressed globally, for all adapters
-				|| adapter!=null && getAppConstants().getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
+		return super.isSuppressed(key) || adapter!=null && getAppConstants().getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
 	}
 }
