@@ -76,7 +76,7 @@
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 			</pipe>
-			<pipe name="renderClob" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" fileName="${testdata.dir}/clobresult.txt">
+			<pipe name="renderClob" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" filename="${testdata.dir}/clobresult.txt">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
@@ -148,7 +148,7 @@
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
-			<pipe name="renderBlob1" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" fileName="${testdata.dir}/blobresult1.txt">
+			<pipe name="renderBlob1" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" filename="${testdata.dir}/blobresult1.txt">
 				<forward name="success" path="EXIT" />
 			</pipe>
 

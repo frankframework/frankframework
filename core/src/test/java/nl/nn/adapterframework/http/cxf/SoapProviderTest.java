@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
@@ -33,6 +34,7 @@ import javax.activation.DataHandler;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.MimeHeader;
+import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.stream.StreamSource;
@@ -47,8 +49,7 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -113,22 +114,14 @@ public class SoapProviderTest {
 		return url.openStream();
 	}
 
-	private SOAPMessage createMessage(String file) throws SOAPException, IOException {
-		return createMessage(getFile(file));
+	private SOAPMessage createMessage(String filename) throws IOException, SOAPException {
+		return createMessage(filename, false, false);
 	}
 
-	private SOAPMessage createMessage(InputStream stream) throws SOAPException, IOException {
-		return createMessage(stream, false);
-	}
-
-	private SOAPMessage createMessage(String file, boolean addAttachment) throws SOAPException, IOException {
-		return createMessage(getFile(file), addAttachment);
-	}
-
-	private SOAPMessage createMessage(InputStream stream, boolean addAttachment) throws IOException, SOAPException {
-		MessageFactory factory = MessageFactory.newInstance();
+	private SOAPMessage createMessage(String filename, boolean addAttachment, boolean isSoap1_1) throws IOException, SOAPException {
+		MessageFactory factory = MessageFactory.newInstance(isSoap1_1 ? SOAPConstants.SOAP_1_1_PROTOCOL : SOAPConstants.SOAP_1_2_PROTOCOL);
 		SOAPMessage soapMessage = factory.createMessage();
-		StreamSource streamSource = new StreamSource(stream);
+		StreamSource streamSource = new StreamSource(getFile(filename));
 		soapMessage.getSOAPPart().setContent(streamSource);
 
 		if(addAttachment) {
@@ -141,7 +134,7 @@ public class SoapProviderTest {
 		return soapMessage;
 	}
 
-	private void assertAttachmentInSession(IPipeLineSession session) throws DomBuilderException, IOException {
+	private void assertAttachmentInSession(PipeLineSession session) throws DomBuilderException, IOException {
 		assertNotNull(session.get("mimeHeaders"));
 
 		assertNotNull(session.get("attachments"));
@@ -205,7 +198,7 @@ public class SoapProviderTest {
 		String expected = Misc.streamToString(getFile("correct-soapmsg.xml"));
 		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
 
-		IPipeLineSession session = SOAPProvider.getSession();
+		PipeLineSession session = SOAPProvider.getSession();
 		assertNotNull(session.get("mimeHeaders"));
 
 		assertNotNull(session.get("attachments"));
@@ -230,14 +223,14 @@ public class SoapProviderTest {
 	 * @throws Throwable
 	 */
 	public void receiveMessageWithAttachmentsTest() throws Throwable {
-		SOAPMessage request = createMessage("correct-soapmsg.xml", true);
+		SOAPMessage request = createMessage("correct-soapmsg.xml", true, false);
 
 		SOAPMessage message = SOAPProvider.invoke(request);
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = Misc.streamToString(getFile("correct-soapmsg.xml"));
 		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
 
-		IPipeLineSession session = SOAPProvider.getSession();
+		PipeLineSession session = SOAPProvider.getSession();
 		assertAttachmentInSession(session);
 	}
 
@@ -249,7 +242,7 @@ public class SoapProviderTest {
 	 */
 	public void sendMessageWithInputStreamAttachmentsTest() throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml");
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		session.put("attachmentXmlSessionKey", MULTIPART_XML);
 		session.put("part_file", new ByteArrayInputStream(ATTACHMENT2_CONTENT.getBytes()));
@@ -274,7 +267,7 @@ public class SoapProviderTest {
 	 */
 	public void sendMessageWithStringAttachmentsTest() throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml");
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		session.put("attachmentXmlSessionKey", MULTIPART_XML);
 		session.put("part_file", ATTACHMENT2_CONTENT);
@@ -298,8 +291,8 @@ public class SoapProviderTest {
 	 * @throws Throwable
 	 */
 	public void receiveAndSendMessageWithAttachmentsTest() throws Throwable {
-		SOAPMessage request = createMessage("correct-soapmsg.xml", true);
-		IPipeLineSession session = new PipeLineSessionBase();
+		SOAPMessage request = createMessage("correct-soapmsg.xml", true, false);
+		PipeLineSession session = new PipeLineSession();
 
 		session.put("attachmentXmlSessionKey", MULTIPART_XML);
 		session.put("part_file", ATTACHMENT2_CONTENT);
@@ -318,5 +311,92 @@ public class SoapProviderTest {
 
 		//Validate the listener returned an attachment back
 		assertAttachmentInReceivedMessage(message);
+	}
+
+	@Test
+	public void soapActionInSessionKeySOAP1_1() throws Throwable {
+		// Soap protocol 1.1 
+		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
+		String value = "1.1-SoapAction";
+		webServiceContext.getMessageContext().put("SOAPAction", value);
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertEquals(value, SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@Test
+	public void noSoapActionInSessionKeySOAP1_1() throws Throwable {
+		// Soap protocol 1.1 
+		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
+		SOAPProvider.invoke(request);
+		assertNull(SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@Test
+	public void soap1_1MessageWithActionInContentTypeHeader() throws Throwable {
+		// Soap protocol 1.1 
+		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
+		String value = "ActionInContentTypeHeader";
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action="+value);
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertNull(SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@Test
+	public void soapActionInSessionKeySOAP1_2ActionIsTheLastItem() throws Throwable {
+		SOAPMessage request = createMessage("soapmsg1_2.xml");
+		String value = "SOAP1_2ActionIsTheLastItem";
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action="+value);
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertEquals(value, SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@Test
+	public void soapActionInSessionKeySOAP1_2ActionIsInMiddle() throws Throwable {
+		SOAPMessage request = createMessage("soapmsg1_2.xml");
+		String value = "SOAP1_2ActionIsInMiddle";
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action="+value+";somethingelse");
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertEquals(value, SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@Test
+	public void soapActionInSessionKeySOAP1_2ActionIsAtTheBeginning() throws Throwable {
+		SOAPMessage request = createMessage("soapmsg1_2.xml");
+		String value = "SOAP1_2ActionIsAtTheBeginning";
+		webServiceContext.getMessageContext().put("Content-Type", "action="+value+";application/soap+xml; somethingelse");
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertEquals(value, SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@Test
+	public void noSoapActionInSessionKey1_2() throws Throwable {
+		SOAPMessage request = createMessage("soapmsg1_2.xml");
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; somethingelse");
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertNull(SOAPProvider.getSession().get("SOAPAction"));
+	}
+	
+	@Test
+	public void emptySoapActionInSessionKey1_2() throws Throwable {
+		SOAPMessage request = createMessage("soapmsg1_2.xml");
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action=; somethingelse");
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertNull(SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@Test
+	public void soap1_2MessageWithSOAPActionHeader() throws Throwable {
+		SOAPMessage request = createMessage("soapmsg1_2.xml");
+		webServiceContext.getMessageContext().put("SOAPAction", "action");
+		SOAPProvider.invoke(request);
+		webServiceContext.getMessageContext().clear();
+		assertNull(SOAPProvider.getSession().get("SOAPAction"));
 	}
 }

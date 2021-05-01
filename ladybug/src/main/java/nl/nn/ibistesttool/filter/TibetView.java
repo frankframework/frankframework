@@ -18,9 +18,8 @@ package nl.nn.ibistesttool.filter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.ibistesttool.tibet2.Storage;
@@ -65,7 +64,7 @@ public class TibetView extends View {
 		if(adapter == null) {
 			return "Not allowed. Could not find adapter " + AUTHORISATION_CHECK_ADAPTER;
 		} else {
-			IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+			PipeLineSession pipeLineSession = new PipeLineSession();
 			if(app.getUserPrincipal() != null)
 				pipeLineSession.put("principal", app.getUserPrincipal().getName());
 			pipeLineSession.put("StorageId", StorageId);

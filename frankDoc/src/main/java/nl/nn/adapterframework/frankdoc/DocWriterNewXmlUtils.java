@@ -40,22 +40,6 @@ class DocWriterNewXmlUtils {
 		return schema;
 	}
 
-	static void addElement(XmlBuilder context, String elementName, String elementType) {
-		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
-		element.addAttribute("name", elementName);
-		element.addAttribute("type", elementType);
-		context.addSubElement(element);
-	}
-
-	static void addElement(XmlBuilder context, String elementName, String elementType, String minOccurs, String maxOccurs) {
-		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
-		element.addAttribute("name", elementName);
-		element.addAttribute("type", elementType);
-		element.addAttribute("minOccurs", minOccurs);
-		element.addAttribute("maxOccurs", maxOccurs);
-		context.addSubElement(element);
-	}
-
 	static XmlBuilder addElementRef(XmlBuilder context, String elementName, String minOccurs, String maxOccurs) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("ref", elementName);
@@ -81,15 +65,6 @@ class DocWriterNewXmlUtils {
 	static XmlBuilder createElementWithType(String name) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("name", name);
-		return element;
-	}
-
-	static XmlBuilder addElementWithType(XmlBuilder context, String name, String minOccurs, String maxOccurs) {
-		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
-		element.addAttribute("name", name);
-		element.addAttribute("minOccurs", minOccurs);
-		element.addAttribute("maxOccurs", maxOccurs);
-		context.addSubElement(element);
 		return element;
 	}
 

@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -18,14 +18,9 @@ import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -35,7 +30,6 @@ import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.FullXmlFilter;
 
 public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachChildElementPipe> {
 
@@ -105,7 +99,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			"<ns:sub name=\"r\" xmlns:ns=\"urn:test\">R</ns:sub>\n"+
 			"</result>\n</results>";
 
-	private IPipeLineSession session = new PipeLineSessionBase();
+	private PipeLineSession session = new PipeLineSession();
 
 	@Override
 	public ForEachChildElementPipe createPipe() {
@@ -128,7 +122,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		EchoSender sender = new EchoSender() {
 
 			@Override
-			public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 				if (sc!=null) sc.mark("out");
 				try {
 					if (message.asString().contains("error")) {
@@ -156,7 +150,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	}
 
 	@Override
-	public void setup() throws ConfigurationException {
+	public void setup() throws Exception {
 		assumeFalse(provideStreamForInput);
 		super.setup();
 	}
@@ -872,53 +866,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		}
 	}
 
-	private class SaxLogger extends FullXmlFilter implements ContentHandler {
-		
-		private String prefix;
-		private SwitchCounter sc;
-		
-		SaxLogger(String prefix, SwitchCounter sc, ContentHandler handler) {
-			super(handler);
-			this.prefix=prefix;
-			this.sc=sc;
-		}
-		private void print(String string) {
-			log.debug(prefix+" "+string);
-			sc.mark(prefix);
-		}
-		
-		@Override
-		public void characters(char[] ch, int start, int length) throws SAXException {
-			print(new String(ch,start,length));
-			super.characters(ch, start, length);
-		}
-
-		@Override
-		public void startDocument() throws SAXException {
-			print("startDocument");
-			super.startDocument();
-		}
-
-		@Override
-		public void endDocument() throws SAXException {
-			print("endDocument");
-			super.endDocument();
-		}
-
-		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-			print("startElement "+localName);
-			super.startElement(uri, localName, qName, attributes);
-		}
-		
-		@Override
-		public void endElement(String uri, String localName, String qName) throws SAXException {
-			print("endElement "+localName);
-			super.endElement(uri, localName, qName);
-		}
-
-		
-	}
 
 	private class LoggingInputStream extends FilterInputStream {
 

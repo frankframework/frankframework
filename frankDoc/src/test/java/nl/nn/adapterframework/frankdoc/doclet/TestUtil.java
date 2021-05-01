@@ -1,6 +1,18 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
-final class TestUtil {
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+import com.sun.javadoc.ClassDoc;
+
+import nl.nn.adapterframework.frankdoc.doclet.classdocs.EasyDoclet;
+
+public final class TestUtil {
+	private static final Properties BUILD_PROPERTIES = new TestUtil().loadBuildProperties();
+	private static final File TEST_SOURCE_DIRECTORY = new File(BUILD_PROPERTIES.getProperty("testSourceDirectory"));
+
 	private TestUtil() {
 	}
 
@@ -12,5 +24,22 @@ final class TestUtil {
 			}
 		}
 		return null;
+	}
+
+	public static ClassDoc[] getClassDocs(String ...packages) {
+		System.out.println("System property java.home: " + System.getProperty("java.home"));
+		EasyDoclet doclet = new EasyDoclet(TEST_SOURCE_DIRECTORY, packages);
+		return doclet.getRootDoc().classes();
+	}
+
+	private Properties loadBuildProperties() {
+		try {
+			Properties result = new Properties();
+			InputStream is = getClass().getClassLoader().getResource("build.properties").openStream();
+			result.load(is);
+			return result;
+		} catch(IOException e) {
+			throw new RuntimeException("Cannot load build.properties", e);
+		}
 	}
 }

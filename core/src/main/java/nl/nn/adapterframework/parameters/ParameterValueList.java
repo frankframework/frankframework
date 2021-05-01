@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.stream.Message;
 
@@ -48,7 +48,7 @@ public class ParameterValueList {
 		map  = new HashMap<String, ParameterValue>();
 	}
 	
-	public static ParameterValueList get(ParameterList params, Message message, IPipeLineSession session) throws ParameterException {
+	public static ParameterValueList get(ParameterList params, Message message, PipeLineSession session) throws ParameterException {
 		if (params==null) {
 			return null;
 		}

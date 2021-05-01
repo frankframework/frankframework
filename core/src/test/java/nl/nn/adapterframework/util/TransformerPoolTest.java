@@ -79,7 +79,7 @@ public class TransformerPoolTest {
 		assertEquals(2, TransformerPool.getTransformerPoolsKeys().size());
 		TransformerPool.getInstance(resource, 1, true);
 		assertEquals(2, TransformerPool.getTransformerPoolsKeys().size());
-		Resource resource2 = Resource.getResource("xml/xsl/AttributesGetter.xsl");
+		Resource resource2 = Resource.getResource("xml/xsl/active.xsl");
 		TransformerPool.getInstance(resource2, 2, true);
 		assertEquals(3, TransformerPool.getTransformerPoolsKeys().size());
 	}

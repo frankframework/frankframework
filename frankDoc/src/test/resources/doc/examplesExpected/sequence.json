@@ -25,67 +25,50 @@
     {
       "name": "Master",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-      "abstract": false,
-      "deprecated": false,
+      "descriptionHeader": "We test here that the sequence of groups, config children and attributes is right.\n It is important that the sequences in @IbisDoc annotations, in the alphabetic order\n and in the order of appearance are all different.",
       "elementNames": ["Master"],
       "attributes": [
         {
           "name": "clemens",
-          "deprecated": false,
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-          "description": "",
-          "type": "string"
+          "description": ""
         },
         {
           "name": "arnold",
-          "deprecated": false,
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-          "description": "",
-          "type": "string"
+          "description": ""
         },
         {
           "name": "dennis",
-          "deprecated": false,
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-          "description": "",
-          "type": "string"
+          "description": ""
         },
         {
           "name": "bernhard",
-          "deprecated": false,
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-          "description": "",
-          "type": "string"
+          "description": ""
         }
       ],
       "children": [
         {
-          "deprecated": false,
-          "mandatory": false,
           "multiple": false,
           "roleName": "roleAlpha",
           "group": "Proton",
           "description": ""
         },
         {
-          "deprecated": false,
-          "mandatory": false,
           "multiple": false,
           "roleName": "roleBeta",
           "group": "Mnemonic",
           "description": ""
         },
         {
-          "deprecated": false,
-          "mandatory": false,
           "multiple": false,
           "roleName": "roleEpsilon",
           "group": "Other",
           "description": ""
         },
         {
-          "deprecated": false,
-          "mandatory": false,
           "multiple": false,
           "roleName": "roleDelta",
           "group": "Nemesis",
@@ -96,8 +79,6 @@
     {
       "name": "Object",
       "fullName": "java.lang.Object",
-      "abstract": false,
-      "deprecated": false,
       "elementNames": [],
       "attributes": [],
       "children": []
@@ -105,8 +86,6 @@
     {
       "name": "Opaque",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque",
-      "abstract": false,
-      "deprecated": false,
       "elementNames": ["RoleEpsilon"],
       "attributes": [],
       "children": []

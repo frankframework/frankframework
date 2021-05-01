@@ -1,11 +1,1 @@
-<file>
-	<fullName>TESTDATA_DIR\b64\file_out.pdf</fullName>
-	<directory>TESTDATA_DIR\b64</directory>
-	<name>file_out.pdf</name>
-	<baseName>file_out</baseName>
-	<extension>pdf</extension>
-	<size>72833</size>
-	<fSize>71 kB</fSize>
-	<modificationDate>25-09-15</modificationDate>
-	<modificationTime>08:38:05</modificationTime>
-</file>
+<file name="file_out.bin" size="72833" fSize="71 kB" canonicalName="TESTDATA_DIR\b64\file_out.bin" modificationDate="08-04-21" modificationTime="17:07:56" />

@@ -54,7 +54,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
         pipe.setDirectory(sourceFolderPath);
         pipe.setOutputType("stream");
         pipe.setActions("read");
-        pipe.setFileName("1.txt");
+        pipe.setFilename("1.txt");
         pipe.setFileSource("filesystem");
         pipe.setActions("create");
         pipe.configure();
@@ -83,7 +83,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
         pipe.setDirectory(sourceFolderPath);
         pipe.setOutputType("base64");
         pipe.setActions("read");
-        pipe.setFileName("1.txt");
+        pipe.setFilename("1.txt");
         pipe.setFileSource("filesystem");
         pipe.setActions("create");
         pipe.configure();

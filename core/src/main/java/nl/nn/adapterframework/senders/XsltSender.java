@@ -30,7 +30,7 @@ import org.xml.sax.XMLReader;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -159,7 +159,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 
-	protected ContentHandler filterInput(ContentHandler input, IPipeLineSession session) {
+	protected ContentHandler filterInput(ContentHandler input, PipeLineSession session) {
 		if (isRemoveNamespaces()) {
 			log.debug(getLogPrefix()+ " providing filter to remove namespaces from input message");
 			return new NamespaceRemovingFilter(input);
@@ -169,13 +169,13 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	
 	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		ContentHandler handler = createHandler(null, session, target);
 		return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, session);
 	}
 
-	protected ContentHandler createHandler(Message input, IPipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(Message input, PipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -185,14 +185,19 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 
 			TransformerPool poolToUse = transformerPool;
-			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && session.get(styleSheetNameSessionKey) != null) {
-				String styleSheetNameToUse = session.get(styleSheetNameSessionKey).toString();
-			
-				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
-					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameToUse, null, true, getParameterList()));
-					poolToUse.open();
-				} else {
-					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+			if(StringUtils.isNotEmpty(styleSheetNameSessionKey)) {
+				if (session.get(styleSheetNameSessionKey) != null) {
+					String styleSheetNameToUse = session.get(styleSheetNameSessionKey).toString();
+				
+					if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+						dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameToUse, null, true, getParameterList()));
+						poolToUse.open();
+					} else {
+						poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+					}
+				} 
+				if (poolToUse == null) {
+					throw new SenderException("no XSLT stylesheet found from styleSheetNameSessionKey ["+session.get(styleSheetNameSessionKey)+"], and neither one statically configured");
 				}
 			}
 			
@@ -267,7 +272,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 	
 
-	protected XMLReader getXmlReader(IPipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
+	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
 		return XmlUtils.getXMLReader(handler);
 	}
 	
@@ -276,7 +281,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 * alternative implementation of send message, that should do the same as the original, but reuses the streaming content handler
 	 */
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException {
 		if (message==null) {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}

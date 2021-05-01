@@ -28,8 +28,9 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -44,7 +45,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Peter Leeuwenburgh
  */
 public class ResultSet2FileSender extends FixedQuerySender {
-	private String fileNameSessionKey;
+	private String filenameSessionKey;
 	private String statusFieldType;
 	private boolean append = false;
 	private String maxRecordsSessionKey;
@@ -54,7 +55,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getFileNameSessionKey())) {
+		if (StringUtils.isEmpty(getFilenameSessionKey())) {
 			throw new ConfigurationException(getLogPrefix()+"fileNameSessionKey must be specified");
 		}
 		String sft = getStatusFieldType();
@@ -67,9 +68,9 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		int counter = 0;
-		String fileName = (String)session.get(getFileNameSessionKey());
+		String fileName = (String)session.get(getFilenameSessionKey());
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
 			maxRecords = Integer.parseInt((String)session.get(getMaxRecordsSessionKey()));
@@ -143,12 +144,18 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return statusFieldType;
 	}
 
-	@IbisDoc({"the session key that contains the name of the file to use", ""})
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String filenameSessionKey) {
-		this.fileNameSessionKey = filenameSessionKey;
+		setFilenameSessionKey(filenameSessionKey);
 	}
-	public String getFileNameSessionKey() {
-		return fileNameSessionKey;
+	
+	@IbisDoc({"the session key that contains the name of the file to use", ""})
+	public void setFilenameSessionKey(String filenameSessionKey) {
+		this.filenameSessionKey = filenameSessionKey;
+	}
+	public String getFilenameSessionKey() {
+		return filenameSessionKey;
 	}
 
 	@IbisDoc({"when set <code>true</code> and the file already exists, the resultset rows are written to the end of the file", "false"})

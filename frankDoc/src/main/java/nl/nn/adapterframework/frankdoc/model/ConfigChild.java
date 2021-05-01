@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.frankdoc.XsdVersion;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
@@ -141,6 +142,15 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	 * included, the XSDs would define multiple times that a SenderSeries can have a sender as child.
 	 * This method makes the config children unique by role name and element type, which means
 	 * unique by {@link nl.nn.adapterframework.frankdoc.model.ElementRole}.
+	 * <p>
+	 * The fix implemented by this method only works if a config child was allowed only once and if
+	 * it is updated to being allowed multiple times. The reverse change won't work. With that change,
+	 * there would be a duplicate config child. The first would be a deprecated config child that
+	 * is allowed multiple times. The second would be a non-deprecated config child that is allowed only once.
+	 * This method would then select the config child that is allowed only once, because that would be
+	 * the first after the sort applied in this method. But that config child setter is deprecated and it
+	 * would be the only one left for the {@link ElementRole}. Therefore, strict.xsd would no longer
+	 * have a config child for the {@link ElementRole}.
 	 */
 	static List<ConfigChild> removeDuplicates(List<ConfigChild> orig) {
 		Map<Key, List<ConfigChild>> byKey = orig.stream().collect(Collectors.groupingBy(Key::new));
@@ -150,6 +160,10 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 			Collections.sort(bucket, REMOVE_DUPLICATES_COMPARATOR);
 			ConfigChild selected = bucket.get(0);
 			result.add(selected);
+			if(selected.isDeprecated()) {
+				log.warn("From duplicate config children, only a deprecated one is selected. In mode {}, {} will not have a config child for ElementRole {}",
+						() -> XsdVersion.STRICT, () -> selected.getOwningElement().getFullName(), () -> selected.getElementRole().toString());
+			}
 			if(log.isTraceEnabled() && (bucket.size() >= 2)) {
 				for(ConfigChild omitted: bucket.subList(1, bucket.size())) {
 					log.trace("Omitting config child {} because it is a duplicate of {}", omitted.toString(), selected.toString());

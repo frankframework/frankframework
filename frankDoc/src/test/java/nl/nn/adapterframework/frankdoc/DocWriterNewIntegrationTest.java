@@ -15,17 +15,14 @@ limitations under the License.
 */
 package nl.nn.adapterframework.frankdoc;
 
-import static nl.nn.adapterframework.testutil.MatchUtils.jsonPretty;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 
-import javax.json.JsonObject;
 import javax.xml.XMLConstants;
+import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -33,15 +30,17 @@ import javax.xml.validation.Validator;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
+import nl.nn.adapterframework.frankdoc.model.FrankElementFilters;
 import nl.nn.adapterframework.frankdoc.model.FrankElementStatistics;
-import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class DocWriterNewIntegrationTest {
@@ -50,57 +49,56 @@ public class DocWriterNewIntegrationTest {
 
 	private FrankClassRepository classRepository;
 
+	@ClassRule
+	public static TemporaryFolder testFolder = new TemporaryFolder();
+
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance();
+		classRepository = FrankClassRepository.getReflectInstance(
+				FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter(), FrankElementFilters.getExcludeFiltersForSuperclass());
 	}
 
+	@Ignore
 	@Test
 	public void testStrict() throws Exception {
-		assumeTrue(TestAssertions.isTestRunningOnCI());
-		String schemaFileName = generateXsd(XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
-		validate(schemaFileName, TEST_CONFIGURATION_FILE);
+		String schemaFileName = "xml/xsd/strict.xsd";
+		validate(getSchemaFromClasspathResource(schemaFileName), TEST_CONFIGURATION_FILE);
+		log.info("Validation of XML document against schema [{}] succeeded", schemaFileName);
 	}
 
+	@Ignore
 	@Test
 	public void testCompatibility() throws Exception {
-		assumeTrue(TestAssertions.isTestRunningOnCI());
-		String schemaFileName = generateXsd(XsdVersion.COMPATIBILITY, AttributeTypeStrategy.VALUES_ONLY);
-		validate(schemaFileName, TEST_CONFIGURATION_FILE);
+		String schemaFileName = "xml/xsd/compatibility.xsd";
+		validate(getSchemaFromClasspathResource(schemaFileName), TEST_CONFIGURATION_FILE);
+		log.info("Validation of XML document against schema [{}] succeeded", schemaFileName);
 	}
 
-	String generateXsd(XsdVersion version, AttributeTypeStrategy attributeTypeStrategy) throws IOException {
-		FrankDocModel model = FrankDocModel.populate(classRepository);
-		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
-		docWriter.init(version);
-		String xsdString = docWriter.getSchema();
-		File output = new File("FrankConfig-" + docWriter.getOutputFileName());
-		log.info("Output file of test xsd: " + output.getAbsolutePath());
-		Writer writer = new BufferedWriter(new FileWriter(output));
-		try {
-			writer.append(xsdString);
-		}
-		finally {
-			writer.close();
-		}
-		return output.getAbsolutePath();
-	}
-
-	private void validate(String schemaFileName, String testConfigurationFileName) throws Exception {
-		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = schemaFactory.newSchema(new File(schemaFileName));
+	private void validate(Schema schema, String testConfigurationFileName) throws Exception {
 		Validator validator = schema.newValidator();
 		String resourcePath = "/doc/testConfigs/" + testConfigurationFileName;
 		Resource resource = Resource.getResource(resourcePath);
 		validator.validate(new SAXSource(resource.asInputSource()));
-		log.info("Validation of XML document against schema [{}] succeeded", schemaFileName);
+	}
+
+	private Schema getSchemaFromClasspathResource(String schemaFileName) throws Exception {
+		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Resource schemaResource = Resource.getResource(schemaFileName);
+		Source schemaSource = schemaResource.asSource();
+		return schemaFactory.newSchema(schemaSource);
+	}
+
+	private Schema getSchemaFromSimpleFile(String schemaFileName) throws Exception {
+		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		return schemaFactory.newSchema(new File(schemaFileName));
 	}
 
 	@Test
 	public void testExotic() throws Exception {
 		String outputFileName = generateXsd(
 				XsdVersion.STRICT, "/doc/exotic-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.exotic.Master", "exotic.xsd", AttributeTypeStrategy.ALLOW_PROPERTY_REF);
-		validate(outputFileName, "testExotic.xml");
+		validate(getSchemaFromSimpleFile(outputFileName), "testExotic.xml");
+		log.info("Validation of XML document against schema [{}] succeeded", outputFileName);
 	}
 
 	private String generateXsd(
@@ -109,7 +107,8 @@ public class DocWriterNewIntegrationTest {
 		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(rootClassName, version);
 		String xsdString = docWriter.getSchema();
-		File output = new File(outputSchemaFileName);
+
+		File output = new File(testFolder.getRoot(), outputSchemaFileName);
 		log.info("Output file of test xsd: " + output.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(output));
 		try {
@@ -119,24 +118,6 @@ public class DocWriterNewIntegrationTest {
 			writer.close();
 		}
 		return output.getAbsolutePath();
-	}
-
-	@Ignore
-	@Test
-	public void testJsonForWebsite() throws Exception {
-		FrankDocModel model = FrankDocModel.populate(classRepository);
-		FrankDocJsonFactory jsonFactory = new FrankDocJsonFactory(model);
-		JsonObject jsonObject = jsonFactory.getJson();
-		String jsonText = jsonPretty(jsonObject.toString());
-		File output = new File("FrankConfig.json");
-		log.info("Output file of test json: " + output.getAbsolutePath());
-		Writer writer = new BufferedWriter(new FileWriter(output));
-		try {
-			writer.append(jsonText);
-		}
-		finally {
-			writer.close();
-		}
 	}
 
 	@Ignore

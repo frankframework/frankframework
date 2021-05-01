@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -41,7 +41,7 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 	protected static final String CONFIG_ALL = "*ALL*";
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
 			return new PipeRunResult(getForward(), doGet(session));
@@ -55,7 +55,7 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 	 * When extending this class, copy and extend the doGet method in the new
 	 * child class.
 	 */
-	protected String doGet(IPipeLineSession session) throws PipeRunException {
+	protected String doGet(PipeLineSession session) throws PipeRunException {
 		IbisManager ibisManager = RestListenerUtils.retrieveIbisManager(session);
 
 		String configurationName = null;
@@ -88,17 +88,17 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 		return root.toXML();
 	}
 
-	protected String retrieveConfigurationName(IPipeLineSession session) {
+	protected String retrieveConfigurationName(PipeLineSession session) {
 		String configurationName = (String) session.get("configuration");
 		if (configurationName == null) {
-			HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
+			HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 			configurationName = (String) httpServletRequest.getSession().getAttribute("configurationName");
 		}
 		return configurationName;
 	}
 
-	protected void storeConfiguration(IPipeLineSession session, boolean configAll, Configuration configuration) {
-		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
+	protected void storeConfiguration(PipeLineSession session, boolean configAll, Configuration configuration) {
+		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		if (configAll) {
 			session.put("configurationName", CONFIG_ALL);
 			httpServletRequest.getSession().setAttribute("configurationName", CONFIG_ALL);

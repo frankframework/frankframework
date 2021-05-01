@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -60,6 +61,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.ValidatorHandler;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -105,7 +109,6 @@ import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.SaxException;
-import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Some utilities for working with XML.
@@ -1626,8 +1629,9 @@ public class XmlUtils {
 
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values.
+	 * @throws IOException 
 	 */
-	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) {
+	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) throws IOException {
 		t.clearParameters();
 		if (parameters == null) {
 			return;
@@ -1635,8 +1639,11 @@ public class XmlUtils {
 		for (String paramName:parameters.keySet()) {
 			Object value = parameters.get(paramName);
 			if (value != null) {
+				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[]) {
+					value = Message.asString(value);
+				}
 				t.setParameter(paramName, value);
-				log.debug("setting parameter [" + paramName+ "] on transformer");
+				log.debug("setting parameter [" + paramName+ "] on transformer from class ["+value.getClass().getTypeName()+"]");
 			}
 			else {
 				log.info("omitting setting of parameter ["+paramName+"] on transformer, as it has a null-value");
@@ -1659,8 +1666,7 @@ public class XmlUtils {
 	}
 
 
-	public static String transformXml(Transformer t, Source s)
-		throws TransformerException, IOException {
+	public static String transformXml(Transformer t, Source s) throws TransformerException, IOException {
 
 		StringWriter out = new StringWriter(getBufSize());
 		transformXml(t,s,out);
@@ -1706,17 +1712,6 @@ public class XmlUtils {
 		}
 		return true;
 	}
-
-	/**
-	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
-	 * @return String (the complete and resolved xml)
-	 */
-	static public String identityTransform(Resource resource) throws  IOException, SAXException {
-		XmlWriter writer = new XmlWriter();
-		parseXml(resource, writer);
-		return writer.toString();
-	}
-
 
 	public static Set<Entry<String,String>> getVersionInfo() {
 		Map<String,String> map = new LinkedHashMap<>();
@@ -2124,4 +2119,18 @@ public class XmlUtils {
 			return new org.apache.xpath.jaxp.XPathFactoryImpl();
 		}
 	}
+
+
+	public static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(schemaURL); 
+		return schema.newValidatorHandler();
+	}
+
+	public static ValidatorHandler getValidatorHandler(Source schemaSource) throws SAXException {
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(schemaSource); 
+		return schema.newValidatorHandler();
+	}
+
 }

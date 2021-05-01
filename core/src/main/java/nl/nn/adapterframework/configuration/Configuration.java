@@ -37,6 +37,8 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -209,12 +211,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
-		if(flowDiagramManager != null) { //Optional bean
-			try {
-				flowDiagramManager.generate(this);
-			} catch (IOException e) {
-				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
-			}
+		try {
+			flowDiagramManager.generate(this);
+		} catch (IOException e) { //Don't throw an exception when generating the flow fails
+			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
 		}
 
 		//Trigger a configure on all Lifecycle beans
@@ -245,11 +245,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public boolean isStubbed() {
-		if(getClassLoader() == null) {
-			return false;
+		if(getClassLoader() instanceof IConfigurationClassLoader) {
+			return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
 		}
 
-		return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
+		return false;
 	}
 
 	/**
@@ -411,6 +411,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	public BaseConfigurationWarnings getConfigurationWarnings() {
 		return configurationWarnings;
+	}
+
+	// Dummy setter to allow JmsRealms being added to Configurations via FrankDoc.xsd
+	public void registerJmsRealm(JmsRealm realm) {
+		JmsRealmFactory.getInstance().registerJmsRealm(realm);
 	}
 
 	@Override

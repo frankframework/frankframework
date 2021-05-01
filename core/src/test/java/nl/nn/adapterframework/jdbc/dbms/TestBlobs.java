@@ -19,6 +19,7 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -73,7 +74,7 @@ public class TestBlobs extends JdbcTestBase {
 			stmt.execute();
 		}
 		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				InputStream blobStream = dbmsSupport.getBlobInputStream(resultSet, 1);
@@ -97,14 +98,14 @@ public class TestBlobs extends JdbcTestBase {
 	public void testWriteAndReadBlobUsingSetBytes(int numBlocks, int blockSize) throws Exception {
 		String blobContents = getBigString(numBlocks, blockSize);
 		String query = "INSERT INTO TEMP (TKEY,TBLOB) VALUES (20,?)";
-		QueryExecutionContext context = new QueryExecutionContext(query, "other", null);
+		QueryExecutionContext context = new QueryExecutionContext(query, QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.execute();
 		}
 		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				InputStream blobStream = dbmsSupport.getBlobInputStream(resultSet, 1);
@@ -128,7 +129,7 @@ public class TestBlobs extends JdbcTestBase {
 	public void testWriteAndReadBlobUsingDbmsSupport(int numOfBlocks, int blockSize) throws Exception {
 		String block = getBigString(1,blockSize);
 		String query = "INSERT INTO TEMP (TKEY,TBLOB) VALUES (20,?)";
-		QueryExecutionContext context = new QueryExecutionContext(query, "other", null);
+		QueryExecutionContext context = new QueryExecutionContext(query, QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			Object blobInsertHandle = dbmsSupport.getBlobHandle(stmt, 1);
@@ -141,7 +142,7 @@ public class TestBlobs extends JdbcTestBase {
 			stmt.execute();
 		}
 		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20", "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				try (InputStream blobStream = dbmsSupport.getBlobInputStream(resultSet, 1)) {
@@ -168,7 +169,7 @@ public class TestBlobs extends JdbcTestBase {
 			stmt.execute();
 		}
 		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, "select")) {
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				try (Reader clobReader = dbmsSupport.getClobReader(resultSet, 1)) {

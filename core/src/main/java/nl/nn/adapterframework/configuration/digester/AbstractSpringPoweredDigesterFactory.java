@@ -15,30 +15,17 @@
 */
 package nl.nn.adapterframework.configuration.digester;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester3.AbstractObjectCreationFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
-import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -70,8 +57,6 @@ import nl.nn.adapterframework.util.SpringUtils;
 public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
-
-	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	public AbstractSpringPoweredDigesterFactory() {
 		super();
@@ -160,136 +145,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 					+ "], Suggested Spring Bean Name=[" + getSuggestedBeanName() + "]");
 		}
 
-		Object currObj = createBeanFromClassName(className);
-
-		checkDeprecation(currObj);
-		checkAttributes(currObj, attrs);
-		return currObj;
-	}
-
-	/**
-	 * Make sure you get the raw (un-proxied) class and check for deprecation annotations.
-	 */
-	private void checkDeprecation(Object currObj) {
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEPRECATION_SUPPRESS_KEY, null, classLoader)) {
-			Class<?> clazz = ClassUtils.getUserClass(currObj);
-			ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
-			if(warning != null) {
-				String msg = getObjectName(currObj, null);
-				if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
-					msg += " is deprecated";
-				}
-				if(StringUtils.isNotEmpty(warning.value())) {
-					msg += ": " + warning.value();
-				}
-				//Only print it once per deprecated class
-				ConfigurationWarnings.addGlobalWarning(log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, classLoader);
-			}
-		}
-	}
-
-	protected void checkAttributes(Object currObj, Map<String, String> attrs) throws Exception {
-		String beanName = attrs.get("name");
-		for (Iterator<String> it = attrs.keySet().iterator(); it.hasNext();) {
-			String attributeName = it.next();
-			String value = attrs.get(attributeName);
-			checkAttribute(currObj, beanName, attributeName, value, attrs);
-		}
-	}
-
-	protected void checkAttribute(Object currObj, String beanName, String attributeName, String value, Map<String, String> attrs) throws Exception {
-		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(currObj, attributeName);
-		if (pd!=null) {
-			Method rm = PropertyUtils.getReadMethod(pd);
-			if (rm!=null) {
-				try {
-					Object dv = rm.invoke(currObj, new Object[0]);
-					if (currObj instanceof HasSpecialDefaultValues) {
-						dv = ((HasSpecialDefaultValues)currObj).getSpecialDefaultValue(attributeName, dv, attrs);
-					}
-					if (dv!=null) { //If a default value exists
-						System.out.println(value);
-						if (dv instanceof String) {
-							if (value.equals(dv)) {
-								addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
-							}
-						} else {
-							if (value.length()==0) {
-								addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] with type ["+dv.getClass().getName()+"] has no value");
-							} else {
-								if (dv instanceof Boolean) {
-									if (Boolean.valueOf(value).equals(dv)) {
-										addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
-									}
-								} else {
-									if (dv instanceof Integer) {
-										try {
-											if (Integer.valueOf(value).equals(dv)) {
-												addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
-											}
-										} catch (NumberFormatException e) {
-											addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Integer: "+e.getMessage());
-										}
-									} else {
-										if (dv instanceof Long) {
-											try {
-												if (Long.valueOf(value).equals(dv)) {
-													addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
-												}
-											} catch (NumberFormatException e) {
-												addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Long: "+e.getMessage());
-											}
-										} else {
-											log.warn("Unknown returning type [" + rm.getReturnType() + "] for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, beanName) + "]");
-										}
-									}
-								}
-							}
-						}
-					}
-				} catch (Throwable t) {
-					log.warn("Error on getting default for object [" + getObjectName(currObj, beanName) + "] with method [" + rm.getName() + "]", t);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Returns the name of the object. In case a Spring proxy is being used, 
-	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
-	 * ClassUtils.getUserClass() makes sure the original class will be returned.
-	 */
-	private String getObjectName(Object o, String name) {
-		String result = ClassUtils.getUserClass(o).getSimpleName();
-		if (name==null && o instanceof INamedObject) {
-			name=((INamedObject)o).getName();
-		}
-		if (name!=null) {
-			result+=" ["+name+"]";
-		}
-		return result;
-	}
-
-	private void addSetToDefaultConfigWarning(Object currObj, String name, String key, String value) {
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, null, classLoader)) {
-			String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
-			if (!configWarnings.containsDefaultValueException(mergedKey)) {
-				addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]");
-			}
-		}
-	}
-
-	private void addConfigWarning(Object currObj, String name, String message) {
-		Locator loc = getDigester().getDocumentLocator();
-		if(currObj instanceof INamedObject && ((INamedObject) currObj).getName() != null) { //name setting may not have been called yet
-			String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+message;
-			ConfigurationWarnings.add((INamedObject) currObj, log, msg);
-		} else { 
-			String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
-			ConfigurationWarnings.add(null, log, msg);
-		}
+		return createBeanFromClassName(className);
 	}
 
 	/**

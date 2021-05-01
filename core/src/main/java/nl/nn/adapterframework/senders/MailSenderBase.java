@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -70,7 +70,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		MailSession mailSession;
 		try {
 			mailSession = extract(message, session);
@@ -86,7 +86,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	/**
 	 * Reads fields from either paramList or Xml file
 	 */
-	public MailSession extract(Message input, IPipeLineSession session) throws SenderException, DomBuilderException {
+	public MailSession extract(Message input, PipeLineSession session) throws SenderException, DomBuilderException {
 		MailSession mailSession;
 		if (paramList == null) {
 			mailSession = parseXML(input, session);
@@ -96,7 +96,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return mailSession;
 	}
 
-	private Collection<MailAttachmentStream> retrieveAttachmentsFromParamList(ParameterValue pv, IPipeLineSession session) throws SenderException, ParameterException {
+	private Collection<MailAttachmentStream> retrieveAttachmentsFromParamList(ParameterValue pv, PipeLineSession session) throws SenderException, ParameterException {
 		Collection<MailAttachmentStream> attachments = null;
 		if (pv != null) {
 			attachments = retrieveAttachments(pv.asCollection(), session);
@@ -115,7 +115,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return recipients;
 	}
 
-	private MailSession readParameters(Message input, IPipeLineSession session) throws SenderException {
+	private MailSession readParameters(Message input, PipeLineSession session) throws SenderException {
 		EMail from = null;
 		String subject = null;
 		String threadTopic = null;
@@ -220,7 +220,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return recipients;
 	}
 
-	private Collection<MailAttachmentStream> retrieveAttachments(Collection<Node> attachmentsNode, IPipeLineSession session) throws SenderException {
+	private Collection<MailAttachmentStream> retrieveAttachments(Collection<Node> attachmentsNode, PipeLineSession session) throws SenderException {
 		Collection<MailAttachmentStream> attachments = null;
 		Iterator<Node> iter = attachmentsNode.iterator();
 		if (iter != null && iter.hasNext()) {
@@ -280,7 +280,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return attachment;
 	}
 
-	private MailSession parseXML(Message input, IPipeLineSession session) throws SenderException, DomBuilderException {
+	private MailSession parseXML(Message input, PipeLineSession session) throws SenderException, DomBuilderException {
 		Element from;
 		String subject;
 		String threadTopic;

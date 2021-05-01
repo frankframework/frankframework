@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018-2021 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.http.cxf;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,15 +42,15 @@ import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
 import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -88,7 +87,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	@Override
 	public SOAPMessage invoke(SOAPMessage request) {
 		String result;
-		try (PipeLineSessionBase pipelineSession = new PipeLineSessionBase()) {
+		try (PipeLineSession pipelineSession = new PipeLineSession()) {
 			String correlationId = Misc.createSimpleUUID();
 			log.debug(getLogPrefix(correlationId)+"received message");
 			String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;
@@ -162,14 +161,26 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 					throw new WebServiceException(m, e);
 				}
 				pipelineSession.put("soapProtocol", soapProtocol);
-	
+				if(soapProtocol.equals(SOAPConstants.SOAP_1_1_PROTOCOL)) {
+					String soapAction = (String) webServiceContext.getMessageContext().get(SoapBindingConstants.SOAP_ACTION);
+					pipelineSession.put(SoapBindingConstants.SOAP_ACTION, soapAction);
+				} else if(soapProtocol.equals(SOAPConstants.SOAP_1_2_PROTOCOL)) {
+					String contentType = (String) webServiceContext.getMessageContext().get("Content-Type");
+					if(StringUtils.isNotEmpty(contentType) && contentType.contains("action=")) {
+						String action = findAction(contentType);
+						if(StringUtils.isNotEmpty(action)) {
+							pipelineSession.put(SoapBindingConstants.SOAP_ACTION, action);
+						} else {
+							log.warn(getLogPrefix(correlationId)+"no SOAPAction found!");
+						}
+					}
+				}
+
 				// Process message via WebServiceListener
 				ISecurityHandler securityHandler = new WebServiceContextSecurityHandler(webServiceContext);
 				pipelineSession.setSecurityHandler(securityHandler);
-				pipelineSession.put(IPipeLineSession.HTTP_REQUEST_KEY, webServiceContext.getMessageContext()
-						.get(MessageContext.SERVLET_REQUEST));
-				pipelineSession.put(IPipeLineSession.HTTP_RESPONSE_KEY, webServiceContext.getMessageContext()
-						.get(MessageContext.SERVLET_RESPONSE));
+				pipelineSession.put(PipeLineSession.HTTP_REQUEST_KEY, webServiceContext.getMessageContext().get(MessageContext.SERVLET_REQUEST));
+				pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, webServiceContext.getMessageContext().get(MessageContext.SERVLET_RESPONSE));
 	
 				try {
 					log.debug(getLogPrefix(correlationId)+"processing message");
@@ -218,34 +229,24 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						String partName = partElement.getAttribute("name");
 						String partSessionKey = partElement.getAttribute("sessionKey");
 						String partMimeType = partElement.getAttribute("mimeType");
-						Object partObject = pipelineSession.get(partSessionKey);
-						if (partObject instanceof InputStream) {
-							InputStream fis = (InputStream) partObject;
-	
-							DataHandler dataHander = null;
-							try {
-								dataHander = new DataHandler(new ByteArrayDataSource(fis, partMimeType));
-							} catch (IOException e) {
-								String m = "Unable to add session key '" + partSessionKey + "' as attachment";
-								log.error(m, e);
-								throw new WebServiceException(m, e);
+						Message partObject = pipelineSession.getMessage(partSessionKey);
+						DataHandler dataHander;
+						try {
+							if (partObject.isBinary()) {
+								dataHander = new DataHandler(new ByteArrayDataSource(partObject.asByteArray(), partMimeType));
+							} else {
+								dataHander = new DataHandler(new ByteArrayDataSource(partObject.asString(), partMimeType));
 							}
-							AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-							attachmentPart.setContentId(partName);
-							soapMessage.addAttachmentPart(attachmentPart);
-	
-							log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] with value ["+partObject+"] and name ["+partName+"]");
+						} catch (IOException e) {
+							String m = "Unable to add session key '" + partSessionKey + "' as attachment";
+							log.error(m, e);
+							throw new WebServiceException(m, e);
 						}
-						else { //String
-							String partValue = (String) partObject;
-	
-							DataHandler dataHander = new DataHandler(new ByteArrayDataSource(partValue, partMimeType));
-							AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-							attachmentPart.setContentId(partName);
-							soapMessage.addAttachmentPart(attachmentPart);
-	
-							log.debug(getLogPrefix(correlationId)+"appended stringpart ["+partSessionKey+"] with value ["+partValue+"]");
-						}
+						AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
+						attachmentPart.setContentId(partName);
+						soapMessage.addAttachmentPart(attachmentPart);
+
+						log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] name ["+partName+"]");
 					}
 				}
 			}
@@ -285,7 +286,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	 * @param pipelineSession messageContext (containing attachments if available)
 	 * @return response to send back
 	 */
-	abstract Message processRequest(String correlationId, Message message, IPipeLineSession pipelineSession) throws ListenerException;
+	abstract Message processRequest(String correlationId, Message message, PipeLineSession pipelineSession) throws ListenerException;
 
 	/**
 	 * SessionKey containing attachment information, or null if no attachments
@@ -305,5 +306,16 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 			xmlMimeHeaders.addSubElement(xmlMimeHeader);
 		}
 		return xmlMimeHeaders;
+	}
+	
+	protected String findAction(String contentType) {
+		// extracts the value of action from contentType
+		int start = contentType.indexOf("action=") + 7;
+		int end;
+		end = contentType.indexOf(';', start);
+		if (end == -1) {
+			end = contentType.length();
+		}
+		return contentType.substring(start, end);
 	}
 }

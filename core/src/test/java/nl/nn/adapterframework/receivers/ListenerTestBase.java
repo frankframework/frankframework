@@ -27,13 +27,13 @@ import org.mockito.Mockito;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * How to test listeners? The main focus is on what to do after a listener has received a 'raw' message.
  */
-public abstract class ListenerTestBase<S extends IListener<Object>> extends Mockito {
+public abstract class ListenerTestBase<M extends Object, S extends IListener<M>> extends Mockito {
 
 	protected static final String STUB_RESULT_KEY = "STUB_RESULT_KEY";
 	protected Logger log = LogUtil.getLogger(this);
@@ -50,12 +50,12 @@ public abstract class ListenerTestBase<S extends IListener<Object>> extends Mock
 		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
 		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
 		if(listener instanceof IPullingListener) {
-			threadContext = ((IPullingListener<Object>) listener).openThread();
+			threadContext = ((IPullingListener<M>) listener).openThread();
 		} else {
 			threadContext = new HashMap<>();
 		}
 
-		PipeLineSessionBase.setListenerParameters(threadContext, messageId, technicalCorrelationId, null, null);
+		PipeLineSession.setListenerParameters(threadContext, messageId, technicalCorrelationId, null, null);
 		listener = createListener();
 	}
 
@@ -63,7 +63,7 @@ public abstract class ListenerTestBase<S extends IListener<Object>> extends Mock
 		threadContext.put(STUB_RESULT_KEY, mockedResult);
 		if(listener instanceof IPullingListener) {
 			@SuppressWarnings("unchecked")
-			IPullingListener<Object> pullingListener = (IPullingListener<Object>) listener;
+			IPullingListener<M> pullingListener = (IPullingListener<M>) listener;
 			return pullingListener.getRawMessage(threadContext);
 		}
 		return null;

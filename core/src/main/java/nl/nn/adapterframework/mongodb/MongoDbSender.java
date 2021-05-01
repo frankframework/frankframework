@@ -30,6 +30,11 @@ import javax.naming.NamingException;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonValue;
 import org.bson.Document;
+import org.bson.codecs.DocumentCodec;
+import org.bson.codecs.Encoder;
+import org.bson.codecs.EncoderContext;
+import org.bson.json.JsonMode;
+import org.bson.json.JsonWriterSettings;
 import org.xml.sax.SAXException;
 
 import com.mongodb.client.FindIterable;
@@ -40,39 +45,46 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
+import com.mongodb.connection.ServerDescription;
 
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.stream.document.ArrayBuilder;
 import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.stream.document.IDocumentBuilder;
+import nl.nn.adapterframework.stream.document.INodeBuilder;
 import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
 
-public class MongoDbSender extends StreamingSenderBase {
+public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDestination {
 
 	public final String PARAM_DATABASE="database";
 	public final String PARAM_COLLECTION="collection";
 	public final String PARAM_FILTER="filter";
 	public final String PARAM_LIMIT="limit";
 
-	public final String NAMED_PARAM_START="?{";
-	public final String NAMED_PARAM_END="}";
+	public final String NAMED_PARAM_START=JdbcQuerySenderBase.UNP_START;
+	public final String NAMED_PARAM_END=JdbcQuerySenderBase.UNP_END;
 
 
 	private @Getter String datasourceName;
@@ -115,10 +127,10 @@ public class MongoDbSender extends StreamingSenderBase {
 		if (getActionEnum()==null) {
 			throw new ConfigurationException("attribute action not specified");
 		}
-		if (getOutputFormatEnum()==DocumentFormat.XML && (getActionEnum()==MongoAction.FINDONE || getActionEnum()==MongoAction.FINDMANY )) {
-			throw new ConfigurationException("outputFormat "+getOutputFormatEnum()+" not supported for FIND-actions");
+		if ((getLimit()>0 || (getParameterList()!=null && getParameterList().findParameter(PARAM_LIMIT)!=null)) && getActionEnum()!=MongoAction.FINDMANY) {
+			throw new ConfigurationException("attribute limit or parameter "+PARAM_LIMIT+" can only be used for action "+MongoAction.FINDMANY);
 		}
- 	}
+	}
 
 	@Override
 	public void open() throws SenderException {
@@ -144,16 +156,16 @@ public class MongoDbSender extends StreamingSenderBase {
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		return null;
 	}
 
 
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		message.closeOnCloseOf(session);
 		MongoAction mngaction = getActionEnum();
-		try (MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? next : null)) {
+		try (MessageOutputStream target = mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? MessageOutputStream.getTargetStream(this, session, next) : new MessageOutputStreamCap(this, next)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
 			MongoCollection<Document> mongoCollection = getCollection(mongoDatabase, pvl);
@@ -165,10 +177,7 @@ public class MongoDbSender extends StreamingSenderBase {
 				renderResult(mongoCollection.insertMany(getDocuments(message)), target);
 				break;
 			case FINDONE:
-				try (Writer writer = target.asWriter()) {
-					Document findOne = mongoCollection.find(getFilter(pvl, message)).first();
-					writer.write(findOne.toJson());
-				}
+				renderResult(mongoCollection.find(getFilter(pvl, message)).first(), target);
 				break;
 			case FINDMANY:
 				renderResult(mongoCollection.find(getFilter(pvl, message)).limit(getLimit(pvl)), target);
@@ -199,7 +208,7 @@ public class MongoDbSender extends StreamingSenderBase {
 		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "insertOneResult", target)) {
 			builder.add("acknowledged", insertOneResult.wasAcknowledged());
 			if (insertOneResult.wasAcknowledged()) {
-				builder.add("insertedId", insertOneResult.getInsertedId().asString().getValue());
+				builder.add("insertedId", renderField(insertOneResult.getInsertedId()));
 			}
 		}
 	}
@@ -213,7 +222,7 @@ public class MongoDbSender extends StreamingSenderBase {
 					
 					insertedIds.forEach((k,v)->{
 						try {
-							objectBuilder.add(Integer.toString(k), v.asString().getValue());
+							objectBuilder.add(Integer.toString(k), renderField(v));
 						} catch (SAXException e) {
 							throw Lombok.sneakyThrow(e);
 						}
@@ -222,26 +231,40 @@ public class MongoDbSender extends StreamingSenderBase {
 			}
 		}
 	}
-
+	
+	protected void renderResult(Document findResult, MessageOutputStream target) throws StreamingException {
+		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormatEnum(), "FindOneResult", target)) {
+			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+			Encoder<Document> encoder = new DocumentCodec();
+			JsonDocumentWriter jsonWriter = new JsonDocumentWriter(builder, writerSettings);
+			encoder.encode(jsonWriter, findResult, EncoderContext.builder().build());
+		} catch (Exception e) {
+			throw new StreamingException("Could not render collection", e);
+		}
+	}
+	
 	protected void renderResult(FindIterable<Document> findResults, MessageOutputStream target) throws StreamingException {
-		try (Writer writer = target.asWriter()) {
+		try {
 			if (isCountOnly()) {
-				int count=0;
-				for (Document doc : findResults) {
-					count++;
+				try (Writer writer = target.asWriter()) {
+					int count=0;
+					for (Document doc : findResults) {
+						count++;
+					}
+					writer.write(Integer.toString(count));
 				}
-				writer.write(Integer.toString(count));
 				return;
+			} 
+			try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormatEnum(), "FindManyResult", "item", target)) {
+				JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+				Encoder<Document> encoder = new DocumentCodec();
+				for (Document doc : findResults) {
+					try (INodeBuilder element = builder.addElement()) {
+						JsonDocumentWriter jsonWriter = new JsonDocumentWriter(element, writerSettings);
+						encoder.encode(jsonWriter, doc, EncoderContext.builder().build());
+					}
+				}
 			}
-			writer.write("[");
-			boolean firstElementSeen = false;
-			for (Document doc : findResults) {
-				if (firstElementSeen) {
-					writer.write(",");
-				}
-				writer.write(doc.toJson());
-				}
-			writer.write("]");
 		} catch (Exception e) {
 			throw new StreamingException("Could not render collection", e);
 		}
@@ -267,9 +290,19 @@ public class MongoDbSender extends StreamingSenderBase {
 		}
 	}
 	
+	private String renderField(BsonValue bsonValue) {
+		if (bsonValue.isObjectId()) {
+			return bsonValue.asObjectId().getValue().toString();
+		}
+		if (bsonValue.isString()) {
+			return bsonValue.asString().getValue().toString();
+		}
+		return bsonValue.toString();
+	}
+
 	protected void addOptionalValue(ObjectBuilder builder, String name, BsonValue bsonValue) throws SAXException {
 		if (bsonValue!=null) {
-			builder.add(name, bsonValue.asString().getValue());
+			builder.add(name, bsonValue.isObjectId()? bsonValue.asObjectId().getValue().toString() : bsonValue.asString().getValue());
 		}	
 	}
 	
@@ -322,6 +355,18 @@ public class MongoDbSender extends StreamingSenderBase {
 		return getParameterOverriddenAttributeValue(pvl, PARAM_LIMIT, getLimit());
 	}
 
+	@Override
+	public String getPhysicalDestinationName() {
+		String result = "datasource ["+getDatasourceName()+"]";
+		if (mongoClient!=null) {
+			List<ServerDescription> serverDescriptions = mongoClient.getClusterDescription().getServerDescriptions();
+			if (!serverDescriptions.isEmpty()) {
+				result += " server ["+serverDescriptions.get(0).getAddress()+"]";
+			}
+		}
+		return result;
+	}
+	
 
 	@IbisDoc({"1", "The MongoDB datasource", "${"+JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
 	public void setDatasourceName(String datasourceName) {
@@ -368,5 +413,5 @@ public class MongoDbSender extends StreamingSenderBase {
 	public DocumentFormat getOutputFormatEnum() {
 		return outputFormat;
 	}
-	
+
 }

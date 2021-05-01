@@ -31,7 +31,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.LogUtil;
@@ -51,8 +51,8 @@ public class RestListenerUtils {
 
 	protected static Logger log = LogUtil.getLogger(RestListenerUtils.class);
 
-	public static IbisManager retrieveIbisManager(IPipeLineSession session) {
-		ServletContext servletContext = (ServletContext) session.get(IPipeLineSession.SERVLET_CONTEXT_KEY);
+	public static IbisManager retrieveIbisManager(PipeLineSession session) {
+		ServletContext servletContext = (ServletContext) session.get(PipeLineSession.SERVLET_CONTEXT_KEY);
 		if (servletContext != null) {
 			IbisContext ibisContext = IbisApplicationServlet.getIbisContext(servletContext);
 			return ibisContext.getIbisManager();
@@ -61,24 +61,24 @@ public class RestListenerUtils {
 		return null;
 	}
 
-	public static ServletOutputStream retrieveServletOutputStream(IPipeLineSession session) throws IOException {
-		HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+	public static ServletOutputStream retrieveServletOutputStream(PipeLineSession session) throws IOException {
+		HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 		if (response != null) {
 			return response.getOutputStream();
 		}
 		return null;
 	}
 
-	public static String retrieveRequestURL(IPipeLineSession session) throws IOException {
-		HttpServletRequest request = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
+	public static String retrieveRequestURL(PipeLineSession session) throws IOException {
+		HttpServletRequest request = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		if (request != null) {
 			return request.getRequestURL().toString();
 		}
 		return null;
 	}
 
-	public static String retrieveSOAPRequestURL(IPipeLineSession session) throws IOException {
-		HttpServletRequest request = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
+	public static String retrieveSOAPRequestURL(PipeLineSession session) throws IOException {
+		HttpServletRequest request = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		if (request != null) {
 			String url = request.getScheme() + "://" + request.getServerName();
 			if(!(request.getScheme().equalsIgnoreCase("http") && request.getServerPort() == 80) && !(request.getScheme().equalsIgnoreCase("https") && request.getServerPort() == 443))
@@ -89,24 +89,24 @@ public class RestListenerUtils {
 		return null;
 	}
 
-	public static void writeToResponseOutputStream(IPipeLineSession session, byte[] bytes) throws IOException {
+	public static void writeToResponseOutputStream(PipeLineSession session, byte[] bytes) throws IOException {
 		retrieveServletOutputStream(session).write(bytes);
 	}
 
-	public static void writeToResponseOutputStream(IPipeLineSession session, InputStream input) throws IOException {
+	public static void writeToResponseOutputStream(PipeLineSession session, InputStream input) throws IOException {
 		OutputStream output = retrieveServletOutputStream(session);
 		StreamUtil.copyStream(input, output, 30000);
 	}
 
-	public static void setResponseContentType(IPipeLineSession session, String contentType) throws IOException {
-		HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+	public static void setResponseContentType(PipeLineSession session, String contentType) throws IOException {
+		HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 		if (response != null) {
 			response.setContentType(contentType);
 		}
 	}
 
-	public static String retrieveRequestRemoteUser(IPipeLineSession session) throws IOException {
-		HttpServletRequest request = (HttpServletRequest) session.get(IPipeLineSession.HTTP_REQUEST_KEY);
+	public static String retrieveRequestRemoteUser(PipeLineSession session) throws IOException {
+		HttpServletRequest request = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		if (request != null) {
 			Principal principal = request.getUserPrincipal();
 			if (principal != null) {

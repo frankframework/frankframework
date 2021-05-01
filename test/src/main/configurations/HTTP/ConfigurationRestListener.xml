@@ -64,7 +64,7 @@
 			</pipe>
 
 			<pipe name="writeFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" fileName="id.xml" directory="${testdata.dir}/rest">
+				actions="write" filename="id.xml" directory="${testdata.dir}/rest">
 				<forward name="success" path="text2Xml2" />
 			</pipe>
 
@@ -208,7 +208,7 @@
 			</pipe>
 
 			<pipe name="writeFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" fileName="result.pdf" directory="${testdata.dir}/rest">
+				actions="write" filename="result.pdf" directory="${testdata.dir}/rest">
 				<forward name="success" path="text2Xml" />
 			</pipe>
 

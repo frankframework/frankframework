@@ -134,7 +134,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -620,7 +620,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -770,7 +770,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -1010,7 +1010,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -1250,7 +1250,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -1511,7 +1511,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipartXmlSessionKey" type="xs:string">
@@ -1727,7 +1727,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipart" type="xs:string" />
@@ -2084,7 +2084,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipart" type="xs:string" />
@@ -2441,7 +2441,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipart" type="xs:string" />
@@ -2742,7 +2742,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -2898,7 +2898,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -3045,7 +3045,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -3196,7 +3196,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="move2dirAfterError" type="xs:string">
@@ -3384,7 +3384,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -3679,7 +3679,7 @@
     <xs:attribute name="requestNamespace" type="xs:string" />
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="responseNamespaceDefs" type="xs:string" />
@@ -4069,7 +4069,7 @@
     <xs:attribute name="requestNamespace" type="xs:string" />
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="responseNamespaceDefs" type="xs:string" />
@@ -4225,7 +4225,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -4480,7 +4480,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -4952,7 +4952,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -5202,7 +5202,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -5450,7 +5450,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -5610,7 +5610,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="minStableTime" type="xs:string">
@@ -5990,7 +5990,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -6251,7 +6251,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -6371,7 +6371,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -6531,7 +6531,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageIsContent" type="xs:string">
@@ -6698,7 +6698,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -6831,7 +6831,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -6968,7 +6968,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -7115,7 +7115,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -7262,7 +7262,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -7392,7 +7392,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -7527,7 +7527,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -8112,7 +8112,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -8366,7 +8366,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -8946,7 +8946,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -9159,7 +9159,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -9820,7 +9820,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -10024,7 +10024,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mode" type="xs:string" />
@@ -10325,7 +10325,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mode" type="xs:string">
@@ -10648,7 +10648,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mode" type="xs:string" />
@@ -10949,7 +10949,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mode" type="xs:string">
@@ -11272,7 +11272,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mode" type="xs:string" />
@@ -11578,7 +11578,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mode" type="xs:string">
@@ -11833,7 +11833,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -11974,7 +11974,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -12106,7 +12106,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -13007,7 +13007,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="move2dirAfterError" type="xs:string">
@@ -13292,7 +13292,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required" />
@@ -13656,7 +13656,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -13916,7 +13916,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -14564,7 +14564,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -14960,7 +14960,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -15460,7 +15460,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -16014,7 +16014,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageIsContent" type="xs:string">
@@ -17222,7 +17222,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mode" type="xs:string">
@@ -17704,7 +17704,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mode" type="xs:string">
@@ -17998,7 +17998,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mode" type="xs:string">
@@ -18329,7 +18329,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -18687,7 +18687,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -19045,7 +19045,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -19325,7 +19325,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -19465,7 +19465,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -19595,7 +19595,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -19745,7 +19745,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -20505,7 +20505,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -20697,7 +20697,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -20994,7 +20994,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -21154,7 +21154,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -21347,7 +21347,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -21716,7 +21716,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -21841,7 +21841,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -21976,7 +21976,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -22111,7 +22111,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -23362,7 +23362,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -24019,7 +24019,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -24307,7 +24307,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -24618,7 +24618,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -24929,7 +24929,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -25179,7 +25179,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -25314,7 +25314,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -25534,7 +25534,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -25806,7 +25806,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -25951,7 +25951,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -26092,7 +26092,7 @@
     <xs:attribute name="logLevel" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -26224,7 +26224,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -26477,7 +26477,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -26668,7 +26668,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -27036,7 +27036,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -27490,7 +27490,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -27677,7 +27677,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -28077,7 +28077,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -28903,7 +28903,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="move2dir" type="xs:string">
@@ -30196,7 +30196,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -30588,7 +30588,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -30763,7 +30763,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -31129,7 +31129,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -31630,7 +31630,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -31770,7 +31770,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -31910,7 +31910,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -32370,7 +32370,7 @@
     <xs:attribute name="maxRequestNumber" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -32564,7 +32564,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -32694,7 +32694,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -32844,7 +32844,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -34345,7 +34345,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -34620,7 +34620,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -34886,7 +34886,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -35403,7 +35403,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -35935,7 +35935,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -36256,7 +36256,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -37056,7 +37056,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -37715,7 +37715,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -37850,7 +37850,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -38066,7 +38066,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -38346,7 +38346,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -38647,7 +38647,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -38927,7 +38927,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -39228,7 +39228,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -39513,7 +39513,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -39738,7 +39738,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -40128,7 +40128,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -40398,7 +40398,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipartXmlSessionKey" type="xs:string">
@@ -40543,7 +40543,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -40928,7 +40928,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -41168,7 +41168,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -41385,7 +41385,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -41938,7 +41938,7 @@
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>a list with jms headers to add to the ipipelinesession</xs:documentation>
+        <xs:documentation>a list with jms headers to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="securityProtocol" type="xs:string">
@@ -42059,7 +42059,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -42239,7 +42239,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -42379,7 +42379,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -43333,7 +43333,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -43544,7 +43544,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -43900,7 +43900,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -44256,7 +44256,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -44728,7 +44728,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -44902,7 +44902,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -45267,7 +45267,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -45492,7 +45492,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -45683,7 +45683,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -45949,7 +45949,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceAware" type="xs:string">
@@ -46594,7 +46594,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -46881,7 +46881,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -47167,7 +47167,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -47382,7 +47382,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -47878,7 +47878,7 @@
     </xs:attribute>
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -48168,7 +48168,7 @@
     <xs:attribute name="logIntermediaryResults" type="xs:string" />
     <xs:attribute name="maxThreads" type="xs:string">
       <xs:annotation>
-        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
+        <xs:documentation>maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously (default: 0 (unlimited))</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">

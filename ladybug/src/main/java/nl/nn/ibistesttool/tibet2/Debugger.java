@@ -20,9 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -56,7 +55,7 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 			String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
 			IAdapter adapter = ibisManager.getRegisteredAdapter(RESEND_ADAPTER);
 			if (adapter != null) {
-				IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+				PipeLineSession pipeLineSession = new PipeLineSession();
 				synchronized(inRerun) {
 					inRerun.add(correlationId);
 				}

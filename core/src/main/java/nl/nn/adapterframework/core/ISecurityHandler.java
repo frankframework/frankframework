@@ -27,7 +27,7 @@ import org.apache.commons.lang3.NotImplementedException;
  */
 public interface ISecurityHandler {
 	
-	public boolean isUserInRole(String role, IPipeLineSession session) throws NotImplementedException;
-	public Principal getPrincipal(IPipeLineSession session) throws NotImplementedException;
+	public boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException;
+	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException;
 
 }

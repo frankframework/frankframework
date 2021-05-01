@@ -56,7 +56,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Jaco de Groot
  */
-public class MessageStoreListener extends JdbcTableListener {
+public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	private String slotId;
 	private String sessionKeys = null;
 	private boolean moveToMessageLog = true;
@@ -98,8 +98,8 @@ public class MessageStoreListener extends JdbcTableListener {
 	}
 
 	@Override
-	public Object getRawMessage(Map<String,Object> threadContext) throws ListenerException {
-		Object rawMessage = super.getRawMessage(threadContext);
+	public M getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+		M rawMessage = super.getRawMessage(threadContext);
 		if (rawMessage != null && sessionKeys != null) {
 			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
 			try {
@@ -117,7 +117,7 @@ public class MessageStoreListener extends JdbcTableListener {
 		return rawMessage;
 	}
 
-	protected IMessageBrowser<Object> augmentMessageBrowser(IMessageBrowser<Object> browser) {
+	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
 		if (browser!=null && browser instanceof JdbcTableMessageBrowser) {
 			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)browser;
 			jtmb.setCommentField("COMMENTS");
@@ -128,8 +128,8 @@ public class MessageStoreListener extends JdbcTableListener {
 	}
 	
 	@Override
-	public IMessageBrowser<Object> getMessageBrowser(ProcessState state) {
-		IMessageBrowser<Object> browser = super.getMessageBrowser(state);
+	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
+		IMessageBrowser<M> browser = super.getMessageBrowser(state);
 		if (browser!=null) {
 			return augmentMessageBrowser(browser);
 		}
