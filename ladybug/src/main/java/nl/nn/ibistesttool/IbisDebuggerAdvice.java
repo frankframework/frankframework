@@ -16,7 +16,6 @@
 package nl.nn.ibistesttool;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.TreeSet;
