@@ -146,6 +146,7 @@ public class SoapProviderTest {
 		String sessionKey = XmlUtils.getChildTagAsString(attachment, "sessionKey");
 		assertNotNull(sessionKey);
 		InputStream attachmentStream = (InputStream) session.get(sessionKey);
+		assertNotNull(attachmentStream);
 
 		//Verify that the attachment sent, was received properly
 		assertEquals(ATTACHMENT_CONTENT, Misc.streamToString(attachmentStream));
