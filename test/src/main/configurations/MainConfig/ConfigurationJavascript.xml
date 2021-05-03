@@ -1,9 +1,6 @@
 <ibis>
 	<adapter name="Javascript" description="Execute javascript using the JavascriptSender">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="Javascript"
-			>
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-Javascript"
@@ -28,10 +25,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="JavascriptDouble" description="Execute javascript using the JavascriptSender">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JavascriptDouble"
-			>
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JavascriptDouble"
@@ -69,10 +63,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="JavascriptCallback" description="Call a sender with javascript code">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="JavascriptCallback"
-			>
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JavascriptCallback"

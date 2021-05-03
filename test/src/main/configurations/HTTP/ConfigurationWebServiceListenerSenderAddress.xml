@@ -2,8 +2,7 @@
     <!-- serviceNamespaceURI listeners -->
 	<adapter name="WebServiceListenerAddress" 
 		description="Test the functioning of the WebServiceListener with the attribute address">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerAddress">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws/address" />
 		</receiver>
@@ -18,8 +17,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerErrorAddress"
 		description="Test the functioning of the WebServiceListener with the attribute address (error)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerErrorAddress">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws_error/address" />
 		</receiver>
@@ -34,8 +32,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerTimeoutAddress"
 		description="Test the functioning of the WebServiceListener with the attribute Address (timeout)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeoutAddress">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws_timeout/address" />
 		</receiver>
@@ -52,8 +49,7 @@
 	
 	<adapter name="WebServiceSenderAddress" 
 		description="Test the functioning of the WebServiceSender sending to a listener with address">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderAddress">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddress" />
 		</receiver>
@@ -72,8 +68,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderErrorAddress"
 		description="Test the functioning of the WebServiceSender sending to a listener with address (error)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderErrorAddress">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderErrorAddress" />
 		</receiver>
@@ -92,8 +87,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderTimeoutGlobalForwardAddress"
 		description="Test the functioning of the WebServiceSender in combination with global-forward sending to a listener with address">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderTimeoutGlobalForwardAddress">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderTimeoutGlobalForwardAddress" />
 		</receiver>
@@ -145,8 +139,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderTimeoutAddress"
 		description="Test the functioning of the WebServiceSender sending to a listener with address (timeout)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderTimeoutAddress">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderTimeoutAddress" />
 		</receiver>

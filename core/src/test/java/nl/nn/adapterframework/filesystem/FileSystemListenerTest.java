@@ -170,8 +170,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		
 		F secondMessage=fileSystemListener.getRawMessage(threadContext);
 		if (inProcessFolder!=null) {
-			boolean movedFirst = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS)!=null;
-			boolean movedSecond = fileSystemListener.changeProcessState(secondMessage, ProcessState.INPROCESS)!=null;
+			boolean movedFirst = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null)!=null;
+			boolean movedSecond = fileSystemListener.changeProcessState(secondMessage, ProcessState.INPROCESS, null)!=null;
 			assertFalse("raw message not have been moved by both threads",movedFirst && movedSecond);			
 		} else {
 			assertNotNull("raw message must still be available when no inProcessFolder is configured",secondMessage);			
@@ -340,6 +340,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState("success");
+		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test");
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		
@@ -377,6 +378,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState("success");
+		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test");
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		
@@ -440,6 +442,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState("error");
+		fileSystemListener.changeProcessState(rawMessage, ProcessState.ERROR, "test");  // this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		
@@ -475,6 +478,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState("error");
+		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test"); // this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		

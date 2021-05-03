@@ -299,43 +299,37 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	}
 
 	@Override
-	public M changeProcessState(M rawMessage, ProcessState toState) throws ListenerException {
+	public M changeProcessState(M rawMessage, ProcessState toState, String reason) throws ListenerException {
 		if (!knownProcessStates().contains(toState)) {
 			return null; // if toState does not exist, the message can/will not be moved to it, so return null.
 		}
 		if (isConnectionsArePooled()) {
 			try (Connection conn = getConnection()) {
-				return changeProcessState(conn, rawMessage, toState);
+				return changeProcessState(conn, rawMessage, toState, reason);
 			} catch (JdbcException|SQLException e) {
 				throw new ListenerException(e);
 			}
 		} 
 		synchronized (connection) {
-			return changeProcessState(connection, rawMessage, toState);
+			return changeProcessState(connection, rawMessage, toState, reason);
 		}
 	}
 
-	public M changeProcessState(Connection connection, M rawMessage, ProcessState toState) throws ListenerException {
-		if (!knownProcessStates().contains(toState)) {
-			return null;
-		}
+	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		String key=getIdFromRawMessage(rawMessage, null);
 		return execute(connection, query, key) ? rawMessage : null;
 	}
 
-	protected boolean execute(Connection conn, String query) throws ListenerException {
-		return execute(conn,query,null);
-	}
-
-	protected boolean execute(Connection conn, String query, String parameter) throws ListenerException {
+	protected boolean execute(Connection conn, String query, String... parameters) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
 			if (trace && log.isDebugEnabled()) log.debug("executing statement ["+query+"]");
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
 				stmt.clearParameters();
-				if (StringUtils.isNotEmpty(parameter)) {
-					log.debug("setting parameter 1 to ["+parameter+"]");
-					JdbcUtil.setParameter(stmt, 1, parameter, getDbmsSupport().isParameterTypeMatchRequired());
+				int i=1;
+				for(String parameter:parameters) {
+					log.debug("setting parameter "+i+" to ["+parameter+"]");
+					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired());
 				}
 
 				return stmt.executeUpdate() > 0;

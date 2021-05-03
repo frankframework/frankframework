@@ -250,18 +250,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				if (StringUtils.isNotEmpty(getLogFolder())) {
 					FileSystemUtils.copyFile(fileSystem, rawMessage, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 				}
-				if (!processResult.isSuccessful()) {
-					if (StringUtils.isNotEmpty(getErrorFolder())) {
-						FileSystemUtils.moveFile(fileSystem, rawMessage, getErrorFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
-						return;
-					}
-				}
-				if (isDelete()) {
+				if (isDelete() && (processResult.isSuccessful() || StringUtils.isEmpty(getErrorFolder()))) {
 					fileSystem.deleteFile(rawMessage);
 					return;
-				}
-				if (StringUtils.isNotEmpty(getProcessedFolder())) {
-					FileSystemUtils.moveFile(fileSystem, rawMessage, getProcessedFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 				}
 			} catch (FileSystemException e) {
 				throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
@@ -343,10 +334,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	public F changeProcessState(F message, ProcessState toState) throws ListenerException {
+	public F changeProcessState(F message, ProcessState toState, String reason) throws ListenerException {
 		try {
 			if (!fileSystem.exists(message) || !knownProcessStates().contains(toState)) {
 				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
+			}
+			if (toState==ProcessState.DONE || toState==ProcessState.ERROR) {
+				return FileSystemUtils.moveFile(fileSystem, message, getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 			}
 			return getFileSystem().moveFile(message, getStateFolder(toState), false);
 		} catch (FileSystemException e) {

@@ -419,15 +419,15 @@
     <wsdl:part name="Part_Item_Response" element="ns2:Item_Response"/>
   </wsdl:message>
   <wsdl:portType name="PortType_SoapValidator">
-    <wsdl:operation name="Operation___wsdl.SoapValidator.listener_of__SoapValidator-Webservice_.soapAction_">
+    <wsdl:operation name="Operation___wsdl.SoapValidator.listener_of__WebServiceListener_.soapAction_">
       <wsdl:input message="tns:Message_Item_Request"/>
       <wsdl:output message="tns:Message_Item_Response"/>
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="Binding_SoapValidator" type="tns:PortType_SoapValidator">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
-    <wsdl:operation name="Operation___wsdl.SoapValidator.listener_of__SoapValidator-Webservice_.soapAction_">
-      <soap:operation style="document" soapAction="${wsdl.SoapValidator.listener of [SoapValidator-Webservice].soapAction}"/>
+    <wsdl:operation name="Operation___wsdl.SoapValidator.listener_of__WebServiceListener_.soapAction_">
+      <soap:operation style="document" soapAction="${wsdl.SoapValidator.listener of [WebServiceListener].soapAction}"/>
       <wsdl:input>
         <soap:body parts="Part_Item_Request" use="literal"/>
       </wsdl:input>

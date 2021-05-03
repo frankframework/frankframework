@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +27,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 
@@ -39,7 +44,9 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	private String statusField;
 	private String orderField;
 	private String timestampField;
+	private String commentField;
 	private String selectCondition;
+	private int maxCommentSize=-1;
 	
 	private Map<ProcessState, String> statusValues = new HashMap<>();
 
@@ -56,6 +63,9 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		}
 		if (StringUtils.isEmpty(getMessageField())) {
 			log.info(getLogPrefix()+"has no messageField specified. Will use keyField as messageField, too");
+		}
+		if (StringUtils.isEmpty(getStatusValue(ProcessState.ERROR))) {
+			throw new ConfigurationException(getLogPrefix()+"must specify statusValueError");
 		}
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.DONE))) {
 			throw new ConfigurationException(getLogPrefix()+"must specify statusValueProcessed");
@@ -81,16 +91,38 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		return "UPDATE "+getTableName()+ 
 				" SET "+getStatusField()+"='"+fieldValue+"'"+
 				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"="+getDbmsSupport().getSysDate():"")+
+				(StringUtils.isNotEmpty(getCommentField())?","+getCommentField()+"=?":"")+
 				(StringUtils.isNotEmpty(additionalSetClause)?","+additionalSetClause:"")+
 				" WHERE "+getStatusField()+"!='"+fieldValue+"' AND "+getKeyField()+"=?";
 	}
 
 	@Override
+	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
+		String query = getUpdateStatusQuery(toState);
+		String key=getIdFromRawMessage(rawMessage, null);
+		List<String> parameters = new ArrayList<>();
+		if (StringUtils.isNotEmpty(getCommentField()) && query.substring(query.indexOf('?')+1).contains("?")) {
+			if (getMaxCommentSize()>=0 && reason.length()>getMaxCommentSize()) {
+				parameters.add(reason.substring(0, getMaxCommentSize()));
+			} else {
+				parameters.add(reason);
+			}
+		}
+		parameters.add(key);
+		return execute(connection, query, parameters.toArray(new String[parameters.size()])) ? rawMessage : null;
+	}
+
+	
+	@Override
 	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
 		if (!knownProcessStates().contains(state)) {
 			return null;
 		}
-		return new JdbcTableMessageBrowser<M>(this, getStatusValue(state), getStorageType(state));
+		JdbcTableMessageBrowser<M> browser = new JdbcTableMessageBrowser<M>(this, getStatusValue(state), getStorageType(state));
+		if (StringUtils.isNotEmpty(getCommentField())) {
+			browser.setCommentField(commentField);
+		}
+		return browser;
 	}
 
 
@@ -112,7 +144,10 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		}
 	}
 	
-
+	@Override
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
+		// skip moving message to DONE or ERROR, as this is now performed by Receiver calling changeProcessState()
+	}
 
 	@Override
 	public String getPhysicalDestinationName() {
@@ -159,6 +194,22 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 	public String getTimestampField() {
 		return timestampField;
+	}
+
+	@IbisDoc({"6", "(optional) Field used to store the reason of the last change of the statusField", ""})
+	public void setCommentField(String commentField) {
+		this.commentField = commentField;
+	}
+	public String getCommentField() {
+		return commentField;
+	}
+
+	@IbisDoc({"6", "(optional) Maximum length of strings to be stored in commentField", "-1 (unlimited)"})
+	public void setMaxCommentSize(int maxCommentSize) {
+		this.maxCommentSize = maxCommentSize;
+	}
+	public int getMaxCommentSize() {
+		return maxCommentSize;
 	}
 
 	@IbisDoc({"7", "(optional) Value of statusField indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.", ""})

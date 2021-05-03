@@ -1,7 +1,6 @@
 <ibis>
 	<adapter name="Text2Xml">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="Text2Xml">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-Text2Xml" />
 		</receiver>

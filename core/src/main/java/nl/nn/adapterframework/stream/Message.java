@@ -379,10 +379,10 @@ public class Message implements Serializable {
 		if (request==null) {
 			return "null";
 		}
-		if (wrappedRequest == null) {
-			return super.toString()+": "+request.getClass().getTypeName()+": "+request.toString();
-		} 
-		return super.toString()+": "+wrappedRequest.getClass().getTypeName()+": "+wrappedRequest.toString();
+		if (wrappedRequest != null) {
+			return wrappedRequest.getClass().getSimpleName()+": "+request.toString();
+		}
+		return request.getClass().getSimpleName()+": "+request.toString();
 	}
 
 	public static Message asMessage(Object object) {
