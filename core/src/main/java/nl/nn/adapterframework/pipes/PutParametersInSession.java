@@ -56,6 +56,6 @@ public class PutParametersInSession extends FixedForwardPipe {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}
 		}
-		return new PipeRunResult(getForward(), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 }

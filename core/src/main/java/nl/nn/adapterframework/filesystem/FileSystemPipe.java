@@ -143,9 +143,9 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
 		if (result!=null) {
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(getSuccessForward(), result);
 		}
-		return new PipeRunResult(getForward(), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	@Override

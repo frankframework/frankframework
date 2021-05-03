@@ -88,6 +88,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 			}
 		}
 		session.put("contentType", contentType);
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 }

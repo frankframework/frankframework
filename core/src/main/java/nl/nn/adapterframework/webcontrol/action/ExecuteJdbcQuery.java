@@ -24,6 +24,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
@@ -85,7 +86,7 @@ public final class ExecuteJdbcQuery extends ActionBase {
 
 		// Forward control to the specified success URI
 		log.debug("forward to success");
-		return (mapping.findForward("success"));
+		return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
 
 	}
 }

@@ -37,7 +37,7 @@ public class LdapFindMembershipsPipeTest {
 	@Before
 	public void setUp() {
 		pipe = new LdapFindGroupMembershipsPipe();
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.registerForward(new PipeForward(PipeForward.SUCCESS_FORWARD,null));
 		pipe.setLdapProviderURL(ldapProviderUrl);
 //		pipe.setHost(host);
 //		pipe.setPort(port);

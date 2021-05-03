@@ -68,7 +68,7 @@ public class DigesterPipe extends FixedForwardPipe {
 		Digester digester = DigesterLoader.createDigester(rulesURL);
 
 		try {
-			return new PipeRunResult(getForward(), digester.parse(message.asReader()));
+			return new PipeRunResult(getSuccessForward(), digester.parse(message.asReader()));
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"exception in digesting", e);
 		}

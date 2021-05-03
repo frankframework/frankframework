@@ -21,6 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.scheduler.SchedulerAdapter;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
@@ -78,7 +79,7 @@ public final class ShowSchedulerStatus extends ActionBase {
 
         // Forward control to the specified success URI
         log.debug("forward to success");
-        return (mapping.findForward("success"));
+        return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
 
     }
 }

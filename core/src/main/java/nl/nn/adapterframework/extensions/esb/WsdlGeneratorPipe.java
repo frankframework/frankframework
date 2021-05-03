@@ -155,7 +155,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				log.warn("exception closing outputstream", e1);
 			}
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private PipeLine createPipeLineFromPropertiesFile(File propertiesFile)
@@ -290,7 +290,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 			esbSoapValidator.setForwardFailureToSuccess(true);
 			PipeForward pf = new PipeForward();
-			pf.setName("success");
+			pf.setName(PipeForward.SUCCESS_FORWARD);
 			esbSoapValidator.registerForward(pf);
 			esbSoapValidator.configure();
 			return esbSoapValidator;

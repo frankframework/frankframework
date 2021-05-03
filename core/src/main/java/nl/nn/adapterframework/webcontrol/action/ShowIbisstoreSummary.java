@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
@@ -164,7 +165,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 
 		if (!errors.isEmpty()) {
 			saveErrors(request, errors);
-			return (mapping.findForward("success"));
+			return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
 		}
 
 		//Successfull: store cookie
@@ -181,7 +182,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 		}
 
 		log.debug("forward to success");
-		return (mapping.findForward("success"));
+		return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
 
 	}
 }

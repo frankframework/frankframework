@@ -49,9 +49,9 @@ public class TestIfsaService extends TimeoutGuardPipe {
 	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return new PipeRunResult(getForward(), doGet(session));
+			return new PipeRunResult(getSuccessForward(), doGet(session));
 		} else if (method.equalsIgnoreCase("POST")) {
-			return new PipeRunResult(getForward(), doPost(session));
+			return new PipeRunResult(getSuccessForward(), doPost(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "illegal value for method [" + method

@@ -27,6 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
@@ -133,7 +134,7 @@ public class ShowMonitors extends ActionBase {
 		}	
 		if (StringUtils.isEmpty(forward)) {
 			log.debug("replacing empty forward with [success]");
-			forward="success";
+			forward=PipeForward.SUCCESS_FORWARD;
 		}
 		
 		

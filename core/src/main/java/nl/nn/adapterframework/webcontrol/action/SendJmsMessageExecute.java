@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.DynaActionForm;
 import org.apache.struts.upload.FormFile;
 
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
@@ -77,7 +78,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 	    if (isCancelled(request)) {
 	        log.debug("sendJmsMessage was cancelled");
 	        removeFormBean(mapping, request);
-	        return (mapping.findForward("success"));
+	        return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
 	    }
 	
 	    // Retrieve form content
@@ -184,7 +185,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 	    
 	    // Forward control to the specified success URI
 	    log.debug("forward to success");
-	    return (mapping.findForward("success"));
+	    return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
 	
 	}
 

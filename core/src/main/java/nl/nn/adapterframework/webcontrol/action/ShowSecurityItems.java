@@ -47,6 +47,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.ftp.FtpSender;
 import nl.nn.adapterframework.http.HttpSender;
@@ -134,7 +135,7 @@ public final class ShowSecurityItems extends ActionBase {
 
 		// Forward control to the specified success URI
 		log.debug("forward to success");
-		return (mapping.findForward("success"));
+		return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
 	}
 
 	private void addRegisteredAdapters(XmlBuilder securityItems) {

@@ -194,7 +194,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	    log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
 
-   		return new PipeRunResult(getForward(), result);
+   		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public static String replace (String target, String from, String to) {   

@@ -62,7 +62,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 			result = Misc.createNumericUUID();
 		}
 
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public String getType() {

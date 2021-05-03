@@ -22,6 +22,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.scheduler.SchedulerAdapter;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
@@ -112,7 +113,7 @@ public class SchedulerHandler extends ActionBase {
 	    }
 	
 	    // Forward control to the specified success URI
-	    return (mapping.findForward("success"));
+	    return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
 	}
 
 }

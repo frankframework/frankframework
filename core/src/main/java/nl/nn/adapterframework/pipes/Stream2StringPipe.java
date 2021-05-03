@@ -39,6 +39,6 @@ public class Stream2StringPipe extends FixedForwardPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this, "Could not convert stream to text", e);
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 }

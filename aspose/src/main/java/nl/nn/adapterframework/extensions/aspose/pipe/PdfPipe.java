@@ -162,7 +162,7 @@ public class PdfPipe extends FixedForwardPipe {
 				session.put("documents", main.toXML());
 			}
 			//TODO result should be converted document
-			return new PipeRunResult(getForward(), "");
+			return new PipeRunResult(getSuccessForward(), "");
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot convert to stream",e);
 		}

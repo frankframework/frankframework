@@ -28,6 +28,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -146,7 +147,7 @@ public class ShowAdapterStatistics extends ActionBase {
 	
 	    // Forward control to the specified success URI
 	    log.debug("forward to success");
-	    return (mapping.findForward("success"));
+	    return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
 	
 	}
 	

@@ -168,7 +168,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (ACTION_CLOSE.equals(getAction())) {
 			closeZipWriterHandle(session,true);
-			return new PipeRunResult(getForward(),input);
+			return new PipeRunResult(getSuccessForward(),input);
 		}
 		ParameterValueList pvl=null;
 		try {
@@ -185,7 +185,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"zipWriterHandle in session key ["+getZipWriterHandle()+"] is already open");
 			}
 			sessionData=createZipWriter(session,pvl,input);
-			return new PipeRunResult(getForward(),input);
+			return new PipeRunResult(getSuccessForward(),input);
 		}
 		// from here on action must be 'write' or 'stream'
 		if (sessionData==null) {
@@ -198,7 +198,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		try {
 			if (ACTION_STREAM.equals(getAction())) {
 				sessionData.openEntry(filename);
-				PipeRunResult prr = new PipeRunResult(getForward(),sessionData.getZipoutput());
+				PipeRunResult prr = new PipeRunResult(getSuccessForward(),sessionData.getZipoutput());
 				return prr;
 			}
 			if (ACTION_WRITE.equals(getAction())) {
@@ -211,7 +211,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 				} catch (IOException e) {
 					throw new PipeRunException(this,getLogPrefix(session)+"cannot add data to zipentry for ["+filename+"]",e);
 				}
-				return new PipeRunResult(getForward(),input);
+				return new PipeRunResult(getSuccessForward(),input);
 			}
 			throw new PipeRunException(this,getLogPrefix(session)+"illegal action ["+getAction()+"]");
 		} catch (CompressionException e) {

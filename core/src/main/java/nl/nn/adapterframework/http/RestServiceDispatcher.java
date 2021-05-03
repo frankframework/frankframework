@@ -353,7 +353,7 @@ public class RestServiceDispatcher  {
 			pipe.setStyleSheetName("xml/xsl/web/noIbisContext.xsl");
 			//pipe.setXslt2(true);
 			PipeForward pipeForward = new PipeForward();
-			pipeForward.setName("success");
+			pipeForward.setName(PipeForward.SUCCESS_FORWARD);
 			pipe.registerForward(pipeForward);
 			pipe.configure();
 			pipe.start();

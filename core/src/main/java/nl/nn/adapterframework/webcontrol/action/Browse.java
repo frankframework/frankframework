@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
@@ -326,7 +327,7 @@ public class Browse extends ActionBase {
 			saveErrors(request, errors);
 		}		
 		log.debug("forward to success");
-		return (mapping.findForward("success"));
+		return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
 
 	}
 

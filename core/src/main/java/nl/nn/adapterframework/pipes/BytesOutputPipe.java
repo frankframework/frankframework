@@ -134,7 +134,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this, "IOException", e);
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private class FieldsContentHandler extends DefaultHandler {

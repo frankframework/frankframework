@@ -41,7 +41,7 @@ public class SizePipe extends FixedForwardPipe {
 			} else if (input instanceof byte[]) {
 				size = ((byte[])input).length;
 			}
-			return new PipeRunResult(getForward(), "" + size);
+			return new PipeRunResult(getSuccessForward(), "" + size);
 		} catch(Exception e) {
 			throw new PipeRunException(this, "Error while transforming input", e);
 		}

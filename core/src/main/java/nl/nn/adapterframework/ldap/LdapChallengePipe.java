@@ -23,6 +23,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -147,7 +148,7 @@ public class LdapChallengePipe extends AbstractPipe {
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 						
-		return new PipeRunResult(findForward("success"), msg);
+		return new PipeRunResult(findForward(PipeForward.SUCCESS_FORWARD), msg);
 	}
 	
 	protected void handleError(LdapSender ldapSender, PipeLineSession session, int code, String message) {
