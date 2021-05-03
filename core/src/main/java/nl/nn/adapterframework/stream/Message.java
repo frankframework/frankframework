@@ -169,7 +169,9 @@ public class Message implements Serializable {
 	}
 	
 	
-	
+	/*
+	 * provide close(), but do not implement AutoCloseable, to avoid having to enclose all messages in try-with-resource clauses.
+	 */
 	public void close() throws Exception {
 		if (request instanceof InputStream || request instanceof Reader) {
 			((AutoCloseable)request).close();
