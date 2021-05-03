@@ -113,7 +113,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	}
 
 
-	@IbisDoc({"2", "when set, the processing continues directly at the forward of this pipe, without executing the pipe itself", "false"})
+	@IbisDoc({"2", "If set, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty", "false"})
 	public void setSkipOnEmptyInput(boolean b) {
 		skipOnEmptyInput = b;
 	}
@@ -121,7 +121,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		return skipOnEmptyInput;
 	}
 
-	@IbisDoc({"3", "when set, this pipe is only executed when the value of parameter with name <code>ifparam</code> equals <code>ifvalue</code> (otherwise this pipe is skipped)", ""})
+	@IbisDoc({"3", "If set, this pipe is only executed when the value of parameter with name <code>ifparam</code> equals <code>ifvalue</code> (otherwise this pipe is skipped)", ""})
 	public void setIfParam(String string) {
 		ifParam = string;
 	}
@@ -129,7 +129,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		return ifParam;
 	}
 
-	@IbisDoc({"4", "see <code>ifparam</code>", ""})
+	@IbisDoc({"4", "See <code>ifparam</code>", ""})
 	public void setIfValue(String string) {
 		ifValue = string;
 	}

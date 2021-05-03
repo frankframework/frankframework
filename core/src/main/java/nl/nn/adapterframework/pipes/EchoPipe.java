@@ -43,6 +43,10 @@ public class EchoPipe extends StreamingPipe {
 
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			log.debug("{} cannot provide outputstream", () -> getLogPrefix(session));
+			return null;
+		}
 		return MessageOutputStream.getTargetStream(this, session, getNextPipe());
 	}
 

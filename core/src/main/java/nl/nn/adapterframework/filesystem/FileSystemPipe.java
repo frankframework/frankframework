@@ -116,6 +116,10 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			log.debug("{} cannot provide outputstream", () -> getLogPrefix(session));
+			return null;
+		}
 		return actor.provideOutputStream(session, getNextPipe());
 	}
 

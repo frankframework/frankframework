@@ -17,9 +17,10 @@ package nl.nn.adapterframework.stream;
 
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -30,7 +31,20 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	public final String AUTOMATIC_STREAMING = "streaming.auto";
 
 	private boolean streamingActive=AppConstants.getInstance().getBoolean(AUTOMATIC_STREAMING, false);
-	
+	private boolean canProvideOutputStream;
+	private boolean canStreamToNextPipe; 
+
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		canProvideOutputStream = StringUtils.isEmpty(getGetInputFromSessionKey()) && StringUtils.isEmpty(getGetInputFromFixedValue())
+				&& StringUtils.isEmpty(getStoreResultInSessionKey()) 
+				&& StringUtils.isEmpty(getEmptyInputReplacement()) && !isSkipOnEmptyInput()
+				&& !isPreserveInput() && StringUtils.isEmpty(getElementToMove()) && getLocker()==null
+				&& StringUtils.isEmpty(getIfParam());
+		canStreamToNextPipe = StringUtils.isEmpty(this.getStoreResultInSessionKey()) && !isPreserveInput();
+	}
 
 	public IForwardTarget getNextPipe() {
 		if (getPipeLine()==null) {
@@ -50,10 +64,11 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	/**
 	 * returns true when:
 	 *  a) the pipe can accept input by providing an OutputStream, and 
-	 *  b) there are no side effects configured that prevent handing over its PipeRunResult to the calling pipe.
+	 *  b) there are no side effects configured that prevent handing over its PipeRunResult to the calling pipe (e.g. storeResultInSessionKey)
+	 *  c) there are no side effects that require the input to be available at the end of the pipe (e.g. preserveInput=true)
 	 */
 	public boolean canProvideOutputStream() {
-		return StringUtils.isEmpty(getGetInputFromSessionKey()) && StringUtils.isEmpty(this.getStoreResultInSessionKey());
+		return canProvideOutputStream;
 	}
 
 	/**
@@ -62,7 +77,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 *  b) there are no side effects configured that require the output of this pipe to be available at the return of the doPipe() method.
 	 */
 	public boolean canStreamToNextPipe() {
-		return StringUtils.isEmpty(this.getStoreResultInSessionKey());
+		return canStreamToNextPipe;
 	}
 
 	/**
@@ -70,11 +85,16 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 * Implementations should provide a forward target by calling {@link #getNextPipe()}.
 	 */
 	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+		log.debug("{} has no implementation to provide an outputstream", () -> getLogPrefix(session));
 		return null;
 	}
 
 	@Override
-	public final MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			log.debug("{} cannot provide outputstream", () -> getLogPrefix(session));
+			return null;
+		}
 		return provideOutputStream(session);
 	}
 	
@@ -84,7 +104,9 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 */
 	protected MessageOutputStream getTargetStream(PipeLineSession session) throws StreamingException {
 		if (canStreamToNextPipe()) {
-			return MessageOutputStream.getTargetStream(this, session, getNextPipe());
+			IForwardTarget nextPipe = getNextPipe();
+			log.debug("{} can stream to next pipe [{}]", () -> getLogPrefix(session), () -> nextPipe.getName());
+			return MessageOutputStream.getTargetStream(this, session, nextPipe);
 		}
 		return new MessageOutputStreamCap(this, getNextPipe());
 	}

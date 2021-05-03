@@ -128,6 +128,10 @@ public class Base64Pipe extends StreamingPipe {
 	@SuppressWarnings("resource")
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			log.debug("{} cannot provide outputstream", () -> getLogPrefix(session));
+			return null;
+		}
 		MessageOutputStream target = getTargetStream(session);
 		boolean directionEncode = getDirectionEnum()==Direction.ENCODE;//TRUE encode - FALSE decode
 		OutputStream targetStream;
