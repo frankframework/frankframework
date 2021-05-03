@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.webcontrol.action;
 
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.http.HttpUtils;
 
 import org.apache.struts.action.ActionForm;
