@@ -835,12 +835,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@Override
-	public M changeProcessState(Object message, ProcessState toState) throws ListenerException {
+	public M changeProcessState(Object message, ProcessState toState, String reason) throws ListenerException {
 		if (toState==ProcessState.AVAILABLE) {
 			String id = getListener().getIdFromRawMessage((M)message, null);
 			resetProblematicHistory(id);
 		}
-		return ((IHasProcessState<M>)getListener()).changeProcessState((M)message, toState); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
+		return ((IHasProcessState<M>)getListener()).changeProcessState((M)message, toState, reason); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
 	}
 
 	@Override
@@ -895,6 +895,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				log.warn("problem sending result:"+sendMsg);
 			}
 		}
+		if (origin instanceof IHasProcessState) {
+			ProcessState targetState = knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
+			changeProcessState(rawMessage, targetState, comments);
+		}
 		origin.afterMessageProcessed(plr, rawMessage, threadContext);
 	}
 
@@ -919,7 +923,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (errorSender!=null) {
 				errorSender.sendMessage(message, null);
 			}
-			// processState change is currently handled in listener.afterMessageProcessed()
+			// processState change is currently handled just before listener.afterMessageProcessed() is called
 //			ProcessState targetState = null;
 //			if (knownProcessStates.contains(ProcessState.ERROR)) {
 //				targetState = ProcessState.ERROR;
@@ -929,7 +933,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 //				}
 //			}
 //			if (targetState !=null && getListener() instanceof IHasProcessState) {
-//				changeProcessState(rawMessage, targetState);
+//				changeProcessState(rawMessage, targetState, comments);
 //			}
 			if (errorStorage!=null) {
 				Serializable sobj;
@@ -1371,6 +1375,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						threadContext.putAll(pipelineSession);
 					}
 					try {
+						if (getListener() instanceof IHasProcessState) {
+							ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
+							changeProcessState(rawMessageOrWrapper, targetState, errorMessage);
+						}
 						getListener().afterMessageProcessed(pipeLineResult, rawMessageOrWrapper, afterMessageProcessedMap);
 					} catch (Exception e) {
 						if (manualRetry) {
@@ -1469,26 +1477,25 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 				resetRetryInterval();
 				return false;
-			} else {
-				threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
-				if (getMaxRetries()<0) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times; maxRetries=["+getMaxRetries()+"]");
-					return false;
-				}
-				if (prci.receiveCount<=getMaxRetries()) {
-					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
-					resetRetryInterval();
-					return false;
-				}
-				warn("message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
-				String comments="too many retries";
-				if (prci.receiveCount>getMaxRetries()+1) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+prci.receiveCount+"]; maxRetries=["+getMaxRetries()+"]");
-				}
-				moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, message, threadContext, prci, comments); // cast to M is done only if !manualRetry
-				prci.receiveCount++; // make sure that the next time this message is seen, the retry interval will be increased
-				return true;
 			}
+			threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
+			if (getMaxRetries()<0) {
+				increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times; maxRetries=["+getMaxRetries()+"]");
+				return false;
+			}
+			if (prci.receiveCount<=getMaxRetries()) {
+				log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
+				resetRetryInterval();
+				return false;
+			}
+			warn("message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
+			String comments="too many retries";
+			if (prci.receiveCount>getMaxRetries()+1) {
+				increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+prci.receiveCount+"]; maxRetries=["+getMaxRetries()+"]");
+			}
+			moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, message, threadContext, prci, comments); // cast to M is done only if !manualRetry
+			prci.receiveCount++; // make sure that the next time this message is seen, the retry interval will be increased
+			return true;
 		} 
 		return isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId);
 	}
