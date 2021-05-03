@@ -149,7 +149,7 @@ public class SoapProviderTest {
 		Message attachmentMessage = session.getMessage(sessionKey);
 
 		//Verify that the attachment sent, was received properly
-		assertEquals(ATTACHMENT_CONTENT, Misc.streamToString(attachmentMessage.asInputStream()));
+		assertEquals(ATTACHMENT_CONTENT, attachmentMessage.asString());
 
 		//Verify the content type
 		Element mimeTypes = XmlUtils.getFirstChildTag(attachment, "mimeHeaders");

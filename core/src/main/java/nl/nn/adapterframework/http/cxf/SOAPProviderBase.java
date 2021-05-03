@@ -130,7 +130,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						sessionKey.setValue("attachment" + i);
 						attachment.addSubElement(sessionKey);
 						Message rawContent = new Message(attachmentPart.getRawContent());
-						rawContent.closeOnCloseOf(pipelineSession);
+						//rawContent.closeOnCloseOf(pipelineSession);
 						pipelineSession.put("attachment" + i, rawContent);
 						log.debug(getLogPrefix(correlationId)+"adding attachment [attachment" + i+"] to session");
 	
