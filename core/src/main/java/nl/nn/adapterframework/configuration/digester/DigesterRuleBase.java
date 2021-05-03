@@ -30,7 +30,6 @@ import org.xml.sax.Locator;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
-import nl.nn.adapterframework.configuration.ConfigWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.AppConstants;
@@ -63,10 +62,9 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 */
 	protected final void addLocalWarning(String message) {
 		Locator loc = getDigester().getDocumentLocator();
-		String msg = getObjectName()+ " on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
+//		String msg = getObjectName()+ " on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
 		String msg2 = "on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
-		ConfigurationWarnings.add(null, log, msg); //TODO fix this
-		ConfigWarning.getInstance(applicationContext).add(getBean(), log, msg2);
+		ConfigurationWarnings.getInstance(applicationContext).add(getBean(), log, msg2);
 	}
 
 	/**
@@ -74,7 +72,6 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 */
 	protected final void addGlobalWarning(String message) {
 		String msg = getBeanClass() + " " + message;
-		ConfigurationWarnings.addGlobalWarning(log, msg); //TODO fix this
 		ApplicationWarnings.getInstance(applicationContext).add(log, msg);
 	}
 

@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
@@ -75,7 +76,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter @Setter boolean configured = false;
 
 	private ConfigurationException configurationException = null;
-	private BaseConfigurationWarnings configurationWarnings = new BaseConfigurationWarnings();
 
 	private Date statisticsMarkDateMain=new Date();
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
@@ -141,6 +141,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		setParent(applicationContext);
 	}
 
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return this;
+	}
+
 	/**
 	 * Spring's configure method.
 	 * Only called when the Configuration has been added through a parent context!
@@ -162,6 +167,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		super.afterPropertiesSet(); //Triggers a context refresh
+
+		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+		postProcessor.setBeanFactory(getBeanFactory());
+		getBeanFactory().addBeanPostProcessor(postProcessor);
 
 		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
@@ -409,8 +418,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return configurationException;
 	}
 
-	public BaseConfigurationWarnings getConfigurationWarnings() {
-		return configurationWarnings;
+	public ConfigurationWarnings getConfigurationWarnings() {
+		return getBean("configurationWarnings", ConfigurationWarnings.class);
 	}
 
 	// Dummy setter to allow JmsRealms being added to Configurations via FrankDoc.xsd

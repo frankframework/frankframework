@@ -19,44 +19,54 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.annotation.Priority;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Scope;
 import org.springframework.util.ClassUtils;
 
 import lombok.Setter;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 
+@IbisInitializer
+@Priority(Integer.MAX_VALUE)
+@Scope(scopeName = ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class ApplicationWarnings implements ApplicationContextAware, InitializingBean {
 
 	private @Setter ApplicationContext applicationContext;
+	private static ApplicationWarnings self = null;
 	private AppConstants appConstants;
 	private List<String> warnings;
 
-
-
-
-	public void add(Logger log, String message) {
+	public static void add(Logger log, String message) {
 		add(log, message, null);
 	}
 
-	public void add(Logger log, String message, Throwable t) {
-		doAdd(log, message, t);
+	public static void add(Logger log, String message, Throwable t) {
+		add(null, log, message, t);
 	}
 
-	public void add(Object source, Logger log, String message) {
+	public static void add(Object source, Logger log, String message) {
 		add(source, log, message, null);
 	}
 
-	public void add(Object source, Logger log, String message, Throwable t) {
-		doAdd(source, log, message, t);
+	public static void add(Object source, Logger log, String message, Throwable t) {
+		getInstance().doAdd(source, log, message, t);
 	}
 
-
-
+	public static ApplicationWarnings getInstance() {
+		if(self == null) {
+			throw new IllegalArgumentException("ApplicationWarnings not initialized");
+		}
+		return self;
+	}
 
 	public static ApplicationWarnings getInstance(ApplicationContext applicationContext) {
 		if(applicationContext == null) {
@@ -70,6 +80,8 @@ public class ApplicationWarnings implements ApplicationContextAware, Initializin
 	public void afterPropertiesSet() throws Exception {
 		appConstants = AppConstants.getInstance(applicationContext.getClassLoader());
 		warnings = new LinkedList<>();
+
+		self = getInstance(applicationContext);
 	}
 
 	protected AppConstants getAppConstants() {
@@ -110,6 +122,14 @@ public class ApplicationWarnings implements ApplicationContextAware, Initializin
 	protected void doAdd(Object source, Logger log, String message, Throwable t) {
 		String msg = getObjectName(source)+" "+message;
 		doAdd(log, msg, t);
+	}
+
+	public int size() {
+		return -1;
+	}
+
+	public String get(int i) {
+		return null;
 	}
 
 	/**

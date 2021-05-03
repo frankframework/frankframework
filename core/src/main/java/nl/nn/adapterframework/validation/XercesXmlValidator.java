@@ -55,6 +55,7 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.cache.EhCache;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -131,7 +132,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				cache.open();
 			} catch (ConfigurationException e) {
 				cache = null;
-				ConfigurationWarnings.addGlobalWarning(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
+				ApplicationWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
 			}
 		}
 	}
