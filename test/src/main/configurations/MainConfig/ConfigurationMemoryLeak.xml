@@ -44,7 +44,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener1"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -66,7 +66,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener2"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -87,7 +87,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener3"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -108,7 +108,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener4"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -129,7 +129,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener5"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -150,7 +150,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener6"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -171,7 +171,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener7"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -192,7 +192,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener8"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -213,7 +213,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener9"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -234,7 +234,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.EchoSender">
 				</sender>
 				<forward name="success" path="READY" />

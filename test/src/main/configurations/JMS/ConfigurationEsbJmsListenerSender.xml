@@ -10,7 +10,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Send2EsbJms"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
 					destinationName="jms/GetMessageRequest" jmsRealm="qcf_tibco_esb_rr"
 					messageProtocol="RR">
@@ -66,7 +66,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Send2EsbJms"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
 					destinationName="jms/UpdateMessageAction" jmsRealm="qcf_tibco_esb_ff"
 					messageProtocol="FF">
@@ -113,7 +113,7 @@
 				<forward name="success" path="fixedInsert" />
 			</pipe>
 			<pipe name="fixedInsert"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromSessionKey="originalMessage">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)"
@@ -125,7 +125,7 @@
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" />
 			<pipe name="suspend"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromSessionKey="originalMessage" transactionAttribute="NotSupported">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('FIRSTNAME',?,NULL,NULL)"
@@ -153,7 +153,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Send2EsbJms"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
 					destinationName="jms/UpdateMessageAction" jmsRealm="qcf_tibco_esb_ff"
 					messageProtocol="FF">
@@ -199,25 +199,25 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_local_echo"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
 					javaListener="EsbJmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_local_exception"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
 					javaListener="EsbJmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_java_echo"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
 					serviceName="ibis4test-EsbJmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_java_exception"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
 					serviceName="ibis4test-EsbJmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />

@@ -26,7 +26,7 @@
 
 			<!-- This subadapter throws an exception -->
 			<pipe name="Send transacted message to required subadapter with exception"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
@@ -38,7 +38,7 @@
 			</pipe>
 
 			<!-- This should rollback -->
-			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
 				<forward name="success" path="EXIT" />
 			</pipe>

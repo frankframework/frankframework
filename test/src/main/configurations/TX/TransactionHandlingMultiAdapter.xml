@@ -27,7 +27,7 @@
 			<!-- This subadapter throws an exception -->
 			<!-- The outcome of this pipe should not influence the pipeline in any way since its not transacted-->
 			<pipe name="Send transacted message to not supported subadapter with exception"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
@@ -38,7 +38,7 @@
 				<forward name="exception" path="fixedInsert"/>
 			</pipe>
 
-			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" transactionAttribute="Required">
+			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="Required">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc">
 					<param name="value" value="test1" />
 				</sender>
@@ -47,7 +47,7 @@
 
 			<!-- This subadapter throws an exception -->
 			<pipe name="Send transacted message to required subadapter with exception"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
@@ -58,7 +58,7 @@
 				<forward name="exception" path="fixedInsertRollback2"/>
 			</pipe>
 
-			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
 				<forward name="success" path="this should fail because of a tx error" />
 			</pipe>

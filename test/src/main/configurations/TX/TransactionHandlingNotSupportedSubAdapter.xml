@@ -25,7 +25,7 @@
 
 			<!-- The pipeline should have a TX, this subadapter should removed it -->
 			<pipe name="Send transacted message to not supported subadapter"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
@@ -57,7 +57,7 @@
 
 			<!-- Make sure there is no TX -->
 			<pipe name="Send transacted message to never subadapter"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender

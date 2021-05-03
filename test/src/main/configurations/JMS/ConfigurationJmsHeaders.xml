@@ -46,7 +46,7 @@
 			</exits>
 
 			<pipe name="SendMessage"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
 					className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"

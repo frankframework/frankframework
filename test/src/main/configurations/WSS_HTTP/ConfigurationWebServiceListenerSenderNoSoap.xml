@@ -29,7 +29,7 @@
 			<pipe name="wrap" className="nl.nn.adapterframework.soap.SoapWrapperPipe" serviceNamespace="urn:wsns">
 				<forward name="success" path="Send2WS" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" name="Send2WS">
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe" name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" soap="false" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" namespaceDefs="ns1=http://www.ing.com/namespace1 ns2=http://www.ing.com/namespace2" />
 				<forward name="success" path="EXIT" />
 			</pipe>

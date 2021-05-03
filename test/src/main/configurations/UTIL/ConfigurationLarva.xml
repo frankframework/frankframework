@@ -82,7 +82,7 @@
 			</pipe>
 			<pipe
 				name="SendMail"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				active="${larva.adapter.mail.active}"
 				>
 				<sender

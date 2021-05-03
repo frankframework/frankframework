@@ -7,7 +7,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" labelXPath="concat('L-',name(*))">
+			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.SenderPipe" labelXPath="concat('L-',name(*))">
 				<sender className="nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender" applicationId="${applicationId}" messageProtocol="FF" serviceId="${SendUnstructuredEmail}" />
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/IfsaFFRequesterSender" />
 				<forward name="success" path="Text2XmlPipe" />
@@ -25,7 +25,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" labelStyleSheet="IfsaRRRequesterSender/label.xsl">
+			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.SenderPipe" labelStyleSheet="IfsaRRRequesterSender/label.xsl">
 				<sender className="nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender" applicationId="${applicationId}" messageProtocol="RR" serviceId="${GetPartyBasicData}" />
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/IfsaRRRequesterSender" />
 				<forward name="success" path="EXIT" />

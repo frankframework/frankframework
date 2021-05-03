@@ -10,7 +10,7 @@
 			</exits>
 
 			<pipe name="insertDoc"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
 					queryType="insert" jmsRealm="jdbc"
@@ -45,7 +45,7 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc"
 					paramsInUrl="false" multipart="true">
@@ -95,7 +95,7 @@
 			</pipe>
 
 			<pipe name="getDocFileName"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				storeResultInSessionKey="docFileName">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TVARCHAR FROM IBISTEMP WHERE TKEY=?" queryType="select"
@@ -113,7 +113,7 @@
 			</pipe>
 
 			<pipe name="getDocAndWriteToFile"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					jmsRealm="jdbc" scalar="true" streamResultToServlet="true"
@@ -151,7 +151,7 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param" streamResultToServlet="true">
 					<param name="url_param" sessionKey="url" />
@@ -189,7 +189,7 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param" base64="true">
 					<param name="url_param" sessionKey="url" />
@@ -255,7 +255,7 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param" streamResultToFileNameSessionKey="fileName">
 					<param name="url_param" sessionKey="url" />

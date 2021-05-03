@@ -35,7 +35,7 @@
 				<exits>
 					<exit path="EXIT" state="success" />
 				</exits>
-				<pipe name="ReturnedSessionKeys" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<pipe name="ReturnedSessionKeys" className="nl.nn.adapterframework.pipes.SenderPipe">
 					<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReturnedSessionKeys" returnedSessionKeys="returnCode,reasonCode" />
 					<forward name="success" path="Reply_success" />
 					<forward name="exception" path="Reply_exception" />
