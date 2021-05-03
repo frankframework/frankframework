@@ -85,14 +85,14 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 * Implementations should provide a forward target by calling {@link #getNextPipe()}.
 	 */
 	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		log.debug("{} has no implementation to provide an outputstream", () -> getLogPrefix(session));
+		log.debug("pipe [{}] has no implementation to provide an outputstream", () -> getName());
 		return null;
 	}
 
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		if (!canProvideOutputStream()) {
-			log.debug("{} cannot provide outputstream", () -> getLogPrefix(session));
+			log.debug("pipe [{}] cannot provide outputstream", () -> getName());
 			return null;
 		}
 		return provideOutputStream(session);
@@ -105,7 +105,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	protected MessageOutputStream getTargetStream(PipeLineSession session) throws StreamingException {
 		if (canStreamToNextPipe()) {
 			IForwardTarget nextPipe = getNextPipe();
-			log.debug("{} can stream to next pipe [{}]", () -> getLogPrefix(session), () -> nextPipe.getName());
+			log.debug("pipe [{}] can stream to next pipe [{}]", () -> getName(), () -> nextPipe.getName());
 			return MessageOutputStream.getTargetStream(this, session, nextPipe);
 		}
 		return new MessageOutputStreamCap(this, getNextPipe());

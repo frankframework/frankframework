@@ -143,7 +143,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		if (!canProvideOutputStream()) {
-			log.debug("{} cannot provide outputstream", () -> getLogPrefix(session));
+			log.debug("pipe [{}] cannot provide outputstream", () -> getName());
 			return null;
 		}
 		return sender.provideOutputStream(session, getNextPipe());
