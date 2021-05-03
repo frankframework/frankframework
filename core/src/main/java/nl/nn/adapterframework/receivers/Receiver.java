@@ -541,7 +541,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			super.configure();
 			if (StringUtils.isEmpty(getName())) {
 				if (getListener()!=null) {
-					setName(ClassUtils.nameOf(getListener()));
+					setName(Misc.concatStrings(ClassUtils.nameOf(getListener()), " ", getListener().getName()));
 				} else {
 					setName(ClassUtils.nameOf(this));
 				}
@@ -1944,9 +1944,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@IbisDoc({"10", "The source of messages"})
 	public void setListener(IListener<M> newListener) {
 		listener = newListener;
-		if (StringUtils.isEmpty(listener.getName())) {
-			listener.setName("listener of ["+getName()+"]");
-		}
 		if (listener instanceof RunStateEnquiring)  {
 			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
 		}

@@ -1,6 +1,6 @@
 <ibis>
 	<adapter name="StringResolver" description="Test the functioning of the StringResolver">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="StringResolver">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-StringResolver" />
 		</receiver>
 		<pipeline firstPipe="ResolveString">

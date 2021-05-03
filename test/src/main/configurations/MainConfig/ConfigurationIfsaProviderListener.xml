@@ -1,6 +1,6 @@
 <module>
 	<adapter name="IfsaFFProviderListener" description="Test the functioning of the IfsaFFProviderListener" active="${active.ifsa}">
-		<receiver name="IfsaFFProviderListener" className="nl.nn.adapterframework.receivers.GenericReceiver" transactionAttribute="Required" transactionTimeout="2" labelXPath="concat('A-',name(*))">
+		<receiver transactionAttribute="Required" transactionTimeout="2" labelXPath="concat('A-',name(*))">
 			<listener className="nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener" applicationId="${applicationId}" messageProtocol="FF" />
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/IfsaFFProviderListener" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/IfsaFFProviderListener" retention="-1" />
@@ -30,7 +30,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="IfsaRRProviderListener" description="Test the functioning of the IfsaRRProviderListener" active="${active.ifsa}">
-		<receiver name="IfsaRRProviderListener" className="nl.nn.adapterframework.receivers.GenericReceiver" labelStyleSheet="IfsaRRProviderListener/label.xsl">
+		<receiver labelStyleSheet="IfsaRRProviderListener/label.xsl">
 			<listener className="nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener" applicationId="${applicationId}2" messageProtocol="RR" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/IfsaRRProviderListener" retention="-1" />
 		</receiver>
@@ -54,7 +54,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="IfsaFFProviderListener_gpoa" active="${active.ifsa}">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="IfsaFFProviderListener_gpoa">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="IfsaFFProviderListener_gpoa" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/IfsaFFProviderListener_gpoa_in" retention="-1" />
 		</receiver>

@@ -1,18 +1,12 @@
 <module>
 	<adapter name="Larva" active="${larva.adapter.active}">
-		<receiver
-			name="Larva"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			>
+		<receiver>
 			<listener
 				name="Larva"
 				className="nl.nn.adapterframework.receivers.JavaListener"
 			/>
 		</receiver>
-		<receiver
-			name="Larva"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			>
+		<receiver>
 			<listener
 				name="Larva"
 				className="nl.nn.adapterframework.http.RestListener"

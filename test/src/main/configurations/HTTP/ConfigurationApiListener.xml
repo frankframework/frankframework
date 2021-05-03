@@ -1,7 +1,6 @@
 <module>
 	<adapter name="ApiListener_SimpleInsert">
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			checkForDuplicates="true"
 			processResultCacheSize="0"
 			>
@@ -32,7 +31,6 @@
 	</adapter>
 	<adapter name="ApiListener_SimpleInsertWithTransactedException">
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			checkForDuplicates="true"
 			processResultCacheSize="0"
 			transactionAttribute="Required"
@@ -62,7 +60,6 @@
 	</adapter>
 	<adapter name="ApiListener_SimpleInsertWithException">
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			checkForDuplicates="true"
 			processResultCacheSize="0"
 			>
@@ -92,7 +89,7 @@
 	</adapter>
 
 	<adapter name="CallApiListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CallApiListener" />
 		</receiver>
 		<pipeline firstPipe="callApiListener">

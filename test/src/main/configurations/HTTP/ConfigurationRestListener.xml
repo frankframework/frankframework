@@ -1,7 +1,6 @@
 <module>
 	<adapter name="RestListener_ArchiveDoc">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestListener_ArchiveDoc">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="RestListener_ArchiveDoc" uriPattern="doc" method="POST" />
 		</receiver>
@@ -24,8 +23,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestSender_ArchiveDoc">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestSender_ArchiveDoc">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-RestSender_ArchiveDoc" />
 		</receiver>
@@ -75,8 +73,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestListener_GetDoc">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestListener_GetDoc">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="RestListener_GetDoc" uriPattern="doc" method="GET" />
 		</receiver>
@@ -128,8 +125,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestListener_GetDoc2">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestListener_GetDoc2">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="RestListener_GetDoc2" uriPattern="doc2" method="GET" />
 		</receiver>
@@ -165,8 +161,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestSender_GetDoc">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestSender_GetDoc">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-RestSender_GetDoc" />
 		</receiver>
@@ -219,8 +214,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestListener_GetDoc3">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestListener_GetDoc3">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="RestListener_GetDoc3" uriPattern="doc3" method="GET" />
 		</receiver>
@@ -237,8 +231,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestSender_GetDoc3">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestSender_GetDoc3">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-RestSender_GetDoc3" />
 		</receiver>
