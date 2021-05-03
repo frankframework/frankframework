@@ -29,12 +29,14 @@ import javax.xml.validation.ValidatorHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
@@ -64,6 +66,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private boolean throwException = false;
 	private boolean fullSchemaChecking = false;

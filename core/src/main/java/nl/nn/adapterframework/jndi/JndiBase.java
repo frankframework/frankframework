@@ -38,8 +38,10 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
@@ -50,6 +52,7 @@ import lombok.Getter;
 public class JndiBase implements IConfigurable{
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
     // JNDI

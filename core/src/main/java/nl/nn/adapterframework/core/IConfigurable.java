@@ -15,9 +15,14 @@
 */
 package nl.nn.adapterframework.core;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
-public interface IConfigurable extends INamedObject, IScopeProvider {
+public interface IConfigurable extends INamedObject, IScopeProvider, ApplicationContextAware {
 
 	public void configure() throws ConfigurationException;
+
+	public ApplicationContext getApplicationContext();
 }
