@@ -60,7 +60,7 @@ public class MessageOutputStream implements AutoCloseable {
 	protected MessageOutputStream(INamedObject owner, IForwardTarget next) {
 		this.owner=owner;
 		tail=this;
-		setForward(new PipeForward(PipeForward.SUCCESS_FORWARD, next==null?null:next.getName()));
+		setForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, next==null?null:next.getName()));
 	}
 	protected MessageOutputStream(INamedObject owner, MessageOutputStream nextStream) {
 		this.owner=owner;

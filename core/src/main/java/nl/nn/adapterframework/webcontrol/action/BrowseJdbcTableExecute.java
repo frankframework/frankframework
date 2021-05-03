@@ -33,7 +33,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.stream.Message;
@@ -264,7 +263,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 
 		// Forward control to the specified success URI
 		log.debug("forward to success");
-		return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
+		return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 
 	}
 	public void StoreFormData(IniDynaActionForm form) {

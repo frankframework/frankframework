@@ -148,7 +148,7 @@ public class LdapChallengePipe extends AbstractPipe {
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 						
-		return new PipeRunResult(findForward(PipeForward.SUCCESS_FORWARD), msg);
+		return new PipeRunResult(findForward(PipeForward.SUCCESS_FORWARD_NAME), msg);
 	}
 	
 	protected void handleError(LdapSender ldapSender, PipeLineSession session, int code, String message) {

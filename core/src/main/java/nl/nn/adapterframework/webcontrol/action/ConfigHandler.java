@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.webcontrol.action;
 
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.util.AppConstants;
 
 import org.apache.struts.action.ActionForm;
@@ -58,6 +57,6 @@ public final class ConfigHandler extends ActionBase {
 			saveErrors(request, errors);
 		} // Forward control to the specified success URI
 		log.debug("forward to success");
-		return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
+		return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 	}
 }

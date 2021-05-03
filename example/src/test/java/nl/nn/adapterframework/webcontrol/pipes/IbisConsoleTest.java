@@ -150,7 +150,7 @@ public class IbisConsoleTest {
 
 	private PipeForward createPipeSuccessForward() {
 		PipeForward pipeForward = new PipeForward();
-		pipeForward.setName(PipeForward.SUCCESS_FORWARD);
+		pipeForward.setName(PipeForward.SUCCESS_FORWARD_NAME);
 		return pipeForward;
 	}
 

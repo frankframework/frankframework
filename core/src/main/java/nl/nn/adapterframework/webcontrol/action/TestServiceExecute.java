@@ -26,7 +26,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -130,7 +129,7 @@ public class TestServiceExecute extends ActionBase {
 
         // Forward control to the specified success URI
         log.debug("forward to success");
-        return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
+        return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 
     }
     

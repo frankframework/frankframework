@@ -21,16 +21,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.scheduler.SchedulerAdapter;
-import nl.nn.adapterframework.scheduler.SchedulerHelper;
-import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
-
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+
+import nl.nn.adapterframework.scheduler.SchedulerAdapter;
+import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs
@@ -79,7 +78,7 @@ public final class ShowSchedulerStatus extends ActionBase {
 
         // Forward control to the specified success URI
         log.debug("forward to success");
-        return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
+        return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 
     }
 }

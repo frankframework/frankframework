@@ -290,7 +290,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 			esbSoapValidator.setForwardFailureToSuccess(true);
 			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			esbSoapValidator.registerForward(pf);
 			esbSoapValidator.configure();
 			return esbSoapValidator;

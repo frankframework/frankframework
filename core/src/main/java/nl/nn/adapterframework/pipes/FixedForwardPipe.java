@@ -54,9 +54,9 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		successForward = findForward(PipeForward.SUCCESS_FORWARD);
+		successForward = findForward(PipeForward.SUCCESS_FORWARD_NAME);
 		if (successForward == null)
-			throw new ConfigurationException("has no forward with name [" + PipeForward.SUCCESS_FORWARD + "]");
+			throw new ConfigurationException("has no forward with name [" + PipeForward.SUCCESS_FORWARD_NAME + "]");
 	}
 
 	/**

@@ -78,6 +78,6 @@ public class AdapterHandler extends ActionBase {
 			saveErrors(request, errors);
 		} // Forward control to the specified success URI
 		log.debug("forward to success");
-		return (mapping.findForward(PipeForward.SUCCESS_FORWARD));
+		return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 	}
 }

@@ -414,19 +414,19 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		if (inputValidator!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			inputValidator.registerForward(pf);
 			configure(inputValidator);
 		}
 		if (outputValidator!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			outputValidator.registerForward(pf);
 			configure(outputValidator);
 		}
 		if (getInputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			getInputWrapper().registerForward(pf);
 			if (getInputWrapper() instanceof EsbSoapWrapperPipe) {
 				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getInputWrapper();
@@ -437,7 +437,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		if (getOutputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			getOutputWrapper().registerForward(pf);
 			configure(getOutputWrapper());
 		}
@@ -556,7 +556,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (wrapResult==null) {
 				throw new PipeRunException(inputWrapper, "retrieved null result from inputWrapper");
 			}
-			if (!wrapResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD)) {
+			if (!wrapResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD_NAME)) {
 				return wrapResult;
 			} else {
 				input = wrapResult.getResult();
@@ -571,7 +571,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			preserve(input, session);
 			log.debug(getLogPrefix(session)+"validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, input, session);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD)) {
+			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD_NAME)) {
 				return validationResult;
 			}
 		}
@@ -799,7 +799,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (wrapResult==null) {
 				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
 			}
-			if (!wrapResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD)) {
+			if (!wrapResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD_NAME)) {
 				return wrapResult;
 			} 
 			result = wrapResult.getResult();

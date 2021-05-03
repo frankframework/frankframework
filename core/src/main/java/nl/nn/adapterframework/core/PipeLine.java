@@ -242,14 +242,14 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 					if (i2 < pipes.size()) {
 						String nextPipeName = getPipe(i2).getName();
 						PipeForward pf = new PipeForward();
-						pf.setName(PipeForward.SUCCESS_FORWARD);
+						pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 						pf.setPath(nextPipeName);
 						pipe.registerForward(pf);
 					} else {
 						PipeLineExit plexit = findExitByState(PipeLineExit.EXIT_STATE_SUCCESS);
 						if (plexit != null) {
 							PipeForward pf = new PipeForward();
-							pf.setName(PipeForward.SUCCESS_FORWARD);
+							pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 							pf.setPath(plexit.getPath());
 							pipe.registerForward(pf);
 						}
@@ -280,7 +280,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (inputValidator != null) {
 			log.debug(getLogPrefix()+"configuring InputValidator");
 			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			inputValidator.registerForward(pf);
 			inputValidator.setName(INPUT_VALIDATOR_NAME);
 			configure(inputValidator);
@@ -288,7 +288,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (outputValidator!=null) {
 			log.debug(getLogPrefix()+"configuring OutputValidator");
 			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			outputValidator.registerForward(pf);
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME);
 			configure(outputValidator);
@@ -297,7 +297,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (getInputWrapper()!=null) {
 			log.debug(getLogPrefix()+"configuring InputWrapper");
 			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			getInputWrapper().registerForward(pf);
 			getInputWrapper().setName(INPUT_WRAPPER_NAME);
 			configure(getInputWrapper());
@@ -305,7 +305,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (getOutputWrapper()!=null) {
 			log.debug(getLogPrefix()+"configuring OutputWrapper");
 			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 
 			getOutputWrapper().registerForward(pf);
 			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
