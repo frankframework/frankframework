@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -60,7 +61,7 @@ public class PdfPipe extends FixedForwardPipe {
 	private String action = null;
 	private List<String> availableActions = Arrays.asList("combine", "convert");
 	private String mainDocumentSessionKey = "defaultMainDocumentSessionKey";
-	private String fileNameToAttachSessionKey = "defaultFileNameToAttachSessionKey";
+	private String filenameToAttachSessionKey = "defaultFileNameToAttachSessionKey";
 	protected String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private boolean isTempDirCreated = false;
 	private AsposeFontManager fontManager;
@@ -143,7 +144,7 @@ public class PdfPipe extends FixedForwardPipe {
 				// Get main document to attach attachments
 				InputStream mainPdf = Message.asInputStream(session.get(mainDocumentSessionKey), charset);
 				// Get file name of attachment
-				String fileNameToAttach = Message.asString(session.get(fileNameToAttachSessionKey));
+				String fileNameToAttach = Message.asString(session.get(getFilenameToAttachSessionKey()));
 
 				InputStream result = PdfAttachmentUtil.combineFiles(mainPdf, binaryInputStream, fileNameToAttach + ".pdf");
 
@@ -183,12 +184,18 @@ public class PdfPipe extends FixedForwardPipe {
 		return mainDocumentSessionKey;
 	}
 
-	@IbisDoc({ "session key that contains the filename to be attached. Only used when the action is set to 'combine' ", "defaultFileNameToAttachSessionKey" })
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameToAttachSessionKey' is replaced with 'filenameToAttachSessionKey'")
 	public void setFileNameToAttachSessionKey(String fileNameToAttachSessionKey) {
-		this.fileNameToAttachSessionKey = fileNameToAttachSessionKey;
+		this.filenameToAttachSessionKey = fileNameToAttachSessionKey;
 	}
-	public String getFileNameToAttachSessionKey() {
-		return fileNameToAttachSessionKey;
+
+	@IbisDoc({ "session key that contains the filename to be attached. Only used when the action is set to 'combine' ", "defaultFileNameToAttachSessionKey" })
+	public void setFilenameToAttachSessionKey(String filenameToAttachSessionKey) {
+		this.filenameToAttachSessionKey = filenameToAttachSessionKey;
+	}
+	public String getFilenameToAttachSessionKey() {
+		return filenameToAttachSessionKey;
 	}
 
 	@IbisDoc({ "fonts folder to load the fonts. If not set then a temporary folder will be created to extract fonts from fonts.zip everytime. Having fontsDirectory to be set will improve startup time", "null" })
