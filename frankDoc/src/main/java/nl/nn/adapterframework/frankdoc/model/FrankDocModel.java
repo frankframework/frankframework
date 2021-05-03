@@ -445,7 +445,7 @@ public class FrankDocModel {
 			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
 			configChild.setOrder(order);
 			result.add(configChild);
-			log.trace("Done creating config child {}, the order is is {}", () -> configChild.toString(), () -> configChild.getOrder());
+			log.trace("Done creating config child {}, the order is {}", () -> configChild.toString(), () -> configChild.getOrder());
 		}
 		log.trace("Removing duplicate config children of FrankElement [{}]", () -> parent.getFullName());
 		result = ConfigChild.removeDuplicates(result);
