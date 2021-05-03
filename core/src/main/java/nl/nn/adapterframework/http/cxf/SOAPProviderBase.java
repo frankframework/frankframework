@@ -122,14 +122,16 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 				Iterator<AttachmentPart> attachmentParts = request.getAttachments();
 				while (attachmentParts.hasNext()) {
 					try {
-						InputStreamAttachmentPart attachmentPart = new InputStreamAttachmentPart(attachmentParts.next());
+						AttachmentPart attachmentPart = attachmentParts.next();
 	
 						XmlBuilder attachment = new XmlBuilder("attachment");
 						attachments.addSubElement(attachment);
 						XmlBuilder sessionKey = new XmlBuilder("sessionKey");
 						sessionKey.setValue("attachment" + i);
 						attachment.addSubElement(sessionKey);
-						pipelineSession.put("attachment" + i, attachmentPart.getInputStream());
+						Message rawContent = new Message(attachmentPart.getRawContent());
+						rawContent.closeOnCloseOf(pipelineSession);
+						pipelineSession.put("attachment" + i, rawContent);
 						log.debug(getLogPrefix(correlationId)+"adding attachment [attachment" + i+"] to session");
 	
 						@SuppressWarnings("unchecked")
