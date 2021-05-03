@@ -37,12 +37,12 @@
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="Request/@action"></pipe>
 			<!-- sendMessage_invalidRequest -->
-			<pipe name="sendMessage_invalidRequest" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="sendMessage_invalidRequest" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				filename="InputOutputWrapper/invalidRequest.xml">
 				<forward name="success" path="sendMessage" />
 			</pipe>
 			<!-- sendMessage_notWellFormedRequest -->
-			<pipe name="sendMessage_notWellFormedRequest" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="sendMessage_notWellFormedRequest" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				filename="InputOutputWrapper/notWellFormedRequest.txt">
 				<forward name="success" path="sendMessage" />
 			</pipe>
@@ -131,12 +131,12 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- invalidResponse -->
-			<pipe name="invalidResponse" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="invalidResponse" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				filename="InputOutputWrapper/invalidResponse.xml">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- notWellFormedResponse -->
-			<pipe name="notWellFormedResponse" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="notWellFormedResponse" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				filename="InputOutputWrapper/notWellFormedResponse.txt">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -174,7 +174,7 @@
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="ErrorExit" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="ErrorExit" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				filename="InputOutputWrapper/emptyErrorResponse.xml">
 				<forward name="success" path="EXIT" />
 			</pipe>

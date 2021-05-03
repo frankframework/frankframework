@@ -23,7 +23,7 @@
 				</sender>
 			</pipe>
 
-			<pipe name="FixedResult" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;success/&gt;">
+			<pipe name="FixedResultPipe" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;success/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
@@ -112,7 +112,7 @@
 				<forward name="500" path="FixedResultOnException" />
 			</pipe>
 
-			<pipe name="FixedResultOnException" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;error/&gt;">
+			<pipe name="FixedResultOnException" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;error/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

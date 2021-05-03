@@ -48,7 +48,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="GetPartiesOnAgreement" getInputFromSessionKey="originalMessage">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="UnknownIfsaServiceName" returnString="Unknown IfsaServiceName">
+			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="UnknownIfsaServiceName" returnString="Unknown IfsaServiceName">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

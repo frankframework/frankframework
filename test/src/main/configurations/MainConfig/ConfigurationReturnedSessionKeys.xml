@@ -8,10 +8,10 @@
 				<exits>
 					<exit path="EXIT" state="success" />
 				</exits>
-				<pipe name="SetReturnCode" className="nl.nn.adapterframework.pipes.FixedResult" returnString="NOT_OK" storeResultInSessionKey="returnCode">
+				<pipe name="SetReturnCode" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="NOT_OK" storeResultInSessionKey="returnCode">
 					<forward name="success" path="SetReasonCode" />
 				</pipe>
-				<pipe name="SetReasonCode" className="nl.nn.adapterframework.pipes.FixedResult" returnString="INTERNAL_ERROR" storeResultInSessionKey="reasonCode">
+				<pipe name="SetReasonCode" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="INTERNAL_ERROR" storeResultInSessionKey="reasonCode">
 					<forward name="success" path="SwitchThrowException" />
 				</pipe>
 				<pipe name="SwitchThrowException" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="originalMessage" xpathExpression="request/@throwException" notFoundForwardName="ThrowExceptionFalse">
