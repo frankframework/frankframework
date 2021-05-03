@@ -146,52 +146,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	private boolean configurationSucceeded = false;
 
-
-	/**
-	 * Register an Pipe at this pipeline.
-	 * The name is also put in the globalForwards table (with
-	 * forward-name=pipename and forward-path=pipename, so that
-	 * pipe can look for a specific pipe-name. If already a globalForward
-	 * exists under that name, the pipe is NOT added, allowing globalForwards
-	 * to prevail.
-	 * @see AbstractPipe
-	 **/
-	@IbisDoc("90")
-	public void addPipe(IPipe pipe) throws ConfigurationException {
-		if (pipe == null) {
-			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
-		}
-		if (pipe instanceof IExtendedPipe && !((IExtendedPipe)pipe).isActive()) {
-			log.debug("Pipe [" + pipe.getName() + "] is not active, therefore not included in configuration");
-			return;
-		}
-		String name = pipe.getName();
-		if (StringUtils.isEmpty(name)) {
-			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe)+"] to be added has no name, pipelineTable size ["+pipesByName.size()+"]");
-		}
-		IPipe current = getPipe(name);
-		if (current != null) {
-			throw new ConfigurationException("pipe [" + name + "] defined more then once");
-		}
-		pipesByName.put(name, pipe);
-		pipes.add(pipe);
-		if (pipe.getMaxThreads() > 0) {
-			pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
-		}
-		log.debug("added pipe [" + pipe.toString() + "]");
-		if (!isForceFixedForwarding())
-		{
-			if (globalForwards.get(name) == null) {
-				PipeForward pw = new PipeForward();
-				pw.setName(name);
-				pw.setPath(name);
-				registerForward(pw);
-			} else {
-				log.info("already had a pipeForward with name ["+ name+ "] skipping the implicit one to Pipe ["+ pipe.getName()+ "]");
-			}
-		}
-	}
-
 	public IPipe getPipe(String pipeName) {
 		return pipesByName.get(pipeName);
 	}
@@ -733,6 +687,51 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	@Override
 	public ICacheAdapter<String,String> getCache() {
 		return cache;
+	}
+
+	/**
+	 * Register an Pipe at this pipeline.
+	 * The name is also put in the globalForwards table (with
+	 * forward-name=pipename and forward-path=pipename, so that
+	 * pipe can look for a specific pipe-name. If already a globalForward
+	 * exists under that name, the pipe is NOT added, allowing globalForwards
+	 * to prevail.
+	 * @see AbstractPipe
+	 **/
+	@IbisDoc("90")
+	public void addPipe(IPipe pipe) throws ConfigurationException {
+		if (pipe == null) {
+			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
+		}
+		if (pipe instanceof IExtendedPipe && !((IExtendedPipe)pipe).isActive()) {
+			log.debug("Pipe [" + pipe.getName() + "] is not active, therefore not included in configuration");
+			return;
+		}
+		String name = pipe.getName();
+		if (StringUtils.isEmpty(name)) {
+			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe)+"] to be added has no name, pipelineTable size ["+pipesByName.size()+"]");
+		}
+		IPipe current = getPipe(name);
+		if (current != null) {
+			throw new ConfigurationException("pipe [" + name + "] defined more then once");
+		}
+		pipesByName.put(name, pipe);
+		pipes.add(pipe);
+		if (pipe.getMaxThreads() > 0) {
+			pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
+		}
+		log.debug("added pipe [" + pipe.toString() + "]");
+		if (!isForceFixedForwarding())
+		{
+			if (globalForwards.get(name) == null) {
+				PipeForward pw = new PipeForward();
+				pw.setName(name);
+				pw.setPath(name);
+				registerForward(pw);
+			} else {
+				log.info("already had a pipeForward with name ["+ name+ "] skipping the implicit one to Pipe ["+ pipe.getName()+ "]");
+			}
+		}
 	}
 
 	@IbisDoc({"1", "Name of the first pipe to execute when a message is to be processed", "<first pipe of the pipeline>" })
