@@ -14,6 +14,10 @@ Upcoming
 
 - 'fileName' in attributes is replaced with 'filename'
 
+### Non backwards compatible changes
+
+- ManageDatabase adapter has been disabled by default on ACC and PRD environments
+
 
 7.6-RC1
 --------
