@@ -61,7 +61,7 @@ public class DocWriterNewIntegrationTest {
 	@Ignore
 	@Test
 	public void testStrict() throws Exception {
-		String schemaFileName = "xml/xsd/strict.xsd";
+		String schemaFileName = "xml/xsd/FrankConfig-strict.xsd";
 		validate(getSchemaFromClasspathResource(schemaFileName), TEST_CONFIGURATION_FILE);
 		log.info("Validation of XML document against schema [{}] succeeded", schemaFileName);
 	}
@@ -69,7 +69,7 @@ public class DocWriterNewIntegrationTest {
 	@Ignore
 	@Test
 	public void testCompatibility() throws Exception {
-		String schemaFileName = "xml/xsd/compatibility.xsd";
+		String schemaFileName = "xml/xsd/FrankConfig-compatibility.xsd";
 		validate(getSchemaFromClasspathResource(schemaFileName), TEST_CONFIGURATION_FILE);
 		log.info("Validation of XML document against schema [{}] succeeded", schemaFileName);
 	}
