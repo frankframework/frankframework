@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 WeAreFrank!
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public final class BrowseQueue extends Base {
 	public Response getBrowseQueue() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
-		List<String> jmsRealms=JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		List<String> jmsRealms=JmsRealmFactory.getInstance().getConnectionFactoryNames();
 		if (jmsRealms.size()==0) jmsRealms.add("no realms defined");
 		returnMap.put("jmsRealms", jmsRealms);
 
