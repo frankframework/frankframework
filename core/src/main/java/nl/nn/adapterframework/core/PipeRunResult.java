@@ -67,4 +67,8 @@ public class PipeRunResult {
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
+
+	public boolean isSuccessful() {
+		return PipeLineExit.EXIT_STATE_SUCCESS.equalsIgnoreCase(getPipeForward().getName());
+	}
 }
