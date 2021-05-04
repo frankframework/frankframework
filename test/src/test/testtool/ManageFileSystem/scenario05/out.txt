@@ -1,0 +1,16 @@
+<manageFileSystemRLY>
+	<completionInformation>
+		<returnCode>NOT_OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<exception>unable to process [null] action for File [null]: Remove directory for [C:/Wearefrank/eclipse-workspace/workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/../logs/testdata/ManageFileSystem] has failed. Directory does not exist.</exception>
+		</result>
+		<result item="2">
+C:/Wearefrank/eclipse-workspace/workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/../logs/testdata/ManageFileSystem
+</result>
+		<result item="3">
+C:/Wearefrank/eclipse-workspace/workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/../logs/testdata/ManageFileSystem
+</result>
+	</results>
+</manageFileSystemRLY>

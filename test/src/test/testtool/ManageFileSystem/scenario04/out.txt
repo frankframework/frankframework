@@ -1,0 +1,10 @@
+<manageFileSystemRLY>
+	<completionInformation>
+		<returnCode>NOT_OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<exception>unable to process [null] action for File [null]: folder [C:/Wearefrank/eclipse-workspace/workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/../logs/testdata/ManageFileSystem], does not exist</exception>
+		</result>
+	</results>
+</manageFileSystemRLY>

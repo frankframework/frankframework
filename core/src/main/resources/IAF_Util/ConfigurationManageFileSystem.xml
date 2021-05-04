@@ -2,7 +2,7 @@
     <Adapter name="ManageFileSystem" description="Manage the file" active="${manageFileSystem.active}">
 
         <Receiver name="ManageFileSystem">
-            <JavaListener name="ManageFileSystem"/>
+            <JavaListener name="ManageFileSystem" serviceName="${manageFileSystem.serviceName}"/>
         </Receiver>
 
         <Pipeline firstPipe="IterateActions">

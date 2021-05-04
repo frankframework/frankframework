@@ -1,0 +1,5 @@
+<manageFileSystemREQ>
+	<mkdir>
+		<inputFolder>${testdata.dir}/ManageFileSystem</inputFolder>
+	</mkdir>
+</manageFileSystemREQ>

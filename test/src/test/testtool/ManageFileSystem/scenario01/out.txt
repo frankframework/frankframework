@@ -1,0 +1,51 @@
+<manageFileSystemRLY>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+C:/Wearefrank/eclipse-workspace/workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/../logs/testdata/ManageFileSystem
+</result>
+		<result item="2">
+			<file name="test.txt" size="131" fSize="1 kB" canonicalName="C:\Wearefrank\eclipse-workspace\workspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\logs\testdata\ManageFileSystem\test.txt" modificationDate="30-04-21" modificationTime="14:16:56"/>
+		</result>
+		<result item="3">
+			<file name="test.txt" size="144" fSize="1 kB" canonicalName="C:\Wearefrank\eclipse-workspace\workspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\logs\testdata\ManageFileSystem\test.txt" modificationDate="30-04-21" modificationTime="14:16:56"/>
+		</result>
+		<result item="4">
+			<file name="test.txt" size="144" fSize="1 kB" canonicalName="C:\Wearefrank\eclipse-workspace\workspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\logs\testdata\ManageFileSystem\test.txt" modificationDate="30-04-21" modificationTime="14:16:56"/>
+		</result>
+		<result item="5">
+IyBGcmFuayFSdW5uZXIKClRoaXMgcHJvamVjdCB3aWxsIGhlbHAgeW91IHJ1biB5b3VyIEZyYW5rIGNvbmZpZ3VyYXRpb25zIHdpdGggVG9tY2F0LgoKQWRkIGEgc21hbGw+ append test
+</result>
+		<result item="6">
+C:/Wearefrank/eclipse-workspace/workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/../logs/testdata/ManageFileSystem/test
+</result>
+		<result item="7">
+test.txt
+</result>
+		<result item="8">
+IyBGcmFuayFSdW5uZXIKClRoaXMgcHJvamVjdCB3aWxsIGhlbHAgeW91IHJ1biB5b3VyIEZyYW5rIGNvbmZpZ3VyYXRpb25zIHdpdGggVG9tY2F0LgoKQWRkIGEgc21hbGw+ append test
+</result>
+		<result item="9">
+test.txt
+</result>
+		<result item="10">
+README.MD
+</result>
+		<result item="11">
+			<directory count="1">
+				<file name="README.MD" size="144" fSize="1 kB" canonicalName="C:\Wearefrank\eclipse-workspace\workspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\logs\testdata\ManageFileSystem\test\README.MD" modificationDate="30-04-21" modificationTime="14:16:56"/>
+			</directory>
+		</result>
+		<result item="12">
+README.MD
+</result>
+		<result item="13">
+C:/Wearefrank/eclipse-workspace/workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/../logs/testdata\ManageFileSystem/test
+</result>
+		<result item="14">
+C:/Wearefrank/eclipse-workspace/workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/../logs/testdata\ManageFileSystem
+</result>
+	</results>
+</manageFileSystemRLY>
