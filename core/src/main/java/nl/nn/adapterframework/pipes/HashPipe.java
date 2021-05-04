@@ -120,7 +120,7 @@ public class HashPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, getLogPrefix(session) + "error determining binaryToText method");
 			}
 			
-			return new PipeRunResult(getForward(), hash);
+			return new PipeRunResult(getSuccessForward(), hash);
 		}
 		catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "error creating hash", e);

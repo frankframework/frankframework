@@ -63,7 +63,7 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
  		if (StringUtils.isEmpty(result)) {
  			result="OK";
  		}
- 		return new PipeRunResult(getForward(),result);
+ 		return new PipeRunResult(getSuccessForward(),result);
 	}
 
 	public void setAuthAlias(String string) {

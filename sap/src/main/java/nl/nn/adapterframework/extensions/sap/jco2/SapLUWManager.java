@@ -136,7 +136,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
 			SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 		} 
-		return new PipeRunResult(getForward(),message);
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 
 

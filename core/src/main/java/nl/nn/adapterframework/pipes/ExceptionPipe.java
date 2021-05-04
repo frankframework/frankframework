@@ -60,7 +60,7 @@ public class ExceptionPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, errorMessage);
 		else {
 			log.error(errorMessage);
-			return new PipeRunResult(getForward(), errorMessage);
+			return new PipeRunResult(getSuccessForward(), errorMessage);
 		}
 	}
 

@@ -307,7 +307,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				}
 			}
 		}
-		return new PipeRunResult(getForward(),transformationResult);
+		return new PipeRunResult(getSuccessForward(),transformationResult);
 	}
 
 	private List<String> getBlockStack(PipeLineSession session, IResultHandler handler, String streamId, boolean create) {

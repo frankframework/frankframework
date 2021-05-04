@@ -135,7 +135,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 				attribute.setValue(membership,true);
 				attributes.addSubElement(attribute);
 			}
-			return new PipeRunResult(getForward(), result.toXML());
+			return new PipeRunResult(getSuccessForward(), result.toXML());
 		} catch (NamingException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
 		}

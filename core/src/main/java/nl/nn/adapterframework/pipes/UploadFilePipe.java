@@ -105,7 +105,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 			throw new PipeRunException(this, getLogPrefix(session) + " Exception on uploading and unzipping/writing file", e);
 		}
 
-		return new PipeRunResult(getForward(), dir.getPath());
+		return new PipeRunResult(getSuccessForward(), dir.getPath());
 	}
 
 	@IbisDoc({"base directory where files are unzipped to", ""})

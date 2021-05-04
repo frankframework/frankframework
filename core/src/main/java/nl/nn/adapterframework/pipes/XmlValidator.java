@@ -267,7 +267,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected PipeForward determineForward(String resultEvent, PipeLineSession session, boolean responseMode) throws PipeRunException {
 		throwEvent(resultEvent);
 		if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
-			return getForward();
+			return getSuccessForward();
 		}
 		PipeForward forward = null;
 		if (AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
@@ -288,7 +288,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 		if (forward == null) {
 			if (isForwardFailureToSuccess()) {
-				forward = findForward("success");
+				forward = getSuccessForward();
 			} else {
 				throw new PipeRunException(this, "not implemented: should get reason from validator");
 			}

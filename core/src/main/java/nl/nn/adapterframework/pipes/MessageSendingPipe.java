@@ -52,6 +52,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -413,19 +414,19 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		if (inputValidator!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			inputValidator.registerForward(pf);
 			configure(inputValidator);
 		}
 		if (outputValidator!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			outputValidator.registerForward(pf);
 			configure(outputValidator);
 		}
 		if (getInputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			getInputWrapper().registerForward(pf);
 			if (getInputWrapper() instanceof EsbSoapWrapperPipe) {
 				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getInputWrapper();
@@ -436,7 +437,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		if (getOutputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			getOutputWrapper().registerForward(pf);
 			configure(getOutputWrapper());
 		}
@@ -543,7 +544,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		String correlationID = session==null?null:session.getMessageId();
  		Message originalMessage = null;
  		Message result = null;
-		PipeForward forward = getForward();
+		PipeForward forward = getSuccessForward();
 
 		if (messageLog!=null) {
 			preserve(input, session);
@@ -555,7 +556,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (wrapResult==null) {
 				throw new PipeRunException(inputWrapper, "retrieved null result from inputWrapper");
 			}
-			if (!wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
+			if (!wrapResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD_NAME)) {
 				return wrapResult;
 			} else {
 				input = wrapResult.getResult();
@@ -570,7 +571,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			preserve(input, session);
 			log.debug(getLogPrefix(session)+"validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, input, session);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
+			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD_NAME)) {
 				return validationResult;
 			}
 		}
@@ -750,7 +751,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					if (StringUtils.isEmpty(getResultOnTimeOut())) {
 						timeoutForward=findForward(EXCEPTION_FORWARD);
 					} else {
-						timeoutForward=getForward();
+						timeoutForward=getSuccessForward();
 					}
 				}
 				if (timeoutForward!=null) {
@@ -798,7 +799,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (wrapResult==null) {
 				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
 			}
-			if (!wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
+			if (!wrapResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD_NAME)) {
 				return wrapResult;
 			} 
 			result = wrapResult.getResult();
@@ -888,7 +889,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 		} finally {
 			if (exitState==null) {
-				exitState = SUCCESS_FORWARD;
+				exitState = PipeLineExit.EXIT_STATE_SUCCESS;
 			}
 			PipeLine pipeline = getPipeLine();
 			if  (pipeline!=null) {

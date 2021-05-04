@@ -38,7 +38,7 @@ public class EchoPipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) {
-		return new PipeRunResult(getForward(),message);
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 
 	@Override

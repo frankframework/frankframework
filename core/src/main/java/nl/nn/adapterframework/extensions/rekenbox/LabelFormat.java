@@ -88,14 +88,14 @@ public class LabelFormat extends FixedForwardPipe {
 				Document document = documentBuilder.parse(message.asInputSource());
 
 				result = XmlToLabelFormat.doTransformation(document).toString();
-				return new PipeRunResult(getForward(), result);
+				return new PipeRunResult(getSuccessForward(), result);
 			}
 			else {
 				XMLReader reader = XMLReaderFactory.createXMLReader("nl.nn.adapterframework.extensions.rekenbox.CalcboxOutputReader");
 				CalcboxContentHandler handler = new CalcboxContentHandler(message.asString());
 				reader.setContentHandler(handler);
 				
-				return new PipeRunResult(getForward(), handler.getStringResult());
+				return new PipeRunResult(getSuccessForward(), handler.getStringResult());
 			}
 		}
 		catch (Exception e) {

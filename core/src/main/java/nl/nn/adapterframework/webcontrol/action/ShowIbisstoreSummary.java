@@ -164,7 +164,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 
 		if (!errors.isEmpty()) {
 			saveErrors(request, errors);
-			return (mapping.findForward("success"));
+			return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 		}
 
 		//Successfull: store cookie
@@ -181,7 +181,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 		}
 
 		log.debug("forward to success");
-		return (mapping.findForward("success"));
+		return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 
 	}
 }
