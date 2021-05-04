@@ -639,7 +639,7 @@ public class DocWriterNew {
 	}
 
 	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, ElementRole role) {
-		addAttribute(context, ELEMENT_ROLE, FIXED, role.getRoleName(), version.getAttributeRoleNameUse());
+		addAttribute(context, ELEMENT_ROLE, FIXED, role.getRoleName(), version.getRoleNameAttributeUse());
 		addClassNameAttribute(context, frankElement);
 	}
 
@@ -776,7 +776,7 @@ public class DocWriterNew {
 	}
 
 	private void addGenericElementOptionAttributes(XmlBuilder complexType, ConfigChildSet configChildSet) {
-		addAttribute(complexType, ELEMENT_ROLE, FIXED, configChildSet.getRoleName(), version.getAttributeRoleNameUse());
+		addAttribute(complexType, ELEMENT_ROLE, FIXED, configChildSet.getRoleName(), version.getRoleNameAttributeUse());
 		Optional<FrankElement> defaultFrankElement = configChildSet.getGenericElementOptionDefault(version.getElementFilter());
 		if(defaultFrankElement.isPresent()) {
 			addAttribute(complexType, CLASS_NAME, DEFAULT, defaultFrankElement.get().getFullName(), OPTIONAL);
@@ -797,7 +797,7 @@ public class DocWriterNew {
 	}
 
 	private void addGenericElementOptionAttributes(XmlBuilder complexType, String roleName) {
-		addAttribute(complexType, ELEMENT_ROLE, FIXED, roleName, version.getAttributeRoleNameUse());
+		addAttribute(complexType, ELEMENT_ROLE, FIXED, roleName, version.getRoleNameAttributeUse());
 		addAttribute(complexType, CLASS_NAME, DEFAULT, null, REQUIRED);
 		// The XSD is invalid if addAnyAttribute is added before attributes elementType and className.
 		addAnyAttribute(complexType);

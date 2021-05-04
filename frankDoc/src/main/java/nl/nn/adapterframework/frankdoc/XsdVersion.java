@@ -38,8 +38,8 @@ public enum XsdVersion {
 		this.delegate = delegate;
 	}
 
-	AttributeUse getAttributeRoleNameUse() {
-		return delegate.getAttributeRoleNameUse();
+	AttributeUse getRoleNameAttributeUse() {
+		return delegate.getRoleNameAttributeUse();
 	}
 
 	AttributeUse getClassNameAttributeUse(FrankElement frankElement) {
@@ -47,13 +47,13 @@ public enum XsdVersion {
 	}
 
 	private abstract static class Delegate {
-		abstract AttributeUse getAttributeRoleNameUse();
+		abstract AttributeUse getRoleNameAttributeUse();
 		abstract AttributeUse getClassNameAttributeUse(FrankElement frankElement);
 	}
 
 	private static class DelegateStrict extends Delegate {
 		@Override
-		AttributeUse getAttributeRoleNameUse() {
+		AttributeUse getRoleNameAttributeUse() {
 			return AttributeUse.PROHIBITED;
 		}
 
@@ -70,7 +70,7 @@ public enum XsdVersion {
 		 * the compatibility XSD.
 		 */
 		@Override
-		AttributeUse getAttributeRoleNameUse() {
+		AttributeUse getRoleNameAttributeUse() {
 			return AttributeUse.OPTIONAL;
 		}
 
