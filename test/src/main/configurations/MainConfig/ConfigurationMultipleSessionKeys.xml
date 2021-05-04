@@ -54,7 +54,7 @@
 				<forward name="success" path="child" />
 			</pipe>
 			<pipe name="child"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
 					javaListener="MultipleSessionKeys_Child">
 					<param name="sessionkey" sessionKey="*" />

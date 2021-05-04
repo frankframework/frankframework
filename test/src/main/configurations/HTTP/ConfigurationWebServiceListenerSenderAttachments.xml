@@ -101,7 +101,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments" multipart="true"
@@ -140,7 +140,7 @@
 				<param name="multipart" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;part name='file' sessionKey='file2' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
 				<forward name="success" path="Send2WS" />
 			</pipe> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart" multipart="true"
@@ -162,7 +162,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning"
@@ -194,7 +194,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"

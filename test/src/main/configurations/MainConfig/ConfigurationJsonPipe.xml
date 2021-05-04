@@ -13,7 +13,7 @@
 				<forward name="success" path="send" />
 			</pipe>
 			<pipe name="send"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
 					serviceName="testtool-JsonPipe" />
 				<forward name="success" path="json2xml" />

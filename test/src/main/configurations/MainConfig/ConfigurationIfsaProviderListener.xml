@@ -11,11 +11,11 @@
 			</exits>
 			<pipe name="SwitchRequest" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action"></pipe>
 			<!-- fixedSelect -->
-			<pipe name="fixedSelect" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" transactionAttribute="RequiresNew">
+			<pipe name="fixedSelect" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="RequiresNew">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT * FROM IBISSTORE WHERE ROWNUM &lt; 1" queryType="select" jmsRealm="jdbc" timeout="30" />
 				<forward name="success" path="gpoa" />
 			</pipe>
-			<pipe name="gpoa" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="gpoa" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="IfsaFFProviderListener_gpoa" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -41,7 +41,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.XmlSwitch" name="SwitchIfsaServiceName" sessionKey="ifsaServiceName" notFoundForwardName="UnknownIfsaServiceName">
 				<forward name="GETPARTIESONAGREEMENT" path="fixedSelect" />
 			</pipe>
-			<pipe name="fixedSelect" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="fixedSelect" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT * FROM IBISSTORE WHERE ROWNUM &lt; 1" queryType="select" jmsRealm="jdbc" timeout="30" />
 				<forward name="success" path="GetPartiesOnAgreement" />
 			</pipe>
@@ -62,7 +62,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" labelStyleSheet="IfsaRRRequesterSender/label.xsl">
+			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.SenderPipe" labelStyleSheet="IfsaRRRequesterSender/label.xsl">
 				<sender className="nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender" applicationId="${applicationId}" messageProtocol="RR" serviceId="${GetPartiesOnAgreement}" />
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/IfsaFFProviderListener_gpoa_out" />
 				<forward name="success" path="EXIT" />

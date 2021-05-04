@@ -17,7 +17,7 @@
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" jmsRealm="jdbc" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
@@ -48,7 +48,7 @@
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" jmsRealm="jdbc" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
@@ -77,7 +77,7 @@
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" jmsRealm="jdbc" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
@@ -98,7 +98,7 @@
 			</exits>
 
 			<pipe name="callApiListener"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param" methodType="post" resultStatusCodeSessionKey="statusCode">
 					<param name="url_param" value="" /> <!-- use pipeline input -->

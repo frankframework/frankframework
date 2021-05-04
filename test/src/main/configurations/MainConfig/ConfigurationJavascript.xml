@@ -11,7 +11,7 @@
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="Javascript"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f2"
@@ -36,7 +36,7 @@
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="Javascript"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				storeResultInSessionKey = "resultSessionKey">
 					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
@@ -49,7 +49,7 @@
 				<forward name="exception" path="EXIT" />
 			</pipe>
 			<pipe name="Javascript2"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f2"
@@ -74,7 +74,7 @@
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="JavascriptCallback"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f5"

@@ -25,7 +25,7 @@
 			</pipe>
 
 			<pipe name="insertBigClob1"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TCLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_CLOB())"
@@ -35,7 +35,7 @@
 			</pipe>
 
 			<pipe name="insertBigClob2"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromSessionKey="base64">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TCLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
@@ -67,7 +67,7 @@
 			</pipe>
 
 			<pipe name="insertBigBlobText1"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
@@ -77,7 +77,7 @@
 			</pipe>
 
 			<pipe name="insertBigBlobText2"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromSessionKey="base64">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
@@ -104,7 +104,7 @@
 			</pipe>
 
 			<pipe name="insertBigBlobBinary1"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
@@ -114,7 +114,7 @@
 			</pipe>
 
 			<pipe name="insertBigBlobBinary2"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
 					queryType="updateBlob" jmsRealm="jdbc" blobSessionKey="fileContent">

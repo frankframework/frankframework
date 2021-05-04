@@ -25,7 +25,7 @@
 
 			<!-- This should create (or reuse) it's transaction when calling this subadapter -->
 			<pipe name="Send transacted message to mandatory subadapter"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender

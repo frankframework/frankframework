@@ -48,7 +48,7 @@
 			</pipe>
 			<!-- sendMessage -->
 			<pipe name="sendMessage"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
 					schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
 					root="Request">
@@ -76,7 +76,7 @@
 			</pipe>
 			<!-- sendMessage_invalidResponse -->
 			<pipe name="sendMessage_invalidResponse"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
 					schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
 					root="Request">
@@ -104,7 +104,7 @@
 			</pipe>
 			<!-- sendMessage_notWellFormedResponse -->
 			<pipe name="sendMessage_notWellFormedResponse"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
 					schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
 					root="Request">

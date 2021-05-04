@@ -19,7 +19,7 @@
 				<forward name="success" path="selectRecordIds" />
 			</pipe>
 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="selectRecordIds">
 				<sender className="nl.nn.adapterframework.jdbc.ResultSet2FileSender"
 					filenameSessionKey="fileName" jmsRealm="jdbc" lockRows="true"
