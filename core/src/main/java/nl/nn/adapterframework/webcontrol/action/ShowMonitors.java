@@ -133,7 +133,7 @@ public class ShowMonitors extends ActionBase {
 		}	
 		if (StringUtils.isEmpty(forward)) {
 			log.debug("replacing empty forward with [success]");
-			forward="success";
+			forward=SUCCESS_ACTION_FORWARD;
 		}
 		
 		

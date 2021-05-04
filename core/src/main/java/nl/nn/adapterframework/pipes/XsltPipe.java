@@ -122,7 +122,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 			Message result = prr.getResult();
 			PipeForward forward = prr.getPipeForward();
 			if (nextPipe==null || forward.getPath()==null) {
-				forward=getForward();
+				forward=getSuccessForward();
 			}
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				session.put(getSessionKey(), result.asString());

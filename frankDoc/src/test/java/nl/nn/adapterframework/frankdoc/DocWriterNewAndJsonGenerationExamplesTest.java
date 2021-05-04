@@ -38,25 +38,29 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
 public class DocWriterNewAndJsonGenerationExamplesTest {
-	@Parameters(name = "{1}")
+	@Parameters(name = "{0}-{3}-{4}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"},
-			{"examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"},
-			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master", null, "deprecated.json"}
+			{XsdVersion.STRICT, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"},
+			{XsdVersion.COMPATIBILITY, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simpleForCompatibility.xsd", "simple.json"},
+			{XsdVersion.STRICT, "examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"},
+			{XsdVersion.STRICT, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master", null, "deprecated.json"}
 		});
 	}
 
 	@Parameter(0)
-	public String digesterRulesFileName;
+	public XsdVersion xsdVersion;
 
 	@Parameter(1)
-	public String startClassName;
+	public String digesterRulesFileName;
 
 	@Parameter(2)
-	public String expectedXsdFileName;
+	public String startClassName;
 
 	@Parameter(3)
+	public String expectedXsdFileName;
+
+	@Parameter(4)
 	public String expectedJsonFileName;
 
 	private String packageOfClasses;
@@ -72,7 +76,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 		assumeNotNull(expectedXsdFileName);
 		FrankDocModel model = createModel();
 		DocWriterNew docWriter = new DocWriterNew(model, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
-		docWriter.init(startClassName, XsdVersion.STRICT);
+		docWriter.init(startClassName, xsdVersion);
 		String actualXsd = docWriter.getSchema();
 		System.out.println(actualXsd);
 		String expectedXsd = TestFileUtils.getTestFile("/doc/examplesExpected/" + expectedXsdFileName);

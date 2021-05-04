@@ -1,15 +1,15 @@
 <module name="validators">
 	<adapter name="SoapValidator">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-Java">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-SoapValidator" throwException="false" />
 		</receiver>
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-Webservice">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener" serviceNamespaceURI="urn:items"/>
 		</receiver>
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-API">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/item" method="GET"/>
 		</receiver>
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="SoapValidator-API-ParamsInPath">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/{subPath}/items/{subPath2}" method="GET" operationId="UniqueIdSoapValidator"/>
 		</receiver>
 		<pipeline firstPipe="CopyItem">
@@ -64,13 +64,13 @@
 	</adapter>
 
 	<adapter name="Json2XmlValidator">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="Json2XmlValidator-Java">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Json2XmlValidator" throwException="false" />
 		</receiver>
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="Json2XmlValidator-API">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" method="GET"/>
 		</receiver>
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="Json2XmlValidator-API-POST">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item/post" method="POST"/>
 		</receiver>
 		<pipeline firstPipe="CopyItem">

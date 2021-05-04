@@ -157,7 +157,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 				throw new PipeRunException(this, "release: could not release handle", e);
 			}
 		} 
-		return new PipeRunResult(getForward(),message);
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 
 

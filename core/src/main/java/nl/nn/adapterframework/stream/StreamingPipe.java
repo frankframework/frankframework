@@ -37,7 +37,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 			return null;
 		}
 		
-		PipeForward forward = getForward();
+		PipeForward forward = getSuccessForward();
 		try {
 			return getPipeLine().resolveForward(this, forward);
 		} catch (PipeRunException e) {

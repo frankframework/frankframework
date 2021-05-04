@@ -45,6 +45,6 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 			}
 		}
 
-		return new PipeRunResult(getForward(),principalName);
+		return new PipeRunResult(getSuccessForward(),principalName);
 	}
 }

@@ -88,7 +88,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 				return new PipeRunResult(notFoundForward, message);
 			}
 		}
-		return new PipeRunResult(getForward(), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	private boolean findMember(String host, int port, String dnSearchIn, boolean useSsl, String dnFind, boolean recursiveSearch) throws NamingException {

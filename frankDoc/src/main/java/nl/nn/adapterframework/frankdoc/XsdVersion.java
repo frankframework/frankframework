@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+import nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.AttributeUse;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
@@ -52,9 +53,19 @@ public enum XsdVersion {
 		delegate.checkForMissingDescription(configChild);
 	}
 
+	AttributeUse getRoleNameAttributeUse() {
+		return delegate.getRoleNameAttributeUse();
+	}
+
+	AttributeUse getClassNameAttributeUse(FrankElement frankElement) {
+		return delegate.getClassNameAttributeUse(frankElement);
+	}
+
 	private static abstract class Delegate {
 		abstract void checkForMissingDescription(FrankAttribute attribute);
 		abstract void checkForMissingDescription(ConfigChild configChild);
+		abstract AttributeUse getRoleNameAttributeUse();
+		abstract AttributeUse getClassNameAttributeUse(FrankElement frankElement);
 	}
 
 	private static class DelegateStrict extends Delegate {
@@ -73,6 +84,15 @@ public enum XsdVersion {
 			}
 			log.warn("Config child [{}] lacks description", configChild.toString());
 		}
+
+		AttributeUse getRoleNameAttributeUse() {
+			return AttributeUse.PROHIBITED;
+		}
+
+		@Override
+		AttributeUse getClassNameAttributeUse(FrankElement frankElement) {
+			return AttributeUse.PROHIBITED;
+		}
 	}
 
 	private static class DelegateCompatibility extends Delegate {
@@ -82,6 +102,30 @@ public enum XsdVersion {
 
 		@Override
 		void checkForMissingDescription(ConfigChild configChild) {
+		}
+
+		/**
+		 * Fix of https://github.com/ibissource/iaf/issues/1760. We need
+		 * to omit the "use" attribute of the "elementRole" attribute in
+		 * the compatibility XSD.
+		 */
+		@Override
+		AttributeUse getRoleNameAttributeUse() {
+			return AttributeUse.OPTIONAL;
+		}
+
+		/**
+		 * Fix of https://github.com/ibissource/iaf/issues/1760. We need
+		 * to omit the "use" attribute of the "className" attribute in
+		 * the compatibility XSD, but only for interface-based FrankElement-s.
+		 */
+		@Override
+		AttributeUse getClassNameAttributeUse(FrankElement frankElement) {
+			if(frankElement.isInterfaceBased()) {
+				return AttributeUse.OPTIONAL;	
+			} else {
+				return AttributeUse.PROHIBITED;
+			}
 		}
 	}
 }

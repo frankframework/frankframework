@@ -112,7 +112,7 @@ public class SchedulerHandler extends ActionBase {
 	    }
 	
 	    // Forward control to the specified success URI
-	    return (mapping.findForward("success"));
+	    return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 	}
 
 }

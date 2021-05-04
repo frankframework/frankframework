@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.frankdoc.XsdVersion;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
@@ -146,8 +147,8 @@ public class ConfigChild extends ElementChild {
 			ConfigChild selected = bucket.get(0);
 			result.add(selected);
 			if(selected.isDeprecated()) {
-				log.warn("From duplicate config children, only a deprecated one is selected. In strict.xsd, {} will not have a config child for ElementRole {}",
-						() -> selected.getOwningElement().getFullName(), () -> selected.getElementRole().toString());
+				log.warn("From duplicate config children, only a deprecated one is selected. In mode {}, {} will not have a config child for ElementRole {}",
+						() -> XsdVersion.STRICT, () -> selected.getOwningElement().getFullName(), () -> selected.getElementRole().toString());
 			}
 			if(log.isTraceEnabled() && (bucket.size() >= 2)) {
 				for(ConfigChild omitted: bucket.subList(1, bucket.size())) {

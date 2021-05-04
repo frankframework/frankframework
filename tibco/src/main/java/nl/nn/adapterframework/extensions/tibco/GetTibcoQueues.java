@@ -175,7 +175,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				boolean countOnly = ("true".equalsIgnoreCase(countOnly_work) ? true
 						: false);
 				if (countOnly) {
-					return new PipeRunResult(getForward(), getQueueMessageCountOnly(admin, queueName_work));
+					return new PipeRunResult(getSuccessForward(), getQueueMessageCountOnly(admin, queueName_work));
 				}
 			}
 
@@ -227,7 +227,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private LdapSender retrieveLdapSender(String ldapUrl, CredentialFactory cf) {

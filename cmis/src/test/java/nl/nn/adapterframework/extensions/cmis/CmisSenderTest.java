@@ -175,7 +175,7 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 		String dummyString = "dummyString";
 		sender.setFileNameSessionKey(dummyString);
 
-		assertEquals(dummyString, sender.getFileNameSessionKey());
+		assertEquals(dummyString, sender.getFilenameSessionKey());
 	}
 
 	@Test

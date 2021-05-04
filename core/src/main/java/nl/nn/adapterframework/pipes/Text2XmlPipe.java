@@ -86,7 +86,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			
 		String resultString = (isIncludeXmlDeclaration()?"<?xml version=\"1.0\" encoding=\"UTF-8\"?>":"") +
 		"<" + getXmlTag() + ">"+result+"</" + xmlTag + ">";	
-		return new PipeRunResult(getForward(), resultString);
+		return new PipeRunResult(getSuccessForward(), resultString);
 	}
 
 	private String addCdataSection(String input) {

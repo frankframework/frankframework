@@ -113,7 +113,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 				return new PipeRunResult(findForward("emptyPostbox"), getResultOnEmptyPostbox());
 				
 			Message result = getListener().extractMessage(rawMessage, threadContext);
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(getSuccessForward(), result);
 		} 
 		catch (Exception e) {
 			throw new PipeRunException( this, getLogPrefix(session) + "caught exception", e);

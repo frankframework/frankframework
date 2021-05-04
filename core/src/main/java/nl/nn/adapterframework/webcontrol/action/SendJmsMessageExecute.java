@@ -77,7 +77,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 	    if (isCancelled(request)) {
 	        log.debug("sendJmsMessage was cancelled");
 	        removeFormBean(mapping, request);
-	        return (mapping.findForward("success"));
+	        return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 	    }
 	
 	    // Retrieve form content
@@ -184,7 +184,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 	    
 	    // Forward control to the specified success URI
 	    log.debug("forward to success");
-	    return (mapping.findForward("success"));
+	    return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 	
 	}
 

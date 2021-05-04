@@ -1,7 +1,6 @@
 <ibis>
 	<adapter name="ResultSet2FileSender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="ResultSet2FileSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-ResultSet2FileSender" />
 		</receiver>
@@ -20,7 +19,7 @@
 				<forward name="success" path="selectRecordIds" />
 			</pipe>
 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="selectRecordIds">
 				<sender className="nl.nn.adapterframework.jdbc.ResultSet2FileSender"
 					filenameSessionKey="fileName" jmsRealm="jdbc" lockRows="true"

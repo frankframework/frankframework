@@ -60,7 +60,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 			} else {
 				log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
 			}
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}

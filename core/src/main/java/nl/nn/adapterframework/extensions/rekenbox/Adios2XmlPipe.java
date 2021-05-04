@@ -199,8 +199,8 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 			noConversionForward = findForward(getNoConversionForwardName());
 		} 
 		if (noConversionForward==null) {
-			noConversionForward=getForward();
-			log.info(getLogPrefix(null)+"no forward found for ["+getNoConversionForwardName()+"], setting to forward for succes ["+getForward().getPath()+"]");
+			noConversionForward=getSuccessForward();
+			log.info(getLogPrefix(null)+"no forward found for ["+getNoConversionForwardName()+"], setting to forward for succes ["+getSuccessForward().getPath()+"]");
 		}
 		initializeConversionTables();
 	}	
@@ -224,7 +224,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	/**

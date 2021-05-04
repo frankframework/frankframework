@@ -17,6 +17,8 @@ package nl.nn.adapterframework.frankdoc.model;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +44,7 @@ public class FrankElementXsdElementNameTest {
 	public void whenNameDoesNotEndWithInterfaceNameThenGroupRoleNameAppended() throws Exception {
 		String className = PACKAGE + "ListenerParent";
 		String typeName = PACKAGE + "IListener";
-		FrankElement instance = model.findOrCreateFrankElement(className);
+		FrankElement instance = model.findFrankElement(className);
 		ElementType elementType = model.findOrCreateElementType(classRepository.findClass(typeName));
 		String actual = instance.getXsdElementName(elementType, "testListener");
 		assertEquals("ListenerParentTestListener", actual);
@@ -52,7 +54,7 @@ public class FrankElementXsdElementNameTest {
 	public void whenNameEndsWithInterfaceNameThenRemovedAndGroupRoleNameAppended() throws Exception {
 		String className = PACKAGE + "ParentListener";
 		String typeName = PACKAGE + "IListener";
-		FrankElement instance = model.findOrCreateFrankElement(className);
+		FrankElement instance = model.findFrankElement(className);
 		ElementType elementType = model.findOrCreateElementType(classRepository.findClass(typeName));
 		String actual = instance.getXsdElementName(elementType, "testListener");
 		assertEquals("ParentTestListener", actual);
@@ -61,7 +63,7 @@ public class FrankElementXsdElementNameTest {
 	@Test
 	public void whenElementTypeIsNotInterfaceThenRoleNameBecomesElementName() throws Exception {
 		String classAndTypeName = PACKAGE + "ListenerParent";
-		FrankElement instance = model.findOrCreateFrankElement(classAndTypeName);
+		FrankElement instance = model.findFrankElement(classAndTypeName);
 		ElementType elementType = model.findOrCreateElementType(classRepository.findClass(classAndTypeName));
 		String actual = instance.getXsdElementName(elementType, "someName");
 		assertEquals("SomeName", actual);
@@ -75,5 +77,17 @@ public class FrankElementXsdElementNameTest {
 		assertArrayEquals(new String[] {"ParentTestListener"}, frankElement.getXmlElementNames().toArray());
 		frankElement = model.findFrankElement(PACKAGE + "Container");
 		assertArrayEquals(new String[] {"Container"}, frankElement.getXmlElementNames().toArray());
+	}
+
+	@Test
+	public void whenFrankElementIsInterfaceBasedThenFlagSet() {
+		FrankElement frankElement = model.findFrankElement(PACKAGE + "ListenerParent");
+		assertTrue(frankElement.isInterfaceBased());
+	}
+
+	@Test
+	public void whenFrankElementIsNotInterfaceBasedThenFlagNotSet() {
+		FrankElement frankElement = model.findFrankElement(CONTAINER);
+		assertFalse(frankElement.isInterfaceBased());
 	}
 }

@@ -122,7 +122,7 @@ public class Base64Pipe extends StreamingPipe {
 				throw new PipeRunException(this,"cannot open stream", e);
 			}
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	@SuppressWarnings("resource")

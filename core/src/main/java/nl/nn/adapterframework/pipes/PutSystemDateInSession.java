@@ -142,7 +142,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 			log.debug(getLogPrefix(session) + "stored ["+ formattedDate	+ "] in pipeLineSession under key [" + getSessionKey() + "]");
 		}
 
-		return new PipeRunResult(getForward(), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 	
 	@IbisDoc({"Key of session variable to store systemdate in", "systemdate"})

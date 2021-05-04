@@ -35,7 +35,6 @@ import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.createGroup;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.createSimpleType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.getXmlSchema;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.AttributeUse.OPTIONAL;
-import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.AttributeUse.PROHIBITED;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.AttributeUse.REQUIRED;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.AttributeValueStatus.DEFAULT;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.AttributeValueStatus.FIXED;
@@ -312,6 +311,7 @@ public class DocWriterNew {
 
 	private static final String CONFIGURATION = "nl.nn.adapterframework.configuration.Configuration";
 	private static final String ELEMENT_ROLE = "elementRole";
+	private static final String CLASS_NAME = "className";
 	private static final String ELEMENT_GROUP_BASE = "ElementGroupBase";
 	static final String ATTRIBUTE_VALUES_TYPE = "AttributeValuesType";
 	static final String VARIABLE_REFERENCE = "variableRef";
@@ -378,7 +378,7 @@ public class DocWriterNew {
 	}
 
 	private void addClassNameAttribute(XmlBuilder context, FrankElement frankElement) {
-		addAttribute(context, "className", FIXED, frankElement.getFullName(), PROHIBITED);
+		addAttribute(context, CLASS_NAME, FIXED, frankElement.getFullName(), version.getClassNameAttributeUse(frankElement));
 	}
 
 	private XmlBuilder recursivelyDefineXsdElementUnchecked(FrankElement frankElement, String xsdElementName) {
@@ -640,7 +640,7 @@ public class DocWriterNew {
 	}
 
 	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, ElementRole role) {
-		addAttribute(context, ELEMENT_ROLE, FIXED, role.getRoleName(), PROHIBITED);
+		addAttribute(context, ELEMENT_ROLE, FIXED, role.getRoleName(), version.getRoleNameAttributeUse());
 		addClassNameAttribute(context, frankElement);
 	}
 
@@ -777,12 +777,12 @@ public class DocWriterNew {
 	}
 
 	private void addGenericElementOptionAttributes(XmlBuilder complexType, ConfigChildSet configChildSet) {
-		addAttribute(complexType, ELEMENT_ROLE, FIXED, configChildSet.getRoleName(), PROHIBITED);
+		addAttribute(complexType, ELEMENT_ROLE, FIXED, configChildSet.getRoleName(), version.getRoleNameAttributeUse());
 		Optional<FrankElement> defaultFrankElement = configChildSet.getGenericElementOptionDefault(version.getElementFilter());
 		if(defaultFrankElement.isPresent()) {
-			addAttribute(complexType, "className", DEFAULT, defaultFrankElement.get().getFullName(), OPTIONAL);
+			addAttribute(complexType, CLASS_NAME, DEFAULT, defaultFrankElement.get().getFullName(), OPTIONAL);
 		} else {
-			addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
+			addAttribute(complexType, CLASS_NAME, DEFAULT, null, REQUIRED);
 		}
 		// The XSD is invalid if addAnyAttribute is added before attributes elementType and className.
 		addAnyAttribute(complexType);		
@@ -798,8 +798,8 @@ public class DocWriterNew {
 	}
 
 	private void addGenericElementOptionAttributes(XmlBuilder complexType, String roleName) {
-		addAttribute(complexType, ELEMENT_ROLE, FIXED, roleName, PROHIBITED);
-		addAttribute(complexType, "className", DEFAULT, null, REQUIRED);
+		addAttribute(complexType, ELEMENT_ROLE, FIXED, roleName, version.getRoleNameAttributeUse());
+		addAttribute(complexType, CLASS_NAME, DEFAULT, null, REQUIRED);
 		// The XSD is invalid if addAnyAttribute is added before attributes elementType and className.
 		addAnyAttribute(complexType);
 	}

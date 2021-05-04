@@ -61,9 +61,9 @@ public class UploadConfig extends TimeoutGuardPipe {
 	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if ("GET".equalsIgnoreCase(method)) {
-			return new PipeRunResult(getForward(), doGet(session));
+			return new PipeRunResult(getSuccessForward(), doGet(session));
 		} else if ("POST".equalsIgnoreCase(method)) {
-			return new PipeRunResult(getForward(), doPost(session));
+			return new PipeRunResult(getSuccessForward(), doPost(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session) + "Illegal value for method [" + method + "], must be 'GET' or 'POST'");
 		}

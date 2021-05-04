@@ -98,6 +98,7 @@ public class FrankDocModel {
 			log.trace("Populating FrankDocModel");
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateFrankElement(rootClassName);
+			result.calculateInterfaceBased();
 			result.calculateHighestCommonInterfaces();
 			result.setOverriddenFrom();
 			result.setHighestCommonInterface();
@@ -720,5 +721,11 @@ public class FrankDocModel {
 
 	public List<AttributeValues> getAllAttributeValuesInstances() {
 		return attributeValuesFactory.getAll();
+	}
+
+	public void calculateInterfaceBased() {
+		allTypes.values().stream().filter(ElementType::isFromJavaInterface)
+			.flatMap(et -> et.getMembers().stream())
+			.forEach(f -> f.setInterfaceBased(true));
 	}
 }

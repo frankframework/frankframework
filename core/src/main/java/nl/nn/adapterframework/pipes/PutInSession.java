@@ -53,7 +53,7 @@ public class PutInSession extends FixedForwardPipe {
 		}
 		session.put(getSessionKey(), v);
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session) + "stored [" + v + "] in pipeLineSession under key [" + getSessionKey() + "]");
-		return new PipeRunResult(getForward(), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	@IbisDoc({"1", "Key of the session variable to store the input in", "" })
