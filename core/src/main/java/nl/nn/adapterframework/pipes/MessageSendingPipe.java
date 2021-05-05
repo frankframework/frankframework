@@ -475,7 +475,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 //	}
 //	
 //	@Override
-//	public boolean canProvideOutputStream() {
+//	public protected canProvideOutputStream() {
 //		return super.canProvideOutputStream() 
 //				&& (!senderAffectsStreamProvidingCapability() || 
 //					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canProvideOutputStream()
@@ -501,23 +501,19 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return super.canProvideOutputStream() && 
 				getInputValidator()==null && getInputWrapper()==null && getOutputValidator()==null && getOutputWrapper()==null &&
 				!isStreamResultToServlet() && StringUtils.isEmpty(getStubFilename()) && getMessageLog()==null && getListener()==null;
 	}
 
 	@Override
-	public boolean canStreamToNextPipe() {
-		return super.canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null &&
-				!isStreamResultToServlet();
+	protected boolean canStreamToNextPipe() {
+		return super.canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null && !isStreamResultToServlet();
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		if (!canProvideOutputStream()) {
-			return null;
-		}
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		MessageOutputStream result=null;
 		if (sender instanceof IOutputStreamingSupport) {
 			// TODO insert output validator
