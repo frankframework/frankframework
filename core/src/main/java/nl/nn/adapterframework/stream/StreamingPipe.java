@@ -46,7 +46,10 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		canStreamToNextPipe = StringUtils.isEmpty(this.getStoreResultInSessionKey()) && !isPreserveInput();
 	}
 
-	public IForwardTarget getNextPipe() {
+	/**
+	 * Find the target to receive this pipes output, i.e that could provide an output stream
+	 */
+	protected IForwardTarget getNextPipe() {
 		if (getPipeLine()==null) {
 			return null;
 		}
@@ -63,11 +66,11 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 
 	/**
 	 * returns true when:
-	 *  a) the pipe can accept input by providing an OutputStream, and 
+	 *  a) the pipe might be able to accept an input by providing an OutputStream, and 
 	 *  b) there are no side effects configured that prevent handing over its PipeRunResult to the calling pipe (e.g. storeResultInSessionKey)
 	 *  c) there are no side effects that require the input to be available at the end of the pipe (e.g. preserveInput=true)
 	 */
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return canProvideOutputStream;
 	}
 
@@ -76,7 +79,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 *  a) the operation needs to have an OutputStream, and 
 	 *  b) there are no side effects configured that require the output of this pipe to be available at the return of the doPipe() method.
 	 */
-	public boolean canStreamToNextPipe() {
+	protected boolean canStreamToNextPipe() {
 		return canStreamToNextPipe;
 	}
 
@@ -84,13 +87,13 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 * provide the outputstream, or null if a stream cannot be provided.
 	 * Implementations should provide a forward target by calling {@link #getNextPipe()}.
 	 */
-	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		log.debug("pipe [{}] has no implementation to provide an outputstream", () -> getName());
 		return null;
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+	public final MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		if (!canProvideOutputStream()) {
 			log.debug("pipe [{}] cannot provide outputstream", () -> getName());
 			return null;
