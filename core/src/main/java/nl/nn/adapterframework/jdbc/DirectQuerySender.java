@@ -18,8 +18,8 @@ package nl.nn.adapterframework.jdbc;
 import java.io.IOException;
 import java.sql.Connection;
 
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -52,7 +52,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	public void configure(boolean trust) throws ConfigurationException {
 		super.configure();
 		if (!trust) {
-			ConfigurationWarnings.add(this, log, "The class ["+ClassUtils.nameOf(this)+"] is used one or more times. This may cause potential SQL injections!");
+			ApplicationWarnings.add(log, "The class ["+ClassUtils.nameOf(this)+"] is used one or more times. This may cause potential SQL injections!");
 		}
 	}
 

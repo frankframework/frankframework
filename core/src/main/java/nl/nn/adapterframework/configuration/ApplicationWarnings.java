@@ -23,6 +23,7 @@ import javax.annotation.Priority;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -38,7 +39,7 @@ import nl.nn.adapterframework.util.AppConstants;
 @IbisInitializer
 @Priority(Integer.MAX_VALUE)
 @Scope(scopeName = ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class ApplicationWarnings implements ApplicationContextAware, InitializingBean {
+public class ApplicationWarnings implements ApplicationContextAware, InitializingBean, DisposableBean {
 
 	private @Setter ApplicationContext applicationContext;
 	private static ApplicationWarnings self = null;
@@ -61,7 +62,7 @@ public class ApplicationWarnings implements ApplicationContextAware, Initializin
 		getInstance().doAdd(source, log, message, t);
 	}
 
-	public static ApplicationWarnings getInstance() {
+	private static ApplicationWarnings getInstance() {
 		if(self == null) {
 			throw new IllegalArgumentException("ApplicationWarnings not initialized");
 		}
@@ -82,6 +83,11 @@ public class ApplicationWarnings implements ApplicationContextAware, Initializin
 		warnings = new LinkedList<>();
 
 		self = getInstance(applicationContext);
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		self = null; //Remove static reference
 	}
 
 	protected AppConstants getAppConstants() {
@@ -116,30 +122,51 @@ public class ApplicationWarnings implements ApplicationContextAware, Initializin
 		return key.isAllowGlobalSuppression() && getAppConstants().getBoolean(key.getKey(), false); // warning is suppressed globally, for all adapters
 	}
 
+	public int size() {
+		return warnings.size();
+	}
+
+	public String get(int i) {
+		return warnings.get(i);
+	}
+
+	public boolean isEmpty() {
+		return warnings.isEmpty();
+	}
+
+	private String prefixLogMessage(Object source, String message) {
+		String msg = "";
+		if(source != null) {
+			msg = getObjectName(source)+" ";
+		}
+
+		return msg += message;
+	}
+
 	/**
 	 * Add configuration warning with Object Class + Name prefix and log the exception stack
 	 */
 	protected void doAdd(Object source, Logger log, String message, Throwable t) {
-		String msg = getObjectName(source)+" "+message;
-		doAdd(log, msg, t);
+		doAdd(log, prefixLogMessage(source, message), t);
 	}
 
-	public int size() {
-		return -1;
-	}
-
-	public String get(int i) {
-		return null;
+	protected void doAdd(Object source, Logger log, String message, String hint) {
+		doAdd(log, prefixLogMessage(source, message), hint, null);
 	}
 
 	/**
 	 * Add configuration warning and log the exception stack
 	 */
 	protected void doAdd(Logger log, String message, Throwable t) {
+		doAdd(log, message, message, t);
+	}
+
+	private void doAdd(Logger log, String message, String postfixLogMessage, Throwable t) {
+		String logMessage = StringUtils.isEmpty(postfixLogMessage) ? message : message + postfixLogMessage;
 		if (t == null) {
-			log.warn(message);
+			log.warn(logMessage);
 		} else {
-			log.warn(message, t);
+			log.warn(logMessage, t);
 		}
 
 		if (t!=null || !warnings.contains(message)) {

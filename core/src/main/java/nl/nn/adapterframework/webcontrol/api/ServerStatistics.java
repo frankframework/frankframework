@@ -47,8 +47,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.context.ApplicationEventPublisher;
 
 import edu.emory.mathcs.backport.java.util.Collections;
-import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
-import nl.nn.adapterframework.configuration.ConfigWarning;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
@@ -170,7 +169,7 @@ public class ServerStatistics extends Base {
 	public Response getServerConfiguration() throws ApiException {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
-		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
+		ApplicationWarnings globalConfigWarnings = getIbisContext().getBean("applicationWarnings", ApplicationWarnings.class);
 
 		long totalErrorStoreCount = 0;
 		boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);

@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.configuration;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -43,8 +42,8 @@ public class ConfigurationWarnings extends ApplicationWarnings {
 	}
 
 	public static void add(IConfigurable source, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
-		ConfigurationWarnings warnings = getInstance(source.getApplicationContext());
-		if(!warnings.isSuppressed(suppressionKey, adapter)) {
+		ConfigurationWarnings warnings = getInstance(source.getApplicationContext()); //We could call two statics, this prevents a double getInstance(..) lookup.
+		if(!warnings.doIsSuppressed(suppressionKey, adapter)) {
 			// provide suppression hint as info 
 			String hint = null;
 			if(log.isInfoEnabled()) {
@@ -58,13 +57,9 @@ public class ConfigurationWarnings extends ApplicationWarnings {
 				}
 			}
 
-			String logMsg = StringUtils.isNotEmpty(hint) ? message + hint : message;
-			warnings.doAdd(source, log, logMsg, null);
+			warnings.doAdd(source, log, message, hint);
 		}
 	}
-
-
-
 
 	public static ConfigurationWarnings getInstance(ApplicationContext applicationContext) {
 		if(applicationContext == null) {
@@ -74,11 +69,15 @@ public class ConfigurationWarnings extends ApplicationWarnings {
 		return applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class);
 	}
 
-	public boolean isSuppressed(SuppressKeys key, IAdapter adapter) {
+	private boolean doIsSuppressed(SuppressKeys key, IAdapter adapter) {
 		if(key == null) {
 			throw new IllegalArgumentException("SuppressKeys may not be NULL");
 		}
 
 		return super.isSuppressed(key) || adapter!=null && getAppConstants().getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
+	}
+
+	public static boolean isSuppressed(SuppressKeys key, IAdapter adapter) {
+		return getInstance(adapter.getApplicationContext()).doIsSuppressed(key, adapter);
 	}
 }
