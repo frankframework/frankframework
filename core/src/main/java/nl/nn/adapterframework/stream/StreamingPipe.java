@@ -105,7 +105,13 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	protected MessageOutputStream getTargetStream(PipeLineSession session) throws StreamingException {
 		if (canStreamToNextPipe()) {
 			IForwardTarget nextPipe = getNextPipe();
-			log.debug("pipe [{}] can stream to next pipe [{}]", () -> getName(), () -> nextPipe.getName());
+			if (log.isDebugEnabled()) {
+				if (nextPipe != null) {
+					log.debug("pipe [{}] can stream to next pipe [{}]", getName(), nextPipe.getName());
+				} else {
+					log.debug("pipe [{}] can stream, but no target to stream to", getName());
+				}
+			}
 			return MessageOutputStream.getTargetStream(this, session, nextPipe);
 		}
 		return new MessageOutputStreamCap(this, getNextPipe());
