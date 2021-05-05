@@ -237,7 +237,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffpipe = (FixedForwardPipe)pipe;
-				if (ffpipe.getSuccessForward() == null) {
+				// getSuccessForward will return null since it has not been set. See below configure(pipe)
+				if (ffpipe.findForward(PipeForward.SUCCESS_FORWARD_NAME) == null) {
 					int i2 = i + 1;
 					if (i2 < pipes.size()) {
 						String nextPipeName = getPipe(i2).getName();

@@ -85,7 +85,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, message, pipeLineSession);
 			if (validationResult!=null) {
-				if (!validationResult.getPipeForward().getName().equals("success")) {
+				if (!validationResult.isSuccessful()) {
 					forwardTarget = pipeLine.resolveForward(inputValidator, validationResult.getPipeForward());
 					log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to validation fault");
 					inputValidateError = true;
@@ -102,7 +102,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			if (inputWrapper!=null) {
 				log.debug("wrapping input");
 				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, message, pipeLineSession);
-				if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+				if (wrapResult!=null && !wrapResult.isSuccessful()) {
 					forwardTarget = pipeLine.resolveForward(inputWrapper, wrapResult.getPipeForward());
 					log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
 				} else {
@@ -157,7 +157,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						if (outputWrapper !=null) {
 							log.debug("wrapping PipeLineResult");
 							PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
-							if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+							if (wrapResult!=null && !wrapResult.isSuccessful()) {
 								forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
 								log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
 								outputWrapError = true;
@@ -177,7 +177,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 									log.debug("validating PipeLineResult");
 								}
 								PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
-								if (!validationResult.getPipeForward().getName().equals("success")) {
+								if (!validationResult.isSuccessful()) {
 									if (!outputValidationFailed) {
 										outputValidationFailed=true;
 										forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());

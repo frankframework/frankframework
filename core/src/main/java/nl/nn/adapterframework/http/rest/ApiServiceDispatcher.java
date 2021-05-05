@@ -366,7 +366,7 @@ public class ApiServiceDispatcher {
 						reference = ple.getResponseRoot();
 					} else {
 						List<String> references = Arrays.asList(ref.split(","));
-						if(ple.getState().equals("success")) {
+						if(ple.isSuccessExit()) {
 							reference = references.get(0);
 						} else {
 							reference = references.get(references.size()-1);

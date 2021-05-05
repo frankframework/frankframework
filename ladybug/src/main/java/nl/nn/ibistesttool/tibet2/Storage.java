@@ -567,7 +567,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 				if(securityContext.getUserPrincipal() != null)
 					pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 				PipeLineResult processResult = adapter.processMessage(TestTool.getCorrelationId(), message, pipeLineSession);
-				if (!(processResult.getState().equalsIgnoreCase("success"))) {
+				if (!processResult.isSuccessful()) {
 					errorMessage = "Delete failed (see logging for more details)";
 				} else {
 					try {
