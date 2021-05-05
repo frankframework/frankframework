@@ -146,10 +146,10 @@ public class SoapProviderTest {
 		//Retrieve sessionkey the attachment was stored in
 		String sessionKey = XmlUtils.getChildTagAsString(attachment, "sessionKey");
 		assertNotNull(sessionKey);
-		Message attachmentMessage = (Message) session.get(sessionKey);
+		Message attachmentMessage = session.getMessage(sessionKey);
 
 		//Verify that the attachment sent, was received properly
-		assertEquals(ATTACHMENT_CONTENT, Misc.streamToString(attachmentMessage.asInputStream()));
+		assertEquals(ATTACHMENT_CONTENT, attachmentMessage.asString());
 
 		//Verify the content type
 		Element mimeTypes = XmlUtils.getFirstChildTag(attachment, "mimeHeaders");
