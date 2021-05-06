@@ -23,8 +23,7 @@
       "attributes": [{
         "name": "abstractParentOfStartAttribute",
         "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart"
-      }],
-      "children": []
+      }]
     },
     {
       "name": "DescribedPossibleIChild",
@@ -43,8 +42,7 @@
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
           "description": "Second attribute of DescribedPossibleIChild"
         }
-      ],
-      "children": []
+      ]
     },
     {
       "name": "NotDescribedPossibleIChild",
@@ -68,15 +66,12 @@
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
           "type": "int"
         }
-      ],
-      "children": []
+      ]
     },
     {
       "name": "Object",
       "fullName": "java.lang.Object",
-      "elementNames": [],
-      "attributes": [],
-      "children": []
+      "elementNames": []
     },
     {
       "name": "Start",
@@ -104,9 +99,7 @@
       "name": "TChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
       "descriptionHeader": "This is the header of the JavaDoc of \\\"TChild\\\".",
-      "elementNames": ["RoleNameTChild"],
-      "attributes": [],
-      "children": []
+      "elementNames": ["RoleNameTChild"]
     }
   ]
 }

@@ -79,16 +79,12 @@
     {
       "name": "Object",
       "fullName": "java.lang.Object",
-      "elementNames": [],
-      "attributes": [],
-      "children": []
+      "elementNames": []
     },
     {
       "name": "Opaque",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque",
-      "elementNames": ["RoleEpsilon"],
-      "attributes": [],
-      "children": []
+      "elementNames": ["RoleEpsilon"]
     }
   ]
 }
