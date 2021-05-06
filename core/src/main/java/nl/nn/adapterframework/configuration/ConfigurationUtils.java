@@ -42,7 +42,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
@@ -73,6 +73,7 @@ public class ConfigurationUtils {
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
 	private static final String CANONICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
+	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
@@ -92,19 +93,19 @@ public class ConfigurationUtils {
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
 		parameters.put("disableValidators", AppConstants.getInstance(configuration.getClassLoader()).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
-		return transformConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
+		return transformConfiguration(originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 
-	public static String getActivatedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return transformConfiguration(configuration, originalConfig, ACTIVE_XSLT, null);
+	public static String getActivatedConfiguration(String originalConfig) throws ConfigurationException {
+		return transformConfiguration(originalConfig, ACTIVE_XSLT, null);
 	}
 
-	public static String getCanonicalizedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return transformConfiguration(configuration, originalConfig, CANONICALIZE_XSLT, null);
+	public static String getCanonicalizedConfiguration(String originalConfig) throws ConfigurationException {
+		return transformConfiguration(originalConfig, CANONICALIZE_XSLT, null);
 	}
 
-	public static String transformConfiguration(Configuration configuration, String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
-		URL xsltSource = ClassUtils.getResourceURL(configuration, xslt);
+	public static String transformConfiguration(String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
+		URL xsltSource = ClassUtils.getResourceURL(xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + xslt + "]");
 		}

@@ -21,13 +21,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -37,6 +34,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.StringIteratorPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 
 /**
@@ -76,8 +74,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		ibisContext.autowireBeanProperties(querySender, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		SpringUtils.autowireByName(getApplicationContext(), querySender);
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
@@ -102,7 +99,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 
 	@SuppressWarnings("finally")
 	@Override
-	protected IDataIterator<String> getIterator(Message message, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		Connection connection = null;
 		PreparedStatement statement=null;
 		ResultSet rs=null;

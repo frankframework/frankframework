@@ -23,10 +23,10 @@ import java.util.zip.Adler32;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -132,7 +132,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
 		try {
 			ChecksumGenerator cg=createChecksumGenerator();
@@ -153,7 +153,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 				cg.update(barr,barr.length);
 			}
 			result=cg.getResult();
-			return new PipeRunResult(getForward(),result);
+			return new PipeRunResult(getSuccessForward(),result);
 		} catch (Exception e) {
 			throw new PipeRunException(this,"cannot calculate ["+getType()+"]"+(isInputIsFile()?" on file ["+message+"]":" using charset ["+getCharset()+"]"),e);
 		}

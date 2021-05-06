@@ -18,11 +18,11 @@ package nl.nn.adapterframework.webcontrol.pipes;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -45,10 +45,10 @@ public class ShowConfigExe extends TimeoutGuardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input,IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input,PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return new PipeRunResult(getForward(), doGet(session));
+			return new PipeRunResult(getSuccessForward(), doGet(session));
 		} else {
 			throw new PipeRunException(this,
 					getLogPrefix(session) + "Illegal value for method ["
@@ -56,7 +56,7 @@ public class ShowConfigExe extends TimeoutGuardPipe {
 		}
 	}
 
-	private String doGet(IPipeLineSession session) throws PipeRunException {
+	private String doGet(PipeLineSession session) throws PipeRunException {
 		String parm_name = (String) session.get("name");
 		if (StringUtils.isEmpty(parm_name)) {
 			throw new PipeRunException(this,
@@ -85,7 +85,7 @@ public class ShowConfigExe extends TimeoutGuardPipe {
 		return "ok";
 	}
 
-	private boolean deactivate(IbisContext ibisContext, String name, String jmsRealm, IPipeLineSession session) throws PipeRunException {
+	private boolean deactivate(IbisContext ibisContext, String name, String jmsRealm, PipeLineSession session) throws PipeRunException {
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
@@ -110,7 +110,7 @@ public class ShowConfigExe extends TimeoutGuardPipe {
 		}
 	}
 
-	private boolean activate(IbisContext ibisContext, String name, String jmsRealm, IPipeLineSession session) throws PipeRunException {
+	private boolean activate(IbisContext ibisContext, String name, String jmsRealm, PipeLineSession session) throws PipeRunException {
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");

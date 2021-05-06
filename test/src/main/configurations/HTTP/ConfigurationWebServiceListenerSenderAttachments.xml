@@ -52,7 +52,7 @@
 			</pipe>
 			<pipe
 				name="GetFile" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" outputType="string" 
-				directory="${testdata.dir}/webservices" fileName="filetext.txt" storeResultInSessionKey="attachment1" 
+				directory="${testdata.dir}/webservices" filename="filetext.txt" storeResultInSessionKey="attachment1" 
 				preserveInput="true" createDirectory="true"
 				>
 				
@@ -76,7 +76,7 @@
 			</pipe>
 			<pipe
 				name="GetFile" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" outputType="string" 
-				directory="${testdata.dir}/webservices" fileName="filetext.txt" storeResultInSessionKey="file" 
+				directory="${testdata.dir}/webservices" filename="filetext.txt" storeResultInSessionKey="file" 
 				preserveInput="true" createDirectory="true"
 			>
 				<forward name="success" path="SetMultipartSessionKey"/>
@@ -101,7 +101,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments" multipart="true"
@@ -123,13 +123,13 @@
 				<exit path="EXIT" state="success" />
 			</exits> 
 			<pipe name="GetAttachment1" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="string" directory="${testdata.dir}/webservices" fileName="textfile.txt" storeResultInSessionKey="file"
+				actions="read" outputType="string" directory="${testdata.dir}/webservices" filename="textfile.txt" storeResultInSessionKey="file"
 				createDirectory="true"
 			>
 				<forward name="success" path="GetAttachment2" />
 			</pipe> 
 			<pipe name="GetAttachment2" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="string" directory="${testdata.dir}/webservices" fileName="textfile.txt"  storeResultInSessionKey="file2"
+				actions="read" outputType="string" directory="${testdata.dir}/webservices" filename="textfile.txt"  storeResultInSessionKey="file2"
 				createDirectory="true"
 			>
 				<forward name="success" path="PutMultipartInSessionKey" />
@@ -140,7 +140,7 @@
 				<param name="multipart" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;part name='file' sessionKey='file2' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
 				<forward name="success" path="Send2WS" />
 			</pipe> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart" multipart="true"
@@ -162,7 +162,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning"
@@ -172,13 +172,13 @@
 			</pipe>
 			<pipe
 				name="WriteStream" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" getInputFromSessionKey="multipart1" fileName="${testdata.dir}/webservices/received.txt"
+				actions="write" getInputFromSessionKey="multipart1" filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="ReadFile"/>
 			</pipe>
 			<pipe
 				name="ReadFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" fileName="${testdata.dir}/webservices/received.txt"
+				actions="read" filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="EXIT"/>
 			</pipe>
@@ -194,7 +194,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
@@ -204,13 +204,13 @@
 			</pipe>
 			<pipe
 				name="WriteStream" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" getInputFromSessionKey="multipart1" fileName="${testdata.dir}/webservices/received.txt"
+				actions="write" getInputFromSessionKey="multipart1" filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="ReadFile"/>
 			</pipe>
 			<pipe
 				name="ReadFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" fileName="${testdata.dir}/webservices/received.txt"
+				actions="read" filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="EXIT"/>
 			</pipe>

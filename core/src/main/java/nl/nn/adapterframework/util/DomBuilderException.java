@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,36 +15,23 @@
 */
 package nl.nn.adapterframework.util;
 
-import org.apache.commons.lang.exception.NestableException;
+import nl.nn.adapterframework.core.IbisException;
 
-public class DomBuilderException extends NestableException {
-	
-/**
- * DomBuilderException constructor comment.
- */
-public DomBuilderException() {
-	super();
-}
-/**
- * DomBuilderException constructor comment.
- * @param msg java.lang.String
- */
-public DomBuilderException(String msg) {
-	super(msg);
-}
-/**
- * DomBuilderException constructor comment.
- * @param msg java.lang.String
- * @param nestedException java.lang.Throwable
- */
-public DomBuilderException(String msg, Throwable nestedException) {
-	super(msg, nestedException);
-}
-/**
- * DomBuilderException constructor comment.
- * @param nestedException java.lang.Throwable
- */
-public DomBuilderException(Throwable nestedException) {
-	super(nestedException);
-}
+public class DomBuilderException extends IbisException {
+
+	public DomBuilderException() {
+		super();
+	}
+
+	public DomBuilderException(String msg) {
+		super(msg);
+	}
+
+	public DomBuilderException(String msg, Throwable nestedException) {
+		super(msg, nestedException);
+	}
+
+	public DomBuilderException(Throwable nestedException) {
+		super(nestedException);
+	}
 }

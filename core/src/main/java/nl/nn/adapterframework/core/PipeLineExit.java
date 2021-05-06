@@ -104,4 +104,8 @@ public class PipeLineExit implements IForwardTarget {
 	public String getResponseRoot() {
 		return responseRoot;
 	}
+
+	public boolean isSuccessExit() {
+		return EXIT_STATE_SUCCESS.equalsIgnoreCase(getState());
+	}
 }

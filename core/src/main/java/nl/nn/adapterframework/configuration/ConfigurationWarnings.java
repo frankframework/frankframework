@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 	 * Add configuration warning with INamedObject prefix and log the exception stack
 	 */
 	public static void add(INamedObject object, Logger log, String message, Throwable t) {
-		String msg = (object==null?"":ClassUtils.nameOf(object) +" ["+object.getName()+"]")+" "+message;
+		String msg = (object==null?"":ClassUtils.nameOf(object) +" ["+object.getName()+"] ")+message;
 		getInstance().doAdd(log, msg, t, null);
 	}
 
@@ -142,23 +142,6 @@ public final class ConfigurationWarnings extends BaseConfigurationWarnings {
 
 	private boolean addConfigurationIndependentWarning(Logger log, String msg, Throwable t, String messageSuffixForLog, boolean onlyOnce) {
 		return super.add(log, msg, t, messageSuffixForLog, onlyOnce);
-	}
-
-	@Override
-	public boolean containsDefaultValueException(String key) {
-		if (activeConfiguration!=null) {
-			return activeConfiguration.getConfigurationWarnings().containsDefaultValueException(key);
-		} else {
-			return super.containsDefaultValueException(key);
-		}
-	}
-
-	public void addDefaultValueExceptions(String key) {
-		if (activeConfiguration!=null) {
-			activeConfiguration.getConfigurationWarnings().addDefaultValueException(key);
-		} else {
-			super.addDefaultValueException(key);
-		}
 	}
 
 	public void setActiveConfiguration (Configuration configuration) {

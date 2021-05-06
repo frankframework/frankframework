@@ -39,8 +39,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
@@ -128,7 +127,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		 * Generate an OpenApi json file
 		 */
 		if(uri.equalsIgnoreCase("/openapi.json")) {
-			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema();
+			JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
 			returnJson(response, 200, jsonSchema);
 			return;
 		}
@@ -140,7 +139,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			uri = uri.substring(0, uri.lastIndexOf("/"));
 			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
 			if(apiConfig != null) {
-				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig);
+				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
 				returnJson(response, 200, jsonSchema);
 				return;
 			}
@@ -149,10 +148,10 @@ public class ApiListenerServlet extends HttpServletBase {
 		/**
 		 * Initiate and populate messageContext
 		 */
-		try (PipeLineSessionBase messageContext = new PipeLineSessionBase()) {
-			messageContext.put(IPipeLineSession.HTTP_REQUEST_KEY, request);
-			messageContext.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
-			messageContext.put(IPipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
+		try (PipeLineSession messageContext = new PipeLineSession()) {
+			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
+			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
+			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
 			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 	
 			try {
@@ -265,7 +264,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				//Remove this? it's now available as header value
 				messageContext.put("remoteAddr", request.getRemoteAddr());
 				if(userPrincipal != null)
-					messageContext.put(IPipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
+					messageContext.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
 				messageContext.put("uri", uri);
 	
 				/**
@@ -363,26 +362,27 @@ public class ApiListenerServlet extends HttpServletBase {
 				/**
 				 * Map headers into messageContext
 				 */
-				Enumeration<String> headers = request.getHeaderNames();
-				XmlBuilder headersXml = new XmlBuilder("headers");
-				while (headers.hasMoreElements()) {
-					String headerName = headers.nextElement().toLowerCase();
-					if(IGNORE_HEADERS.contains(headerName))
-						continue;
-	
-					String headerValue = request.getHeader(headerName);
-					try {
-						XmlBuilder headerXml = new XmlBuilder("header");
-						headerXml.addAttribute("name", headerName);
-						headerXml.setValue(headerValue);
-						headersXml.addSubElement(headerXml);
+				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
+					XmlBuilder headersXml = new XmlBuilder("headers");
+					String params[] = listener.getHeaderParams().split(",");
+					for (String headerParam : params) {
+						if(IGNORE_HEADERS.contains(headerParam)) {
+							continue;
+						}
+						String headerValue = request.getHeader(headerParam);
+						try {
+							XmlBuilder headerXml = new XmlBuilder("header");
+							headerXml.addAttribute("name", headerParam);
+							headerXml.setValue(headerValue);
+							headersXml.addSubElement(headerXml);
+						}
+						catch (Throwable t) {
+							log.info("unable to convert header to xml name["+headerParam+"] value["+headerValue+"]");
+						}
 					}
-					catch (Throwable t) {
-						log.info("unable to convert header to xml name["+headerName+"] value["+headerValue+"]");
-					}
+					messageContext.put("headers", headersXml.toXML());
 				}
-				messageContext.put("headers", headersXml.toXML());
-	
+
 				/**
 				 * Map multipart parts into messageContext
 				 */
@@ -475,7 +475,16 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageId = messageIdHeader;
 					}
 				}
-				PipeLineSessionBase.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
+				PipeLineSession.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
+//				if(StringUtils.isNotEmpty(listener.getCookieParams())) {
+//					String params[] = listener.getCookieParams().split(",");
+//					for (String cookieParam : params) {
+//						Cookie cookie = CookieUtil.getCookie(request, cookieParam);
+//						if(cookie != null) {
+//							messageContext.put(cookieParam, cookie.getValue());
+//						}
+//					}
+//				}
 				Message result = listener.processRequest(null, body, messageContext);
 
 				/**

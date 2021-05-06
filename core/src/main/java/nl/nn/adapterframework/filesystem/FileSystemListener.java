@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
@@ -250,18 +250,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				if (StringUtils.isNotEmpty(getLogFolder())) {
 					FileSystemUtils.copyFile(fileSystem, rawMessage, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 				}
-				if (!processResult.isSuccessful()) {
-					if (StringUtils.isNotEmpty(getErrorFolder())) {
-						FileSystemUtils.moveFile(fileSystem, rawMessage, getErrorFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
-						return;
-					}
-				}
-				if (isDelete()) {
+				if (isDelete() && (processResult.isSuccessful() || StringUtils.isEmpty(getErrorFolder()))) {
 					fileSystem.deleteFile(rawMessage);
 					return;
-				}
-				if (StringUtils.isNotEmpty(getProcessedFolder())) {
-					FileSystemUtils.moveFile(fileSystem, rawMessage, getProcessedFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 				}
 			} catch (FileSystemException e) {
 				throw new ListenerException("Could not move or delete file ["+fileSystem.getName(rawMessage)+"]",e);
@@ -325,7 +316,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				messageId+="-"+DateUtils.format(fileSystem.getModificationTime(file));
 			}
 			if (threadContext!=null) {
-				PipeLineSessionBase.setListenerParameters(threadContext, messageId, messageId, null, null);
+				PipeLineSession.setListenerParameters(threadContext, messageId, messageId, null, null);
 				if (attributes!=null) {
 					threadContext.putAll(attributes);
 				}
@@ -343,10 +334,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	public F changeProcessState(F message, ProcessState toState) throws ListenerException {
+	public F changeProcessState(F message, ProcessState toState, String reason) throws ListenerException {
 		try {
 			if (!fileSystem.exists(message) || !knownProcessStates().contains(toState)) {
 				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
+			}
+			if (toState==ProcessState.DONE || toState==ProcessState.ERROR) {
+				return FileSystemUtils.moveFile(fileSystem, message, getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders());
 			}
 			return getFileSystem().moveFile(message, getStateFolder(toState), false);
 		} catch (FileSystemException e) {

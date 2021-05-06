@@ -19,10 +19,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -55,7 +55,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	
 	
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
 		try {
 			if (isSplitLines() && message != null) {
@@ -86,7 +86,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			
 		String resultString = (isIncludeXmlDeclaration()?"<?xml version=\"1.0\" encoding=\"UTF-8\"?>":"") +
 		"<" + getXmlTag() + ">"+result+"</" + xmlTag + ">";	
-		return new PipeRunResult(getForward(), resultString);
+		return new PipeRunResult(getSuccessForward(), resultString);
 	}
 
 	private String addCdataSection(String input) {

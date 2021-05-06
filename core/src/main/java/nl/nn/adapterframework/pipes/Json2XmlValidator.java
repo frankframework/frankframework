@@ -29,7 +29,7 @@ import javax.json.JsonObject;
 import javax.json.JsonStructure;
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
@@ -40,7 +40,7 @@ import nl.nn.adapterframework.align.XmlAligner;
 import nl.nn.adapterframework.align.XmlTypeToJsonSchemaConverter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -104,7 +104,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		}
 	}
 	
-	public String getOutputFormat(IPipeLineSession session, boolean responseMode) {
+	public String getOutputFormat(PipeLineSession session, boolean responseMode) {
 		String format=null;
 		if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
 			format=(String)session.get(getOutputFormatSessionKey());
@@ -118,7 +118,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return format;
 	}
 	
-	protected void storeInputFormat(String format, IPipeLineSession session, boolean responseMode) {
+	protected void storeInputFormat(String format, PipeLineSession session, boolean responseMode) {
 		if (!responseMode) {
 			String sessionKey = getInputFormatSessionKey();
 			if (log.isDebugEnabled()) log.debug("storing inputFormat ["+format+"] under session key ["+sessionKey+"]");
@@ -132,7 +132,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session, boolean responseMode) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode) throws PipeRunException {
 		String messageToValidate;
 		try {
 			messageToValidate=input==null || input.asObject()==null?"{}":input.asString();
@@ -197,7 +197,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return getRootValidations(responseMode);
 	}
 	
-	protected PipeRunResult alignXml2Json(String messageToValidate, IPipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	protected PipeRunResult alignXml2Json(String messageToValidate, PipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		ValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
@@ -222,7 +222,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return result;
 	}
 	
-	protected PipeRunResult alignJson(String messageToValidate, IPipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
+	protected PipeRunResult alignJson(String messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
 
 		ValidationContext context;
 		ValidatorHandler validatorHandler;

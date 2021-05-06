@@ -25,7 +25,7 @@ import javax.naming.NamingException;
 
 import nl.nn.adapterframework.util.ClassUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * {@link MessagingSource} for JMS connections.
@@ -81,7 +81,8 @@ public class JmsMessagingSource extends MessagingSource {
 		}
 		return dest;
 	}
-	
+
+	@Override
 	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(),"wrapped");
 	}

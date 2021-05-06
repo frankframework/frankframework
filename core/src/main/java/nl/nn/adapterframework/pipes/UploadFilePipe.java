@@ -21,14 +21,14 @@ import java.io.InputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Uploads a zip file (inputstream in a sessionKey) and unzips it to a directory.
@@ -62,7 +62,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		InputStream inputStream = (InputStream) session.get(getSessionKey());
 		if (inputStream == null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
@@ -105,7 +105,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 			throw new PipeRunException(this, getLogPrefix(session) + " Exception on uploading and unzipping/writing file", e);
 		}
 
-		return new PipeRunResult(getForward(), dir.getPath());
+		return new PipeRunResult(getSuccessForward(), dir.getPath());
 	}
 
 	@IbisDoc({"base directory where files are unzipped to", ""})

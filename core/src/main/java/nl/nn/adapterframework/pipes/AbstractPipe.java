@@ -21,9 +21,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -33,7 +35,7 @@ import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -50,6 +52,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -62,9 +65,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * As much as possible, class instantiating should take place in the
  * {@link IPipe#configure()} method.
  * The object remains alive while the framework is running. When the pipe is to be run,
- * the {@link IPipe#doPipe(Message, IPipeLineSession) doPipe} method is activated.
+ * the {@link IPipe#doPipe(Message, PipeLineSession) doPipe} method is activated.
  * <p>
- * For the duration of the processing of a message by the {@link PipeLine pipeline} has a {@link IPipeLineSession pipeLineSession}.
+ * For the duration of the processing of a message by the {@link PipeLine pipeline} has a {@link PipeLineSession pipeLineSession}.
  * <br/>
  * By this mechanism, pipes may communicate with one another.<br/>
  * However, use this functionality with caution, as it is not desirable to make pipes dependent
@@ -92,10 +95,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @author     Johan Verrips / Gerrit van Brakel
  *
- * @see IPipeLineSession
+ * @see PipeLineSession
  */
-public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable {
+public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable, ApplicationContextAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ApplicationContext applicationContext;
 
 	private String name;
 	private String getInputFromSessionKey=null;
@@ -141,7 +145,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	/**
 	 * <code>configure()</code> is called after the {@link PipeLine Pipeline} is registered
 	 * at the {@link Adapter Adapter}. Purpose of this method is to reduce
-	 * creating connections to databases etc. in the {@link #doPipe(Message, IPipeLineSession) doPipe()} method.
+	 * creating connections to databases etc. in the {@link #doPipe(Message, PipeLineSession) doPipe()} method.
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
 	 */
@@ -199,13 +203,25 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		configure();
 	}
 
+	/**
+	 * final method to ensure nobody overrides this...
+	 */
+	@Override
+	public final void setApplicationContext(ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext;
+	}
+
+	protected <T> T createBean(Class<T> beanClass) {
+		return SpringUtils.createBean(applicationContext, beanClass);
+	}
+
 
 	/**
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.
 	 */
 	@Override
-	public abstract PipeRunResult doPipe (Message message, IPipeLineSession session) throws PipeRunException;
+	public abstract PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException;
 
 	/**
 	 * looks up a key in the pipeForward hashtable. <br/>
@@ -256,7 +272,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 * from the <code>configure()</code>, <code>start()</code> and <code>stop()</code> methods.
 	 * @return String with the name of the pipe and the message id of the current message.
 	 */
-	protected String getLogPrefix(IPipeLineSession session) {
+	protected String getLogPrefix(PipeLineSession session) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Pipe ["+getName()+"] ");
 		if (session!=null) {
@@ -380,10 +396,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	}
 
 	/**
-	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Message, IPipeLineSession)} simultaneously in case
+	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Message, PipeLineSession)} simultaneously in case
 	 *  A value of 0 indicates an unlimited number of threads.
 	 */
-	@IbisDoc({"maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.IPipeLineSession)} simultaneously", "0 (unlimited)"})
+	@IbisDoc({"maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously", "0 (unlimited)"})
 	public void setMaxThreads(int newMaxThreads) {
 		maxThreads = newMaxThreads;
 	}

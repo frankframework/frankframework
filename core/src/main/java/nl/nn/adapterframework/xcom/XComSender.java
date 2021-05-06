@@ -23,10 +23,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -122,7 +122,7 @@ public class XComSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String messageString;
 		try {
 			messageString = message.asString();
@@ -173,7 +173,7 @@ public class XComSender extends SenderWithParametersBase {
 		return message;
 	}
 
-	private String getCommand(IPipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {
+	private String getCommand(PipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {
 		try {
 			StringBuffer sb = new StringBuffer();
 

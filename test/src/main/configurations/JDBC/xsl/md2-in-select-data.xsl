@@ -14,10 +14,13 @@
                         <name>tchar</name>
                     </column>
                     <column>
-                        <name>tvarchar</name>
+                        <name>tclob</name>
                     </column>
                     <column>
                         <name>tnumber</name>
+                    </column>
+                    <column>
+                        <name>tvarchar</name>
                     </column>
                 </columns>
                 <where>tnumber=<xsl:value-of select="$tnumber"/></where>

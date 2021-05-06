@@ -35,7 +35,8 @@ import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Lock;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.EnumUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -74,8 +75,8 @@ public class ShowMonitors extends ActionBase {
 		selDest=(String[])destinations.toArray(selDest);
 		monitorForm.set("selDestinations",selDest);
 		monitorForm.set("enabled",new Boolean(mm.isEnabled()));
-		monitorForm.set("eventTypes",EventTypeEnum.getEnumList());
-		monitorForm.set("severities",SeverityEnum.getEnumList());
+		monitorForm.set("eventTypes", EnumUtils.getEnumList(EventTypeEnum.class));
+		monitorForm.set("severities", EnumUtils.getEnumList(SeverityEnum.class));
 	}
 
 	public ActionForward executeSub(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -132,7 +133,7 @@ public class ShowMonitors extends ActionBase {
 		}	
 		if (StringUtils.isEmpty(forward)) {
 			log.debug("replacing empty forward with [success]");
-			forward="success";
+			forward=SUCCESS_ACTION_FORWARD;
 		}
 		
 		

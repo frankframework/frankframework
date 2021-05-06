@@ -18,14 +18,13 @@ package nl.nn.adapterframework.soap;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.axis.MessageContext;
-import org.apache.axis.client.AxisClient;
-import org.apache.axis.configuration.NullProvider;
-import org.apache.axis.message.SOAPEnvelope;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSSConfig;
@@ -40,7 +39,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -126,7 +125,7 @@ public class SoapWrapper {
 		return getBody(message, false, null, null);
 	}
 	
-	public Message getBody(Message message, boolean allowPlainXml, IPipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
+	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
 		message.preserve();
 		Message result = new Message(extractBodySoap11.transform(message.asSource()));
 		if (!Message.isEmpty(result)) {
@@ -253,16 +252,11 @@ public class SoapWrapper {
 			WSSConfig config = secEngine.getWssConfig();
 			config.setPrecisionInMilliSeconds(false);
 
-			// create context
-			AxisClient tmpEngine = new AxisClient(new NullProvider());
-			MessageContext msgContext = new MessageContext(tmpEngine);
-
-			org.apache.axis.Message msg = new org.apache.axis.Message(soapMessage.asInputStream());
-			msg.setMessageContext(msgContext);
+			SOAPMessage msg = MessageFactory.newInstance().createMessage(null, soapMessage.asInputStream());
 
 			// create unsigned envelope
-			SOAPEnvelope unsignedEnvelope = msg.getSOAPEnvelope();
-			Document doc = unsignedEnvelope.getAsDocument();
+			SOAPEnvelope unsignedEnvelope = msg.getSOAPPart().getEnvelope();
+			Document doc = unsignedEnvelope.getOwnerDocument();
 
 			// create security header and insert it into unsigned envelope
 			WSSecHeader secHeader = new WSSecHeader();

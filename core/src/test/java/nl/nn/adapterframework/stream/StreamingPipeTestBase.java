@@ -14,11 +14,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
@@ -47,14 +46,14 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 	}
 
 	@Override
-	public void setup() throws ConfigurationException {
+	public void setup() throws Exception {
 		super.setup();
 		pipe.setStreamingActive(!classic);
 	}
 
 
 	@Override
-	protected PipeRunResult doPipe(P pipe, Message input, IPipeLineSession session) throws PipeRunException {
+	protected PipeRunResult doPipe(P pipe, Message input, PipeLineSession session) throws PipeRunException {
 		PipeRunResult prr=null;
 		// TODO: CapProvider should not be provided as argument to provideOutputStream, because that is not used there.
 		// Instead, it must be the next pipe in the pipeline. When it is called, the forward of that pipe
@@ -112,7 +111,7 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 		}
 
 		@Override
-		public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+		public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 			return cap;
 		}
 		

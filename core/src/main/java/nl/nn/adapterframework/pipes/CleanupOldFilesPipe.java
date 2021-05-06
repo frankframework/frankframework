@@ -21,14 +21,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Pipe for deleting files.
@@ -53,7 +53,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		
 		
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			String filename;
 			if (StringUtils.isNotEmpty(getFilePattern())) {
@@ -93,7 +93,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 				}
 			}
 			
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		}
 		catch(Exception e) {
 			throw new PipeRunException(this, "Error while deleting file(s)", e); 

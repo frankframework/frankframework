@@ -15,8 +15,9 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.stream.Message;
@@ -28,7 +29,7 @@ import nl.nn.adapterframework.util.Locker;
 public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, IPipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		PipeLineResult pipeLineResult;
 		Locker locker = pipeLine.getLocker();
 		String objectId = null;
@@ -41,7 +42,7 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 			if (objectId == null) {
 				log.info("could not obtain lock ["+locker+"]");
 				pipeLineResult = new PipeLineResult();
-				pipeLineResult.setState("success");
+				pipeLineResult.setState(PipeLineExit.EXIT_STATE_SUCCESS);
 			} else {
 				try {
 					pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);

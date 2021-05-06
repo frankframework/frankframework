@@ -20,9 +20,9 @@
 				<forward name="success" path="fixedresult"/>
 			</pipe>
             <pipe 
-                className="nl.nn.adapterframework.pipes.FixedResult"
+                className="nl.nn.adapterframework.pipes.FixedResultPipe"
                 name="fixedresult" 
-                fileName="cache/resultTemplate.xml"
+                filename="cache/resultTemplate.xml"
             >
 				<param name="input" />
                  <forward name="success" path="READY"/>
@@ -50,9 +50,9 @@
 				<forward name="success" path="fixedresult"/>
 			</pipe>
             <pipe 
-                className="nl.nn.adapterframework.pipes.FixedResult"
+                className="nl.nn.adapterframework.pipes.FixedResultPipe"
                 name="fixedresult" 
-                fileName="cache/resultTemplate.xml"
+                filename="cache/resultTemplate.xml"
             >
 				<param name="input" />
                  <forward name="success" path="READY"/>

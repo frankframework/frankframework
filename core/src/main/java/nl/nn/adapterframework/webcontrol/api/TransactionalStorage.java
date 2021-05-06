@@ -38,7 +38,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -305,7 +305,7 @@ public class TransactionalStorage extends Base {
 			IMessageBrowser<?> store = receiver.getMessageBrowser(currentState);
 			for(int i=0; i < messageIds.length; i++) {
 				try {
-					if (receiver.changeProcessState(store.browseMessage(messageIds[i]), targetPS)==null) {
+					if (receiver.changeProcessState(store.browseMessage(messageIds[i]), targetPS, "admin requested move")==null) {
 						errorMessages.add("could not move message ["+messageIds[i]+"]");
 					}
 				} catch (ListenerException e) {

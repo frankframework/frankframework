@@ -26,7 +26,7 @@ import org.xml.sax.ext.LexicalHandler;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 public class TransformerFilter extends FullXmlFilter {
@@ -34,7 +34,7 @@ public class TransformerFilter extends FullXmlFilter {
 	private TransformerHandler transformerHandler;
 	private @Getter ErrorListener errorListener;
 	
-	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
+	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
 		super();
 		if (expectChildThreads) {
 			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
@@ -67,6 +67,9 @@ public class TransformerFilter extends FullXmlFilter {
 						}
 					} catch (TransformerException e) {
 						exceptionInsertingFilter.insertException(new SaxException(e));
+						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+						// If absent, Xslt tests fail.
+						throw e; 
 					}
 				}
 
@@ -78,6 +81,9 @@ public class TransformerFilter extends FullXmlFilter {
 						}
 					} catch (TransformerException e) {
 						exceptionInsertingFilter.insertException(new SaxException(e));
+						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+						// If absent, Xslt tests fail.
+						throw e; 
 					}
 					
 				}
@@ -90,6 +96,9 @@ public class TransformerFilter extends FullXmlFilter {
 						}
 					} catch (TransformerException e) {
 						exceptionInsertingFilter.insertException(new SaxException(e));
+						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+						// If absent, Xslt tests fail.
+						throw e; 
 					}
 					
 				}

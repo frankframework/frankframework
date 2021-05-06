@@ -23,16 +23,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import lombok.Setter;
 import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 
 /**
@@ -47,8 +51,9 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public abstract class Result2LobWriterBase extends ResultWriter {
-	
+public abstract class Result2LobWriterBase extends ResultWriter implements ApplicationContextAware {
+	private @Setter ApplicationContext applicationContext;
+
 	protected Map<String,Connection> openConnections = Collections.synchronizedMap(new HashMap<String,Connection>());
 	protected Map<String,ResultSet>  openResultSets  = Collections.synchronizedMap(new HashMap<String,ResultSet>());
 	protected Map<String,Object>     openLobHandles  = Collections.synchronizedMap(new HashMap<String,Object>());
@@ -60,8 +65,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		IbisContext ibisContext = getPipe().getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		querySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		querySender = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		querySender.setName("querySender of "+getName());
 		querySender.configure();
 	}
@@ -86,7 +90,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	protected abstract void   updateLob   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 	
 	@Override
-	protected Writer createWriter(IPipeLineSession session, String streamId) throws Exception {
+	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
 		querySender.sendMessage(new Message(streamId), session); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it? 
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
@@ -103,7 +107,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 	}
 	
 	@Override
-	public String finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception {
+	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
 		try {
 			return super.finalizeResult(session,streamId, error);
 		} finally {

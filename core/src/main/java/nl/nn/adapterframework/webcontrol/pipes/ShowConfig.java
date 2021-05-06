@@ -17,11 +17,11 @@ package nl.nn.adapterframework.webcontrol.pipes;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -47,10 +47,10 @@ public class ShowConfig extends TimeoutGuardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return new PipeRunResult(getForward(), doGet(session));
+			return new PipeRunResult(getSuccessForward(), doGet(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "Illegal value for method [" + method
@@ -58,7 +58,7 @@ public class ShowConfig extends TimeoutGuardPipe {
 		}
 	}
 
-	private String doGet(IPipeLineSession session) throws PipeRunException {
+	private String doGet(PipeLineSession session) throws PipeRunException {
 		String parm_name = (String) session.get("name");
 		if (StringUtils.isEmpty(parm_name)) {
 			return retrieveAllConfigs(session);
@@ -111,7 +111,7 @@ public class ShowConfig extends TimeoutGuardPipe {
 		}
 	}
 
-	private String retrieveAllConfigs(IPipeLineSession session)
+	private String retrieveAllConfigs(PipeLineSession session)
 			throws PipeRunException {
 		List<String> jmsRealms = JmsRealmFactory.getInstance()
 				.getRegisteredDatasourceRealmNamesAsList();

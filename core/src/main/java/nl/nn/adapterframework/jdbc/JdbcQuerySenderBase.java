@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,13 +38,13 @@ import java.util.StringTokenizer;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -96,10 +96,10 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  */
 public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
-	private final static String UNP_START = "?{";
-	private final static String UNP_END = "}";
+	public final static String UNP_START = "?{";
+	public final static String UNP_END = "}";
 
-	private String queryType = "other";
+	private QueryType queryType = QueryType.OTHER;
 	private int maxRows=-1; // return all rows
 	private int startRow=1;
 	private boolean scalar=false;
@@ -137,6 +137,14 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	
 	private String convertedResultQuery;
 
+	public enum QueryType {
+		SELECT,
+		UPDATEBLOB,
+		UPDATECLOB,
+		PACKAGE,
+		OTHER
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -158,7 +166,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				columnsReturnedList[i] = tempList.get(i);
 			}
 		}
-		if (getBatchSize()>0 && !"other".equals(getQueryType())) {
+		if (getBatchSize()>0 && getQueryTypeEnum() != QueryType.OTHER) {
 			throw new ConfigurationException(getLogPrefix()+"batchSize>0 only valid for queryType 'other'");
 		}
 	}
@@ -182,7 +190,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		super.open();
 		if (StringUtils.isNotEmpty(getResultQuery())) {
 			try (Connection connection = getConnection()) {
-				QueryExecutionContext resultContext = new QueryExecutionContext(getResultQuery(), "select", null);
+				QueryExecutionContext resultContext = new QueryExecutionContext(getResultQuery(), QueryType.SELECT, null);
 				convertQuery(connection, resultContext);
 				if (log.isDebugEnabled()) log.debug("converted result query into [" + resultContext.getQuery() + "]");
 				convertedResultQuery = resultContext.getQuery();
@@ -217,7 +225,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (columnsReturned!=null) {
 			return prepareQueryWithColunmsReturned(con,query,columnsReturned);
 		}
-		boolean resultSetUpdateable = isLockRows() || "updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType()) || "updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType());
+		boolean resultSetUpdateable = isLockRows() || queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB || queryExecutionContext.getQueryType()==QueryType.UPDATECLOB;
 		return con.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,resultSetUpdateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
@@ -233,13 +241,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return st.getGeneratedKeys();
 	}
 
-	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message, IPipeLineSession session) throws SenderException, SQLException, ParameterException, JdbcException {
+	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message, PipeLineSession session) throws SenderException, SQLException, ParameterException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
 		String query=getQuery(message);
 		if (isUseNamedParams()) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
-		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, getQueryType(), newParameterList);
+		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, getQueryTypeEnum(), newParameterList);
 		queryExecutionContext.setConnection(connection);
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
 		PreparedStatement statement = getStatement(connection, queryExecutionContext);
@@ -259,7 +267,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 		return connection;
 	}
-	protected void closeConnectionForSendMessage(Connection connection, IPipeLineSession session) throws JdbcException, TimeOutException {
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeOutException {
 		if (isConnectionsArePooled() && connection!=null) {
 			try {
 				connection.close();
@@ -269,7 +277,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 	
-	protected QueryExecutionContext prepareStatementSet(H blockHandle, Connection connection, Message message, IPipeLineSession session) throws SenderException {
+	protected QueryExecutionContext prepareStatementSet(H blockHandle, Connection connection, Message message, PipeLineSession session) throws SenderException {
 		try {
 			QueryExecutionContext result = getQueryExecutionContext(connection, message, session);
 			if (getBatchSize()>0) {
@@ -280,7 +288,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
 	}
-	protected void closeStatementSet(QueryExecutionContext queryExecutionContext, IPipeLineSession session) {
+	protected void closeStatementSet(QueryExecutionContext queryExecutionContext, PipeLineSession session) {
 		try (PreparedStatement statement = queryExecutionContext.getStatement()) {
 			if (getBatchSize()>0) {
 				statement.executeBatch();
@@ -296,7 +304,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		try (JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
 			try {
@@ -312,55 +320,56 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
-			if ("select".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				Object blobSessionVar=null;
-				Object clobSessionVar=null;
-				if (session!=null && StringUtils.isNotEmpty(getBlobSessionKey())) {
-					blobSessionVar=session.get(getBlobSessionKey());
-				}
-				if (session!=null && StringUtils.isNotEmpty(getClobSessionKey())) {
-					clobSessionVar=session.get(getClobSessionKey());
-				}
-				if (isStreamResultToServlet()) {
-					HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
-					String contentType = (String) session.get("contentType");
-					String contentDisposition = (String) session.get("contentDisposition");
-					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
-				} else {
-					return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);
-				}
-			} 
-			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				if (StringUtils.isNotEmpty(getBlobSessionKey())) {
-					return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:Message.asMessage(session.get(getBlobSessionKey()))));
-				} 
-				return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
-			} 
-			if ("updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				if (StringUtils.isNotEmpty(getClobSessionKey())) {
-					return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:Message.asMessage(session.get(getClobSessionKey()))));
-				} 
-				return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
-			} 
-			if ("package".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				return new PipeRunResult(null, executePackageQuery(queryExecutionContext));
+			switch(queryExecutionContext.getQueryType()) {
+				case SELECT:
+					Object blobSessionVar=null;
+					Object clobSessionVar=null;
+					if (session!=null && StringUtils.isNotEmpty(getBlobSessionKey())) {
+						blobSessionVar=session.get(getBlobSessionKey());
+					}
+					if (session!=null && StringUtils.isNotEmpty(getClobSessionKey())) {
+						clobSessionVar=session.get(getClobSessionKey());
+					}
+					if (isStreamResultToServlet()) {
+						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
+						String contentType = (String) session.get("contentType");
+						String contentDisposition = (String) session.get("contentDisposition");
+						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
+					} else {
+						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);
+					}
+				case UPDATEBLOB:
+					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
+						return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:Message.asMessage(session.get(getBlobSessionKey()))));
+					} 
+					return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
+				case UPDATECLOB:
+					if (StringUtils.isNotEmpty(getClobSessionKey())) {
+						return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:Message.asMessage(session.get(getClobSessionKey()))));
+					} 
+					return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
+				case PACKAGE:
+					return new PipeRunResult(null, executePackageQuery(queryExecutionContext));
+				case OTHER:
+					Message result = executeOtherQuery(queryExecutionContext, message, session);
+					if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
+						int results[]=statement.executeBatch();
+						int numRowsAffected=0;
+						for (int i:results) {
+							numRowsAffected+=i;
+						}
+						result = new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
+						statement.clearBatch();
+						queryExecutionContext.iteration=0;
+					}
+					return new PipeRunResult(null, result);
+				default:
+					throw new IllegalStateException("Unsupported queryType: ["+queryExecutionContext.getQueryType()+"]");
 			}
-			Message result = executeOtherQuery(queryExecutionContext, message, session);
-			if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
-				int results[]=statement.executeBatch();
-				int numRowsAffected=0;
-				for (int i:results) {
-					numRowsAffected+=i;
-				}
-				result = new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
-				statement.clearBatch();
-				queryExecutionContext.iteration=0;
-			}
-			return new PipeRunResult(null, result);
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
@@ -461,7 +470,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null, null, null).getResult();
 	}
 
-	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, IPipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
+	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
 		if (isScalar()) {
 			String result=null;
 			if (resultset.next()) {
@@ -627,7 +636,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return clobWriter==null ? null : new Message(clobWriter.getWarnings().toXML());
 	}
 
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return false; // FixedQuerySender returns true for updateBlob and updateClob
 	}
 
@@ -637,7 +646,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
@@ -654,35 +663,37 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (queryExecutionContext.getParameterList() != null) {
 				JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
 			}
-			if ("updateBlob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				return new MessageOutputStream(this, getBlobOutputStream(statement, blobColumn, isBlobsCompressed()), next) {
+			if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
+				BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
+				return new MessageOutputStream(this, blobOutputStream, next) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
-						log.warn(getLogPrefix()+"warnings: "+((BlobOutputStream)requestStream).getWarnings().toXML());
+						log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
 					}
 				};
 			}
-			if ("updateClob".equalsIgnoreCase(queryExecutionContext.getQueryType())) {
-				return new MessageOutputStream(this, getClobWriter(statement, getClobColumn()), next) {
+			if (queryExecutionContext.getQueryType()==QueryType.UPDATECLOB) {
+				ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
+				return new MessageOutputStream(this, clobWriter, next) {
 					@Override
 					public void afterClose() throws SQLException {
 						connection.close();
-						log.warn(getLogPrefix()+"warnings: "+((ClobWriter)requestStream).getWarnings().toXML());
+						log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
 					}
 				};
 			} 
-			throw new IllegalStateException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
+			throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
 		} catch (JdbcException | SQLException | IOException | ParameterException e) {
 			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
 		}
 	}
 
-	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, IPipeLineSession session, IForwardTarget next) throws SenderException{
+	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, PipeLineSession session, IForwardTarget next) throws SenderException{
 		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null, session, next);
 	}
 
-	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, IPipeLineSession session, IForwardTarget next) throws SenderException{
+	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws SenderException{
 		try {
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
@@ -779,7 +790,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected Message executeOtherQuery(QueryExecutionContext queryExecutionContext, Message message, IPipeLineSession session) throws SenderException {
+	protected Message executeOtherQuery(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session) throws SenderException {
 		Connection connection = queryExecutionContext.getConnection(); 
 		PreparedStatement statement = queryExecutionContext.getStatement(); 
 		String query = queryExecutionContext.getQuery();
@@ -788,7 +799,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return executeOtherQuery(connection, statement, query, resStmt, message, session, parameterList);
 	}
 	
-	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, IPipeLineSession session, ParameterList parameterList) throws SenderException {
+	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
@@ -943,25 +954,21 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			return packageContent;
 		}
 
-	/**
-	 * Controls wheter output is expected from the query. 
-	 * Possible values: 
-	 * <ul>
-	 * <li>select:</li> output is expected
-	 * <li><i>anything else</i>:</li> no output is expected, the number of rows affected is returned
-	 * </ul>
-	 */
 	@IbisDoc({"1", "One of: <ul>" 
 				+ "<li><code>select</code> for queries that return data</li>" 
 				+ "<li><code>updateBlob</code> for queries that update a BLOB</li>" 
 				+ "<li><code>updateClob</code> for queries that update a CLOB</li>" 
 				+ "<li><code>package</code> to execute Oracle PL/SQL package</li>" 
-				+ "<li><code>other</code> or anything else for queries that return no data.</li>" 
+				+ "<li><code>other</code> for queries that return no data.</li>" 
 				+ "</ul>", "<code>other</code>"})
 	public void setQueryType(String queryType) {
-		this.queryType = queryType;
+		if ("insert".equalsIgnoreCase(queryType) || "delete".equalsIgnoreCase(queryType) || "update".equalsIgnoreCase(queryType)) {
+			this.queryType=QueryType.OTHER;
+		} else {
+			this.queryType = Misc.parse(QueryType.class, "queryType", queryType);
+		}
 	}
-	public String getQueryType() {
+	public QueryType getQueryTypeEnum() {
 		return queryType;
 	}
 

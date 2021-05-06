@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
@@ -24,7 +24,7 @@ import nl.nn.adapterframework.stream.Message;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Pipe that throws an exception, based on the input message.
@@ -44,7 +44,7 @@ public class ExceptionPipe extends FixedForwardPipe {
 	private boolean throwException = true;
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		String errorMessage;
 		try {
@@ -60,7 +60,7 @@ public class ExceptionPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, errorMessage);
 		else {
 			log.error(errorMessage);
-			return new PipeRunResult(getForward(), errorMessage);
+			return new PipeRunResult(getSuccessForward(), errorMessage);
 		}
 	}
 

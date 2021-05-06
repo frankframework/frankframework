@@ -185,12 +185,65 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 			assertTrue("could not create folder before test", _folderExists(folderName));
 		}
 		
-		fileSystem.removeFolder(folderName);
+		fileSystem.removeFolder(folderName, false);
 		waitForActionToFinish();
 		
 		assertFalse("folder still exists after removal", _folderExists(folderName));
 	}
 
+	@Test
+	public void writableFileSystemTestRemoveNonEmptyFolder() throws Exception {
+		String folderName = "dummyTestFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (!_folderExists(folderName)) {
+			_createFolder(folderName);
+			waitForActionToFinish();
+			assertTrue("could not create folder before test", _folderExists(folderName));
+		}
+		
+		for(int i=0;i<3;i++) {
+			createFile(folderName, "file_"+i+".txt", "some text here");
+		}
+
+		fileSystem.removeFolder(folderName, true);
+		waitForActionToFinish();
+
+		assertFalse("folder still exists after removal", _folderExists(folderName));
+	}
+	
+	@Test
+	public void writableFileSystemTestRemoveFolderRecursive() throws Exception {
+		String folderName = "dummyTestFolder";
+		String innerFolder = folderName+"/innerfolder";
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (!_folderExists(folderName)) {
+			_createFolder(folderName);
+			waitForActionToFinish();
+			assertTrue("could not create folder before test", _folderExists(folderName));
+		}
+		
+		if (!_folderExists(innerFolder)) {
+			_createFolder(innerFolder);
+			waitForActionToFinish();
+			assertTrue("could not create folder before test", _folderExists(folderName));
+		}
+		
+		for(int i=0;i<3;i++) {
+			createFile(folderName, "file_"+i+".txt", "some text here");
+			createFile(innerFolder, "file_"+i+".txt", "some text here");
+		}
+
+		fileSystem.removeFolder(folderName, true);
+		waitForActionToFinish();
+
+		assertFalse("folder still exists after removal", _folderExists(folderName));
+	}
+	
 	@Test
 	public void writableFileSystemTestFolderExists() throws Exception {
 		String folderName = "dummyFolder";
@@ -312,7 +365,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if(_folderExists(foldername)) {
 			_deleteFolder(foldername);
 		}
-		fileSystem.removeFolder(foldername);
+		fileSystem.removeFolder(foldername, false);
 	}
 	
 	@Test

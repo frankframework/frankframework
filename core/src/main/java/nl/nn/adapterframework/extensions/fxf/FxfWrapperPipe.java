@@ -18,10 +18,10 @@ package nl.nn.adapterframework.extensions.fxf;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -169,7 +169,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
 			xmlStartTransfer_Action.addAttribute("xmlns", "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/"+retrieveStartTransferVersion());
@@ -227,7 +227,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			// has a mount to the IUF state machine).
 			String fxfFile = fxfDir + File.separator + flowId + File.separator + "in" + File.separator + new File(clientFilename).getName();
 			session.put(getFxfFileSessionKey(), fxfFile);
-			return new PipeRunResult(getForward(), fxfFile);
+			return new PipeRunResult(getSuccessForward(), fxfFile);
 		}
 	}
 

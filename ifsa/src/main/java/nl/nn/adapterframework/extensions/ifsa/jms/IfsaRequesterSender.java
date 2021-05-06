@@ -34,7 +34,7 @@ import com.ing.ifsa.IFSAReportMessage;
 import com.ing.ifsa.IFSATimeOutMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -184,7 +184,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		
 		try {
 			if (isSynchronous()) {

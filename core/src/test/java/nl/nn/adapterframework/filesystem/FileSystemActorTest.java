@@ -20,9 +20,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -37,7 +36,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	protected FS fileSystem;
 	protected INamedObject owner;
-	private IPipeLineSession session;
+	private PipeLineSession session;
 
 
 	protected abstract FS createFileSystem();
@@ -251,7 +250,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -338,7 +337,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -363,7 +362,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -392,7 +391,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -572,7 +571,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwString", contents);
 
 		ParameterList params = new ParameterList();
@@ -610,7 +609,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
 		ParameterList params = new ParameterList();
@@ -650,7 +649,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
 		ParameterList params = new ParameterList();
@@ -690,7 +689,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 //		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		ParameterList paramlist = new ParameterList();
 		Parameter param = new Parameter();
@@ -733,7 +732,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
@@ -780,7 +779,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		createFile(null, filename, contents);
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterList params = new ParameterList();
 		
 		Parameter p = new Parameter();
@@ -1167,7 +1166,67 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// test
 		assertFalse("Expected folder [" + folder + "] " + "not to be present", actual);
 	}
+	@Test
+	public void fileSystemActorRmNonEmptyDirActionTest() throws Exception {
+		String folder = DIR1;
+		String innerFolder = DIR1+"/innerFolder";
+		if (!_folderExists(DIR1)) {
+			_createFolder(folder);
+		}
+		if (!_folderExists(innerFolder)) {
+			_createFolder(innerFolder);
+		}
+		for (int i=0; i < 3; i++) {
+			String filename = "file"+i + FILE1;
+			createFile(folder, filename, "is not empty");
+			createFile(innerFolder, filename, "is not empty");
+		}
 
+		actor.setAction("rmdir");
+		actor.setRemoveNonEmptyFolder(true);
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message message = new Message(folder);
+		ParameterValueList pvl = null;
+		Object result = actor.doAction(message, pvl, session);
+
+		// test
+		assertEquals("result of actor should be name of removed folder",folder,result);
+		waitForActionToFinish();
+		
+		boolean actual = _folderExists(folder);
+		// test
+		assertFalse("Expected folder [" + folder + "] " + "not to be present", actual);
+	}
+	
+	@Test
+	public void fileSystemActorAttemptToRmNonEmptyDir() throws Exception {
+		thrown.expectMessage("Cannot remove folder");
+		String folder = DIR1;
+		String innerFolder = DIR1+"/innerFolder";
+		if (!_folderExists(DIR1)) {
+			_createFolder(folder);
+		}
+		if (!_folderExists(innerFolder)) {
+			_createFolder(innerFolder);
+		}
+		for (int i=0; i < 3; i++) {
+			String filename = "file"+i + FILE1;
+			createFile(folder, filename, "is not empty");
+			createFile(innerFolder, filename, "is not empty");
+		}
+
+		actor.setAction("rmdir");
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message message = new Message(folder);
+		ParameterValueList pvl = null;
+		actor.doAction(message, pvl, session);
+
+	}
+	
 	@Test
 	public void fileSystemActorDeleteActionTest() throws Exception {
 		String filename = "tobedeleted" + FILE1;
@@ -1323,7 +1382,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	
 	
 	
-	protected ParameterValueList createParameterValueList(ParameterList paramList, Message input, IPipeLineSession session) throws ParameterException {
+	protected ParameterValueList createParameterValueList(ParameterList paramList, Message input, PipeLineSession session) throws ParameterException {
 		if (paramList==null) {
 			return null;
 		}

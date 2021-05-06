@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2020 WeAreFrank!
+Copyright 2016-2017, 2020, 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,16 +32,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -62,6 +61,8 @@ public final class TestPipeline extends Base {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
+	public final String PIPELINE_RESULT_STATE_ERROR="ERROR";
+	
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-pipeline")
@@ -86,7 +87,7 @@ public final class TestPipeline extends Base {
 			throw new ApiException("Adapter ["+adapterName+"] not found");
 		}
 
-		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, Misc.DEFAULT_INPUT_STREAM_ENCODING);
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
@@ -111,13 +112,23 @@ public final class TestPipeline extends Base {
 		}
 
 		if (StringUtils.isNotEmpty(message)) {
+			result.put("message", message);
 			try {
 				PipeLineResult plr = processMessage(adapter, message, secLogMessage);
-				result.put("state", plr.getState());
-				result.put("message", message);
-				result.put("result", plr.getResult().asString());
+				try {
+					result.put("state", plr.getState());
+					result.put("result", plr.getResult().asString());
+				} catch (Exception e) {
+					String msg = "An Exception occurred while extracting the result of the PipeLine with exit state ["+plr.getState()+"]"; 
+					log.warn(msg, e);
+					result.put("state", PIPELINE_RESULT_STATE_ERROR);
+					result.put("result", msg+": ("+e.getClass().getTypeName()+") "+e.getMessage());
+				}
 			} catch (Exception e) {
-				throw new ApiException("exception on sending message", e);
+				String msg = "An Exception occurred while processing the message"; 
+				log.warn(msg, e);
+				result.put("state", PIPELINE_RESULT_STATE_ERROR);
+				result.put("result", msg + ": ("+e.getClass().getTypeName()+") "+e.getMessage());
 			}
 		}
 
@@ -127,19 +138,19 @@ public final class TestPipeline extends Base {
 	private void processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {
 		StringBuilder result = new StringBuilder();
 		String lastState = null;
-		ZipInputStream archive = new ZipInputStream(inputStream);
-		for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
-			String name = entry.getName();
-			byte contentBytes[] = StreamUtil.streamToByteArray(archive, true);
-			String message = XmlUtils.readXml(contentBytes, fileEncoding, false);
-			if (result.length() > 0) {
-				result.append("\n");
+		try (ZipInputStream archive = new ZipInputStream(inputStream)) {
+			for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
+				String name = entry.getName();
+				byte contentBytes[] = StreamUtil.streamToByteArray(archive, true);
+				String message = XmlUtils.readXml(contentBytes, fileEncoding, false);
+				if (result.length() > 0) {
+					result.append("\n");
+				}
+				lastState = processMessage(adapter, message, writeSecLogMessage).getState();
+				result.append(name + ":" + lastState);
+				archive.closeEntry();
 			}
-			lastState = processMessage(adapter, message, writeSecLogMessage).getState();
-			result.append(name + ":" + lastState);
-			archive.closeEntry();
 		}
-		archive.close();
 		returnResult.put("state", lastState);
 		returnResult.put("result", result);
 	}
@@ -147,7 +158,7 @@ public final class TestPipeline extends Base {
 	@SuppressWarnings("rawtypes")
 	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
-		try (IPipeLineSession pls = new PipeLineSessionBase()) {
+		try (PipeLineSession pls = new PipeLineSession()) {
 			Map ibisContexts = XmlUtils.getIbisContext(message);
 			String technicalCorrelationId = null;
 			if (ibisContexts != null) {
@@ -158,7 +169,7 @@ public final class TestPipeline extends Base {
 					if (log.isDebugEnabled()) {
 						contextDump = contextDump + "\n " + key + "=[" + value + "]";
 					}
-					if (key.equals(IPipeLineSession.technicalCorrelationIdKey)) {
+					if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
 						technicalCorrelationId = value;
 					} else {
 						pls.put(key, value);
@@ -169,12 +180,12 @@ public final class TestPipeline extends Base {
 				}
 			}
 			Date now = new Date();
-			PipeLineSessionBase.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
+			PipeLineSession.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
 	
 			secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
 	
 			PipeLineResult plr = adapter.processMessage(messageId, new Message(message), pls);
-			plr.getResult().unregisterCloseable(pls);
+			plr.getResult().unscheduleFromCloseOnExitOf(pls);
 			return plr;
 		}
 	}

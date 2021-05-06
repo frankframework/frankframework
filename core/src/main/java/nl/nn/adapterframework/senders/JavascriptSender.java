@@ -18,10 +18,9 @@ package nl.nn.adapterframework.senders;
 import java.io.IOException;
 import java.net.URL;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -81,7 +80,7 @@ public class JavascriptSender extends SenderSeries {
 					getLogPrefix() + "cannot find resource [" + getJsFileName() + "]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new SenderException(
 					getLogPrefix() + "got exception loading [" + getJsFileName() + "]", e);
@@ -100,7 +99,7 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 
 		Object jsResult = "";
 		int numberOfParameters = 0;

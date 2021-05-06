@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
@@ -41,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,12 +58,19 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 
@@ -80,6 +90,7 @@ public class Misc {
 	private static Long responseBodySizeWarnByDefault = null;
 	private static Boolean forceFixedForwardingByDefault = null;
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+	public static final String LINE_SEPARATOR = System.lineSeparator();
 
 	/**
 	 * Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
@@ -513,13 +524,24 @@ public class Misc {
 	 * @return the concatenated string
 	 */
 	public static String concatStrings(String part1, String separator, String part2) {
-		if (StringUtils.isEmpty(part1)) {
-			return part2;
+		return concat(separator, part1, part2);
+	}
+
+	public static String concat(String separator, String... parts) {
+		int i=0;
+		while(i<parts.length && StringUtils.isEmpty(parts[i])) {
+			i++;
 		}
-		if (StringUtils.isEmpty(part2)) {
-			return part1;
+		if (i>=parts.length) {
+			return null;
 		}
-		return part1+separator+part2;
+		String result=parts[i];
+		while(++i<parts.length) {
+			if (StringUtils.isNotEmpty(parts[i])) {
+				result += separator + parts[i];
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -796,7 +818,7 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map<String,Object> from, IPipeLineSession to) {
+	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to) {
 		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
 			StringTokenizer st = new StringTokenizer(keys,",;");
 			while (st.hasMoreTokens()) {
@@ -1422,5 +1444,21 @@ public class Misc {
 			fieldValues.add(fieldValue);
 		}
 		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
+	}
+
+	public static String jsonPretty(String json) {
+		StringWriter sw = new StringWriter();
+		JsonReader jr = Json.createReader(new StringReader(json));
+		JsonObject jobj = jr.readObject();
+
+		Map<String, Object> properties = new HashMap<>(1);
+		properties.put(JsonGenerator.PRETTY_PRINTING, true);
+
+		JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+		try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
+			jsonWriter.writeObject(jobj);
+		}
+
+		return sw.toString().trim();
 	}
 }

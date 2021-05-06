@@ -19,7 +19,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class ShowConfiguration extends ConfigurationBase {
 
 	@Override
-	protected String doGet(IPipeLineSession session) throws PipeRunException {
+	protected String doGet(PipeLineSession session) throws PipeRunException {
 		IbisManager ibisManager = retrieveIbisManager();
 
 		String configurationName = retrieveConfigurationName(session);

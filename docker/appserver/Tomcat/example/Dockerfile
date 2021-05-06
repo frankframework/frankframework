@@ -4,7 +4,7 @@ FROM iaf-as-tomcat AS iaf-example-tomcat
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
 
 # copy database and jms configuration
-COPY src/scripts/context.xml /usr/local/tomcat/conf/Catalina/localhost/iaf.xml
+COPY target/dependencies/frank/context/context.xml /usr/local/tomcat/conf/Catalina/localhost/iaf.xml
 
 # copy configuration, properties and testscenarios
 COPY target/dependencies/frank/configuration/*-resources.jar /opt/frank/resources/

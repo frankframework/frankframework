@@ -17,7 +17,7 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -27,7 +27,7 @@ import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Manager for SAP Logical Units of Work (LUWs). 
@@ -94,7 +94,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	}
 
 	@Override
-	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, IPipeLineSession session) throws PipeRunException {
+	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, PipeLineSession session) throws PipeRunException {
 		SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 	}
 
@@ -113,7 +113,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
 			SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey(),true,getSapSystem(),false).begin();
 		} else
@@ -136,7 +136,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 		if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
 			SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 		} 
-		return new PipeRunResult(getForward(),message);
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 
 

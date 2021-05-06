@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -134,7 +134,7 @@ public final class ShowSecurityItems extends ActionBase {
 
 		// Forward control to the specified success URI
 		log.debug("forward to success");
-		return (mapping.findForward("success"));
+		return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 	}
 
 	private void addRegisteredAdapters(XmlBuilder securityItems) {

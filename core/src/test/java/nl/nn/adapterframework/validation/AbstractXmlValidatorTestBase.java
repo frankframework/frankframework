@@ -11,7 +11,7 @@ import java.util.Set;
 import org.junit.runners.Parameterized;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -42,7 +42,7 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
 		instance.setFullSchemaChecking(true);
 
 		String testXml = inputfile != null ? TestFileUtils.getTestFile(inputfile + ".xml") : null;
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		try {
 			instance.configure("init");

@@ -17,11 +17,11 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -64,7 +64,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Object result;
 		PipeForward pipeForward;
 		String input;
@@ -80,7 +80,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 				} else {
 					result = PasswordHash.createHash(input.toCharArray(), Integer.valueOf(session.get(getRoundsSessionKey()).toString()));
 				}
-				pipeForward = getForward();
+				pipeForward = getSuccessForward();
 			} catch (Exception e) {
 				throw new PipeRunException(this, "Could not hash password", e);
 			}
@@ -88,7 +88,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 			try {
 				result = message;
 				if (PasswordHash.validatePassword(input, (String)session.get(getHashSessionKey()))) {
-					pipeForward = getForward();
+					pipeForward = getSuccessForward();
 				} else {
 					pipeForward = findForward(FAILURE_FORWARD_NAME);
 				}

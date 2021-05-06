@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.text.StrTokenizer;
+import org.apache.commons.text.StringEscapeUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -29,7 +29,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -56,7 +55,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Jaco de Groot
  */
-public class MessageStoreListener extends JdbcTableListener {
+public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	private String slotId;
 	private String sessionKeys = null;
 	private boolean moveToMessageLog = true;
@@ -71,6 +70,7 @@ public class MessageStoreListener extends JdbcTableListener {
 		setBlobSmartGet(true);
 		setStatusField("TYPE");
 		setTimestampField("MESSAGEDATE");
+		setCommentField("COMMENTS");
 		setStatusValueAvailable(IMessageBrowser.StorageType.MESSAGESTORAGE.getCode());
 		setStatusValueProcessed(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
 		setStatusValueError(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
@@ -81,14 +81,14 @@ public class MessageStoreListener extends JdbcTableListener {
 		setSelectCondition("SLOTID = '" + slotId + "'");
 		super.configure();
 		if (sessionKeys != null) {
-			sessionKeysList = new ArrayList<String>();
+			sessionKeysList = new ArrayList<>();
 			StringTokenizer stringTokenizer = new StringTokenizer(sessionKeys, ",");
 			while (stringTokenizer.hasMoreElements()) {
-				sessionKeysList.add((String)stringTokenizer.nextElement());
+				sessionKeysList.add(stringTokenizer.nextToken());
 			}
 		}
 		if (isMoveToMessageLog()) {
-			String setClause = "COMMENTS = '" + Receiver.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
+			String setClause = "EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
 			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE),setClause));
 		} else {
 			String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
@@ -98,16 +98,16 @@ public class MessageStoreListener extends JdbcTableListener {
 	}
 
 	@Override
-	public Object getRawMessage(Map<String,Object> threadContext) throws ListenerException {
-		Object rawMessage = super.getRawMessage(threadContext);
+	public M getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+		M rawMessage = super.getRawMessage(threadContext);
 		if (rawMessage != null && sessionKeys != null) {
 			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
 			try {
-				StrTokenizer strTokenizer = StrTokenizer.getCSVInstance().reset(messageWrapper.getMessage().asString());
-				messageWrapper.setMessage(new Message((String)strTokenizer.next()));
+				StringTokenizer strTokenizer = new StringTokenizer(messageWrapper.getMessage().asString(), ",");
+				messageWrapper.setMessage(new Message(strTokenizer.nextToken()));
 				int i = 0;
-				while (strTokenizer.hasNext()) {
-					threadContext.put(sessionKeysList.get(i), strTokenizer.next());
+				while (strTokenizer.hasMoreTokens()) {
+					threadContext.put(sessionKeysList.get(i), StringEscapeUtils.unescapeCsv(strTokenizer.nextToken()));
 					i++;
 				}
 			} catch (IOException e) {
@@ -117,10 +117,9 @@ public class MessageStoreListener extends JdbcTableListener {
 		return rawMessage;
 	}
 
-	protected IMessageBrowser<Object> augmentMessageBrowser(IMessageBrowser<Object> browser) {
+	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
 		if (browser!=null && browser instanceof JdbcTableMessageBrowser) {
 			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)browser;
-			jtmb.setCommentField("COMMENTS");
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
 		}
@@ -128,8 +127,8 @@ public class MessageStoreListener extends JdbcTableListener {
 	}
 	
 	@Override
-	public IMessageBrowser<Object> getMessageBrowser(ProcessState state) {
-		IMessageBrowser<Object> browser = super.getMessageBrowser(state);
+	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
+		IMessageBrowser<M> browser = super.getMessageBrowser(state);
 		if (browser!=null) {
 			return augmentMessageBrowser(browser);
 		}

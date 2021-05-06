@@ -1,0 +1,50 @@
+<module>
+	<Adapter name="MongoDbSender" description="Test the functioning of the MongoDbSender" active="${active.mongodb}">
+		<Receiver>
+			<JavaListener serviceName="ibis4test-MongoDbSender" />
+		</Receiver>
+		<pipeline>
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<XsltPipe name="extractJson" xpathExpression="request/json" outputType="text" storeResultInSessionKey="json" />
+			<XmlSwitchPipe name="switchAction" xpathExpression="request/@action" getInputFromSessionKey="originalMessage"/>
+			<SenderPipe name="InsertOne" getInputFromSessionKey="json">
+				<MongoDbSender action="InsertOne" datasourceName="mongodb/ibis4test" database="testdb" collection="Students" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+			<SenderPipe name="InsertMany" getInputFromSessionKey="json">
+				<MongoDbSender action="InsertMany" datasourceName="mongodb/ibis4test" database="testdb" collection="Students" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+			<SenderPipe name="FindOne" getInputFromSessionKey="json">
+				<MongoDbSender action="findOne" datasourceName="mongodb/ibis4test" database="testdb" collection="Students" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+			<SenderPipe name="FindMany" getInputFromSessionKey="json">
+				<MongoDbSender action="findMany" datasourceName="mongodb/ibis4test" database="testdb" collection="Students" limit="3"/>
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+			<SenderPipe name="UpdateOne" getInputFromSessionKey="json">
+				<MongoDbSender action="UpdateOne" datasourceName="mongodb/ibis4test" database="testdb" collection="Students" >
+					<Param name="filter" sessionKey="originalMessage" xpathExpression="request/filter" />
+				</MongoDbSender>
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+			<SenderPipe name="UpdateMany" getInputFromSessionKey="json">
+				<MongoDbSender action="UpdateMany" datasourceName="mongodb/ibis4test" database="testdb" collection="Students">
+					<Param name="filter" sessionKey="originalMessage" xpathExpression="request/filter" />
+				</MongoDbSender>
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+			<SenderPipe name="DeleteOne" getInputFromSessionKey="json">
+				<MongoDbSender action="DeleteOne" datasourceName="mongodb/ibis4test" database="testdb" collection="Students" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+			<SenderPipe name="DeleteMany" getInputFromSessionKey="json">
+				<MongoDbSender action="DeleteMany" datasourceName="mongodb/ibis4test" database="testdb" collection="Students" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+		</pipeline>
+	</Adapter>
+</module>

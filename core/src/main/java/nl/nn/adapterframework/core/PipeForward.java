@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Bean that knows a functional name of a Forward, to be referred by
@@ -34,6 +34,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 public class PipeForward {
 
+	public final static String SUCCESS_FORWARD_NAME = PipeLineExit.EXIT_STATE_SUCCESS;
     private String name;
     private String path;
 

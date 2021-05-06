@@ -18,11 +18,11 @@ package nl.nn.adapterframework.cache;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import net.sf.ehcache.Cache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -51,7 +51,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			String cacheKey = keyTransformer.transformKey(message.asString(), session);
 			Cache cache = ibisCacheManager.getCache(cacheName);
@@ -60,7 +60,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 			} else {
 				log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
 			}
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}

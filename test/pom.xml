@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.6-SNAPSHOT</version>
+		<version>7.7-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ibis-adapterframework-test</artifactId>
@@ -14,7 +14,6 @@
 	<properties>
 		<m2eclipse.wtp.contextRoot>iaf-test</m2eclipse.wtp.contextRoot>
 		<failOnMissingWebXml>false</failOnMissingWebXml>
-		<databaseHost>localhost</databaseHost>
 	</properties>
 
 	<dependencies>
@@ -128,7 +127,6 @@
 				<configuration>
 					<packagingExcludes>.gitignore</packagingExcludes>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
-					<filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
 
 					<archive>
 						<manifestEntries>
@@ -156,11 +154,6 @@
 							<directory>src/test/testtool</directory>
 							<targetPath>testtool</targetPath>
 						</resource>
-						<webResource>
-							<directory>src/main/webapp/META-INF</directory>
-							<targetPath>META-INF</targetPath>
-							<filtering>true</filtering>
-						</webResource>
 					</webResources>
 				</configuration>
 			</plugin>

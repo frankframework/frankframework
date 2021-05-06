@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 import java.util.LinkedList;
-import java.util.Vector;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -28,7 +27,6 @@ import java.util.Vector;
  * @author Peter Leeuwenburgh
  */
 public class BaseConfigurationWarnings extends LinkedList<String> {
-	protected Vector<String> defaultValueExceptions = new Vector<String>();
 
 	protected boolean add(Logger log, String msg, Throwable t, String messageSuffixForLog, boolean onlyOnce) {
 		String logMsg = StringUtils.isNotEmpty(messageSuffixForLog) ? msg + messageSuffixForLog : msg;
@@ -41,19 +39,6 @@ public class BaseConfigurationWarnings extends LinkedList<String> {
 			return super.add(msg);
 		} else {
 			return false;
-		}
-	}
-
-	/**
-	 * These are the exceptions thrown when a setter is invoked but the default value has not been changed.
-	 */
-	public boolean containsDefaultValueException(String key) {
-		return defaultValueExceptions.contains(key);
-	}
-
-	public void addDefaultValueException(String key) {
-		if (!containsDefaultValueException(key)) {
-			defaultValueExceptions.add(key);
 		}
 	}
 }

@@ -18,11 +18,11 @@ package nl.nn.adapterframework.pipes;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -74,7 +74,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 	
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		File srcFile=null;
 		File dstFile=null;
 
@@ -161,7 +161,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 			}
 		}
 		
-		return new PipeRunResult(getForward(), (dstFile==null?srcFile.getAbsolutePath():dstFile.getAbsolutePath()));
+		return new PipeRunResult(getSuccessForward(), (dstFile==null?srcFile.getAbsolutePath():dstFile.getAbsolutePath()));
 	}
 
 	private String retrieveDestinationChild(String child) {
@@ -178,7 +178,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return newChild;
 	}
 	
-	private void moveFile(IPipeLineSession session, File srcFile, File dstFile) throws PipeRunException {
+	private void moveFile(PipeLineSession session, File srcFile, File dstFile) throws PipeRunException {
 		try {
 			if (!dstFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {

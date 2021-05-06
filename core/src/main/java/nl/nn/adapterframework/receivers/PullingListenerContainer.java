@@ -18,7 +18,7 @@ package nl.nn.adapterframework.receivers;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.core.task.TaskExecutor;
@@ -28,7 +28,10 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.IHasProcessState;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
@@ -78,7 +81,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 		processToken = new Semaphore(receiver.getNumThreads());
 		maxThreadCount = receiver.getNumThreads();
-		if (receiver.isTransacted()) {
+		if (receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
 			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 			if (receiver.getTransactionTimeout() > 0) {
 				txDef.setTimeout(receiver.getTransactionTimeout());
@@ -129,16 +132,22 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 	}
 
-	private class ControllerTask implements SchedulingAwareRunnable {
+	private class ControllerTask implements SchedulingAwareRunnable, INamedObject {
+
+		private @Getter @Setter String name;
 
 		@Override
 		public boolean isLongLived() {
 			return true;
 		}
 
+		public ControllerTask() {
+			setName(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"]");
+		}
+
 		@Override
 		public void run() {
-			ThreadContext.push(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"]");
+			ThreadContext.push(getName());
 			log.debug("taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
 			receiver.setRunState(RunStateEnum.STARTED);
 			log.debug("started ControllerTask");
@@ -171,8 +180,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 	}
 
-	private class ListenTask implements SchedulingAwareRunnable {
+	private class ListenTask implements SchedulingAwareRunnable, INamedObject {
 
+		private @Getter @Setter String name;
 		private IHasProcessState<M> inProcessStateManager=null;
 
 		@Override
@@ -180,6 +190,11 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			return false;
 		}
 
+		public ListenTask() {
+			setName("Receiver ["+receiver.getName()+"]");
+		}
+
+		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {
 			IPullingListener<M> listener = null;
@@ -209,7 +224,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									}
 								}
 								if (messageAvailable) {
-									if (receiver.isTransacted()) {
+									// Start a transaction if the entire processing is transacted, or
+									// messages needs to be moved to inProcess, and transaction control is not inhibited by setting transactionAttribute=NotSupported.
+									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
 										txStatus = txManager.getTransaction(txNew);
 									}
 									rawMessage = listener.getRawMessage(threadContext);
@@ -228,11 +245,17 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								}
 							}
 							if (rawMessage == null) {
+								if (txStatus!=null) {
+									txManager.rollback(txStatus);
+								}
 								return;
 							}
 
 							if (inProcessStateManager!=null) {
-								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS))==null) {
+								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS, "start processing"))==null) {
+									if (txStatus!=null) {
+										txManager.rollback(txStatus);
+									}
 									return;
 								}
 								// If inProcess-state is used, we'll commit the transaction that set the message state to the inProcess.
@@ -240,7 +263,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								// This is necessary for dbmses like MariaDB, that have no 'SKIP LOCKED' functionality, and for pipelines that do not support roll back
 								if (txStatus!=null) {
 									txManager.commit(txStatus);
-									txStatus = txManager.getTransaction(txNew);
+									if (receiver.isTransacted()) {
+										txStatus = txManager.getTransaction(txNew);
+									}
 								}
 							}
 
@@ -260,7 +285,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							if (txStatus != null) {
 								if (txStatus.isRollbackOnly()) {
 									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-									rollBack(txStatus, rawMessage);
+									rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
 								} else {
 									txManager.commit(txStatus);
 								}
@@ -268,7 +293,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						} catch (Exception e) {
 							try {
 								if (txStatus != null && !txStatus.isCompleted()) {
-									rollBack(txStatus, rawMessage);
+									rollBack(txStatus, rawMessage, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
 								}
 							} catch (Exception e2) {
 								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
@@ -282,7 +307,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
-							rollBack(txStatus, rawMessage);
+							rollBack(txStatus, rawMessage, "Rollback because transaction has terminated unexpectedly");
 						}
 					}
 				}
@@ -305,13 +330,13 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 		}
 
-		private void rollBack(TransactionStatus txStatus, M rawMessage) throws ListenerException {
+		private void rollBack(TransactionStatus txStatus, M rawMessage, String reason) throws ListenerException {
 			try {
 				txManager.rollback(txStatus);
 			} finally {
 				if (inProcessStateManager!=null) {
 					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
-					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE);
+					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE, reason);
 					txManager.commit(txStatusRevert);
 				}
 			}

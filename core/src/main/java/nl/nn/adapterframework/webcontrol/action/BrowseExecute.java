@@ -25,7 +25,7 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -36,7 +36,7 @@ import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -178,7 +178,7 @@ public class BrowseExecute extends Browse {
 				String filename="msg_"+id+"_id["+msgId.replace(':','-')+"]"+"_mid["+msgMid.replace(':','-')+"]"+"_cid["+msgCid.replace(':','-')+"]";
 				ZipEntry zipEntry=new ZipEntry(filename+".txt");
 
-				String sentDateString=(String)context.get(IPipeLineSession.tsSentKey);
+				String sentDateString=(String)context.get(PipeLineSession.tsSentKey);
 				if (StringUtils.isNotEmpty(sentDateString)) {
 					try {
 						Date sentDate = DateUtils.parseToDate(sentDateString, DateUtils.FORMAT_FULL_GENERIC);

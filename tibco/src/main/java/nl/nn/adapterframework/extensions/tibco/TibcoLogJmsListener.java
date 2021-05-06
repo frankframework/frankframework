@@ -22,7 +22,7 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import com.tibco.tibjms.TibjmsMapMessage;

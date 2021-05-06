@@ -58,6 +58,7 @@ import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
@@ -76,6 +77,7 @@ import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs from the Scheduler.
@@ -530,6 +532,8 @@ public final class ShowScheduler extends Base {
 			throw new ApiException("unable to determine listener for receiver ["+receiverName+"]");
 		}
 
+		Configuration applicationContext = adapter.getConfiguration();
+
 		String jobGroup = groupName;
 		if(StringUtils.isEmpty(jobGroup)) {
 			jobGroup = adapter.getConfiguration().getName();
@@ -546,7 +550,7 @@ public final class ShowScheduler extends Base {
 		SchedulerHelper sh = manager.getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
-		DatabaseJobDef jobdef = new DatabaseJobDef();
+		DatabaseJobDef jobdef = SpringUtils.createBean(applicationContext, DatabaseJobDef.class);
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setAdapterName(adapterName);
@@ -557,7 +561,7 @@ public final class ShowScheduler extends Base {
 		jobdef.setInterval(interval);
 
 		if(hasLocker) {
-			Locker locker = (Locker) getIbisContext().createBeanAutowireByName(Locker.class);
+			Locker locker = SpringUtils.createBean(applicationContext, Locker.class);
 			locker.setName(lockKey);
 			locker.setObjectId(lockKey);
 			locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
@@ -566,7 +570,7 @@ public final class ShowScheduler extends Base {
 
 		try {
 			jobdef.configure();
-			sh.scheduleJob(manager, jobdef);
+			sh.scheduleJob(jobdef);
 		} catch (Exception e) {
 			throw new ApiException("Failed to add schedule", e);
 		}
@@ -574,7 +578,7 @@ public final class ShowScheduler extends Base {
 		//Save the job in the database
 		if(persistent && AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
 			boolean success = false;
-			FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+			FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 			qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 			try {

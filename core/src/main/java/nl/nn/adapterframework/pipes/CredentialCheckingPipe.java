@@ -16,13 +16,13 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Pipe to check the the CredentialFactory (for testing only).
@@ -51,7 +51,7 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		CredentialFactory cf=new CredentialFactory(getAuthAlias(),getDefaultUserid(),getDefaultPassword());
 		String result="";
 		if (!getTargetUserid().equals(cf.getUsername())) {
@@ -63,7 +63,7 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
  		if (StringUtils.isEmpty(result)) {
  			result="OK";
  		}
- 		return new PipeRunResult(getForward(),result);
+ 		return new PipeRunResult(getSuccessForward(),result);
 	}
 
 	public void setAuthAlias(String string) {
