@@ -135,7 +135,7 @@
 						<inherited>false</inherited>
 						<configuration>
 							<target>
-								<exec executable="docker">
+								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
 									<arg value="iaf-example-${SERVER_TYPE}"/>
