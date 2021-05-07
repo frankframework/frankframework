@@ -17,7 +17,7 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.doclet;
 
 public interface FrankMethod extends FrankProgramElement {
-	public static final String JAVADOC_DEFAULT_VALUE_TAG = "@frankdoc.default";
+	public static final String JAVADOC_DEFAULT_VALUE_TAG = "@ff.default";
 
 	FrankAnnotation[] getAnnotations();
 	FrankAnnotation getAnnotation(String name);

@@ -34,7 +34,7 @@ public class ChildTarget extends ParentTarget {
 	}
 
 	/**
-	 * @frankdoc.default setIbisDocRefRefersJavaDocDefault default value
+	 * @ff.default setIbisDocRefRefersJavaDocDefault default value
 	 */
 	public void setIbisDocRefRefersJavaDocDefault(String value) {
 	}

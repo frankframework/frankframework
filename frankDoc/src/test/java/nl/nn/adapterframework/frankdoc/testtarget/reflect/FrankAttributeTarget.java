@@ -114,7 +114,7 @@ public class FrankAttributeTarget extends FrankAttributeTargetParent {
 	}
 
 	/**
-	 * @frankdoc.default My default value
+	 * @ff.default My default value
 	 */
 	public void setAttributeWithJavaDocDefault(String value) {
 	}
@@ -124,26 +124,26 @@ public class FrankAttributeTarget extends FrankAttributeTargetParent {
 	}
 
 	/**
-	 * @frankdoc.default My overruled default value
+	 * @ff.default My overruled default value
 	 */
 	@IbisDoc({"50", "Dummy description", "The default from the IbisDoc annotation"})
 	public void setAttributeWithIbisDocThatOverrulesJavadocDefault(String value) {
 	}
 
 	/**
-	 * @frankdoc.default This is a string, not an integer
+	 * @ff.default This is a string, not an integer
 	 */
 	public void setIntAttributeWithStringDefault(int value) {
 	}
 
 	/**
-	 * @frankdoc.default This is a string, not a Boolean
+	 * @ff.default This is a string, not a Boolean
 	 */
 	public void setBoolAttributeWithStringDefault(boolean value) {
 	}
 
 	/**
-	 * @frankdoc.default String that does not match enum values.
+	 * @ff.default String that does not match enum values.
 	 */
 	public void setEnumAttributeWithInvalidDefault(String value) {
 	}
