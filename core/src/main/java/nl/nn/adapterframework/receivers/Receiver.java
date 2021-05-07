@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -375,7 +373,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
 				Object value = pipelineSession.get(key);
-				Message.asMessage(value).unregisterCloseable(pipelineSession);
+				Message.asMessage(value).unscheduleFromCloseOnExitOf(pipelineSession);
 				if (log.isDebugEnabled()) {
 					log.debug(getLogPrefix()+"returning session key [" + key + "] value [" + value + "]");
 				}
@@ -1087,11 +1085,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
 		Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, threadContext, waitingDuration, manualRetry);
 		try {
-			if(output.asObject() instanceof Closeable) {
-				((Closeable) output.asObject()).close();
-			}
-		} catch (IOException e) {
-			// Ignore if already closed!
+			output.close();
+		} catch (Exception e) {
+			log.warn("Could not close result message ["+output+"]", e);
 		}
 	}
 
@@ -1409,8 +1405,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			} finally {
 				if (pipelineSession != null ) {
-					if(!Message.isEmpty(result)) { //Don't close Message in case it's passed to a 'parent' adapter or ServiceDispatcher.
-						result.unregisterCloseable(pipelineSession);
+					if(!Message.isEmpty(result) && result.isScheduledForCloseOnExitOf(pipelineSession)) { //Don't close Message in case it's passed to a 'parent' adapter or ServiceDispatcher.
+						log.debug("unscheduling result message from close on exit");
+						result.unscheduleFromCloseOnExitOf(pipelineSession);
 					}
 					pipelineSession.close();
 				}

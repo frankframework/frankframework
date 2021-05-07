@@ -106,7 +106,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         	String result = prr.getResult().asString();
         	System.out.println("result ["+ToStringBuilder.reflectionToString(prr)+"]");
         	String event;
-        	if (prr.getPipeForward().getName().equals("success")) {
+        	if (prr.isSuccessful()) {
         		event="valid XML";
         	} else {
             	if (prr.getPipeForward().getName().equals("failure")) {

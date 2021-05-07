@@ -57,6 +57,7 @@
 	<!ENTITY MessageStorePeek SYSTEM "./ConfigurationMessageStoreSenderAndListenerPeek.xml">
 	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
 	<!ENTITY Validators SYSTEM "./ConfigurationValidators.xml">
+	<!ENTITY Streaming SYSTEM "./ConfigurationStreaming.xml">
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
 	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
 ]>
@@ -119,6 +120,7 @@
 	&MessageStorePeek;
 	&BlockEnabledSenders;
 	&Validators;
+	&Streaming;
 	&ApiWsdlGenerator;
 	&Unzip;
 </configuration>

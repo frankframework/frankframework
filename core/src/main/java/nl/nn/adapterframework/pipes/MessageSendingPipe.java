@@ -151,7 +151,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
 	public static final String PIPE_EXCEPTION_MONITOR_EVENT = "Sender Exception Caught";
 
-	private final static String SUCCESS_FORWARD = "success";
 	private final static String TIMEOUT_FORWARD = "timeout";
 	private final static String EXCEPTION_FORWARD = "exception";
 	private final static String ILLEGAL_RESULT_FORWARD = "illegalResult";
@@ -476,7 +475,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 //	}
 //	
 //	@Override
-//	public boolean canProvideOutputStream() {
+//	public protected canProvideOutputStream() {
 //		return super.canProvideOutputStream() 
 //				&& (!senderAffectsStreamProvidingCapability() || 
 //					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canProvideOutputStream()
@@ -502,23 +501,19 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return super.canProvideOutputStream() && 
 				getInputValidator()==null && getInputWrapper()==null && getOutputValidator()==null && getOutputWrapper()==null &&
 				!isStreamResultToServlet() && StringUtils.isEmpty(getStubFilename()) && getMessageLog()==null && getListener()==null;
 	}
 
 	@Override
-	public boolean canStreamToNextPipe() {
-		return super.canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null &&
-				!isStreamResultToServlet();
+	protected boolean canStreamToNextPipe() {
+		return super.canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null && !isStreamResultToServlet();
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		if (!canProvideOutputStream()) {
-			return null;
-		}
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		MessageOutputStream result=null;
 		if (sender instanceof IOutputStreamingSupport) {
 			// TODO insert output validator
@@ -556,7 +551,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (wrapResult==null) {
 				throw new PipeRunException(inputWrapper, "retrieved null result from inputWrapper");
 			}
-			if (!wrapResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD_NAME)) {
+			if (!wrapResult.isSuccessful()) {
 				return wrapResult;
 			} else {
 				input = wrapResult.getResult();
@@ -571,7 +566,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			preserve(input, session);
 			log.debug(getLogPrefix(session)+"validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, input, session);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD_NAME)) {
+			if (validationResult!=null && !validationResult.isSuccessful()) {
 				return validationResult;
 			}
 		}
@@ -789,7 +784,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
 			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(result), session);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
+			if (validationResult!=null && !validationResult.isSuccessful()) {
 				return validationResult;
 			}
 		}
@@ -799,7 +794,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (wrapResult==null) {
 				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
 			}
-			if (!wrapResult.getPipeForward().getName().equals(PipeForward.SUCCESS_FORWARD_NAME)) {
+			if (!wrapResult.isSuccessful()) {
 				return wrapResult;
 			} 
 			result = wrapResult.getResult();
