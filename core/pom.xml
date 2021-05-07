@@ -250,7 +250,7 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
-			<version>4.2.2</version>
+			<version>4.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -272,25 +272,6 @@
 			<groupId>org.apache.ws.security</groupId>
 			<artifactId>wss4j</artifactId>
 			<version>1.5.11</version>
-		</dependency>
-		<dependency>
-			<groupId>axis</groupId>
-			<artifactId>axis</artifactId>
-			<version>1.4</version>
-			<exclusions>
-				<exclusion>
-					<groupId>axis</groupId>
-					<artifactId>axis-jaxrpc</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>axis</groupId>
-					<artifactId>axis-wsdl4j</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>axis</groupId>
-					<artifactId>axis-saaj</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>soap</groupId>
@@ -694,73 +675,6 @@
 					<optional>true</optional>
 				</dependency>
 			</dependencies>
-		</profile>
-		<profile>
-			<id>attachFrankDoc</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.2.0</version>
-						<inherited>false</inherited>
-						<configuration>
-							<doclint>none</doclint>
-							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
-							<docletArtifact>
-								<groupId>org.ibissource</groupId>
-								<artifactId>ibis-adapterframework-frankDoc</artifactId>
-								<version>${project.version}</version>
-							</docletArtifact>
-							<additionalOptions>
-								<additionalOption>-outputDirectory</additionalOption>
-								<additionalOption>${project.build.directory}/classes/</additionalOption>
-								<additionalOption>-strictPath</additionalOption>
-								<additionalOption>xml/xsd/frankdoc.xsd</additionalOption>
-								<additionalOption>-compatibilityPath</additionalOption>
-								<additionalOption>xml/xsd/frankdoc-compatibility.xsd</additionalOption>
-								<additionalOption>-jsonPath</additionalOption>
-								<additionalOption>js/frankdoc.json</additionalOption>
-							</additionalOptions>
-							<source>1.8</source>
-							<useStandardDocletOptions>false</useStandardDocletOptions>
-							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
-						</configuration>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<phase>prepare-package</phase>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-								<configuration>
-									<failOnError>false</failOnError>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.projectlombok</groupId>
-						<artifactId>lombok-maven-plugin</artifactId>
-						<version>1.18.16.0</version>
-						<executions>
-							<execution>
-								<phase>generate-sources</phase>
-								<goals>
-									<goal>delombok</goal>
-								</goals>
-								<configuration>
-									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-									<addOutputDirectory>false</addOutputDirectory>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
 		</profile>
 	</profiles>
 </project>

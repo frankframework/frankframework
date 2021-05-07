@@ -194,6 +194,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			setName("Receiver ["+receiver.getName()+"]");
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {
 			IPullingListener<M> listener = null;
@@ -251,7 +252,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 
 							if (inProcessStateManager!=null) {
-								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS))==null) {
+								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS, "start processing"))==null) {
 									if (txStatus!=null) {
 										txManager.rollback(txStatus);
 									}
@@ -284,7 +285,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							if (txStatus != null) {
 								if (txStatus.isRollbackOnly()) {
 									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-									rollBack(txStatus, rawMessage);
+									rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
 								} else {
 									txManager.commit(txStatus);
 								}
@@ -292,7 +293,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						} catch (Exception e) {
 							try {
 								if (txStatus != null && !txStatus.isCompleted()) {
-									rollBack(txStatus, rawMessage);
+									rollBack(txStatus, rawMessage, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
 								}
 							} catch (Exception e2) {
 								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
@@ -306,7 +307,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
-							rollBack(txStatus, rawMessage);
+							rollBack(txStatus, rawMessage, "Rollback because transaction has terminated unexpectedly");
 						}
 					}
 				}
@@ -329,13 +330,13 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 		}
 
-		private void rollBack(TransactionStatus txStatus, M rawMessage) throws ListenerException {
+		private void rollBack(TransactionStatus txStatus, M rawMessage, String reason) throws ListenerException {
 			try {
 				txManager.rollback(txStatus);
 			} finally {
 				if (inProcessStateManager!=null) {
 					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
-					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE);
+					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE, reason);
 					txManager.commit(txStatusRevert);
 				}
 			}

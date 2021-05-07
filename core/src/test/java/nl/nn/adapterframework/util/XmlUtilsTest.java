@@ -13,6 +13,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
@@ -111,7 +112,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	public void testIdentityTransformWithDefaultEntityResolver() throws Exception { //External EntityResolving is still possible with the XMLEntityResolver
 		Resource resource = Resource.getResource(new TestScopeProvider(), "XmlUtils/EntityResolution/in-file-entity-c-temp.xml");
 		SAXException thrown = assertThrows(SAXException.class, () -> {
-			XmlUtils.identityTransform(resource);
+			XmlUtils.parseXml(resource, new XmlWriter());
 		});
 
 		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:///c:/temp/test.xml] in scope [nl.nn.adapterframework.testutil.TestScopeProvider";

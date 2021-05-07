@@ -143,7 +143,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			}
 			if(log.isDebugEnabled()) log.debug("found eTag cacheKey ["+cacheKey+"] with action ["+getAction()+"]");
 
-			return new PipeRunResult(getForward(), returnCode);
+			return new PipeRunResult(getSuccessForward(), returnCode);
 		}
 		else {
 			PipeForward pipeForward = findForward("exception");

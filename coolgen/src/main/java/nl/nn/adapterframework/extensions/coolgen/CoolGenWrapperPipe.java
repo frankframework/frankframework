@@ -307,7 +307,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
         throw new PipeRunException(this, getLogPrefix(session)+"TransformerException excecuting proxy", e);
 	}
 
-    return new PipeRunResult(getForward(),wrapperResult) ;
+    return new PipeRunResult(getSuccessForward(),wrapperResult) ;
 }
 
 

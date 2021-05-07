@@ -1,7 +1,6 @@
 <ibis>
 	<adapter name="XmlFileElementIteratorPipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="XmlFileElementIteratorPipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XmlFileElementIteratorPipe" />
 		</receiver>
@@ -40,8 +39,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="XmlFileElementIteratorPipe_node">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="XmlFileElementIteratorPipe_node">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				name="XmlFileElementIteratorPipe_node" />
 		</receiver>

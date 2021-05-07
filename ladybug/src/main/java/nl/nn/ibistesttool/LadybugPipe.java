@@ -78,7 +78,7 @@ public class LadybugPipe extends FixedForwardPipe {
 		super.configure();
 		failureForward = findForward(FAILURE_FORWARD_NAME);
 		if (failureForward == null) {
-			failureForward = getForward();
+			failureForward = getSuccessForward();
 		}
 		if (StringUtils.isNotEmpty(exclude)) {
 			excludeRegexPattern = Pattern.compile(exclude);
@@ -181,7 +181,7 @@ public class LadybugPipe extends FixedForwardPipe {
 					+ "TotalDuration=\"" + (endTime - startTime) + "\", "
 					+ "Equal=\"" + allReportsPassed + "\"");
 		}
-		PipeForward forward = allReportsPassed ? getForward() : failureForward;
+		PipeForward forward = allReportsPassed ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, results.toXML());
 	}
 

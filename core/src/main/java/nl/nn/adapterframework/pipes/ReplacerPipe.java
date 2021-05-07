@@ -111,7 +111,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 				input = XmlUtils.replaceNonValidXmlCharacters(input, getReplaceNonXmlChar().charAt(0), false, isAllowUnicodeSupplementaryCharacters());
 			}
 		}
-		return new PipeRunResult(getForward(),input);
+		return new PipeRunResult(getSuccessForward(),input);
 	}
 	
 	/**

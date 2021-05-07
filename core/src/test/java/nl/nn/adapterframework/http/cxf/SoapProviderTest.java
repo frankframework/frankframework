@@ -53,6 +53,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.stream.Message;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SoapProviderTest {
@@ -145,10 +146,10 @@ public class SoapProviderTest {
 		//Retrieve sessionkey the attachment was stored in
 		String sessionKey = XmlUtils.getChildTagAsString(attachment, "sessionKey");
 		assertNotNull(sessionKey);
-		InputStream attachmentStream = (InputStream) session.get(sessionKey);
+		Message attachmentMessage = session.getMessage(sessionKey);
 
 		//Verify that the attachment sent, was received properly
-		assertEquals(ATTACHMENT_CONTENT, Misc.streamToString(attachmentStream));
+		assertEquals(ATTACHMENT_CONTENT, attachmentMessage.asString());
 
 		//Verify the content type
 		Element mimeTypes = XmlUtils.getFirstChildTag(attachment, "mimeHeaders");
@@ -164,16 +165,15 @@ public class SoapProviderTest {
 		Iterator<?> attachmentParts = message.getAttachments();
 		while (attachmentParts.hasNext()) {
 			AttachmentPart soapAttachmentPart = (AttachmentPart)attachmentParts.next();
-			InputStreamAttachmentPart attachmentPart = new InputStreamAttachmentPart(soapAttachmentPart);
-			String attachment = Misc.streamToString(attachmentPart.getInputStream());
+			String attachment = Misc.streamToString(soapAttachmentPart.getRawContent());
 			//ContentID should be equal to the filename
-			assertEquals(ATTACHMENT2_NAME, attachmentPart.getContentId());
+			assertEquals(ATTACHMENT2_NAME, soapAttachmentPart.getContentId());
 
 			//Validate the attachment's content
 			assertEquals(ATTACHMENT2_CONTENT, attachment);
 
 			//Make sure at least the content-type header has been set
-			Iterator<?> headers = attachmentPart.getAllMimeHeaders();
+			Iterator<?> headers = soapAttachmentPart.getAllMimeHeaders();
 			String contentType = null;
 			while (headers.hasNext()) {
 				MimeHeader header = (MimeHeader) headers.next();

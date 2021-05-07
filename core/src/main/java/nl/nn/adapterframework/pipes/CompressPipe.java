@@ -170,7 +170,7 @@ public class CompressPipe extends FixedForwardPipe {
 					in.close();
 				}
 			}
-			return new PipeRunResult(getForward(), getResultMsg(result));
+			return new PipeRunResult(getSuccessForward(), getResultMsg(result));
 		} catch(Exception e) {
 			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
 			if (exceptionForward!=null) {

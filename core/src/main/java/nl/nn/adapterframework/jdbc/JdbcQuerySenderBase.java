@@ -96,8 +96,8 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  */
 public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
-	private final static String UNP_START = "?{";
-	private final static String UNP_END = "}";
+	public final static String UNP_START = "?{";
+	public final static String UNP_END = "}";
 
 	private QueryType queryType = QueryType.OTHER;
 	private int maxRows=-1; // return all rows
@@ -636,7 +636,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return clobWriter==null ? null : new Message(clobWriter.getWarnings().toXML());
 	}
 
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return false; // FixedQuerySender returns true for updateBlob and updateClob
 	}
 

@@ -1,7 +1,6 @@
 <module>
 	<adapter name="RestListener_ArchiveDoc">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestListener_ArchiveDoc">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="RestListener_ArchiveDoc" uriPattern="doc" method="POST" />
 		</receiver>
@@ -11,7 +10,7 @@
 			</exits>
 
 			<pipe name="insertDoc"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
 					queryType="insert" jmsRealm="jdbc"
@@ -24,8 +23,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestSender_ArchiveDoc">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestSender_ArchiveDoc">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-RestSender_ArchiveDoc" />
 		</receiver>
@@ -47,7 +45,7 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc"
 					paramsInUrl="false" multipart="true">
@@ -75,8 +73,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestListener_GetDoc">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestListener_GetDoc">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="RestListener_GetDoc" uriPattern="doc" method="GET" />
 		</receiver>
@@ -98,7 +95,7 @@
 			</pipe>
 
 			<pipe name="getDocFileName"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				storeResultInSessionKey="docFileName">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TVARCHAR FROM IBISTEMP WHERE TKEY=?" queryType="select"
@@ -116,7 +113,7 @@
 			</pipe>
 
 			<pipe name="getDocAndWriteToFile"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					jmsRealm="jdbc" scalar="true" streamResultToServlet="true"
@@ -128,8 +125,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestListener_GetDoc2">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestListener_GetDoc2">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="RestListener_GetDoc2" uriPattern="doc2" method="GET" />
 		</receiver>
@@ -155,7 +151,7 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param" streamResultToServlet="true">
 					<param name="url_param" sessionKey="url" />
@@ -165,8 +161,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestSender_GetDoc">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestSender_GetDoc">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-RestSender_GetDoc" />
 		</receiver>
@@ -194,7 +189,7 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param" base64="true">
 					<param name="url_param" sessionKey="url" />
@@ -219,8 +214,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestListener_GetDoc3">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestListener_GetDoc3">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.RestListener"
 				name="RestListener_GetDoc3" uriPattern="doc3" method="GET" />
 		</receiver>
@@ -237,8 +231,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="RestSender_GetDoc3">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="RestSender_GetDoc3">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-RestSender_GetDoc3" />
 		</receiver>
@@ -262,7 +255,7 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param" streamResultToFileNameSessionKey="fileName">
 					<param name="url_param" sessionKey="url" />

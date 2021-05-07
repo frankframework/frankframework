@@ -80,7 +80,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 				} else {
 					result = PasswordHash.createHash(input.toCharArray(), Integer.valueOf(session.get(getRoundsSessionKey()).toString()));
 				}
-				pipeForward = getForward();
+				pipeForward = getSuccessForward();
 			} catch (Exception e) {
 				throw new PipeRunException(this, "Could not hash password", e);
 			}
@@ -88,7 +88,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 			try {
 				result = message;
 				if (PasswordHash.validatePassword(input, (String)session.get(getHashSessionKey()))) {
-					pipeForward = getForward();
+					pipeForward = getSuccessForward();
 				} else {
 					pipeForward = findForward(FAILURE_FORWARD_NAME);
 				}

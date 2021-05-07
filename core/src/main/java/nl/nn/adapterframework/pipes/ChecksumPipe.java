@@ -153,7 +153,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 				cg.update(barr,barr.length);
 			}
 			result=cg.getResult();
-			return new PipeRunResult(getForward(),result);
+			return new PipeRunResult(getSuccessForward(),result);
 		} catch (Exception e) {
 			throw new PipeRunException(this,"cannot calculate ["+getType()+"]"+(isInputIsFile()?" on file ["+message+"]":" using charset ["+getCharset()+"]"),e);
 		}

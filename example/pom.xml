@@ -90,8 +90,20 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.2.0</version>
-				<!-- make separate artifacts of configurations, resources and testscenarios, to inject them into deployments -->
+				<!-- make separate artifacts of context, configurations, resources and testscenarios, to inject them into deployments -->
 				<executions>
+					<execution>
+						<id>zip-context</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>context</classifier>
+							<classesDirectory>src/main/webapp/META-INF</classesDirectory>
+							<includes>context.xml</includes>
+						</configuration>
+					</execution>
 					<execution>
 						<id>zip-configurations</id>
 						<phase>package</phase>

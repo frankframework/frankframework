@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
+import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -41,7 +42,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public static final String DISABLE_OUTPUT_ESCAPING="javax.xml.transform.disable-output-escaping";
 	public static final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
 
-	private Writer writer;
+	private @Getter Writer writer;
 	private @Setter boolean includeXmlDeclaration=false;
 	private @Setter boolean newlineAfterXmlDeclaration=false;
 	private @Setter boolean includeComments=true;
@@ -265,10 +266,6 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void endEntity(String arg0) throws SAXException {
 //		System.out.println("endEntity ["+arg0+"]");
-	}
-
-	public Writer getWriter() {
-		return writer;
 	}
 
 	@Override

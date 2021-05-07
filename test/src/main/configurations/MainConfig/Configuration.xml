@@ -15,6 +15,7 @@
 	<!ENTITY QuerySender SYSTEM "./ConfigurationQuerySender.xml">
 	<!ENTITY ClobAndBlob SYSTEM "./ConfigurationClobAndBlob.xml">
 	<!ENTITY BigClobAndBlob SYSTEM "./ConfigurationBigClobAndBlob.xml">
+	<!ENTITY MongoDbSender SYSTEM "./ConfigurationMongoDbSender.xml">
 	<!ENTITY BatchFileTransformerPipe SYSTEM "./ConfigurationBatchFileTransformerPipe.xml">
 	<!ENTITY IfsaRequesterSender SYSTEM "./ConfigurationIfsaRequesterSender.xml">
 	<!ENTITY LinkMethodMessageId SYSTEM "./ConfigurationLinkMethodMessageId.xml">
@@ -30,7 +31,7 @@
 	<!ENTITY CorrelationMessageId SYSTEM "./ConfigurationCorrelationMessageId.xml">
 	<!ENTITY XmlBuilderThreadSafety SYSTEM "./ConfigurationXmlBuilderThreadSafety.xml">
 	<!ENTITY DelayPipe SYSTEM "./ConfigurationDelayPipe.xml">
-	<!ENTITY GenericMessageSendingPipe SYSTEM "./ConfigurationGenericMessageSendingPipe.xml">
+	<!ENTITY SenderPipe SYSTEM "./ConfigurationSenderPipe.xml">
 	<!ENTITY XmlValidator SYSTEM "./ConfigurationXmlValidator.xml">
 	<!ENTITY SoapWrapperPipe SYSTEM "./ConfigurationSoapWrapperPipe.xml">
 	<!ENTITY EsbSoapWrapperPipe SYSTEM "./ConfigurationEsbSoapWrapperPipe.xml">
@@ -56,6 +57,7 @@
 	<!ENTITY MessageStorePeek SYSTEM "./ConfigurationMessageStoreSenderAndListenerPeek.xml">
 	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
 	<!ENTITY Validators SYSTEM "./ConfigurationValidators.xml">
+	<!ENTITY Streaming SYSTEM "./ConfigurationStreaming.xml">
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
 	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
 ]>
@@ -77,6 +79,7 @@
 	&ClobAndBlob;
 	&BigClobAndBlob;
 	&BatchFileTransformerPipe;
+	&MongoDbSender;
 	&IfsaRequesterSender;
 	&LinkMethodMessageId;
 	&ReturnedSessionKeys;
@@ -91,7 +94,7 @@
 	&CorrelationMessageId;
 	&XmlBuilderThreadSafety;
 	&DelayPipe;
-	&GenericMessageSendingPipe;
+	&SenderPipe;
 	&XmlValidator;
 	&SoapWrapperPipe;
 	&EsbSoapWrapperPipe;
@@ -117,6 +120,7 @@
 	&MessageStorePeek;
 	&BlockEnabledSenders;
 	&Validators;
+	&Streaming;
 	&ApiWsdlGenerator;
 	&Unzip;
 </configuration>

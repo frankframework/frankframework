@@ -44,7 +44,7 @@ public abstract class ConfigurationBase extends TimeoutGuardPipe {
 	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return new PipeRunResult(getForward(), doGet(session));
+			return new PipeRunResult(getSuccessForward(), doGet(session));
 		} else {
 			throw new PipeRunException(this,
 					getLogPrefix(session) + "Illegal value for method [" + method + "], must be 'GET'");

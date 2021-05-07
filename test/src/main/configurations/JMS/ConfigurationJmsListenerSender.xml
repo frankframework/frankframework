@@ -10,7 +10,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Send2Jms"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="jms/i4testiaf_in" synchronous="true"
 					replyToName="jms/i4testiaf_out">
@@ -52,7 +52,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="send2Jms"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="jms/i4testiaf_ff">
 					<param name="SOURCE" value="${hostname}_FF1" />
@@ -81,7 +81,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="send2Jms"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="jms/i4testiaf_ff">
 					<param name="SOURCE" value="${hostname}_FF2" />
@@ -91,7 +91,7 @@
 				<forward name="success" path="fixedInsert" />
 			</pipe>
 			<pipe name="fixedInsert"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromSessionKey="originalMessage">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)"
@@ -103,7 +103,7 @@
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" />
 			<pipe name="suspend"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromSessionKey="originalMessage" transactionAttribute="NotSupported">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('FIRSTNAME',?,NULL,NULL)"
@@ -130,7 +130,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="send2Jms"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="jms/i4testiaf_ff">
 					<param name="SOURCE" value="${hostname}_FF3" />
@@ -139,7 +139,7 @@
 					jmsRealm="jdbc" slotId="${applicationId}/JmsFFSenderWithRead" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				returnString="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -161,7 +161,7 @@
 					<param name="destination" sessionKey="originalMessage" xpathExpression="*/@destination" />
 				</sender>
 			</pipe>
-			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResult"
+			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				returnString="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -193,25 +193,25 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_local_echo"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
 					javaListener="JmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_local_exception"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
 					javaListener="JmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_java_echo"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
 					serviceName="ibis4test-JmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_java_exception"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
 					serviceName="ibis4test-JmsFFListener_subcall" />
 				<forward name="success" path="EXIT" />
@@ -264,7 +264,7 @@
 				<forward name="success" path="jmsBrowser" />
 			</pipe>
 			<pipe name="jmsBrowser"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.XmlJmsBrowserSender" />
 				<forward name="success" path="EXIT" />
 			</pipe>

@@ -46,11 +46,6 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
 		<!-- Without this dependency, the unit tests fail with a NoClassDefFoundError, Martijn does not know why.
 		     The error mentions javax/jms/JMSException -->
 		<dependency>
@@ -67,6 +62,7 @@
 			<groupId>com.sun</groupId>
 			<artifactId>tools</artifactId>
 			<version>1.8</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

@@ -161,7 +161,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 			}
 		}
 		
-		return new PipeRunResult(getForward(), (dstFile==null?srcFile.getAbsolutePath():dstFile.getAbsolutePath()));
+		return new PipeRunResult(getSuccessForward(), (dstFile==null?srcFile.getAbsolutePath():dstFile.getAbsolutePath()));
 	}
 
 	private String retrieveDestinationChild(String child) {
