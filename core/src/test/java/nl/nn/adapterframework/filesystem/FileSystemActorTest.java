@@ -308,7 +308,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorListActionTestInFolderWithExcludeWildCard() throws Exception {
-		actor.setExcludeWildCard("*d0*");
+		actor.setExcludeWildcard("*d0*");
 		_createFolder("folder");
 		fileSystemActorListActionTest("folder",5,4);
 	}
@@ -316,7 +316,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test
 	public void fileSystemActorListActionTestInFolderWithBothWildCardAndExcludeWildCard() throws Exception {
 		actor.setWildCard("*.txt");
-		actor.setExcludeWildCard("*ted1*");
+		actor.setExcludeWildcard("*ted1*");
 		_createFolder("folder");
 		fileSystemActorListActionTest("folder",5,4);
 	}
@@ -352,7 +352,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename2 = filename+".xml";
 		String contents = "regeltje tekst";
 		
-		actor.setExcludeWildCard("*.bak");
+		actor.setExcludeWildcard("*.bak");
 		actor.setAction("list");
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -381,7 +381,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String contents = "regeltje tekst";
 		
 		actor.setWildCard("*.xml");
-		actor.setExcludeWildCard("*.oud.xml");
+		actor.setExcludeWildcard("*.oud.xml");
 		actor.setAction("list");
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -880,7 +880,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		actor.setAction("move");
-		actor.setExcludeWildCard("tobemoved*");
+		actor.setExcludeWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
@@ -1049,7 +1049,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		actor.setAction("copy");
-		actor.setExcludeWildCard("tobemoved*");
+		actor.setExcludeWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
@@ -1311,7 +1311,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		actor.setAction("delete");
-		actor.setExcludeWildCard("tostay*");
+		actor.setExcludeWildcard("tostay*");
 		actor.setInputFolder(srcFolderName);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
