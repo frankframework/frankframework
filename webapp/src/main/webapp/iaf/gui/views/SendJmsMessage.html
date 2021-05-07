@@ -14,10 +14,10 @@
 				<div class="ibox-content">
 					<form role="form">
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Select a JMS realm</label>
+							<label class="col-sm-3 control-label">Select a Connection Factory</label>
 							<div class="col-sm-9">
-								<select class="form-control m-b" name="realm" ng-model="form.realm">
-									<option ng-repeat="realm in jmsRealms" selected="{{$first ? 'selected' : ''}}">{{realm}}</option>
+								<select class="form-control m-b" name="connectionFactory" ng-model="form.connectionFactory">
+									<option ng-repeat="connectionFactory in connectionFactories" selected="{{$first ? 'selected' : ''}}">{{connectionFactory}}</option>
 								</select>
 							</div>
 						</div>

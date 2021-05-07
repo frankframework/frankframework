@@ -55,9 +55,9 @@ public final class BrowseQueue extends Base {
 	public Response getBrowseQueue() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
-		List<String> jmsRealms=JmsRealmFactory.getInstance().getConnectionFactoryNames();
-		if (jmsRealms.size()==0) jmsRealms.add("no realms defined");
-		returnMap.put("jmsRealms", jmsRealms);
+		List<String> connectionFactories=JmsRealmFactory.getInstance().getConnectionFactoryNames();
+		if (connectionFactories.size()==0) connectionFactories.add("no connection factories defined");
+		returnMap.put("connectionFactories", connectionFactories);
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
@@ -71,14 +71,14 @@ public final class BrowseQueue extends Base {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
-		String jmsRealm = null, destination = null, type = null;
+		String connectionFactory = null, destination = null, type = null;
 		boolean rowNumbersOnly = false;
 		boolean showPayload = false;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("realm")) {
-				jmsRealm = entry.getValue().toString();
+			if(key.equalsIgnoreCase("connectionFactory")) {
+				connectionFactory = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("destination")) {
 				destination = entry.getValue().toString();
@@ -94,8 +94,8 @@ public final class BrowseQueue extends Base {
 			}
 		}
 
-		if(jmsRealm == null)
-			throw new ApiException("No realm provided");
+		if(connectionFactory == null)
+			throw new ApiException("No connection factory provided");
 		if(destination == null)
 			throw new ApiException("No destination provided");
 		if(type == null)
@@ -104,6 +104,10 @@ public final class BrowseQueue extends Base {
 		try {
 			JmsBrowser<javax.jms.Message> jmsBrowser = new JmsBrowser<>();
 			jmsBrowser.setName("BrowseQueueAction");
+			String jmsRealm = JmsRealmFactory.getInstance().findJmsRealm(connectionFactory);
+			if(jmsRealm == null) {
+				throw new ApiException("connection factory ["+connectionFactory+"] does not have a realm");
+			}
 			jmsBrowser.setJmsRealm(jmsRealm);
 			jmsBrowser.setDestinationName(destination);
 			jmsBrowser.setDestinationType(type);

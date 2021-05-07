@@ -34,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -64,12 +65,17 @@ public final class SendJmsMessage extends Base {
 		}
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		String jmsRealm = resolveStringFromMap(inputDataMap, "realm");
+		String connectionFactory = resolveStringFromMap(inputDataMap, "connectionFactory");
 		String destinationName = resolveStringFromMap(inputDataMap, "destination");
 		String destinationType = resolveStringFromMap(inputDataMap, "type");
 		String replyTo = resolveTypeFromMap(inputDataMap, "replyTo", String.class, "");
 		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
 		boolean synchronous = resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
+
+		String jmsRealm = JmsRealmFactory.getInstance().findJmsRealm(connectionFactory);
+		if(jmsRealm == null) {
+			throw new ApiException("connection factory ["+connectionFactory+"] does not have a realm");
+		}
 
 		JmsSender qms = jmsBuilder(jmsRealm, destinationName, persistent, destinationType, replyTo, synchronous);
 		Attachment filePart = inputDataMap.getAttachment("file");
