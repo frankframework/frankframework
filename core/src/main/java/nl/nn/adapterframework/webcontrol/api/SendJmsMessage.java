@@ -114,7 +114,7 @@ public final class SendJmsMessage extends Base {
 	}
 
 	private JmsSender jmsBuilder(String realm, String destination, boolean persistent, String type, String replyTo, boolean synchronous) {
-		JmsSender qms = new JmsSender();
+		JmsSender qms = getIbisContext().createBeanAutowireByName(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
 		qms.setJmsRealm(realm);
 		qms.setDestinationName(destination);

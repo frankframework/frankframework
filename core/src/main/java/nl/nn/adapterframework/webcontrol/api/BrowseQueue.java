@@ -102,7 +102,7 @@ public final class BrowseQueue extends Base {
 			throw new ApiException("No type provided");
 
 		try {
-			JmsBrowser<javax.jms.Message> jmsBrowser = new JmsBrowser<>();
+			JmsBrowser<javax.jms.Message> jmsBrowser = getIbisContext().createBeanAutowireByName(JmsBrowser.class);
 			jmsBrowser.setName("BrowseQueueAction");
 			String jmsRealm = JmsRealmFactory.getInstance().findJmsRealm(connectionFactory);
 			if(jmsRealm == null) {
