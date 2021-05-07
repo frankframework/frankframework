@@ -4,7 +4,7 @@
 	</completionInformation>
 	<results>
 		<result item="1">
-C:/Wearefrank/eclipse-workspace/workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/../logs/testdata/ManageFileSystem
+TESTDATA_DIR/ManageFileSystem
 </result>
 	</results>
 </manageFileSystemRLY>
