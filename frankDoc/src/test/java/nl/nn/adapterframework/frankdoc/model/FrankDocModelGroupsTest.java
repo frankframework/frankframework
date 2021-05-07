@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -30,8 +29,6 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class FrankDocModelGroupsTest {
-	private static final String I_GROUP_CONTAINER = "nl.nn.adapterframework.frankdoc.testtarget.groups.IGroupContainer";
-
 	private FrankDocModel instance;
 	
 	@Before
@@ -48,8 +45,6 @@ public class FrankDocModelGroupsTest {
 		List<FrankElement> elements = group.getElements();
 		assertEquals(1, elements.size());
 		assertEquals("GroupContainer", group.getElements().get(0).getSimpleName());
-		ElementType elementType = instance.getAllTypes().get(I_GROUP_CONTAINER);
-		assertSame(group, elementType.getFrankDocGroup());
 	}
 
 	@Test
@@ -59,7 +54,5 @@ public class FrankDocModelGroupsTest {
 		assertEquals(1, other.getElements().size());
 		FrankElement element = other.getElements().get(0);
 		assertEquals("GroupChild", element.getSimpleName());
-		ElementType elementType = instance.getAllTypes().get("nl.nn.adapterframework.frankdoc.testtarget.groups.GroupChild");
-		assertSame(other, elementType.getFrankDocGroup());
 	}
 }
