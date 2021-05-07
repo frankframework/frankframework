@@ -2050,6 +2050,8 @@ angular.module('iaf.beheerconsole')
 			fd.append("persistent", formData.persistent);
 		if(formData.synchronous && formData.synchronous != "")
 			fd.append("synchronous", formData.synchronous);
+		if(formData.lookupDestination && formData.lookupDestination != "")
+			fd.append("lookupDestination", formData.lookupDestination);
 
 		if(!formData.message && !formData.file) {
 			$scope.error = "Please specify a file or message!";

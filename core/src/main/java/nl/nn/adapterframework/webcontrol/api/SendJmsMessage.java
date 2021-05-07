@@ -71,13 +71,14 @@ public final class SendJmsMessage extends Base {
 		String replyTo = resolveTypeFromMap(inputDataMap, "replyTo", String.class, "");
 		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
 		boolean synchronous = resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
+		boolean lookupDestination = resolveTypeFromMap(inputDataMap, "lookupDestination", boolean.class, false);
 
 		String jmsRealm = JmsRealmFactory.getInstance().findJmsRealm(connectionFactory);
 		if(jmsRealm == null) {
 			throw new ApiException("connection factory ["+connectionFactory+"] does not have a realm");
 		}
 
-		JmsSender qms = jmsBuilder(jmsRealm, destinationName, persistent, destinationType, replyTo, synchronous);
+		JmsSender qms = jmsBuilder(jmsRealm, destinationName, persistent, destinationType, replyTo, synchronous, lookupDestination);
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			fileName = filePart.getContentDisposition().getParameter( "filename" );
@@ -113,7 +114,7 @@ public final class SendJmsMessage extends Base {
 		}
 	}
 
-	private JmsSender jmsBuilder(String realm, String destination, boolean persistent, String type, String replyTo, boolean synchronous) {
+	private JmsSender jmsBuilder(String realm, String destination, boolean persistent, String type, String replyTo, boolean synchronous, boolean lookupDestination) {
 		JmsSender qms = getIbisContext().createBeanAutowireByName(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
 		qms.setJmsRealm(realm);
@@ -124,6 +125,7 @@ public final class SendJmsMessage extends Base {
 			qms.setReplyToName(replyTo);
 		}
 		qms.setSynchronous(synchronous);
+		qms.setLookupDestination(lookupDestination);
 		return qms;
 	}
 

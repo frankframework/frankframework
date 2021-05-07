@@ -72,8 +72,7 @@ public final class BrowseQueue extends Base {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
 		String connectionFactory = null, destination = null, type = null;
-		boolean rowNumbersOnly = false;
-		boolean showPayload = false;
+		boolean rowNumbersOnly = false, showPayload = false, lookupDestination=false;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -91,6 +90,9 @@ public final class BrowseQueue extends Base {
 			}
 			if(key.equalsIgnoreCase("payload")) {
 				showPayload = Boolean.parseBoolean(entry.getValue().toString());
+			}
+			if(key.equalsIgnoreCase("lookupDestination")) {
+				lookupDestination = Boolean.parseBoolean(entry.getValue().toString());
 			}
 		}
 
@@ -111,6 +113,7 @@ public final class BrowseQueue extends Base {
 			jmsBrowser.setJmsRealm(jmsRealm);
 			jmsBrowser.setDestinationName(destination);
 			jmsBrowser.setDestinationType(type);
+			jmsBrowser.setLookupDestination(lookupDestination);
 
 			List<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
 			try (IMessageBrowsingIterator it = jmsBrowser.getIterator()) {
