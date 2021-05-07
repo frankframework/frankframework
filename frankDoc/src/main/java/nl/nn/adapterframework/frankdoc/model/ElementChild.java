@@ -135,7 +135,7 @@ public abstract class ElementChild {
 			if(value != null) {
 				description = value;
 			}
-			value = method.getDefaultValueFromJavadocIncludingInherited();
+			value = method.getJavaDocAnnotationIncludingInherited(FrankAttribute.JAVADOC_DEFAULT_VALUE_TAG);
 			if(value != null) {
 				defaultValue = value;
 			}

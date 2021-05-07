@@ -26,8 +26,8 @@ public class FrankClassTest extends TestBase {
 		FrankClass instance = classRepository.findClass(PACKAGE + "Child");
 		assertEquals(PACKAGE + "Child", instance.getName());
 		assertTrue(instance.isPublic());
-		assertEquals(0, instance.getAnnotations().length);
-		assertNull(instance.getAnnotation(FrankDocletConstants.DEPRECATED));
+		assertEquals(0, instance.getJava5Annotations().length);
+		assertNull(instance.getJava5Annotation(FrankDocletConstants.DEPRECATED));
 		assertFalse(instance.isAbstract());
 		assertEquals("Child", instance.getSimpleName());
 		assertEquals("Parent", instance.getSuperclass().getSimpleName());
@@ -43,13 +43,13 @@ public class FrankClassTest extends TestBase {
 	}
 
 	@Test
-	public void testClassAnnotations() throws FrankDocException {
+	public void testClassJava5Annotations() throws FrankDocException {
 		FrankClass instance = classRepository.findClass(PACKAGE + "DeprecatedChild");
-		FrankAnnotation[] annotations = instance.getAnnotations();
+		FrankAnnotation[] annotations = instance.getJava5Annotations();
 		assertEquals(1, annotations.length);
 		FrankAnnotation annotation = annotations[0];
 		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
-		annotation = instance.getAnnotation(FrankDocletConstants.DEPRECATED);
+		annotation = instance.getJava5Annotation(FrankDocletConstants.DEPRECATED);
 		assertNotNull(annotation);
 		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}

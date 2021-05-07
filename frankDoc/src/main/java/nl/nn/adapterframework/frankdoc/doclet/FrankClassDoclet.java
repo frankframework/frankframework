@@ -88,13 +88,13 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	@Override
-	public FrankAnnotation[] getAnnotations() {
+	public FrankAnnotation[] getJava5Annotations() {
 		List<FrankAnnotation> values = new ArrayList<>(frankAnnotationsByName.values());
 		return values.toArray(new FrankAnnotation[] {});
 	}
 
 	@Override
-	public FrankAnnotation getAnnotation(String name) {
+	public FrankAnnotation getJava5Annotation(String name) {
 		return frankAnnotationsByName.get(name);
 	}
 

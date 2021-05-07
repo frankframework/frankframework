@@ -34,12 +34,12 @@ abstract class FrankSimpleType implements FrankType {
 	}
 
 	@Override
-	public FrankAnnotation[] getAnnotations() {
+	public FrankAnnotation[] getJava5Annotations() {
 		return new FrankAnnotation[] {};
 	}
 
 	@Override
-	public FrankAnnotation getAnnotation(String name) {
+	public FrankAnnotation getJava5Annotation(String name) {
 		return null;
 	}
 

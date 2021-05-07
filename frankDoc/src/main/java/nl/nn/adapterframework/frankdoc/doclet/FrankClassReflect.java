@@ -235,7 +235,7 @@ class FrankClassReflect implements FrankClass {
 	}
 
 	@Override
-	public FrankAnnotation[] getAnnotations() {
+	public FrankAnnotation[] getJava5Annotations() {
 		List<FrankAnnotation> annotationList = new ArrayList<>(annotations.values());
 		FrankAnnotation[] result = new FrankAnnotation[annotationList.size()];
 		for(int i = 0; i < annotationList.size(); ++i) {
@@ -245,7 +245,7 @@ class FrankClassReflect implements FrankClass {
 	}
 
 	@Override
-	public FrankAnnotation getAnnotation(String name) {
+	public FrankAnnotation getJava5Annotation(String name) {
 		return annotations.get(name);
 	}
 

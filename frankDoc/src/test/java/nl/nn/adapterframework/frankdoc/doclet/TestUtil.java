@@ -14,6 +14,7 @@ import nl.nn.adapterframework.frankdoc.doclet.classdocs.EasyDoclet;
 public final class TestUtil {
 	private static final Properties BUILD_PROPERTIES = new TestUtil().loadBuildProperties();
 	private static final File TEST_SOURCE_DIRECTORY = new File(BUILD_PROPERTIES.getProperty("testSourceDirectory"));
+	static final String TEST_JAVADOC_DEFAULT_VALUE_TAG = "@ff.default";
 
 	private TestUtil() {
 	}

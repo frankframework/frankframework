@@ -22,6 +22,8 @@ import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 
 public class FrankAttribute extends ElementChild {
+	static final String JAVADOC_DEFAULT_VALUE_TAG = "@ff.default";
+
 	@EqualsAndHashCode(callSuper = false)
 	static class Key extends AbstractKey {
 		private String name;
