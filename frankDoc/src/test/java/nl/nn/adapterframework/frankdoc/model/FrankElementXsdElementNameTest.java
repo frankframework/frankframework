@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class FrankElementXsdElementNameTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.simple.";
@@ -35,7 +36,7 @@ public class FrankElementXsdElementNameTest {
 
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance(PACKAGE);
+		classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		model = FrankDocModel.populate(DIGESTER_RULES, CONTAINER, classRepository);
 	}
 

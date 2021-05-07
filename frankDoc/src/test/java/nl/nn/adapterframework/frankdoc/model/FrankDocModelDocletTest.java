@@ -2,13 +2,8 @@ package nl.nn.adapterframework.frankdoc.model;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
 import org.junit.Before;
 import org.junit.Test;
-
-import com.sun.javadoc.ClassDoc;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
@@ -25,8 +20,7 @@ public class FrankDocModelDocletTest {
 
 	@Before
 	public void setUp() {
-		ClassDoc[] classDocs = TestUtil.getClassDocs(new String[] {SIMPLE});
-		FrankClassRepository repository = FrankClassRepository.getDocletInstance(classDocs, new HashSet<>(Arrays.asList(SIMPLE)), new HashSet<>(), new HashSet<>());
+		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(SIMPLE);
 		instance = FrankDocModel.populate("doc/xsd-element-name-digester-rules.xml", SIMPLE + "Container", repository);
 	}
 

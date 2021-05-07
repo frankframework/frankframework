@@ -119,4 +119,29 @@ class FrankMethodReflect implements FrankMethod {
 			return new FrankAnnotationReflect(rawAnnotation);
 		}
 	}
+
+	@Override
+	public String getJavaDoc() {
+		return null;
+	}
+	
+	@Override
+	public String getJavaDocIncludingInherited() {
+		return null;
+	}
+
+	@Override
+	public String getDefaultValueFromJavadoc() {
+		return null;
+	}
+
+	@Override
+	public String getDefaultValueFromJavadocIncludingInherited() {
+		return null;
+	}
+
+	@Override
+	public String toString() {
+		return toStringImpl();
+	}
 }

@@ -30,49 +30,41 @@
       "attributes": [
         {
           "name": "clemens",
-          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-          "description": ""
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master"
         },
         {
           "name": "arnold",
-          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-          "description": ""
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master"
         },
         {
           "name": "dennis",
-          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-          "description": ""
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master"
         },
         {
           "name": "bernhard",
-          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-          "description": ""
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master"
         }
       ],
       "children": [
         {
           "multiple": false,
           "roleName": "roleAlpha",
-          "group": "Proton",
-          "description": ""
+          "group": "Proton"
         },
         {
           "multiple": false,
           "roleName": "roleBeta",
-          "group": "Mnemonic",
-          "description": ""
+          "group": "Mnemonic"
         },
         {
           "multiple": false,
           "roleName": "roleEpsilon",
-          "group": "Other",
-          "description": ""
+          "group": "Other"
         },
         {
           "multiple": false,
           "roleName": "roleDelta",
-          "group": "Nemesis",
-          "description": ""
+          "group": "Nemesis"
         }
       ]
     },

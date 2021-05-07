@@ -36,6 +36,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import lombok.EqualsAndHashCode;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 @RunWith(Parameterized.class)
 public class NavigationTest {
@@ -109,7 +110,7 @@ public class NavigationTest {
 	@Test
 	public void test() throws Exception {
 		String rootClassName = PACKAGE + "." + simpleClassName;
-		FrankClassRepository repository = FrankClassRepository.getReflectInstance(PACKAGE);
+		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
 		FrankElement walkFrom = model.findFrankElement(rootClassName);
 		walkFrom.walkCumulativeAttributes(new CumulativeChildHandler<FrankAttribute>() {

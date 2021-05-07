@@ -583,6 +583,7 @@ public class DocWriterNew {
 
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
 		log.trace("Adding config child [{}]", () -> child.toString());
+		version.checkForMissingDescription(child);
 		ElementRole theRole = model.findElementRole(child);
 		if(isNoElementTypeNeeded(theRole)) {
 			addConfigChildSingleReferredElement(context, child);
@@ -868,6 +869,7 @@ public class DocWriterNew {
 			log.trace("Adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
 			ThreadContext.push(String.format("Owning element [%s], ConfigChildSet [%s]", frankElement.getSimpleName(), configChildSet.toString()));
 		}
+		configChildSet.getConfigChildren().forEach(version::checkForMissingDescription);
 		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
 		if((roles.size() == 1) && isNoElementTypeNeeded(roles.get(0))) {
 			log.trace("Config child set appears as element reference");
@@ -951,6 +953,7 @@ public class DocWriterNew {
 	}
 
 	private void addAttributeList(XmlBuilder context, List<FrankAttribute> frankAttributes) {
+		frankAttributes.forEach(version::checkForMissingDescription);
 		for(FrankAttribute frankAttribute: frankAttributes) {
 			log.trace("Adding attribute [{}]", () -> frankAttribute.getName());
 			XmlBuilder attribute = null;

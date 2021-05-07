@@ -34,6 +34,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 @RunWith(Parameterized.class)
 public class NavigationCumulativeTest {
@@ -44,8 +45,8 @@ public class NavigationCumulativeTest {
 		return asList(new Object[][] {
 			{"Parent", "Parent", IN_XSD, NONE, asList("parentAttributeFirst", "parentAttributeSecond")},
 			{"Child inXsd", "Child", IN_XSD, NONE, asList("childAttribute", "parentAttributeFirst", "parentAttributeSecond")},
-			{"Child all", "Child", ALL, NONE, asList("childAttribute", "parentAttributeFirst", "parentAttributeSecond")},
-			{"GrandChild", "GrandChild", ALL, NONE, asList("grandChildAttribute", "parentAttributeSecond", "childAttribute", "parentAttributeFirst")},
+			{"Child all", "Child", ALL, NONE, asList("parentAttributeFirst", "childAttribute", "parentAttributeSecond")},
+			{"GrandChild", "GrandChild", ALL, NONE, asList("parentAttributeSecond", "grandChildAttribute", "parentAttributeFirst", "childAttribute")},
 			{"GrandChild2 no reject", "GrandChild2", ALL, NONE, asList("grandChild2Attribute", "child2Attribute", "parentAttributeFirst", "parentAttributeSecond")},
 			{"GrandChild2 reject deprecated", "GrandChild2", ALL, DEPRECATED, asList("grandChild2Attribute", "parentAttributeFirst", "parentAttributeSecond")} 
 		});
@@ -67,9 +68,9 @@ public class NavigationCumulativeTest {
 	public List<String> childNames;
 
 	@Test
-	public void test() {
+	public void test() throws Exception {
 		String rootClassName = PACKAGE + "." + simpleClassName;
-		FrankClassRepository repository = FrankClassRepository.getReflectInstance(PACKAGE);
+		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
 		FrankElement subject = model.findFrankElement(rootClassName);
 		List<String> actual = subject.getCumulativeAttributes(childSelector, childRejector).stream()

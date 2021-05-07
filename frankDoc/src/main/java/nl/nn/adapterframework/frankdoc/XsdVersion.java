@@ -17,14 +17,21 @@ package nl.nn.adapterframework.frankdoc;
 
 import java.util.function.Predicate;
 
+import org.apache.logging.log4j.Logger;
+
 import lombok.Getter;
 import nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.AttributeUse;
+import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
+import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
+import nl.nn.adapterframework.util.LogUtil;
 
 public enum XsdVersion {
 	STRICT(ElementChild.IN_XSD, ElementChild.DEPRECATED, f -> ! f.isDeprecated(), new DelegateStrict()),
 	COMPATIBILITY(ElementChild.IN_COMPATIBILITY_XSD, ElementChild.NONE, f -> true, new DelegateCompatibility());
+
+	private static Logger log = LogUtil.getLogger(XsdVersion.class);
 
 	private final @Getter Predicate<ElementChild> childSelector;
 	private final @Getter Predicate<ElementChild> childRejector;
@@ -38,6 +45,14 @@ public enum XsdVersion {
 		this.delegate = delegate;
 	}
 
+	void checkForMissingDescription(FrankAttribute attribute) {
+		delegate.checkForMissingDescription(attribute);
+	}
+
+	void checkForMissingDescription(ConfigChild configChild) {
+		delegate.checkForMissingDescription(configChild);
+	}
+
 	AttributeUse getRoleNameAttributeUse() {
 		return delegate.getRoleNameAttributeUse();
 	}
@@ -46,13 +61,30 @@ public enum XsdVersion {
 		return delegate.getClassNameAttributeUse(frankElement);
 	}
 
-	private abstract static class Delegate {
+	private static abstract class Delegate {
+		abstract void checkForMissingDescription(FrankAttribute attribute);
+		abstract void checkForMissingDescription(ConfigChild configChild);
 		abstract AttributeUse getRoleNameAttributeUse();
 		abstract AttributeUse getClassNameAttributeUse(FrankElement frankElement);
 	}
 
 	private static class DelegateStrict extends Delegate {
 		@Override
+		void checkForMissingDescription(FrankAttribute attribute) {
+			if(attribute.getDescription() != null) {
+				return;
+			}
+			log.warn("Attribute [{}] lacks description", attribute.toString());
+		}
+
+		@Override
+		void checkForMissingDescription(ConfigChild configChild) {
+			if(configChild.getDescription() != null) {
+				return;
+			}
+			log.warn("Config child [{}] lacks description", configChild.toString());
+		}
+
 		AttributeUse getRoleNameAttributeUse() {
 			return AttributeUse.PROHIBITED;
 		}
@@ -64,6 +96,14 @@ public enum XsdVersion {
 	}
 
 	private static class DelegateCompatibility extends Delegate {
+		@Override
+		void checkForMissingDescription(FrankAttribute attribute) {
+		}
+
+		@Override
+		void checkForMissingDescription(ConfigChild configChild) {
+		}
+
 		/**
 		 * Fix of https://github.com/ibissource/iaf/issues/1760. We need
 		 * to omit the "use" attribute of the "elementRole" attribute in

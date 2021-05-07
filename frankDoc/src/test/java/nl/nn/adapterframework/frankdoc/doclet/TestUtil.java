@@ -3,6 +3,8 @@ package nl.nn.adapterframework.frankdoc.doclet;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
 
 import com.sun.javadoc.ClassDoc;
@@ -24,6 +26,11 @@ public final class TestUtil {
 			}
 		}
 		return null;
+	}
+
+	public static FrankClassRepository getFrankClassRepositoryDoclet(String ...packages) {
+		ClassDoc[] classes = getClassDocs(packages);
+		return FrankClassRepository.getDocletInstance(classes, new HashSet<>(Arrays.asList(packages)), new HashSet<>(), new HashSet<>());
 	}
 
 	public static ClassDoc[] getClassDocs(String ...packages) {

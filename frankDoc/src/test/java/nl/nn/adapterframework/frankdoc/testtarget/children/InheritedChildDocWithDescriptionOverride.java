@@ -1,4 +1,4 @@
 package nl.nn.adapterframework.frankdoc.testtarget.children;
 
-public class InheritedChildDocWithOrderOverride {
+public class InheritedChildDocWithDescriptionOverride {
 }

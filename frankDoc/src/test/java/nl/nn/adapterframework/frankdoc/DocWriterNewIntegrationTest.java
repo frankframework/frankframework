@@ -37,14 +37,15 @@ import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
-import nl.nn.adapterframework.frankdoc.model.FrankElementFilters;
 import nl.nn.adapterframework.frankdoc.model.FrankElementStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class DocWriterNewIntegrationTest {
 	private static Logger log = LogUtil.getLogger(DocWriterNewIntegrationTest.class);
+	private static final String EXOTIC_PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.exotic.";
 	private static final String TEST_CONFIGURATION_FILE = "testConfiguration.xml";
 
 	private FrankClassRepository classRepository;
@@ -54,8 +55,7 @@ public class DocWriterNewIntegrationTest {
 
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance(
-				FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter(), FrankElementFilters.getExcludeFiltersForSuperclass());
+		classRepository = TestUtil.getFrankClassRepositoryDoclet(EXOTIC_PACKAGE);
 	}
 
 	@Ignore
@@ -96,7 +96,7 @@ public class DocWriterNewIntegrationTest {
 	@Test
 	public void testExotic() throws Exception {
 		String outputFileName = generateXsd(
-				XsdVersion.STRICT, "/doc/exotic-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.exotic.Master", "exotic.xsd", AttributeTypeStrategy.ALLOW_PROPERTY_REF);
+				XsdVersion.STRICT, "/doc/exotic-digester-rules.xml", EXOTIC_PACKAGE + "Master", "exotic.xsd", AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		validate(getSchemaFromSimpleFile(outputFileName), "testExotic.xml");
 		log.info("Validation of XML document against schema [{}] succeeded", outputFileName);
 	}
