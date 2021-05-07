@@ -72,7 +72,9 @@ public final class BrowseQueue extends Base {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
 		String connectionFactory = null, destination = null, type = null;
-		boolean rowNumbersOnly = false, showPayload = false, lookupDestination=false;
+		boolean rowNumbersOnly = false,
+				showPayload = false,
+				lookupDestination=false;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
