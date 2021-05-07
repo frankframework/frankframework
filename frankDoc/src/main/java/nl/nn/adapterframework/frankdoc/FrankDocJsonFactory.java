@@ -195,7 +195,6 @@ public class FrankDocJsonFactory {
 		}
 		result.add("multiple", child.isAllowMultiple());
 		result.add("roleName", child.getElementRole().getRoleName());
-		result.add("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
 		addIfNotNull(result, "description", child.getDescription());
 		return result.build();
 	}
