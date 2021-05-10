@@ -530,7 +530,6 @@ public class FrankDocModel {
 		for(ElementType elementType: getAllTypes().values()) {
 			if(elementType.isFromJavaInterface()) {
 				FrankDocGroup interfaceBasedGroup = FrankDocGroup.getInstanceFromElementType(elementType);
-				elementType.setFrankDocGroup(interfaceBasedGroup);
 				String groupName = elementType.getGroupName();
 				if(groupsBase.containsKey(groupName)) {
 					groupsBase.get(groupName).add(interfaceBasedGroup);
@@ -559,11 +558,7 @@ public class FrankDocModel {
 			log.warn("Name \"[{}]\" cannot been used for others group because it is the name of an ElementType", OTHER);
 		}
 		else {
-			final FrankDocGroup groupOther = FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther);
-			allTypes.values().stream()
-				.filter(et -> ! et.isFromJavaInterface())
-				.forEach(et -> et.setFrankDocGroup(groupOther));
-			groupsBase.put(OTHER, Arrays.asList(groupOther));
+			groupsBase.put(OTHER, Arrays.asList(FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther)));
 		}
 		for(String groupName: groupsBase.keySet()) {
 			if(groupsBase.get(groupName).size() != 1) {
