@@ -1,20 +1,11 @@
 {
   "groups": [
     {
-      "name": "Mnemonic",
-      "members": []
-    },
-    {
-      "name": "Nemesis",
-      "members": []
-    },
-    {
       "name": "Other",
-      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque"]
-    },
-    {
-      "name": "Proton",
-      "members": []
+      "members": [
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque"
+      ]
     }
   ],
   "elements": [

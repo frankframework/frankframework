@@ -9,7 +9,10 @@
     },
     {
       "name": "Other",
-      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"]
+      "members": [
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"
+      ]
     }
   ],
   "elements": [

@@ -3,6 +3,7 @@
         {
             "name":"Other",
             "members":[
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master",
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild"
             ]
         }
