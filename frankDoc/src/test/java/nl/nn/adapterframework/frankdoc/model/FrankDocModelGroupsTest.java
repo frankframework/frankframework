@@ -41,9 +41,9 @@ public class FrankDocModelGroupsTest {
 
 	@Test
 	public void testGroups() {
-		List<FrankDocGroup2> groups = instance.getGroups2();
+		List<FrankDocGroup> groups = instance.getGroups2();
 		assertEquals(2, groups.size());
-		FrankDocGroup2 current = groups.get(0);
+		FrankDocGroup current = groups.get(0);
 		assertEquals("Listener", current.getName());
 		List<FrankElement> members = current.getMembers();
 		assertEquals(1, members.size());

@@ -36,7 +36,7 @@ import nl.nn.adapterframework.frankdoc.model.AttributeValues;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
-import nl.nn.adapterframework.frankdoc.model.FrankDocGroup2;
+import nl.nn.adapterframework.frankdoc.model.FrankDocGroup;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
 import nl.nn.adapterframework.util.LogUtil;
@@ -68,13 +68,13 @@ public class FrankDocJsonFactory {
 
 	private JsonArray getGroups() throws JsonException {
 		JsonArrayBuilder result = bf.createArrayBuilder();
-		for(FrankDocGroup2 group: model.getGroups2()) {
+		for(FrankDocGroup group: model.getGroups2()) {
 			result.add(getGroup(group));
 		}
 		return result.build();
 	}
 
-	private JsonObject getGroup(FrankDocGroup2 group) throws JsonException {
+	private JsonObject getGroup(FrankDocGroup group) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", group.getName());
 		final JsonArrayBuilder members = bf.createArrayBuilder();

@@ -64,7 +64,7 @@ public class FrankDocModel {
 	/**
 	 * Values of the groups map are sorted alphabetically.
 	 */
-	private @Getter List<FrankDocGroup2> groups2;
+	private @Getter List<FrankDocGroup> groups2;
 
 	// We want to iterate FrankElement in the order they are created, to be able
 	// to create the ElementRole objects in the right order. 
@@ -679,7 +679,7 @@ public class FrankDocModel {
 		for(String groupName: sortedGroupNames) {
 			List<FrankElement> members = new ArrayList<>(groupsBase.get(groupName));
 			Collections.sort(members);
-			groups2.add(new FrankDocGroup2(groupName, members));
+			groups2.add(new FrankDocGroup(groupName, members));
 		}
 	}
 }
