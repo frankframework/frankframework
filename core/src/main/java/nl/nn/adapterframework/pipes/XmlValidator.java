@@ -747,7 +747,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return schemaSessionKey;
 	}
 
-	@IbisDoc({"5", "Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list", ""})
+	@IbisDoc({"5", "Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setRoot(String root) {
 		this.root = root;
 		if (root!=null) {
@@ -757,7 +757,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public String getRoot() {
 		return root;
 	}
-	@IbisDoc({"6", "Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list", ""})
+	@IbisDoc({"6", "Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
 		if (responseRoot!=null) {
