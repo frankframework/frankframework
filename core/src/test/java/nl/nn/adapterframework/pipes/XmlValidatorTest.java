@@ -1,6 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
 
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,9 +48,15 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
     }
 
  
-    static PipeForward getSuccess() {
+    static PipeForward createSuccessForward() {
         PipeForward forward = new PipeForward();
         forward.setName("success");
+        return forward;
+    }
+
+    static PipeForward createFailureForward() {
+        PipeForward forward = new PipeForward();
+        forward.setName("failure");
         return forward;
     }
 
@@ -82,7 +92,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
         if (addNamespaceToSchema) {
             validator.setAddNamespaceToSchema(addNamespaceToSchema);
         }
-        validator.registerForward(getSuccess());
+        validator.registerForward(createSuccessForward());
         validator.setThrowException(true);
         validator.setFullSchemaChecking(true);
         return validator;
@@ -140,7 +150,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
             throw new RuntimeException(e);
         }
 
-        validator.registerForward(getSuccess());
+        validator.registerForward(createSuccessForward());
         validator.setThrowException(true);
         validator.setFullSchemaChecking(true);
 		validator.setRoot(root);
@@ -169,7 +179,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	public void testStoreRootElement(String schema, String root, String inputFile) throws Exception {
 		XmlValidator validator = new XmlValidator();
 
-		validator.registerForward(getSuccess());
+		validator.registerForward(createSuccessForward());
 		validator.setThrowException(true);
 		validator.setFullSchemaChecking(true);
 		validator.setRoot(root);
@@ -192,4 +202,55 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		testStoreRootElement(SCHEMA_LOCATION_BASIC_A_OK, "A", INPUT_FILE_BASIC_A_OK);
 	}
 	
+	public void testWrongRootElement(String schema, String root, String inputFile) throws Exception {
+		XmlValidator validator = new XmlValidator();
+
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		
+		validator.setFullSchemaChecking(true);
+		validator.setRoot("anotherElement");
+		validator.setReasonSessionKey("reason");
+		validator.setSchemaLocation(schema);
+		validator.configure();
+		validator.start();
+
+		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.doPipe(new Message(testXml), session);
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("failure", forward.getName());
+		assertThat((String)session.get("reason"), containsString("Illegal element 'A'. Element(s) 'anotherElement' expected."));
+	}
+
+	@Test
+	public void testWrongRootElement() throws Exception {
+		testWrongRootElement(SCHEMA_LOCATION_BASIC_A_OK, "A", INPUT_FILE_BASIC_A_OK);
+	}
+
+	public void testMultipleRootElement(String schema, String root, String inputFile) throws Exception {
+		XmlValidator validator = new XmlValidator();
+
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		
+		validator.setFullSchemaChecking(true);
+		validator.setRoot(root+",anotherElement"); // if multiple root elements are specified, in a comma separated list, the validation succeeds if one of these root elements is found
+		validator.setSchemaLocation(schema);
+		validator.configure();
+		validator.start();
+
+		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.doPipe(new Message(testXml), session);
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("success", forward.getName());
+	}
+
+	@Test
+	public void testMultipleRootElement() throws Exception {
+		testMultipleRootElement(SCHEMA_LOCATION_BASIC_A_OK, "A", INPUT_FILE_BASIC_A_OK);
+	}
 }
