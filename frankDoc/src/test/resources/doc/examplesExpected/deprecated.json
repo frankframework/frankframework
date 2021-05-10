@@ -2,7 +2,6 @@
     "groups":[
         {
             "name":"Other",
-            "category":"Other",
             "members":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild"
             ]

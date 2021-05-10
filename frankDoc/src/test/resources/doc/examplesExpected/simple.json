@@ -2,7 +2,6 @@
   "groups": [
     {
       "name": "Child",
-      "category": "Child",
       "members": [
         "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
         "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild"
@@ -10,7 +9,6 @@
     },
     {
       "name": "Other",
-      "category": "Other",
       "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"]
     }
   ],

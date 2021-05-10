@@ -77,7 +77,6 @@ public class FrankDocJsonFactory {
 	private JsonObject getGroup(FrankDocGroup group) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", group.getName());
-		result.add("category", group.getCategory());
 		final JsonArrayBuilder members = bf.createArrayBuilder();
 		group.getElements().stream()
 				.map(FrankElement::getFullName)

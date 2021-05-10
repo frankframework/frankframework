@@ -2,22 +2,18 @@
   "groups": [
     {
       "name": "Mnemonic",
-      "category": "Mnemonic",
       "members": []
     },
     {
       "name": "Nemesis",
-      "category": "Nemesis",
       "members": []
     },
     {
       "name": "Other",
-      "category": "Other",
       "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque"]
     },
     {
       "name": "Proton",
-      "category": "Proton",
       "members": []
     }
   ],
