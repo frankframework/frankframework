@@ -84,7 +84,7 @@ limitations under the License.
  * by the implemented Java interface (interface-implementing {@link nl.nn.adapterframework.frankdoc.model.ElementType} objects). There
  * is an additional group "Other" for all {@link nl.nn.adapterframework.frankdoc.model.FrankElement} that belong to a non-interface-based
  * {@link nl.nn.adapterframework.frankdoc.model.ElementType} (e.g. {@link nl.nn.adapterframework.core.PipeForward}). These table-of-contents (TOC)
- * groups are modeled by model class {@link nl.nn.adapterframework.frankdoc.model.FrankDocGroup}.
+ * groups are modeled by model class {@link nl.nn.adapterframework.frankdoc.model.FrankDocGroup2}.
  * <p>
  * Class {@link nl.nn.adapterframework.frankdoc.model.FrankDocModel} holds the entire model (not shown in the diagram). Two model classes
  * have not been explained yet: {@link nl.nn.adapterframework.frankdoc.model.ConfigChildSet} and
@@ -102,7 +102,7 @@ limitations under the License.
  * why the method has an {@link nl.nn.adapterframework.frankdoc.model.ElementRole} argument.
  * <p>
  * {@link nl.nn.adapterframework.frankdoc.model.FrankElement}-s in
- * {@link nl.nn.adapterframework.frankdoc.model.FrankDocGroup} "Other",
+ * {@link nl.nn.adapterframework.frankdoc.model.FrankDocGroup2} "Other",
  * like <code>&lt;Forward&gt;</code> and <code>&lt;Param&gt;</code>, are
  * named in a special way. They usually belong to a single
  * {@link nl.nn.adapterframework.frankdoc.model.ElementRole}. Their name is

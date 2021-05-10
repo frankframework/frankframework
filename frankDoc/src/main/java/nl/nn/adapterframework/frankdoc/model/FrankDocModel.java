@@ -64,8 +64,6 @@ public class FrankDocModel {
 	/**
 	 * Values of the groups map are sorted alphabetically.
 	 */
-	// This one has to be removed
-	private @Getter LinkedHashMap<String, FrankDocGroup> groups = new LinkedHashMap<>();
 	private @Getter List<FrankDocGroup2> groups2;
 
 	// We want to iterate FrankElement in the order they are created, to be able
@@ -106,7 +104,6 @@ public class FrankDocModel {
 			result.setHighestCommonInterface();
 			result.createConfigChildSets();
 			result.setElementNamesOfFrankElements(rootClassName);
-			result.buildGroups();
 			result.buildGroups2();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -524,60 +521,6 @@ public class FrankDocModel {
 		log.trace("Going to calculate highest common interface for every ElementType");
 		allTypes.values().forEach(et -> et.calculateHighestCommonInterface(this));
 		log.trace("Done calculating highest common interface for every ElementType");
-	}
-
-	void buildGroups() {
-		log.trace("Building groups");
-		Map<String, List<FrankDocGroup>> groupsBase = new HashMap<>();
-		List<FrankElement> membersOfOther = new ArrayList<>();
-		for(ElementType elementType: getAllTypes().values()) {
-			if(elementType.isFromJavaInterface()) {
-				FrankDocGroup interfaceBasedGroup = FrankDocGroup.getInstanceFromElementType(elementType);
-				String groupName = elementType.getGroupName();
-				if(groupsBase.containsKey(groupName)) {
-					groupsBase.get(groupName).add(interfaceBasedGroup);
-				} else {
-					groupsBase.put(groupName, Arrays.asList(interfaceBasedGroup));
-				}
-				log.trace("Appended group [{}] with candidate element type [{}], which is based on a Java interface", () -> elementType.getSimpleName(), () -> elementType.getFullName());
-			}
-			else {
-				try {
-					membersOfOther.add(elementType.getSingletonElement());
-					// Cannot eliminate the isTraceEnabled, because Lambdas dont work here.
-					// getSingletonElement throws an exception.
-					if(log.isTraceEnabled()) {
-						log.trace("Appended the others group with FrankElement [{}]", elementType.getSingletonElement().getFullName());
-					}
-				} catch(ReflectiveOperationException e) {
-					String frankElementsString = elementType.getMembers().stream()
-							.map(FrankElement::getSimpleName).collect(Collectors.joining(", "));
-					log.warn("Error adding ElementType [{}] to group other because it has multiple FrankElement objects: [{}]",
-								() -> elementType.getFullName(), () -> frankElementsString, () -> e);
-				}
-			}
-		}
-		if(groupsBase.containsKey(OTHER)) {
-			log.warn("Name \"[{}]\" cannot been used for others group because it is the name of an ElementType", OTHER);
-		}
-		else {
-			groupsBase.put(OTHER, Arrays.asList(FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther)));
-		}
-		for(String groupName: groupsBase.keySet()) {
-			if(groupsBase.get(groupName).size() != 1) {
-				log.warn("Group name [{}] used for multiple groups", groupName);
-			}
-		}
-		// Sort the groups alphabetically, including group "Other". We have to update
-		// this code if "Other" needs to be put to the end.
-		groups = new LinkedHashMap<>();
-		List<String> sortedGroups = new ArrayList<>(groupsBase.keySet());
-		Collections.sort(sortedGroups);
-		for(String groupName: sortedGroups) {
-			log.trace("Creating group [{}]", groupName);
-			groups.put(groupName, groupsBase.get(groupName).get(0));
-		}
-		log.trace("Done building groups");
 	}
 
 	void setOverriddenFrom() {
