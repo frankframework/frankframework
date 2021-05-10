@@ -88,15 +88,6 @@ public class JmsRealmFactory {
 		return list;
 	}
 
-	public String findJmsRealm(String connectionFactory) {
-		for (JmsRealm jmsRealm: jmsRealms.values()) {
-			if(connectionFactory!=null && connectionFactory.equals(jmsRealm.retrieveConnectionFactoryName())) {
-				return jmsRealm.getRealmName();
-			}
-		}
-		return null;
-	}
-
 	/**
 	 * Get the realmNames as an Iterator, in the order that they were declared
 	 */

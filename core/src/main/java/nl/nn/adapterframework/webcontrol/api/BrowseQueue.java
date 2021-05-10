@@ -108,11 +108,11 @@ public final class BrowseQueue extends Base {
 		try {
 			JmsBrowser<javax.jms.Message> jmsBrowser = getIbisContext().createBeanAutowireByName(JmsBrowser.class);
 			jmsBrowser.setName("BrowseQueueAction");
-			String jmsRealm = JmsRealmFactory.getInstance().findJmsRealm(connectionFactory);
-			if(jmsRealm == null) {
-				throw new ApiException("connection factory ["+connectionFactory+"] does not have a realm");
+			if(type.equals("QUEUE")) {
+				jmsBrowser.setQueueConnectionFactoryName(connectionFactory);
+			} else {
+				jmsBrowser.setTopicConnectionFactoryName(connectionFactory);
 			}
-			jmsBrowser.setJmsRealm(jmsRealm);
 			jmsBrowser.setDestinationName(destination);
 			jmsBrowser.setDestinationType(type);
 			jmsBrowser.setLookupDestination(lookupDestination);
