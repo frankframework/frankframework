@@ -68,7 +68,7 @@ public class FrankDocJsonFactory {
 
 	private JsonArray getGroups() throws JsonException {
 		JsonArrayBuilder result = bf.createArrayBuilder();
-		for(FrankDocGroup group: model.getGroups2()) {
+		for(FrankDocGroup group: model.getGroups()) {
 			result.add(getGroup(group));
 		}
 		return result.build();

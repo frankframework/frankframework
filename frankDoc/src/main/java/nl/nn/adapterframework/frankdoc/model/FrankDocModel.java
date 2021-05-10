@@ -64,7 +64,7 @@ public class FrankDocModel {
 	/**
 	 * Values of the groups map are sorted alphabetically.
 	 */
-	private @Getter List<FrankDocGroup> groups2;
+	private @Getter List<FrankDocGroup> groups;
 
 	// We want to iterate FrankElement in the order they are created, to be able
 	// to create the ElementRole objects in the right order. 
@@ -104,7 +104,7 @@ public class FrankDocModel {
 			result.setHighestCommonInterface();
 			result.createConfigChildSets();
 			result.setElementNamesOfFrankElements(rootClassName);
-			result.buildGroups2();
+			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
 			return null;
@@ -670,16 +670,16 @@ public class FrankDocModel {
 			.forEach(f -> f.setInterfaceBased(true));
 	}
 
-	public void buildGroups2() {
+	public void buildGroups() {
 		Map<String, List<FrankElement>> groupsBase = allElements.values().stream()
 				.filter(f -> ! f.getXmlElementNames().isEmpty())
 				.collect(Collectors.groupingBy(FrankElement::getGroupName));
 		List<String> sortedGroupNames = groupsBase.keySet().stream().sorted().collect(Collectors.toList());
-		groups2 = new ArrayList<>();
+		groups = new ArrayList<>();
 		for(String groupName: sortedGroupNames) {
 			List<FrankElement> members = new ArrayList<>(groupsBase.get(groupName));
 			Collections.sort(members);
-			groups2.add(new FrankDocGroup(groupName, members));
+			groups.add(new FrankDocGroup(groupName, members));
 		}
 	}
 }
