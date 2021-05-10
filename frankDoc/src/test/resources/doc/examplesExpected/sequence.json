@@ -48,23 +48,19 @@
       "children": [
         {
           "multiple": false,
-          "roleName": "roleAlpha",
-          "group": "Proton"
+          "roleName": "roleAlpha"
         },
         {
           "multiple": false,
-          "roleName": "roleBeta",
-          "group": "Mnemonic"
+          "roleName": "roleBeta"
         },
         {
           "multiple": false,
-          "roleName": "roleEpsilon",
-          "group": "Other"
+          "roleName": "roleEpsilon"
         },
         {
           "multiple": false,
-          "roleName": "roleDelta",
-          "group": "Nemesis"
+          "roleName": "roleDelta"
         }
       ]
     },

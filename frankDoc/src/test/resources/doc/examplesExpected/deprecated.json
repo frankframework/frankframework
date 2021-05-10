@@ -27,8 +27,7 @@
                 {
                     "deprecated":true,
                     "multiple":true,
-                    "roleName":"roleNameTChild",
-                    "group":"Other"
+                    "roleName":"roleNameTChild"
                 }
             ]
         },

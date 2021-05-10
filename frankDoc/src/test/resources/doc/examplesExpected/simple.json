@@ -85,13 +85,11 @@
       "children": [
         {
           "multiple": false,
-          "roleName": "roleNameIChild",
-          "group": "Child"
+          "roleName": "roleNameIChild"
         },
         {
           "multiple": true,
-          "roleName": "roleNameTChild",
-          "group": "Other"
+          "roleName": "roleNameTChild"
         }
       ]
     },
