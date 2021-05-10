@@ -25,6 +25,8 @@ import nl.nn.adapterframework.stream.Message;
  * A Pipe represents an action to take in a {@link PipeLine}.
  * 
  * @author Johan Verrips
+ * 
+ * @ff.group Pipe
  */
 public interface IPipe extends INamedObject, IForwardTarget {
 	/**

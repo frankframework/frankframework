@@ -26,6 +26,8 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author  Gerrit van Brakel
  * @since   4.2
+ *
+ * @ff.group Listener
  */
 public interface IListener<M> extends IConfigurable {
 

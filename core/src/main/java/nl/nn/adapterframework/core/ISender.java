@@ -23,6 +23,8 @@ import nl.nn.adapterframework.stream.Message;
  * some destination.
  * 
  * @author  Gerrit van Brakel
+ *
+ * @ff.group Sender
  */
 public interface ISender extends IConfigurable {
 
