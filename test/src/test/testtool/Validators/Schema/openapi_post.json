@@ -58,24 +58,35 @@
                             }
                         }
                     },
+                    "201":{
+                        "description":"Created",
+                        "content":{
+                            "*/*":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/SpecialResponse"
+                                }
+                            }
+                        }
+                    },
                     "304":{
                         "description":"Not Modified"
                     },
                     "400":{
-                        "description":"Bad Request"
-                    },
-                    "401":{
-                        "description":"Unauthorized"
-                    },
-                    "403":{
-                        "description":"Forbidden"
+                        "description":"Bad Request",
+                        "content":{
+                            "*/*":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/InputValidationFailure"
+                                }
+                            }
+                        }
                     },
                     "500":{
                         "description":"Internal Server Error",
                         "content":{
                             "*/*":{
                                 "schema":{
-                                    "$ref":"#/components/schemas/Item_Response"
+                                    "$ref":"#/components/schemas/OutputValidationFailure"
                                 }
                             }
                         }
@@ -439,6 +450,28 @@
                     "Action"
                 ]
             },
+            "InputValidationFailure":{
+                "type":"object",
+                "additionalProperties":false,
+                "properties":{
+                    "Status":{
+                        "type":"string",
+                        "enum":[
+                            "a",
+                            "b"
+                        ]
+                    },
+                    "Item":{
+                        "$ref":"#/components/schemas/ItemType"
+                    },
+                    "Result":{
+                        "$ref":"#/definitions/Result"
+                    }
+                },
+                "required":[
+                    "Result"
+                ]
+            },
             "Item_Request":{
                 "type":"object",
                 "additionalProperties":false,
@@ -458,6 +491,50 @@
                 }
             },
             "Item_Response":{
+                "type":"object",
+                "additionalProperties":false,
+                "properties":{
+                    "Status":{
+                        "type":"string",
+                        "enum":[
+                            "a",
+                            "b"
+                        ]
+                    },
+                    "Item":{
+                        "$ref":"#/components/schemas/ItemType"
+                    },
+                    "Result":{
+                        "$ref":"#/definitions/Result"
+                    }
+                },
+                "required":[
+                    "Result"
+                ]
+            },
+            "OutputValidationFailure":{
+                "type":"object",
+                "additionalProperties":false,
+                "properties":{
+                    "Status":{
+                        "type":"string",
+                        "enum":[
+                            "a",
+                            "b"
+                        ]
+                    },
+                    "Item":{
+                        "$ref":"#/components/schemas/ItemType"
+                    },
+                    "Result":{
+                        "$ref":"#/definitions/Result"
+                    }
+                },
+                "required":[
+                    "Result"
+                ]
+            },
+            "SpecialResponse":{
                 "type":"object",
                 "additionalProperties":false,
                 "properties":{

@@ -94,6 +94,13 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	private String rootNamespaceSessionKey;
 
 
+	/*
+	 * Root validations are a set of lists.
+	 * Each list corresponds to a path of elements from the root through the document
+	 * All paths in the set must be matched for the validation to pass
+	 * Therefore, rootValidations are a set of required paths.
+	 * However, each element in a path can be a comma separated list of elements, of which one needs to match at that place.
+	 */
 	private Set<List<String>> requestRootValidations;
 	private Set<List<String>> responseRootValidations;
 	private Map<List<String>, List<String>> invalidRootNamespaces;
@@ -740,21 +747,21 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return schemaSessionKey;
 	}
 
-	@IbisDoc({"5", "Name of the root element, or a comma separated list of names to choose from (only one is allowed)", ""})
+	@IbisDoc({"5", "Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setRoot(String root) {
 		this.root = root;
 		if (root!=null) {
-			addRequestRootValidation(Arrays.asList(root.split(",")));
+			addRequestRootValidation(Arrays.asList(root));
 		}
 	}
 	public String getRoot() {
 		return root;
 	}
-	@IbisDoc({"6", "Name of the response root element, or a comma separated list of names to choose from (only one is allowed)", ""})
+	@IbisDoc({"6", "Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
 		if (responseRoot!=null) {
-			addResponseRootValidation(Arrays.asList(responseRoot.split(",")));
+			addResponseRootValidation(Arrays.asList(responseRoot));
 		}
 	}
 	protected String getResponseRoot() {
