@@ -98,6 +98,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 			log.debug("pipe [{}] cannot provide outputstream", () -> getName());
 			return null;
 		}
+		log.debug("pipe [{}] creating outputstream", () -> getName());
 		return provideOutputStream(session);
 	}
 	

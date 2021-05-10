@@ -44,7 +44,7 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream implements AutoCloseable {
-	protected Logger log = LogUtil.getLogger(this);
+	protected static Logger log = LogUtil.getLogger(MessageOutputStream.class);
 	
 	private INamedObject owner;
 	protected Object requestStream;
@@ -365,9 +365,11 @@ public class MessageOutputStream implements AutoCloseable {
 			}
 		}
 		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(session, null);
-		if (target==null) {
-			target=new MessageOutputStreamCap(owner, next);
+		if (target!=null) {
+			log.debug("OutputStream for {} [{}] is provided by {} [{}]", ()->owner.getClass().getSimpleName(), ()->owner.getName(), ()->next.getClass().getSimpleName(), ()->next.getName());
+			return target;
 		}
-		return target;
+		log.debug("providing MessageOutputStreamCap for {} [{}]", ()->owner.getClass().getSimpleName(), ()->owner.getName());
+		return new MessageOutputStreamCap(owner, next);
 	}
 }
