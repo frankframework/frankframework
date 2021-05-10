@@ -2025,12 +2025,14 @@ angular.module('iaf.beheerconsole')
 
 .controller('SendJmsMessageCtrl', ['$scope', 'Api', function($scope, Api) {
 	$scope.destinationTypes = ["QUEUE", "TOPIC"]; 
+	$scope.processing = false;
 	Api.Get("jms", function(data) {
 		$.extend($scope, data);
 		angular.element("select[name='type']").val($scope.destinationTypes[0]);
 	});
 
 	$scope.submit = function(formData) {
+		$scope.processing = true;
 		if(!formData) return;
 
 		var fd = new FormData();
@@ -2067,7 +2069,9 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("jms/message", fd, function(returnData) {
 			//?
+			$scope.processing = false;
 		}, function(errorData, status, errorMsg) {
+			$scope.processing = false;
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
 		});
 	};
