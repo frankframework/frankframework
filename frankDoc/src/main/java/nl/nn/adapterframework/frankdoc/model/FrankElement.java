@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.AccessLevel;
@@ -36,12 +37,15 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.Utils;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
+import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 public class FrankElement implements Comparable<FrankElement> {
+	private static final String GROUP_NAME_OTHER = "Other";
+
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
 
 	private static final Comparator<FrankElement> COMPARATOR =
@@ -68,12 +72,14 @@ public class FrankElement implements Comparable<FrankElement> {
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 	private @Getter @Setter String description;
 	private @Getter @Setter String descriptionHeader;
+	private @Getter String groupName;
 
 	FrankElement(FrankClass clazz) {
 		this(clazz.getName(), clazz.getSimpleName(), clazz.isAbstract());
 		isDeprecated = clazz.getAnnotation(FrankDocletConstants.DEPRECATED) != null;
 		configChildSets = new LinkedHashMap<>();
 		javadocStrategy.completeFrankElement(this, clazz);
+		groupName = getGroupNameOf(clazz);
 	}
 
 	/**
@@ -94,6 +100,27 @@ public class FrankElement implements Comparable<FrankElement> {
 	public void setParent(FrankElement parent) {
 		this.parent = parent;
 		this.statistics = new FrankElementStatistics(this);
+	}
+
+	private static String getGroupNameOf(FrankClass clazz) {
+		String result = null;
+		try {
+			result = clazz.getGroupName();
+		} catch(FrankDocException e) {
+			log.warn("An exception happened when getting the group name of Java class {}", clazz.getName(), e);
+		}
+		if(result == null) {
+			return GROUP_NAME_OTHER;
+		}
+		if(result.equals(GROUP_NAME_OTHER)) {
+			log.warn("FrankElement {} is put in group {} explicitly, didn't you mean another group?", clazz.getName(), GROUP_NAME_OTHER);
+		}
+		if(StringUtils.isBlank(result)) {
+			log.warn("Class [{}] has annotation [{}], but no group name is given. Taking [{}]",
+					clazz.getName(), FrankClass.JAVADOC_GROUP_TAG, GROUP_NAME_OTHER);
+			result = GROUP_NAME_OTHER;
+		}
+		return result;
 	}
 
 	public void addXmlElementName(String elementName) {
