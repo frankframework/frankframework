@@ -48,13 +48,13 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
     }
 
  
-    static PipeForward createSuccessForward() {
+    protected static PipeForward createSuccessForward() {
         PipeForward forward = new PipeForward();
         forward.setName("success");
         return forward;
     }
 
-    static PipeForward createFailureForward() {
+    protected static PipeForward createFailureForward() {
         PipeForward forward = new PipeForward();
         forward.setName("failure");
         return forward;
@@ -202,7 +202,11 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		testStoreRootElement(SCHEMA_LOCATION_BASIC_A_OK, "A", INPUT_FILE_BASIC_A_OK);
 	}
 	
-	public void testWrongRootElement(String schema, String root, String inputFile) throws Exception {
+	@Test
+	public void testWrongRootElement() throws Exception {
+		String schema = SCHEMA_LOCATION_BASIC_A_OK;
+		String root = "A"; 
+		String inputFile = INPUT_FILE_BASIC_A_OK;
 		XmlValidator validator = new XmlValidator();
 
 		validator.registerForward(createSuccessForward());
@@ -224,12 +228,12 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertThat((String)session.get("reason"), containsString("Illegal element 'A'. Element(s) 'anotherElement' expected."));
 	}
 
-	@Test
-	public void testWrongRootElement() throws Exception {
-		testWrongRootElement(SCHEMA_LOCATION_BASIC_A_OK, "A", INPUT_FILE_BASIC_A_OK);
-	}
 
-	public void testMultipleRootElement(String schema, String root, String inputFile) throws Exception {
+	@Test
+	public void testMultipleRootElement() throws Exception {
+		String schema = SCHEMA_LOCATION_BASIC_A_OK;
+		String root = "A"; 
+		String inputFile = INPUT_FILE_BASIC_A_OK;
 		XmlValidator validator = new XmlValidator();
 
 		validator.registerForward(createSuccessForward());
@@ -249,8 +253,4 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test
-	public void testMultipleRootElement() throws Exception {
-		testMultipleRootElement(SCHEMA_LOCATION_BASIC_A_OK, "A", INPUT_FILE_BASIC_A_OK);
-	}
 }
