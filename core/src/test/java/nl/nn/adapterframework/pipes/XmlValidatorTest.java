@@ -205,7 +205,6 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	@Test
 	public void testWrongRootElement() throws Exception {
 		String schema = SCHEMA_LOCATION_BASIC_A_OK;
-		String root = "A"; 
 		String inputFile = INPUT_FILE_BASIC_A_OK;
 		XmlValidator validator = new XmlValidator();
 
