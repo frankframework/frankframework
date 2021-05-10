@@ -33,6 +33,7 @@ import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.FieldDoc;
 import com.sun.javadoc.MethodDoc;
+import com.sun.javadoc.Tag;
 
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -264,5 +265,40 @@ class FrankClassDoclet implements FrankClass {
 	@Override
 	public String toString() {
 		return getName();
+	}
+
+	@Override
+	public String getGroupName() throws FrankDocException {
+		String result = getGroupNameExcludingImplementedInterfaces();
+		if(result == null) {
+			result = getGroupNameFromImplementedInterfaces();
+		}
+		return result;
+	}
+
+	private String getGroupNameExcludingImplementedInterfaces() throws FrankDocException {
+		String result = getDeclaredGroupName();
+		if((result == null) && (getSuperclass() != null)) {
+			result = ((FrankClassDoclet) getSuperclass()).getGroupNameExcludingImplementedInterfaces();
+		}
+		return result;
+	}
+
+	private String getDeclaredGroupName() {
+		String result = null;
+		Tag[] tags = clazz.tags(FrankClass.JAVADOC_GROUP_TAG);
+		if(tags.length >= 1) {
+			result = tags[0].text();
+		}
+		return result;
+	}
+
+	private String getGroupNameFromImplementedInterfaces() throws FrankDocException {
+		TransitiveImplementedInterfaceBrowser<String> browser = new TransitiveImplementedInterfaceBrowser<>(this);
+		String result = browser.search(c -> ((FrankClassDoclet) c).getDeclaredGroupName());
+		if((result == null) && (getSuperclass() != null)) {
+			result = ((FrankClassDoclet) getSuperclass()).getGroupNameFromImplementedInterfaces();
+		}
+		return result;
 	}
 }

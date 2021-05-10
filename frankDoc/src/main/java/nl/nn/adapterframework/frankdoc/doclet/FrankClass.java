@@ -19,6 +19,8 @@ package nl.nn.adapterframework.frankdoc.doclet;
 import java.util.List;
 
 public interface FrankClass extends FrankType {
+	public static final String JAVADOC_GROUP_TAG = "@ff.group";
+
 	@Override
 	default boolean isPrimitive() {
 		return false;
@@ -47,4 +49,9 @@ public interface FrankClass extends FrankType {
 
 	String[] getEnumConstants();
 	String getJavaDoc();
+	// TODO: Change to getJavaDocAnnotation(String name) and update
+	// similar methods of FrankModel likewise. Getting the group name
+	// is the responsibility of the nl.nn.adaterframework.frankdoc.model
+	// package.
+	String getGroupName() throws FrankDocException;
 }
