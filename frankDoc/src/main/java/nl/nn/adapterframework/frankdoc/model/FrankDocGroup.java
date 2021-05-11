@@ -24,8 +24,8 @@ public class FrankDocGroup {
 	private final @Getter String name;
 	private final @Getter List<FrankElement> elements;
 
-	FrankDocGroup(String name, List<FrankElement> members) {
+	FrankDocGroup(String name, List<FrankElement> elements) {
 		this.name = name;
-		this.elements = members;
+		this.elements = elements;
 	}
 }
