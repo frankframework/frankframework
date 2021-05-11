@@ -45,12 +45,12 @@ public class FrankDocModelGroupsTest {
 		assertEquals(2, groups.size());
 		FrankDocGroup current = groups.get(0);
 		assertEquals("Listener", current.getName());
-		List<FrankElement> members = current.getMembers();
+		List<FrankElement> members = current.getElements();
 		assertEquals(1, members.size());
 		assertEquals("DefaultChild", members.get(0).getSimpleName());
 		current = groups.get(1);
 		assertEquals("Other", current.getName());
-		members = current.getMembers();
+		members = current.getElements();
 		assertEquals(2, members.size());
 		assertEquals("Container", members.get(0).getSimpleName());
 		assertEquals("Default", members.get(1).getSimpleName());

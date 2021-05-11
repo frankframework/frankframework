@@ -78,7 +78,7 @@ public class FrankDocJsonFactory {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", group.getName());
 		final JsonArrayBuilder members = bf.createArrayBuilder();
-		group.getMembers().stream()
+		group.getElements().stream()
 				.map(FrankElement::getFullName)
 				.forEach(members::add);
 		result.add("members", members);

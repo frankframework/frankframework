@@ -22,10 +22,10 @@ import lombok.Getter;
 
 public class FrankDocGroup {
 	private final @Getter String name;
-	private final @Getter List<FrankElement> members;
+	private final @Getter List<FrankElement> elements;
 
 	FrankDocGroup(String name, List<FrankElement> members) {
 		this.name = name;
-		this.members = members;
+		this.elements = members;
 	}
 }
