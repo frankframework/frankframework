@@ -20,6 +20,7 @@ package nl.nn.adapterframework.core;
  * 
  * @author Gerrit van Brakel
  *
+ * @ff.group Validator
  */
 public interface IValidator extends IPipe {
 

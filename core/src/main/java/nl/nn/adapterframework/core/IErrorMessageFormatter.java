@@ -23,6 +23,8 @@ import nl.nn.adapterframework.stream.Message;
  * By implementing this interface, it is possible to customize messages.
  * 
  * @author Johan Verrips
+ * 
+ * @ff.group ErrorMessageFormatter
  */
 public interface IErrorMessageFormatter {
 
