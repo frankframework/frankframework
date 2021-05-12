@@ -54,9 +54,10 @@ public final class BrowseQueue extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getBrowseQueue() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
+		JmsBrowser<javax.jms.Message> jmsBrowser = getIbisContext().createBeanAutowireByName(JmsBrowser.class);
 
-		List<String> connectionFactories=JmsRealmFactory.getInstance().getConnectionFactoryNames();
-		if (connectionFactories.size()==0) connectionFactories.add("no connection factories defined");
+		List<String> connectionFactories=jmsBrowser.getConnectionFactoryFactory().getConnectionFactoryNames();
+		if (connectionFactories.size()==0) connectionFactories.add("no connection factories found");
 		returnMap.put("connectionFactories", connectionFactories);
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
