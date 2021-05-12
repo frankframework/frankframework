@@ -20,7 +20,7 @@
 			</pipe>
 
 			<pipe name="encodeBigClobPdf" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				convert2String="false" storeResultInSessionKey="base64">
+				storeResultInSessionKey="base64">
 				<forward name="success" path="insertBigClob1" />
 			</pipe>
 
@@ -62,7 +62,7 @@
 			</pipe>
 
 			<pipe name="encodeBigBlobPdf" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				convert2String="false" storeResultInSessionKey="base64">
+				storeResultInSessionKey="base64">
 				<forward name="success" path="insertBigBlobText1" />
 			</pipe>
 
