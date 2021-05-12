@@ -33,7 +33,7 @@
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
 						commentField="TVARCHAR"
-						maxCommentSize="100"
+						maxCommentLength="100"
 						selectCondition="TNUMBER=${jdbc.querylistener.key}"
 						statusValueAvailable="5"
 						statusValueProcessed="6"

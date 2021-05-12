@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ProcessState;
@@ -46,7 +47,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	private String timestampField;
 	private String commentField;
 	private String selectCondition;
-	private int maxCommentSize=-1;
+	private int maxCommentLength=ITransactionalStorage.MAXCOMMENTLEN;
 	
 	private Map<ProcessState, String> statusValues = new HashMap<>();
 
@@ -102,8 +103,8 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		String key=getIdFromRawMessage(rawMessage, null);
 		List<String> parameters = new ArrayList<>();
 		if (StringUtils.isNotEmpty(getCommentField()) && query.substring(query.indexOf('?')+1).contains("?")) {
-			if (getMaxCommentSize()>=0 && reason.length()>getMaxCommentSize()) {
-				parameters.add(reason.substring(0, getMaxCommentSize()));
+			if (getMaxCommentLength()>=0 && reason.length()>getMaxCommentLength()) {
+				parameters.add(reason.substring(0, getMaxCommentLength()));
 			} else {
 				parameters.add(reason);
 			}
@@ -204,12 +205,12 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		return commentField;
 	}
 
-	@IbisDoc({"6", "(optional) Maximum length of strings to be stored in commentField", "-1 (unlimited)"})
-	public void setMaxCommentSize(int maxCommentSize) {
-		this.maxCommentSize = maxCommentSize;
+	@IbisDoc({"6", "(optional) Maximum length of strings to be stored in commentField, or -1 for unlimited", ITransactionalStorage.MAXCOMMENTLEN+""})
+	public void setMaxCommentLength(int maxCommentLength) {
+		this.maxCommentLength = maxCommentLength;
 	}
-	public int getMaxCommentSize() {
-		return maxCommentSize;
+	public int getMaxCommentLength() {
+		return maxCommentLength;
 	}
 
 	@IbisDoc({"7", "(optional) Value of statusField indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.", ""})
