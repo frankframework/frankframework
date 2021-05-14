@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.xslt;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
@@ -11,9 +13,6 @@ import java.util.Properties;
 import org.hamcrest.core.StringContains;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -122,8 +121,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	 */
 	@Test
 	public void testConfigWarnings() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		ConfigurationWarnings warnings = ConfigurationWarnings.getInstance();
-		warnings.clear(); 
+		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();
 		String styleSheetName=  "/Xslt3/orgchart.xslt";
 		setStyleSheetName(styleSheetName);
 		setXslt2(false);

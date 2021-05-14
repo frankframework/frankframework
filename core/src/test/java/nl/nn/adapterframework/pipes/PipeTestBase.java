@@ -4,6 +4,8 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
+
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -16,6 +18,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class PipeTestBase<P extends IPipe> {
@@ -26,25 +29,31 @@ public abstract class PipeTestBase<P extends IPipe> {
 	protected P pipe;
 	protected PipeLine pipeline;
 	protected Adapter adapter;
+	private TestConfiguration configuration = new TestConfiguration();
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	public abstract P createPipe();
-	
+
 	@Before
 	public void setup() throws Exception {
 		pipe = createPipe();
 		pipe.registerForward(new PipeForward("success",null));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipeline = new PipeLine();
+		configuration.autowireByType(pipe);
+		pipeline = configuration.createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
 		exit.setState("success");
 		pipeline.registerPipeLineExit(exit);
-		adapter = new Adapter();
+		adapter = configuration.createBean(Adapter.class);
 		adapter.setPipeLine(pipeline);
+	}
+
+	protected final Configuration getConfiguration() {
+		return configuration;
 	}
 
 	/**

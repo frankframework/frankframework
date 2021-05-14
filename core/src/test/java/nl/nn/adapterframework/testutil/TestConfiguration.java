@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Test Configuration utility
@@ -31,5 +33,13 @@ public class TestConfiguration extends Configuration {
 		assertEquals(TEST_CONFIGURATION_NAME, config.getId());
 		config.close();
 		assertFalse(config.isActive());
+	}
+
+	public void autowireByType(Object bean) {
+		SpringUtils.autowireByType(this, bean);
+	}
+
+	public <T> T createBean(Class<T> beanClass) {
+		return SpringUtils.createBean(this, beanClass);
 	}
 }
