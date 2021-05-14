@@ -15,17 +15,16 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.io.Writer;
 import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.Logger;
@@ -33,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 
 
 /**
@@ -42,13 +40,13 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public class PipeLineSessionBase extends HashMap<String,Object> implements IPipeLineSession {
+public class PipeLineSessionBase extends HashMap<String,Object> implements IPipeLineSession, AutoCloseable {
 	private Logger log = LogUtil.getLogger(this);
 
 	private ISecurityHandler securityHandler = null;
 	
 	// Map that maps resources to wrapped versions of them. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
-	private Map<AutoCloseable,AutoCloseable> closeables = new HashMap<>(); 
+	private Set<Message> closeables = new HashSet<>(); 
 	public PipeLineSessionBase() {
 		super();
 	}
@@ -207,52 +205,30 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	}
 	
 	@Override
-	public InputStream scheduleCloseOnSessionExit(InputStream stream) {
-		return scheduleCloseOnSessionExit(stream, StreamUtil::onClose );
-	}
-		
-	@Override
-	public OutputStream scheduleCloseOnSessionExit(OutputStream stream) {
-		return scheduleCloseOnSessionExit(stream, StreamUtil::onClose );
+	public void scheduleCloseOnSessionExit(Message message) {
+		closeables.add(message);
 	}
 
 	@Override
-	public Reader scheduleCloseOnSessionExit(Reader reader) {
-		return scheduleCloseOnSessionExit(reader, StreamUtil::onClose );
+	public void scheduleCloseOnSessionExit(Writer writer) {
+		// create a dummy Message, to be able to schedule the writer for close on exit of session
+		Message writerMessage = new Message(new StringReader("dummy")) {
+			@Override
+			public void close() throws IOException {
+				writer.close();
+			}
+		};
+		scheduleCloseOnSessionExit(writerMessage);
 	}
-		
+	
 	@Override
-	public Writer scheduleCloseOnSessionExit(Writer writer) {
-		return scheduleCloseOnSessionExit(writer, StreamUtil::onClose );
+	public boolean isScheduledForCloseOnExit(Message message) {
+		return closeables.contains(message);
 	}
-
-	/**
-	 * Ensure that the resource will be closed when the PipeLineSession is closed.
-	 * @param resource 	the resource to be closed on exit
-	 * @param onClose	a method that will make sure that a task is executed when the resource is closed. 
-	 * 					This is used to unschedule the resource when it is closed.
-	 */
-	@SuppressWarnings("unchecked")
-	private <R extends AutoCloseable> R scheduleCloseOnSessionExit(R resource, BiFunction<R, Runnable, R> onClose) {
-		if (closeables.values().contains(resource)) {
-			return resource; // resource is already a wrapped resource scheduled for closing at pipeline exit
-		}
-		return (R)closeables.computeIfAbsent(resource, k -> {
-				if (log.isDebugEnabled()) log.debug("registering resource ["+resource+"] for close on exit");
-				return onClose.apply(resource, () -> {
-					if (log.isDebugEnabled()) log.debug("closed and unregistering resource ["+resource+"] from close on exit");
-					closeables.remove(resource);
-				});
-			});
-	}
-
 
 	@Override
-	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
-		Optional<Entry<AutoCloseable, AutoCloseable>> entry = closeables.entrySet().stream().filter(e -> resource == e.getValue()).findFirst();
-		if (entry.isPresent()) {
-			closeables.remove(entry.get().getKey());
-		}
+	public void unscheduleCloseOnSessionExit(Message message) {
+		closeables.remove(message);
 	}
 	
 	@Override
@@ -260,10 +236,11 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 		log.debug("Closing PipeLineSession");
 		while (!closeables.isEmpty()) {
 			try {
-				Iterator<Entry<AutoCloseable, AutoCloseable>>  it = closeables.entrySet().iterator();
-				Entry<AutoCloseable, AutoCloseable> entry = it.next();
-				log.warn("messageId ["+getMessageId()+"] auto closing resource ["+entry.getKey()+"]");
-				entry.getValue().close();
+				Iterator<Message> it = closeables.iterator();
+				Message entry = it.next();
+				log.warn("messageId ["+getMessageId()+"] auto closing resource ["+entry+"]");
+				entry.close();
+				closeables.remove(entry);
 			} catch (Exception e) {
 				log.warn("Exception closing resource", e);
 			}

@@ -158,34 +158,34 @@ public class PipeLineSessionBaseTest {
 		}
 	}
 	
-	@Test
-	public void testCloseables() throws IOException {
-		StateObservableInputStream a = new StateObservableInputStream("a");
-		StateObservableInputStream b = new StateObservableInputStream("b");
-		StateObservableInputStream c = new StateObservableInputStream("c");
-		StateObservableInputStream d = new StateObservableInputStream("d");
-		
-		InputStream p = session.scheduleCloseOnSessionExit(a);
-		InputStream q = session.scheduleCloseOnSessionExit(a);
-		assertTrue("scheduling a resource twice must yield the same object", p==q); 
-		
-		InputStream r = session.scheduleCloseOnSessionExit(b);
-		InputStream s = session.scheduleCloseOnSessionExit(c);
-		InputStream t = session.scheduleCloseOnSessionExit(d);
-		InputStream u = session.scheduleCloseOnSessionExit(t);
-		assertTrue("rescheduling the wrapper of a scheduled object must yield the same wrapped object", u==t);
-
-		log.debug("test calling close on wrapped(b)");
-		r.close();
-
-		log.debug("test unschedule wrapped(c)");
-		session.unscheduleCloseOnSessionExit(s);
-		
-		session.close();
-		
-		assertEquals(1, a.closes);
-		assertEquals(1, b.closes);
-		assertEquals(0, c.closes);
-		assertEquals(1, d.closes);
-	}
+//	@Test
+//	public void testCloseables() throws IOException {
+//		StateObservableInputStream a = new StateObservableInputStream("a");
+//		StateObservableInputStream b = new StateObservableInputStream("b");
+//		StateObservableInputStream c = new StateObservableInputStream("c");
+//		StateObservableInputStream d = new StateObservableInputStream("d");
+//		
+//		InputStream p = session.scheduleCloseOnSessionExit(a);
+//		InputStream q = session.scheduleCloseOnSessionExit(a);
+//		assertTrue("scheduling a resource twice must yield the same object", p==q); 
+//		
+//		InputStream r = session.scheduleCloseOnSessionExit(b);
+//		InputStream s = session.scheduleCloseOnSessionExit(c);
+//		InputStream t = session.scheduleCloseOnSessionExit(d);
+//		InputStream u = session.scheduleCloseOnSessionExit(t);
+//		assertTrue("rescheduling the wrapper of a scheduled object must yield the same wrapped object", u==t);
+//
+//		log.debug("test calling close on wrapped(b)");
+//		r.close();
+//
+//		log.debug("test unschedule wrapped(c)");
+//		session.unscheduleCloseOnSessionExit(s);
+//		
+//		session.close();
+//		
+//		assertEquals(1, a.closes);
+//		assertEquals(1, b.closes);
+//		assertEquals(0, c.closes);
+//		assertEquals(1, d.closes);
+//	}
 }

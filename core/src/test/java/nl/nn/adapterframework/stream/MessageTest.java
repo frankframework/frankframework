@@ -99,11 +99,7 @@ public class MessageTest {
 	
 	protected void testToString(Message adapter, Class<?> clazz, Class<?> wrapperClass) {
 		String actual = adapter.toString();
-		String startsWith = Message.class.getName();
-		MatcherAssert.assertThat("Result of toString() doesn't start with " + startsWith,
-				startsWith.equals(actual.substring(0, actual.indexOf("@"))));
-		int i = actual.indexOf(": ") + 2;
-		assertEquals(clazz.getTypeName(), actual.substring(i).substring(0, actual.substring(i).indexOf(": ")));
+		assertEquals(clazz.getSimpleName(), actual.substring(0, actual.indexOf(": ")));
 		if (wrapperClass == null) {
 			assertEquals(adapter.asObject().getClass().getName(), clazz.getName());
 		} else {
