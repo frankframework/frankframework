@@ -18,10 +18,12 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -55,8 +57,11 @@ public final class BrowseQueue extends Base {
 	public Response getBrowseQueue() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		JmsBrowser<javax.jms.Message> jmsBrowser = getIbisContext().createBeanAutowireByName(JmsBrowser.class);
-
-		List<String> connectionFactories=jmsBrowser.getConnectionFactoryFactory().getConnectionFactoryNames();
+		Set<String> connectionFactories = new HashSet<String>();
+		// configured jms realm
+		connectionFactories.addAll(JmsRealmFactory.getInstance().getConnectionFactoryNames());
+		// connection factories used in configured jmsSenders etc.
+		connectionFactories.addAll(jmsBrowser.getConnectionFactoryFactory().getConnectionFactoryNames());
 		if (connectionFactories.size()==0) connectionFactories.add("no connection factories found");
 		returnMap.put("connectionFactories", connectionFactories);
 
