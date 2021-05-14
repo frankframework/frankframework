@@ -10,6 +10,12 @@ public class Parent {
 		}
 	}
 
+	// There are spaces around the @ff.default value, please leave them! We test that the value is trimmed.
+	/**
+	 * This is the JavaDoc of method "setInherited".
+	 * @param value
+	 * @ff.default   DefaultValue   
+	 */
 	@IbisDoc("50")
 	public void setInherited(String value) {
 	}

@@ -41,7 +41,7 @@ public class GetLtpaTokenPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			return new PipeRunResult(getForward(),SsoUtil.getSsoToken());
+			return new PipeRunResult(getSuccessForward(),SsoUtil.getSsoToken());
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Could not obtain LtpaToken",e);
 		}

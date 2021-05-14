@@ -188,7 +188,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		session.put(CONTENTTYPE, getContentType());
 		log.debug(getLogPrefix(session) + "stored [" + getContentType() + "] in pipeLineSession under key [" + CONTENTTYPE + "]");
 
-		return new PipeRunResult(getForward(), newResult);
+		return new PipeRunResult(getSuccessForward(), newResult);
 	}
 
 	private Map<String,Object> retrieveParameters(HttpServletRequest httpServletRequest, ServletContext servletContext, String srcPrefix) throws DomBuilderException {

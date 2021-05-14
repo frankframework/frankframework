@@ -78,7 +78,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix(session)+"stored ["+session.get(sessionKey)+"] in pipeLineSession under key ["+getSessionKey()+"]");
 		}
-		return new PipeRunResult(findForward("success"), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	@IbisDoc({"reference to the session variable whose value is to be increased", ""})

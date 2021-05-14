@@ -95,7 +95,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 				throw new PipeRunException(this,"",e);
 			}
 		}
-		return new PipeRunResult(getForward(),message);
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 	
 	public String getRole() {

@@ -41,6 +41,6 @@ public interface IHasProcessState<M> {
 	 * is returned.
 	 * @return the moved message, or null if no message was moved. 
 	 */
-	public M changeProcessState(M message, ProcessState toState) throws ListenerException;
+	public M changeProcessState(M message, ProcessState toState, String reason) throws ListenerException;
 
 }

@@ -221,7 +221,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	        
 			
 	//		log.debug("Pipe ["+name+"] retrieved result ["+result+"]");
-		    return new PipeRunResult(getForward(), result);
+		    return new PipeRunResult(getSuccessForward(), result);
 			
 	    } catch (Exception e) {
 		   	throw new PipeRunException(this, getLogPrefix(session)+"got Exception executing rekenbox", e);

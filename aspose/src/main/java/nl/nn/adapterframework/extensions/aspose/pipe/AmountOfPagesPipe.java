@@ -54,7 +54,7 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 			return new PipeRunResult(findForward("passwordProtected"), "File is password protected." );
 		}
       
-		return new PipeRunResult(getForward(), Integer.toString(result) );
+		return new PipeRunResult(getSuccessForward(), Integer.toString(result) );
 	}
 
 	@IbisDoc({ "charset to be used to encode the given input string ", "UTF-8" })

@@ -87,7 +87,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		}
 		failForward=findForward(FORWARD_FAIL);
 		if (failForward==null) {
-			failForward=getForward();
+			failForward=getSuccessForward();
 		}
 	}
 
@@ -127,7 +127,7 @@ public class LarvaPipe extends FixedForwardPipe {
 								paramWaitBeforeCleanUp, realPath,
 								paramScenariosRootDirectory,
 								out, silent);
-		PipeForward forward=numScenariosFailed==0? getForward(): failForward;
+		PipeForward forward=numScenariosFailed==0? getSuccessForward(): failForward;
 		return new PipeRunResult(forward, out.toString());
 	}
 

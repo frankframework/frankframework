@@ -29,8 +29,9 @@ public class Container extends ContainerParent {
 	public void setAttribute(String attributeValue) {
 	}
 
-	@IbisDoc("10")
-	public void setInheritedChildDocWithOrderOverride(InheritedChildDocWithOrderOverride child) {
+	@IbisDoc("Description of Container.setInheritedChildDocWithDescriptionOverride")
+	@Override
+	public void setInheritedChildDocWithDescriptionOverride(InheritedChildDocWithDescriptionOverride child) {
 	}
 
 	@Override

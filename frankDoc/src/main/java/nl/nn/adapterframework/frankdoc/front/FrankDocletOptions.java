@@ -108,7 +108,7 @@ class FrankDocletOptions {
 			if(optionsByName.containsKey(key)) {
 				Option option = optionsByName.get(key);
 				String value = opt[1];
-				log.info(String.format("Setting option [%s] to [%s]", option.getMavenName(), value));
+				log.info("Setting option [{}] to [{}]", option.getMavenName(), value);
 				setOption(option, value);
 			}
 		}

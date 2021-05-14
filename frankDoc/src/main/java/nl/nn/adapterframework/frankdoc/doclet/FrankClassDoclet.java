@@ -20,9 +20,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -41,7 +43,7 @@ class FrankClassDoclet implements FrankClass {
 	private final ClassDoc clazz;
 	private final Set<String> childClassNames = new HashSet<>();
 	private final Map<String, FrankClass> interfaceImplementationsByName = new HashMap<>();
-	private final Map<MethodDoc, FrankMethod> frankMethodsByDocletMethod = new HashMap<>();
+	private final LinkedHashMap<MethodDoc, FrankMethod> frankMethodsByDocletMethod = new LinkedHashMap<>();
 	private final Map<String, FrankMethodDoclet> methodsBySignature = new HashMap<>();
 	private final Map<String, FrankAnnotation> frankAnnotationsByName;
 
@@ -239,10 +241,10 @@ class FrankClassDoclet implements FrankClass {
 		return methodsBySignature.get(signature);
 	}
 
-	FrankAnnotation getMethodAnnotationFromSignature(String methodSignature, String annotationName) {
+	<T> T getMethodItemFromSignature(String methodSignature, Function<FrankMethodDoclet, T> getter) {
 		FrankMethodDoclet frankMethod = getMethodFromSignature(methodSignature);
 		if(frankMethod != null) {
-			FrankAnnotation result = frankMethod.getAnnotation(annotationName);
+			T result = getter.apply(frankMethod);
 			if(result != null) {
 				return result;
 			}
@@ -257,5 +259,10 @@ class FrankClassDoclet implements FrankClass {
 	@Override
 	public String getJavaDoc() {
 		return clazz.commentText();
+	}
+
+	@Override
+	public String toString() {
+		return getName();
 	}
 }

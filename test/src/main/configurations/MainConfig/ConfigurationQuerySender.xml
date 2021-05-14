@@ -45,7 +45,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- directInsertWithNamedParams -->
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="directInsertWithNamedParams" returnString="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES (?{name},?{value},NULL,?{lastmodby})">
+			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="directInsertWithNamedParams" returnString="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES (?{name},?{value},NULL,?{lastmodby})">
 				<forward name="success" path="doDirectInsertWithNamedParams" />
 			</pipe>
 			<pipe name="doDirectInsertWithNamedParams">
@@ -86,7 +86,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="root/*" xslt2="true">
+			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="root/*">
 				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" jmsRealm="jdbc" />
 				<forward name="success" path="EXIT" />
 			</pipe>

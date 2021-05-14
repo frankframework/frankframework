@@ -200,10 +200,10 @@ public class RhinoPipe extends FixedForwardPipe {
 			stringResult =jsResult;
 		}
 		if (StringUtils.isEmpty(getSessionKey())) {
-			return new PipeRunResult(getForward(), stringResult);
+			return new PipeRunResult(getSuccessForward(), stringResult);
 		} else {
 			session.put(getSessionKey(), stringResult);
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		}
 	}
 

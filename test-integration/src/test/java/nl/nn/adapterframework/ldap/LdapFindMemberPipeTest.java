@@ -32,7 +32,7 @@ public class LdapFindMemberPipeTest {
 	@Before
 	public void setUp() {
 		pipe = new LdapFindMemberPipe();
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.registerForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, null));
 		pipe.setHost(host);
 		pipe.setPort(port);
 		pipe.setUseSsl(useSSL);

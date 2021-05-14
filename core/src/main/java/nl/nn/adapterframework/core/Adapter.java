@@ -734,18 +734,6 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * Register a PipeLine at this adapter. On registering, the adapter performs
-	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
-	 * @see PipeLine
-	 */
-	@Override
-	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
-		this.pipeline = pipeline;
-		pipeline.setAdapter(this);
-		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");
-	}
-
-	/**
 	 * Register a receiver for this Adapter
 	 * @see Receiver
 	 */
@@ -757,6 +745,18 @@ public class Adapter implements IAdapter, NamedBean {
 		} else {
 			log.debug("Adapter [" + name + "] did not register inactive receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
 		}
+	}
+
+	/**
+	 * Register a PipeLine at this adapter. On registering, the adapter performs
+	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
+	 * @see PipeLine
+	 */
+	@Override
+	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
+		this.pipeline = pipeline;
+		pipeline.setAdapter(this);
+		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");
 	}
 
 	/**

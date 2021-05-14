@@ -636,7 +636,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return clobWriter==null ? null : new Message(clobWriter.getWarnings().toXML());
 	}
 
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return false; // FixedQuerySender returns true for updateBlob and updateClob
 	}
 

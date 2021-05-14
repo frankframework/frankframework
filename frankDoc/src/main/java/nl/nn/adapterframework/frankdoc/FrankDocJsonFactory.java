@@ -111,8 +111,14 @@ public class FrankDocJsonFactory {
 		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
 		frankElement.getXmlElementNames().forEach(xmlElementNames::add);
 		result.add("elementNames", xmlElementNames);
-		result.add("attributes", getAttributes(frankElement));
-		result.add("children", getConfigChildren(frankElement));
+		JsonArray attributes = getAttributes(frankElement);
+		if(! attributes.isEmpty()) {
+			result.add("attributes", attributes);
+		}
+		JsonArray configChildren = getConfigChildren(frankElement);
+		if(! configChildren.isEmpty()) {
+			result.add("children", configChildren);
+		}
 		return result.build();
 	}
 

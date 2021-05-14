@@ -43,8 +43,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public abstract class FixedForwardPipe extends AbstractPipe {
 
-	private final String forwardName = "success";
-	private PipeForward forward;
+	private PipeForward successForward;
 	private boolean skipOnEmptyInput = false;
 	private String ifParam = null;
 	private String ifValue = null;
@@ -55,9 +54,9 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		forward = findForward(forwardName);
-		if (forward == null)
-			throw new ConfigurationException("has no forward with name [" + forwardName + "]");
+		successForward = findForward(PipeForward.SUCCESS_FORWARD_NAME);
+		if (successForward == null)
+			throw new ConfigurationException("has no forward with name [" + PipeForward.SUCCESS_FORWARD_NAME + "]");
 	}
 
 	/**
@@ -65,7 +64,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	 */
 	public PipeRunResult doInitialPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (isSkipOnEmptyInput() && (input == null || StringUtils.isEmpty(input.toString()))) {
-			return new PipeRunResult(getForward(), input);
+			return new PipeRunResult(getSuccessForward(), input);
 		}
 		if (StringUtils.isNotEmpty(getIfParam())) {
 			boolean skipPipe = true;
@@ -89,7 +88,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 				}
 			}
 			if (skipPipe) {
-				return new PipeRunResult(getForward(), input);
+				return new PipeRunResult(getSuccessForward(), input);
 			}
 		}
 		return null;
@@ -108,12 +107,12 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		return null;
 	}
 
-	public PipeForward getForward() {
-		return forward;
+	public PipeForward getSuccessForward() {
+		return successForward;
 	}
 
 
-	@IbisDoc({"2", "when set, the processing continues directly at the forward of this pipe, without executing the pipe itself", "false"})
+	@IbisDoc({"2", "If set, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty", "false"})
 	public void setSkipOnEmptyInput(boolean b) {
 		skipOnEmptyInput = b;
 	}
@@ -121,7 +120,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		return skipOnEmptyInput;
 	}
 
-	@IbisDoc({"3", "when set, this pipe is only executed when the value of parameter with name <code>ifparam</code> equals <code>ifvalue</code> (otherwise this pipe is skipped)", ""})
+	@IbisDoc({"3", "If set, this pipe is only executed when the value of parameter with name <code>ifparam</code> equals <code>ifvalue</code> (otherwise this pipe is skipped)", ""})
 	public void setIfParam(String string) {
 		ifParam = string;
 	}
@@ -129,7 +128,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		return ifParam;
 	}
 
-	@IbisDoc({"4", "see <code>ifparam</code>", ""})
+	@IbisDoc({"4", "See <code>ifparam</code>", ""})
 	public void setIfValue(String string) {
 		ifValue = string;
 	}

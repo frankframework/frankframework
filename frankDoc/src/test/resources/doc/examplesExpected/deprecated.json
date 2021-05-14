@@ -36,10 +36,6 @@
             "name":"Object",
             "fullName":"java.lang.Object",
             "elementNames":[
-            ],
-            "attributes":[
-            ],
-            "children":[
             ]
         },
         {
@@ -48,10 +44,6 @@
             "deprecated":true,
             "elementNames":[
                 "RoleNameTChild"
-            ],
-            "attributes":[
-            ],
-            "children":[
             ]
         }
     ]

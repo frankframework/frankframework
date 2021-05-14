@@ -1,12 +1,11 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
 import com.sun.javadoc.ClassDoc;
 
-public enum Environment {
+enum Environment {
 	REFLECTION(new ReflectionDelegate()),
 	DOCLET(new DocletDelegate());
 
@@ -20,7 +19,7 @@ public enum Environment {
 		return delegate.getRepository(packageName);
 	}
 
-	public FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters, List<String> excludeFiltersForSuperclass) {
+	FrankClassRepository getRepository(List<String> allPackages, List<String> includeFilters, List<String> excludeFilters, List<String> excludeFiltersForSuperclass) {
 		return delegate.getRepository(allPackages, includeFilters, excludeFilters, excludeFiltersForSuperclass);
 	}
 
@@ -45,8 +44,7 @@ public enum Environment {
 	private static class DocletDelegate extends Delegate {
 		@Override
 		FrankClassRepository getRepository(String packageName) {
-			ClassDoc[] classDocs = TestUtil.getClassDocs(packageName);
-			return FrankClassRepository.getDocletInstance(classDocs, new HashSet<>(Arrays.asList(packageName)), new HashSet<>(), new HashSet<>());
+			return TestUtil.getFrankClassRepositoryDoclet(packageName);
 		}
 
 		@Override

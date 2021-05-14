@@ -1,6 +1,6 @@
 <ibis>
 	<adapter name="MoveFilePipe" description="Test the functioning of the MoveFilePipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="MoveFilePipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-MoveFilePipe" />
 		</receiver>
 		<pipeline firstPipe="cleanup dir">

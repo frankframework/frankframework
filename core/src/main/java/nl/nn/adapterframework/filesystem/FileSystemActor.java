@@ -509,7 +509,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 	
 	
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return (ACTION_WRITE1.equals(getAction()) || ACTION_APPEND.equals(getAction())) && parameterList.findParameter(PARAMETER_FILENAME)!=null;
 	}
 

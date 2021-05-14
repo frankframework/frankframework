@@ -63,7 +63,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 				}
 			}
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private String buildXml(String xml) {

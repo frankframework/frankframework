@@ -326,7 +326,7 @@ public class Browse extends ActionBase {
 			saveErrors(request, errors);
 		}		
 		log.debug("forward to success");
-		return (mapping.findForward("success"));
+		return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 
 	}
 

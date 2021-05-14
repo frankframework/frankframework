@@ -93,7 +93,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 				}
 			}
 			
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		}
 		catch(Exception e) {
 			throw new PipeRunException(this, "Error while deleting file(s)", e); 

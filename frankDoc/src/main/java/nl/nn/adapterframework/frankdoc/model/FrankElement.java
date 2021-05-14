@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.Utils;
@@ -52,6 +53,11 @@ public class FrankElement implements Comparable<FrankElement> {
 	private final @Getter String simpleName;
 	private final @Getter boolean isAbstract;
 	private @Getter boolean isDeprecated = false;
+
+	// True if this FrankElement corresponds to a class that implements a Java interface
+	// that we model with an ElementType. This means: The Java interface only counts
+	// if it appears as argument type of a config child setter.
+	private @Getter @Setter(AccessLevel.PACKAGE) boolean interfaceBased = false;
 
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;

@@ -73,7 +73,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Could not generate WSDL for adapter [" + adapter.getName() + "]", e); 
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public String getFrom() {

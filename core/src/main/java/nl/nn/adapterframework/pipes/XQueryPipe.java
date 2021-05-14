@@ -122,7 +122,7 @@ public class XQueryPipe extends FixedForwardPipe {
 			}
 			XQResultSequence resultSequence = preparedExpression.executeQuery();
 			stringResult = resultSequence.getSequenceAsString(null);
-			return new PipeRunResult(getForward(), stringResult);
+			return new PipeRunResult(getSuccessForward(), stringResult);
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)+" Exception on running xquery", e);
 		}

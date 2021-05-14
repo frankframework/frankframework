@@ -221,7 +221,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
 		try {
 			flowDiagramManager.generate(this);
-		} catch (IOException e) { //Don't throw an exception when generating the flow fails
+		} catch (Exception e) { //Don't throw an exception when generating the flow fails
 			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
 		}
 

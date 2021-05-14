@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.frankdoc.testtarget.examples.simple;
 
 public class NotDescribedPossibleIChild implements IChild {
-	public void setSecondAttribute(String value) {
+	public void setFirstAttribute(String value) {
 	}
 
-	public void setFirstAttribute(String value) {
+	public void setSecondAttribute(String value) {
 	}
 
 	public MyEnum getFirstAttributeEnum() {

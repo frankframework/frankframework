@@ -168,22 +168,46 @@ public class Message implements Serializable {
 		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof Reader;
 	}
 	
+	
+	/*
+	 * provide close(), but do not implement AutoCloseable, to avoid having to enclose all messages in try-with-resource clauses.
+	 */
+	public void close() throws Exception {
+		if (request instanceof InputStream || request instanceof Reader) {
+			((AutoCloseable)request).close();
+			request = null;
+		}
+	}
+	
 	public void closeOnCloseOf(PipeLineSession session) {
-		if (request instanceof InputStream) {
-			request = session.scheduleCloseOnSessionExit((InputStream)request);
+		if (!(request instanceof InputStream || request instanceof Reader) || isScheduledForCloseOnExitOf(session)) {
 			return;
+		}
+		if (log.isDebugEnabled()) log.debug("registering Message ["+this+"] for close on exit");
+		if (request instanceof InputStream) {
+			request = StreamUtil.onClose((InputStream)request, () -> {
+				if (log.isDebugEnabled()) log.debug("closed InputStream and unregistering Message ["+this+"] from close on exit");
+				unscheduleFromCloseOnExitOf(session);
+			});
 		}
 		if (request instanceof Reader) {
-			request = session.scheduleCloseOnSessionExit((Reader)request);
-			return;
+			request = StreamUtil.onClose((Reader)request, () -> {
+				if (log.isDebugEnabled()) log.debug("closed Reader and unregistering Message ["+this+"] from close on exit");
+				unscheduleFromCloseOnExitOf(session);
+			});
 		}
+		session.scheduleCloseOnSessionExit(this);
+	}
+	
+	public boolean isScheduledForCloseOnExitOf(PipeLineSession session) {
+		return session.isScheduledForCloseOnExit(this);
 	}
 
-	public void unregisterCloseable(PipeLineSession session) {
-		if (request instanceof InputStream || request instanceof Reader) {
-			session.unscheduleCloseOnSessionExit((AutoCloseable)request);
-		}
+	public void unscheduleFromCloseOnExitOf(PipeLineSession session) {
+		session.unscheduleCloseOnSessionExit(this);
 	}
+	
+	
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -355,10 +379,10 @@ public class Message implements Serializable {
 		if (request==null) {
 			return "null";
 		}
-		if (wrappedRequest == null) {
-			return super.toString()+": "+request.getClass().getTypeName()+": "+request.toString();
-		} 
-		return super.toString()+": "+wrappedRequest.getClass().getTypeName()+": "+wrappedRequest.toString();
+		if (wrappedRequest != null) {
+			return wrappedRequest.getClass().getSimpleName()+": "+request.toString();
+		}
+		return request.getClass().getSimpleName()+": "+request.toString();
 	}
 
 	public static Message asMessage(Object object) {

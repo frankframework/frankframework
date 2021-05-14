@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class FrankDocModelAttributeTypeTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.enumattr.";
@@ -22,7 +23,7 @@ public class FrankDocModelAttributeTypeTest {
 
 	@Before
 	public void setUp() {
-		classRepository = FrankClassRepository.getReflectInstance(PACKAGE);
+		classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 	}
 
 	@Test
@@ -43,12 +44,12 @@ public class FrankDocModelAttributeTypeTest {
 		assertEquals(MY_ENUM, myEnum.getFullName());
 		assertArrayEquals(new String[] {"ONE", "TWO", "THREE"}, myEnum.getValues().toArray());
 		// By fixing the list index like this, we test that the attributes are sorted correctly.
-		FrankAttribute childAttribute = child.getAttributes(ElementChild.ALL).get(1);
+		FrankAttribute childAttribute = child.getAttributes(ElementChild.ALL).get(0);
 		assertEquals("childStringAttribute", childAttribute.getName());
 		assertEquals(myEnum, childAttribute.getAttributeValues());
 		assertEquals(AttributeType.STRING, childAttribute.getAttributeType());
 		// Test the int attribute
-		childAttribute = child.getAttributes(ElementChild.ALL).get(0);
+		childAttribute = child.getAttributes(ElementChild.ALL).get(1);
 		assertEquals(AttributeType.INT, childAttribute.getAttributeType());
 	}
 }

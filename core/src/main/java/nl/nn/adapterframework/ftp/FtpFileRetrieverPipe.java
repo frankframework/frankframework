@@ -90,7 +90,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 			if (deleteAfterGet) {
 				ftpSession.deleteRemote(remoteDirectory, orgFilename, true);
 			} 
-			return new PipeRunResult(getForward(), localFilename);
+			return new PipeRunResult(getSuccessForward(), localFilename);
 		}
 		catch(Exception e) {
 			String msg="Error while getting file [" + remoteDirectory + "/" + orgFilename+"]";

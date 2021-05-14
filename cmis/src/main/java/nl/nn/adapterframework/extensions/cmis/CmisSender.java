@@ -215,7 +215,7 @@ public class CmisSender extends SenderWithParametersBase {
 	private String authAlias;
 	private String userName;
 	private String password;
-	private String fileNameSessionKey;
+	private String filenameSessionKey;
 	private String fileInputStreamSessionKey;
 	private String fileContentStreamSessionKey;
 	private String defaultMediaType = "application/octet-stream";
@@ -485,7 +485,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
-		String fileName = (String) session.get(getFileNameSessionKey());
+		String fileName = (String) session.get(getFilenameSessionKey());
 
 		Object inputFromSessionKey;
 		if(StringUtils.isNotEmpty(getFileInputStreamSessionKey())) {
@@ -1152,13 +1152,19 @@ public class CmisSender extends SenderWithParametersBase {
 		sessionBuilder.setBindingType(bindingType);
 	}
 
-	public String getFileNameSessionKey() {
-		return fileNameSessionKey;
+	public String getFilenameSessionKey() {
+		return filenameSessionKey;
 	}
 
 	@IbisDoc({"If <code>action=create</code> the session key that contains the name of the file to use. If not set, the value of the property <code>filename</code> from the input message is used", ""})
+	public void setFilenameSessionKey(String string) {
+		filenameSessionKey = string;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String string) {
-		fileNameSessionKey = string;
+		filenameSessionKey = string;
 	}
 
 	@IbisDoc({"If <code>action=create</code> the session key that contains the input stream of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the input stream of the document is stored", ""})

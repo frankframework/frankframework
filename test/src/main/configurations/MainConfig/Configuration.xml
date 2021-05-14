@@ -31,7 +31,7 @@
 	<!ENTITY CorrelationMessageId SYSTEM "./ConfigurationCorrelationMessageId.xml">
 	<!ENTITY XmlBuilderThreadSafety SYSTEM "./ConfigurationXmlBuilderThreadSafety.xml">
 	<!ENTITY DelayPipe SYSTEM "./ConfigurationDelayPipe.xml">
-	<!ENTITY GenericMessageSendingPipe SYSTEM "./ConfigurationGenericMessageSendingPipe.xml">
+	<!ENTITY SenderPipe SYSTEM "./ConfigurationSenderPipe.xml">
 	<!ENTITY XmlValidator SYSTEM "./ConfigurationXmlValidator.xml">
 	<!ENTITY SoapWrapperPipe SYSTEM "./ConfigurationSoapWrapperPipe.xml">
 	<!ENTITY EsbSoapWrapperPipe SYSTEM "./ConfigurationEsbSoapWrapperPipe.xml">
@@ -57,6 +57,7 @@
 	<!ENTITY MessageStorePeek SYSTEM "./ConfigurationMessageStoreSenderAndListenerPeek.xml">
 	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
 	<!ENTITY Validators SYSTEM "./ConfigurationValidators.xml">
+	<!ENTITY Streaming SYSTEM "./ConfigurationStreaming.xml">
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
 	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
 ]>
@@ -93,7 +94,7 @@
 	&CorrelationMessageId;
 	&XmlBuilderThreadSafety;
 	&DelayPipe;
-	&GenericMessageSendingPipe;
+	&SenderPipe;
 	&XmlValidator;
 	&SoapWrapperPipe;
 	&EsbSoapWrapperPipe;
@@ -119,6 +120,7 @@
 	&MessageStorePeek;
 	&BlockEnabledSenders;
 	&Validators;
+	&Streaming;
 	&ApiWsdlGenerator;
 	&Unzip;
 </configuration>

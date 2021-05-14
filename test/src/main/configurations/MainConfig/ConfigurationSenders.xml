@@ -27,7 +27,7 @@
 			
 			<pipe
 				name="Call ExceptionPipe"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
 					className="nl.nn.adapterframework.senders.IbisLocalSender"
@@ -71,7 +71,7 @@
 
 			<pipe
 				name="Call ExceptionPipe"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
 					className="nl.nn.adapterframework.senders.IbisLocalSender"
@@ -233,7 +233,7 @@
 
 			<pipe
 				name="Call SendersException"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
 					className="nl.nn.adapterframework.senders.IbisLocalSender"
