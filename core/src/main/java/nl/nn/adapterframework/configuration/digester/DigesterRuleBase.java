@@ -31,7 +31,6 @@ import org.xml.sax.Locator;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -40,6 +39,9 @@ import nl.nn.adapterframework.util.StringResolver;
 public abstract class DigesterRuleBase extends Rule implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
+	private @Setter ConfigurationWarnings configurationWarnings;
+	private @Setter ApplicationWarnings applicationWarnings;
+	private boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", false);
 
 	/**
 	 * Returns the name of the object. In case a Spring proxy is being used, 
@@ -62,24 +64,18 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 * Add a configuration warning message to the current configuration
 	 */
 	protected final void addLocalWarning(String message) {
-		Locator loc = getDigester().getDocumentLocator();
-//		String msg = getObjectName()+ " on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
-		String msg2 = "on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
-		
-		if(getBean() instanceof IConfigurable) {
-			ConfigurationWarnings.getInstance(applicationContext).add((IConfigurable) getBean(), log, msg2);
+		if(includeLineInformation) {
+			Locator loc = getDigester().getDocumentLocator();
+			message = "on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
 		}
-		//TODO
-		ConfigurationWarnings.getInstance(applicationContext).
-		ConfigurationWarnings.getInstance(applicationContext).add(getBean(), log, msg2);
+		configurationWarnings.add(getBean(), log, message);
 	}
 
 	/**
 	 * Add a global message to the application
 	 */
 	protected final void addGlobalWarning(String message) {
-		String msg = getBeanClass().getSimpleName() + " " + message;
-		ApplicationWarnings.add(log, msg);
+		applicationWarnings.add(getBean(), log, message);
 	}
 
 	/**
