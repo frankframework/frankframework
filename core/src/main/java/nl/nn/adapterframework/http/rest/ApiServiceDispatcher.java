@@ -237,8 +237,8 @@ public class ApiServiceDispatcher {
 		return serversArray;
 	}
 
-	public static Json2XmlValidator getJsonValidator(PipeLine pipeline, boolean isOutputValidator) {
-		IPipe validator = isOutputValidator ? pipeline.getOutputValidator() : pipeline.getInputValidator();
+	public static Json2XmlValidator getJsonValidator(PipeLine pipeline, boolean forOutputValidation) {
+		IPipe validator = forOutputValidation ? pipeline.getOutputValidator() : pipeline.getInputValidator();
 		if(validator == null) {
 			validator = pipeline.getPipe(pipeline.getFirstPipe());
 		}
@@ -339,15 +339,15 @@ public class ApiServiceDispatcher {
 		Json2XmlValidator outputValidator = getJsonValidator(pipeline, true);
 
 		JsonObjectBuilder schema = null;
-		String ref = null;
+		String schemaReferenceElement = null;
 		List<XSModel> models = new ArrayList<XSModel>();
 		if(inputValidator != null) {
 			models.addAll(inputValidator.getXSModels());
-			ref = inputValidator.getMessageRoot(true);
+			schemaReferenceElement = inputValidator.getMessageRoot(true);
 		}
 		if(outputValidator != null) {
 			models.addAll(outputValidator.getXSModels());
-			ref = outputValidator.getRoot();	// all non-empty exits should refer to this element
+			schemaReferenceElement = outputValidator.getRoot();	// all non-empty exits should refer to this element
 		}
 
 		if(!models.isEmpty()) {
@@ -369,12 +369,12 @@ public class ApiServiceDispatcher {
 			exit.add("description", status.getReasonPhrase());
 			if(!ple.getEmptyResult()) {
 				JsonObjectBuilder content = Json.createObjectBuilder();
-				if(StringUtils.isNotEmpty(ref)){
+				if(StringUtils.isNotEmpty(schemaReferenceElement)){
 					String reference = null;
 					if(StringUtils.isNotEmpty(ple.getResponseRoot()) && outputValidator == null) {
 						reference = ple.getResponseRoot();
 					} else {
-						List<String> references = Arrays.asList(ref.split(","));
+						List<String> references = Arrays.asList(schemaReferenceElement.split(","));
 						if(ple.isSuccessExit()) {
 							reference = references.get(0);
 						} else {

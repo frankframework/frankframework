@@ -73,9 +73,7 @@ public class XmlTypeToJsonSchemaConverter  {
 	}
 
 	public XmlTypeToJsonSchemaConverter(List<XSModel> models, boolean skipArrayElementContainers, String definitionsPath) {
-		this.models=models;
-		this.skipArrayElementContainers=skipArrayElementContainers;
-		this.definitionsPath=definitionsPath;
+		this(models, skipArrayElementContainers, false, null, definitionsPath);
 	}
 
 	public JsonStructure createJsonSchema(String elementName, String namespace) {
