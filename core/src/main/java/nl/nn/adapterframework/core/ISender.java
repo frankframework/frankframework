@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -25,7 +25,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author  Gerrit van Brakel
  */
-@IbisDoc({"20", "Senders"})
+@FrankDocGroup(groupOrder = 20, groupName = "Senders")
 public interface ISender extends IConfigurable {
 
 	/**

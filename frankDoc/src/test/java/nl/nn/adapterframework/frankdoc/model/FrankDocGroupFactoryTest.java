@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
-
 public class FrankDocGroupFactoryTest {
 	private FrankDocGroupFactory instance;
 
@@ -22,61 +20,74 @@ public class FrankDocGroupFactoryTest {
 
 	@Test
 	public void whenSameGroupNameRequestedThenSameGroupReturned() throws Exception {
-		FrankDocGroup first = instance.getGroup(new String[] {"MyGroup"});
-		FrankDocGroup second = instance.getGroup(new String[] {"MyGroup"});
+		FrankDocGroup first = instance.getGroup("MyGroup", Integer.MAX_VALUE);
+		FrankDocGroup second = instance.getGroup("MyGroup", Integer.MAX_VALUE);
 		assertSame(second, first);
 		assertEquals("MyGroup", first.getName());
 	}
 
 	@Test
-	public void whenGroupOtherRequestedTwiceThenSameGroupReturned() throws Exception {
-		FrankDocGroup first = instance.getGroup((String[]) null);
-		FrankDocGroup second = instance.getGroup((String[]) null);
-		assertSame(second, first);
-		assertEquals(FrankDocGroup.GROUP_NAME_OTHER, first.getName());		
-	}
-
-	@Test
-	public void whenNoAnnotationThenHaveOtherWithoutOrder() throws Exception {
-		FrankDocGroup group = instance.getGroup((String[]) null);
-		assertEquals(FrankDocGroup.GROUP_NAME_OTHER, group.getName());
+	public void whenAnnotationWithOrderDefaultThenGroupWithoutOrder() throws Exception {
+		FrankDocGroup group = instance.getGroup("MyGroup", Integer.MAX_VALUE);
+		assertEquals("MyGroup", group.getName());
 		assertEquals(Integer.MAX_VALUE, group.getOrder());
 	}
 
 	@Test
 	public void whenAnnotationWithOneValueThenGroupWithoutOrder() throws Exception {
-		FrankDocGroup group = instance.getGroup(new String[] {"MyGroup"});
+		FrankDocGroup group = instance.getGroup("MyGroup", null);
 		assertEquals("MyGroup", group.getName());
 		assertEquals(Integer.MAX_VALUE, group.getOrder());
 	}
 
 	@Test
 	public void whenAnnotationWithTwoValuesThenGroupWithOrder() throws Exception {
-		FrankDocGroup group = instance.getGroup(new String[] {"3", "MyGroup"});
+		FrankDocGroup group = instance.getGroup("MyGroup", 3);
 		assertEquals("MyGroup", group.getName());
 		assertEquals(3, group.getOrder());		
 	}
 
 	@Test
+	public void whenGroupRequestedWithAndWithoutOrderThenOrderRemains() {
+		FrankDocGroup group = instance.getGroup("MyGroup", 3);
+		group = instance.getGroup("MyGroup", Integer.MAX_VALUE);
+		assertEquals("MyGroup", group.getName());
+		assertEquals(3, group.getOrder());				
+	}
+
+	@Test
+	public void whenGroupRequestedWithoutAndWithOrderThenOrderRemains() {
+		// Integer.MAX_VALUE is the default value for the groupOrder in the @FrankDocGroup annotation.
+		FrankDocGroup group = instance.getGroup("MyGroup", Integer.MAX_VALUE);
+		group = instance.getGroup("MyGroup", 3);
+		assertEquals("MyGroup", group.getName());
+		assertEquals(3, group.getOrder());				
+	}
+
+	@Test
 	public void whenConflictingOrdersThenMinimumTaken() throws Exception {
-		FrankDocGroup first = instance.getGroup(new String[] {"3", "MyGroup"});
-		FrankDocGroup second = instance.getGroup(new String[] {"2", "MyGroup"});
+		FrankDocGroup first = instance.getGroup("MyGroup", 3);
+		FrankDocGroup second = instance.getGroup("MyGroup", 2);
 		assertSame(second, first);
 		assertEquals("MyGroup", first.getName());
 		assertEquals(2, first.getOrder());		
 	}
 
-	@Test(expected = FrankDocException.class)
-	public void whenTooManyValuesInAnnotationThenError() throws Exception {
-		instance.getGroup(new String[] {"3", "MyGroup", "extra"});		
+	@Test
+	public void whenSameOrderSetTwiceThenThatOrder() throws Exception {
+		FrankDocGroup first = instance.getGroup("MyGroup", 3);
+		FrankDocGroup second = instance.getGroup("MyGroup", 3);
+		assertSame(second, first);
+		assertEquals("MyGroup", first.getName());
+		assertEquals(3, first.getOrder());		
 	}
 
 	@Test
 	public void whenAllGroupsRequestedThenSortedGroupsReturned() throws Exception {
-		instance.getGroup(new String[] {"30", "A"});
-		instance.getGroup(new String[] {"20", "B"});
-		instance.getGroup(new String[] {"40", "C"});
-		instance.getGroup(new String[] {"10", "D"});
+		instance.getGroup("A", 30);
+		instance.getGroup("B", 20);
+		instance.getGroup("C", 40);
+		instance.getGroup("D", 10);
 		List<FrankDocGroup> allGroups = instance.getAllGroups();
 		List<String> actualGroupNames = allGroups.stream().map(FrankDocGroup::getName).collect(Collectors.toList());
 		assertArrayEquals(new String[] {"D", "B", "A", "C"}, actualGroupNames.toArray(new String[] {}));

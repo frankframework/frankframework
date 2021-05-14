@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.frankdoc.testtarget.doclet.interfaces.java5.annotation;
 
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 
 /**
  * @author martijn
  *
  */
-@IbisDoc("ClassGroup")
+@FrankDocGroup(groupName = "ClassGroup")
 public class ClassWithJava5Annotation implements InterfaceWithJavaDocTag {
 }

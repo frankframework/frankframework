@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.frankdoc.testtarget.examples.simple;
 
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 
-@IbisDoc({"10", "Child"})
+@FrankDocGroup(groupOrder = 10, groupName = "Child")
 public interface IChild {
 }

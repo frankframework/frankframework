@@ -43,6 +43,9 @@ public class FrankDocGroup implements Comparable<FrankDocGroup> {
 	}
 
 	void setOrder(int newOrder) {
+		if(newOrder == Integer.MAX_VALUE) {
+			return;
+		}
 		if(order == Integer.MAX_VALUE) {
 			order = newOrder;
 		} else if(newOrder != order) {

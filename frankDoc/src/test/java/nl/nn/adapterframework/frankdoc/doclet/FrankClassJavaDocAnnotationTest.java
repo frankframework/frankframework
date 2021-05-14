@@ -44,7 +44,7 @@ public class FrankClassJavaDocAnnotationTest {
 		if(expectedJavaDocTagValue == null) {
 			assertNull(actualGroupAnnotation);
 		} else {
-			assertEquals(expectedJavaDocTagValue, ((String[]) actualGroupAnnotation.getValue())[0]);
+			assertEquals(expectedJavaDocTagValue, (String) actualGroupAnnotation.getValueOf("groupName"));
 		}
 	}
 }

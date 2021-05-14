@@ -19,7 +19,7 @@ package nl.nn.adapterframework.frankdoc.doclet;
 import java.util.List;
 
 public interface FrankClass extends FrankType {
-	public static final String JAVADOC_GROUP_TAG = "nl.nn.adapterframework.doc.IbisDoc";
+	public static final String JAVADOC_GROUP_TAG = "nl.nn.adapterframework.doc.FrankDocGroup";
 
 	@Override
 	default boolean isPrimitive() {

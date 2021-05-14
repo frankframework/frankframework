@@ -21,11 +21,13 @@ import java.io.Reader;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 
 /**
  * @author  Gerrit van Brakel
  * @since  
  */
+@FrankDocGroup(groupName = "Batch")
 public interface IInputStreamReaderFactory {
 
 	void configure() throws ConfigurationException;

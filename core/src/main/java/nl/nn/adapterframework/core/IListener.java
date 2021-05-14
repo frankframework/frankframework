@@ -18,7 +18,7 @@ package nl.nn.adapterframework.core;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -28,7 +28,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-@IbisDoc({"30", "Listeners"})
+@FrankDocGroup(groupOrder = 30, groupName = "Listeners")
 public interface IListener<M> extends IConfigurable {
 
 	/**

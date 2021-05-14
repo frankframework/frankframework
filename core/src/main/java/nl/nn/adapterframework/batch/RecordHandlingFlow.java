@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -32,6 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * 
  * @author  John Dekker
  */
+@FrankDocGroup(groupName = "Batch")
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);
 

@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -25,7 +25,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Johan Verrips
  */
-@IbisDoc({"50", "ErrorMessageFormatters"})
+@FrankDocGroup(groupOrder = 50, groupName = "ErrorMessageFormatters")
 public interface IErrorMessageFormatter {
 
 	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);

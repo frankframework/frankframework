@@ -20,6 +20,7 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
@@ -32,6 +33,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * 
  * @author John Dekker
  */
+@FrankDocGroup(groupOrder = 60, groupName = "Batch")
 public interface IRecordHandlerManager extends INamedObject {
 
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;

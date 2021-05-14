@@ -23,36 +23,29 @@ class FrankDocGroupFactory {
 		try {
 			FrankAnnotation annotation = clazz.getGroupAnnotation();
 			if(annotation == null) {
-				result = getGroup((String[]) null);
+				result = getGroup(FrankDocGroup.GROUP_NAME_OTHER);
 			} else {
-				result = getGroup((String[]) annotation.getValue());
+				String groupName = (String) annotation.getValueOf("groupName");
+				Integer groupOrder = (Integer) annotation.getValueOf("groupOrder");
+				log.trace("FrankDocGroup requested for group name {} with new order {}", () -> groupName, () -> groupOrder);
+				result = getGroup(groupName, groupOrder);
 			}
 		} catch(FrankDocException e) {
-			log.warn("Class [{}] has invalid @IbisDoc: {}", clazz.getName(), e.getMessage());
+			log.warn("Class [{}] has invalid @FrankDocGroup: {}", clazz.getName(), e.getMessage());
 			return getGroup(FrankDocGroup.GROUP_NAME_OTHER);
 		}
 		return result;
 	}
 
-	// This method can be tested without using real Java classes.
-	FrankDocGroup getGroup(String[] annotationValues) throws FrankDocException {
-		if(annotationValues == null) {
-			return getGroup(FrankDocGroup.GROUP_NAME_OTHER);
+	FrankDocGroup getGroup(String groupName, Integer groupOrder) {
+		FrankDocGroup result;
+		result = getGroup(groupName);
+		if(groupOrder == null) {
+			// The Doclet API does not provide the default value of the @FrankDocGroup annotation.
+			// We need to repeat it here.
+			groupOrder = Integer.MAX_VALUE;
 		}
-		if((annotationValues.length >= 3) || (annotationValues.length == 0)) {
-			throw new FrankDocException(String.format("@IbisDoc annotation because invalid length [%d]", annotationValues.length), null);
-		}
-		if(annotationValues.length == 1) {
-			return getGroup(annotationValues[0]);
-		}
-		int order = Integer.MAX_VALUE;
-		try {
-			order = Integer.valueOf(annotationValues[0]);
-		} catch(NumberFormatException e) {
-			throw new FrankDocException(String.format("@IbisDoc annotation has non-numeric order [%d]", annotationValues[0]), null);
-		}
-		FrankDocGroup result = getGroup(annotationValues[1]);
-		result.setOrder(order);
+		result.setOrder(groupOrder);
 		return result;
 	}
 
