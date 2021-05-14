@@ -18,8 +18,8 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -57,11 +57,11 @@ public final class BrowseQueue extends Base {
 	public Response getBrowseQueue() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		JmsBrowser<javax.jms.Message> jmsBrowser = getIbisContext().createBeanAutowireByName(JmsBrowser.class);
-		Set<String> connectionFactories = new HashSet<String>();
-		// configured jms realm
-		connectionFactories.addAll(JmsRealmFactory.getInstance().getConnectionFactoryNames());
+		Set<String> connectionFactories = new LinkedHashSet<String>();
 		// connection factories used in configured jmsSenders etc.
 		connectionFactories.addAll(jmsBrowser.getConnectionFactoryFactory().getConnectionFactoryNames());
+		// configured jms realm
+		connectionFactories.addAll(JmsRealmFactory.getInstance().getConnectionFactoryNames());
 		if (connectionFactories.size()==0) connectionFactories.add("no connection factories found");
 		returnMap.put("connectionFactories", connectionFactories);
 
@@ -77,7 +77,9 @@ public final class BrowseQueue extends Base {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
-		String connectionFactory = null, destination = null, type = null;
+		String connectionFactory = null,
+				destination = null,
+				type = null;
 		boolean rowNumbersOnly = false,
 				showPayload = false,
 				lookupDestination=false;
