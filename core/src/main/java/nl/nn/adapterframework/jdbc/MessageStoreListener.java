@@ -23,12 +23,14 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.text.StringEscapeUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -56,9 +58,10 @@ import nl.nn.adapterframework.stream.Message;
  * @author Jaco de Groot
  */
 public class MessageStoreListener<M> extends JdbcTableListener<M> {
-	private String slotId;
-	private String sessionKeys = null;
-	private boolean moveToMessageLog = true;
+	private @Getter String slotId;
+	private @Getter String sessionKeys = null;
+	private @Getter boolean moveToMessageLog = true;
+	private @Getter boolean setRetryFlag;
 
 	private List<String> sessionKeysList;
 
@@ -110,6 +113,9 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 					threadContext.put(sessionKeysList.get(i), StringEscapeUtils.unescapeCsv(strTokenizer.nextToken()));
 					i++;
 				}
+				if (isSetRetryFlag()) {
+					threadContext.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
+				}
 			} catch (IOException e) {
 				throw new ListenerException("cannot convert message",e);
 			}
@@ -140,24 +146,15 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	public void setSlotId(String slotId) {
 		this.slotId = slotId;
 	}
-	public String getSlotId() {
-		return slotId;
-	}
 
 	@IbisDoc({"2", "Comma separated list of sessionKey's to be read together with the message. Please note: corresponding {@link MessagestoreSender} must have the same value for this attribute", ""})
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}
-	public String getSessionKeys() {
-		return sessionKeys;
-	}
 
 	@IbisDoc({"3", "Move to messageLog after processing, as the message is already stored in the ibisstore only some fields need to be updated. When set false, messages are deleted after being processed", "true"})
 	public void setMoveToMessageLog(boolean moveToMessageLog) {
 		this.moveToMessageLog = moveToMessageLog;
-	}
-	public boolean isMoveToMessageLog() {
-		return moveToMessageLog;
 	}
 
 	@Override
@@ -166,4 +163,8 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		super.setStatusValueInProcess(string);
 	}
 
+	@IbisDoc({"5", "If set, every message read is processed as if it were retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'", "false"})
+	public void setSetRetryFlag(boolean setRetryFlag) {
+		this.setRetryFlag = setRetryFlag;
+	}
 }
