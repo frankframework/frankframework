@@ -53,21 +53,6 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 	@Override
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message) {
-<<<<<<< HEAD
-//			try {
-				((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
-//			} catch (IOException e) {
-//				String msg = "Could not capture message";
-//				log.warn(msg, e);
-//				msg += ": ("+ e.getClass().getTypeName()+") "+e.getMessage();
-//				try (Writer w=writer) {
-//					w.append(msg);
-//				} catch (IOException e1) {
-//					log.warn("Could not write error message to Debugger",e1);
-//				}
-//			}
-			return message;
-=======
 			try {
 				((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
 			} catch (Throwable t) {
@@ -78,7 +63,6 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 					log.error("Could not close writer", e);
 				}
 			}
->>>>>>> refs/heads/master
 		} 
 		if (message instanceof WriterPlaceHolder) {
 			WriterPlaceHolder writerPlaceHolder = (WriterPlaceHolder)message;
@@ -94,21 +78,6 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 		if (message instanceof Message) {
 			Message m = (Message)message;
 			charsetNotifier.accept(m.getCharset());
-<<<<<<< HEAD
-//			try {
-				((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
-//			} catch (IOException e) {
-//				String msg = "Could not capture message";
-//				log.warn(msg, e);
-//				msg += ": ("+ e.getClass().getTypeName()+") "+e.getMessage();
-//				try (Writer w=new OutputStreamWriter(outputStream)) {
-//					w.append(msg);
-//				} catch (IOException e1) {
-//					log.warn("Could not write error message to Debugger",e1);
-//				}
-//			}
-			return message;
-=======
 			try {
 				((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
 			} catch (Throwable t) {
@@ -119,7 +88,6 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 					log.error("Could not close output stream", e);
 				}
 			}
->>>>>>> refs/heads/master
 		}
 		return message;
 	}
