@@ -711,7 +711,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
 			}
 			
-			if (isTransacted() && errorSender==null && errorStorage==null) {
+			if (isTransacted() && errorSender==null && errorStorage==null && !knownProcessStates().contains(ProcessState.ERROR)) {
 				ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			}
 
