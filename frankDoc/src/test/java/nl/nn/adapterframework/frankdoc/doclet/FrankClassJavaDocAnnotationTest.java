@@ -14,13 +14,13 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class FrankClassJavaDocAnnotationTest {
-	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.doclet.interfaces.classtag.";
+	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.doclet.interfaces.java5.annotation.";
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{"ClassWithJavaDocTag", "ClassGroup"},
-			{"ClassWithoutJavaDocTag", null},
+			{"ClassWithJava5Annotation", "ClassGroup"},
+			{"ClassWithoutJava5Annotation", null},
 			{"InheriterFromParent", "ClassGroup"},
 			{"ParentOverrider", "ParentOverriderGroup"},
 			{"InheriterFromChildInterface", "InterfaceGroup"},
