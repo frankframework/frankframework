@@ -542,7 +542,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
 			MessageOutputStream stream = new MessageOutputStream(owner, out, next);
-			stream.setResponse(getFileAsXmlBuilder(file, "file").toXML());
+			stream.setResponse(new Message(getFileAsXmlBuilder(file, "file").toXML()));
 			return stream;
 		} catch (FileSystemException | IOException e) {
 			throw new StreamingException("cannot obtain OutputStream", e);
