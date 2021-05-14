@@ -57,7 +57,6 @@ import org.xml.sax.XMLReader;
 import nl.nn.adapterframework.cache.EhCache;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -457,7 +456,7 @@ class MyErrorHandler implements XMLErrorHandler {
 	@Override
 	public void warning(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ApplicationWarnings.add(log, e.getMessage()); //TODO turn into ConfigurationWarning
 		}
 	}
 
@@ -469,14 +468,14 @@ class MyErrorHandler implements XMLErrorHandler {
 			throw e;
 		}
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ApplicationWarnings.add(log, e.getMessage()); //TODO turn into ConfigurationWarning
 		}
 	}
 
 	@Override
 	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ApplicationWarnings.add(log, e.getMessage()); //TODO turn into ConfigurationWarning
 		}
 		throw new XNIException(e);
 	}
