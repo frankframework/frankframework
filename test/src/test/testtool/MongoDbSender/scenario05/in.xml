@@ -1,0 +1,4 @@
+<request action="UpdateOne">
+	<filter>{ "student_id": "Joop" }</filter>
+	<json>{"$set": {"seatno":"10"}}</json>
+</request>

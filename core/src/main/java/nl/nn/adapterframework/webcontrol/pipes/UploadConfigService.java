@@ -54,14 +54,14 @@ public class UploadConfigService extends FixedForwardPipe {
 		if (inputStream == null) {
 			result = createJsonErrorResponse("invalid_request", "missing_file");
 			session.put(HTTP_STATUS_CODE, 400);
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(getSuccessForward(), result);
 		}
 		String fileName = (String) session.get("fileName");
 		if (StringUtils.isEmpty(fileName)) {
 			result = createJsonErrorResponse("invalid_request",
 					"missing_filename");
 			session.put(HTTP_STATUS_CODE, 400);
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(getSuccessForward(), result);
 		}
 
 		String name = null;
@@ -81,7 +81,7 @@ public class UploadConfigService extends FixedForwardPipe {
 			if (StringUtils.isEmpty(name) || StringUtils.isEmpty(version)) {
 				result = createJsonErrorResponse("invalid_request", "missing_name_version");
 				session.put(HTTP_STATUS_CODE, 400);
-				return new PipeRunResult(getForward(), result);
+				return new PipeRunResult(getSuccessForward(), result);
 			}
 
 			fileName = name + "-" + version + ".jar";
@@ -98,7 +98,7 @@ public class UploadConfigService extends FixedForwardPipe {
 			throw new PipeRunException(this, getLogPrefix(session) + "Error occured on adding config to database", e);
 		}
 
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private String createJsonErrorResponse(String error,

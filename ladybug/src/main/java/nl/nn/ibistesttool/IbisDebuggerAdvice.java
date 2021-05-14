@@ -35,11 +35,11 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.jms.JmsSender;
@@ -292,7 +292,8 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		String correlationId = session == null ? null : session.getMessageId();
 		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
-			Writer writer = session.scheduleCloseOnSessionExit(writerPlaceHolder.getWriter());
+			Writer writer = writerPlaceHolder.getWriter();
+			session.scheduleCloseOnSessionExit(writer);
 			XmlWriter xmlWriter = new XmlWriter(StreamUtil.limitSize(writer, writerPlaceHolder.getSizeLimit()));
 			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
 		} 

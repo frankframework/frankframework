@@ -97,7 +97,7 @@ public class CrlPipe extends FixedForwardPipe {
 			}
 			result = root.toXML();
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private boolean isCRLOK(X509CRL x509crl, InputStream issuer) throws PipeRunException {

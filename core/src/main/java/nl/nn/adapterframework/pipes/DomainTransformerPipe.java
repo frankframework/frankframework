@@ -114,7 +114,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			String invoerString = invoer.asString();
 			int startPos = invoerString.indexOf(DT_START);
 			if (startPos == -1)
-				return new PipeRunResult(getForward(), invoerString);
+				return new PipeRunResult(getSuccessForward(), invoerString);
 			char[] invoerChars = invoerString.toCharArray();
 			int copyFrom = 0;
 			while (startPos != -1) {
@@ -170,7 +170,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			JdbcUtil.fullClose(conn, stmt);
 		}
 
-		return new PipeRunResult(getForward(), buffer.toString());
+		return new PipeRunResult(getSuccessForward(), buffer.toString());
 	}
 
 	public String getValueOut(String label, String valueIn, String type, PreparedStatement stmt) throws JdbcException, SQLException {

@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +37,8 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	
 	private JdbcFacade parent=null;
 	
+	private JdbcTableListener<M> tableListener;
+	
 
 	private static final String PROPERTY_USE_INDEX_HINT=CONTROL_PROPERTY_PREFIX+"useIndexHint";
 	private static final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";
@@ -42,12 +46,12 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	protected boolean useIndexHint;
 	private boolean useFirstRowsHint;
 
-	public JdbcTableMessageBrowser() {
-		super();
+	public JdbcTableMessageBrowser(JdbcTableListener<M> tableListener) {
+		this.tableListener = tableListener;
 	}
 	
-	public JdbcTableMessageBrowser(JdbcTableListener tableListener, String statusValue, StorageType storageType) {
-		this();
+	public JdbcTableMessageBrowser(JdbcTableListener<M> tableListener, String statusValue, StorageType storageType) {
+		this(tableListener);
 		parent=tableListener;
 		setKeyField(tableListener.getKeyField());
 		setIdField(tableListener.getKeyField());
@@ -88,13 +92,19 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		useFirstRowsHint = ac.getBoolean(PROPERTY_USE_FIRST_ROWS_HINT, true);
 	}
 
-
+	@Override
+	protected M retrieveObject(ResultSet rs, int columnIndex) throws JdbcException, SQLException {
+		if (tableListener!=null) {
+			return tableListener.extractRawMessage(rs);
+		}
+		return (M)rs.getString(columnIndex);
+	}
 	
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {
 		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
 		String listClause=getListClause();
 		selectContextQuery = "SELECT "+listClause+ getWhereClause(getKeyField()+"=?",true);
-		selectDataQuery = "SELECT "+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
+		selectDataQuery = "SELECT "+getKeyField()+","+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
 		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
 		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
 		try {

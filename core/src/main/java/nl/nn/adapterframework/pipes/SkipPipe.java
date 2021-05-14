@@ -68,7 +68,7 @@ public class SkipPipe extends FixedForwardPipe {
 				}
 				result = bytesResult;
 			}
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(getSuccessForward(), result);
 		} catch(Exception e) {
 			throw new PipeRunException(this, "Error while transforming input", e); 
 		}

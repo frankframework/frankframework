@@ -227,7 +227,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			// has a mount to the IUF state machine).
 			String fxfFile = fxfDir + File.separator + flowId + File.separator + "in" + File.separator + new File(clientFilename).getName();
 			session.put(getFxfFileSessionKey(), fxfFile);
-			return new PipeRunResult(getForward(), fxfFile);
+			return new PipeRunResult(getSuccessForward(), fxfFile);
 		}
 	}
 

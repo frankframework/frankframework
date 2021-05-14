@@ -27,14 +27,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class FrankDocModelConfigChildrenDetailTest {
 	private FrankDocModel instance;
 
 	@Before
 	public void setUp() throws SAXException, IOException {
-		instance = new FrankDocModel(FrankClassRepository.getReflectInstance());
+		// No need to set include and exclude filters of the FrankClassRepository, because
+		// we are not asking for the implementations of an interface.
+		instance = new FrankDocModel(TestUtil.getFrankClassRepositoryDoclet());
 		instance.createConfigChildDescriptorsFrom("doc/fake-digester-rules.xml");
 	}
 

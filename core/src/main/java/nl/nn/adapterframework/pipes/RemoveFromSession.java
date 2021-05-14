@@ -97,7 +97,7 @@ import nl.nn.adapterframework.stream.Message;
 			}
 		}
 	
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	 

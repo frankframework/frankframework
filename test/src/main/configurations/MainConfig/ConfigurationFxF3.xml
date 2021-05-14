@@ -27,7 +27,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="EchoSender"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
 					flowId="NNX01234" createFolder="true"/>
 				<inputValidator
@@ -48,7 +48,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="EchoSender"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
 					flowId="NNX01234" fxfVersion="3.2" cmhVersion="2" createFolder="true"/>
 				<inputValidator

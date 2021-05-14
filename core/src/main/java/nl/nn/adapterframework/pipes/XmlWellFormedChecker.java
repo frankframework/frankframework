@@ -63,7 +63,7 @@ public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator
 		}
 		if (XmlUtils.isWellFormed(input, getRoot())) {
 			throwEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		}
 		throwEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
 		PipeForward forward = findForward("parserError");

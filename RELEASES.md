@@ -12,7 +12,11 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- 'fileName' in attributes is replaced with 'filename'
 
+### Non backwards compatible changes
+
+- ManageDatabase adapter has been disabled by default on ACC and PRD environments
 
 
 7.6-RC1

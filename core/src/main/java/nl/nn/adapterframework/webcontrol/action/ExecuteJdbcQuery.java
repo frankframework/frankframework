@@ -85,7 +85,7 @@ public final class ExecuteJdbcQuery extends ActionBase {
 
 		// Forward control to the specified success URI
 		log.debug("forward to success");
-		return (mapping.findForward("success"));
+		return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 
 	}
 }

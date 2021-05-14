@@ -1,7 +1,6 @@
 <module>
 	<adapter name="ApiListener_SimpleInsert">
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			checkForDuplicates="true"
 			processResultCacheSize="0"
 			>
@@ -18,13 +17,13 @@
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" jmsRealm="jdbc" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
 
-			<pipe name="FixedResult" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;success/&gt;">
+			<pipe name="FixedResultPipe" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;success/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
@@ -32,7 +31,6 @@
 	</adapter>
 	<adapter name="ApiListener_SimpleInsertWithTransactedException">
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			checkForDuplicates="true"
 			processResultCacheSize="0"
 			transactionAttribute="Required"
@@ -50,7 +48,7 @@
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" jmsRealm="jdbc" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
@@ -62,7 +60,6 @@
 	</adapter>
 	<adapter name="ApiListener_SimpleInsertWithException">
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			checkForDuplicates="true"
 			processResultCacheSize="0"
 			>
@@ -80,7 +77,7 @@
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" jmsRealm="jdbc" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
@@ -92,7 +89,7 @@
 	</adapter>
 
 	<adapter name="CallApiListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CallApiListener" />
 		</receiver>
 		<pipeline firstPipe="callApiListener">
@@ -101,7 +98,7 @@
 			</exits>
 
 			<pipe name="callApiListener"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param" methodType="post" resultStatusCodeSessionKey="statusCode">
 					<param name="url_param" value="" /> <!-- use pipeline input -->
@@ -115,7 +112,7 @@
 				<forward name="500" path="FixedResultOnException" />
 			</pipe>
 
-			<pipe name="FixedResultOnException" className="nl.nn.adapterframework.pipes.FixedResult" returnString="&lt;error/&gt;">
+			<pipe name="FixedResultOnException" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;error/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 /**
  * Class {@link FrankElement} has many different method to get children
@@ -40,7 +41,8 @@ public class AncestorKindsTest {
 
 	@Before
 	public void setUp() {
-		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild", FrankClassRepository.getReflectInstance());
+		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
+		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild", classRepository);
 	}
 
 	@Test

@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class ElementRoleIntegrationTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.role.";
@@ -30,7 +31,8 @@ public class ElementRoleIntegrationTest {
 
 	@Before
 	public void setUp() {
-		model = FrankDocModel.populate("doc/role-digester-rules.xml", PACKAGE + "Master", FrankClassRepository.getReflectInstance());
+		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
+		model = FrankDocModel.populate("doc/role-digester-rules.xml", PACKAGE + "Master", repository);
 	}
 
 	@Test

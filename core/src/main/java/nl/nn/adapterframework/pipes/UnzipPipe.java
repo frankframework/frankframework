@@ -261,7 +261,7 @@ public class UnzipPipe extends FixedForwardPipe {
 			throw new PipeRunException(this,"cannot unzip",e);
 		}
 		String result = "<results count=\"" + count + "\">" + entryResults + "</results>";
-		return new PipeRunResult(getForward(),result);
+		return new PipeRunResult(getSuccessForward(),result);
 	}
 
 	@IbisDoc({"1", "Directory to extract the archive to", ""})

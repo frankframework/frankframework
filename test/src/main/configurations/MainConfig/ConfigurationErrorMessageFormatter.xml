@@ -3,7 +3,7 @@
 		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter" styleSheet="ErrorMessageFormatter/buildGenericError.xsl">
 			<param name="foutCode" value="1001" />
 		</errorMessageFormatter>
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ErrorMessageFormatter">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ErrorMessageFormatter" throwException="false" />
 		</receiver>
 		<pipeline firstPipe="GenerateException">

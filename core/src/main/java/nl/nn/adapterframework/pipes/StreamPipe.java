@@ -258,7 +258,7 @@ public class StreamPipe extends FixedForwardPipe {
 		} catch (FileUploadException e) {
 			throw new PipeRunException(this, "FileUploadException getting multiparts from httpServletRequest", e);
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 	
 	protected String adjustFirstStringPart(String firstStringPart, PipeLineSession session) throws PipeRunException {

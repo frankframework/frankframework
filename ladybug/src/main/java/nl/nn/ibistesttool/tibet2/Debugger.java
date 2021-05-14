@@ -63,7 +63,7 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 					if(securityContext.getUserPrincipal() != null)
 						pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 					PipeLineResult processResult = adapter.processMessage(correlationId, new Message(inputMessage), pipeLineSession);
-					if (!(processResult.getState().equalsIgnoreCase("success") && processResult.getResult().asString().equalsIgnoreCase("<ok/>"))) {
+					if (!(processResult.isSuccessful() && processResult.getResult().asString().equalsIgnoreCase("<ok/>"))) {
 						errorMessage = "Rerun failed. Result of adapter " + RESEND_ADAPTER + ": " + processResult.getResult().asString();
 					}
 				} catch (IOException e) {

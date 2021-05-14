@@ -11,6 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class ConfigChildTechnicalOverrideTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.technical.override.";
@@ -20,7 +21,8 @@ public class ConfigChildTechnicalOverrideTest {
 
 	@BeforeClass
 	public static void setUp() {
-		model = FrankDocModel.populate(DIGESTER_RULES, PACKAGE + "Master", FrankClassRepository.getReflectInstance());
+		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
+		model = FrankDocModel.populate(DIGESTER_RULES, PACKAGE + "Master", repository);
 	}
 
 	@Test

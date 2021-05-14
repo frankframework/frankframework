@@ -1,13 +1,13 @@
 <ibis>
 	<adapter name="ClobAndBlob" description="Test the functioning handling CLOBs and BLOBs">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ClobAndBlob">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ClobAndBlob" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="prepareDummyInput" className="nl.nn.adapterframework.pipes.FixedResult" storeResultInSessionKey="dummyInput" returnString="&lt;root&gt;dummyInput&lt;/root&gt;" />
+			<pipe name="prepareDummyInput" className="nl.nn.adapterframework.pipes.FixedResultPipe" storeResultInSessionKey="dummyInput" returnString="&lt;root&gt;dummyInput&lt;/root&gt;" />
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage"
 			xpathExpression="request/@action"/>
 
@@ -66,7 +66,7 @@
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 			</pipe>
-			<pipe name="prepareClobResultSessionKey" className="nl.nn.adapterframework.pipes.FixedResult" storeResultInSessionKey="clobResult" returnString="${testdata.dir}/clobresult.txt" />
+			<pipe name="prepareClobResultSessionKey" className="nl.nn.adapterframework.pipes.FixedResultPipe" storeResultInSessionKey="clobResult" returnString="${testdata.dir}/clobresult.txt" />
 			<pipe name="cleanupClobResult" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="delete" filename="${testdata.dir}/clobresult.txt" >
 				<forward name="exception" path="readClobViaSessionKey" />
 			</pipe>
@@ -76,7 +76,7 @@
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 			</pipe>
-			<pipe name="renderClob" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" fileName="${testdata.dir}/clobresult.txt">
+			<pipe name="renderClob" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" filename="${testdata.dir}/clobresult.txt">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
@@ -137,7 +137,7 @@
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
-			<pipe name="prepareBlobResultSessionKey" className="nl.nn.adapterframework.pipes.FixedResult" storeResultInSessionKey="blobResult" returnString="${testdata.dir}/blobresult1.txt" />
+			<pipe name="prepareBlobResultSessionKey" className="nl.nn.adapterframework.pipes.FixedResultPipe" storeResultInSessionKey="blobResult" returnString="${testdata.dir}/blobresult1.txt" />
 			<pipe name="cleanupBlobResult" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="delete" filename="${testdata.dir}/blobresult1.txt" >
 				<forward name="exception" path="readBlobViaSessionKey" />
 			</pipe>
@@ -148,7 +148,7 @@
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
-			<pipe name="renderBlob1" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" fileName="${testdata.dir}/blobresult1.txt">
+			<pipe name="renderBlob1" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" filename="${testdata.dir}/blobresult1.txt">
 				<forward name="success" path="EXIT" />
 			</pipe>
 

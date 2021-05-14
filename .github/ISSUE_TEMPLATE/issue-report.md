@@ -13,6 +13,7 @@ A clear and concise description of what the issue is.
 **Reporter**
 Please state your name. If we don't know who is reporting, a solution of the issue might be delayed.
 
+<!-- If your issue is a bug or a problem an existing instance, please provide us the context below this line  -->
 **To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
@@ -40,7 +41,7 @@ Please go to the console of your Frank, click on 'Information' and copy-paste th
 ```
 
 **Additional Environment**
- - DBMS: [e.g. Oracle, MSSQL, MariaDB, MySql,PostgreSQL]
+ - DBMS: [e.g. Oracle, MSSQL, MariaDB, MySql, PostgreSQL]
  - Browser: [e.g. Chrome, Safari, Edge, Firefox]
 
 **Additional Context**

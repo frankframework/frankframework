@@ -140,6 +140,11 @@
 				<version>7.7-SNAPSHOT</version>
 			</dependency>
 			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-frankDoc</artifactId>
+				<version>7.7-SNAPSHOT</version>
+			</dependency>
+			<dependency>
 				<groupId>commons-lang</groupId>
 				<artifactId>commons-lang</artifactId>
 				<version>2.6</version>
@@ -289,7 +294,7 @@
 				<executions>
 					<execution>
 						<id>attach-sources</id>
-						<phase>verify</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>jar-no-fork</goal>
 						</goals>
@@ -330,6 +335,28 @@
 				<version>3.9.1</version>
 			</plugin>
 		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.projectlombok</groupId>
+					<artifactId>lombok-maven-plugin</artifactId>
+					<version>1.18.16.0</version>
+					<executions>
+						<execution>
+							<phase>generate-sources</phase>
+							<goals>
+								<goal>delombok</goal>
+							</goals>
+							<configuration>
+								<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+								<addOutputDirectory>false</addOutputDirectory>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<reporting>
@@ -350,6 +377,14 @@
 				<configuration>
 					<doclint>none</doclint>
 				</configuration>
+				<reportSets>
+					<reportSet>
+						<id>javadoc</id>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+				</reportSets>
 			</plugin>
 		</plugins>
 	</reporting>
@@ -514,6 +549,10 @@
 			<build>
 				<plugins>
 					<plugin>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<version>3.2.0</version>
@@ -548,19 +587,52 @@
 							</execution>
 						</executions>
 					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>attachFrankDoc</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
 					<plugin>
 						<groupId>org.projectlombok</groupId>
 						<artifactId>lombok-maven-plugin</artifactId>
-						<version>1.18.16.0</version>
+					</plugin>
+					<plugin>
+						<groupId>org.ibissource</groupId>
+						<artifactId>frank-doc-plugin</artifactId>
+						<version>0.1-SNAPSHOT</version>
+						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
+						<configuration>
+							<doclint>none</doclint>
+							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
+							<docletArtifact>
+								<groupId>org.ibissource</groupId>
+								<artifactId>ibis-adapterframework-frankDoc</artifactId>
+								<version>${project.version}</version>
+							</docletArtifact>
+							<additionalOptions>
+								<additionalOption>-outputDirectory</additionalOption>
+								<additionalOption>${project.build.directory}/frankdoc</additionalOption>
+							</additionalOptions>
+							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
+							<source>1.8</source>
+							<useStandardDocletOptions>false</useStandardDocletOptions>
+							<appendTo>ibis-adapterframework-core</appendTo>
+							<finalName>ibis-adapterframework-frankdoc-${project.version}</finalName>
+						</configuration>
 						<executions>
 							<execution>
-								<phase>generate-sources</phase>
+								<id>attach-frankdoc</id>
+								<phase>process-sources</phase>
 								<goals>
-									<goal>delombok</goal>
+									<goal>aggregate-jar</goal>
 								</goals>
 								<configuration>
-									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-									<addOutputDirectory>false</addOutputDirectory>
+									<failOnError>false</failOnError>
 								</configuration>
 							</execution>
 						</executions>

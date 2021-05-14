@@ -189,14 +189,19 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 
 			TransformerPool poolToUse = transformerPool;
-			if(StringUtils.isNotEmpty(styleSheetNameSessionKey) && session.get(styleSheetNameSessionKey) != null) {
-				String styleSheetNameToUse = session.get(styleSheetNameSessionKey).toString();
-			
-				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
-					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameToUse, null, true, getParameterList()));
-					poolToUse.open();
-				} else {
-					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+			if(StringUtils.isNotEmpty(styleSheetNameSessionKey)) {
+				if (session.get(styleSheetNameSessionKey) != null) {
+					String styleSheetNameToUse = session.get(styleSheetNameSessionKey).toString();
+				
+					if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+						dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameToUse, null, true, getParameterList()));
+						poolToUse.open();
+					} else {
+						poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+					}
+				} 
+				if (poolToUse == null) {
+					throw new SenderException("no XSLT stylesheet found from styleSheetNameSessionKey ["+session.get(styleSheetNameSessionKey)+"], and neither one statically configured");
 				}
 			}
 			

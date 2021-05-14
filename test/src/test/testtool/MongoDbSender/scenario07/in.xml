@@ -1,0 +1,3 @@
+<request action="DeleteOne">
+	<json>{ "class_id": "first" }</json>
+</request>

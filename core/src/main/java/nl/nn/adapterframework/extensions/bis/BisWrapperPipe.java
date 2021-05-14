@@ -356,7 +356,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
 
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private String prepareMessageHeader(String originalMessageHeader, String conversationId, String externalRefToMessageId) throws SAXException, IOException, TransformerException {
