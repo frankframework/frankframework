@@ -48,12 +48,12 @@ import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -360,7 +360,7 @@ public class TransformerPool {
 					String xsltVersionInStylesheet = result.getConfigMap().get("stylesheet-version");
 					int detectedXsltVersion = XmlUtils.interpretXsltVersion(xsltVersionInStylesheet);
 					if (xsltVersion!=detectedXsltVersion) {
-						ConfigurationWarnings.add(null, log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+detectedXsltVersion+"] declared in stylesheet ["+styleSheet.getSystemId()+"]");
+						ApplicationWarnings.add(log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+detectedXsltVersion+"] declared in stylesheet ["+styleSheet.getSystemId()+"]");
 					}
 				}
 			} catch (IOException e) {

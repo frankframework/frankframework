@@ -23,7 +23,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -377,7 +376,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getClassLoader().getClass().getSimpleName();
 	}
 
-	@Autowired
 	public void setIbisManager(IbisManager ibisManager) {
 		this.ibisManager = ibisManager;
 	}

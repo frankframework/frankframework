@@ -18,21 +18,16 @@ package nl.nn.adapterframework.configuration.digester;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester3.Rule;
 import org.apache.logging.log4j.Logger;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
+
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Helper class to check that each attribute set from the configuration is available on the 
@@ -42,7 +37,6 @@ import org.xml.sax.Locator;
  */
 public class AttributeCheckingRule extends Rule {
 	protected Logger log = LogUtil.getLogger(this);
-	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
 
 	/**
 	 * Returns the name of the object. In case a Spring proxy is being used, 
@@ -78,26 +72,7 @@ public class AttributeCheckingRule extends Rule {
 				if (m==null) {
 					Locator loc = getDigester().getDocumentLocator();
 					String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" does not have an attribute ["+name+"] to set to value ["+attributes.getValue(name)+"]";
-					ConfigurationWarnings.add(null, log, msg); //We need to use this as it's a configuration specific warning
-				} else {
-					ConfigurationWarning warning = AnnotationUtils.findAnnotation(m, ConfigurationWarning.class);
-					if(warning != null) {
-						Locator loc = getDigester().getDocumentLocator();
-						String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" attribute ["+name+"]";
-						boolean isDeprecated = AnnotationUtils.findAnnotation(m, Deprecated.class) != null;
-
-						if(isDeprecated) {
-							msg += " is deprecated";
-						}
-
-						if(StringUtils.isNotEmpty(warning.value())) {
-							msg += ": " + warning.value();
-						}
-
-						if(!(suppressDeprecationWarnings && isDeprecated)) { //Don't log if deprecation warnings are suppressed and it is deprecated
-							ConfigurationWarnings.add(null, log, msg); //We need to use this as it's a configuration specific warning
-						}
-					}
+					ApplicationWarnings.add(log, msg);
 				}
 			}
 		}

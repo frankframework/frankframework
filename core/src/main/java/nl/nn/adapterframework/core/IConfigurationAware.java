@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public interface IConfigurable extends INamedObject, IConfigurationAware {
+public interface IConfigurationAware extends IScopeProvider, ApplicationContextAware {
 
-	public void configure() throws ConfigurationException;
+	public String getName();
+	public ApplicationContext getApplicationContext();
 }

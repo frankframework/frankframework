@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
@@ -90,7 +89,6 @@ public class AdapterManager implements ApplicationContextAware, AutoCloseable, C
 		if(log.isDebugEnabled()) log.debug("unregistered adapter ["+name+"] from AdapterManager ["+this+"]");
 	}
 
-	@Autowired
 	public void setAdapterLifecycleWrappers(List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers) {
 		this.adapterLifecycleWrappers = adapterLifecycleWrappers;
 	}
