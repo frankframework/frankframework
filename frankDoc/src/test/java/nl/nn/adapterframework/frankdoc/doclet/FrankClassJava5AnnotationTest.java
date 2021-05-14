@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class FrankClassJavaDocAnnotationTest {
+public class FrankClassJava5AnnotationTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.doclet.interfaces.java5.annotation.";
 
 	@Parameters(name = "{0}")
@@ -32,19 +32,19 @@ public class FrankClassJavaDocAnnotationTest {
 	public String queriedClass;
 
 	@Parameter(1)
-	public String expectedJavaDocTagValue;
+	public String expectedValue;
 
 	@Test
-	public void testJavaDocTagValue() throws Exception {
+	public void testJavaAnnotationValue() throws Exception {
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		FrankClass instance = repository.findClass(PACKAGE + queriedClass);
-		// TODO: Will rename this method and give it the JavaDoc tag name as argument.
+		// TODO: Will rename this method and give it Java annotation class name as argument.
 		// This has to be done for similar methods in FrankMethod as well.
 		FrankAnnotation actualGroupAnnotation = instance.getGroupAnnotation();
-		if(expectedJavaDocTagValue == null) {
+		if(expectedValue == null) {
 			assertNull(actualGroupAnnotation);
 		} else {
-			assertEquals(expectedJavaDocTagValue, (String) actualGroupAnnotation.getValueOf("groupName"));
+			assertEquals(expectedValue, (String) actualGroupAnnotation.getValueOf("groupName"));
 		}
 	}
 }
