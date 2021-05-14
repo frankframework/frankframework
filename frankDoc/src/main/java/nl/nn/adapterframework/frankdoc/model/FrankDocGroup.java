@@ -16,16 +16,47 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.model;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.util.LogUtil;
 
-public class FrankDocGroup {
+public class FrankDocGroup implements Comparable<FrankDocGroup> {
+	private static Logger log = LogUtil.getLogger(FrankDocGroup.class);
+
+	private static final Comparator<FrankDocGroup> COMPARATOR =
+			Comparator.comparingInt(FrankDocGroup::getOrder).thenComparing(FrankDocGroup::getName);
+	static String GROUP_NAME_OTHER = "Other";
+
 	private final @Getter String name;
-	private final @Getter List<FrankElement> elements;
+	private @Getter int order = Integer.MAX_VALUE;
+	private @Getter @Setter(AccessLevel.PACKAGE) List<FrankElement> elements = new ArrayList<>();
 
-	FrankDocGroup(String name, List<FrankElement> elements) {
+	FrankDocGroup(String name) {
 		this.name = name;
-		this.elements = elements;
+	}
+
+	void setOrder(int newOrder) {
+		if(order == Integer.MAX_VALUE) {
+			order = newOrder;
+		} else if(newOrder != order) {
+			int selectedOrder = Math.min(order, newOrder);
+			// Adding the class name that causes the conflict requires us to
+			// make the class name available. Adding this feature is not worth
+			// the extra complexity of the code.
+			log.warn("Conflicting order values for group {}. Old {}, new {}, selected {}", name, order, newOrder, selectedOrder);
+			order = selectedOrder;
+		}
+	}
+
+	@Override
+	public int compareTo(FrankDocGroup other) {
+		return COMPARATOR.compare(this, other);
 	}
 }

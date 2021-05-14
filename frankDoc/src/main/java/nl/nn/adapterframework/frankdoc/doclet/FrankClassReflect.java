@@ -297,7 +297,7 @@ class FrankClassReflect implements FrankClass {
 	}
 
 	@Override
-	public String getGroupName() {
+	public FrankAnnotation getGroupAnnotation() {
 		return null;
 	}
 }

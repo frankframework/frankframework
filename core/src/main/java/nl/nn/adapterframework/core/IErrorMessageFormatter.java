@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -23,9 +24,8 @@ import nl.nn.adapterframework.stream.Message;
  * By implementing this interface, it is possible to customize messages.
  * 
  * @author Johan Verrips
- * 
- * @ff.group ErrorMessageFormatter
  */
+@IbisDoc({"50", "ErrorMessageFormatters"})
 public interface IErrorMessageFormatter {
 
 	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);

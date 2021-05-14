@@ -1,9 +1,11 @@
 package nl.nn.adapterframework.frankdoc.testtarget.doclet.interfaces.classtag;
 
+import nl.nn.adapterframework.doc.IbisDoc;
+
 /**
- * @ff.group ParentOverriderGroup
  * @author martijn
  *
  */
+@IbisDoc("ParentOverriderGroup")
 public class ParentOverrider extends ClassWithJavaDocTag implements InterfaceWithJavaDocTag {
 }

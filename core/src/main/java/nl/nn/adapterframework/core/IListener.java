@@ -18,6 +18,7 @@ package nl.nn.adapterframework.core;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -26,9 +27,8 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author  Gerrit van Brakel
  * @since   4.2
- *
- * @ff.group Listener
  */
+@IbisDoc({"30", "Listeners"})
 public interface IListener<M> extends IConfigurable {
 
 	/**

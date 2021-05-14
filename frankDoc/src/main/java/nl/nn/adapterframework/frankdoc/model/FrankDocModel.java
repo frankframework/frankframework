@@ -61,11 +61,9 @@ public class FrankDocModel {
 
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
 	
-	/**
-	 * Values of the groups map are sorted alphabetically.
-	 */
+	private FrankDocGroupFactory groupFactory = new FrankDocGroupFactory();
 	private @Getter List<FrankDocGroup> groups;
-
+	
 	// We want to iterate FrankElement in the order they are created, to be able
 	// to create the ElementRole objects in the right order. 
 	private @Getter Map<String, FrankElement> allElements = new LinkedHashMap<>();
@@ -176,7 +174,8 @@ public class FrankDocModel {
 			return allElements.get(clazz.getName());
 		}
 		log.trace("Creating FrankElement for class name [{}]", () -> clazz.getName());
-		FrankElement current = new FrankElement(clazz);
+		FrankDocGroup group = groupFactory.getGroup(clazz);
+		FrankElement current = new FrankElement(clazz, group);
 		allElements.put(clazz.getName(), current);
 		FrankClass superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass.getName());
@@ -671,15 +670,14 @@ public class FrankDocModel {
 	}
 
 	public void buildGroups() {
-		Map<String, List<FrankElement>> groupsBase = allElements.values().stream()
+		Map<String, List<FrankElement>> groupsElements = allElements.values().stream()
 				.filter(f -> ! f.getXmlElementNames().isEmpty())
-				.collect(Collectors.groupingBy(FrankElement::getGroupName));
-		List<String> sortedGroupNames = groupsBase.keySet().stream().sorted().collect(Collectors.toList());
-		groups = new ArrayList<>();
-		for(String groupName: sortedGroupNames) {
-			List<FrankElement> members = new ArrayList<>(groupsBase.get(groupName));
-			Collections.sort(members);
-			groups.add(new FrankDocGroup(groupName, members));
+				.collect(Collectors.groupingBy(f -> f.getGroup().getName()));
+		groups = groupFactory.getAllGroups();
+		for(FrankDocGroup group: groups) {
+			List<FrankElement> elements = new ArrayList<>(groupsElements.get(group.getName()));
+			Collections.sort(elements);
+			group.setElements(elements);
 		}
 	}
 }

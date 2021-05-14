@@ -1,9 +1,11 @@
 package nl.nn.adapterframework.frankdoc.testtarget.doclet.interfaces.classtag;
 
+import nl.nn.adapterframework.doc.IbisDoc;
+
 /**
- * @ff.group ClassGroup
  * @author martijn
  *
  */
+@IbisDoc("ClassGroup")
 public class ClassWithJavaDocTag implements InterfaceWithJavaDocTag {
 }

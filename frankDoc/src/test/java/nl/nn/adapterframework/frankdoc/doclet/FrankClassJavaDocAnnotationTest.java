@@ -21,7 +21,6 @@ public class FrankClassJavaDocAnnotationTest {
 		return Arrays.asList(new Object[][] {
 			{"ClassWithJavaDocTag", "ClassGroup"},
 			{"ClassWithoutJavaDocTag", null},
-			{"ClassWithEmptyJavaDocTag", ""},
 			{"InheriterFromParent", "ClassGroup"},
 			{"ParentOverrider", "ParentOverriderGroup"},
 			{"InheriterFromChildInterface", "InterfaceGroup"},
@@ -41,11 +40,11 @@ public class FrankClassJavaDocAnnotationTest {
 		FrankClass instance = repository.findClass(PACKAGE + queriedClass);
 		// TODO: Will rename this method and give it the JavaDoc tag name as argument.
 		// This has to be done for similar methods in FrankMethod as well.
-		String actualJavaDocTagValue = instance.getGroupName();
+		FrankAnnotation actualGroupAnnotation = instance.getGroupAnnotation();
 		if(expectedJavaDocTagValue == null) {
-			assertNull(actualJavaDocTagValue);
+			assertNull(actualGroupAnnotation);
 		} else {
-			assertEquals(expectedJavaDocTagValue, actualJavaDocTagValue);
+			assertEquals(expectedJavaDocTagValue, ((String[]) actualGroupAnnotation.getValue())[0]);
 		}
 	}
 }

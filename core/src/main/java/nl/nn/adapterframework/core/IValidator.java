@@ -15,13 +15,14 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.doc.IbisDoc;
+
 /**
  * Marker interface for Validators
  * 
  * @author Gerrit van Brakel
- *
- * @ff.group Validator
  */
+@IbisDoc({"40", "Validators"})
 public interface IValidator extends IPipe {
 
 }

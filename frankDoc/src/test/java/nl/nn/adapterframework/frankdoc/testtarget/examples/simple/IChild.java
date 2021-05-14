@@ -1,9 +1,7 @@
 package nl.nn.adapterframework.frankdoc.testtarget.examples.simple;
 
-/**
- * @ff.group Child
- * @author martijn
- *
- */
+import nl.nn.adapterframework.doc.IbisDoc;
+
+@IbisDoc({"10", "Child"})
 public interface IChild {
 }

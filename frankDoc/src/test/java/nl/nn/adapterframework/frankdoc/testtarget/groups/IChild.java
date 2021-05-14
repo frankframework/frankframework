@@ -1,9 +1,7 @@
 package nl.nn.adapterframework.frankdoc.testtarget.groups;
 
-/**
- * @ff.group Listener
- * @author martijn
- *
- */
+import nl.nn.adapterframework.doc.IbisDoc;
+
+@IbisDoc({"10", "Listener"})
 public interface IChild {
 }

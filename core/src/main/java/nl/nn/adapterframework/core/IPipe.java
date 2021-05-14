@@ -18,6 +18,7 @@ package nl.nn.adapterframework.core;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedResultPipe;
 import nl.nn.adapterframework.stream.Message;
 
@@ -25,9 +26,8 @@ import nl.nn.adapterframework.stream.Message;
  * A Pipe represents an action to take in a {@link PipeLine}.
  * 
  * @author Johan Verrips
- * 
- * @ff.group Pipe
  */
+@IbisDoc({"10", "Pipes"})
 public interface IPipe extends INamedObject, IForwardTarget {
 	/**
 	 * <code>configure()</code> is called once after the {@link PipeLine} is registered

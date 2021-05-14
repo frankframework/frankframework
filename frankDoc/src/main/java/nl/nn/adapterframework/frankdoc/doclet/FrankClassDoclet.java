@@ -33,7 +33,6 @@ import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.FieldDoc;
 import com.sun.javadoc.MethodDoc;
-import com.sun.javadoc.Tag;
 
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -268,36 +267,27 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	@Override
-	public String getGroupName() throws FrankDocException {
-		String result = getGroupNameExcludingImplementedInterfaces();
+	public FrankAnnotation getGroupAnnotation() throws FrankDocException {
+		FrankAnnotation result = getGroupAnnotationExcludingImplementedInterfaces();
 		if(result == null) {
-			result = getGroupNameFromImplementedInterfaces();
+			result = getGroupAnnotationFromImplementedInterfaces();
 		}
 		return result;
 	}
 
-	private String getGroupNameExcludingImplementedInterfaces() throws FrankDocException {
-		String result = getDeclaredGroupName();
+	private FrankAnnotation getGroupAnnotationExcludingImplementedInterfaces() throws FrankDocException {
+		FrankAnnotation result = getAnnotation(JAVADOC_GROUP_TAG);
 		if((result == null) && (getSuperclass() != null)) {
-			result = ((FrankClassDoclet) getSuperclass()).getGroupNameExcludingImplementedInterfaces();
+			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationExcludingImplementedInterfaces();
 		}
 		return result;
 	}
 
-	private String getDeclaredGroupName() {
-		String result = null;
-		Tag[] tags = clazz.tags(FrankClass.JAVADOC_GROUP_TAG);
-		if(tags.length >= 1) {
-			result = tags[0].text();
-		}
-		return result;
-	}
-
-	private String getGroupNameFromImplementedInterfaces() throws FrankDocException {
-		TransitiveImplementedInterfaceBrowser<String> browser = new TransitiveImplementedInterfaceBrowser<>(this);
-		String result = browser.search(c -> ((FrankClassDoclet) c).getDeclaredGroupName());
+	private FrankAnnotation getGroupAnnotationFromImplementedInterfaces() throws FrankDocException {
+		TransitiveImplementedInterfaceBrowser<FrankAnnotation> browser = new TransitiveImplementedInterfaceBrowser<>(this);
+		FrankAnnotation result = browser.search(c -> ((FrankClassDoclet) c).getAnnotation(JAVADOC_GROUP_TAG));
 		if((result == null) && (getSuperclass() != null)) {
-			result = ((FrankClassDoclet) getSuperclass()).getGroupNameFromImplementedInterfaces();
+			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationFromImplementedInterfaces();
 		}
 		return result;
 	}
