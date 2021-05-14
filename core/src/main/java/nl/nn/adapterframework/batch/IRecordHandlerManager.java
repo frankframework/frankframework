@@ -33,7 +33,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * 
  * @author John Dekker
  */
-@FrankDocGroup(groupOrder = 60, groupName = "Batch")
+@FrankDocGroup(groupOrder = 70, groupName = "Batch")
 public interface IRecordHandlerManager extends INamedObject {
 
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;
