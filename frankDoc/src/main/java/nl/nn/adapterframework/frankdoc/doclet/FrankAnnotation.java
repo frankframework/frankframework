@@ -16,6 +16,17 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.doclet;
 
+/**
+ * Models a Java 5 annotation. Only value types String[], String and Integer are supported.
+ * @author martijn
+ *
+ */
 public interface FrankAnnotation extends FrankProgramElement {
+	/**
+	 * Get the "value" field of the annotation.
+	 * @throws FrankDocException
+	 */
 	Object getValue() throws FrankDocException;
+
+	public Object getValueOf(String fieldName) throws FrankDocException;
 }
