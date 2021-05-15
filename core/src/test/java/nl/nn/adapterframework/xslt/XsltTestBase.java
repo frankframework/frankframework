@@ -121,7 +121,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	 */
 	@Test
 	public void testConfigWarnings() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();
+		ConfigurationWarnings warnings = getConfigurationWarnings();
 		String styleSheetName=  "/Xslt3/orgchart.xslt";
 		setStyleSheetName(styleSheetName);
 		setXslt2(false);

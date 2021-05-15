@@ -9,7 +9,6 @@ import org.hamcrest.core.StringEndsWith;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
 public class PipeLineTest {
@@ -27,9 +26,9 @@ public class PipeLineTest {
 		pipeline.registerPipeLineExit(exit);
 		adapter.setPipeLine(pipeline);
 
-		ConfigurationWarnings configurationWarnings = configuration.getConfigurationWarnings();
-		List<String> warnings = configurationWarnings.getWarnings();
+		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
 		assertEquals(warnings.size(), 1);
-		assertThat(warnings.get(warnings.size()-1),StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
+		String lastWarning = warnings.get(warnings.size()-1);
+		assertThat(lastWarning,StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
 	}
 }

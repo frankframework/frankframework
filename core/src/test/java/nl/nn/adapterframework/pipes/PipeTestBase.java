@@ -5,8 +5,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
@@ -52,8 +52,8 @@ public abstract class PipeTestBase<P extends IPipe> {
 		adapter.setPipeLine(pipeline);
 	}
 
-	protected final Configuration getConfiguration() {
-		return configuration;
+	protected ConfigurationWarnings getConfigurationWarnings() {
+		return configuration.getConfigurationWarnings();
 	}
 
 	/**
