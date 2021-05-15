@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -37,6 +38,7 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.util.SpringUtils;
 
 
 /**
@@ -49,19 +51,23 @@ import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
  * @author Johan Verrips
  */
 
-public class XsltPipe extends StreamingPipe implements IThreadCreator {
+public class XsltPipe extends StreamingPipe implements IThreadCreator, InitializingBean {
 
 	private String sessionKey=null;
 	
-	private XsltSender sender = createXsltSender();
+	private XsltSender sender;
 	
 	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
 	{
 		setSizeStatistics(true);
 	}
-	
-	
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		sender = SpringUtils.createBean(getApplicationContext(), XsltSender.class);
+	}
+
 	protected XsltSender createXsltSender() {
 		return new XsltSender();
 	}

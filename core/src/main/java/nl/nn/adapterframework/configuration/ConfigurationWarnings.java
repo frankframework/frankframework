@@ -41,6 +41,8 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 		ConfigurationWarnings instance = getInstance(source.getApplicationContext());
 		if(instance != null) {
 			instance.doAdd(source, log, message, t);
+		} else {
+			ApplicationWarnings.add(log, message, t);
 		}
 	}
 
@@ -76,7 +78,7 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 
 	public static ConfigurationWarnings getInstance(ApplicationContext applicationContext) {
 		if(applicationContext == null) {
-			IllegalArgumentException e = new IllegalArgumentException("ApplicationContext may not be NULL");
+//			IllegalArgumentException e = new IllegalArgumentException("ApplicationContext may not be NULL");
 			return null;
 		}
 

@@ -39,9 +39,9 @@ public abstract class PipeTestBase<P extends IPipe> {
 	@Before
 	public void setup() throws Exception {
 		pipe = createPipe();
+		autowireByType(pipe);
 		pipe.registerForward(new PipeForward("success",null));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		configuration.autowireByType(pipe);
 		pipeline = configuration.createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
 		PipeLineExit exit = new PipeLineExit();
@@ -50,6 +50,10 @@ public abstract class PipeTestBase<P extends IPipe> {
 		pipeline.registerPipeLineExit(exit);
 		adapter = configuration.createBean(Adapter.class);
 		adapter.setPipeLine(pipeline);
+	}
+
+	protected void autowireByType(Object bean) {
+		configuration.autowireByType(bean);
 	}
 
 	protected ConfigurationWarnings getConfigurationWarnings() {
