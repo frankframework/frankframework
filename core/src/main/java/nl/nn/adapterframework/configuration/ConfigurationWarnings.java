@@ -38,7 +38,10 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 			throw new IllegalArgumentException("A source must be provided.");
 		}
 
-		getInstance(source.getApplicationContext()).doAdd(source, log, message, t);
+		ConfigurationWarnings instance = getInstance(source.getApplicationContext());
+		if(instance != null) {
+			instance.doAdd(source, log, message, t);
+		}
 	}
 
 	/**
@@ -52,8 +55,8 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	 * Add a suppressable ConfigurationWarning with INamedObject prefix
 	 */
 	public static void add(IConfigurationAware source, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
-		ConfigurationWarnings warnings = getInstance(source.getApplicationContext()); //We could call two statics, this prevents a double getInstance(..) lookup.
-		if(!warnings.doIsSuppressed(suppressionKey, adapter)) {
+		ConfigurationWarnings instance = getInstance(source.getApplicationContext()); //We could call two statics, this prevents a double getInstance(..) lookup.
+		if(instance != null && !instance.doIsSuppressed(suppressionKey, adapter)) {
 			// provide suppression hint as info 
 			String hint = null;
 			if(log.isInfoEnabled()) {
@@ -67,13 +70,14 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 				}
 			}
 
-			warnings.doAdd(source, log, message, hint);
+			instance.doAdd(source, log, message, hint);
 		}
 	}
 
 	public static ConfigurationWarnings getInstance(ApplicationContext applicationContext) {
 		if(applicationContext == null) {
-			throw new IllegalArgumentException("ApplicationContext may not be NULL");
+			IllegalArgumentException e = new IllegalArgumentException("ApplicationContext may not be NULL");
+			return null;
 		}
 
 		return applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class);

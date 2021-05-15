@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,47 +23,18 @@ import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineExit;
-import nl.nn.adapterframework.pipes.EchoPipe;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 public class MockIbisManager extends Mockito implements IbisManager {
-	private IbisContext ibisContext = null;
+	private IbisContext ibisContext = spy(new IbisContext());
 	private List<Configuration> configurations = new ArrayList<Configuration>();
 
 	public MockIbisManager() {
-		Configuration mockConfiguration = spy(new TestConfiguration());
-		mockConfiguration.setName("myConfiguration");
-		Adapter adapter = new Adapter();
-		adapter.setName("dummyAdapter");
-		try {
-			PipeLine pipeline = new PipeLine();
-			PipeLineExit exit = new PipeLineExit();
-			exit.setPath("EXIT");
-			exit.setState("success");
-			pipeline.registerPipeLineExit(exit);
-			EchoPipe pipe = new EchoPipe();
-			pipe.setName("myPipe");
-			pipeline.addPipe(pipe);
-			adapter.setPipeLine(pipeline);
-			mockConfiguration.registerAdapter(adapter);
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-			fail("error registering adapter ["+adapter+"] " + e.getMessage());
-		}
-		BaseConfigurationWarnings warnings = new BaseConfigurationWarnings();
-		warnings.add("hello I am a configuration warning!");
-		doReturn(warnings).when(mockConfiguration).getConfigurationWarnings();
-		configurations.add(mockConfiguration);
 	}
 
 	@Override
