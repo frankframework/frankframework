@@ -65,7 +65,8 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator, Initializ
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		sender = SpringUtils.createBean(getApplicationContext(), XsltSender.class);
+		sender = createXsltSender();
+		SpringUtils.autowireByName(getApplicationContext(), sender);
 	}
 
 	protected XsltSender createXsltSender() {

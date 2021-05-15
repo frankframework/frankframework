@@ -56,6 +56,10 @@ public abstract class PipeTestBase<P extends IPipe> {
 		configuration.autowireByType(bean);
 	}
 
+	protected void autowireByName(Object bean) {
+		configuration.autowireByName(bean);
+	}
+
 	protected ConfigurationWarnings getConfigurationWarnings() {
 		return configuration.getConfigurationWarnings();
 	}

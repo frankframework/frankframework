@@ -38,7 +38,10 @@ public class TestConfiguration extends Configuration {
 
 	public void autowireByType(Object bean) {
 		SpringUtils.autowireByType(this, bean);
-		this.getAutowireCapableBeanFactory().initializeBean(bean, bean.getClass().getSimpleName());
+	}
+
+	public void autowireByName(Object bean) {
+		SpringUtils.autowireByName(this, bean);
 	}
 
 	public <T> T createBean(Class<T> beanClass) {
