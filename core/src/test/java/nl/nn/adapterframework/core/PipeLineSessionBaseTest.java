@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -12,6 +13,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import lombok.ToString;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class PipeLineSessionBaseTest {
@@ -158,34 +160,42 @@ public class PipeLineSessionBaseTest {
 		}
 	}
 	
-//	@Test
-//	public void testCloseables() throws IOException {
-//		StateObservableInputStream a = new StateObservableInputStream("a");
-//		StateObservableInputStream b = new StateObservableInputStream("b");
-//		StateObservableInputStream c = new StateObservableInputStream("c");
-//		StateObservableInputStream d = new StateObservableInputStream("d");
-//		
-//		InputStream p = session.scheduleCloseOnSessionExit(a);
-//		InputStream q = session.scheduleCloseOnSessionExit(a);
-//		assertTrue("scheduling a resource twice must yield the same object", p==q); 
-//		
-//		InputStream r = session.scheduleCloseOnSessionExit(b);
-//		InputStream s = session.scheduleCloseOnSessionExit(c);
-//		InputStream t = session.scheduleCloseOnSessionExit(d);
-//		InputStream u = session.scheduleCloseOnSessionExit(t);
-//		assertTrue("rescheduling the wrapper of a scheduled object must yield the same wrapped object", u==t);
-//
-//		log.debug("test calling close on wrapped(b)");
-//		r.close();
-//
-//		log.debug("test unschedule wrapped(c)");
-//		session.unscheduleCloseOnSessionExit(s);
-//		
-//		session.close();
-//		
-//		assertEquals(1, a.closes);
-//		assertEquals(1, b.closes);
-//		assertEquals(0, c.closes);
-//		assertEquals(1, d.closes);
-//	}
+	@Test
+	public void testCloseables() throws Exception {
+		StateObservableInputStream a = new StateObservableInputStream("a");
+		StateObservableInputStream b = new StateObservableInputStream("b");
+		StateObservableInputStream c = new StateObservableInputStream("c");
+		StateObservableInputStream d = new StateObservableInputStream("d");
+		
+		Message ma = new Message(a);
+		Message mb = new Message(b);
+		Message mc = new Message(c);
+		Message md = new Message(d);
+		
+		ma.closeOnCloseOf(session);
+		InputStream p = (InputStream)ma.asObject();
+		ma.closeOnCloseOf(session);
+		InputStream q = (InputStream)ma.asObject();
+
+		assertTrue("scheduling a resource twice must yield the same object", p==q); 
+		
+		mb.closeOnCloseOf(session);
+		mc.closeOnCloseOf(session);
+		md.closeOnCloseOf(session);
+
+		log.debug("test calling close on wrapped(b)");
+		mb.close();
+		
+		assertFalse(mb.isScheduledForCloseOnExitOf(session));
+
+		log.debug("test unschedule wrapped(c)");
+		mc.unscheduleFromCloseOnExitOf(session);
+		
+		session.close();
+		
+		assertEquals(1, a.closes);
+		assertEquals(1, b.closes);
+		assertEquals(0, c.closes);
+		assertEquals(1, d.closes);
+	}
 }
