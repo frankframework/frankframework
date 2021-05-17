@@ -89,9 +89,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter long minStableTime = 1000;
 //	private Long fileListFirstFileFound;
 
-	private @Getter String wildCard;
-	private @Getter String excludeWildCard;
-
 	private FS fileSystem;
 	
 	private Set<ProcessState> knownProcessStates;
@@ -530,7 +527,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
-	
+
 	@Deprecated
 	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
 	public void setExcludeWildCard(String excludeWildcard) {
