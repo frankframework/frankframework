@@ -44,7 +44,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
-		transactionConnector = new TransactionConnector(txManager);
+		transactionConnector = txManager == null ? null : new TransactionConnector(txManager);
 		threadCompleted = new Semaphore();
 	}
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PlatformTransactionManager txManager, PipeLineSession session) {
@@ -57,7 +57,9 @@ public class ThreadConnector<T> implements AutoCloseable {
 			log.debug("startThread");
 			currentThread.setName(parentThread.getName()+"/"+currentThread.getName());
 			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
-			transactionConnector.applyTransactionInfo();
+			if (transactionConnector!=null) {
+				transactionConnector.applyTransactionInfo();
+			}
 			if (threadLifeCycleEventListener!=null) {
 				return threadLifeCycleEventListener.threadCreated(threadInfo, input);
 			}
@@ -74,8 +76,10 @@ public class ThreadConnector<T> implements AutoCloseable {
 	public <M> M endThread(M response) {
 		try {
 			try {
-				log.debug("endThread closing transactionConnector.commit()");
-				transactionConnector.commit();
+				if (transactionConnector!=null) {
+					log.debug("endThread closing transactionConnector.commit()");
+					transactionConnector.commit();
+				}
 			} finally {
 				threadCompleted.release();
 				if (threadLifeCycleEventListener!=null) {
@@ -91,8 +95,10 @@ public class ThreadConnector<T> implements AutoCloseable {
 	public Throwable abortThread(Throwable t) {
 		try {
 			try {
-				log.debug("abortThread closing transactionConnector.rollback()");
-				transactionConnector.rollback();
+				if (transactionConnector!=null) {
+					log.debug("abortThread closing transactionConnector.rollback()");
+					transactionConnector.rollback();
+				}
 			} finally {
 				threadCompleted.release();
 				if (threadLifeCycleEventListener!=null) {
@@ -113,7 +119,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	// close() to be called from parent thread
 	@Override
 	public void close() {
-		if (transactionConnector!=null) {
+		if (threadCompleted!=null) {
 			log.debug("waiting to finish");
 			try {
 				threadCompleted.acquire();
@@ -122,6 +128,8 @@ public class ThreadConnector<T> implements AutoCloseable {
 			}
 			threadCompleted.release();
 		}
-		transactionConnector.close();
+		if (transactionConnector!=null) {
+			transactionConnector.close();
+		}
 	}
 }
