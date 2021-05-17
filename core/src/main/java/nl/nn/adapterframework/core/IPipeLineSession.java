@@ -15,12 +15,16 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.security.Principal;
 import java.util.Map;
+
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -74,11 +78,10 @@ public interface IPipeLineSession extends Map<String,Object>, AutoCloseable {
 	public Principal getPrincipal();
 
 	
-	public InputStream scheduleCloseOnSessionExit(InputStream stream);
-	public OutputStream scheduleCloseOnSessionExit(OutputStream stream);
-	public Reader scheduleCloseOnSessionExit(Reader reader);
-	public Writer scheduleCloseOnSessionExit(Writer writer);
-	public void unscheduleCloseOnSessionExit(AutoCloseable resource);
+	public void scheduleCloseOnSessionExit(Message message);
+	public void scheduleCloseOnSessionExit(Writer writer);
+	public boolean isScheduledForCloseOnExit(Message message);
+	public void unscheduleCloseOnSessionExit(Message message);
 	
 	@Override // to remove throws clause
 	public void close();

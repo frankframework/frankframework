@@ -15,16 +15,21 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.function.Consumer;
 
+import org.apache.logging.log4j.Logger;
+
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.testtool.TestTool;
 
 public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private @Setter @Getter TestTool testTool;
 
@@ -46,8 +51,16 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 	@Override
 	public <T> T toWriter(T message, Writer writer) {
 		if (message instanceof Message) {
-			((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
-			return message;
+			try {
+				((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
+			} catch (Exception e) {
+				log.warn("Could not capture characterstream", e);
+				try {
+					writer.close();
+				} catch (IOException e1) {
+					log.error("Could not close writer", e1);
+				}
+			}
 		} 
 		if (message instanceof WriterPlaceHolder) {
 			WriterPlaceHolder writerPlaceHolder = (WriterPlaceHolder)message;
@@ -62,8 +75,16 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 		if (message instanceof Message) {
 			Message m = (Message)message;
 			charsetNotifier.accept(m.getCharset());
-			((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
-			return message;
+			try {
+				((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
+			} catch (Exception e) {
+				log.warn("Could not capture binary stream", e);
+				try {
+					outputStream.close();
+				} catch (IOException e1) {
+					log.error("Could not close output stream", e1);
+				}
+			}
 		}
 		return message;
 	}
