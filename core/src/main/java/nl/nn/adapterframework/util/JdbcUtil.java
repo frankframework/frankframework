@@ -247,10 +247,14 @@ public class JdbcUtil {
 	}
 
 	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
-		streamBlob(getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed), charset, blobBase64Direction, target, close);
+		try (InputStream blobIntputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
+			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
+		}
 	}
 	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
-		streamBlob(getBlobInputStream(dbmsSupport, rs, columnName, blobIsCompressed), charset, blobBase64Direction, target, close);
+		try (InputStream blobIntputStream = getBlobInputStream(dbmsSupport, rs, columnName, blobIsCompressed)) {
+			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
+		}
 	}
 	public static void streamBlob(final InputStream blobIntputStream, String charset, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
 		if (target==null) {
@@ -293,8 +297,9 @@ public class JdbcUtil {
 		}
 		Writer writer = StreamUtil.getWriter(target);
 		if (writer !=null) {
-			Reader reader = dbmsSupport.getClobReader(rs, column);
-			StreamUtil.copyReaderToWriter(reader, writer, 50000, false, false);
+			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
+				StreamUtil.copyReaderToWriter(reader, writer, 50000, false, false);
+			}
 			if (close) {
 				writer.close();
 			}
@@ -302,9 +307,10 @@ public class JdbcUtil {
 		}
 		OutputStream outputStream=StreamUtil.getOutputStream(target);
 		if (outputStream!=null) {
-			Reader reader = dbmsSupport.getClobReader(rs, column);
-			try (Writer streamWriter = new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET)) {
-				StreamUtil.copyReaderToWriter(reader, streamWriter, 50000, false, false);
+			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
+				try (Writer streamWriter = new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET)) {
+					StreamUtil.copyReaderToWriter(reader, streamWriter, 50000, false, false);
+				}
 			}
 			if (close) {
 				outputStream.close();
