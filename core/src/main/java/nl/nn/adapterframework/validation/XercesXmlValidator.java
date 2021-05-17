@@ -463,7 +463,7 @@ class MyErrorHandler implements XMLErrorHandler {
 	@Override
 	public void warning(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.add(source, log, e.getMessage()); //TODO turn into ConfigurationWarning
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 	}
 
@@ -475,14 +475,14 @@ class MyErrorHandler implements XMLErrorHandler {
 			throw e;
 		}
 		if (warn) {
-			ConfigurationWarnings.add(source, log, e.getMessage()); //TODO turn into ConfigurationWarning
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 	}
 
 	@Override
 	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.add(source, log, e.getMessage()); //TODO turn into ConfigurationWarning
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 		throw new XNIException(e);
 	}
