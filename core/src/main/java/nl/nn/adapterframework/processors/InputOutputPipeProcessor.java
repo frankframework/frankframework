@@ -161,7 +161,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		return pipeRunResult;
 	}
 
-	private String restoreMovedElements(String invoerString, PipeLineSession pipeLineSession) {
+	private String restoreMovedElements(String invoerString, PipeLineSession pipeLineSession) throws IOException {
 		StringBuffer buffer = new StringBuffer();
 		int startPos = invoerString.indexOf(ME_START);
 		if (startPos == -1) {
@@ -183,7 +183,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			} else {
 				String movedElementSessionKey = invoerString.substring(startPos + ME_START.length(),endPos);
 				if (pipeLineSession.containsKey(movedElementSessionKey)) {
-					String movedElementValue = (String) pipeLineSession.get(movedElementSessionKey);
+					String movedElementValue = pipeLineSession.getMessage(movedElementSessionKey).asString();
 					buffer.append(movedElementValue);
 					copyFrom = endPos + ME_END.length();
 				} else {
