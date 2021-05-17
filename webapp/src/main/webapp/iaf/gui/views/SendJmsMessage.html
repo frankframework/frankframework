@@ -14,10 +14,10 @@
 				<div class="ibox-content">
 					<form role="form">
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Select a JMS realm</label>
+							<label class="col-sm-3 control-label">Select a Connection Factory</label>
 							<div class="col-sm-9">
-								<select class="form-control m-b" name="realm" ng-model="form.realm">
-									<option ng-repeat="realm in jmsRealms" selected="{{$first ? 'selected' : ''}}">{{realm}}</option>
+								<select class="form-control m-b" name="connectionFactory" ng-model="form.connectionFactory">
+									<option ng-repeat="connectionFactory in connectionFactories" selected="{{$first ? 'selected' : ''}}">{{connectionFactory}}</option>
 								</select>
 							</div>
 						</div>
@@ -54,6 +54,12 @@
 							</div>
 						</div>
 						<div class="form-group">
+							<label class="col-sm-3 control-label">Lookup Destination</label>
+							<div class="col-sm-9">
+								<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" name="lookupDestination" ng-model="form.lookupDestination" /></span>
+							</div>
+						</div>
+						<div class="form-group">
 							<label class="col-sm-3 control-label label-height-30">Message</label>
 							<div class="col-sm-9">
 								<textarea class="form-control m-b" name="message" rows="5" style="resize:none;" ng-model="form.message"></textarea>
@@ -75,7 +81,7 @@
 							<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
 						</div>
 						<div class="col-sm-9 m-t-md">
-							<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+							<button ladda="processing" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
 						</div>
 					</form>
 				</div>

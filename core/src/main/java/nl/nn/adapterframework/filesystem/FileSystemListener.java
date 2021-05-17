@@ -82,6 +82,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter String storeMetadataInSessionKey;
 	
 	private @Getter boolean disableMessageBrowsers = false;
+	private @Getter String wildcard;
+	private @Getter String excludeWildcard;
 	
 
 	private @Getter long minStableTime = 1000;
@@ -208,7 +210,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		FS fileSystem=getFileSystem();
-		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildCard(), getExcludeWildCard())) {
+		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard())) {
 			if (ds==null) {
 				return null;
 			}
@@ -519,19 +521,29 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		this.disableMessageBrowsers = disableMessageBrowsers;
 	}
 
-	@IbisDoc({"16", "Filter of files to look for in inputFolder e.g. '*.inp'.", ""})
-	public void setWildCard(String wildCard) {
-		this.wildCard = wildCard;
+	@Deprecated
+	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
+	public void setWildCard(String wildcard) {
+		setWildcard(wildcard);
 	}
-
+	@IbisDoc({"16", "Filter of files to look for in inputFolder e.g. '*.inp'.", ""})
+	public void setWildcard(String wildcard) {
+		this.wildcard = wildcard;
+	}
+	
+	@Deprecated
+	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
+	public void setExcludeWildCard(String excludeWildcard) {
+		setExcludeWildcard(excludeWildcard);
+	}
 	@IbisDoc({"17", "Filter of files to be excluded when looking in inputFolder.", ""})
-	public void setExcludeWildCard(String excludeWildCard) {
-		this.excludeWildCard = excludeWildCard;
+	public void setExcludeWildcard(String excludeWildcard) {
+		this.excludeWildcard = excludeWildcard;
 	}
 
 	@IbisDoc({"18", "If set, an XML with all message properties is provided under this key", ""})
 	public void setStoreMetadataInSessionKey(String storeMetadataInSessionKey) {
 		this.storeMetadataInSessionKey = storeMetadataInSessionKey;
 	}
-
+	
 }

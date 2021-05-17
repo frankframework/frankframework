@@ -68,12 +68,14 @@ public class FrankElement implements Comparable<FrankElement> {
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 	private @Getter @Setter String description;
 	private @Getter @Setter String descriptionHeader;
+	private @Getter FrankDocGroup group = null;
 
-	FrankElement(FrankClass clazz) {
+	FrankElement(FrankClass clazz, FrankDocGroup group) {
 		this(clazz.getName(), clazz.getSimpleName(), clazz.isAbstract());
 		isDeprecated = clazz.getAnnotation(FrankDocletConstants.DEPRECATED) != null;
 		configChildSets = new LinkedHashMap<>();
 		javadocStrategy.completeFrankElement(this, clazz);
+		this.group = group;
 	}
 
 	/**

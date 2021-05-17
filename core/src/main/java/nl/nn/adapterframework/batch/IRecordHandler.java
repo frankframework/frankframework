@@ -20,12 +20,14 @@ import java.util.List;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 
 /**
  * Interface for transforming a record (= structured ASCII line). 
  * 
  * @author John Dekker
  */
+@FrankDocGroup(name = "Batch")
 public interface IRecordHandler extends IConfigurable {
 
 	public void open() throws SenderException;
