@@ -39,6 +39,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsMessageBrowserIteratorItem;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
 
 /**
  * Send a message with JMS.
@@ -56,10 +57,10 @@ public final class BrowseQueue extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getBrowseQueue() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
-		JmsBrowser<javax.jms.Message> jmsBrowser = getIbisContext().createBeanAutowireByName(JmsBrowser.class);
+		JndiConnectionFactoryFactory connectionFactoryFactory = getIbisContext().getBean("connectionFactoryFactory", JndiConnectionFactoryFactory.class);
 		Set<String> connectionFactories = new LinkedHashSet<String>();
 		// connection factories used in configured jmsSenders etc.
-		connectionFactories.addAll(jmsBrowser.getConnectionFactoryFactory().getConnectionFactoryNames());
+		connectionFactories.addAll(connectionFactoryFactory.getConnectionFactoryNames());
 		// configured jms realm
 		connectionFactories.addAll(JmsRealmFactory.getInstance().getConnectionFactoryNames());
 		if (connectionFactories.size()==0) connectionFactories.add("no connection factories found");
