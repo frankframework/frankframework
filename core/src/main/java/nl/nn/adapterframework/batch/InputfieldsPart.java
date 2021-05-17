@@ -22,7 +22,7 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
 /**
  * @author  John Dekker
  */
-@FrankDocGroup(groupName = "Batch")
+@FrankDocGroup(name = "Batch")
 public class InputfieldsPart {
 
 	private @Getter @Setter String value;

@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * 
  * @author  John Dekker
  */
-@FrankDocGroup(groupName = "Batch")
+@FrankDocGroup(name = "Batch")
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);
 

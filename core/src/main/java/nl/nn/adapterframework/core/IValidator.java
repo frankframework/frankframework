@@ -22,7 +22,7 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
  * 
  * @author Gerrit van Brakel
  */
-@FrankDocGroup(groupOrder = 40, groupName = "Validators")
+@FrankDocGroup(order = 40, name = "Validators")
 public interface IValidator extends IPipe {
 
 }

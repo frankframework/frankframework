@@ -44,7 +44,7 @@ public class FrankClassJava5AnnotationTest {
 		if(expectedValue == null) {
 			assertNull(actualGroupAnnotation);
 		} else {
-			assertEquals(expectedValue, (String) actualGroupAnnotation.getValueOf("groupName"));
+			assertEquals(expectedValue, (String) actualGroupAnnotation.getValueOf("name"));
 		}
 	}
 }

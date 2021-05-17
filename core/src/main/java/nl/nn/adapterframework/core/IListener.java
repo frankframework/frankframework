@@ -28,7 +28,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-@FrankDocGroup(groupOrder = 30, groupName = "Listeners")
+@FrankDocGroup(order = 30, name = "Listeners")
 public interface IListener<M> extends IConfigurable {
 
 	/**

@@ -25,7 +25,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author  Gerrit van Brakel
  */
-@FrankDocGroup(groupOrder = 20, groupName = "Senders")
+@FrankDocGroup(order = 20, name = "Senders")
 public interface ISender extends IConfigurable {
 
 	/**

@@ -2,6 +2,6 @@ package nl.nn.adapterframework.frankdoc.testtarget.examples.simple;
 
 import nl.nn.adapterframework.doc.FrankDocGroup;
 
-@FrankDocGroup(groupOrder = 10, groupName = "Child")
+@FrankDocGroup(order = 10, name = "Child")
 public interface IChild {
 }

@@ -28,7 +28,7 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
  * 
  * @author  John Dekker
  */
-@FrankDocGroup(groupName = "Batch")
+@FrankDocGroup(name = "Batch")
 public interface IResultHandler extends IConfigurable {
 
 	public void setPipe(AbstractPipe pipe);

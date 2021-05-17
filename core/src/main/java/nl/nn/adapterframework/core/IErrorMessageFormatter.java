@@ -25,7 +25,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Johan Verrips
  */
-@FrankDocGroup(groupOrder = 60, groupName = "ErrorMessageFormatters")
+@FrankDocGroup(order = 60, name = "ErrorMessageFormatters")
 public interface IErrorMessageFormatter {
 
 	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);

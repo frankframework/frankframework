@@ -29,7 +29,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @author  Gerrit van Brakel
  * @since   4.1
 */
-@FrankDocGroup(groupOrder = 50, groupName = "TransactionalStorages")
+@FrankDocGroup(order = 50, name = "TransactionalStorages")
 public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
 	public static final int MAXCOMMENTLEN=1000;

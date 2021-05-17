@@ -41,8 +41,8 @@ class FrankDocGroupFactory {
 			if(annotation == null) {
 				result = getGroup(FrankDocGroup.GROUP_NAME_OTHER);
 			} else {
-				String groupName = (String) annotation.getValueOf("groupName");
-				Integer groupOrder = (Integer) annotation.getValueOf("groupOrder");
+				String groupName = (String) annotation.getValueOf("name");
+				Integer groupOrder = (Integer) annotation.getValueOf("order");
 				log.trace("FrankDocGroup requested for group name {} with new order {}", () -> groupName, () -> groupOrder);
 				result = getGroup(groupName, groupOrder);
 			}

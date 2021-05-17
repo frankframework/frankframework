@@ -6,6 +6,6 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
  * @author martijn
  *
  */
-@FrankDocGroup(groupName = "ParentOverriderGroup")
+@FrankDocGroup(name = "ParentOverriderGroup")
 public class ParentOverrider extends ClassWithJava5Annotation implements InterfaceWithJavaDocTag {
 }

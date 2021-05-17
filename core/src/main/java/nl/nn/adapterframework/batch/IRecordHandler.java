@@ -27,7 +27,7 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
  * 
  * @author John Dekker
  */
-@FrankDocGroup(groupName = "Batch")
+@FrankDocGroup(name = "Batch")
 public interface IRecordHandler extends IConfigurable {
 
 	public void open() throws SenderException;

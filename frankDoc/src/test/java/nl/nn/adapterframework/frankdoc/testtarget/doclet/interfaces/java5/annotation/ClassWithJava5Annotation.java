@@ -6,6 +6,6 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
  * @author martijn
  *
  */
-@FrankDocGroup(groupName = "ClassGroup")
+@FrankDocGroup(name = "ClassGroup")
 public class ClassWithJava5Annotation implements InterfaceWithJavaDocTag {
 }

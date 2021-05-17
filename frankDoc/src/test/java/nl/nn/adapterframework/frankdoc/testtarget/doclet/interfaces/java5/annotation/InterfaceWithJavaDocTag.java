@@ -6,6 +6,6 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
  * @author martijn
  *
  */
-@FrankDocGroup(groupName = "InterfaceGroup")
+@FrankDocGroup(name = "InterfaceGroup")
 public interface InterfaceWithJavaDocTag {
 }
