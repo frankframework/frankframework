@@ -206,50 +206,56 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 				throw new WebServiceException(m, e);
 			}
 	
-			String multipartXml = (String) pipelineSession.get(attachmentXmlSessionKey);
-			log.debug(getLogPrefix(correlationId)+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
-			if (StringUtils.isNotEmpty(multipartXml)) {
-				Element partsElement;
-				try {
-					partsElement = XmlUtils.buildElement(multipartXml);
-				}
-				catch (DomBuilderException e) {
-					String m = "error building multipart xml";
-					log.error(m, e);
-					throw new WebServiceException(m, e);
-				}
-				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-				if (parts==null || parts.size()==0) {
-					log.warn(getLogPrefix(correlationId)+"no part(s) in multipart xml [" + multipartXml + "]");
-				}
-				else {
-					Iterator<Node> iter = parts.iterator();
-					while (iter.hasNext()) {
-						Element partElement = (Element) iter.next();
-						//String partType = partElement.getAttribute("type");
-						String partName = partElement.getAttribute("name");
-						String partSessionKey = partElement.getAttribute("sessionKey");
-						String partMimeType = partElement.getAttribute("mimeType");
-						Message partObject = pipelineSession.getMessage(partSessionKey);
-						DataHandler dataHander;
-						try {
-							if (partObject.isBinary()) {
-								dataHander = new DataHandler(new ByteArrayDataSource(partObject.asByteArray(), partMimeType));
-							} else {
-								dataHander = new DataHandler(new ByteArrayDataSource(partObject.asString(), partMimeType));
+			try {
+				String multipartXml = pipelineSession.getMessage(attachmentXmlSessionKey).asString();
+				log.debug(getLogPrefix(correlationId)+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
+				if (StringUtils.isNotEmpty(multipartXml)) {
+					Element partsElement;
+					try {
+						partsElement = XmlUtils.buildElement(multipartXml);
+					}
+					catch (DomBuilderException e) {
+						String m = "error building multipart xml";
+						log.error(m, e);
+						throw new WebServiceException(m, e);
+					}
+					Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
+					if (parts==null || parts.size()==0) {
+						log.warn(getLogPrefix(correlationId)+"no part(s) in multipart xml [" + multipartXml + "]");
+					}
+					else {
+						Iterator<Node> iter = parts.iterator();
+						while (iter.hasNext()) {
+							Element partElement = (Element) iter.next();
+							//String partType = partElement.getAttribute("type");
+							String partName = partElement.getAttribute("name");
+							String partSessionKey = partElement.getAttribute("sessionKey");
+							String partMimeType = partElement.getAttribute("mimeType");
+							Message partObject = pipelineSession.getMessage(partSessionKey);
+							DataHandler dataHander;
+							try {
+								if (partObject.isBinary()) {
+									dataHander = new DataHandler(new ByteArrayDataSource(partObject.asByteArray(), partMimeType));
+								} else {
+									dataHander = new DataHandler(new ByteArrayDataSource(partObject.asString(), partMimeType));
+								}
+							} catch (IOException e) {
+								String m = "Unable to add session key '" + partSessionKey + "' as attachment";
+								log.error(m, e);
+								throw new WebServiceException(m, e);
 							}
-						} catch (IOException e) {
-							String m = "Unable to add session key '" + partSessionKey + "' as attachment";
-							log.error(m, e);
-							throw new WebServiceException(m, e);
+							AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
+							attachmentPart.setContentId(partName);
+							soapMessage.addAttachmentPart(attachmentPart);
+	
+							log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] name ["+partName+"]");
 						}
-						AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-						attachmentPart.setContentId(partName);
-						soapMessage.addAttachmentPart(attachmentPart);
-
-						log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] name ["+partName+"]");
 					}
 				}
+			} catch (IOException e) {
+				String m = "Could not transform attachment";
+				log.error(m);
+				throw new WebServiceException(m, e);
 			}
 	
 			return soapMessage;
