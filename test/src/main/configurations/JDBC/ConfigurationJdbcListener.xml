@@ -33,7 +33,7 @@
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
 						commentField="TVARCHAR"
-						maxCommentSize="100"
+						maxCommentLength="100"
 						selectCondition="TNUMBER=${jdbc.querylistener.key}"
 						statusValueAvailable="5"
 						statusValueProcessed="6"
@@ -100,14 +100,14 @@
 				<forward name="success" path="do_success" />
 			</pipe>
 			<pipe name="SelectData" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="xsl/md2-in-select-data.xsl" xslt2="true"
+				styleSheetName="xsl/md2-in-select-data.xsl"
 			>
 				<param name="tnumber" value="${jdbc.querylistener.key}"/>
 				<param name="slotid" value="${applicationId}/JdbcQueryListener"/>
 				<forward name="success" path="Exec_Query"/>
 			</pipe>
 			<pipe name="SelectDataTable" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="xsl/md2-in-select-data.xsl" xslt2="true"
+				styleSheetName="xsl/md2-in-select-data.xsl"
 			>
 				<param name="tnumber" value="${jdbc.querylistener.key}"/>
 				<param name="slotid" value="${applicationId}/JdbcTableListener"/>
@@ -119,7 +119,7 @@
 				<forward name="success" path="AddIgnores"/>
 			</pipe>
 			<pipe name="AddIgnores" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="xsl/add-ignores.xsl" xslt2="true"
+				styleSheetName="xsl/add-ignores.xsl"
 			>
 				<param name="tnumber" value="${jdbc.querylistener.key}"/>
 				<forward name="success" path="EXIT"/>

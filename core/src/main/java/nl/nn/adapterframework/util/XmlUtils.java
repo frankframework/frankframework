@@ -1639,7 +1639,7 @@ public class XmlUtils {
 		for (String paramName:parameters.keySet()) {
 			Object value = parameters.get(paramName);
 			if (value != null) {
-				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[]) {
+				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[] || value instanceof Message) {
 					value = Message.asString(value);
 				}
 				t.setParameter(paramName, value);

@@ -86,7 +86,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="root/*" xslt2="true">
+			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="root/*">
 				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" jmsRealm="jdbc" />
 				<forward name="success" path="EXIT" />
 			</pipe>
