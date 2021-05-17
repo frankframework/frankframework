@@ -1,11 +1,10 @@
 package nl.nn.adapterframework.soap;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,14 +19,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 
-import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -39,6 +36,7 @@ import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidatorTest;
 import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
@@ -72,6 +70,16 @@ public class WsdlTest {
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance("a", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "Test1");
+		WsdlGenerator wsdl = new WsdlGenerator(simple);
+		wsdl.init();
+		test(wsdl, "WsdlTest/webservice1.test.wsdl");
+	}
+
+	@Test
+	public void basicMultipleRootTagsAllowed() throws XMLStreamException, IOException, ParserConfigurationException, SAXException, ConfigurationException, URISyntaxException, NamingException {
+		PipeLine simple = mockPipeLine(
+				getXmlValidatorInstance("a,x,y", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
+				getXmlValidatorInstance("b,p,q", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "Test1");
 		WsdlGenerator wsdl = new WsdlGenerator(simple);
 		wsdl.init();
 		test(wsdl, "WsdlTest/webservice1.test.wsdl");
@@ -214,18 +222,12 @@ public class WsdlTest {
         wsdl.setDocumentation("test");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         wsdl.wsdl(out, "Test");
-        DocumentBuilder dbuilder = createDocumentBuilder();
-        Document result = dbuilder.parse(new ByteArrayInputStream(out.toByteArray()));
+        String result = new String(out.toByteArray());
 
-        Document expected = dbuilder.parse(getClass().getClassLoader().getResourceAsStream(testWsdl));
-        XMLUnit.setIgnoreWhitespace(true);
-        XMLUnit.setIgnoreComments(true);
-
-        assertXMLEqual("expected xml (" + testWsdl + ") not similar to result xml:\n" + new String(out.toByteArray()), expected, result);
-
-        zip(wsdl);
-
+        String expected = TestFileUtils.getTestFile("/"+testWsdl);
+        assertXmlEquals(expected, result);
     }
+
     protected void zip(WsdlGenerator wsdl) throws IOException, XMLStreamException, URISyntaxException, NamingException, ConfigurationException {
         File dir = new File(System.getProperty("java.io.tmpdir") + File.separator + "zipfiles");
         File zipFile = new File(dir, wsdl.getName() + ".zip");
