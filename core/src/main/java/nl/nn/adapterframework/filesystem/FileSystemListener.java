@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -40,6 +41,9 @@ import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -57,6 +61,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	
 	public final String ORIGINAL_FILENAME_KEY = "originalFilename";
+	public final String FILENAME_KEY = "filename";
+	public final String FILEPATH_KEY = "filepath";
 
 	private @Getter String name;
 	private @Getter String inputFolder;
@@ -322,11 +328,27 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					threadContext.putAll(attributes);
 				}
 				if (!"path".equals(getMessageType())) {
-					threadContext.put("filepath", fileSystem.getCanonicalName(rawMessage));
+					threadContext.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
 				}
 				if (!"name".equals(getMessageType())) {
-					threadContext.put("filename", fileSystem.getName(rawMessage));
+					threadContext.put(FILENAME_KEY, fileSystem.getName(rawMessage));
 				}
+			}
+			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
+				ObjectBuilder metadataBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "metadata");
+				
+				if (attributes!=null) {
+					attributes.forEach((k,v) -> {
+						try {
+							metadataBuilder.add(k, v==null?null:v.toString());
+						} catch (SAXException e) {
+							log.warn("cannot add property [{}] value [{}]", k, v, e);
+						}
+					});
+				}
+
+				metadataBuilder.close();
+				threadContext.put(getStoreMetadataInSessionKey(), metadataBuilder.toString());
 			}
 			return messageId;
 		} catch (Exception e) {
