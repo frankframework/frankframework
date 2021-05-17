@@ -21,7 +21,6 @@ public class InputOutputPipeProcessorTest {
 
 	private InputOutputPipeProcessor processor;
 	private PipeLine pipeLine;
-	private Adapter owner;
 	private PipeLineSession session; 
 	
 	@Before
@@ -36,7 +35,7 @@ public class InputOutputPipeProcessorTest {
 		processor.setPipeProcessor(chain);
 		
 		pipeLine = new PipeLine();
-		owner = new Adapter();
+		Adapter owner = new Adapter();
 		owner.setName("PipeLine owner");
 		pipeLine.setOwner(owner);
 		
