@@ -14,19 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License. 
 */
 
-package nl.nn.adapterframework.frankdoc.doclet;
+package nl.nn.adapterframework.doc;
 
-/**
- * Models a Java 5 annotation. Only value types String[], String and Integer are supported.
- * @author martijn
- *
- */
-public interface FrankAnnotation extends FrankProgramElement {
-	/**
-	 * Get the "value" field of the annotation.
-	 * @throws FrankDocException
-	 */
-	Object getValue() throws FrankDocException;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-	public Object getValueOf(String fieldName) throws FrankDocException;
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+public @interface FrankDocGroup {
+	String name();
+	int order() default Integer.MAX_VALUE;
 }

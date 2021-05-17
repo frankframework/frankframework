@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -46,7 +45,6 @@ public class ElementType {
 	private static Logger log = LogUtil.getLogger(ElementType.class);
 	private @Getter(AccessLevel.PACKAGE) List<FrankElement> members;
 	private @Getter boolean fromJavaInterface;
-	private @Getter @Setter FrankDocGroup frankDocGroup;
 	
 	private static class InterfaceHierarchyItem {
 		private @Getter String fullName;
