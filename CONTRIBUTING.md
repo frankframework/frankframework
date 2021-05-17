@@ -166,6 +166,7 @@ eclipse.exe file.
 
 ### Set up a Tomcat server in Eclipse
 
+- If you want to test the Frank!Doc webapplication, you need file `iaf/target/ibis-adapterframework-frankdoc-7.7-SNAPSHOT-frankdoc.jar` on the classpath (or a later version, if you are reading this after the 7.7 release). Right-click the ibis-adapterframework-webapp project and select "Properties". In the dialog that opens, select "Deployment Assembly". To the right, press "Add...". Another dialog opens. Select "Archives from Workspace". Press "Next" and then "Add...". Select the mentioned file by expanding the "iaf" folder in the tree view.
 - Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download the latest version of [Tomcat](http://tomcat.apache.org/) (version 7.0.47+ is known to work)), OK, Finish.
 - Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
 - Right click Tomcat v7.0 Server at localhost, Start.
