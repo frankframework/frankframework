@@ -60,6 +60,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Boolean autoStart = null;
+	private boolean enabledAutowiredPostProcessing = false;
 
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
@@ -164,11 +165,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", ()-> getName(), ()-> getVersion());
 		}
 
-		super.afterPropertiesSet(); //Triggers a context refresh
+		if(enabledAutowiredPostProcessing) {
+			//Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+			AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+			postProcessor.setBeanFactory(getBeanFactory());
+			getBeanFactory().addBeanPostProcessor(postProcessor);
+		}
 
-		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
-		postProcessor.setBeanFactory(getBeanFactory());
-		getBeanFactory().addBeanPostProcessor(postProcessor);
+		super.afterPropertiesSet(); //Triggers a context refresh
 
 		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
