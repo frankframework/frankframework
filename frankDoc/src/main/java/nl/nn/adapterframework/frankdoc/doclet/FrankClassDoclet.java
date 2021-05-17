@@ -265,4 +265,30 @@ class FrankClassDoclet implements FrankClass {
 	public String toString() {
 		return getName();
 	}
+
+	@Override
+	public FrankAnnotation getGroupAnnotation() throws FrankDocException {
+		FrankAnnotation result = getGroupAnnotationExcludingImplementedInterfaces();
+		if(result == null) {
+			result = getGroupAnnotationFromImplementedInterfaces();
+		}
+		return result;
+	}
+
+	private FrankAnnotation getGroupAnnotationExcludingImplementedInterfaces() throws FrankDocException {
+		FrankAnnotation result = getAnnotation(JAVADOC_GROUP_TAG);
+		if((result == null) && (getSuperclass() != null)) {
+			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationExcludingImplementedInterfaces();
+		}
+		return result;
+	}
+
+	private FrankAnnotation getGroupAnnotationFromImplementedInterfaces() throws FrankDocException {
+		TransitiveImplementedInterfaceBrowser<FrankAnnotation> browser = new TransitiveImplementedInterfaceBrowser<>(this);
+		FrankAnnotation result = browser.search(c -> ((FrankClassDoclet) c).getAnnotation(JAVADOC_GROUP_TAG));
+		if((result == null) && (getSuperclass() != null)) {
+			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationFromImplementedInterfaces();
+		}
+		return result;
+	}
 }

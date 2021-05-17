@@ -2025,19 +2025,21 @@ angular.module('iaf.beheerconsole')
 
 .controller('SendJmsMessageCtrl', ['$scope', 'Api', function($scope, Api) {
 	$scope.destinationTypes = ["QUEUE", "TOPIC"]; 
+	$scope.processing = false;
 	Api.Get("jms", function(data) {
 		$.extend($scope, data);
 		angular.element("select[name='type']").val($scope.destinationTypes[0]);
 	});
 
 	$scope.submit = function(formData) {
+		$scope.processing = true;
 		if(!formData) return;
 
 		var fd = new FormData();
-		if(formData.realm && formData.realm != "")
-			fd.append("realm", formData.realm);
+		if(formData.connectionFactory && formData.connectionFactory != "")
+			fd.append("connectionFactory", formData.connectionFactory);
 		else 
-			fd.append("realm", $scope.jmsRealms[0]);
+			fd.append("connectionFactory", $scope.connectionFactories[0]);
 		if(formData.destination && formData.destination != "")
 			fd.append("destination", formData.destination);
 		if(formData.type && formData.type != "")
@@ -2050,6 +2052,8 @@ angular.module('iaf.beheerconsole')
 			fd.append("persistent", formData.persistent);
 		if(formData.synchronous && formData.synchronous != "")
 			fd.append("synchronous", formData.synchronous);
+		if(formData.lookupDestination && formData.lookupDestination != "")
+			fd.append("lookupDestination", formData.lookupDestination);
 
 		if(!formData.message && !formData.file) {
 			$scope.error = "Please specify a file or message!";
@@ -2065,7 +2069,9 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("jms/message", fd, function(returnData) {
 			//?
+			$scope.processing = false;
 		}, function(errorData, status, errorMsg) {
+			$scope.processing = false;
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
 		});
 	};
@@ -2105,12 +2111,12 @@ angular.module('iaf.beheerconsole')
 	$scope.submit = function(formData) {
 		$scope.processing = true;
 		if(!formData || !formData.destination) {
-			$scope.error = "Please specify a jms realm and destination!";
+			$scope.error = "Please specify a connection factory and destination!";
 			return;
 		}
 
 		Cookies.set("browseJmsQueue", formData);
-		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+		if(!formData.connectionFactory) formData.connectionFactory = $scope.connectionFactories[0] || false;
 		if(!formData.type) formData.type = $scope.destinationTypes[0] || false;
 
 		Api.Post("jms/browse", JSON.stringify(formData), function(data) {

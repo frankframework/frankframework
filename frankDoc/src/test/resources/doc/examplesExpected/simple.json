@@ -2,7 +2,6 @@
   "groups": [
     {
       "name": "Child",
-      "category": "Child",
       "members": [
         "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
         "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild"
@@ -10,8 +9,10 @@
     },
     {
       "name": "Other",
-      "category": "Other",
-      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"]
+      "members": [
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"
+      ]
     }
   ],
   "elements": [
@@ -85,13 +86,11 @@
       "children": [
         {
           "multiple": false,
-          "roleName": "roleNameIChild",
-          "group": "Child"
+          "roleName": "roleNameIChild"
         },
         {
           "multiple": true,
-          "roleName": "roleNameTChild",
-          "group": "Other"
+          "roleName": "roleNameTChild"
         }
       ]
     },

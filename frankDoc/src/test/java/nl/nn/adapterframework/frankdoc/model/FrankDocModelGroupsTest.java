@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -30,36 +29,33 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class FrankDocModelGroupsTest {
-	private static final String I_GROUP_CONTAINER = "nl.nn.adapterframework.frankdoc.testtarget.groups.IGroupContainer";
+	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.groups.";
 
 	private FrankDocModel instance;
 	
 	@Before
 	public void setUp() throws SAXException, IOException, ReflectiveOperationException {
-		FrankClassRepository r = TestUtil.getFrankClassRepositoryDoclet("nl.nn.adapterframework.frankdoc.testtarget.groups");
-		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.groups.GroupContainer", r);
+		FrankClassRepository r = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
+		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", PACKAGE + "Container", r);
 	}
 
 	@Test
-	public void whenElementTypeThenGroupCreated() {
-		assertTrue(instance.getGroups().containsKey("GroupContainer"));
-		FrankDocGroup group = instance.getGroups().get("GroupContainer");
-		assertEquals("GroupContainer", group.getName());
-		List<FrankElement> elements = group.getElements();
-		assertEquals(1, elements.size());
-		assertEquals("GroupContainer", group.getElements().get(0).getSimpleName());
-		ElementType elementType = instance.getAllTypes().get(I_GROUP_CONTAINER);
-		assertSame(group, elementType.getFrankDocGroup());
-	}
-
-	@Test
-	public void whenNonInterfaceElementTypeThenPutInGroupOther() {
-		assertTrue(instance.getGroups().containsKey(FrankDocModel.OTHER));
-		FrankDocGroup other = instance.getGroups().get(FrankDocModel.OTHER);
-		assertEquals(1, other.getElements().size());
-		FrankElement element = other.getElements().get(0);
-		assertEquals("GroupChild", element.getSimpleName());
-		ElementType elementType = instance.getAllTypes().get("nl.nn.adapterframework.frankdoc.testtarget.groups.GroupChild");
-		assertSame(other, elementType.getFrankDocGroup());
+	public void testGroups() {
+		List<FrankDocGroup> groups = instance.getGroups();
+		assertEquals(2, groups.size());
+		FrankDocGroup current = groups.get(0);
+		assertEquals("Listener", current.getName());
+		List<FrankElement> members = current.getElements();
+		assertEquals(1, members.size());
+		assertEquals("DefaultChild", members.get(0).getSimpleName());
+		current = groups.get(1);
+		assertEquals("Other", current.getName());
+		members = current.getElements();
+		assertEquals(2, members.size());
+		assertEquals("Container", members.get(0).getSimpleName());
+		assertEquals("Default", members.get(1).getSimpleName());
+		assertTrue(members.get(1).getXmlElementNames().contains("DefaultSender"));
+		// We test here that class DefaultSender is excluded from the group, because that would
+		// produce a conflicting definition for XML tag "DefaultSender".
 	}
 }

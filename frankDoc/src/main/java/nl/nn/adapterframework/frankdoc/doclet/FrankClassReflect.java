@@ -295,4 +295,9 @@ class FrankClassReflect implements FrankClass {
 	public String toString() {
 		return getName();
 	}
+
+	@Override
+	public FrankAnnotation getGroupAnnotation() {
+		return null;
+	}
 }

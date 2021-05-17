@@ -2,8 +2,8 @@
     "groups":[
         {
             "name":"Other",
-            "category":"Other",
             "members":[
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master",
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild"
             ]
         }
@@ -27,8 +27,7 @@
                 {
                     "deprecated":true,
                     "multiple":true,
-                    "roleName":"roleNameTChild",
-                    "group":"Other"
+                    "roleName":"roleNameTChild"
                 }
             ]
         },

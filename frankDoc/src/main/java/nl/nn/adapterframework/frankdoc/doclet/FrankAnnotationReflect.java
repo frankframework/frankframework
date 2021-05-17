@@ -46,4 +46,14 @@ class FrankAnnotationReflect implements FrankAnnotation {
 			throw new FrankDocException(String.format("Could not get value of annotation [%s]", getName()), e);
 		}
 	}
+
+	@Override
+	public Object getValueOf(String fieldName) throws FrankDocException {
+		try {
+			Method valueMethod = annotation.annotationType().getMethod(fieldName);
+			return valueMethod.invoke(annotation);
+		} catch(Exception e) {
+			throw new FrankDocException(String.format("Could not get value of annotation [%s]", getName()), e);
+		}
+	}
 }
