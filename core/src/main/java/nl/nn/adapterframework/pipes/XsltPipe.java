@@ -21,8 +21,8 @@ import org.springframework.beans.factory.InitializingBean;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -32,12 +32,10 @@ import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.senders.XsltSender;
-import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.SpringUtils;
 
 
@@ -51,12 +49,12 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Johan Verrips
  */
 
-public class XsltPipe extends StreamingPipe implements IThreadCreator, InitializingBean {
+public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	private String sessionKey=null;
-	
+
 	private XsltSender sender;
-	
+
 	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
 	{
@@ -256,11 +254,6 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator, Initializ
 	public void setName(String name) {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
-	}
-
-	@Override
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
-		sender.setThreadLifeCycleEventListener(threadLifeCycleEventListener);
 	}
 
 	protected XsltSender getSender() {
