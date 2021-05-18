@@ -140,4 +140,44 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 		assertFalse(pipe.canStreamToNextPipe());
 	}
 
+	@Test
+	public void testStreamToNextPipeWithRestoreMovedElements() throws ConfigurationException, PipeStartException {
+		pipe.setRestoreMovedElements(true);
+		configureAndStartPipe();
+
+		assertFalse(pipe.canStreamToNextPipe());
+	}
+
+	@Test
+	public void testStreamToNextPipeWithChompCharSize() throws ConfigurationException, PipeStartException {
+		pipe.setChompCharSize("size");
+		configureAndStartPipe();
+
+		assertFalse(pipe.canStreamToNextPipe());
+	}
+
+	@Test
+	public void testStreamToNextPipeWithElementToMove() throws ConfigurationException, PipeStartException {
+		pipe.setElementToMove("element");
+		configureAndStartPipe();
+
+		assertFalse(pipe.canStreamToNextPipe());
+	}
+	
+	@Test
+	public void testStreamToNextPipeWithElementToMoveChain() throws ConfigurationException, PipeStartException {
+		pipe.setElementToMoveChain("elementChain");
+		configureAndStartPipe();
+
+		assertFalse(pipe.canStreamToNextPipe());
+	}
+	
+	@Test
+	public void testStreamToNextPipeWithWriteToSecLoc() throws ConfigurationException, PipeStartException {
+		pipe.setWriteToSecLog(true);
+		configureAndStartPipe();
+
+		assertFalse(pipe.canStreamToNextPipe());
+	}
+	
 }
