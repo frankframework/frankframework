@@ -39,11 +39,13 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	public void configure() throws ConfigurationException {
 		super.configure();
 		canProvideOutputStream = StringUtils.isEmpty(getGetInputFromSessionKey()) && StringUtils.isEmpty(getGetInputFromFixedValue())
-				&& StringUtils.isEmpty(getStoreResultInSessionKey()) 
+				&& StringUtils.isEmpty(getStoreResultInSessionKey())
 				&& StringUtils.isEmpty(getEmptyInputReplacement()) && !isSkipOnEmptyInput()
 				&& !isPreserveInput() && StringUtils.isEmpty(getElementToMove()) && getLocker()==null
 				&& StringUtils.isEmpty(getIfParam());
-		canStreamToNextPipe = StringUtils.isEmpty(this.getStoreResultInSessionKey()) && !isPreserveInput();
+		canStreamToNextPipe = StringUtils.isEmpty(this.getStoreResultInSessionKey()) && !isPreserveInput() && !isRestoreMovedElements() 
+				&& StringUtils.isEmpty(getChompCharSize()) && StringUtils.isEmpty(getElementToMove()) && StringUtils.isEmpty(getElementToMoveChain())
+				&& !isWriteToSecLog();
 	}
 
 	/**
