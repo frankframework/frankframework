@@ -49,7 +49,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
@@ -137,14 +136,10 @@ public final class Webservices extends Base {
 				endpoint.put("method", method);
 				if (adapter!=null) endpoint.put("adapter", adapter.getName());
 				if (receiver!=null) endpoint.put("receiver", receiver.getName());
-				PipeLine pipeline = adapter.getPipeLine();
-				if (ApiServiceDispatcher.getJsonValidator(pipeline)!=null || pipeline.getOutputValidator()!=null) {
-					String schemaResource = uriPattern.substring(1).replace("/", "_")+"_"+method+"_"+"openapi.json";
-					// N.B. OpenAPI 3.0 generation via ApiServiceDispatcher.mapResponses() is currently not based on explicit outputValidator. 
-					endpoint.put("schemaResource",schemaResource);
-				} else {
-					endpoint.put("error","Pipeline has no validator. Content in the response mappings will be empty in the generated schema.");
-				}
+
+				String schemaResource = uriPattern.substring(1).replace("/", "_")+"_"+method+"_"+"openapi.json";
+				endpoint.put("schemaResource",schemaResource);
+
 				apiListeners.add(endpoint);
 			}
 		}

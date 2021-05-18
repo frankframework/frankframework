@@ -921,16 +921,12 @@ public class WsdlGenerator {
     }
 
     protected String getRoot(IXmlValidator xmlValidator, boolean outputMode) {
-    	return xmlValidator.getMessageRoot();
-//        if (xmlValidator instanceof SoapValidator) {
-//        	if (outputMode) {
-//            	return ((SoapValidator)xmlValidator).getOutputSoapBody();
-//        	} else {
-//            	return ((SoapValidator)xmlValidator).getSoapBody();
-//        	}
-//        } else {
-//            return xmlValidator.getRoot();
-//        }
+    	String rootSpecification = xmlValidator.getMessageRoot();
+    	if (StringUtils.isNotEmpty(rootSpecification) && rootSpecification.indexOf(',')>=0) {
+    		log.warn("validator [{}] is configured with multiple root elements [{}] in mode [{}]; will use only first", xmlValidator.getName(), rootSpecification, outputMode?"response":"request");
+    		rootSpecification = rootSpecification.split(",")[0].trim();
+    	}
+    	return rootSpecification;
     }
 
     protected QName getRootElement(Set<XSD> xsds, String root) {

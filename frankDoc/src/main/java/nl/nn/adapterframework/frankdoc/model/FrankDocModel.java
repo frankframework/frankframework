@@ -61,11 +61,9 @@ public class FrankDocModel {
 
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
 	
-	/**
-	 * Values of the groups map are sorted alphabetically.
-	 */
-	private @Getter LinkedHashMap<String, FrankDocGroup> groups = new LinkedHashMap<>();
-
+	private FrankDocGroupFactory groupFactory = new FrankDocGroupFactory();
+	private @Getter List<FrankDocGroup> groups;
+	
 	// We want to iterate FrankElement in the order they are created, to be able
 	// to create the ElementRole objects in the right order. 
 	private @Getter Map<String, FrankElement> allElements = new LinkedHashMap<>();
@@ -176,7 +174,8 @@ public class FrankDocModel {
 			return allElements.get(clazz.getName());
 		}
 		log.trace("Creating FrankElement for class name [{}]", () -> clazz.getName());
-		FrankElement current = new FrankElement(clazz);
+		FrankDocGroup group = groupFactory.getGroup(clazz);
+		FrankElement current = new FrankElement(clazz, group);
 		allElements.put(clazz.getName(), current);
 		FrankClass superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass.getName());
@@ -523,65 +522,6 @@ public class FrankDocModel {
 		log.trace("Done calculating highest common interface for every ElementType");
 	}
 
-	void buildGroups() {
-		log.trace("Building groups");
-		Map<String, List<FrankDocGroup>> groupsBase = new HashMap<>();
-		List<FrankElement> membersOfOther = new ArrayList<>();
-		for(ElementType elementType: getAllTypes().values()) {
-			if(elementType.isFromJavaInterface()) {
-				FrankDocGroup interfaceBasedGroup = FrankDocGroup.getInstanceFromElementType(elementType);
-				elementType.setFrankDocGroup(interfaceBasedGroup);
-				String groupName = elementType.getGroupName();
-				if(groupsBase.containsKey(groupName)) {
-					groupsBase.get(groupName).add(interfaceBasedGroup);
-				} else {
-					groupsBase.put(groupName, Arrays.asList(interfaceBasedGroup));
-				}
-				log.trace("Appended group [{}] with candidate element type [{}], which is based on a Java interface", () -> elementType.getSimpleName(), () -> elementType.getFullName());
-			}
-			else {
-				try {
-					membersOfOther.add(elementType.getSingletonElement());
-					// Cannot eliminate the isTraceEnabled, because Lambdas dont work here.
-					// getSingletonElement throws an exception.
-					if(log.isTraceEnabled()) {
-						log.trace("Appended the others group with FrankElement [{}]", elementType.getSingletonElement().getFullName());
-					}
-				} catch(ReflectiveOperationException e) {
-					String frankElementsString = elementType.getMembers().stream()
-							.map(FrankElement::getSimpleName).collect(Collectors.joining(", "));
-					log.warn("Error adding ElementType [{}] to group other because it has multiple FrankElement objects: [{}]",
-								() -> elementType.getFullName(), () -> frankElementsString, () -> e);
-				}
-			}
-		}
-		if(groupsBase.containsKey(OTHER)) {
-			log.warn("Name \"[{}]\" cannot been used for others group because it is the name of an ElementType", OTHER);
-		}
-		else {
-			final FrankDocGroup groupOther = FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther);
-			allTypes.values().stream()
-				.filter(et -> ! et.isFromJavaInterface())
-				.forEach(et -> et.setFrankDocGroup(groupOther));
-			groupsBase.put(OTHER, Arrays.asList(groupOther));
-		}
-		for(String groupName: groupsBase.keySet()) {
-			if(groupsBase.get(groupName).size() != 1) {
-				log.warn("Group name [{}] used for multiple groups", groupName);
-			}
-		}
-		// Sort the groups alphabetically, including group "Other". We have to update
-		// this code if "Other" needs to be put to the end.
-		groups = new LinkedHashMap<>();
-		List<String> sortedGroups = new ArrayList<>(groupsBase.keySet());
-		Collections.sort(sortedGroups);
-		for(String groupName: sortedGroups) {
-			log.trace("Creating group [{}]", groupName);
-			groups.put(groupName, groupsBase.get(groupName).get(0));
-		}
-		log.trace("Done building groups");
-	}
-
 	void setOverriddenFrom() {
 		log.trace("Going to set property overriddenFrom for all config children and all attributes of all FrankElement");
 		Set<String> remainingElements = allElements.values().stream().map(FrankElement::getFullName).collect(Collectors.toSet());
@@ -727,5 +667,17 @@ public class FrankDocModel {
 		allTypes.values().stream().filter(ElementType::isFromJavaInterface)
 			.flatMap(et -> et.getMembers().stream())
 			.forEach(f -> f.setInterfaceBased(true));
+	}
+
+	public void buildGroups() {
+		Map<String, List<FrankElement>> groupsElements = allElements.values().stream()
+				.filter(f -> ! f.getXmlElementNames().isEmpty())
+				.collect(Collectors.groupingBy(f -> f.getGroup().getName()));
+		groups = groupFactory.getAllGroups();
+		for(FrankDocGroup group: groups) {
+			List<FrankElement> elements = new ArrayList<>(groupsElements.get(group.getName()));
+			Collections.sort(elements);
+			group.setElements(elements);
+		}
 	}
 }

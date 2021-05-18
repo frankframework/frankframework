@@ -1,4 +1,4 @@
 package nl.nn.adapterframework.frankdoc.testtarget.groups;
 
-public interface IGroupContainer {
+public class DefaultChild implements IChild {
 }

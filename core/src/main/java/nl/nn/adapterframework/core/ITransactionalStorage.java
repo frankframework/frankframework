@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
@@ -28,6 +29,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @author  Gerrit van Brakel
  * @since   4.1
 */
+@FrankDocGroup(order = 50, name = "TransactionalStorages")
 public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
 	public static final int MAXCOMMENTLEN=1000;

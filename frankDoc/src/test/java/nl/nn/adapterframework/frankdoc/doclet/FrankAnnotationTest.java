@@ -2,10 +2,13 @@ package nl.nn.adapterframework.frankdoc.doclet;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import nl.nn.adapterframework.frankdoc.testtarget.doclet.Java5Annotation;
 
 @RunWith(Parameterized.class)
 public class FrankAnnotationTest extends TestBase{
@@ -31,5 +34,25 @@ public class FrankAnnotationTest extends TestBase{
 		FrankAnnotation annotation = setter.getAnnotation(FrankDocletConstants.IBISDOC);
 		assertEquals(FrankDocletConstants.IBISDOC, annotation.getName());
 		assertArrayEquals(new String[] {"100", "Some description", "0"}, (String[]) annotation.getValue());
+	}
+
+	@Test
+	public void whenAnnotationHasFieldNotNamedValueThenStillReadable() throws Exception {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Parent");
+		FrankAnnotation annotation = clazz.getAnnotation(Java5Annotation.class.getName());
+		assertNotNull(annotation);
+		Object stringArrayRawValue = annotation.getValueOf("myStringArray");
+		String[] stringArrayValue = (String[]) stringArrayRawValue;
+		assertArrayEquals(new String[] {"first", "second"}, stringArrayValue);
+	}
+
+	@Test
+	public void whenAnnotationHasStringFieldThenReadable() throws Exception {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Parent");
+		FrankAnnotation annotation = clazz.getAnnotation(Java5Annotation.class.getName());
+		assertNotNull(annotation);
+		Object stringRawValue = annotation.getValueOf("myString");
+		String stringValue = (String) stringRawValue;
+		assertEquals("A string", stringValue);
 	}
 }

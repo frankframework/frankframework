@@ -92,12 +92,16 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		return null;
 	}
 
-	@Override
-	public final MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+	/**
+	 * Don't override unless you're absolutely sure what you're doing!
+	 */
+	@Override //Can't make AOP'd methods final
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		if (!canProvideOutputStream()) {
 			log.debug("pipe [{}] cannot provide outputstream", () -> getName());
 			return null;
 		}
+		log.debug("pipe [{}] creating outputstream", () -> getName());
 		return provideOutputStream(session);
 	}
 	

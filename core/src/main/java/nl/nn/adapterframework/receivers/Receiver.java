@@ -201,7 +201,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	// Should be smaller than the transaction timeout as the delay takes place
 	// within the transaction. WebSphere default transaction timeout is 120.
 	public static final int MAX_RETRY_INTERVAL=100;
-	public final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
+	public static final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
 
 	/**
 	 * CONTINUE: don't stop the receiver and an error occurs.
@@ -714,7 +714,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
 			}
 			
-			if (isTransacted() && errorSender==null && errorStorage==null) {
+			if (isTransacted() && errorSender==null && errorStorage==null && !knownProcessStates().contains(ProcessState.ERROR)) {
 				ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
 			}
 

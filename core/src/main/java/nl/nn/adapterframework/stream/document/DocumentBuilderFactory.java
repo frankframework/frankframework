@@ -35,7 +35,7 @@ public class DocumentBuilderFactory {
 		}
 	}
 	
-	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement) throws SAXException, StreamingException {
+	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement) throws SAXException {
 		switch (format) {
 		case XML:
 			return new XmlDocumentBuilder(rootElement);
@@ -58,7 +58,7 @@ public class DocumentBuilderFactory {
 		return startDocument(format, rootElement, outputStream).asObjectBuilder();
 	}
 
-	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement) throws SAXException, StreamingException {
+	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement) throws SAXException {
 		return startDocument(format, rootElement).asObjectBuilder();
 	}
 
@@ -66,7 +66,7 @@ public class DocumentBuilderFactory {
 		return startDocument(format, rootElement, outputStream).asArrayBuilder(elementName);
 	}
 
-	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName) throws SAXException, StreamingException {
+	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName) throws SAXException {
 		return startDocument(format, rootElement).asArrayBuilder(elementName);
 	}
 

@@ -553,11 +553,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 			if (!wrapResult.isSuccessful()) {
 				return wrapResult;
-			} else {
-				input = wrapResult.getResult();
-				if (messageLog!=null) {
-					preserve(input, session);
-				}
+			}
+			input = wrapResult.getResult();
+			if (messageLog!=null) {
+				preserve(input, session);
 			}
 			log.debug(getLogPrefix(session)+"input after wrapping ("+ClassUtils.nameOf(input)+") [" + input.toString() + "]");
 		}
@@ -815,9 +814,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", e);
 			}
 			return new PipeRunResult(forward, "");
-		} else {
-			return new PipeRunResult(forward, result);
 		}
+		return new PipeRunResult(forward, result);
 	}
 
 	private boolean validResult(Object result) throws IOException {
@@ -1025,9 +1023,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public boolean hasSizeStatistics() {
 		if (!super.hasSizeStatistics()) {
 			return getSender().isSynchronous();
-		} else {
-			return super.hasSizeStatistics();
 		}
+		return super.hasSizeStatistics();
 	}
 
 

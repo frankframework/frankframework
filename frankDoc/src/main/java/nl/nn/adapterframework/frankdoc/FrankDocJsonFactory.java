@@ -68,7 +68,7 @@ public class FrankDocJsonFactory {
 
 	private JsonArray getGroups() throws JsonException {
 		JsonArrayBuilder result = bf.createArrayBuilder();
-		for(FrankDocGroup group: model.getGroups().values()) {
+		for(FrankDocGroup group: model.getGroups()) {
 			result.add(getGroup(group));
 		}
 		return result.build();
@@ -77,7 +77,6 @@ public class FrankDocJsonFactory {
 	private JsonObject getGroup(FrankDocGroup group) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", group.getName());
-		result.add("category", group.getCategory());
 		final JsonArrayBuilder members = bf.createArrayBuilder();
 		group.getElements().stream()
 				.map(FrankElement::getFullName)
@@ -195,7 +194,6 @@ public class FrankDocJsonFactory {
 		}
 		result.add("multiple", child.isAllowMultiple());
 		result.add("roleName", child.getElementRole().getRoleName());
-		result.add("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
 		addIfNotNull(result, "description", child.getDescription());
 		return result.build();
 	}

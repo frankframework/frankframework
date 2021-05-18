@@ -18,6 +18,7 @@ package nl.nn.adapterframework.core;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.pipes.FixedResultPipe;
 import nl.nn.adapterframework.stream.Message;
 
@@ -26,6 +27,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Johan Verrips
  */
+@FrankDocGroup(order = 10, name = "Pipes")
 public interface IPipe extends INamedObject, IForwardTarget {
 	/**
 	 * <code>configure()</code> is called once after the {@link PipeLine} is registered

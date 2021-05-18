@@ -94,6 +94,7 @@ Start reading our code and you'll get the hang of it. We optimize for readabilit
     - Class level IbisDoc, not larger then 5 to 10 lines
     - For each configurable attribute, IbisDoc must not be larger then 2 lines
     - Any examples and more detailed information, that has to be incorperated in to the IbisManual, should be provided as a separate file(s) attached to the pull request
+  * In JavaDoc comments, do not use the `’` character. It breaks the Frank!Doc. You can use `'` instead.
   * Please do not modify files purely for the sake of formatting, or do so in a dedicated pull request. Formatting changes make a pull request harder to understand for reviewers.
   * You can experiment with Eclipse's formatting capabilities. In the preferences window, search for the string "tab". You will get an overview of all the options about formatting. The following options are interesting in particular:
     - There are many screens in which you can define that you use tabs instead of spaces for indentation. Please visit them all to configure that you use tabs.
