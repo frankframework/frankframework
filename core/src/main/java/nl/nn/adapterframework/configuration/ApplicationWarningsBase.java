@@ -33,12 +33,11 @@ import nl.nn.adapterframework.util.AppConstants;
 public abstract class ApplicationWarningsBase implements ApplicationContextAware, InitializingBean, DisposableBean {
 	private ApplicationContext applicationContext;
 	private AppConstants appConstants;
-	private List<String> warnings;
+	protected List<String> warnings = new LinkedList<>();
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		appConstants = AppConstants.getInstance(applicationContext.getClassLoader());
-		warnings = new LinkedList<>();
 	}
 
 	@Override
@@ -72,14 +71,6 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 
 	public final List<String> getWarnings() {
 		return Collections.unmodifiableList(warnings);
-	}
-
-	public boolean isSuppressed(SuppressKeys key) {
-		if(key == null) {
-			throw new IllegalArgumentException("SuppressKeys may not be NULL");
-		}
-
-		return key.isAllowGlobalSuppression() && getAppConstants().getBoolean(key.getKey(), false); // warning is suppressed globally, for all adapters
 	}
 
 	/**

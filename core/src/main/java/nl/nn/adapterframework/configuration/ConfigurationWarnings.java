@@ -90,10 +90,23 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 			throw new IllegalArgumentException("SuppressKeys may not be NULL");
 		}
 
-		return super.isSuppressed(key) || adapter!=null && getAppConstants().getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
+		return isSuppressed(key) || adapter!=null && getAppConstants().getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
+	}
+
+	public boolean isSuppressed(SuppressKeys key) {
+		if(key == null) {
+			throw new IllegalArgumentException("SuppressKeys may not be NULL");
+		}
+
+		return key.isAllowGlobalSuppression() && getAppConstants().getBoolean(key.getKey(), false); // warning is suppressed globally, for all adapters
 	}
 
 	public static boolean isSuppressed(SuppressKeys key, IAdapter adapter) {
-		return getInstance(adapter.getApplicationContext()).doIsSuppressed(key, adapter);
+		ConfigurationWarnings instance = getInstance(adapter.getApplicationContext());
+		if(instance == null) {
+			throw new IllegalArgumentException("ConfigurationWarnings not initialized");
+		}
+
+		return instance.doIsSuppressed(key, adapter);
 	}
 }

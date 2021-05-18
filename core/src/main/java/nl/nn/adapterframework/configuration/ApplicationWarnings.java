@@ -45,29 +45,38 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 		getInstance().doAdd(null, log, message, t);
 	}
 
-	private static ApplicationWarnings getInstance() {
+	public static ApplicationWarnings getInstance() {
 		if(self == null) {
-			throw new IllegalArgumentException("ApplicationWarnings not initialized");
+			self = new ApplicationWarnings();
 		}
 		return self;
 	}
 
-	public static ApplicationWarnings getInstance(ApplicationContext applicationContext) {
+	public static void removeInstance() {
+		self = null;
+	}
+
+	private static void setInstance(ApplicationContext applicationContext) {
 		if(applicationContext == null) {
 			throw new IllegalArgumentException("ApplicationContext may not be NULL");
 		}
 
-		return applicationContext.getBean("applicationWarnings", ApplicationWarnings.class);
+		ApplicationWarnings applicationWarnings = applicationContext.getBean("applicationWarnings", ApplicationWarnings.class);
+		if(self != null) { //Something already logged info before we could wire the bean
+			applicationWarnings.warnings = self.warnings;
+			self = applicationWarnings;
+		}
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		super.afterPropertiesSet();
-		self = getInstance(getApplicationContext());
+
+		setInstance(getApplicationContext());
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		self = null; //Remove static reference
+		removeInstance(); //Remove static reference
 	}
 }
