@@ -130,6 +130,9 @@
 		<!-- Logger name="org.springframework" level="DEBUG" additivity="false">
 			<AppenderRef ref="stdout"/>
 		</Logger -->
+		<!-- Logger name="org.springframework.aop" level="DEBUG" additivity="false">
+			<AppenderRef ref="stdout"/>
+		</Logger -->
 		<!-- Logger name="bitronix.tm" level="DEBUG" additivity="false">
 			<AppenderRef ref="stdout"/>
 		</Logger -->
