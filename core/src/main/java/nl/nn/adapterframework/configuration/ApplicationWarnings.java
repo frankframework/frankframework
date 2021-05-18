@@ -66,7 +66,7 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 		return instance;
 	}
 
-	private static void removeInstance() {
+	public static void removeInstance() {
 		instance = null;
 	}
 

@@ -50,6 +50,7 @@ import org.springframework.mock.web.MockServletContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -76,6 +77,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 
 	@Before
 	public void setUp() {
+		ApplicationWarnings.removeInstance(); //Remove old instance if present
 		M resource = createJaxRsResource();
 		checkContextFields(resource);
 		jaxRsResource = spy(resource);

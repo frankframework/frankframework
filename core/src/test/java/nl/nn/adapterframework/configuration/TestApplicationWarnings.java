@@ -3,6 +3,7 @@ package nl.nn.adapterframework.configuration;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -10,6 +11,11 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class TestApplicationWarnings {
 	private Logger log = LogUtil.getLogger(TestApplicationWarnings.class);
+
+	@Before
+	public void setUp() {
+		ApplicationWarnings.removeInstance(); //Remove old instance if present
+	}
 
 	@Test
 	public void testApplicationContextFromSpring() {

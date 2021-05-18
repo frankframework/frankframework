@@ -53,7 +53,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	private String sessionKey=null;
 
-	private XsltSender sender;
+	private XsltSender sender = createXsltSender();
 
 	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
@@ -63,7 +63,6 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		sender = createXsltSender();
 		SpringUtils.autowireByName(getApplicationContext(), sender);
 	}
 
