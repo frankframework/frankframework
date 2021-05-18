@@ -38,7 +38,7 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 			throw new IllegalArgumentException("A source must be provided.");
 		}
 
-		ConfigurationWarnings instance = getInstance(source.getApplicationContext());
+		ConfigurationWarnings instance = getInstance(source);
 		if(instance != null) {
 			instance.doAdd(source, log, message, t);
 		} else {
@@ -57,7 +57,7 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	 * Add a suppressable ConfigurationWarning with INamedObject prefix
 	 */
 	public static void add(IConfigurationAware source, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
-		ConfigurationWarnings instance = getInstance(source.getApplicationContext()); //We could call two statics, this prevents a double getInstance(..) lookup.
+		ConfigurationWarnings instance = getInstance(source); //We could call two statics, this prevents a double getInstance(..) lookup.
 		if(instance != null && !instance.doIsSuppressed(suppressionKey, adapter)) {
 			// provide suppression hint as info 
 			String hint = null;
@@ -76,7 +76,9 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 		}
 	}
 
-	public static ConfigurationWarnings getInstance(ApplicationContext applicationContext) {
+	//Helper method to retrieve ConfigurationWarnings from the Configuration Context
+	private static ConfigurationWarnings getInstance(IConfigurationAware source) {
+		ApplicationContext applicationContext = source.getApplicationContext();
 		if(applicationContext == null) {
 //			IllegalArgumentException e = new IllegalArgumentException("ApplicationContext may not be NULL");
 			return null;
@@ -102,7 +104,7 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	}
 
 	public static boolean isSuppressed(SuppressKeys key, IAdapter adapter) {
-		ConfigurationWarnings instance = getInstance(adapter.getApplicationContext());
+		ConfigurationWarnings instance = getInstance(adapter);
 		if(instance == null) {
 			throw new IllegalArgumentException("ConfigurationWarnings not initialized");
 		}

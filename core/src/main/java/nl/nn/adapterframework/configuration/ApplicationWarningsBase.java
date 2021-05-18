@@ -33,11 +33,15 @@ import nl.nn.adapterframework.util.AppConstants;
 public abstract class ApplicationWarningsBase implements ApplicationContextAware, InitializingBean, DisposableBean {
 	private ApplicationContext applicationContext;
 	private AppConstants appConstants;
-	protected List<String> warnings = new LinkedList<>();
+	private List<String> warnings = new LinkedList<>();
 
 	@Override
 	public void afterPropertiesSet() {
 		appConstants = AppConstants.getInstance(applicationContext.getClassLoader());
+	}
+
+	protected void addWarnings(List<String> warnings) {
+		this.warnings.addAll(warnings);
 	}
 
 	@Override
@@ -121,7 +125,7 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 	}
 
 	protected void doAdd(Logger log, String message, Throwable t) {
-		doAdd(log, message, message, t);
+		doAdd(log, message, null, t);
 	}
 
 	private void doAdd(Logger log, String message, String postfixLogMessage, Throwable t) {

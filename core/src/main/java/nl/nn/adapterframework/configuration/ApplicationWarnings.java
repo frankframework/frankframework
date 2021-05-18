@@ -15,21 +15,33 @@ limitations under the License.
 */
 package nl.nn.adapterframework.configuration;
 
+import java.util.List;
+
 import javax.annotation.Priority;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.util.LogUtil;
 
 @IbisInitializer
 @Priority(Integer.MAX_VALUE)
 @Scope(scopeName = ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class ApplicationWarnings extends ApplicationWarningsBase {
+	private static final Logger LOG = LogUtil.getLogger(ApplicationWarnings.class);
 
-	private static ApplicationWarnings self = null;
+	//Only allow static references to this class to ensure no objects are stored elsewhere
+	private static ApplicationWarnings instance = null;
+
+	public ApplicationWarnings() {
+		this(true);
+	}
+
+	private ApplicationWarnings(boolean springInstantiated) {
+		LOG.debug("ApplicationWarnings instantiated "+(springInstantiated?"through Spring":"manually"));
+	}
 
 	/**
 	 * Add an AppplicationWarning
@@ -45,38 +57,44 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 		getInstance().doAdd(null, log, message, t);
 	}
 
-	public static ApplicationWarnings getInstance() {
-		if(self == null) {
-			self = new ApplicationWarnings();
+
+
+	private static synchronized ApplicationWarnings getInstance() {
+		if(instance == null) {
+			instance = new ApplicationWarnings(false);
 		}
-		return self;
+		return instance;
 	}
 
-	public static void removeInstance() {
-		self = null;
+	private static void removeInstance() {
+		instance = null;
 	}
 
-	private static void setInstance(ApplicationContext applicationContext) {
-		if(applicationContext == null) {
-			throw new IllegalArgumentException("ApplicationContext may not be NULL");
+	private static synchronized void overrideInstance(ApplicationWarnings springInstance) {
+		if(instance != null) {
+			List<String> warnings = instance.getWarnings();
+			springInstance.addWarnings(warnings);
+			if(!warnings.isEmpty()) {
+				LOG.debug("appending ["+warnings.size()+"] warning(s)");
+			}
 		}
-
-		ApplicationWarnings applicationWarnings = applicationContext.getBean("applicationWarnings", ApplicationWarnings.class);
-		if(self != null) { //Something already logged info before we could wire the bean
-			applicationWarnings.warnings = self.warnings;
-			self = applicationWarnings;
-		}
+		instance = springInstance;
 	}
 
 	@Override
 	public void afterPropertiesSet() {
+		if(getApplicationContext() == null) {
+			throw new IllegalArgumentException("ApplicationContext may not be NULL");
+		}
+
 		super.afterPropertiesSet();
 
-		setInstance(getApplicationContext());
+		//Register the bean in the Spring Context
+		overrideInstance(this);
 	}
 
 	@Override
-	public void destroy() throws Exception {
-		removeInstance(); //Remove static reference
+	public void destroy() {
+		removeInstance(); //Remove static reference when Spring shuts down.
 	}
 }
