@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.xslt;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assume.assumeFalse;
 
 import java.util.ArrayList;
@@ -17,13 +17,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.pipes.GenericMessageSendingPipe;
+import nl.nn.adapterframework.pipes.SenderPipe;
 import nl.nn.adapterframework.senders.ParallelSenders;
 import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
-public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPipe> {
+public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	public int NUM_SENDERS=10;
 	private List<XsltSender> xsltSenders;
@@ -54,12 +54,14 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 				return taskExecutor;
 			}
 		};
-		return senders;		
+
+		autowireByType(senders);
+		return senders;
 	}
 
 	@Override
-	public GenericMessageSendingPipe createPipe() {
-		GenericMessageSendingPipe pipe = new GenericMessageSendingPipe();
+	public SenderPipe createPipe() {
+		SenderPipe pipe = new SenderPipe();
 		SenderSeries psenders=createSenderContainer();
 		xsltSenders=new ArrayList<XsltSender>();
 		for(int i=0;i<NUM_SENDERS;i++) {
@@ -77,8 +79,9 @@ public class ParallelXsltTest extends XsltErrorTestBase<GenericMessageSendingPip
 			param2.setSessionKey("sessionKey"+i);
 			session.put("sessionKey"+i,"sessionKeyValue"+i);
 			sender.addParameter(param2);
-			
-			psenders.setSender(sender);
+
+			autowireByType(sender);
+			psenders.registerSender(sender);
 			xsltSenders.add(sender);
 		}
 		Parameter param = new Parameter();

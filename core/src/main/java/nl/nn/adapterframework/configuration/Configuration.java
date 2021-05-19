@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -23,7 +22,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
@@ -61,6 +60,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Boolean autoStart = null;
+	private boolean enabledAutowiredPostProcessing = false;
 
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
@@ -75,7 +75,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter @Setter boolean configured = false;
 
 	private ConfigurationException configurationException = null;
-	private BaseConfigurationWarnings configurationWarnings = new BaseConfigurationWarnings();
 
 	private Date statisticsMarkDateMain=new Date();
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
@@ -141,6 +140,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		setParent(applicationContext);
 	}
 
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return this;
+	}
+
 	/**
 	 * Spring's configure method.
 	 * Only called when the Configuration has been added through a parent context!
@@ -159,6 +163,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			log.info("unable to determine [configuration.version] for configuration [{}]", ()-> getName());
 		} else {
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", ()-> getName(), ()-> getVersion());
+		}
+
+		if(enabledAutowiredPostProcessing) {
+			//Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+			AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+			postProcessor.setBeanFactory(getBeanFactory());
+			getBeanFactory().addBeanPostProcessor(postProcessor);
 		}
 
 		super.afterPropertiesSet(); //Triggers a context refresh
@@ -368,7 +379,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getClassLoader().getClass().getSimpleName();
 	}
 
-	@Autowired
 	public void setIbisManager(IbisManager ibisManager) {
 		this.ibisManager = ibisManager;
 	}
@@ -409,8 +419,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return configurationException;
 	}
 
-	public BaseConfigurationWarnings getConfigurationWarnings() {
-		return configurationWarnings;
+	public ConfigurationWarnings getConfigurationWarnings() {
+		if(isActive()) {
+			return getBean("configurationWarnings", ConfigurationWarnings.class);
+		}
+
+		return null;
 	}
 
 	// Dummy setter to allow JmsRealms being added to Configurations via FrankDoc.xsd

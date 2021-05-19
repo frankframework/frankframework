@@ -38,6 +38,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
@@ -145,7 +146,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private ParameterList parameterList;
 
 	
-	public void configure(FS fileSystem, ParameterList parameterList, INamedObject owner) throws ConfigurationException {
+	public void configure(FS fileSystem, ParameterList parameterList, IConfigurable owner) throws ConfigurationException {
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;

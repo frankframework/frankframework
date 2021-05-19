@@ -103,6 +103,8 @@
 		>
 	</bean>
 
+	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
+
 	<bean
 		name="listenerContainer"
 		class="nl.nn.adapterframework.receivers.PullingListenerContainer"

@@ -26,10 +26,15 @@ public class SpringUtils {
 	}
 
 	public static <T> void autowireByType(ApplicationContext applicationContext, Object existingBean) {
-		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(existingBean, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
+		autowire(applicationContext, existingBean, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
 	}
 
 	public static <T> void autowireByName(ApplicationContext applicationContext, Object existingBean) {
-		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(existingBean, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		autowire(applicationContext, existingBean, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME);
+	}
+
+	public static <T> void autowire(ApplicationContext applicationContext, Object existingBean, int autowireMode) {
+		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(existingBean, autowireMode, false);
+		applicationContext.getAutowireCapableBeanFactory().initializeBean(existingBean, existingBean.getClass().getCanonicalName());
 	}
 }

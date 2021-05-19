@@ -29,9 +29,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.beans.factory.NamedBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -89,6 +91,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  */
 public class Adapter implements IAdapter, NamedBean {
+	private @Getter @Setter ApplicationContext applicationContext;
+
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 

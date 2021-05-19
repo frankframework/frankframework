@@ -17,10 +17,12 @@ package nl.nn.adapterframework.cache;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -35,9 +37,10 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IScopeProvider {
+public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IConfigurationAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 

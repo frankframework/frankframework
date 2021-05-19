@@ -29,14 +29,16 @@ import javax.xml.validation.ValidatorHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -56,7 +58,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-public abstract class AbstractXmlValidator implements IScopeProvider {
+public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
@@ -64,6 +66,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private boolean throwException = false;
 	private boolean fullSchemaChecking = false;
@@ -99,6 +102,11 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	 */
 	public void configure(String logPrefix) throws ConfigurationException {
 		this.logPrefix = logPrefix;
+	}
+
+	@Override
+	public String getName() {
+		return logPrefix;
 	}
 
 	public void start() throws ConfigurationException {

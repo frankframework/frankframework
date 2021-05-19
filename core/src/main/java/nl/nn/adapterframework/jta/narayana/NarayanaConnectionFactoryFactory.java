@@ -21,7 +21,6 @@ import javax.jms.XAConnectionFactory;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.jboss.narayana.jta.jms.JmsXAResourceRecoveryHelper;
 import org.jboss.narayana.jta.jms.TransactionHelper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
@@ -39,12 +38,10 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 		return new ConnectionFactoryProxy((XAConnectionFactory) connectionFactory, transactionHelper);
 	}
 
-	@Autowired
 	public void setRecoveryManager(NarayanaRecoveryManager recoveryManager) {
 		this.recoveryManager = recoveryManager;
 	}
 
-	@Autowired
 	public void setTransactionHelper(TransactionHelper transactionHelper) {
 		this.transactionHelper = transactionHelper;
 	}

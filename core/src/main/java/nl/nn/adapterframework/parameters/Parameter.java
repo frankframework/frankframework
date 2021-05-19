@@ -36,10 +36,12 @@ import javax.xml.transform.dom.DOMResult;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -95,6 +97,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class Parameter implements IConfigurable, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	public final static String TYPE_XML="xml";
 	public final static String TYPE_NODE="node";

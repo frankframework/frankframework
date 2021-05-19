@@ -13,6 +13,9 @@
 
 	<bean name="lifecycleProcessor" class="nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor" />
 
+	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigurationWarnings" />
+	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
+
 	<bean
 		name="adapterManager"
 		class="nl.nn.adapterframework.configuration.AdapterManager"

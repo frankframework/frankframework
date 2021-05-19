@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -99,7 +101,8 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author  Johan Verrips
  */
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IScopeProvider {
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
+	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private PipeLineProcessor pipeLineProcessor;
@@ -588,13 +591,17 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return requestSizeStats;
 	}
 
+	@Override
+	public String getName() {
+		String name = "PipeLine";
+		if(owner != null) {
+			name += " of [" + owner.getName() + "]";
+		}
+		return name;
+	}
 
 	private String getLogPrefix() {
-		String prefix = "PipeLine";
-		if(owner != null) {
-			prefix += " of [" + owner.getName() + "]";
-		}
-		return prefix + " ";
+		return getName() + " ";
 	}
 
 	/**
@@ -658,7 +665,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	@IbisDoc({"50", "PipeLine exits"})
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
-			ConfigurationWarnings.add(null, log, getLogPrefix()+"exit named ["+exit.getPath()+"] already exists");
+			ConfigurationWarnings.add(this, log, "exit named ["+exit.getPath()+"] already exists");
 		}
 		if (exit.getExitCode()>0) {
 			for(PipeLineExit item: pipeLineExits.values()) {

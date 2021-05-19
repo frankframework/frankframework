@@ -24,9 +24,9 @@ import java.util.Vector;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -141,7 +141,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			this.reportLevel = ReportLevel.valueOf(level.toUpperCase());
 		}
 		catch (IllegalArgumentException e) {
-			ConfigurationWarnings.addGlobalWarning(log, "invalid reportLevel ["+level+"], using default [ERROR]");
+			ApplicationWarnings.add(log, "invalid reportLevel ["+level+"], using default [ERROR]");
 		}
 	}
 

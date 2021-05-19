@@ -23,11 +23,13 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -52,6 +54,7 @@ import java.util.Date;
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	public final static String VERWERKTAG = "VRWRKCD";
 	public final static String TPNRTAG = "AL_RECCRT";

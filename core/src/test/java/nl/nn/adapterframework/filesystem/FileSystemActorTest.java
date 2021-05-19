@@ -18,8 +18,11 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -35,7 +38,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	protected FileSystemActor<F, FS> actor;
 
 	protected FS fileSystem;
-	protected INamedObject owner;
+	protected IConfigurable owner;
 	private PipeLineSession session;
 
 
@@ -45,7 +48,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		owner= new INamedObject() {
+		owner= new IConfigurable() {
 
 			@Override
 			public String getName() {
@@ -55,7 +58,22 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			public void setName(String newName) {
 				throw new IllegalStateException("setName() should not be called");
 			}
-			
+			@Override
+			public ClassLoader getConfigurationClassLoader() {
+				return Thread.currentThread().getContextClassLoader();
+			}
+			@Override
+			public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+				// Ignore
+			}
+			@Override
+			public void configure() throws ConfigurationException {
+				// Ignore
+			}
+			@Override
+			public ApplicationContext getApplicationContext() {
+				return null;
+			}
 		};
 		fileSystem = createFileSystem();
 		fileSystem.configure();
