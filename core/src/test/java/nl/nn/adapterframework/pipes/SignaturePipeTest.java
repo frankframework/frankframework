@@ -48,12 +48,15 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
 		PrivateKey privateKey = keyManager.getPrivateKey("1");
 
+		String alias = "1";
 		String[] aliases = null;
 		if(privateKey == null) {
 			try {
 				aliases = keyManager.getServerAliases("RSA", null);
 				if(aliases != null) { // Try the first alias
 					privateKey = keyManager.getPrivateKey(aliases[0]);
+					assertNotNull(privateKey);
+					alias = aliases[0];
 				}
 			} catch (Exception e) {
 				System.out.println("unable to retreive alias from PFX file");
@@ -63,7 +66,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword(pfxPassword);
-		pipe.setKeystoreAlias("1");
+		pipe.setKeystoreAlias(alias); //GitHub Actions uses a different X509KeyManager, the first alias is 0 instead of 1;
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
