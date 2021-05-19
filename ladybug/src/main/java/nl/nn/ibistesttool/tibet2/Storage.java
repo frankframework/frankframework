@@ -321,18 +321,6 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	}
 
 	@Override
-	public List getTreeChildren(String path) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List getStorageIds(String path) throws StorageException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		final Report report = new Report();
 		report.setTestTool(testTool);
