@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.util.Arrays;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
@@ -46,10 +47,21 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		}
 		X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
 		PrivateKey privateKey = keyManager.getPrivateKey("1");
-		assertNotNull("No private key in PFX file", privateKey);
+
+		String[] aliases = null;
+		if(privateKey == null) {
+			try {
+				aliases = keyManager.getServerAliases("RSA", null);
+				if(aliases != null) { // Try the first alias
+					privateKey = keyManager.getPrivateKey(aliases[0]);
+				}
+			} catch (Exception e) {
+				System.out.println("unable to retreive alias from PFX file");
+			}
+		}
+		assertNotNull((aliases != null) ? ("found aliases "+Arrays.asList(aliases)+" in PFX file") : "no aliases found in PFX file", privateKey);
 
 		pipe.setKeystore("/Signature/certificate.pfx");
-		pipe.setKeystoreType("pkcs12");
 		pipe.setKeystorePassword(pfxPassword);
 		pipe.setKeystoreAlias("1");
 		configureAndStartPipe();
