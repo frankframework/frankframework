@@ -49,7 +49,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 		exit.setState("success");
 		pipeline.registerPipeLineExit(exit);
 		adapter = configuration.createBean(Adapter.class);
-		adapter.setName("TestAdapter-for-".concat(this.getClass().getSimpleName()));
+		adapter.setName("TestAdapter-for-".concat(pipe.getClass().getSimpleName()));
 		adapter.setPipeLine(pipeline);
 	}
 
