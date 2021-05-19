@@ -396,9 +396,13 @@ function indentCompare(sources, result)
 {
 	var s = eval(sources);
 	
-	for (var i = 0; i < s.length; i++)
-		xmlFormat(s[i]);
-		
+	for (var i = 0; i < s.length; i++){
+		// if it is xml
+		if($(s[i]).value.startsWith("<") || $(s[i]).value.startsWith(escapeChars("<"))){
+			xmlFormat(s[i]);
+		}
+	}
+
 	showDiffs(result, s[0], s[1]);
 	
 	if ($(result).nodeName.toLowerCase() == "pre")
