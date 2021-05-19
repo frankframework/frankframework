@@ -207,19 +207,17 @@ public class ServerStatistics extends Base {
 
 			//Configuration specific warnings
 			ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
-			List<Object> warnings = new ArrayList<Object>();
-			for (int j = 0; j < configWarns.size(); j++) {
-				warnings.add(configWarns.get(j));
+			if(configWarns != null && configWarns.size() > 0) {
+				configurationsMap.put("warnings", configWarns.getWarnings());
 			}
-			if(warnings.size() > 0)
-				configurationsMap.put("warnings", warnings);
 
 			//Configuration specific messages
 			MessageKeeper messageKeeper = getIbisContext().getMessageKeeper(configuration.getName());
 			if(messageKeeper != null) {
 				List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-				if(messages.size() > 0)
+				if(!messages.isEmpty()) {
 					configurationsMap.put("messages", messages);
+				}
 			}
 
 			returnMap.put(configuration.getName(), configurationsMap);

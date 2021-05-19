@@ -420,7 +420,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public ConfigurationWarnings getConfigurationWarnings() {
-		return getBean("configurationWarnings", ConfigurationWarnings.class);
+		if(isActive()) {
+			return getBean("configurationWarnings", ConfigurationWarnings.class);
+		}
+
+		return null;
 	}
 
 	// Dummy setter to allow JmsRealms being added to Configurations via FrankDoc.xsd
