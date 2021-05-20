@@ -163,14 +163,18 @@
 
 	<bean name="treePane" class="nl.nn.testtool.echo2.reports.TreePane" autowire="byName" init-method="initBean" scope="prototype"/>
 
-	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
-		<property name="changeReportGeneratorEnabledRoles">
+	<bean name="changeReportGeneratorEnabledRoles" class="java.util.ArrayList">
+		<constructor-arg>
 			<list>
 				<value>IbisTester</value>
 				<value>IbisAdmin</value>
 				<value>IbisDataAdmin</value>
 			</list>
-		</property>
+		</constructor-arg>
+	</bean>
+
+	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
+		<property name="changeReportGeneratorEnabledRoles" ref="changeReportGeneratorEnabledRoles" />
 		<property name="testTool">
 			<ref bean="testTool"/>
 		</property>
@@ -310,7 +314,14 @@
 
 	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
 
-	<bean name="apiConfigurationProvider" class="nl.nn.testtool.web.ApiConfigurationProvider" />
+	<bean name="apiConfigurationProvider" class="nl.nn.testtool.web.ApiConfigurationProvider">
+		<property name="authenticationRolesMap">
+			<map value-type="java.util.List" key-type="java.lang.String">
+				<entry key="POST/testtool$" value-ref="changeReportGeneratorEnabledRoles" />
+				<entry key="POST/runner/run/.*" value-ref="rerunRoles" />
+			</map>
+		</property>
+	</bean>
 
 	<import resource="springIbisDebuggerAdvice.xml"/>
 
