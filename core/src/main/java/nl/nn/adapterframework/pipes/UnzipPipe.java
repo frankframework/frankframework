@@ -218,9 +218,8 @@ public class UnzipPipe extends FixedForwardPipe {
 						} else {
 							String filename = new File(basename).getName();
 							String zipEntryPath = entryname.substring(0, ze.getName().indexOf(filename));
-							String basePath = dir.getPath() + File.separator + zipEntryPath;
 							if(filename.length() < 3) filename += ".tmp.";	//filename here is a prefix to create a unique filename and that prefix must be at least 3 chars long
-							tmpFile = File.createTempFile(filename, extension, new File(basePath));
+							tmpFile = File.createTempFile(filename, extension, new File(dir, zipEntryPath));
 						}
 						if (isDeleteOnExit()) {
 							tmpFile.deleteOnExit();
