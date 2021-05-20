@@ -397,9 +397,11 @@ function indentCompare(sources, result)
 	var s = eval(sources);
 	
 	for (var i = 0; i < s.length; i++){
-		// if it is xml
-		if($(s[i]).value.startsWith("<") || $(s[i]).value.startsWith(escapeChars("<"))){
-			xmlFormat(s[i]);
+		var elementId = s[i];
+		var text = $(elementId).value;
+		// if text is xml
+		if(text.startsWith("<") || text.startsWith(escapeChars("<"))){
+			xmlFormat(elementId);
 		}
 	}
 
