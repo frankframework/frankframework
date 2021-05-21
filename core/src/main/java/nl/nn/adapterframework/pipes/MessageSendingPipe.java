@@ -850,7 +850,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			try {
-				if (sender instanceof IStreamingSender && getOutputValidator()==null && getOutputWrapper()==null && !isStreamResultToServlet()) {
+				if (sender instanceof IStreamingSender && canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null && !isStreamResultToServlet()) {
 					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
 				} else {
 					// sendResult has a messageID for async senders, the result for sync senders

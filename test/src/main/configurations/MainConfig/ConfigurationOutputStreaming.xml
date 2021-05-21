@@ -1,0 +1,22 @@
+<module>
+	<adapter name="OutputStreaming" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-OutputStreaming" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<SenderPipe name="retrieveData" storeResultInSessionKey="dataSessionKey"> <!-- Should not stream to XsltPipe, because of storeResultInSessionKey -->
+				<FixedQuerySender 
+					queryType="select"
+					query="SELECT COUNT(*) AS MSGCOUNT FROM IBISTEMP WHERE TKEY = 0 AND TKEY != 0"
+				>	
+				</FixedQuerySender>
+			</SenderPipe>
+
+			<XsltPipe           name="transformData"      xpathExpression="*/result" />
+			<GetFromSessionPipe name="retrieveSessionKey" sessionKey="dataSessionKey" />
+		</pipeline>
+	</adapter>
+</module>
