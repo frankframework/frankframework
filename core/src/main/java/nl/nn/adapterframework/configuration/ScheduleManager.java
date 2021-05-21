@@ -99,8 +99,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	@Override
 	public void stop() {
 		if(!inState(BootState.STARTED)) {
-			log.warn("unable to stop ["+this+"] while in state ["+getState()+"]");
-			return;
+			log.warn("forcing ["+this+"] to stop while in state ["+getState()+"]");
 		}
 		updateState(BootState.STOPPING);
 
