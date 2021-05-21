@@ -2,9 +2,23 @@
     "groups":[
         {
             "name":"Other",
+            "types":[
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild",
+                "Other"
+            ]
+        }
+    ],
+    "types":[
+        {
+            "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild",
             "members":[
-                "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master",
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild"
+            ]
+        },
+        {
+            "name":"Other",
+            "members":[
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master"
             ]
         }
     ],
