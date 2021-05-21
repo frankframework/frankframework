@@ -670,7 +670,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (exit.getExitCode()>0) {
 			for(PipeLineExit item: pipeLineExits.values()) {
 				if (item.getExitCode()==exit.getExitCode()) {
-					ConfigurationWarnings.add(null, log, getLogPrefix()+"exit ["+exit.getName()+"] has code ["+exit.getExitCode()+"] that is already defined. Only the first exit ["+item.getName()+"] with this code will be represented in OpenAPI schema when it is generated");
+					ConfigurationWarnings.add(this, log, getLogPrefix()+"exit ["+exit.getName()+"] has code ["+exit.getExitCode()+"] that is already defined. Only the first exit ["+item.getName()+"] with this code will be represented in OpenAPI schema when it is generated");
 					break;
 				}
 			}
