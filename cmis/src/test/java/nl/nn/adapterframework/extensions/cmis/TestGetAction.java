@@ -28,7 +28,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -108,7 +108,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		sender.setKeepSession(false);
 
 		HttpServletResponse response = mock(HttpServletResponse.class);
-		session.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
+		session.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 		ServletOutputStream outputStream = mock(ServletOutputStream.class);
 		try {
 			doReturn(outputStream).when(response).getOutputStream();

@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.extensions.ifsa;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -298,7 +298,7 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 	}
 
 	@Override
-	public Destination getDestination(IPipeLineSession session, ParameterValueList pvl) throws JmsException, NamingException, JMSException {
+	public Destination getDestination(PipeLineSession session, ParameterValueList pvl) throws JmsException, NamingException, JMSException {
 		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
 			return (Destination) session.get("replyTo");
 		} else {

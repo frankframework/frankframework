@@ -15,12 +15,14 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.doc.FrankDocGroup;
+
 /**
  * Marker interface for Validators
  * 
  * @author Gerrit van Brakel
- *
  */
+@FrankDocGroup(order = 40, name = "Validators")
 public interface IValidator extends IPipe {
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,11 +24,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -67,12 +68,12 @@ public class ZipWriterPipe extends FixedForwardPipe {
 
 	private static final String PARAMETER_FILENAME="filename";
 
- 	private String action=null;
-	private String zipWriterHandle="zipwriterhandle";
-	private boolean closeInputstreamOnExit=true;
-	private boolean closeOutputstreamOnExit=true;
-	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private boolean completeFileHeader=false;
+ 	private @Getter String action=null;
+	private @Getter String zipWriterHandle="zipwriterhandle";
+	private @Getter boolean closeInputstreamOnExit=true;
+	private @Getter boolean closeOutputstreamOnExit=true;
+	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter boolean completeFileHeader=false;
 
 	private Parameter filenameParameter=null; //used for with action=open for main filename, with action=write for entryfilename
 
@@ -101,11 +102,11 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 
-	protected ZipWriter getZipWriter(IPipeLineSession session) {
+	protected ZipWriter getZipWriter(PipeLineSession session) {
 		return ZipWriter.getZipWriter(session,getZipWriterHandle());
 	}
 
-	protected ZipWriter createZipWriter(IPipeLineSession session, ParameterValueList pvl, Message message) throws PipeRunException {
+	protected ZipWriter createZipWriter(PipeLineSession session, ParameterValueList pvl, Message message) throws PipeRunException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"opening new zipstream");
 		OutputStream resultStream=null;
 		Object input=message.asObject();
@@ -146,14 +147,13 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 
-	protected void closeZipWriterHandle(IPipeLineSession session, boolean mustFind) throws PipeRunException {
+	protected void closeZipWriterHandle(PipeLineSession session, boolean mustFind) throws PipeRunException {
 		ZipWriter sessionData=getZipWriter(session);
 		if (sessionData==null) {
 			if (mustFind) {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot find session data");
-			} else {
-				log.debug(getLogPrefix(session)+"did find session data, assuming already closed");
-			}
+			} 
+			log.debug(getLogPrefix(session)+"did find session data, assuming already closed");
 		} else {
 			try {
 				sessionData.close();
@@ -165,10 +165,10 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (ACTION_CLOSE.equals(getAction())) {
 			closeZipWriterHandle(session,true);
-			return new PipeRunResult(getForward(),input);
+			return new PipeRunResult(getSuccessForward(),input);
 		}
 		ParameterValueList pvl=null;
 		try {
@@ -185,7 +185,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"zipWriterHandle in session key ["+getZipWriterHandle()+"] is already open");
 			}
 			sessionData=createZipWriter(session,pvl,input);
-			return new PipeRunResult(getForward(),input);
+			return new PipeRunResult(getSuccessForward(),input);
 		}
 		// from here on action must be 'write' or 'stream'
 		if (sessionData==null) {
@@ -198,7 +198,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		try {
 			if (ACTION_STREAM.equals(getAction())) {
 				sessionData.openEntry(filename);
-				PipeRunResult prr = new PipeRunResult(getForward(),sessionData.getZipoutput());
+				PipeRunResult prr = new PipeRunResult(getSuccessForward(),sessionData.getZipoutput());
 				return prr;
 			}
 			if (ACTION_WRITE.equals(getAction())) {
@@ -211,7 +211,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 				} catch (IOException e) {
 					throw new PipeRunException(this,getLogPrefix(session)+"cannot add data to zipentry for ["+filename+"]",e);
 				}
-				return new PipeRunResult(getForward(),input);
+				return new PipeRunResult(getSuccessForward(),input);
 			}
 			throw new PipeRunException(this,getLogPrefix(session)+"illegal action ["+getAction()+"]");
 		} catch (CompressionException e) {
@@ -220,19 +220,16 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	protected String getLogPrefix(IPipeLineSession session) {
-		return super.getLogPrefix(session)+"action ["+getAction()+"] ";
+	protected String getLogPrefix(PipeLineSession session) {
+		return super.getLogPrefix(session)+"action ["+getAction()+"] zipWriterHandle ["+getZipWriterHandle()+"]";
 	}
 
-	@IbisDoc({"only for action='write': when set to <code>false</code>, the inputstream is not closed after the zip entry is written", "true"})
+	@IbisDoc({"Only for action='write': If set to <code>false</code>, the inputstream is not closed after the zip entry is written", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
-	public boolean isCloseInputstreamOnExit() {
-		return closeInputstreamOnExit;
-	}
 
-	@IbisDoc({"only for action='open': when set to <code>false</code>, the outputstream is not closed after the zip creation is finished", "true"})
+	@IbisDoc({"Only for action='open': If set to <code>false</code>, the outputstream is not closed after the zip creation is finished", "true"})
 	public void setCloseOutputstreamOnExit(boolean b) {
 		closeOutputstreamOnExit = b;
 	}
@@ -241,39 +238,24 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	public void setCloseStreamOnExit(boolean b) {
 		setCloseOutputstreamOnExit(b);
 	}
-	public boolean isCloseOutputstreamOnExit() {
-		return closeOutputstreamOnExit;
-	}
 
-	@IbisDoc({"only for action='write': charset used to write strings to zip entries", "utf-8"})
+	@IbisDoc({"Only for action='write': Charset used to write strings to zip entries", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
-	public String getCharset() {
-		return charset;
-	}
 
-	@IbisDoc({"session key used to refer to zip session. must be used if zipwriterpipes are nested", "zipwriterhandle"})
+	@IbisDoc({"Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested", "zipwriterhandle"})
 	public void setZipWriterHandle(String string) {
 		zipWriterHandle = string;
 	}
-	public String getZipWriterHandle() {
-		return zipWriterHandle;
-	}
 
-	@IbisDoc({"one of <ul><li>open: to open a new zip file or stream</li> <li>close: to close the zip file or stream</li> <li>write: write the input to the zip as a new entry</li> <li>stream: create a new zip entry, and provide an outputstream that another pipe can use to write the contents</li> </ul>", ""})
+	@IbisDoc({"One of <ul><li>open: To open a new zip file or stream</li> <li>close: To close the zip file or stream</li> <li>write: Write the input to the zip as a new entry</li> <li>stream: Create a new zip entry, and provide an outputstream that another pipe can use to write the contents</li> </ul>", ""})
 	public void setAction(String string) {
 		action = string;
 	}
-	public String getAction() {
-		return action;
-	}
 
-	@IbisDoc({"only for action='write': when set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)", "false"})
+	@IbisDoc({"Only for action='write': If set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)", "false"})
 	public void setCompleteFileHeader(boolean b) {
 		completeFileHeader = b;
-	}
-	public boolean isCompleteFileHeader() {
-		return completeFileHeader;
 	}
 }

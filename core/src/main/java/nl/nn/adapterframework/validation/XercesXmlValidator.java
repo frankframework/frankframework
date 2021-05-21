@@ -55,9 +55,11 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.cache.EhCache;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IConfigurationAware;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -131,7 +133,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				cache.open();
 			} catch (ConfigurationException e) {
 				cache = null;
-				ConfigurationWarnings.addGlobalWarning(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
+				ApplicationWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
 			}
 		}
 	}
@@ -203,7 +205,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				throw new ConfigurationException(msg, e);
 			}
 		}
-		MyErrorHandler errorHandler = new MyErrorHandler();
+		MyErrorHandler errorHandler = new MyErrorHandler(this);
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
 		for (Schema schema : schemas) {
@@ -241,7 +243,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 	}
 
-	protected PreparseResult getPreparseResult(IPipeLineSession session) throws ConfigurationException, PipeRunException {
+	protected PreparseResult getPreparseResult(PipeLineSession session) throws ConfigurationException, PipeRunException {
 		PreparseResult preparseResult;
 		String schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
@@ -265,7 +267,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public XercesValidationContext createValidationContext(IPipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public XercesValidationContext createValidationContext(PipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		super.createValidationContext(session, rootValidations, invalidRootNamespaces);
 
@@ -277,7 +279,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 	
 	@Override
-	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException {
+	public ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException {
 		ValidatorHandler validatorHandler;
 
 		try {
@@ -315,7 +317,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 		return validatorHandler;
 	}
-	public XMLReader createValidatingParser(IPipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
+	public XMLReader createValidatingParser(PipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
 		SymbolTable symbolTable = ((XercesValidationContext)context).getSymbolTable();
 		XMLGrammarPool grammarPool = ((XercesValidationContext)context).getGrammarPool();
 
@@ -452,11 +454,16 @@ class PreparseResult {
 class MyErrorHandler implements XMLErrorHandler {
 	protected Logger log = LogUtil.getLogger(this);
 	protected boolean warn = true;
+	private IConfigurationAware source;
+
+	public MyErrorHandler(IConfigurationAware source) {
+		this.source = source;
+	}
 
 	@Override
 	public void warning(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 	}
 
@@ -468,14 +475,14 @@ class MyErrorHandler implements XMLErrorHandler {
 			throw e;
 		}
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 	}
 
 	@Override
 	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 		throw new XNIException(e);
 	}

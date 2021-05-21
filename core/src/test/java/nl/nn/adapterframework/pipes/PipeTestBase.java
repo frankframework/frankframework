@@ -4,48 +4,65 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class PipeTestBase<P extends IPipe> {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected IPipeLineSession session = new PipeLineSessionBase();
+	protected PipeLineSession session = new PipeLineSession();
 
 	protected P pipe;
 	protected PipeLine pipeline;
 	protected Adapter adapter;
+	private TestConfiguration configuration = new TestConfiguration();
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	public abstract P createPipe();
-	
+
 	@Before
-	public void setup() throws ConfigurationException {
+	public void setup() throws Exception {
 		pipe = createPipe();
+		autowireByType(pipe);
 		pipe.registerForward(new PipeForward("success",null));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipeline = new PipeLine();
+		pipeline = configuration.createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
 		exit.setState("success");
 		pipeline.registerPipeLineExit(exit);
-		adapter = new Adapter();
+		adapter = configuration.createBean(Adapter.class);
+		adapter.setName("TestAdapter-for-".concat(pipe.getClass().getSimpleName()));
 		adapter.setPipeLine(pipeline);
+	}
+
+	protected void autowireByType(Object bean) {
+		configuration.autowireByType(bean);
+	}
+
+	protected void autowireByName(Object bean) {
+		configuration.autowireByName(bean);
+	}
+
+	protected ConfigurationWarnings getConfigurationWarnings() {
+		return configuration.getConfigurationWarnings();
 	}
 
 	/**
@@ -84,11 +101,11 @@ public abstract class PipeTestBase<P extends IPipe> {
 	protected PipeRunResult doPipe(Message input) throws PipeRunException {
 		return doPipe(pipe, input, session);
 	}
-	protected PipeRunResult doPipe(P pipe, Message input, IPipeLineSession session) throws PipeRunException {
+	protected PipeRunResult doPipe(P pipe, Message input, PipeLineSession session) throws PipeRunException {
 		return pipe.doPipe(input, session);
 	}
 	
-	protected PipeRunResult doPipe(P pipe, Object input, IPipeLineSession session) throws PipeRunException {
+	protected PipeRunResult doPipe(P pipe, Object input, PipeLineSession session) throws PipeRunException {
 		return doPipe(pipe, Message.asMessage(input), session);
 	}
 

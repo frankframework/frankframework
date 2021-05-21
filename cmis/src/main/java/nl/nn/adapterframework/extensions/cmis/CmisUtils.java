@@ -126,7 +126,7 @@ import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.cmis.server.CmisSecurityHandler;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.util.AppConstants;
@@ -145,7 +145,7 @@ public class CmisUtils {
 	private static Logger log = LogUtil.getLogger(CmisUtils.class);
 	private static String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
 
-	public static void populateCmisAttributes(IPipeLineSession session) {
+	public static void populateCmisAttributes(PipeLineSession session) {
 		CallContext callContext = (CallContext) session.get(CMIS_CALLCONTEXT_KEY);
 		if(callContext != null) {
 			session.put(CMIS_VERSION_KEY, callContext.getCmisVersion());
@@ -1061,7 +1061,7 @@ public class CmisUtils {
 		return cmisXml;
 	}
 
-	public static ObjectData xml2ObjectData(Element cmisElement, IPipeLineSession context) {
+	public static ObjectData xml2ObjectData(Element cmisElement, PipeLineSession context) {
 		ObjectDataImpl impl = new ObjectDataImpl();
 
 		// Handle allowable actions
@@ -1130,7 +1130,7 @@ public class CmisUtils {
 		return impl;
 	}
 
-	public static ObjectList xml2ObjectList(Element result, IPipeLineSession context) {
+	public static ObjectList xml2ObjectList(Element result, PipeLineSession context) {
 		ObjectListImpl objectList = new ObjectListImpl();
 		objectList.setNumItems(CmisUtils.parseBigIntegerAttr(result, "numberOfItems"));
 		objectList.setHasMoreItems(CmisUtils.parseBooleanAttr(result, "hasMoreItems"));

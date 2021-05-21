@@ -18,7 +18,7 @@ package nl.nn.adapterframework.pipes;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -44,7 +44,7 @@ public class PutInSession extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Object v;
 		if (getValue() == null) {
 			v = message.asObject();
@@ -53,7 +53,7 @@ public class PutInSession extends FixedForwardPipe {
 		}
 		session.put(getSessionKey(), v);
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session) + "stored [" + v + "] in pipeLineSession under key [" + getSessionKey() + "]");
-		return new PipeRunResult(getForward(), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	@IbisDoc({"1", "Key of the session variable to store the input in", "" })

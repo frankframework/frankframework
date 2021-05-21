@@ -305,6 +305,11 @@
     <ClassName>nl.nn.adapterframework.jdbc.MessageStoreSender</ClassName>
   </Element>
   <Element>
+    <Name>MongoDbSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.mongodb.MongoDbSender</ClassName>
+  </Element>
+  <Element>
     <Name>MqttSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.extensions.mqtt.MqttSender</ClassName>

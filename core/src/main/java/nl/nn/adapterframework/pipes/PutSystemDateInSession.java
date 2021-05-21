@@ -22,7 +22,7 @@ import java.util.TimeZone;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Puts the system date/time under a key in the {@link IPipeLineSession pipeLineSession}.
+ * Puts the system date/time under a key in the {@link PipeLineSession pipeLineSession}.
  *
  * @author  Johan Verrips
  * @author  Jaco de Groot (***@dynasol.nl)
@@ -92,7 +92,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		String formattedDate;
 		if(isGetCurrentTimeStampInMillis()) {
@@ -142,7 +142,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 			log.debug(getLogPrefix(session) + "stored ["+ formattedDate	+ "] in pipeLineSession under key [" + getSessionKey() + "]");
 		}
 
-		return new PipeRunResult(getForward(), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 	
 	@IbisDoc({"Key of session variable to store systemdate in", "systemdate"})

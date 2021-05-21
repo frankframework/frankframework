@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -47,7 +47,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result = null;
 		Adapter adapter;
 		try {
@@ -73,7 +73,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Could not generate WSDL for adapter [" + adapter.getName() + "]", e); 
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public String getFrom() {

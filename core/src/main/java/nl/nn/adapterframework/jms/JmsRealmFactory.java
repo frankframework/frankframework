@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -75,6 +75,17 @@ public class JmsRealmFactory {
 			log.error("no JmsRealm found under name [" + jmsRealmName + "], factory contents [" + toString() + "]");
 		}
 		return jmsRealm;
+	}
+
+	public List<String> getConnectionFactoryNames() {
+		List<String> list = new ArrayList<String>();
+		for (JmsRealm jmsRealm: jmsRealms.values()) {
+			String connectionFactory = jmsRealm.retrieveConnectionFactoryName();
+			if(StringUtils.isNotEmpty(connectionFactory)) {
+				list.add(connectionFactory);
+			}
+		}
+		return list;
 	}
 
 	/**

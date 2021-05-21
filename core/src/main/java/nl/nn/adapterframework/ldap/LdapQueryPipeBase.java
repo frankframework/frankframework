@@ -18,7 +18,7 @@ package nl.nn.adapterframework.ldap;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -73,7 +73,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (exceptionForward != null) {
 			try {
 				return doPipeWithException(message, session);
@@ -86,7 +86,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		}
 	}
 
-	public abstract PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException;
+	public abstract PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException;
 
 	protected String retrieveUrl(String host, int port, String baseDN, boolean useSsl) {
 		String url; 

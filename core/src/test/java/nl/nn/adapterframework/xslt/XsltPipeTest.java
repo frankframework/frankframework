@@ -1,14 +1,8 @@
 package nl.nn.adapterframework.xslt;
 
-import org.mockito.Mock;
-
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.pipes.XsltPipe;
 
 public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
-
-	@Mock
-	private IPipeLineSession session;
 
 	@Override
 	public XsltPipe createPipe() {

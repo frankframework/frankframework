@@ -18,7 +18,7 @@ import com.networknt.schema.ValidationMessage;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
-import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /*
@@ -73,7 +73,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		if (jsonschema == null) {
 			fail("no schema generated for [" + rootElement + "]");
 		}
-		String jsonSchemaContent = MatchUtils.jsonPretty(jsonschema.toString());
+		String jsonSchemaContent = Misc.jsonPretty(jsonschema.toString());
 		System.out.println("result compactArrays [" + compactArrays + "] skipJsonRootElements [" + skipJsonRootElements + "] json:\n" + jsonSchemaContent);
 		if (StringUtils.isEmpty(jsonSchemaContent)) {
 			fail("json schema is empty");

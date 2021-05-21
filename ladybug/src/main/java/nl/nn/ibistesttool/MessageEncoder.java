@@ -35,7 +35,7 @@ import nl.nn.testtool.TestTool;
 
 public class MessageEncoder extends MessageEncoderImpl {
 
-	private @Setter @Getter TestTool testTool;	
+	private @Setter @Getter TestTool testTool;
 
 	@Override
 	public ToStringResult toString(Object message, String charset) {
@@ -54,16 +54,16 @@ public class MessageEncoder extends MessageEncoderImpl {
 							result.setMessageClassName(m.asObject().getClass().getTypeName());
 							return result;
 						} catch (IOException e) {
-							return super.toString("Could not capture message: ("+ e.getClass().getTypeName()+") "+e.getMessage(), charset);
+							return super.toString(e, null);
 						}
 					} 
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
 						IOUtils.copy(new BoundedReader(reader, testTool.getMaxMessageLength()), writer);
 					} catch (IOException e) {
-						writer.write("Could not capture message: ("+ e.getClass().getTypeName()+") "+e.getMessage());
+						return super.toString(e, null);
 					}
-					return new ToStringResult(writer.toString(), charset, m.asObject().getClass().getTypeName());
+					return new ToStringResult(writer.toString(), null, m.asObject().getClass().getTypeName());
 				}
 				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.asObject().getClass().getTypeName());
 			}

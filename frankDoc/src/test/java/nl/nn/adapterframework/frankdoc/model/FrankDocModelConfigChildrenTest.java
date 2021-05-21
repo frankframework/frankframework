@@ -17,6 +17,7 @@ package nl.nn.adapterframework.frankdoc.model;
 
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL;
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.IN_XSD;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -33,11 +34,13 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class FrankDocModelConfigChildrenTest {
-	private static String CONTAINER = "nl.nn.adapterframework.frankdoc.testtarget.children.Container";
-	private static String CONTAINER_DERIVED = "nl.nn.adapterframework.frankdoc.testtarget.children.ContainerDerived";
-	private static String CONTAINER_OTHER = "nl.nn.adapterframework.frankdoc.testtarget.children.ContainerOther";
+	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.children.";
+	private static String CONTAINER = PACKAGE + "Container";
+	private static String CONTAINER_DERIVED = PACKAGE + "ContainerDerived";
+	private static String CONTAINER_OTHER = PACKAGE + "ContainerOther";
 	
 	private FrankDocModel instance;
 	private FrankClassRepository classRepository;
@@ -46,7 +49,7 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Before
 	public void setUp() throws SAXException, IOException, FrankDocException {
-		classRepository = FrankClassRepository.getReflectInstance();
+		classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		instance = new FrankDocModel(classRepository);
 		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");
 		instance.findOrCreateElementType(classRepository.findClass(CONTAINER));
@@ -64,7 +67,6 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
-		assertEquals(100, actual.getOrder());
 		assertFalse(actual.isAllowMultiple());
 		assertFalse(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
@@ -87,7 +89,6 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
 		assertTrue(actual.isDocumented());
-		assertEquals(200, actual.getOrder());
 		assertFalse(actual.isAllowMultiple());
 		assertTrue(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
@@ -102,7 +103,6 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChild", actual.getElementType().getSimpleName());
 		assertFalse(actual.isDocumented());
-		assertEquals(50, actual.getOrder());
 		assertTrue(actual.isAllowMultiple());
 		assertFalse(actual.isDeprecated());
 		assertFalse(actual.isMandatory());
@@ -113,29 +113,13 @@ public class FrankDocModelConfigChildrenTest {
 	}
 
 	@Test
-	public void whenIbisDocOnDerivedMethodThenStillOrderFromIbisDoc() {
-		ConfigChild actual = selectChild("roleNameInheritedChildDocOnDerived");
-		assertEquals("roleNameInheritedChildDocOnDerived", actual.getRoleName());
-		assertEquals("Container", actual.getOwningElement().getSimpleName());
-		assertEquals("InheritedChildDocOnDerived", actual.getElementType().getSimpleName());
-		assertTrue(actual.isDocumented());
-		assertEquals(70, actual.getOrder());
-		assertFalse(actual.isAllowMultiple());
-		assertFalse(actual.isMandatory());
-		assertFalse(actual.isDeprecated());
-		// The method in the parent is protected, so not overridden
-		assertNull(actual.getOverriddenFrom());
-		assertFalse(actual.isTechnicalOverride());
-	}
-
-	@Test
 	public void whenIbisDocBothOnParentAndDerivedThenDerivedValueTaken() {
-		ConfigChild actual = selectChild("roleNameInheritedChildDocWithOrderOverride");
-		assertEquals("roleNameInheritedChildDocWithOrderOverride", actual.getRoleName());
+		ConfigChild actual = selectChild("roleNameInheritedChildDocWithDescriptionOverride");
+		assertEquals("roleNameInheritedChildDocWithDescriptionOverride", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
-		assertEquals("InheritedChildDocWithOrderOverride", actual.getElementType().getSimpleName());
+		assertEquals("InheritedChildDocWithDescriptionOverride", actual.getElementType().getSimpleName());
+		assertEquals("Description of Container.setInheritedChildDocWithDescriptionOverride", actual.getDescription());
 		assertTrue(actual.isDocumented());
-		assertEquals(10, actual.getOrder());
 		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
 		assertTrue(actual.isTechnicalOverride());
@@ -156,13 +140,18 @@ public class FrankDocModelConfigChildrenTest {
 	}
 
 	@Test
-	public void onlyWantedConfigChildrenProduced() {
-		assertEquals(7, configChildren.size());
+	public void testSequenceOfConfigChildrenMatchesSequenceOfConfigChildSetters() {
+		List<String> actualConfigChildNames = configChildren.stream().map(ConfigChild::toString).collect(Collectors.toList());
+		String[] expectedConfigChildNames = new String[] {"Container.setChild(Child)", "Container.setDeprecatedChild(Child)",
+				"Container.registerInheritedChilds(InheritedChild)", "Container.setInheritedChildDocOnDerived(InheritedChildDocOnDerived)",
+				"Container.setInheritedChildDocWithDescriptionOverride(InheritedChildDocWithDescriptionOverride)", "Container.setInheritedChildNonSelected(InheritedChildNonSelected)",
+				"Container.setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated)"};
+		assertArrayEquals(expectedConfigChildNames, actualConfigChildNames.toArray(new String[] {}));
 	}
 
 	@Test
 	public void whenConfigChildOverriddenTwiceTheGrandparentTaken() {
-		ConfigChild grandChild = checkAndFindGrandChild("roleNameInheritedChildDocWithOrderOverride");
+		ConfigChild grandChild = checkAndFindGrandChild("roleNameInheritedChildDocWithDescriptionOverride");
 		assertEquals("Container", grandChild.getOverriddenFrom().getSimpleName());
 	}
 
@@ -183,7 +172,6 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void whenConfigChildOverriddenNotDocumentedThenChildCreatedButNotSelected() {
 		ConfigChild actual = selectChild("roleNameInheritedChildNonSelected");
-		assertEquals(120, actual.getOrder());
 		assertFalse(actual.isDocumented());
 		assertFalse(actual.isDeprecated());
 		assertNotNull(actual.getOverriddenFrom());
@@ -196,8 +184,8 @@ public class FrankDocModelConfigChildrenTest {
 		assertEquals("roleNameChildOverriddenOnlyParentAnnotated", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("ChildOverriddenOnlyParentAnnotated", actual.getElementType().getSimpleName());
+		assertEquals("Description of ContainerParent.setChildOverriddenOnlyParentAnnotated", actual.getDescription());
 		assertFalse(actual.isDocumented());
-		assertEquals(110, actual.getOrder());
 		assertFalse(actual.isDeprecated());
 		assertEquals("ContainerParent", actual.getOverriddenFrom().getSimpleName());
 		// Not selected because deprecated
@@ -206,8 +194,33 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void whenInheritedConfigChildNotDeprecatedInheritedFromDeprecatedThenNotDeprecated() throws Exception {
-		ConfigChild theConfigChild = instance.findOrCreateFrankElement(CONTAINER_OTHER)
-				.getConfigChildren(c -> ((ConfigChild)c).getOrder() == 110).get(0);
+		ConfigChild theConfigChild = instance.findOrCreateFrankElement(CONTAINER_OTHER).getConfigChildren(ElementChild.ALL).get(0);
 		assertFalse(theConfigChild.isDeprecated());
+	}
+
+	@Test
+	public void whenConfigChildHasJavadocThenDocumentedAndTakenAsDescription() throws Exception {
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadoc").getConfigChildren(ElementChild.ALL).get(0);
+		assertTrue(configChild.isDocumented());
+		assertEquals("JavaDoc of ContainerForConfigChildDescriptionJavadoc.setChild", configChild.getDescription());
+	}
+
+	@Test
+	public void whenConfigChildInheritsJavadocThenNotDocumentedButDescriptionTaken() throws Exception {
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadocDerived").getConfigChildren(ElementChild.ALL).get(0);
+		assertFalse(configChild.isDocumented());
+		assertEquals("JavaDoc of ContainerForConfigChildDescriptionJavadoc.setChild", configChild.getDescription());		
+	}
+
+	@Test
+	public void whenConfigChildHasIbisDocDescriptionThenJavadocOverruled() throws Exception {
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadocOverruled").getConfigChildren(ElementChild.ALL).get(0);
+		assertEquals("Description of ContainerForConfigChildDescriptionJavadocOverruled.setChild", configChild.getDescription());
+	}
+
+	@Test
+	public void whenConfigChildHasIbisDocWithoutDescriptionThenJavadocTaken() throws Exception {
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionIbisDocOmitsDescriptionJavadocTaken").getConfigChildren(ElementChild.ALL).get(0);
+		assertEquals("Description of ContainerForConfigChildDescriptionIbisDocOmitsDescriptionJavadocTaken.setChild", configChild.getDescription());
 	}
 }

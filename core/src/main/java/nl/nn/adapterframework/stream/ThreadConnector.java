@@ -19,7 +19,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Set;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 
 public class ThreadConnector<T> {
@@ -37,7 +37,7 @@ public class ThreadConnector<T> {
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
 	}
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IPipeLineSession session) {
+	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
 	}
 	

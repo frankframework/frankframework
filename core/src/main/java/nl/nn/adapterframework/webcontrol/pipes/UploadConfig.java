@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jms.JmsRealm;
@@ -58,18 +58,18 @@ public class UploadConfig extends TimeoutGuardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if ("GET".equalsIgnoreCase(method)) {
-			return new PipeRunResult(getForward(), doGet(session));
+			return new PipeRunResult(getSuccessForward(), doGet(session));
 		} else if ("POST".equalsIgnoreCase(method)) {
-			return new PipeRunResult(getForward(), doPost(session));
+			return new PipeRunResult(getSuccessForward(), doPost(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session) + "Illegal value for method [" + method + "], must be 'GET' or 'POST'");
 		}
 	}
 
-	private String doGet(IPipeLineSession session) throws PipeRunException {
+	private String doGet(PipeLineSession session) throws PipeRunException {
 		String dtapStage = APP_CONSTANTS.getResolvedProperty("dtap.stage");
 		session.put(ACTIVE_CONFIG, "on");
 		if ("DEV".equalsIgnoreCase(dtapStage) || "TEST".equalsIgnoreCase(dtapStage)) {
@@ -80,7 +80,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		return retrieveFormInput();
 	}
 
-	private String doPost(IPipeLineSession session) throws PipeRunException {
+	private String doPost(PipeLineSession session) throws PipeRunException {
 		String multipleConfigs = (String) session.get("multipleConfigs");
 		String fileName = (String) session.get("fileName");
 		String result;
@@ -105,7 +105,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 		return "<dummy/>";
 	}
 
-	private String processZipFile(IPipeLineSession session)
+	private String processZipFile(PipeLineSession session)
 			throws PipeRunException, IOException {
 		StringBuilder result = new StringBuilder();
 		Object formFile = session.get("file");
@@ -160,7 +160,7 @@ public class UploadConfig extends TimeoutGuardPipe {
 
 	
 
-	private String processJarFile(IPipeLineSession session, String fileName, String fileSessionKey) throws PipeRunException {
+	private String processJarFile(PipeLineSession session, String fileName, String fileSessionKey) throws PipeRunException {
 		String formJmsRealm = (String) session.get("jmsRealm");
 		String activeConfig = (String) session.get(ACTIVE_CONFIG);
 		boolean isActiveConfig = "on".equals(activeConfig);

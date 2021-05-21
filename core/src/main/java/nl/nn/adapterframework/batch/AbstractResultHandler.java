@@ -18,12 +18,14 @@ package nl.nn.adapterframework.batch;
 import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -41,6 +43,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class AbstractResultHandler implements IResultHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
 	private @Getter String prefix;
@@ -68,10 +71,10 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	@Override
-	public void openDocument(IPipeLineSession session, String streamId) throws Exception {
+	public void openDocument(PipeLineSession session, String streamId) throws Exception {
 	}
 	@Override
-	public void closeDocument(IPipeLineSession session, String streamId) {
+	public void closeDocument(PipeLineSession session, String streamId) {
 	}
 
 	@Override
@@ -124,7 +127,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return defaultResultHandler;
 	}
 
-	@IbisDoc({"when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType(IPipeLineSession, boolean, List, List) RecordHandler.newRecordType} is handled as a block.", "true"})
+	@IbisDoc({"when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType(PipeLineSession, boolean, List, List) RecordHandler.newRecordType} is handled as a block.", "true"})
 	public void setBlockByRecordType(boolean b) {
 		blockByRecordType = b;
 	}

@@ -29,9 +29,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.beans.factory.NamedBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -89,6 +91,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  */
 public class Adapter implements IAdapter, NamedBean {
+	private @Getter @Setter ApplicationContext applicationContext;
+
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
@@ -579,7 +583,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public PipeLineResult processMessage(String messageId, Message message, IPipeLineSession pipeLineSession) {
+	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
 			return processMessageWithExceptions(messageId, message, pipeLineSession);
@@ -615,7 +619,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public PipeLineResult processMessageWithExceptions(String messageId, Message message, IPipeLineSession pipeLineSession) throws ListenerException {
+	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
 
 		PipeLineResult result = new PipeLineResult();
 
@@ -730,18 +734,6 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * Register a PipeLine at this adapter. On registering, the adapter performs
-	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
-	 * @see PipeLine
-	 */
-	@Override
-	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
-		this.pipeline = pipeline;
-		pipeline.setAdapter(this);
-		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");
-	}
-
-	/**
 	 * Register a receiver for this Adapter
 	 * @see Receiver
 	 */
@@ -753,6 +745,18 @@ public class Adapter implements IAdapter, NamedBean {
 		} else {
 			log.debug("Adapter [" + name + "] did not register inactive receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
 		}
+	}
+
+	/**
+	 * Register a PipeLine at this adapter. On registering, the adapter performs
+	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
+	 * @see PipeLine
+	 */
+	@Override
+	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
+		this.pipeline = pipeline;
+		pipeline.setAdapter(this);
+		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");
 	}
 
 	/**

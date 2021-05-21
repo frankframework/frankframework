@@ -1,4 +1,4 @@
-<Item_Response xmlns="urn:items">
+<OutputValidationFailure xmlns="urn:items">
 	<Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
 		<Status>ERROR</Status>
 		<ErrorList>
@@ -10,7 +10,7 @@
 					<Context/>
 					<Action>
 						<Paradigm>Response</Paradigm>
-						<Name>Test/SoapValidator</Name>
+						<Name>Test/Validator</Name>
 						<Version>1</Version>
 					</Action>
 				</Service>
@@ -27,4 +27,4 @@
 			</Error>
 		</ErrorList>
 	</Result>
-</Item_Response>
+</OutputValidationFailure>

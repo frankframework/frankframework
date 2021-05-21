@@ -93,7 +93,7 @@
 		type="org.mariadb.jdbc.MariaDbDataSource"
 		user="testiaf_user"
 		password="testiaf_user00"
-		url="jdbc:mariadb://${databaseHost}:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
+		url="jdbc:mariadb://host.docker.internal:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
 	/>
  -->
  	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
@@ -103,21 +103,31 @@
 		name="jdbc/ibis4test-postgres-xa" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.postgresql.xa.PGXADataSource" 
-		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
+		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
 		user="testiaf_user" 
 		password="testiaf_user00" 
 	/>
 
- 	<Resource name="jdbc/ibis4test-postgres" auth="Container"
+	<Resource name="jdbc/ibis4test-postgres" auth="Container"
 		type="javax.sql.DataSource" 
 		driverClassName="org.postgresql.Driver"
-		url="jdbc:postgresql://${databaseHost}:5432/testiaf"
+		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
 		username="testiaf_user"
 		password="testiaf_user00" 
 		maxTotal="10"
 		maxWaitMillis="5000"
-	/>	
-		
+	/>
+
+	<Resource 
+		name="mongodb/ibis4test"
+		type="com.mongodb.MongoClient"
+		factory="com.mongodb.client.MongoClientFactory"
+		connectionString="mongodb://testiaf_user:testiaf_user00@host.docker.internal"
+		auth="Container"
+		closeMethod="close"
+		singleton="true"
+	/>
+
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="org.apache.naming.factory.BeanFactory"

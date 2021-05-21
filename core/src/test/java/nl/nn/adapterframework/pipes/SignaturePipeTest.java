@@ -2,6 +2,16 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import java.net.URL;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.util.Arrays;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.X509KeyManager;
 
 import org.junit.Test;
 
@@ -9,6 +19,8 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.PkiUtil;
 
 public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
@@ -23,11 +35,40 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 	@Test
 	public void testSign() throws Exception {
+		String pfxCertificate = "/Signature/certificate.pfx";
+		String pfxPassword = "geheim";
+
+		URL pfxURL = ClassUtils.getResourceURL(pfxCertificate);
+		assertNotNull("PFX file not found", pfxURL);
+		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, "pkcs12", "junittest");
+		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, pfxPassword, null);
+		if (keymanagers==null || keymanagers.length==0) {
+			fail("No keymanager found in PFX file ["+pfxCertificate+"]");
+		}
+		X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
+		PrivateKey privateKey = keyManager.getPrivateKey("1");
+
+		String alias = "1";
+		String[] aliases = null;
+		if(privateKey == null) {
+			try {
+				aliases = keyManager.getServerAliases("RSA", null);
+				if(aliases != null) { // Try the first alias
+					privateKey = keyManager.getPrivateKey(aliases[0]);
+					assertNotNull(privateKey);
+					alias = aliases[0];
+				}
+			} catch (Exception e) {
+				System.out.println("unable to retreive alias from PFX file");
+			}
+		}
+		assertNotNull((aliases != null) ? ("found aliases "+Arrays.asList(aliases)+" in PFX file") : "no aliases found in PFX file", privateKey);
+
 		pipe.setKeystore("/Signature/certificate.pfx");
-		pipe.setKeystorePassword("geheim");
-		pipe.setKeystoreAlias("1");
+		pipe.setKeystorePassword(pfxPassword);
+		pipe.setKeystoreAlias(alias); //GitHub Actions uses a different X509KeyManager, the first alias is 0 instead of 1;
 		configureAndStartPipe();
-		
+
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
 		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT

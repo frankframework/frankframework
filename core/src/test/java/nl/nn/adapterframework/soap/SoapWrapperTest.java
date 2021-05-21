@@ -2,12 +2,20 @@ package nl.nn.adapterframework.soap;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+import java.net.URL;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * @author Peter Leeuwenburgh
@@ -78,7 +86,7 @@ public class SoapWrapperTest {
 		String soapMessage = soapMessageSoap11;
 		String expectedSoapBody = expectedSoapBody11;
 		String soapBody = null;
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
 			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
@@ -96,7 +104,7 @@ public class SoapWrapperTest {
 		String soapMessage = soapMessageSoap12;
 		String expectedSoapBody = expectedSoapBody12;
 		String soapBody = null;
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
 			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
@@ -114,7 +122,7 @@ public class SoapWrapperTest {
 		String soapMessage = xmlMessage;
 		String expectedSoapBody = xmlMessage;
 		String soapBody = null;
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
 			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
@@ -124,6 +132,55 @@ public class SoapWrapperTest {
 		assertEquals(expectedSoapBody, soapBody);
 		String soapVersion = (String)session.get(sessionKey);
 		assertEquals(SoapVersion.NONE.namespace,soapVersion);
+	}
+
+	@Test
+	public void signSoap11MessageDigestPassword() throws ConfigurationException, IOException, TransformerException, SAXException {
+		SoapWrapper soapWrapper = SoapWrapper.getInstance();
+		String soapMessage = soapMessageSoap11;
+		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_passwordDigest.xml");
+		String soapBody = null;
+		try {
+			soapBody = soapWrapper.signMessage(new Message(soapMessage), "digestPassword", "digestPassword", true).asString();
+		} catch (Exception e) {
+			soapBody = e.getMessage();
+		}
+		String result = replaceDynamicElements(soapBody);
+		assertEquals(expectedSoapBody, result);
+	}
+
+	@Test
+	public void signSoap11Message() throws ConfigurationException, IOException, TransformerException, SAXException {
+		SoapWrapper soapWrapper = SoapWrapper.getInstance();
+		String soapMessage = soapMessageSoap11;
+		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1.xml");
+		String soapBody = null;
+		try {
+			soapBody = soapWrapper.signMessage(new Message(soapMessage), "test", "test", false).asString();
+		} catch (Exception e) {
+			soapBody = e.getMessage();
+		}
+		String result = replaceDynamicElements(soapBody);
+		assertEquals(expectedSoapBody, result);
+	}
+
+	@Test
+	public void signSoap11MessageBadFlow() throws ConfigurationException, IOException, TransformerException, SAXException {
+		SoapWrapper soapWrapper = SoapWrapper.getInstance();
+		String soapMessage = "noSOAP";
+		String soapBody = null;
+		try {
+			soapBody = soapWrapper.signMessage(new Message(soapMessage), "test", "test", false).asString();
+		} catch (Exception e) {
+			soapBody = e.getMessage();
+		}
+		assertEquals("Could not sign message", soapBody);
+	}
+
+	private String replaceDynamicElements(String result) throws IOException, TransformerException, SAXException {
+		URL url = TestFileUtils.getTestFileURL("/Soap/ignoreElements.xsl");
+		Transformer transformer = XmlUtils.createTransformer(url);
+		return XmlUtils.transformXml(transformer, result);
 	}
 	
 }

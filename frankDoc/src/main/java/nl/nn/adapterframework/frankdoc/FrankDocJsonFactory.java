@@ -28,8 +28,10 @@ import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.frankdoc.model.AttributeType;
 import nl.nn.adapterframework.frankdoc.model.AttributeValues;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
@@ -42,10 +44,12 @@ import nl.nn.adapterframework.util.LogUtil;
 public class FrankDocJsonFactory {
 	private static Logger log = LogUtil.getLogger(FrankDocJsonFactory.class);
 
+	private static final String DESCRIPTION_HEADER = "descriptionHeader";
+
 	private FrankDocModel model;
 	private JsonBuilderFactory bf;
 
-	FrankDocJsonFactory(FrankDocModel model) {
+	public FrankDocJsonFactory(FrankDocModel model) {
 		this.model = model;
 		bf = Json.createBuilderFactory(null);
 	}
@@ -64,7 +68,7 @@ public class FrankDocJsonFactory {
 
 	private JsonArray getGroups() throws JsonException {
 		JsonArrayBuilder result = bf.createArrayBuilder();
-		for(FrankDocGroup group: model.getGroups().values()) {
+		for(FrankDocGroup group: model.getGroups()) {
 			result.add(getGroup(group));
 		}
 		return result.build();
@@ -73,7 +77,6 @@ public class FrankDocJsonFactory {
 	private JsonObject getGroup(FrankDocGroup group) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", group.getName());
-		result.add("category", group.getCategory());
 		final JsonArrayBuilder members = bf.createArrayBuilder();
 		group.getElements().stream()
 				.map(FrankElement::getFullName)
@@ -96,14 +99,25 @@ public class FrankDocJsonFactory {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", frankElement.getSimpleName());
 		result.add("fullName", frankElement.getFullName());
-		result.add("abstract", frankElement.isAbstract());
-		result.add("deprecated", frankElement.isDeprecated());
+		if(frankElement.isAbstract()) {
+			result.add("abstract", frankElement.isAbstract());
+		}
+		if(frankElement.isDeprecated()) {
+			result.add("deprecated", frankElement.isDeprecated());
+		}
+		addDescriptionHeader(result, frankElement.getDescriptionHeader());
 		addIfNotNull(result, "parent", getParentOrNull(frankElement));
 		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
 		frankElement.getXmlElementNames().forEach(xmlElementNames::add);
 		result.add("elementNames", xmlElementNames);
-		result.add("attributes", getAttributes(frankElement));
-		result.add("children", getConfigChildren(frankElement));
+		JsonArray attributes = getAttributes(frankElement);
+		if(! attributes.isEmpty()) {
+			result.add("attributes", attributes);
+		}
+		JsonArray configChildren = getConfigChildren(frankElement);
+		if(! configChildren.isEmpty()) {
+			result.add("children", configChildren);
+		}
 		return result.build();
 	}
 
@@ -129,11 +143,15 @@ public class FrankDocJsonFactory {
 	private JsonObject getAttribute(FrankAttribute frankAttribute) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", frankAttribute.getName());
-		result.add("deprecated", frankAttribute.isDeprecated());
+		if(frankAttribute.isDeprecated()) {
+			result.add("deprecated", frankAttribute.isDeprecated());
+		}
 		result.add("describer", frankAttribute.getDescribingElement().getFullName());
 		addIfNotNull(result, "description", frankAttribute.getDescription());
 		addIfNotNull(result, "default", frankAttribute.getDefaultValue());
-		result.add("type", frankAttribute.getAttributeType().name().toLowerCase());
+		if(! frankAttribute.getAttributeType().equals(AttributeType.STRING)) {
+			result.add("type", frankAttribute.getAttributeType().name().toLowerCase());
+		}
 		if(frankAttribute.getAttributeValues() != null) {
 			result.add("values", getValues(frankAttribute.getAttributeValues()));
 		}
@@ -143,6 +161,12 @@ public class FrankDocJsonFactory {
 	private void addIfNotNull(JsonObjectBuilder builder, String field, String value) {
 		if(value != null) {
 			builder.add(field, value);
+		}
+	}
+
+	private void addDescriptionHeader(JsonObjectBuilder builder, String value) {
+		if(! StringUtils.isBlank(value)) {
+			builder.add(DESCRIPTION_HEADER, value.replaceAll("\"", "\\\\\\\""));
 		}
 	}
 
@@ -162,11 +186,14 @@ public class FrankDocJsonFactory {
 
 	private JsonObject getConfigChild(ConfigChild child) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
-		result.add("deprecated", child.isDeprecated());
-		result.add("mandatory", child.isMandatory());
+		if(child.isDeprecated()) {
+			result.add("deprecated", child.isDeprecated());
+		}
+		if(child.isMandatory()) {
+			result.add("mandatory", child.isMandatory());
+		}
 		result.add("multiple", child.isAllowMultiple());
 		result.add("roleName", child.getElementRole().getRoleName());
-		result.add("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
 		addIfNotNull(result, "description", child.getDescription());
 		return result.build();
 	}

@@ -23,11 +23,13 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -46,6 +48,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
 	private @Getter String inputSeparator;
@@ -93,7 +96,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 	
 	@Override
-	public List<String> parse(IPipeLineSession session, String record) {
+	public List<String> parse(PipeLineSession session, String record) {
 		if (inputFields.size() > 0) {
 			return parseUsingInputFields(record);
 		}
@@ -181,7 +184,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 	
 	@Override
-	public boolean isNewRecordType(IPipeLineSession session, boolean equalRecordHandlers, List<String> prevRecord, List<String> curRecord) {
+	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordHandlers, List<String> prevRecord, List<String> curRecord) {
 		if (getRecordIdentifyingFieldList().size() == 0) {
 			if (log.isTraceEnabled()) log.trace("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
 			return false;

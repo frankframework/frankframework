@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
@@ -121,7 +121,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 	}
 
 	@Override
-	protected String doGet(IPipeLineSession session) throws PipeRunException {
+	protected String doGet(PipeLineSession session) throws PipeRunException {
 		IbisManager ibisManager = retrieveIbisManager();
 
 		String configurationName = null;
@@ -277,13 +277,13 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 
 	private XmlBuilder toConfigurationWarningsXml(List<Configuration> configurations,
 			Configuration configurationSelected) {
-		ConfigurationWarnings globalConfigurationWarnings = ConfigurationWarnings.getInstance();
+		ApplicationWarnings globalConfigurationWarnings = getApplicationContext().getBean("applicationWarnings", ApplicationWarnings.class);
 
 		List<ErrorStoreCounter> errorStoreCounters = retrieveErrorStoreCounters(configurations, configurationSelected);
 
 		List<String[]> selectedConfigurationWarnings = new ArrayList<String[]>();
 		if (configurationSelected != null) {
-			BaseConfigurationWarnings configWarns = configurationSelected.getConfigurationWarnings();
+			ConfigurationWarnings configWarns = configurationSelected.getConfigurationWarnings();
 			for (int j = 0; j < configWarns.size(); j++) {
 				String[] item = new String[2];
 				item[0] = configurationSelected.getName();
@@ -292,7 +292,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 			}
 		} else {
 			for (Configuration configuration : configurations) {
-				BaseConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
+				ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
 				for (int j = 0; j < configWarns.size(); j++) {
 					String[] item = new String[2];
 					item[0] = configuration.getName();

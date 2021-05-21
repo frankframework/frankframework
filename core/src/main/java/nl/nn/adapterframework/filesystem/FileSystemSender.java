@@ -18,9 +18,10 @@ package nl.nn.adapterframework.filesystem;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -103,12 +104,12 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IForwardTarget next) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		return actor.provideOutputStream(session, next);
 	}
 
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		
 		try {
@@ -208,14 +209,24 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		actor.setBase64(base64);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
+	public void setWildCard(String wildcard) {
+		setWildcard(wildcard);
+	}
 	@IbisDocRef({"10", FILESYSTEMACTOR})
-	public void setWildCard(String wildCard) {
-		actor.setWildCard(wildCard);
+	public void setWildcard(String wildcard) {
+		actor.setWildcard(wildcard);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
+	public void setExcludeWildCard(String excludeWildcard) {
+		setExcludeWildcard(excludeWildcard);
+	}
 	@IbisDocRef({"11", FILESYSTEMACTOR})
-	public void setExcludeWildCard(String excludeWildCard) {
-		actor.setExcludeWildCard(excludeWildCard);
+	public void setExcludeWildcard(String excludeWildcard) {
+		actor.setExcludeWildcard(excludeWildcard);
 	}
 
 	@IbisDocRef({"12", FILESYSTEMACTOR})

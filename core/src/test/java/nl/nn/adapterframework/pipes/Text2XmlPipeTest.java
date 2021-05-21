@@ -21,7 +21,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
     }
 
     /**
-     * Method: doPipe(Object input, IPipeLineSession session)
+     * Method: doPipe(Object input, PipeLineSession session)
      */
     @Test
     public void testSuccessCDataAndReplaceNonXMLSplitLines() throws Exception {
@@ -58,7 +58,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
     }
 
     /**
-     * Method: doPipe(Object input, IPipeLineSession session)
+     * Method: doPipe(Object input, PipeLineSession session)
      */
     @Test
     public void testSuccessSplitWithoutReplacingNonXMLChars() throws Exception {

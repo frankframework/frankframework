@@ -18,8 +18,9 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.JCoFunctionTemplate;
@@ -27,6 +28,7 @@ import com.sap.conn.jco.JCoParameterList;
 import com.sap.conn.jco.JCoStructure;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
 import nl.nn.adapterframework.extensions.sap.SapException;
@@ -60,6 +62,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 	private String sapSystemName;

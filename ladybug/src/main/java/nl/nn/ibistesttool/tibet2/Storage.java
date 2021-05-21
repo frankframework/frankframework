@@ -34,9 +34,8 @@ import org.springframework.jdbc.core.RowMapper;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
@@ -322,18 +321,6 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	}
 
 	@Override
-	public List getTreeChildren(String path) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List getStorageIds(String path) throws StorageException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		final Report report = new Report();
 		report.setTestTool(testTool);
@@ -564,11 +551,11 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 			Message message = Message.asMessage(checkpoint.getMessage());
 			IAdapter adapter = ibisManager.getRegisteredAdapter(DELETE_ADAPTER);
 			if (adapter != null) {
-				IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+				PipeLineSession pipeLineSession = new PipeLineSession();
 				if(securityContext.getUserPrincipal() != null)
 					pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 				PipeLineResult processResult = adapter.processMessage(TestTool.getCorrelationId(), message, pipeLineSession);
-				if (!(processResult.getState().equalsIgnoreCase("success"))) {
+				if (!processResult.isSuccessful()) {
 					errorMessage = "Delete failed (see logging for more details)";
 				} else {
 					try {

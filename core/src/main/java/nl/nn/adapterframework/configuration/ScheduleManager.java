@@ -21,37 +21,35 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
  *
  */
-public class ScheduleManager implements ApplicationContextAware, AutoCloseable, ConfigurableLifecycle {
-	protected final Logger log = LogUtil.getLogger(this);
+public class ScheduleManager extends ConfigurableLifecyleBase implements ApplicationContextAware, AutoCloseable {
 
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter SchedulerHelper schedulerHelper;
 	private final Map<String, JobDef> schedules = new LinkedHashMap<>();
 
-	private enum BootState {
-		STARTING, STARTED, STOPPING, STOPPED;
-	}
-	private BootState state = BootState.STARTING;
-
 	@Override
 	public void configure() {
+		if(!inState(BootState.STOPPED)) {
+			log.warn("unable to configure ["+this+"] while in state ["+getState()+"]");
+			return;
+		}
+		updateState(BootState.STARTING);
+
 		for (JobDef jobdef : getSchedulesList()) {
 			try {
 				jobdef.configure();
@@ -67,7 +65,8 @@ public class ScheduleManager implements ApplicationContextAware, AutoCloseable, 
 	 */
 	@Override
 	public void start() {
-		if(state != BootState.STARTING) {
+		if(!inState(BootState.STARTING)) {
+			log.warn("unable to start ["+this+"] while in state ["+getState()+"]");
 			return;
 		}
 
@@ -91,7 +90,7 @@ public class ScheduleManager implements ApplicationContextAware, AutoCloseable, 
 			log.error("Could not start scheduler", e);
 		}
 
-		state = BootState.STARTED;
+		updateState(BootState.STARTED);
 	}
 
 	/**
@@ -99,11 +98,11 @@ public class ScheduleManager implements ApplicationContextAware, AutoCloseable, 
 	 */
 	@Override
 	public void stop() {
-		if(state != BootState.STARTED) {
-			return;
+		if(!inState(BootState.STARTED)) {
+			log.warn("forcing ["+this+"] to stop while in state ["+getState()+"]");
 		}
+		updateState(BootState.STOPPING);
 
-		state = BootState.STOPPING;
 		log.info("stopping all adapters in AdapterManager ["+this+"]");
 		List<JobDef> schedules = getSchedulesList();
 		Collections.reverse(schedules);
@@ -116,22 +115,23 @@ public class ScheduleManager implements ApplicationContextAware, AutoCloseable, 
 				log.error("unable to remove scheduled job ["+jobdef+"]", se);
 			}
 		}
-		state = BootState.STOPPED;
+
+		updateState(BootState.STOPPED);
 	}
 
 	@Override
 	public void close() throws Exception {
 		stop(); //Call this just in case...
 
-		while (getSchedulesList().size() > 0) {
+		while (!getSchedulesList().isEmpty()) {
 			JobDef job = getSchedulesList().get(0);
 			unRegister(job);
 		}
 	}
 
 	public void register(JobDef job) {
-		if(state != BootState.STARTING) {
-			log.warn("cannot add JobDefinition, manager in state ["+state.name()+"]");
+		if(!inState(BootState.STARTING)) {
+			log.warn("cannot add JobDefinition, manager in state ["+getState()+"]");
 		}
 
 		if(log.isDebugEnabled()) log.debug("registering JobDef ["+job+"] with ScheduleManager ["+this+"]");
@@ -165,15 +165,10 @@ public class ScheduleManager implements ApplicationContextAware, AutoCloseable, 
 	}
 
 	@Override
-	public boolean isRunning() {
-		return state == BootState.STARTED;
-	}
-
-	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
-		builder.append(" state ["+state+"]");
+		builder.append(" state ["+getState()+"]");
 		builder.append(" schedules ["+schedules.size()+"]");
 		if(applicationContext != null) {
 			builder.append(" applicationContext ["+applicationContext.getDisplayName()+"]");

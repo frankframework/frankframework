@@ -18,7 +18,7 @@ package nl.nn.adapterframework.batch;
 import java.util.Map;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
@@ -35,7 +35,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 	private @Getter int endPosition=-1;
 	
 	@Override
-	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
+	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		String value = null;
 		if (startPosition >= record.length()) {
 			throw new Exception("Record size is smaller then the specified position of the recordtype within the record");

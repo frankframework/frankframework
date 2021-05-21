@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -48,44 +47,22 @@ class FrankClassReflect implements FrankClass {
 	private static Logger log = LogUtil.getLogger(FrankClassReflect.class);
 
 	private final Class<?> clazz;
+	private final FrankClassRepositoryReflect repository;
 	private final Map<String, FrankAnnotation> annotations;
 
-	private static Set<String> excludeFilters = new TreeSet<String>();
-	static {
-		// Exclude classes that will give conflicts with existing, non-compatible bean definition of same name and class
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.esb\\.WsdlGeneratorPipe");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.SapSender");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.SapListener");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.SapLUWManager");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapSender");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapListener");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco2\\.SapLUWManager");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapSender");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapListener");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.extensions\\.sap\\.jco3\\.SapLUWManager");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.CommandSender");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.EchoSender");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.FixedResultSender");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.LogSender");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.MailSender");
-		excludeFilters.add(".*\\.IbisstoreSummaryQuerySender");
-		// Exclude classes that cannot be used directly in configurations
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.MessageSendingPipe");
-		
-		// Exclude classes that should only be used in internal configurations
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.doc\\.IbisDocPipe");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.webcontrol\\..*");
-		excludeFilters.add("nl\\.nn\\.adapterframework\\.pipes\\.CreateRestViewPipe");
-	}
-
-	FrankClassReflect(Class<?> clazz) {
+	FrankClassReflect(Class<?> clazz, FrankClassRepositoryReflect repository) {
 		this.clazz = clazz;
+		this.repository = repository;
 		Annotation[] reflectAnnotations = clazz.getAnnotations();
 		annotations = new HashMap<>();
 		for(Annotation r: reflectAnnotations) {
 			FrankAnnotation frankAnnotation = new FrankAnnotationReflect(r);
 			annotations.put(frankAnnotation.getName(), frankAnnotation);
 		}
+	}
+
+	FrankClassRepository getRepository() {
+		return repository;
 	}
 
 	@Override
@@ -99,12 +76,23 @@ class FrankClassReflect implements FrankClass {
 	}
 
 	@Override
+	public String getPackageName() {
+		return clazz.getPackage().getName();
+	}
+
+	@Override
 	public FrankClass getSuperclass() {
-		Class<?> superClazz = clazz.getSuperclass();
+		final Class<?> superClazz = clazz.getSuperclass();
 		if(superClazz == null) {
 			return null;
 		} else {
-			return new FrankClassReflect(superClazz);
+			boolean omit = ((FrankClassRepositoryReflect) repository).getExcludeFiltersForSuperclass().stream().anyMatch(
+					exclude -> superClazz.getName().startsWith(exclude));
+			if(omit) {
+				return null;
+			} else {
+				return new FrankClassReflect(superClazz, repository);
+			}
 		}
 	}
 
@@ -113,7 +101,7 @@ class FrankClassReflect implements FrankClass {
 		Class<?>[] interfazes = clazz.getInterfaces();
 		FrankClass[] result = new FrankClass[interfazes.length];
 		for(int i = 0; i < interfazes.length; ++i) {
-			result[i] = new FrankClassReflect(interfazes[i]);
+			result[i] = new FrankClassReflect(interfazes[i], repository);
 		}
 		return result;
 	}
@@ -145,7 +133,7 @@ class FrankClassReflect implements FrankClass {
 		Collections.sort(springBeans);
 		return springBeans.stream()
 				.map(SpringBean::getClazz)
-				.map(FrankClassReflect::new)
+				.map(clazz -> new FrankClassReflect(clazz, repository))
 				.collect(Collectors.toList());
 	}
 
@@ -153,7 +141,7 @@ class FrankClassReflect implements FrankClass {
 	 * @param interfaceName The interface for which we want SpringBean objects.
 	 * @return All classes implementing interfaceName, ordered by their full class name.
 	 */
-	private static List<SpringBean> getSpringBeans(final String interfaceName) throws ReflectiveOperationException {
+	private List<SpringBean> getSpringBeans(final String interfaceName) throws ReflectiveOperationException {
 		Class<?> interfaze = getClass(interfaceName);
 		if(interfaze == null) {
 			throw new ReflectiveOperationException("Class or interface is not available on the classpath: " + interfaceName);
@@ -171,7 +159,7 @@ class FrankClassReflect implements FrankClass {
 		return result;
 	}
 
-	private static Set<SpringBean> getSpringBeans(Class<?> interfaze) {
+	private Set<SpringBean> getSpringBeans(Class<?> interfaze) {
 		Set<SpringBean> result = new HashSet<SpringBean>();
 		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
@@ -186,8 +174,10 @@ class FrankClassReflect implements FrankClass {
 			}
 		};
 		scanner.setBeanNameGenerator(beanNameGenerator);
+		Set<String> excludeFilters = new HashSet<>(repository.getExcludeFilters());
 		for (String excludeFilter : excludeFilters) {
-			addExcludeFilter(scanner, excludeFilter);
+			String filterRegex = excludeFilter.replaceAll("\\.", "\\\\.");
+			addExcludeFilter(scanner, filterRegex);
 		}
 		boolean success = false;
 		int maxTries = 100;
@@ -195,7 +185,7 @@ class FrankClassReflect implements FrankClass {
 		while (!success && tryCount < maxTries) {
 			tryCount++;
 			try {
-				scanner.scan("nl.nn.adapterframework", "nl.nn.ibistesttool");
+				scanner.scan(new ArrayList<>(repository.getIncludeFilters()).toArray(new String[] {}));
 				success = true;
 			} catch(BeanDefinitionStoreException e) {
 				// Exclude errors like class java.lang.NoClassDefFoundError: com/tibco/tibjms/admin/TibjmsAdminException
@@ -268,7 +258,7 @@ class FrankClassReflect implements FrankClass {
 	private FrankMethod[] wrapReflectMethodsInArray(Method[] rawDeclaredMethods) {
 		FrankMethod[] result = new FrankMethod[rawDeclaredMethods.length];
 		for(int i = 0; i < rawDeclaredMethods.length; ++i) {
-			result[i] = new FrankMethodReflect(rawDeclaredMethods[i], new FrankClassReflect(rawDeclaredMethods[i].getDeclaringClass()));
+			result[i] = new FrankMethodReflect(rawDeclaredMethods[i], new FrankClassReflect(rawDeclaredMethods[i].getDeclaringClass(), repository));
 		}
 		return result;
 	}
@@ -294,5 +284,20 @@ class FrankClassReflect implements FrankClass {
 			result[i] = enumConstants[i].name();
 		}
 		return result;
+	}
+
+	@Override
+	public String getJavaDoc() {
+		return null;
+	}
+
+	@Override
+	public String toString() {
+		return getName();
+	}
+
+	@Override
+	public FrankAnnotation getGroupAnnotation() {
+		return null;
 	}
 }

@@ -33,8 +33,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -419,7 +418,7 @@ public class MiscTest {
 	@Test
 	public void testCopyContext() throws Exception {
 		Map<String, Object> from = new HashMap<>();
-		IPipeLineSession to = new PipeLineSessionBase();
+		PipeLineSession to = new PipeLineSession();
 		String keys = "a,b";
 		from.put("a", 15);
 		from.put("b", 16);

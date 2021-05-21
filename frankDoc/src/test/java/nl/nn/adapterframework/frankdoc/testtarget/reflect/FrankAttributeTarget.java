@@ -5,6 +5,8 @@ import java.util.List;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 public class FrankAttributeTarget extends FrankAttributeTargetParent {
+	public static enum FrankAttributeTargetEnum {ONE, TWO};
+
 	public void setAttributeSetterGetter(String value) {
 	}
 
@@ -20,6 +22,9 @@ public class FrankAttributeTarget extends FrankAttributeTargetParent {
 	}
 
 	public void setAttributeOnlySetter(String value) {
+	}
+
+	public void setNonAttributeVararg(String ...value) {
 	}
 
 	public void setAttributeOnlySetterInt(int value) {
@@ -81,4 +86,70 @@ public class FrankAttributeTarget extends FrankAttributeTargetParent {
 	@IbisDoc("Description of ibisDockedDeprecated")
 	public void setIbisDockedDeprecated(String value) {
 	}
+
+	/**
+	 * Attribute with JavaDoc
+	 */
+	public void setAttributeWithJavaDoc(String value) {
+	}
+
+	@Override
+	public void setAttributeWithInheritedJavaDoc(String value) {
+	}
+
+	/**
+	 * Superseeded Javadoc
+	 * @param value
+	 */
+	@IbisDoc({"100", "IbisDoc description that overrules JavaDoc"})
+	public void setAttributeWithIbisDocThatOverrulesJavadocDescription(String value) {
+	}
+
+	/**
+	 * JavaDoc for description that is selected because IbisDoc annotation lacks description.
+	 * @param value
+	 */
+	@IbisDoc("120")
+	public void setAttributeWithIbisDocLackingDescription(String value) {
+	}
+
+	/**
+	 * @ff.default My default value
+	 */
+	public void setAttributeWithJavaDocDefault(String value) {
+	}
+
+	@Override
+	public void setAttributeWithInheritedJavaDocDefault(String value) {
+	}
+
+	/**
+	 * @ff.default My overruled default value
+	 */
+	@IbisDoc({"50", "Dummy description", "The default from the IbisDoc annotation"})
+	public void setAttributeWithIbisDocThatOverrulesJavadocDefault(String value) {
+	}
+
+	/**
+	 * @ff.default This is a string, not an integer
+	 */
+	public void setIntAttributeWithStringDefault(int value) {
+	}
+
+	/**
+	 * @ff.default This is a string, not a Boolean
+	 */
+	public void setBoolAttributeWithStringDefault(boolean value) {
+	}
+
+	/**
+	 * @ff.default String that does not match enum values.
+	 */
+	public void setEnumAttributeWithInvalidDefault(String value) {
+	}
+
+	public FrankAttributeTargetEnum getEnumAttributeWithInvalidDefaultEnum() {
+		return null;
+	}
+
 }

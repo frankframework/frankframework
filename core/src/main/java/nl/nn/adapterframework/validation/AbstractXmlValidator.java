@@ -29,16 +29,18 @@ import javax.xml.validation.ValidatorHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -56,7 +58,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-public abstract class AbstractXmlValidator implements IScopeProvider {
+public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
@@ -64,6 +66,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private boolean throwException = false;
 	private boolean fullSchemaChecking = false;
@@ -101,6 +104,11 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		this.logPrefix = logPrefix;
 	}
 
+	@Override
+	public String getName() {
+		return logPrefix;
+	}
+
 	public void start() throws ConfigurationException {
 		if(isStarted()) {
 			log.info("already started " + ClassUtils.nameOf(this));
@@ -115,7 +123,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		}
 	}
 
-	protected String handleFailures(XmlValidatorErrorHandler xmlValidatorErrorHandler, IPipeLineSession session, String event, Throwable t) throws XmlValidatorException {
+	protected String handleFailures(XmlValidatorErrorHandler xmlValidatorErrorHandler, PipeLineSession session, String event, Throwable t) throws XmlValidatorException {
 		// A SAXParseException will already be reported by the parser to the
 		// XmlValidatorErrorHandler through the ErrorHandler interface.
 		if (t != null && !(t instanceof SAXParseException)) {
@@ -137,7 +145,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		return event;
 	}
 
-	public ValidationContext createValidationContext(IPipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public ValidationContext createValidationContext(PipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(logPrefix + "removing contents of sessionKey [" + getReasonSessionKey() + "]");
@@ -151,22 +159,22 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		return null;
 	}
 
-	public abstract ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
+	public abstract ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
 	public abstract List<XSModel> getXSModels();
 
 	/**
 	 * @param input   the XML string to validate
-	 * @param session a {@link IPipeLineSession pipeLineSession}
+	 * @param session a {@link PipeLineSession pipeLineSession}
 	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
-	public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public String validate(Object input, PipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
 		return validate(input, session, logPrefix, validatorHandler, null, context);
 	}
 
-	public String validate(Object input, IPipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public String validate(Object input, PipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		if (filter != null) {
 			// If a filter is present, connect its output to the context.contentHandler.
@@ -183,7 +191,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		return validate(is, validatorHandler, session, context);
 	}
 
-	public String validate(InputSource inputSource, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context) throws XmlValidatorException {
+	public String validate(InputSource inputSource, ValidatorHandler validatorHandler, PipeLineSession session, ValidationContext context) throws XmlValidatorException {
 		try {
 			XmlUtils.parseXml(inputSource, validatorHandler, context.getErrorHandler());
 		} catch (IOException | SAXException e) {
@@ -201,7 +209,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	 * @return the result event, e.g. 'valid XML' or 'Invalid XML'
 	 * @throws XmlValidatorException, when configured to do so
 	 */
-	public String finalizeValidation(ValidationContext context, IPipeLineSession session, Throwable t) throws XmlValidatorException {
+	public String finalizeValidation(ValidationContext context, PipeLineSession session, Throwable t) throws XmlValidatorException {
 		if (t != null) {
 			return handleFailures(context.getErrorHandler(), session, XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, t);
 		}
@@ -220,7 +228,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		this.schemasProvider = schemasProvider;
 	}
 
-	protected String getLogPrefix(IPipeLineSession session) {
+	protected String getLogPrefix(PipeLineSession session) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(ClassUtils.nameOf(this)).append(' ');
 		if (this instanceof INamedObject) {

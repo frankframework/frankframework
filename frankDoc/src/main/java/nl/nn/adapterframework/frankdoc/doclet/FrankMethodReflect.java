@@ -65,13 +65,18 @@ class FrankMethodReflect implements FrankMethod {
 		if(clazz.isPrimitive()) {
 			return new FrankPrimitiveType(clazz.getName());
 		} else {
-			return new FrankClassReflect(clazz);
+			return new FrankClassReflect(clazz, (FrankClassRepositoryReflect) ((FrankClassReflect) declaringClass).getRepository());
 		}
 	}
 
 	@Override
 	public int getParameterCount() {
 		return method.getParameterCount();
+	}
+
+	@Override
+	public boolean isVarargs() {
+		return method.isVarArgs();
 	}
 
 	@Override
@@ -113,5 +118,30 @@ class FrankMethodReflect implements FrankMethod {
 		} else {
 			return new FrankAnnotationReflect(rawAnnotation);
 		}
+	}
+
+	@Override
+	public String getJavaDoc() {
+		return null;
+	}
+	
+	@Override
+	public String getJavaDocIncludingInherited() {
+		return null;
+	}
+
+	@Override
+	public String getDefaultValueFromJavadoc() {
+		return null;
+	}
+
+	@Override
+	public String getDefaultValueFromJavadocIncludingInherited() {
+		return null;
+	}
+
+	@Override
+	public String toString() {
+		return toStringImpl();
 	}
 }

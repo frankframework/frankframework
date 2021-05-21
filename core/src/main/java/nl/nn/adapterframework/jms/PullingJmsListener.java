@@ -29,12 +29,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -176,7 +175,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
-		String cid = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
+		String cid = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
 		try {
@@ -226,8 +225,8 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					if (log.isDebugEnabled()) {
 						log.debug(getLogPrefix()+ "no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					PipeLineSessionBase pipeLineSession = new PipeLineSessionBase();
-					pipeLineSession.put(IPipeLineSession.messageIdKey,cid);
+					PipeLineSession pipeLineSession = new PipeLineSession();
+					pipeLineSession.put(PipeLineSession.messageIdKey,cid);
 					getSender().sendMessage(plr.getResult(), pipeLineSession);
 				}
 			}
@@ -240,13 +239,13 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					// the following if transacted using transacted sessions, instead of XA-enabled sessions.
 					Session session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 					if (session == null) {
-						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(IPipeLineSession.originalMessageIdKey) +"] has no session to commit or rollback");
+						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.originalMessageIdKey) +"] has no session to commit or rollback");
 					} else {
 						String successState = getCommitOnState();
 						if (successState!=null && successState.equalsIgnoreCase(plr.getState())) {
 							session.commit();
 						} else {
-							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(IPipeLineSession.originalMessageIdKey) +"] not committed nor rolled back either");
+							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.originalMessageIdKey) +"] not committed nor rolled back either");
 							//TODO: enable rollback, or remove support for JmsTransacted altogether (XA-transactions should do it all)
 							// session.rollback();
 						}

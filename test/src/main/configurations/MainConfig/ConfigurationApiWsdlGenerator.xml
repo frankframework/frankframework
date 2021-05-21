@@ -1,6 +1,6 @@
 <module>
 	<adapter name="ApiWsdlGenerator">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ApiWsdlGenerator">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ApiWsdlGenerator" />
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
@@ -10,13 +10,13 @@
 			<inputValidator className="nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator" wsdl="/ApiWsdlGenerator/wsdl/HelloWorld.wsdl" soapBody="HelloWorld_Request" soapBodyNamespace="http://api.nn.nl/HelloWorld" outputSoapBody="HelloWorld_Response" throwException="true" />
 			<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" />
 			<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" />
-			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResult" fileName="ApiWsdlGenerator/xml/HelloWorldResponseStub.xml">
+			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="ApiWsdlGenerator/xml/HelloWorldResponseStub.xml">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="ApiWsdlGeneratorMultipart">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ApiWsdlGeneratorMultipart">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ApiWsdlGeneratorMultipart" />
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
@@ -26,7 +26,7 @@
 			<inputValidator className="nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator" wsdl="/ApiWsdlGenerator/wsdl/HelloWorld.wsdl" soapBody="HelloWorld_Request" soapBodyNamespace="http://api.nn.nl/HelloWorld" outputSoapBody="HelloWorld_Response" multipart="true" throwException="true" />
 			<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" />
 			<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" />
-			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResult" fileName="ApiWsdlGenerator/xml/HelloWorldResponseStub.xml">
+			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="ApiWsdlGenerator/xml/HelloWorldResponseStub.xml">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

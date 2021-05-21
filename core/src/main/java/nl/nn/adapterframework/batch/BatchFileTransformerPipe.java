@@ -21,7 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -65,13 +65,13 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	private @Getter boolean delete = false;
 
 	@Override
-	protected String getStreamId(Message input, IPipeLineSession session) {
+	protected String getStreamId(Message input, PipeLineSession session) {
 		String filename = (String)input.asObject();
 		File file = new File(filename);
 		return file.getName();
 	}
 	@Override
-	protected InputStream getInputStream(String streamId, Message input, IPipeLineSession session) throws PipeRunException {
+	protected InputStream getInputStream(String streamId, Message input, PipeLineSession session) throws PipeRunException {
 		try {
 			String filename	= (String)input.asObject();
 			File file = new File(filename);
@@ -88,10 +88,10 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	 * Move the input file to a done directory when transformation is finished
 	 * and return the names of the generated files. 
 	 * 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}

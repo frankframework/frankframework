@@ -18,7 +18,7 @@ package nl.nn.adapterframework.ftp;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -75,9 +75,9 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	}
  
 	/** 
-* @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
+* @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String orgFilename;
 		try {
 			orgFilename = message.asString();
@@ -90,7 +90,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 			if (deleteAfterGet) {
 				ftpSession.deleteRemote(remoteDirectory, orgFilename, true);
 			} 
-			return new PipeRunResult(getForward(), localFilename);
+			return new PipeRunResult(getSuccessForward(), localFilename);
 		}
 		catch(Exception e) {
 			String msg="Error while getting file [" + remoteDirectory + "/" + orgFilename+"]";

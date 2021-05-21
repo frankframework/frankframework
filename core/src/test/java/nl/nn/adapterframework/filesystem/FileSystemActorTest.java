@@ -18,11 +18,13 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -36,8 +38,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	protected FileSystemActor<F, FS> actor;
 
 	protected FS fileSystem;
-	protected INamedObject owner;
-	private IPipeLineSession session;
+	protected IConfigurable owner;
+	private PipeLineSession session;
 
 
 	protected abstract FS createFileSystem();
@@ -46,7 +48,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		owner= new INamedObject() {
+		owner= new IConfigurable() {
 
 			@Override
 			public String getName() {
@@ -56,7 +58,22 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			public void setName(String newName) {
 				throw new IllegalStateException("setName() should not be called");
 			}
-			
+			@Override
+			public ClassLoader getConfigurationClassLoader() {
+				return Thread.currentThread().getContextClassLoader();
+			}
+			@Override
+			public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+				// Ignore
+			}
+			@Override
+			public void configure() throws ConfigurationException {
+				// Ignore
+			}
+			@Override
+			public ApplicationContext getApplicationContext() {
+				return null;
+			}
 		};
 		fileSystem = createFileSystem();
 		fileSystem.configure();
@@ -251,7 +268,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -309,7 +326,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorListActionTestInFolderWithExcludeWildCard() throws Exception {
-		actor.setExcludeWildCard("*d0*");
+		actor.setExcludeWildcard("*d0*");
 		_createFolder("folder");
 		fileSystemActorListActionTest("folder",5,4);
 	}
@@ -317,7 +334,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test
 	public void fileSystemActorListActionTestInFolderWithBothWildCardAndExcludeWildCard() throws Exception {
 		actor.setWildCard("*.txt");
-		actor.setExcludeWildCard("*ted1*");
+		actor.setExcludeWildcard("*ted1*");
 		_createFolder("folder");
 		fileSystemActorListActionTest("folder",5,4);
 	}
@@ -338,7 +355,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -353,7 +370,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename2 = filename+".xml";
 		String contents = "regeltje tekst";
 		
-		actor.setExcludeWildCard("*.bak");
+		actor.setExcludeWildcard("*.bak");
 		actor.setAction("list");
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -363,7 +380,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -382,7 +399,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String contents = "regeltje tekst";
 		
 		actor.setWildCard("*.xml");
-		actor.setExcludeWildCard("*.oud.xml");
+		actor.setExcludeWildcard("*.oud.xml");
 		actor.setAction("list");
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -392,7 +409,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
 		String stringResult=(String)result;
@@ -572,7 +589,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwString", contents);
 
 		ParameterList params = new ParameterList();
@@ -610,7 +627,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
 		ParameterList params = new ParameterList();
@@ -650,7 +667,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
 		ParameterList params = new ParameterList();
@@ -690,7 +707,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 //		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		ParameterList paramlist = new ParameterList();
 		Parameter param = new Parameter();
@@ -733,7 +750,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
@@ -780,7 +797,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		createFile(null, filename, contents);
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterList params = new ParameterList();
 		
 		Parameter p = new Parameter();
@@ -881,7 +898,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		actor.setAction("move");
-		actor.setExcludeWildCard("tobemoved*");
+		actor.setExcludeWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
@@ -1050,7 +1067,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		actor.setAction("copy");
-		actor.setExcludeWildCard("tobemoved*");
+		actor.setExcludeWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
@@ -1312,7 +1329,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		actor.setAction("delete");
-		actor.setExcludeWildCard("tostay*");
+		actor.setExcludeWildcard("tostay*");
 		actor.setInputFolder(srcFolderName);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -1383,7 +1400,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	
 	
 	
-	protected ParameterValueList createParameterValueList(ParameterList paramList, Message input, IPipeLineSession session) throws ParameterException {
+	protected ParameterValueList createParameterValueList(ParameterList paramList, Message input, PipeLineSession session) throws ParameterException {
 		if (paramList==null) {
 			return null;
 		}

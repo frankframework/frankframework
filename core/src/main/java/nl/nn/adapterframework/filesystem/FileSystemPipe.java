@@ -19,8 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -115,13 +116,13 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return actor.provideOutputStream(session, getNextPipe());
 	}
 
 
 	@Override
-	public PipeRunResult doPipe (Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterValueList pvl=null;
 		try {
@@ -143,9 +144,9 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
 		if (result!=null) {
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(getSuccessForward(), result);
 		}
-		return new PipeRunResult(getForward(), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	@Override
@@ -222,14 +223,24 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		actor.setBase64(base64);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
+	public void setWildCard(String wildcard) {
+		setWildcard(wildcard);
+	}
 	@IbisDocRef({"10", FILESYSTEMACTOR})
-	public void setWildCard(String wildCard) {
-		actor.setWildCard(wildCard);
+	public void setWildcard(String wildcard) {
+		actor.setWildcard(wildcard);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
+	public void setExcludeWildCard(String excludeWildcard) {
+		setExcludeWildcard(excludeWildcard);
+	}
 	@IbisDocRef({"11", FILESYSTEMACTOR})
-	public void setExcludeWildCard(String excludeWildCard) {
-		actor.setExcludeWildCard(excludeWildCard);
+	public void setExcludeWildcard(String excludeWildcard) {
+		actor.setExcludeWildcard(excludeWildcard);
 	}
 
 	@IbisDocRef({"12", FILESYSTEMACTOR})

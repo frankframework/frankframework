@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -75,7 +75,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
@@ -143,7 +143,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			}
 			if(log.isDebugEnabled()) log.debug("found eTag cacheKey ["+cacheKey+"] with action ["+getAction()+"]");
 
-			return new PipeRunResult(getForward(), returnCode);
+			return new PipeRunResult(getSuccessForward(), returnCode);
 		}
 		else {
 			PipeForward pipeForward = findForward("exception");

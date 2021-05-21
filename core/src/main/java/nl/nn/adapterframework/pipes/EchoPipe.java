@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -37,12 +37,12 @@ import nl.nn.adapterframework.stream.StreamingPipe;
 public class EchoPipe extends StreamingPipe {
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) {
-		return new PipeRunResult(getForward(),message);
+	public PipeRunResult doPipe(Message message, PipeLineSession session) {
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session) throws StreamingException {
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return MessageOutputStream.getTargetStream(this, session, getNextPipe());
 	}
 

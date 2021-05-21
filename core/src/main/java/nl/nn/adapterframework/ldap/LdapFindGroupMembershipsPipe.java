@@ -26,7 +26,7 @@ import javax.naming.NamingException;
 import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -106,7 +106,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 
 
 	@Override
-	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "input is null");
 		}
@@ -135,7 +135,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 				attribute.setValue(membership,true);
 				attributes.addSubElement(attribute);
 			}
-			return new PipeRunResult(getForward(), result.toXML());
+			return new PipeRunResult(getSuccessForward(), result.toXML());
 		} catch (NamingException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
 		}

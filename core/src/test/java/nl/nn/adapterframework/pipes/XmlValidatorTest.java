@@ -1,6 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
 
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,9 +14,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -45,9 +48,15 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
     }
 
  
-    static PipeForward getSuccess() {
+    protected static PipeForward createSuccessForward() {
         PipeForward forward = new PipeForward();
         forward.setName("success");
+        return forward;
+    }
+
+    protected static PipeForward createFailureForward() {
+        PipeForward forward = new PipeForward();
+        forward.setName("failure");
         return forward;
     }
 
@@ -83,7 +92,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
         if (addNamespaceToSchema) {
             validator.setAddNamespaceToSchema(addNamespaceToSchema);
         }
-        validator.registerForward(getSuccess());
+        validator.registerForward(createSuccessForward());
         validator.setThrowException(true);
         validator.setFullSchemaChecking(true);
         return validator;
@@ -94,7 +103,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
    protected String runAndEvaluate(XmlValidator validator, String inputfile, String[] expectedFailureReasons) throws IOException  {
 	   System.out.println("inputfile ["+inputfile+"]");
        String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
-  		IPipeLineSession session=new PipeLineSessionBase();
+  		PipeLineSession session=new PipeLineSession();
        try {
       		PipeRunResult result=validator.doPipe(new Message(testXml), session);
       		PipeForward forward=result.getPipeForward();
@@ -141,7 +150,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
             throw new RuntimeException(e);
         }
 
-        validator.registerForward(getSuccess());
+        validator.registerForward(createSuccessForward());
         validator.setThrowException(true);
         validator.setFullSchemaChecking(true);
 		validator.setRoot(root);
@@ -170,7 +179,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	public void testStoreRootElement(String schema, String root, String inputFile) throws Exception {
 		XmlValidator validator = new XmlValidator();
 
-		validator.registerForward(getSuccess());
+		validator.registerForward(createSuccessForward());
 		validator.setThrowException(true);
 		validator.setFullSchemaChecking(true);
 		validator.setRoot(root);
@@ -180,7 +189,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.start();
 
 		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
-		IPipeLineSession session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		PipeRunResult result = validator.doPipe(new Message(testXml), session);
 		PipeForward forward = result.getPipeForward();
 
@@ -193,4 +202,54 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		testStoreRootElement(SCHEMA_LOCATION_BASIC_A_OK, "A", INPUT_FILE_BASIC_A_OK);
 	}
 	
+	@Test
+	public void testWrongRootElement() throws Exception {
+		String schema = SCHEMA_LOCATION_BASIC_A_OK;
+		String inputFile = INPUT_FILE_BASIC_A_OK;
+		XmlValidator validator = new XmlValidator();
+
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		
+		validator.setFullSchemaChecking(true);
+		validator.setRoot("anotherElement");
+		validator.setReasonSessionKey("reason");
+		validator.setSchemaLocation(schema);
+		validator.configure();
+		validator.start();
+
+		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.doPipe(new Message(testXml), session);
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("failure", forward.getName());
+		assertThat((String)session.get("reason"), containsString("Illegal element 'A'. Element(s) 'anotherElement' expected."));
+	}
+
+
+	@Test
+	public void testMultipleRootElement() throws Exception {
+		String schema = SCHEMA_LOCATION_BASIC_A_OK;
+		String root = "A"; 
+		String inputFile = INPUT_FILE_BASIC_A_OK;
+		XmlValidator validator = new XmlValidator();
+
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		
+		validator.setFullSchemaChecking(true);
+		validator.setRoot(root+",anotherElement"); // if multiple root elements are specified, in a comma separated list, the validation succeeds if one of these root elements is found
+		validator.setSchemaLocation(schema);
+		validator.configure();
+		validator.start();
+
+		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.doPipe(new Message(testXml), session);
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("success", forward.getName());
+	}
+
 }

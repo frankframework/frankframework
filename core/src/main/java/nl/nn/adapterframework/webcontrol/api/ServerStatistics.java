@@ -47,7 +47,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.context.ApplicationEventPublisher;
 
 import edu.emory.mathcs.backport.java.util.Collections;
-import nl.nn.adapterframework.configuration.BaseConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
@@ -169,7 +169,7 @@ public class ServerStatistics extends Base {
 	public Response getServerConfiguration() throws ApiException {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
-		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
+		ApplicationWarnings globalConfigWarnings = getIbisContext().getBean("applicationWarnings", ApplicationWarnings.class);
 
 		long totalErrorStoreCount = 0;
 		boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
@@ -206,20 +206,18 @@ public class ServerStatistics extends Base {
 			}
 
 			//Configuration specific warnings
-			BaseConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
-			List<Object> warnings = new ArrayList<Object>();
-			for (int j = 0; j < configWarns.size(); j++) {
-				warnings.add(configWarns.get(j));
+			ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
+			if(configWarns != null && configWarns.size() > 0) {
+				configurationsMap.put("warnings", configWarns.getWarnings());
 			}
-			if(warnings.size() > 0)
-				configurationsMap.put("warnings", warnings);
 
 			//Configuration specific messages
 			MessageKeeper messageKeeper = getIbisContext().getMessageKeeper(configuration.getName());
 			if(messageKeeper != null) {
 				List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-				if(messages.size() > 0)
+				if(!messages.isEmpty()) {
 					configurationsMap.put("messages", messages);
+				}
 			}
 
 			returnMap.put(configuration.getName(), configurationsMap);

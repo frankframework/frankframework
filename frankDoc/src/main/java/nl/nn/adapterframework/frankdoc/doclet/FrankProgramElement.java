@@ -19,6 +19,4 @@ package nl.nn.adapterframework.frankdoc.doclet;
 public interface FrankProgramElement {
 	String getName();
 	boolean isPublic();
-	FrankAnnotation[] getAnnotations();
-	FrankAnnotation getAnnotation(String name);
 }

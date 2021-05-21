@@ -64,14 +64,15 @@ public final class SendJmsMessage extends Base {
 		}
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		String jmsRealm = resolveStringFromMap(inputDataMap, "realm");
+		String connectionFactory = resolveStringFromMap(inputDataMap, "connectionFactory");
 		String destinationName = resolveStringFromMap(inputDataMap, "destination");
 		String destinationType = resolveStringFromMap(inputDataMap, "type");
 		String replyTo = resolveTypeFromMap(inputDataMap, "replyTo", String.class, "");
 		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
 		boolean synchronous = resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
+		boolean lookupDestination = resolveTypeFromMap(inputDataMap, "lookupDestination", boolean.class, false);
 
-		JmsSender qms = jmsBuilder(jmsRealm, destinationName, persistent, destinationType, replyTo, synchronous);
+		JmsSender qms = jmsBuilder(connectionFactory, destinationName, persistent, destinationType, replyTo, synchronous, lookupDestination);
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			fileName = filePart.getContentDisposition().getParameter( "filename" );
@@ -107,10 +108,14 @@ public final class SendJmsMessage extends Base {
 		}
 	}
 
-	private JmsSender jmsBuilder(String realm, String destination, boolean persistent, String type, String replyTo, boolean synchronous) {
-		JmsSender qms = new JmsSender();
+	private JmsSender jmsBuilder(String connectionFactory, String destination, boolean persistent, String type, String replyTo, boolean synchronous, boolean lookupDestination) {
+		JmsSender qms = getIbisContext().createBeanAutowireByName(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
-		qms.setJmsRealm(realm);
+		if(type.equals("QUEUE")) {
+			qms.setQueueConnectionFactoryName(connectionFactory);
+		} else {
+			qms.setTopicConnectionFactoryName(connectionFactory);
+		}
 		qms.setDestinationName(destination);
 		qms.setPersistent(persistent);
 		qms.setDestinationType(type);
@@ -118,6 +123,7 @@ public final class SendJmsMessage extends Base {
 			qms.setReplyToName(replyTo);
 		}
 		qms.setSynchronous(synchronous);
+		qms.setLookupDestination(lookupDestination);
 		return qms;
 	}
 

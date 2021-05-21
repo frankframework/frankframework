@@ -17,7 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
@@ -61,12 +61,12 @@ public class FilePipe extends FixedForwardPipe {
 	}
 	
 	/** 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			return new PipeRunResult(getForward(), fileHandler.handle(message, session, getParameterList()));
+			return new PipeRunResult(getSuccessForward(), fileHandler.handle(message, session, getParameterList()));
 		}
 		catch(Exception e) {
 			if (findForward("exception") != null) {
@@ -101,12 +101,24 @@ public class FilePipe extends FixedForwardPipe {
 		fileHandler.setWriteSuffix(suffix);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
 	public void setFileName(String filename) {
-		fileHandler.setFileName(filename);
+		setFilename(filename);
 	}
 
+	public void setFilename(String filename) {
+		fileHandler.setFilename(filename);
+	}
+
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String filenameSessionKey) {
-		fileHandler.setFileNameSessionKey(filenameSessionKey);
+		setFilenameSessionKey(filenameSessionKey);
+	}
+
+	public void setFilenameSessionKey(String filenameSessionKey) {
+		fileHandler.setFilenameSessionKey(filenameSessionKey);
 	}
 
 	public void setCreateDirectory(boolean b) {

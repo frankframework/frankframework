@@ -8,8 +8,8 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.TestConfiguration;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.SpringUtils;
 

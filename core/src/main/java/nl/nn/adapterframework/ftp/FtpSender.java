@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.ftp;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -52,7 +52,7 @@ public class FtpSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			ftpSession.put(paramList, session, message.asString(), remoteDirectory, remoteFilenamePattern, true);
 		} catch(SenderException e) {

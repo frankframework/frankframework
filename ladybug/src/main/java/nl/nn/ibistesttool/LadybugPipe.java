@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -78,7 +78,7 @@ public class LadybugPipe extends FixedForwardPipe {
 		super.configure();
 		failureForward = findForward(FAILURE_FORWARD_NAME);
 		if (failureForward == null) {
-			failureForward = getForward();
+			failureForward = getSuccessForward();
 		}
 		if (StringUtils.isNotEmpty(exclude)) {
 			excludeRegexPattern = Pattern.compile(exclude);
@@ -87,7 +87,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		XmlBuilder results = new XmlBuilder("Results");
 		int reportsPassed = 0;
 		
@@ -181,7 +181,7 @@ public class LadybugPipe extends FixedForwardPipe {
 					+ "TotalDuration=\"" + (endTime - startTime) + "\", "
 					+ "Equal=\"" + allReportsPassed + "\"");
 		}
-		PipeForward forward = allReportsPassed ? getForward() : failureForward;
+		PipeForward forward = allReportsPassed ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, results.toXML());
 	}
 
@@ -251,10 +251,10 @@ public class LadybugPipe extends FixedForwardPipe {
 }
 
 class IbisSecurityContext implements SecurityContext {
-	private IPipeLineSession session;
+	private PipeLineSession session;
 	private boolean checkRoles;
 
-	IbisSecurityContext(IPipeLineSession session, boolean checkRoles) {
+	IbisSecurityContext(PipeLineSession session, boolean checkRoles) {
 		this.session = session;
 		this.checkRoles = checkRoles;
 	}

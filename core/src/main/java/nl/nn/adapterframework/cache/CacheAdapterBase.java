@@ -17,11 +17,13 @@ package nl.nn.adapterframework.cache;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IConfigurationAware;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -35,9 +37,10 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IScopeProvider {
+public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IConfigurationAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 
@@ -83,7 +86,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IS
 	protected abstract V toValue(Message value);
 
 	@Override
-	public String transformKey(String input, IPipeLineSession session) {
+	public String transformKey(String input, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session!=null) {
 			input=(String)session.get(getKeyInputSessionKey());
 		}
@@ -105,7 +108,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IS
 	}
 
 	@Override
-	public V transformValue(Message value, IPipeLineSession session) {
+	public V transformValue(Message value, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && session!=null) {
 			value=Message.asMessage(session.get(getValueInputSessionKey()));
 		}

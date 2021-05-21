@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.processors;
 
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -28,7 +28,7 @@ import nl.nn.adapterframework.stream.Message;
 public class CorePipeProcessor implements PipeProcessor {
 	
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
 		return pipe.doPipe(message, pipeLineSession);
 	}
 

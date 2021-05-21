@@ -37,18 +37,20 @@ class FrankAnnotationReflect implements FrankAnnotation {
 		return Modifier.isPublic(annotation.annotationType().getModifiers());
 	}
 
-	public FrankAnnotation[] getAnnotations() {
-		return new FrankAnnotation[] {};
-	}
-
-	public FrankAnnotation getAnnotation(String name) {
-		return null;
-	}
-
 	@Override
 	public Object getValue() throws FrankDocException {
 		try {
 			Method valueMethod = annotation.annotationType().getMethod("value");
+			return valueMethod.invoke(annotation);
+		} catch(Exception e) {
+			throw new FrankDocException(String.format("Could not get value of annotation [%s]", getName()), e);
+		}
+	}
+
+	@Override
+	public Object getValueOf(String fieldName) throws FrankDocException {
+		try {
+			Method valueMethod = annotation.annotationType().getMethod(fieldName);
 			return valueMethod.invoke(annotation);
 		} catch(Exception e) {
 			throw new FrankDocException(String.format("Could not get value of annotation [%s]", getName()), e);

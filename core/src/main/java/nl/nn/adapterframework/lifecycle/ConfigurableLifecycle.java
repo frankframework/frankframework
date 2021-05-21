@@ -17,7 +17,17 @@ package nl.nn.adapterframework.lifecycle;
 
 import org.springframework.context.Lifecycle;
 
+/**
+ * Interface for Spring beans that require their Lifecycle to be managed by Spring.
+ * See {@link ConfiguringLifecycleProcessor}
+ * 
+ * @author Niels
+ */
 public interface ConfigurableLifecycle extends Lifecycle {
+
+	public enum BootState {
+		STARTING, STARTED, STOPPING, STOPPED;
+	}
 
 	public void configure();
 }

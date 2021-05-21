@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -42,7 +42,7 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		int result = 0;
 
 		try (InputStream binaryInputStream = input.asInputStream(getCharset())){
@@ -54,7 +54,7 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 			return new PipeRunResult(findForward("passwordProtected"), "File is password protected." );
 		}
       
-		return new PipeRunResult(getForward(), Integer.toString(result) );
+		return new PipeRunResult(getSuccessForward(), Integer.toString(result) );
 	}
 
 	@IbisDoc({ "charset to be used to encode the given input string ", "UTF-8" })

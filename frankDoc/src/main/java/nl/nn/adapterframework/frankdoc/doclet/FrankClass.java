@@ -19,19 +19,22 @@ package nl.nn.adapterframework.frankdoc.doclet;
 import java.util.List;
 
 public interface FrankClass extends FrankType {
+	public static final String JAVADOC_GROUP_TAG = "nl.nn.adapterframework.doc.FrankDocGroup";
+
 	@Override
 	default boolean isPrimitive() {
 		return false;
 	}
 
-	@Override
-	default boolean isAnnotation() {
-		return false;
-	}
-
 	String getSimpleName();
+	String getPackageName();
 	FrankClass getSuperclass();
+
+	/**
+	 * Get super interfaces of an interface, or interfaces implemented by a class.
+	 */
 	FrankClass[] getInterfaces();
+
 	boolean isAbstract();
 	boolean isInterface();
 	boolean isPublic();
@@ -45,4 +48,10 @@ public interface FrankClass extends FrankType {
 	FrankMethod[] getDeclaredAndInheritedMethods();
 
 	String[] getEnumConstants();
+	String getJavaDoc();
+	// TODO: Change to getJava5AnnotationIncludingInherited(String name) and update
+	// similar methods of FrankModel likewise. Getting the group name
+	// is the responsibility of the nl.nn.adaterframework.frankdoc.model
+	// package.
+	FrankAnnotation getGroupAnnotation() throws FrankDocException;
 }

@@ -141,7 +141,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		}
 
 		log.debug("forward to success");
-		return (mapping.findForward("success"));
+		return (mapping.findForward(SUCCESS_ACTION_FORWARD));
 
 	}
 	public void StoreFormData(String query, String result, DynaActionForm executeJdbcQueryExecuteForm) {

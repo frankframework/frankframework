@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -44,7 +44,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	private final static String ME_END = "}";
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
 		Object preservedObject = message;
 		PipeRunResult pipeRunResult = null;
 		INamedObject owner = pipeLine.getOwner();
@@ -59,6 +59,9 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
 				message.closeOnCloseOf(pipeLineSession);
+				if (!pipeLineSession.containsKey(pe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pe.getEmptyInputReplacement())) {
+					throw new PipeRunException(pe, "getInputFromSessionKey ["+pe.getGetInputFromSessionKey()+"] is not present in session");
+				}
 				message=Message.asMessage(pipeLineSession.get(pe.getGetInputFromSessionKey()));
 			}
 			if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
@@ -161,7 +164,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		return pipeRunResult;
 	}
 
-	private String restoreMovedElements(String invoerString, IPipeLineSession pipeLineSession) {
+	private String restoreMovedElements(String invoerString, PipeLineSession pipeLineSession) throws IOException {
 		StringBuffer buffer = new StringBuffer();
 		int startPos = invoerString.indexOf(ME_START);
 		if (startPos == -1) {
@@ -183,7 +186,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			} else {
 				String movedElementSessionKey = invoerString.substring(startPos + ME_START.length(),endPos);
 				if (pipeLineSession.containsKey(movedElementSessionKey)) {
-					String movedElementValue = (String) pipeLineSession.get(movedElementSessionKey);
+					String movedElementValue = pipeLineSession.getMessage(movedElementSessionKey).asString();
 					buffer.append(movedElementValue);
 					copyFrom = endPos + ME_END.length();
 				} else {

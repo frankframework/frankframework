@@ -18,14 +18,16 @@ package nl.nn.adapterframework.batch;
 import java.util.List;
 
 import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 
 /**
  * Interface for transforming a record (= structured ASCII line). 
  * 
  * @author John Dekker
  */
+@FrankDocGroup(name = "Batch")
 public interface IRecordHandler extends IConfigurable {
 
 	public void open() throws SenderException;
@@ -36,16 +38,16 @@ public interface IRecordHandler extends IConfigurable {
 	 * 
 	 * @return List with String values for each inputfield
 	 */
-	List<String> parse(IPipeLineSession session, String record) throws Exception;
+	List<String> parse(PipeLineSession session, String record) throws Exception;
 
 	/**
 	 * Perform an action on the array of fields.
 	 * 
 	 * @return transformed result
 	 */	
-	String handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception;
+	String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception;
 	
-	boolean isNewRecordType(IPipeLineSession session, boolean equalRecordTypes, List<String> prevRecord, List<String> curRecord) throws Exception;
+	boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List<String> prevRecord, List<String> curRecord) throws Exception;
 	
 	public String getRecordType(List<String> record);
 	

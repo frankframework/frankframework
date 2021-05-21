@@ -14,4 +14,17 @@ public class FrankAttributeTargetParent {
 	@IbisDocRef("1000")
 	public void setAttributeOnlySetterInt(int value) {
 	}
+
+	/**
+	 * JavaDoc of FrankAttributeTargetParent.setAttributeWithInheritedJavaDoc()
+	 * @param value
+	 */
+	public void setAttributeWithInheritedJavaDoc(String value) {
+	}
+
+	/**
+	 * @ff.default My inherited default value
+	 */
+	public void setAttributeWithInheritedJavaDocDefault(String value) {
+	}
 }

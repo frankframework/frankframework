@@ -44,7 +44,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -160,7 +160,7 @@ public class Message implements Serializable {
 	public boolean isRepeatable() {
 		return request instanceof String || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
 	}
-	
+
 	/**
 	 * If true, the Message should preferably be read using a streaming method, i.e. asReader() or asInputStream(), to avoid copying it into memory.
 	 */
@@ -168,22 +168,46 @@ public class Message implements Serializable {
 		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof Reader;
 	}
 	
-	public void closeOnCloseOf(IPipeLineSession session) {
-		if (request instanceof InputStream) {
-			request = session.scheduleCloseOnSessionExit((InputStream)request);
+	
+	/*
+	 * provide close(), but do not implement AutoCloseable, to avoid having to enclose all messages in try-with-resource clauses.
+	 */
+	public void close() throws Exception {
+		if (request instanceof InputStream || request instanceof Reader) {
+			((AutoCloseable)request).close();
+			request = null;
+		}
+	}
+	
+	public void closeOnCloseOf(PipeLineSession session) {
+		if (!(request instanceof InputStream || request instanceof Reader) || isScheduledForCloseOnExitOf(session)) {
 			return;
+		}
+		if (log.isDebugEnabled()) log.debug("registering Message ["+this+"] for close on exit");
+		if (request instanceof InputStream) {
+			request = StreamUtil.onClose((InputStream)request, () -> {
+				if (log.isDebugEnabled()) log.debug("closed InputStream and unregistering Message ["+this+"] from close on exit");
+				unscheduleFromCloseOnExitOf(session);
+			});
 		}
 		if (request instanceof Reader) {
-			request = session.scheduleCloseOnSessionExit((Reader)request);
-			return;
+			request = StreamUtil.onClose((Reader)request, () -> {
+				if (log.isDebugEnabled()) log.debug("closed Reader and unregistering Message ["+this+"] from close on exit");
+				unscheduleFromCloseOnExitOf(session);
+			});
 		}
+		session.scheduleCloseOnSessionExit(this);
+	}
+	
+	public boolean isScheduledForCloseOnExitOf(PipeLineSession session) {
+		return session.isScheduledForCloseOnExit(this);
 	}
 
-	public void unregisterCloseable(IPipeLineSession session) {
-		if (request instanceof InputStream || request instanceof Reader) {
-			session.unscheduleCloseOnSessionExit((AutoCloseable)request);
-		}
+	public void unscheduleFromCloseOnExitOf(PipeLineSession session) {
+		session.unscheduleCloseOnSessionExit(this);
 	}
+	
+	
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -355,10 +379,10 @@ public class Message implements Serializable {
 		if (request==null) {
 			return "null";
 		}
-		if (wrappedRequest == null) {
-			return super.toString()+": "+request.getClass().getTypeName()+": "+request.toString();
-		} 
-		return super.toString()+": "+wrappedRequest.getClass().getTypeName()+": "+wrappedRequest.toString();
+		if (wrappedRequest != null) {
+			return wrappedRequest.getClass().getSimpleName()+": "+request.toString();
+		}
+		return request.getClass().getSimpleName()+": "+request.toString();
 	}
 
 	public static Message asMessage(Object object) {
@@ -513,28 +537,24 @@ public class Message implements Serializable {
 	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
 	 * message, after the stream has been closed. Primarily for debugging purposes.
 	 */
-	public ByteArrayOutputStream captureBinaryStream() {
+	public ByteArrayOutputStream captureBinaryStream() throws IOException {
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		captureBinaryStream(result);
 		return result;
 	}
-	public void captureBinaryStream(OutputStream outputStream) {
+	public void captureBinaryStream(OutputStream outputStream) throws IOException {
 		captureBinaryStream(outputStream, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
-	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
+	public void captureBinaryStream(OutputStream outputStream, int maxSize) throws IOException {
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
-		try {
-			if (isRepeatable()) {
-				log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
-			}
-			wrappedRequest = request;
-			if (isBinary()) {
-				request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
-			} else {
-				request = StreamUtil.captureReader(asReader(), new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize, true);
-			}
-		} catch (IOException e) {
-			log.warn("Cannot capture stream", e);
+		if (isRepeatable()) {
+			log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
+		}
+		wrappedRequest = request;
+		if (isBinary()) {
+			request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
+		} else {
+			request = StreamUtil.captureReader(asReader(), new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize, true);
 		}
 	}
 	
@@ -545,29 +565,25 @@ public class Message implements Serializable {
 	 * When isBinary() is true the Message's charset is used when present to create a Reader that reads the InputStream.
 	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
 	 */
-	public StringWriter captureCharacterStream() {
+	public StringWriter captureCharacterStream() throws IOException {
 		StringWriter result = new StringWriter();
 		captureCharacterStream(result);
 		return result;
 	}
-	public void captureCharacterStream(Writer writer) {
+	public void captureCharacterStream(Writer writer) throws IOException {
 		captureCharacterStream(writer, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
-	public void captureCharacterStream(Writer writer, int maxSize) {
+	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
 		log.debug("creating capture of "+ClassUtils.nameOf(request));
-		try {
-			if (isRepeatable()) {
-				log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
-			}
-			wrappedRequest = request;
-			if (!isBinary()) {
-				request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
-			} else {
-				String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-				request = StreamUtil.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
-			}
-		} catch (IOException e) {
-			log.warn("Cannot capture reader", e);
+		if (isRepeatable()) {
+			log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
+		}
+		wrappedRequest = request;
+		if (!isBinary()) {
+			request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
+		} else {
+			String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			request = StreamUtil.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
 		}
 	}
 

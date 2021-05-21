@@ -61,11 +61,9 @@ public class FrankDocModel {
 
 	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
 	
-	/**
-	 * Values of the groups map are sorted alphabetically.
-	 */
-	private @Getter LinkedHashMap<String, FrankDocGroup> groups = new LinkedHashMap<>();
-
+	private FrankDocGroupFactory groupFactory = new FrankDocGroupFactory();
+	private @Getter List<FrankDocGroup> groups;
+	
 	// We want to iterate FrankElement in the order they are created, to be able
 	// to create the ElementRole objects in the right order. 
 	private @Getter Map<String, FrankElement> allElements = new LinkedHashMap<>();
@@ -98,6 +96,7 @@ public class FrankDocModel {
 			log.trace("Populating FrankDocModel");
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateFrankElement(rootClassName);
+			result.calculateInterfaceBased();
 			result.calculateHighestCommonInterfaces();
 			result.setOverriddenFrom();
 			result.setHighestCommonInterface();
@@ -175,7 +174,8 @@ public class FrankDocModel {
 			return allElements.get(clazz.getName());
 		}
 		log.trace("Creating FrankElement for class name [{}]", () -> clazz.getName());
-		FrankElement current = new FrankElement(clazz);
+		FrankDocGroup group = groupFactory.getGroup(clazz);
+		FrankElement current = new FrankElement(clazz, group);
 		allElements.put(clazz.getName(), current);
 		FrankClass superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass.getName());
@@ -194,27 +194,37 @@ public class FrankDocModel {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
 		FrankMethod[] methods = clazz.getDeclaredMethods();
 		Map<String, FrankMethod> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
-		Map<String, FrankMethod> setterAttributes = getAttributeToMethodMap(methods, "set");
+		LinkedHashMap<String, FrankMethod> setterAttributes = getAttributeToMethodMap(methods, "set");
 		Map<String, FrankMethod> getterAttributes = getGetterAndIsserAttributes(methods, attributeOwner);
 		List<FrankAttribute> result = new ArrayList<>();
 		for(Entry<String, FrankMethod> entry: setterAttributes.entrySet()) {
 			String attributeName = entry.getKey();
-			log.trace("Attribute [{}]", attributeName);
+			log.trace("Attribute [{}]", () -> attributeName);
 			FrankMethod method = entry.getValue();
 			if(getterAttributes.containsKey(attributeName)) {
 				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
 			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
 			attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
+			log.trace("Attribute {} has type {}", () -> attributeName, () -> attribute.getAttributeType().toString());
 			documentAttribute(attribute, method, attributeOwner);
+			log.trace("Default [{}]", () -> attribute.getDefaultValue());
 			if(enumGettersByAttributeName.containsKey(attributeName)) {
+				log.trace("Attribute {} has enum values", () -> attributeName);
 				attribute.setAttributeValues(findOrCreateAttributeValues((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
 			}
+			try {
+				// Method FrankAttribute.typeCheckDefaultValue() does not write the warning
+				// but only throws an exception. This allows us to test that method
+				// discovers type mismatches.
+				attribute.typeCheckDefaultValue();
+			} catch(FrankDocException e) {
+				log.warn("Attribute [{}] has an invalid default value, [{}, detail {}]", attribute.toString(), attribute.getDefaultValue(), e.getMessage());
+			}
 			result.add(attribute);
-			log.trace("Attribute [{}] done", attributeName);
+			log.trace("Attribute [{}] done", () -> attributeName);
 		}
-		Collections.sort(result);
-		log.trace("Sorted the attributes and done creating attributes");
+		log.trace("Done creating attributes for {}", attributeOwner.getFullName());
 		return result;
 	}
 
@@ -235,16 +245,14 @@ public class FrankDocModel {
      * The original order of the methods is preserved, which you get when you iterate
      * over the entrySet() of the returned Map.
 	 */
-	static Map<String, FrankMethod> getAttributeToMethodMap(FrankMethod[] methods, String prefix) {
+	static LinkedHashMap<String, FrankMethod> getAttributeToMethodMap(FrankMethod[] methods, String prefix) {
 		List<FrankMethod> methodList = Arrays.asList(methods);
 		methodList = methodList.stream()
 				.filter(FrankMethod::isPublic)
 				.filter(Utils::isAttributeGetterOrSetter)
 				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
 				.collect(Collectors.toList());
-		// The sort order determines the creation order of AttributeValues instances.
-		Collections.sort(methodList, Comparator.comparing(FrankMethod::getName));
-		Map<String, FrankMethod> result = new LinkedHashMap<>();
+		LinkedHashMap<String, FrankMethod> result = new LinkedHashMap<>();
 		for(FrankMethod method: methodList) {
 			String attributeName = attributeOf(method.getName(), prefix);
 			result.put(attributeName, method);
@@ -305,26 +313,24 @@ public class FrankDocModel {
 		attribute.setDeprecated(method.getAnnotation(FrankDocletConstants.DEPRECATED) != null);
 		attribute.setDocumented(
 				(method.getAnnotation(FrankDocletConstants.IBISDOC) != null)
-				|| (method.getAnnotation(FrankDocletConstants.IBISDOCREF) != null));
+				|| (method.getAnnotation(FrankDocletConstants.IBISDOCREF) != null)
+				|| (method.getJavaDoc() != null)
+				|| (method.getDefaultValueFromJavadoc() != null));
 		log.trace("Attribute: deprecated = [{}], documented = [{}]", () -> attribute.isDeprecated(), () -> attribute.isDocumented());
+		attribute.setJavaDocBasedDescriptionAndDefault(method);
 		FrankAnnotation ibisDocRef = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOCREF);
 		if(ibisDocRef != null) {
 			log.trace("Found @IbisDocRef annotation");
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
 			FrankAnnotation ibisDoc = null;
-			if(parsed.getReferredMethod() != null) {
+			if((parsed != null) && (parsed.getReferredMethod() != null)) {
+				attribute.setJavaDocBasedDescriptionAndDefault(parsed.getReferredMethod());
 				ibisDoc = parsed.getReferredMethod().getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 				if(ibisDoc != null) {
 					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass().getName()));
 					log.trace("Describing element of attribute [{}].[{}] is [{}]",
 							() -> attributeOwner.getFullName(), () -> attribute.getName(), () -> attribute.getDescribingElement().getFullName());
-					if(! attribute.parseIbisDocAnnotation(ibisDoc)) {
-						log.warn("FrankAttribute [{}] of FrankElement [{}] does not have a configured order", () -> attribute.getName(), () -> attributeOwner.getFullName());
-					}
-					if(parsed.hasOrder) {
-						attribute.setOrder(parsed.getOrder());
-						log.trace("Attribute [{}] has order from @IbisDocRef: [{}]", () -> attribute.getName(), () -> attribute.getOrder());
-					}
+					attribute.parseIbisDocAnnotation(ibisDoc);
 					log.trace("Done documenting attribute [{}]", () -> attribute.getName());
 					return;
 				}				
@@ -336,10 +342,6 @@ public class FrankDocModel {
 		if(ibisDoc != null) {
 			log.trace("For attribute [{}], have @IbisDoc without @IbisDocRef", attribute);
 			attribute.parseIbisDocAnnotation(ibisDoc);
-			log.trace("Order [{}], default [{}]", () -> attribute.getOrder(), () -> attribute.getDefaultValue());
-		}
-		else {
-			log.warn("No documentation available for FrankElement [{}], attribute [{}]", () -> attributeOwner.getSimpleName(), () -> attribute.getName());
 		}
 		log.trace("Done documenting attribute [{}]", () -> attribute.getName());
 	}
@@ -377,7 +379,13 @@ public class FrankDocModel {
 			log.warn("Too many or zero parameters in @IbisDocRef annotation on method: [{}].[{}]", () -> originalMethod.getDeclaringClass().getName(), () -> originalMethod.getName());
 			return null;
 		}
-		result.setReferredMethod(getReferredMethod(methodString, originalMethod));
+		try {
+			result.setReferredMethod(getReferredMethod(methodString, originalMethod));
+		} catch(Exception e) {
+			log.warn("@IbisDocRef on [{}].[{}] annotation references invalid method [{}], ignoring @IbisDocRef annotation",
+					originalMethod.getDeclaringClass().getName(), originalMethod.getName(), methodString);
+			return null;
+		}
 		return result;
 	}
 
@@ -398,6 +406,10 @@ public class FrankDocModel {
 	private FrankMethod getParentMethod(String className, String methodName) {
 		try {
 			FrankClass parentClass = classRepository.findClass(className);
+			if(parentClass == null) {
+				log.warn("Class {} is unknown", className);
+				return null;
+			}
 			for (FrankMethod parentMethod : parentClass.getDeclaredAndInheritedMethods()) {
 				if (parentMethod.getName().equals(methodName)) {
 					return parentMethod;
@@ -413,53 +425,36 @@ public class FrankDocModel {
 	private List<ConfigChild> createConfigChildren(FrankMethod[] methods, FrankElement parent) throws FrankDocException {
 		log.trace("Creating config children of FrankElement [{}]", () -> parent.getFullName());
 		List<ConfigChild> result = new ArrayList<>();
-		for(ConfigChild.SortNode sortNode: createSortNodes(methods, parent)) {
-			log.trace("Have config child SortNode [{}]", () -> sortNode.getName());
-			ConfigChild configChild = new ConfigChild(parent, sortNode);
-			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(sortNode.getName());
+		List<FrankMethod> frankMethods = Arrays.asList(methods).stream()
+				.filter(FrankMethod::isPublic)
+				.filter(Utils::isConfigChildSetter)
+				.filter(m -> configChildDescriptors.get(m.getName()) != null)
+				.collect(Collectors.toList());
+		for(int order = 0; order < frankMethods.size(); ++order) {
+			FrankMethod frankMethod = frankMethods.get(order);
+			log.trace("Have config child setter [{}]", () -> frankMethod.getName());
+			ConfigChild configChild = new ConfigChild(parent, frankMethod);
+			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(frankMethod.getName());
 			log.trace("Have ConfigChildSetterDescriptor, methodName = [{}], roleName = [{}], mandatory = [{}], allowMultiple = [{}]",
 					() -> configChildDescriptor.getMethodName(), () -> configChildDescriptor.getRoleName(), () -> configChildDescriptor.isMandatory(), () -> configChildDescriptor.isAllowMultiple());
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
-			log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> sortNode.getName());
-			configChild.setElementRole(findOrCreateElementRole(
-					(FrankClass) sortNode.getElementType(), configChildDescriptor.getRoleName()));
-			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> sortNode.getName());
-			if(sortNode.getIbisDoc() == null) {
-				log.warn("No @IbisDoc annotation for config child [{}] of FrankElement [{}]", () -> configChild.getKey().toString(), () -> parent.getFullName());
-			} else if(! configChild.parseIbisDocAnnotation(sortNode.getIbisDoc())) {
-				log.warn("@IbisDoc annotation for config child [{}] of FrankElement [{}] does not specify a sort order", () -> configChild.getKey().toString(), () -> parent.getFullName());
-			}
-			if(! StringUtils.isEmpty(configChild.getDefaultValue())) {
-				log.warn("Default value [{}] of config child [{}] of FrankElement [{}] is not used", () -> configChild.getDefaultValue(), () -> configChild.getKey().toString(), () -> parent.getFullName());
-			}
+			log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
+			FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
+			configChild.setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
+			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
+			configChild.setOrder(order);
 			result.add(configChild);
-			log.trace("Done creating ConfigChild for SortNode [{}], order = [{}]", () -> sortNode.getName(), () -> configChild.getOrder());
+			log.trace("Done creating config child {}, the order is {}", () -> configChild.toString(), () -> configChild.getOrder());
 		}
 		log.trace("Removing duplicate config children of FrankElement [{}]", () -> parent.getFullName());
 		result = ConfigChild.removeDuplicates(result);
-		Collections.sort(result);
-		log.trace("Sorted config children are:");
+		log.trace("The config children are (sequence follows sequence of Java methods):");
 		if(log.isTraceEnabled()) {
 			result.forEach(c -> log.trace("{}", c.toString()));
 		}
 		log.trace("Done creating config children of FrankElement [{}]", () -> parent.getFullName());
 		return result;
-	}
-
-	private List<ConfigChild.SortNode> createSortNodes(FrankMethod[] methods, FrankElement parent) {
-		List<FrankMethod> configChildSetters = Arrays.asList(methods).stream()
-				.filter(FrankMethod::isPublic)
-				.filter(Utils::isConfigChildSetter)
-				.filter(m -> configChildDescriptors.get(m.getName()) != null)
-				.collect(Collectors.toList());
-		List<ConfigChild.SortNode> sortNodes = new ArrayList<>();
-		for(FrankMethod setter: configChildSetters) {
-			ConfigChild.SortNode sortNode = new ConfigChild.SortNode(setter);
-			sortNodes.add(sortNode);
-		}
-		Collections.sort(sortNodes);
-		return sortNodes;
 	}
 
 	ElementRole findOrCreateElementRole(FrankClass elementTypeClass, String roleName) throws FrankDocException {
@@ -525,65 +520,6 @@ public class FrankDocModel {
 		log.trace("Going to calculate highest common interface for every ElementType");
 		allTypes.values().forEach(et -> et.calculateHighestCommonInterface(this));
 		log.trace("Done calculating highest common interface for every ElementType");
-	}
-
-	void buildGroups() {
-		log.trace("Building groups");
-		Map<String, List<FrankDocGroup>> groupsBase = new HashMap<>();
-		List<FrankElement> membersOfOther = new ArrayList<>();
-		for(ElementType elementType: getAllTypes().values()) {
-			if(elementType.isFromJavaInterface()) {
-				FrankDocGroup interfaceBasedGroup = FrankDocGroup.getInstanceFromElementType(elementType);
-				elementType.setFrankDocGroup(interfaceBasedGroup);
-				String groupName = elementType.getGroupName();
-				if(groupsBase.containsKey(groupName)) {
-					groupsBase.get(groupName).add(interfaceBasedGroup);
-				} else {
-					groupsBase.put(groupName, Arrays.asList(interfaceBasedGroup));
-				}
-				log.trace("Appended group [{}] with candidate element type [{}], which is based on a Java interface", () -> elementType.getSimpleName(), () -> elementType.getFullName());
-			}
-			else {
-				try {
-					membersOfOther.add(elementType.getSingletonElement());
-					// Cannot eliminate the isTraceEnabled, because Lambdas dont work here.
-					// getSingletonElement throws an exception.
-					if(log.isTraceEnabled()) {
-						log.trace("Appended the others group with FrankElement [{}]", elementType.getSingletonElement().getFullName());
-					}
-				} catch(ReflectiveOperationException e) {
-					String frankElementsString = elementType.getMembers().stream()
-							.map(FrankElement::getSimpleName).collect(Collectors.joining(", "));
-					log.warn("Error adding ElementType [{}] to group other because it has multiple FrankElement objects: [{}]",
-								() -> elementType.getFullName(), () -> frankElementsString, () -> e);
-				}
-			}
-		}
-		if(groupsBase.containsKey(OTHER)) {
-			log.warn("Name \"[{}]\" cannot been used for others group because it is the name of an ElementType", OTHER);
-		}
-		else {
-			final FrankDocGroup groupOther = FrankDocGroup.getInstanceFromFrankElements(OTHER, membersOfOther);
-			allTypes.values().stream()
-				.filter(et -> ! et.isFromJavaInterface())
-				.forEach(et -> et.setFrankDocGroup(groupOther));
-			groupsBase.put(OTHER, Arrays.asList(groupOther));
-		}
-		for(String groupName: groupsBase.keySet()) {
-			if(groupsBase.get(groupName).size() != 1) {
-				log.warn("Group name [{}] used for multiple groups", groupName);
-			}
-		}
-		// Sort the groups alphabetically, including group "Other". We have to update
-		// this code if "Other" needs to be put to the end.
-		groups = new LinkedHashMap<>();
-		List<String> sortedGroups = new ArrayList<>(groupsBase.keySet());
-		Collections.sort(sortedGroups);
-		for(String groupName: sortedGroups) {
-			log.trace("Creating group [{}]", groupName);
-			groups.put(groupName, groupsBase.get(groupName).get(0));
-		}
-		log.trace("Done building groups");
 	}
 
 	void setOverriddenFrom() {
@@ -725,5 +661,23 @@ public class FrankDocModel {
 
 	public List<AttributeValues> getAllAttributeValuesInstances() {
 		return attributeValuesFactory.getAll();
+	}
+
+	public void calculateInterfaceBased() {
+		allTypes.values().stream().filter(ElementType::isFromJavaInterface)
+			.flatMap(et -> et.getMembers().stream())
+			.forEach(f -> f.setInterfaceBased(true));
+	}
+
+	public void buildGroups() {
+		Map<String, List<FrankElement>> groupsElements = allElements.values().stream()
+				.filter(f -> ! f.getXmlElementNames().isEmpty())
+				.collect(Collectors.groupingBy(f -> f.getGroup().getName()));
+		groups = groupFactory.getAllGroups();
+		for(FrankDocGroup group: groups) {
+			List<FrankElement> elements = new ArrayList<>(groupsElements.get(group.getName()));
+			Collections.sort(elements);
+			group.setElements(elements);
+		}
 	}
 }

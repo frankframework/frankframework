@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -50,7 +50,7 @@ public class CommandSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		List commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
 			commandline = commandToList(getCommand());

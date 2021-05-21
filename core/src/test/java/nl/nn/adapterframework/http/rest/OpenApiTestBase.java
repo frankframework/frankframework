@@ -35,6 +35,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -52,6 +53,7 @@ public class OpenApiTestBase extends Mockito {
 	@Before
 	public void setUp() throws ServletException {
 		configuration = mock(Configuration.class);
+		AppConstants.getInstance().setProperty("hostname", "hostname");
 	}
 
 	@After
@@ -106,6 +108,7 @@ public class OpenApiTestBase extends Mockito {
 
 	protected HttpServletRequest createRequest(String method, String uri) {
 		MockHttpServletRequest request = new MockHttpServletRequest(method.toUpperCase(), uri);
+		request.setServerName("dummy");
 		request.setPathInfo(uri);
 		return request;
 	}
@@ -134,7 +137,8 @@ public class OpenApiTestBase extends Mockito {
 
 	public class AdapterBuilder {
 		private ApiListener listener;
-		private Json2XmlValidator validator;
+		private Json2XmlValidator inputValidator;
+		private Json2XmlValidator outputValidator;
 		private Adapter adapter;
 		private List<PipeLineExit> exits = new ArrayList<PipeLineExit>();
 
@@ -160,32 +164,57 @@ public class OpenApiTestBase extends Mockito {
 			if(StringUtils.isNotEmpty(operationId)) {
 				listener.setOperationId(operationId);
 			}
-
 			return this;
 		}
-		public AdapterBuilder setValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
+		public AdapterBuilder setHeaderParams(String headerParams) {
+			listener.setHeaderParams(headerParams);
+			return this;
+		}
+//		public AdapterBuilder setCookieParams(String cookieParams) {
+//			listener.setCookieParams(cookieParams);
+//			return this;
+//		}
+		public AdapterBuilder setMessageIdHeader(String messageIdHeader) {
+			listener.setMessageIdHeader(messageIdHeader);
+			return this;
+		}
+		
+		public AdapterBuilder setInputValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
 			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+responseRoot;
-			validator = new Json2XmlValidator();
-			validator.setName(ref);
+			inputValidator = new Json2XmlValidator();
+			inputValidator.setName(ref);
 			String xsd = "/OpenApi/"+xsdSchema;
 			URL url = this.getClass().getResource(xsd);
 			assertNotNull("xsd ["+xsdSchema+"] not found", url);
-			validator.setSchema(xsd);
+			inputValidator.setSchema(xsd);
 			if (requestRoot!=null) {
-				validator.setRoot(requestRoot);
+				inputValidator.setRoot(requestRoot);
 			}
-			validator.setResponseRoot(responseRoot);
-			validator.setThrowException(true);
+			inputValidator.setResponseRoot(responseRoot);
+			inputValidator.setThrowException(true);
 			if(param != null) {
-				validator.addParameter(param);
+				inputValidator.addParameter(param);
 			}
 
+			return this;
+		}
+		protected AdapterBuilder setOutputValidator(String xsdSchema, String root) {
+			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+root;
+			outputValidator = new Json2XmlValidator();
+			outputValidator.setName(ref);
+			String xsd = "/OpenApi/"+xsdSchema;
+			URL url = this.getClass().getResource(xsd);
+			assertNotNull("xsd ["+xsdSchema+"] not found", url);
+			outputValidator.setSchema(xsd);
+			outputValidator.setThrowException(true);
+			if (root!=null) {
+				outputValidator.setRoot(root);
+			}
 			return this;
 		}
 		public AdapterBuilder addExit(String exitCode) {
 			return addExit(exitCode, null, "false");
 		}
-		
 		public AdapterBuilder addExit(String exitCode, String responseRoot, String isEmpty) {
 			PipeLineExit ple = new PipeLineExit();
 			ple.setCode(exitCode);
@@ -217,7 +246,8 @@ public class OpenApiTestBase extends Mockito {
 			Receiver receiver = new Receiver();
 			receiver.setName("receiver");
 			receiver.setListener(listener);
-			pipeline.setInputValidator(validator);
+			pipeline.setInputValidator(inputValidator);
+			pipeline.setOutputValidator(outputValidator);
 			for (PipeLineExit exit : exits) {
 				exit.setPath("success"+exit.getExitCode());
 

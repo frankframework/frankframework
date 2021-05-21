@@ -12,7 +12,11 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- 'fileName' in attributes is replaced with 'filename'
 
+### Non backwards compatible changes
+
+- ManageDatabase adapter has been disabled by default on ACC and PRD environments
 
 
 7.6-RC1
@@ -57,8 +61,13 @@ Upcoming
 ### Non backwards compatible changes
 
 - Change HashPipe attribute encoding into charset. Its default has changed from ISO8859-1 into UTF-8
+- Logging library Log4j has been upgraded to Log4j2, versions are not backwards compatible!
+- The RESTEasy library has been replaced with Apache-CXF, this might enable jBoss hosted applications to cleanup their customized ClassLoader configuration
+- The StaxParserFactory has been configured to always enable XML 1.1 content. You can validate this on the Security Items page under XML Components.
 
+### Breaking changes
 
+- It is highly recommended not to use any custom file which overrides a file from the framework itself. In case it was required to override a file, do not forget to update the changes when upgrading the framework version! It is a good practice to keep the `.orig` suffixed original file also in the project to understand what change have been made. The changes in the custom file might have been included in the new version of the framework and the file may be no longer needed. If the changes are complicated to understand please consult the Frank!Framework Team.
 
 7.5
 --------
@@ -555,7 +564,7 @@ Upcoming
 - Ignore import with namespace but without schemaLocation (fix on previous commit 'Support schema attribute with config in database and refactor ClassUtils.getResourceURL()')
 - Rewrite dependencies on removed URL fallback in ClassUtils.getResourceURL()
 - Make it possible to disable lastModifiedDelta in CleanupOldFilesPipe
-- Fix WebServiceListener.processRequest() not being called by ServiceDispatcher (fix on previous commit 'Refactor http package to use IPipeLineSession instead of Map...')
+- Fix WebServiceListener.processRequest() not being called by ServiceDispatcher (fix on previous commit 'Refactor http package to use PipeLineSession instead of Map...')
 - Fix cache not returning valueXPath transformed value in first call
 - Add possibility to cache and share transformers (to save memory)
 - Make ParallelSenders (with XsltSender) thread safe

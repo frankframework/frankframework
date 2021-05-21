@@ -8,7 +8,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -38,7 +38,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
     }
 
-    public static Parameter setUp(IPipeLineSession session){
+    public static Parameter setUp(PipeLineSession session){
         Parameter param = new Parameter();
         param.setName("param1");
         param.setValue("abs");
@@ -82,7 +82,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
     @Test
     public void testEmptyFileName() throws Exception{
-        exception.expectMessage("has neither fileName nor fileNameSessionKey nor returnString specified");
+        exception.expectMessage("has neither filename nor filenameSessionKey nor returnString specified");
         pipe.configure();
         fail("this should fail");
     }

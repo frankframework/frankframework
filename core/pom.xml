@@ -15,6 +15,7 @@
 		<j2v8.version>4.6.0</j2v8.version>
 		<cxf.version>3.1.18</cxf.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>net.arnx</groupId>
@@ -98,13 +99,18 @@
 		</dependency>
 		<!-- commons -->
 		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 			<version>3.2.2</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -242,6 +248,11 @@
 			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>4.2.3</version>
+		</dependency>
+		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-struts</artifactId>
 		</dependency>
@@ -261,25 +272,6 @@
 			<groupId>org.apache.ws.security</groupId>
 			<artifactId>wss4j</artifactId>
 			<version>1.5.11</version>
-		</dependency>
-		<dependency>
-			<groupId>axis</groupId>
-			<artifactId>axis</artifactId>
-			<version>1.4</version>
-			<exclusions>
-				<exclusion>
-					<groupId>axis</groupId>
-					<artifactId>axis-jaxrpc</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>axis</groupId>
-					<artifactId>axis-wsdl4j</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>axis</groupId>
-					<artifactId>axis-saaj</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>soap</groupId>
@@ -441,11 +433,6 @@
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>2.8</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.11</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mozilla</groupId>

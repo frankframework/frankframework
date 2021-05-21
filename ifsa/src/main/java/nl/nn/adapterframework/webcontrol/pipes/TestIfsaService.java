@@ -25,8 +25,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -47,12 +46,12 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class TestIfsaService extends TimeoutGuardPipe {
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String method = (String) session.get("method");
 		if (method.equalsIgnoreCase("GET")) {
-			return new PipeRunResult(getForward(), doGet(session));
+			return new PipeRunResult(getSuccessForward(), doGet(session));
 		} else if (method.equalsIgnoreCase("POST")) {
-			return new PipeRunResult(getForward(), doPost(session));
+			return new PipeRunResult(getSuccessForward(), doPost(session));
 		} else {
 			throw new PipeRunException(this, getLogPrefix(session)
 					+ "illegal value for method [" + method
@@ -60,11 +59,11 @@ public class TestIfsaService extends TimeoutGuardPipe {
 		}
 	}
 
-	private String doGet(IPipeLineSession session) throws PipeRunException {
+	private String doGet(PipeLineSession session) throws PipeRunException {
 		return retrieveFormInput(session);
 	}
 
-	private String doPost(IPipeLineSession session) throws PipeRunException {
+	private String doPost(PipeLineSession session) throws PipeRunException {
 		Object form_file = session.get("file");
 		String form_message = null;
 		form_message = (String) session.get("message");
@@ -131,7 +130,7 @@ public class TestIfsaService extends TimeoutGuardPipe {
 		return "<dummy/>";
 	}
 
-	private String processZipFile(IPipeLineSession session,
+	private String processZipFile(PipeLineSession session,
 			InputStream inputStream, String fileEncoding, String applicationId,
 			String serviceId, String messageProtocol) throws IOException {
 		String result = "";
@@ -184,12 +183,12 @@ public class TestIfsaService extends TimeoutGuardPipe {
 		sender.setMessageProtocol(messageProtocol);
 		sender.configure();
 		sender.open();
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		session.put(IPipeLineSession.messageIdKey, "testmsg_" + Misc.createUUID());
+		PipeLineSession session = new PipeLineSession();
+		session.put(PipeLineSession.messageIdKey, "testmsg_" + Misc.createUUID());
 		return sender.sendMessage(new Message(message), session).asString();
 	}
 
-	private String retrieveFormInput(IPipeLineSession session) {
+	private String retrieveFormInput(PipeLineSession session) {
 		List<String> protocols = new ArrayList<String>();
 		protocols.add("RR");
 		protocols.add("FF");

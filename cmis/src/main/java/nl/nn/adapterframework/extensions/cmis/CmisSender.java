@@ -62,7 +62,7 @@ import org.w3c.dom.Node;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -215,7 +215,7 @@ public class CmisSender extends SenderWithParametersBase {
 	private String authAlias;
 	private String userName;
 	private String password;
-	private String fileNameSessionKey;
+	private String filenameSessionKey;
 	private String fileInputStreamSessionKey;
 	private String fileContentStreamSessionKey;
 	private String defaultMediaType = "application/octet-stream";
@@ -338,7 +338,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		Session cmisSession = null;
 		try {
 			ParameterValueList pvl=null;
@@ -383,7 +383,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private Message sendMessageForActionGet(Session cmisSession, Message message, IPipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
+	private Message sendMessageForActionGet(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
 		if (Message.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -413,7 +413,7 @@ public class CmisSender extends SenderWithParametersBase {
 			}
 
 			if (isStreamResultToServlet()) {
-				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+				HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 
 				ContentStream contentStream = document.getContentStream();
 				InputStream inputStream = contentStream.getStream();
@@ -484,8 +484,8 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private Message sendMessageForActionCreate(Session cmisSession, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		String fileName = (String) session.get(getFileNameSessionKey());
+	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+		String fileName = (String) session.get(getFilenameSessionKey());
 
 		Object inputFromSessionKey;
 		if(StringUtils.isNotEmpty(getFileInputStreamSessionKey())) {
@@ -625,7 +625,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private Message sendMessageForActionDelete(Session cmisSession, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	private Message sendMessageForActionDelete(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		if (Message.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -747,7 +747,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private Message sendMessageForDynamicActions(Session cmisSession, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	private Message sendMessageForDynamicActions(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 
 		XmlBuilder resultXml = new XmlBuilder("cmis");
 		Element requestElement = null;
@@ -1152,13 +1152,19 @@ public class CmisSender extends SenderWithParametersBase {
 		sessionBuilder.setBindingType(bindingType);
 	}
 
-	public String getFileNameSessionKey() {
-		return fileNameSessionKey;
+	public String getFilenameSessionKey() {
+		return filenameSessionKey;
 	}
 
 	@IbisDoc({"If <code>action=create</code> the session key that contains the name of the file to use. If not set, the value of the property <code>filename</code> from the input message is used", ""})
+	public void setFilenameSessionKey(String string) {
+		filenameSessionKey = string;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String string) {
-		fileNameSessionKey = string;
+		filenameSessionKey = string;
 	}
 
 	@IbisDoc({"If <code>action=create</code> the session key that contains the input stream of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the input stream of the document is stored", ""})

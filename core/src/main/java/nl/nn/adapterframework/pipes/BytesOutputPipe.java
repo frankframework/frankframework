@@ -23,7 +23,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
@@ -122,7 +122,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class BytesOutputPipe extends FixedForwardPipe {
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Object result = null;
 
 		try {
@@ -134,7 +134,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this, "IOException", e);
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private class FieldsContentHandler extends DefaultHandler {

@@ -19,8 +19,6 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -36,7 +34,6 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 		return new NarayanaDataSource((DataSource) dataSource);
 	}
 
-	@Autowired
 	public void setRecoveryManager(NarayanaRecoveryManager recoveryManager) {
 		this.recoveryManager = recoveryManager;
 	}

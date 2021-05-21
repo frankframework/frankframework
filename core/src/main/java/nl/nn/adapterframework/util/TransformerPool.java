@@ -50,10 +50,11 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -311,18 +312,18 @@ public class TransformerPool {
 		}
 	}
 
-	public static TransformerPool configureTransformer(String logPrefix, IScopeProvider scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
+	public static TransformerPool configureTransformer(String logPrefix, IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
 		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
 			return configureTransformer(logPrefix,scopeProvider,namespaceDefs,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
 		} 
 		return null;
 	}
 
-	public static TransformerPool configureTransformer(String logPrefix, IScopeProvider scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+	public static TransformerPool configureTransformer(String logPrefix, IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
 		return configureTransformer0(logPrefix,scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,0);
 	}
 
-	public static TransformerPool configureTransformer0(String logPrefix, IScopeProvider scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool configureTransformer0(String logPrefix, IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
 		if (logPrefix==null) {
 			logPrefix="";
 		}
@@ -341,7 +342,7 @@ public class TransformerPool {
 		throw new ConfigurationException(logPrefix+" either xpathExpression or styleSheetName must be specified");
 	}
 
-	public static TransformerPool configureStyleSheetTransformer(String logPrefix, IScopeProvider scopeProvider, String styleSheetName, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool configureStyleSheetTransformer(String logPrefix, IConfigurationAware scopeProvider, String styleSheetName, int xsltVersion) throws ConfigurationException {
 		TransformerPool result;
 		if (logPrefix==null) {
 			logPrefix="";
@@ -360,7 +361,7 @@ public class TransformerPool {
 					String xsltVersionInStylesheet = result.getConfigMap().get("stylesheet-version");
 					int detectedXsltVersion = XmlUtils.interpretXsltVersion(xsltVersionInStylesheet);
 					if (xsltVersion!=detectedXsltVersion) {
-						ConfigurationWarnings.add(null, log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+detectedXsltVersion+"] declared in stylesheet ["+styleSheet.getSystemId()+"]");
+						ConfigurationWarnings.add(scopeProvider, log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+detectedXsltVersion+"] declared in stylesheet ["+styleSheet.getSystemId()+"]");
 					}
 				}
 			} catch (IOException e) {
@@ -538,7 +539,7 @@ public class TransformerPool {
 	}
 
 	
-	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, boolean expectChildThreads, ContentHandler handler) throws TransformerConfigurationException {
+	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) throws TransformerConfigurationException {
 		return new TransformerFilter(owner, getTransformerHandler(), threadLifeCycleEventListener, session, expectChildThreads, handler);
 	}
 	

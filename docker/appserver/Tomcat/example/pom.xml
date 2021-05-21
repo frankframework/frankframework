@@ -10,8 +10,17 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
-		<version>7.7-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
+	
+	<properties>
+		<config.tag>example</config.tag>
+		<config.groupid>org.ibissource</config.groupid>
+		<config.project>ibis-adapterframework-${config.tag}</config.project>
+		<config.project.version>${iaf.version}</config.project.version>
+	</properties>
+	
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -20,21 +29,27 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${iaf.version}</version>
+			<groupId>${config.groupid}</groupId>
+			<artifactId>${config.project}</artifactId>
+			<version>${config.project.version}</version>
+			<classifier>context</classifier>
+		</dependency>
+		<dependency>
+			<groupId>${config.groupid}</groupId>
+			<artifactId>${config.project}</artifactId>
+			<version>${config.project.version}</version>
 			<classifier>resources</classifier>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${iaf.version}</version>
+			<groupId>${config.groupid}</groupId>
+			<artifactId>${config.project}</artifactId>
+			<version>${config.project.version}</version>
 			<classifier>configurations</classifier>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${iaf.version}</version>
+			<groupId>${config.groupid}</groupId>
+			<artifactId>${config.project}</artifactId>
+			<version>${config.project.version}</version>
 			<classifier>scenarios</classifier>
 		</dependency>
 	</dependencies>
@@ -71,19 +86,37 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
+									<groupId>${config.groupid}</groupId>
+									<artifactId>${config.project}</artifactId>
 									<classifier>configurations</classifier>
 								</artifactItem>
 								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
+									<groupId>${config.groupid}</groupId>
+									<artifactId>${config.project}</artifactId>
 									<classifier>resources</classifier>
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
 							<stripVersion>true</stripVersion>
 							<excludeTransitive>true</excludeTransitive>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-context</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${config.groupid}</groupId>
+									<artifactId>${config.project}</artifactId>
+									<classifier>context</classifier>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/frank/context</outputDirectory>
 						</configuration>
 					</execution>
 					<execution>
@@ -95,8 +128,8 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
+									<groupId>${config.groupid}</groupId>
+									<artifactId>${config.project}</artifactId>
 									<classifier>scenarios</classifier>
 								</artifactItem>
 							</artifactItems>
@@ -120,7 +153,7 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-example-tomcat"/>
+									<arg value="iaf-${config.tag}-tomcat"/>
 									<arg value="."/>
 								</exec>
 							</target>

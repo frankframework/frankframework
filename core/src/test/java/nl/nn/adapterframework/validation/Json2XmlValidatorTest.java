@@ -15,7 +15,7 @@ import org.junit.runners.Parameterized;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
@@ -73,7 +73,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 	@Override
 	public String validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception {
 		init();
-        PipeLineSessionBase session = new PipeLineSessionBase();
+        PipeLineSession session = new PipeLineSession();
         //instance.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
         instance.setSchemaLocation(schemaLocation);
         instance.setAddNamespaceToSchema(addNamespaceToSchema);
@@ -106,7 +106,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         	String result = prr.getResult().asString();
         	System.out.println("result ["+ToStringBuilder.reflectionToString(prr)+"]");
         	String event;
-        	if (prr.getPipeForward().getName().equals("success")) {
+        	if (prr.isSuccessful()) {
         		event="valid XML";
         	} else {
             	if (prr.getPipeForward().getName().equals("failure")) {
