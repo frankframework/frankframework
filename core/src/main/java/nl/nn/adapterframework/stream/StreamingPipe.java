@@ -38,14 +38,14 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		
+		boolean outputSideEffectsPresent = StringUtils.isNotEmpty(getStoreResultInSessionKey()) || isPreserveInput() || isRestoreMovedElements()
+				|| StringUtils.isNotEmpty(getElementToMove()) || StringUtils.isNotEmpty(getChompCharSize()) || StringUtils.isNotEmpty(getElementToMoveChain()); 
+		
 		canProvideOutputStream = StringUtils.isEmpty(getGetInputFromSessionKey()) && StringUtils.isEmpty(getGetInputFromFixedValue())
-				&& StringUtils.isEmpty(getStoreResultInSessionKey())
 				&& StringUtils.isEmpty(getEmptyInputReplacement()) && !isSkipOnEmptyInput()
-				&& !isPreserveInput() && StringUtils.isEmpty(getElementToMove()) && getLocker()==null
-				&& StringUtils.isEmpty(getIfParam());
-		canStreamToNextPipe = StringUtils.isEmpty(this.getStoreResultInSessionKey()) && !isPreserveInput() && !isRestoreMovedElements() 
-				&& StringUtils.isEmpty(getChompCharSize()) && StringUtils.isEmpty(getElementToMove()) && StringUtils.isEmpty(getElementToMoveChain())
-				&& !isWriteToSecLog();
+				&& getLocker()==null && StringUtils.isEmpty(getIfParam()) && !outputSideEffectsPresent;
+		canStreamToNextPipe = !outputSideEffectsPresent && !isWriteToSecLog();
 	}
 
 	/**
