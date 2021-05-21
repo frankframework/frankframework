@@ -4,14 +4,20 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	}
 
 	$scope.categories = {};
+	$scope.types = {};
 	$scope.elements = {};
 	var http = $http.get(getURI()).then(function(response) {
 		if(response && response.data) {
-			var data = response.data
+			var data = response.data;
+			var types = response.types;
 			var elements = data.elements;
 
 			//map elements so we can search
 			$scope.categories = data.groups;
+			for(i in types) {
+				var aType = types[i];
+				$scope.types[aType.name] = aType.members;
+			}
 			for(i in elements) {
 				var element = elements[i];
 				$scope.elements[element.fullName] = element;
