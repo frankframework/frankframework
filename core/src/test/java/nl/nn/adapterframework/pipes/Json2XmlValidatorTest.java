@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -233,11 +234,102 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		param4.setSessionKey("IntValueList");
 		pipe.addParameter(param4);
 		
+		Parameter param5 = new Parameter();
+		param5.setName("stringElem3");
+		List<String> stringElem3elements = Arrays.asList("aa","bb");
+		session.put("stringElem3elements", stringElem3elements);
+		param5.setSessionKey("stringElem3elements");
+		pipe.addParameter(param5);
+		
 		pipe.configure();
 		pipe.start();
 		
 		String input    = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/allOptions.xml");
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testMultivaluedParametersFindDocuments() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/FindDocuments/findDocuments.xsd");
+		pipe.setRoot("FindDocuments_Request");
+		pipe.setThrowException(true);
+		
+		Parameter param1 = new Parameter();
+		param1.setName("schemaName");
+		param1.setValue("NNPensioenen");
+		pipe.addParameter(param1);
+
+		Parameter param2 = new Parameter();
+		param2.setName("requestUserId");
+		param2.setValue("postman2");
+		pipe.addParameter(param2);
+
+		Parameter param3 = new Parameter();
+		param3.setName("SearchAttributes/agreementNumber");
+		param3.setSessionKey("agreementNumbers");
+		pipe.addParameter(param3);
+		
+		pipe.configure();
+		pipe.start();
+		
+		List agreementNumbers = new ArrayList<>();
+		agreementNumbers.add("12.12");
+		agreementNumbers.add("33002118");
+		
+		session.put("agreementNumbers", agreementNumbers);
+		
+		String input    = "{}";
+		String expected = TestFileUtils.getTestFile("/Align/FindDocuments/FindDocumentsRequest.xml");
+		
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testMultivaluedParametersFindDocumentsDeepSearch() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/FindDocuments/findDocuments.xsd");
+		pipe.setRoot("FindDocuments_Request");
+		pipe.setDeepSearch(true);
+		pipe.setThrowException(true);
+		
+		Parameter param1 = new Parameter();
+		param1.setName("schemaName");
+		param1.setValue("NNPensioenen");
+		pipe.addParameter(param1);
+
+		Parameter param2 = new Parameter();
+		param2.setName("requestUserId");
+		param2.setValue("postman2");
+		pipe.addParameter(param2);
+
+		Parameter param3 = new Parameter();
+		param3.setName("agreementNumber");
+		param3.setSessionKey("agreementNumbers");
+		pipe.addParameter(param3);
+		
+		pipe.configure();
+		pipe.start();
+		
+		List agreementNumbers = new ArrayList<>();
+		agreementNumbers.add("12.12");
+		agreementNumbers.add("33002118");
+		
+		session.put("agreementNumbers", agreementNumbers);
+		
+		String input    = "{}";
+		String expected = TestFileUtils.getTestFile("/Align/FindDocuments/FindDocumentsRequest.xml");
 		
 
 		PipeRunResult prr = doPipe(pipe, input,session);
