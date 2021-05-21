@@ -15,19 +15,28 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import org.springframework.context.Lifecycle;
+import org.apache.logging.log4j.Logger;
 
-/**
- * Interface for Spring beans that require their Lifecycle to be managed by Spring.
- * See {@link ConfiguringLifecycleProcessor}
- * 
- * @author Niels
- */
-public interface ConfigurableLifecycle extends Lifecycle {
+import nl.nn.adapterframework.util.LogUtil;
 
-	public enum BootState {
-		STARTING, STARTED, STOPPING, STOPPED;
+public abstract class ConfigurableLifecyleBase implements ConfigurableLifecycle {
+	protected final Logger log = LogUtil.getLogger(this);
+	private BootState state = BootState.STOPPED;
+
+	public BootState getState() {
+		return state;
 	}
 
-	public void configure();
+	public boolean inState(BootState state) {
+		return this.state == state;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return this.state == BootState.STARTED;
+	}
+
+	protected void updateState(BootState state) {
+		this.state = state;
+	}
 }
