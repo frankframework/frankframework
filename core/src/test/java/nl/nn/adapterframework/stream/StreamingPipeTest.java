@@ -102,6 +102,14 @@ public class StreamingPipeTest extends PipeTestBase<StreamingPipe> {
 	}
 
 	@Test
+	public void testCanProvideOutputStreamWithRestoreMovedElements() throws ConfigurationException, PipeStartException {
+		pipe.setRestoreMovedElements(true);
+		configureAndStartPipe();
+		
+		assertFalse(pipe.canProvideOutputStream());
+	}
+
+	@Test
 	public void testCanProvideOutputStreamWithLocker() throws ConfigurationException, PipeStartException {
 		Locker locker = new Locker() {
 			@Override

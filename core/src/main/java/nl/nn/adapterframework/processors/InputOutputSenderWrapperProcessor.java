@@ -43,6 +43,9 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 			session.put(senderWrapperBase.getStoreInputInSessionKey(), message);
 		}
 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
+			if (!session.containsKey(senderWrapperBase.getGetInputFromSessionKey())) {
+				throw new SenderException("getInputFromSessionKey ["+senderWrapperBase.getGetInputFromSessionKey()+"] is not present in session");
+			}
 			senderInput=Message.asMessage(session.get(senderWrapperBase.getGetInputFromSessionKey()));
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
 		} else {
