@@ -5,9 +5,10 @@
 			{{element.fullName}}
 		</a>
 	</h4>
-	<br/>
-
+	Elements: <span ng-repeat="tag in element.elementNames">{{( $first ? tag : ", " + tag )}}</span>
+	<br />
+	
 	<table ng-if="element.attributes" element-attributes></table>
-
+	
 	<parent-element ng-if="element.parent" parent="element.parent"></parent-element>
 </div>
