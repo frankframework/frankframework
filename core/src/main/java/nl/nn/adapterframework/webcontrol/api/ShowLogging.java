@@ -64,7 +64,7 @@ import nl.nn.adapterframework.webcontrol.FileViewerServlet;
  */
 
 @Path("/")
-public final class ShowLogging extends Base {
+public class ShowLogging extends Base {
 	@Context HttpServletRequest servletRequest;
 
 	private final static String FF_PACKAGE_PREFIX = "nl.nn.adapterframework";
