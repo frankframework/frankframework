@@ -9,7 +9,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	var http = $http.get(getURI()).then(function(response) {
 		if(response && response.data) {
 			var data = response.data;
-			var types = response.types;
+			var types = data.types;
 			var elements = data.elements;
 
 			//map elements so we can search

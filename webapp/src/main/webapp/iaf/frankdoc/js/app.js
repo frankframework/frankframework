@@ -89,11 +89,14 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 .filter('matchElement', function() {
 	return function(elements, $scope) {
 		if(!elements || elements.length < 1 || !$scope.category) return [];
+		var types = $scope.category.types;
+		var memberNames = [];
+		types.forEach(t => memberNames = memberNames.concat($scope.types[t]));
+		memberNames = memberNames.filter((x, i, a) => a.indexOf(x) == i);
 		var r = {};
-		var members = $scope.category.members;
-		for(i in members) {
-			var member = members[i];
-			r[member] = elements[member];
+		for(i in memberNames) {
+			var memberName = memberNames[i];
+			r[memberName] = elements[memberName];
 		}
 		return r;
 	};
