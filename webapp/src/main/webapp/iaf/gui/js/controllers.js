@@ -1928,9 +1928,11 @@ angular.module('iaf.beheerconsole')
 	$scope.updateDynamicParams = false;
 
 	$scope.loggers = {};
+	var logURL = "server/logging";
 	function updateLogInformation() {
-		Api.Get("logsettings", function(data) {
-			$scope.loggers = data;
+		Api.Get(logURL+"/settings", function(data) {
+			$scope.loggers = data.loggers;
+			$scope.definitions = data.definitions;
 		}, function(data) {
 			console.error(data);
 		});
@@ -1938,7 +1940,7 @@ angular.module('iaf.beheerconsole')
 	updateLogInformation();
 
 	$scope.errorLevels = ["DEBUG", "INFO", "WARN", "ERROR"];
-	Api.Get("server/log", function(data) {
+	Api.Get(logURL, function(data) {
 		$scope.form = data;
 		$scope.errorLevels = data.errorLevels;
 	});
@@ -1958,16 +1960,24 @@ angular.module('iaf.beheerconsole')
 
 	//Individual level
 	$scope.changeLoglevel = function(logger, level) {
-		Api.Put("logsettings", {logger:logger, level:level}, function() {
+		Api.Put(logURL+"/settings", {logger:logger, level:level}, function() {
 			Toastr.success("Updated logger ["+logger+"] to ["+level+"]");
 			updateLogInformation();
 		});
 	};
 
+	//Reconfigure Log4j2
+	$scope.reconfigure = function () {
+		Api.Put(logURL+"/settings", {reconfigure:true}, function() {
+			Toastr.success("Reconfigured log definitions!");
+			updateLogInformation();
+		});
+	}
+
 	$scope.submit = function(formData) {
 		$scope.updateDynamicParams = true;
-		Api.Put("server/log", formData, function() {
-			Api.Get("server/log", function(data) {
+		Api.Put(logURL, formData, function() {
+			Api.Get(logURL, function(data) {
 				$scope.form = data;
 				$scope.updateDynamicParams = false;
 				Toastr.success("Successfully updated log configuration!");

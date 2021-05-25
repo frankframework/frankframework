@@ -44,8 +44,12 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -173,12 +177,8 @@ public class ConfigurationUtils {
 		return version;
 	}
 
-	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name) throws ConfigurationException {
-		return getConfigFromDatabase(ibisContext, name, null);
-	}
-
-	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm) throws ConfigurationException {
-		return getConfigFromDatabase(ibisContext, name, jmsRealm, null);
+	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String dataSourceName) throws ConfigurationException {
+		return getConfigFromDatabase(ibisContext, name, dataSourceName, null);
 	}
 
 	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String dataSourceName, String version) throws ConfigurationException {
@@ -189,6 +189,7 @@ public class ConfigurationUtils {
 		if (StringUtils.isEmpty(version)) {
 			version = null; //Make sure this is null when empty!
 		}
+		if(log.isInfoEnabled()) log.info("trying to fetch configuration [{}] version [{}] from database with dataSourceName [{}]", name, version, workdataSourceName);
 
 		Connection conn = null;
 		ResultSet rs = null;
@@ -214,7 +215,7 @@ public class ConfigurationUtils {
 				rs = stmt.executeQuery();
 			}
 			if (!rs.next()) {
-				log.warn("no configuration found in database with name ["+name+"] version ["+version+"]");
+				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
 				return null;
 			}
 
@@ -354,6 +355,10 @@ public class ConfigurationUtils {
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
+
+		PlatformTransactionManager txManager = ibisContext.getBean("TransactionManager", PlatformTransactionManager.class);
+		TransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		IbisTransaction itx = new IbisTransaction(txManager , txDef, "add config ["+name+"] to database");
 		try {
 			qs.open();
 			conn = qs.getConnection();
@@ -388,13 +393,11 @@ public class ConfigurationUtils {
 			stmt.setObject(7, qs.getDbmsSupport().getBooleanValue(automatic_reload));
 
 			return stmt.executeUpdate() > 0;
-		} catch (SenderException e) {
-			throw new ConfigurationException(e);
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} catch (SQLException e) {
+		} catch (SenderException | JdbcException | SQLException e) {
+			itx.setRollbackOnly();
 			throw new ConfigurationException(e);
 		} finally {
+			itx.commit();
 			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}

@@ -393,15 +393,15 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/versions/{version}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
+	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("dataSourceName") String dataSourceName) throws ApiException {
 
 		if (StringUtils.isEmpty(version))
 			version = null;
-		if (StringUtils.isEmpty(jmsRealm))
-			jmsRealm = null;
+		if (StringUtils.isEmpty(dataSourceName))
+			dataSourceName = null;
 
 		try {
-			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), configurationName, jmsRealm, version);
+			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), configurationName, dataSourceName, version);
 			return Response
 					.status(Response.Status.OK)
 					.entity(configuration.get("CONFIG"))
