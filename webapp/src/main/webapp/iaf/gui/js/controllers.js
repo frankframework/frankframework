@@ -1058,8 +1058,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', 'Toastr', function($scope, Api, appConstants, Toastr) {
-	$scope.updateDynamicParams = false;
+.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', function($scope, Api, appConstants) {
 	$scope.variables = {};
 	$scope.searchFilter = "";
 
@@ -1096,35 +1095,6 @@ angular.module('iaf.beheerconsole')
 		}
 		return tmp;
 	}
-
-	Api.Get("server/log", function(data) {
-		$scope.form = data;
-	});
-
-	$scope.form = {
-		loglevel: "DEBUG",
-		logIntermediaryResults: true,
-		maxMessageLength: -1,
-		errorLevels: ["DEBUG", "INFO", "WARN", "ERROR"],
-		enableDebugger: true,
-	};
-
-	$scope.changeLoglevel = function(name) {
-		$scope.form.loglevel = name;
-	};
-
-	$scope.submit = function(formData) {
-		$scope.updateDynamicParams = true;
-		Api.Put("server/log", formData, function() {
-			Api.Get("server/log", function(data) {
-				$scope.form = data;
-				$scope.updateDynamicParams = false;
-				Toastr.success("Successfully updated log configuration!");
-			});
-		}, function() {
-			$scope.updateDynamicParams = false;
-		});
-	};
 }])
 
 .controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', function($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug) {
@@ -1892,14 +1862,11 @@ angular.module('iaf.beheerconsole')
 		}
 
 		$scope.viewFile = URL;
-		$scope.loading = true;
 		$timeout(function() {
 			var iframe = angular.element("iframe");
 
 			iframe[0].onload = function() {
-				$scope.loading = false;
 				var iframeBody = $(iframe[0].contentWindow.document.body);
-				iframeBody.css({"background-color": "rgb(243, 243, 244)"});
 				iframe.css({"height": iframeBody.height() + 50});
 			};
 		});
@@ -1907,7 +1874,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.closeFile = function () {
 		$scope.viewFile = false;
-		$state.transitionTo('pages.logging', {directory: $scope.directory});
+		$state.transitionTo('pages.logging_show', {directory: $scope.directory});
 	};
 
 	$scope.download = function (file) {
@@ -1936,9 +1903,9 @@ angular.module('iaf.beheerconsole')
 
 	$scope.open = function(file) {
 		if(file.type == "directory") {
-			$state.transitionTo('pages.logging', {directory: file.path});
+			$state.transitionTo('pages.logging_show', {directory: file.path});
 		} else {
-			$state.transitionTo('pages.logging', {directory: $scope.directory, file: file.name}, { notify: false, reload: false });
+			$state.transitionTo('pages.logging_show', {directory: $scope.directory, file: file.name}, { notify: false, reload: false });
 		}
 	};
 
@@ -1955,6 +1922,61 @@ angular.module('iaf.beheerconsole')
 	else {
 		openDirectory(directory);
 	}
+}])
+
+.controller('LogSettingsCtrl', ['$scope', 'Api', 'Misc', '$timeout', '$state','Toastr', function($scope, Api, Misc, $timeout, $state, Toastr) {
+	$scope.updateDynamicParams = false;
+
+	$scope.loggers = {};
+	function updateLogInformation() {
+		Api.Get("logsettings", function(data) {
+			$scope.loggers = data;
+		}, function(data) {
+			console.error(data);
+		});
+	}
+	updateLogInformation();
+
+	$scope.errorLevels = ["DEBUG", "INFO", "WARN", "ERROR"];
+	Api.Get("server/log", function(data) {
+		$scope.form = data;
+		$scope.errorLevels = data.errorLevels;
+	});
+
+	$scope.form = {
+		loglevel: "DEBUG",
+		logIntermediaryResults: true,
+		maxMessageLength: -1,
+		errorLevels: $scope.errorLevels,
+		enableDebugger: true,
+	};
+
+	//Root logger level
+	$scope.changeRootLoglevel = function(level) {
+		$scope.form.loglevel = level;
+	};
+
+	//Individual level
+	$scope.changeLoglevel = function(logger, level) {
+		Api.Put("logsettings", {logger:logger, level:level}, function() {
+			Toastr.success("Updated logger ["+logger+"] to ["+level+"]");
+			updateLogInformation();
+		});
+	};
+
+	$scope.submit = function(formData) {
+		$scope.updateDynamicParams = true;
+		Api.Put("server/log", formData, function() {
+			Api.Get("server/log", function(data) {
+				$scope.form = data;
+				$scope.updateDynamicParams = false;
+				Toastr.success("Successfully updated log configuration!");
+				updateLogInformation();
+			});
+		}, function() {
+			$scope.updateDynamicParams = false;
+		});
+	};
 }])
 
 .controller('IBISstoreSummaryCtrl', ['$scope', 'Api', '$location', function($scope, Api, $location) {
