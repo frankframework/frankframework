@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -61,7 +60,6 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	private @Getter String slotId;
 	private @Getter String sessionKeys = null;
 	private @Getter boolean moveToMessageLog = true;
-	private @Getter boolean setRetryFlag;
 
 	private List<String> sessionKeysList;
 
@@ -113,9 +111,6 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 					threadContext.put(sessionKeysList.get(i), StringEscapeUtils.unescapeCsv(strTokenizer.nextToken()));
 					i++;
 				}
-				if (isSetRetryFlag()) {
-					threadContext.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
-				}
 			} catch (IOException e) {
 				throw new ListenerException("cannot convert message",e);
 			}
@@ -161,10 +156,5 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	@IbisDoc({"4", "Value of status field indicating is being processed. Set to 'I' if database has no SKIP LOCKED functionality or the Receiver cannot be set to Required or RequiresNew.", ""})
 	public void setStatusValueInProcess(String string) {
 		super.setStatusValueInProcess(string);
-	}
-
-	@IbisDoc({"5", "If set, every message read is processed as if it were retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'", "false"})
-	public void setSetRetryFlag(boolean setRetryFlag) {
-		this.setRetryFlag = setRetryFlag;
 	}
 }
