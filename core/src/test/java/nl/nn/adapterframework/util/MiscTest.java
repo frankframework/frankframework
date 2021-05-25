@@ -605,4 +605,12 @@ public class MiscTest {
 		assertEquals("<!doctype txt>this is a text file. newly added string new line in the text file.", s1);
 	}
 
+	@Test
+	public void testPrettyJson() throws IOException {
+		URL input = TestFileUtils.getTestFileURL("/Misc/minified.json");
+		String inputString = Misc.resourceToString(input);
+		URL expected = TestFileUtils.getTestFileURL("/Misc/prettified.json");
+		String expectedString = Misc.resourceToString(expected);
+		assertEquals(expectedString, Misc.jsonPretty(inputString));
+	}
 }

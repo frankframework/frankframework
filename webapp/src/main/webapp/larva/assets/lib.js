@@ -172,6 +172,11 @@ function xmlFormat(elementId) {
 	$(elementId).value = value;
 }
 
+function jsonFormat(elementId, text) {
+	var jsonObject = JSON.parse(text);
+	$(elementId).value = JSON.stringify(jsonObject, null, 4); //indent with 4 spaces
+}
+
 /** Searches for the differences in Result and Expected.
     First it shows the result line and then the expected line with the difference colored.
 **/
@@ -402,6 +407,8 @@ function indentCompare(sources, result)
 		// if text is xml
 		if(text.startsWith("<") || text.startsWith(escapeChars("<"))){
 			xmlFormat(elementId);
+		} else if ((text.startsWith("{") && text.endsWith("}")) || (text.startsWith("[") && text.endsWith("]"))) { // TODO: something smarter for detecting json like text
+			jsonFormat(elementId, text);
 		}
 	}
 
