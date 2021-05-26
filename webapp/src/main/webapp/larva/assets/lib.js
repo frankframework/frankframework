@@ -172,8 +172,9 @@ function xmlFormat(elementId) {
 	$(elementId).value = value;
 }
 
-function jsonFormat(elementId, text) {
-	var jsonObject = JSON.parse(text);
+function jsonFormat(elementId) {
+	var value = $(elementId).value;
+	var jsonObject = JSON.parse(value);
 	$(elementId).value = JSON.stringify(jsonObject, null, 4); //indent with 4 spaces
 }
 
@@ -408,7 +409,7 @@ function indentCompare(sources, result)
 		if(text.startsWith("<") || text.startsWith(escapeChars("<"))){
 			xmlFormat(elementId);
 		} else if ((text.startsWith("{") && text.endsWith("}")) || (text.startsWith("[") && text.endsWith("]"))) { // TODO: something smarter for detecting json like text
-			jsonFormat(elementId, text);
+			jsonFormat(elementId);
 		}
 	}
 
