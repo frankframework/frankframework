@@ -97,14 +97,14 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 });
 
 function getCategoryMembers($scope) {
-	    var types = $scope.category.types;
-		var memberNames = [];
-		types.forEach(t => memberNames = memberNames.concat($scope.types[t]));
-		memberNames = memberNames.filter((x, i, a) => a.indexOf(x) == i);
-		var r = [];
-		for(i in memberNames) {
-			var memberName = memberNames[i];
-			r.push($scope.elements[memberName]);
-		}
-		return r;
+	var types = $scope.category.types;
+	var memberNames = [];
+	types.forEach(t => memberNames = memberNames.concat($scope.types[t]));
+	memberNames = memberNames.filter((x, i, a) => a.indexOf(x) == i);
+	var r = [];
+	for(i in memberNames) {
+		var memberName = memberNames[i];
+		r.push($scope.elements[memberName]);
+	}
+	return r;
 }
