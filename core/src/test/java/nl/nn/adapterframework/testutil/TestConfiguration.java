@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.webcontrol.api.MockIbisManager;
 
@@ -25,6 +26,9 @@ public class TestConfiguration extends Configuration {
 		refresh();
 		configure();
 		start();
+
+		AppConstants.getInstance().setProperty("instance.name", TEST_CONFIGURATION_NAME);
+		AppConstants.getInstance().setProperty("instance.name.lc", TEST_CONFIGURATION_NAME.toLowerCase());
 	}
 
 	@Test

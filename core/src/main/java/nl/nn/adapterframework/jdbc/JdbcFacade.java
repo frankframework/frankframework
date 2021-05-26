@@ -29,6 +29,7 @@ import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
@@ -257,6 +258,16 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		hski.handleStatisticsKeeper(data, connectionStatistics);
+	}
+
+	@Override
+	@Deprecated
+	@ConfigurationWarning("Please use attribute dataSourceName instead")
+	public void setJmsRealm(String jmsRealmName) {
+		super.setJmsRealm(jmsRealmName);
+		if(StringUtils.isEmpty(getJmsRealmName())) { //Validate that the realm was found
+			throw new IllegalStateException("JmsRealm ["+jmsRealmName+"] not found");
+		}
 	}
 
 	/**
