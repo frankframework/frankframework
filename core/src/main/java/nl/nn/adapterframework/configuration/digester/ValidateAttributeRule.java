@@ -50,7 +50,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 					msg += ": "+warning.value();
 				}
 
-				addGlobalWarning(msg); //Only print it once per deprecated class
+				addLocalWarning(msg);
 			}
 		}
 	}
