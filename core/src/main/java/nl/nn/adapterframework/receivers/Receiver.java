@@ -224,6 +224,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private int numThreadsPolling = 1;
 	private int pollInterval=10;
 
+	private @Getter boolean forceRetryFlag = false;
 	private boolean checkForDuplicates=false;
 	private String checkForDuplicatesMethod="MESSAGEID";
 	private int maxDeliveries=5;
@@ -837,7 +838,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	@Override
 	public M changeProcessState(Object message, ProcessState toState, String reason) throws ListenerException {
-		if (toState==ProcessState.AVAILABLE) {
+		if (toState==ProcessState.AVAILABLE || toState==ProcessState.ERROR) {
 			String id = getListener().getIdFromRawMessage((M)message, null);
 			resetProblematicHistory(id);
 		}
@@ -1035,9 +1036,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String,Object>threadContext, long waitingDuration) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String,Object> threadContext, long waitingDuration) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
+		}
+		if(isForceRetryFlag()) {
+			threadContext.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
 		}
 		processRawMessage(rawMessage, threadContext, waitingDuration, false);
 	}
@@ -1046,7 +1050,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * All messages that for this receiver are pumped down to this method, so it actually
 	 * calls the {@link nl.nn.adapterframework.core.Adapter adapter} to process the message.<br/>
 
-	 * Assumes that a transation has been started where necessary.
+	 * Assumes that a transaction has been started where necessary.
 	 */
 	private void processRawMessage(Object rawMessageOrWrapper, Map<String,Object>threadContext, long waitingDuration, boolean manualRetry) throws ListenerException {
 		if (rawMessageOrWrapper==null) {
@@ -2056,7 +2060,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return onError;
 	}
 
-
 	/**
 	 * The number of threads that this receiver is configured to work with.
 	 */
@@ -2083,7 +2086,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public int getPollInterval() {
 		return pollInterval;
 	}
-
 
 	@IbisDoc({"11", "If set to <code>true</code>, each message is checked for presence in the messageLog. If already present, it is not processed again. Only required for non XA compatible messaging. Requires messageLog!", "<code>false</code>"})
 	public void setCheckForDuplicates(boolean b) {
@@ -2125,7 +2127,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return processResultCacheSize;
 	}
 	
-	
 	@IbisDoc({"16", "Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for Listeners that support it, like JavaListener)", ""})
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
@@ -2133,9 +2134,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public String getReturnedSessionKeys() {
 		return returnedSessionKeys;
 	}
-
-
-
 
 	@IbisDoc({"17", "XPath expression to extract correlationid from message", ""})
 	public void setCorrelationIDXPath(String string) {
@@ -2161,7 +2159,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return correlationIDStyleSheet;
 	}
 
-
 	@IbisDoc({"20", "XPath expression to extract label from message", ""})
 	public void setLabelXPath(String string) {
 		labelXPath = string;
@@ -2186,7 +2183,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return labelStyleSheet;
 	}
 
-	
 	@IbisDoc({"If set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})
 	public void setChompCharSize(String string) {
 		chompCharSize = string;
@@ -2226,8 +2222,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return removeCompactMsgNamespaces;
 	}
 
-
-
 	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
@@ -2252,4 +2246,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return hiddenInputSessionKeys;
 	}
 
+	@IbisDoc({"23", "If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'", "<code>false</code>"})
+	public void setForceRetryFlag(boolean b) {
+		forceRetryFlag = b;
+	}
 }
