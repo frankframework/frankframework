@@ -63,8 +63,9 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 
 				if($scope.category && $state.params && $state.params.element) {
 					var elementName = $state.params.element;
-					for(i in $scope.category.members) {
-						var fullName = $scope.category.members[i];
+					var categoryMembers = getCategoryMembers($scope);
+					for(i in categoryMembers) {
+						var fullName = categoryMembers[i].fullName;
 						if($scope.elements[fullName].name == elementName) {
 							$rootScope.$broadcast('element', $scope.elements[fullName]);
 						}
@@ -101,3 +102,16 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		return r;
 	};
 });
+
+function getCategoryMembers($scope) {
+	    var types = $scope.category.types;
+		var memberNames = [];
+		types.forEach(t => memberNames = memberNames.concat($scope.types[t]));
+		memberNames = memberNames.filter((x, i, a) => a.indexOf(x) == i);
+		var r = [];
+		for(i in memberNames) {
+			var memberName = memberNames[i];
+			r.push($scope.elements[memberName]);
+		}
+		return r;
+}
