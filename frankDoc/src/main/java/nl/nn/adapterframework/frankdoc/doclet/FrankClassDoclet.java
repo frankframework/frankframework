@@ -268,26 +268,26 @@ class FrankClassDoclet implements FrankClass {
 
 	@Override
 	public FrankAnnotation getJava5AnnotationIncludingInherited(String annotationFullName) throws FrankDocException {
-		FrankAnnotation result = getGroupAnnotationExcludingImplementedInterfaces(annotationFullName);
+		FrankAnnotation result = getJava5AnnotationExcludingImplementedInterfaces(annotationFullName);
 		if(result == null) {
-			result = getGroupAnnotationFromImplementedInterfaces(annotationFullName);
+			result = getJava5AnnotationFromImplementedInterfaces(annotationFullName);
 		}
 		return result;
 	}
 
-	private FrankAnnotation getGroupAnnotationExcludingImplementedInterfaces(String annotationFullName) throws FrankDocException {
+	private FrankAnnotation getJava5AnnotationExcludingImplementedInterfaces(String annotationFullName) throws FrankDocException {
 		FrankAnnotation result = getAnnotation(annotationFullName);
 		if((result == null) && (getSuperclass() != null)) {
-			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationExcludingImplementedInterfaces(annotationFullName);
+			result = ((FrankClassDoclet) getSuperclass()).getJava5AnnotationExcludingImplementedInterfaces(annotationFullName);
 		}
 		return result;
 	}
 
-	private FrankAnnotation getGroupAnnotationFromImplementedInterfaces(String annotationFullName) throws FrankDocException {
+	private FrankAnnotation getJava5AnnotationFromImplementedInterfaces(String annotationFullName) throws FrankDocException {
 		TransitiveImplementedInterfaceBrowser<FrankAnnotation> browser = new TransitiveImplementedInterfaceBrowser<>(this);
 		FrankAnnotation result = browser.search(c -> ((FrankClassDoclet) c).getAnnotation(annotationFullName));
 		if((result == null) && (getSuperclass() != null)) {
-			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationFromImplementedInterfaces(annotationFullName);
+			result = ((FrankClassDoclet) getSuperclass()).getJava5AnnotationFromImplementedInterfaces(annotationFullName);
 		}
 		return result;
 	}

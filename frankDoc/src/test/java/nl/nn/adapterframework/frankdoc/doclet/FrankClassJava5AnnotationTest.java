@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.frankdoc.doclet;
 
+import static nl.nn.adapterframework.frankdoc.doclet.TestUtil.JAVADOC_GROUP_ANNOTATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -40,7 +41,7 @@ public class FrankClassJava5AnnotationTest {
 		FrankClass instance = repository.findClass(PACKAGE + queriedClass);
 		// TODO: Will rename this method and give it Java annotation class name as argument.
 		// This has to be done for similar methods in FrankMethod as well.
-		FrankAnnotation actualGroupAnnotation = instance.getJava5AnnotationIncludingInherited();
+		FrankAnnotation actualGroupAnnotation = instance.getJava5AnnotationIncludingInherited(JAVADOC_GROUP_ANNOTATION);
 		if(expectedValue == null) {
 			assertNull(actualGroupAnnotation);
 		} else {

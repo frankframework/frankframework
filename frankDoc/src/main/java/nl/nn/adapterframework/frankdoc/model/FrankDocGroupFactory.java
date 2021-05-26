@@ -30,6 +30,8 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.util.LogUtil;
 
 class FrankDocGroupFactory {
+	private static final String JAVADOC_GROUP_ANNOTATION = "nl.nn.adapterframework.doc.FrankDocGroup";
+
 	private static Logger log = LogUtil.getLogger(FrankDocGroupFactory.class);
 
 	private final Map<String, FrankDocGroup> allGroups = new HashMap<>();
@@ -37,7 +39,7 @@ class FrankDocGroupFactory {
 	FrankDocGroup getGroup(FrankClass clazz) {
 		FrankDocGroup result = null;
 		try {
-			FrankAnnotation annotation = clazz.getJava5AnnotationIncludingInherited();
+			FrankAnnotation annotation = clazz.getJava5AnnotationIncludingInherited(JAVADOC_GROUP_ANNOTATION);
 			if(annotation == null) {
 				result = getGroup(FrankDocGroup.GROUP_NAME_OTHER);
 			} else {
