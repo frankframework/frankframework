@@ -40,7 +40,7 @@ public class FrankClassJava5AnnotationTest {
 		FrankClass instance = repository.findClass(PACKAGE + queriedClass);
 		// TODO: Will rename this method and give it Java annotation class name as argument.
 		// This has to be done for similar methods in FrankMethod as well.
-		FrankAnnotation actualGroupAnnotation = instance.getGroupAnnotation();
+		FrankAnnotation actualGroupAnnotation = instance.getJava5AnnotationIncludingInherited();
 		if(expectedValue == null) {
 			assertNull(actualGroupAnnotation);
 		} else {

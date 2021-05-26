@@ -267,27 +267,27 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	@Override
-	public FrankAnnotation getGroupAnnotation() throws FrankDocException {
-		FrankAnnotation result = getGroupAnnotationExcludingImplementedInterfaces();
+	public FrankAnnotation getJava5AnnotationIncludingInherited(String annotationFullName) throws FrankDocException {
+		FrankAnnotation result = getGroupAnnotationExcludingImplementedInterfaces(annotationFullName);
 		if(result == null) {
-			result = getGroupAnnotationFromImplementedInterfaces();
+			result = getGroupAnnotationFromImplementedInterfaces(annotationFullName);
 		}
 		return result;
 	}
 
-	private FrankAnnotation getGroupAnnotationExcludingImplementedInterfaces() throws FrankDocException {
-		FrankAnnotation result = getAnnotation(JAVADOC_GROUP_TAG);
+	private FrankAnnotation getGroupAnnotationExcludingImplementedInterfaces(String annotationFullName) throws FrankDocException {
+		FrankAnnotation result = getAnnotation(annotationFullName);
 		if((result == null) && (getSuperclass() != null)) {
-			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationExcludingImplementedInterfaces();
+			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationExcludingImplementedInterfaces(annotationFullName);
 		}
 		return result;
 	}
 
-	private FrankAnnotation getGroupAnnotationFromImplementedInterfaces() throws FrankDocException {
+	private FrankAnnotation getGroupAnnotationFromImplementedInterfaces(String annotationFullName) throws FrankDocException {
 		TransitiveImplementedInterfaceBrowser<FrankAnnotation> browser = new TransitiveImplementedInterfaceBrowser<>(this);
-		FrankAnnotation result = browser.search(c -> ((FrankClassDoclet) c).getAnnotation(JAVADOC_GROUP_TAG));
+		FrankAnnotation result = browser.search(c -> ((FrankClassDoclet) c).getAnnotation(annotationFullName));
 		if((result == null) && (getSuperclass() != null)) {
-			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationFromImplementedInterfaces();
+			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationFromImplementedInterfaces(annotationFullName);
 		}
 		return result;
 	}
