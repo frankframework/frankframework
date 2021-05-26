@@ -83,7 +83,7 @@ public class ConfigurationUtilsTest extends Mockito {
 			}
 			
 		};
-		doReturn(ptm).when(ibisContext).getBean("TransactionManager", PlatformTransactionManager.class);
+		doReturn(ptm).when(ibisContext).getBean("txManager", PlatformTransactionManager.class);
 	}
 
 	@Test

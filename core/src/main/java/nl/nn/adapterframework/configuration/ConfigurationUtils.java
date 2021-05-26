@@ -356,7 +356,7 @@ public class ConfigurationUtils {
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
 
-		PlatformTransactionManager txManager = ibisContext.getBean("TransactionManager", PlatformTransactionManager.class);
+		PlatformTransactionManager txManager = ibisContext.getBean("txManager", PlatformTransactionManager.class);
 		TransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		IbisTransaction itx = new IbisTransaction(txManager , txDef, "add config ["+name+"] to database");
 		try {

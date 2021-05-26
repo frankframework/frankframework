@@ -35,7 +35,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import edu.emory.mathcs.backport.java.util.Collections;
+import java.util.Collections;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -71,13 +71,13 @@ public class ServerStatistics extends Base {
 	@Path("/server/info")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServerInformation() throws ApiException {
-		Map<String, Object> returnMap = new HashMap<String, Object>();
-		List<Object> configurations = new ArrayList<Object>();
+		Map<String, Object> returnMap = new HashMap<>();
+		List<Map<String, Object>> configurations = new ArrayList<>();
 
 		AppConstants appConstants = AppConstants.getInstance();
 
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
-			Map<String, Object> cfg = new HashMap<String, Object>();
+			Map<String, Object> cfg = new HashMap<>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
 			cfg.put("stubbed", configuration.isStubbed());
@@ -102,11 +102,13 @@ public class ServerStatistics extends Base {
 		}
 
 		//TODO Replace this with java.util.Collections!
-		Collections.sort(configurations, new Comparator<Map<String, String>>() {
+		configurations.sort(new Comparator<Map<String, Object>>() {
 			@Override
-			public int compare(Map<String, String> lhs, Map<String, String> rhs) {
-				String name1 = lhs.get("name");
-				String name2 = rhs.get("name");
+			public int compare(Map<String, Object> lhs, Map<String, Object> rhs) {
+				String name1 = (String) lhs.get("name");
+				String name2 = (String) rhs.get("name");
+				if(name1 == null || name2 == null) return 0;
+
 				return name1.startsWith("IAF_") ? -1 : name2.startsWith("IAF_") ? 1 : name1.compareTo(name2);
 			}
 		});
