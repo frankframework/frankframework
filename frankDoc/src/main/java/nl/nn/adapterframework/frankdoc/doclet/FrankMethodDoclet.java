@@ -58,12 +58,12 @@ class FrankMethodDoclet implements FrankMethod {
 	}
 
 	@Override
-	public FrankAnnotation[] getAnnotations() {
+	public FrankAnnotation[] getJava5Annotations() {
 		return frankAnnotationsByName.values().toArray(new FrankAnnotation[] {});
 	}
 
 	@Override
-	public FrankAnnotation getAnnotation(String name) {
+	public FrankAnnotation getJava5Annotation(String name) {
 		return frankAnnotationsByName.get(name);
 	}
 
@@ -130,8 +130,8 @@ class FrankMethodDoclet implements FrankMethod {
 	}
 
 	@Override
-	public FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException {
-		Function<FrankMethodDoclet, FrankAnnotation> getter = m -> m.getAnnotation(name);
+	public FrankAnnotation getJava5AnnotationInludingInherited(String name) throws FrankDocException {
+		Function<FrankMethodDoclet, FrankAnnotation> getter = m -> m.getJava5Annotation(name);
 		return searchIncludingInherited(getter);
 	}
 
@@ -194,8 +194,8 @@ class FrankMethodDoclet implements FrankMethod {
 	}
 
 	@Override
-	public String getDefaultValueFromJavadoc() {
-		Tag[] tags = method.tags(FrankMethod.JAVADOC_DEFAULT_VALUE_TAG);
+	public String getJavaDocTag(String tagName) {
+		Tag[] tags = method.tags(tagName);
 		if((tags == null) || (tags.length == 0)) {
 			return null;
 		}
@@ -204,8 +204,8 @@ class FrankMethodDoclet implements FrankMethod {
 	}
 
 	@Override
-	public String getDefaultValueFromJavadocIncludingInherited() throws FrankDocException {
-		Function<FrankMethodDoclet, String> getter = m -> m.getDefaultValueFromJavadoc();
+	public String getJavaDocTagIncludingInherited(String tagName) throws FrankDocException {
+		Function<FrankMethodDoclet, String> getter = m -> m.getJavaDocTag(tagName);
 		return searchIncludingInherited(getter);		
 	}
 

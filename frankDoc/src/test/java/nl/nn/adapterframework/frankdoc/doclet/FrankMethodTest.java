@@ -24,11 +24,11 @@ public class FrankMethodTest extends TestBase {
 		FrankMethod setter = TestUtil.getDeclaredMethodOf(clazz, "setInherited");
 		assertEquals("setInherited", setter.getName());
 		assertTrue(setter.isPublic());
-		FrankAnnotation[] annotations = setter.getAnnotations();
+		FrankAnnotation[] annotations = setter.getJava5Annotations();
 		assertEquals(1, annotations.length);
 		FrankAnnotation annotation = annotations[0];
 		assertEquals(FrankDocletConstants.IBISDOC, annotation.getName());
-		annotation = setter.getAnnotation(FrankDocletConstants.IBISDOC);
+		annotation = setter.getJava5Annotation(FrankDocletConstants.IBISDOC);
 		assertNotNull(annotation);
 		assertEquals(FrankDocletConstants.IBISDOC, annotation.getName());
 		FrankType returnType = setter.getReturnType();
@@ -41,7 +41,7 @@ public class FrankMethodTest extends TestBase {
 		FrankType parameter = parameters[0];
 		assertFalse(parameter.isPrimitive());
 		assertEquals(FrankDocletConstants.STRING, parameter.getName());
-		annotation = setter.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
+		annotation = setter.getJava5AnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 		assertNotNull(annotation);
 		assertEquals(FrankDocletConstants.IBISDOC, annotation.getName());
 	}
@@ -58,8 +58,8 @@ public class FrankMethodTest extends TestBase {
 	public void whenNoAnnotationsThenNullReturned() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "packagePrivateMethod");
-		assertEquals(0, method.getAnnotations().length);
-		assertNull(method.getAnnotation(FrankDocletConstants.IBISDOC));
+		assertEquals(0, method.getJava5Annotations().length);
+		assertNull(method.getJava5Annotation(FrankDocletConstants.IBISDOC));
 	}
 
 	@Test
@@ -67,9 +67,9 @@ public class FrankMethodTest extends TestBase {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "setInherited");
 		assertNotNull(method);
-		FrankAnnotation annotation = method.getAnnotation(FrankDocletConstants.IBISDOC);
+		FrankAnnotation annotation = method.getJava5Annotation(FrankDocletConstants.IBISDOC);
 		assertNull(annotation);
-		annotation = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
+		annotation = method.getJava5AnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 		assertNotNull(annotation);
 		assertEquals(FrankDocletConstants.IBISDOC, annotation.getName());
 	}
@@ -125,7 +125,7 @@ public class FrankMethodTest extends TestBase {
 	public void annotationCanBeInheritedFromImplementedInterface() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "myAnnotatedMethod");
-		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
+		FrankAnnotation annotation = method.getJava5AnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
 		assertNotNull(annotation);
 		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}
