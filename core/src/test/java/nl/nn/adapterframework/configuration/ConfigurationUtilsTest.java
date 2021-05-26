@@ -30,11 +30,14 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.configuration.ConfigurationUtils.ConfigurationValidator;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
-import nl.nn.adapterframework.testutil.TestAssertions;
 
 public class ConfigurationUtilsTest extends Mockito {
 
@@ -60,6 +63,27 @@ public class ConfigurationUtilsTest extends Mockito {
 		}).when(conn).prepareStatement(anyString());
 
 		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
+
+		// STUB a TransactionManager
+		PlatformTransactionManager ptm = new PlatformTransactionManager() {
+
+			@Override
+			public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
+				return mock(TransactionStatus.class);
+			}
+
+			@Override
+			public void commit(TransactionStatus status) throws TransactionException {
+				// STUB
+			}
+
+			@Override
+			public void rollback(TransactionStatus status) throws TransactionException {
+				// STUB
+			}
+			
+		};
+		doReturn(ptm).when(ibisContext).getBean("txManager", PlatformTransactionManager.class);
 	}
 
 	@Test

@@ -2,15 +2,14 @@
 
 # How to contribute
 
-I'm really glad you're reading this, because we need volunteer developers to help this project come to fruition.
+Thanks for reading this we're glad you're taking an interest in contributing to our framework.
+We want you working on things you're excited about, there are however pleny of [issues](https://github.com/ibissource/iaf/issues) that can be picked up.
 
-If you haven't already, come find us on our [community forums](https://ibissource.org/forum). We want you working on things you're excited about.
+**Please be advised that we use our own repository manager for snapshot builds.**
+Either use our public `ibissource` or private `proprietary` profile when running Maven.
 
 
-##### We use our own repository manager for snapshot builds. Either use our public `ibissource` or private `proprietary` profile when running Maven. #####
-
-
-## Running the IBIS Adapter Framework
+## Running the Frank!Framework
 
 Initial:
 
@@ -236,4 +235,4 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 - Run your configuration and you are ready to go.
 
 Thanks,
-The IAF Team
+The Frank!Framework Team
