@@ -1,5 +1,11 @@
 package nl.nn.adapterframework.testutil;
 
+import static org.junit.Assert.fail;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.naming.NamingException;
@@ -11,7 +17,7 @@ import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public class URLDataSourceFactory extends JndiDataSourceFactory {
 
-	public static final Object[][] TEST_DATASOURCES = {
+	private static final Object[][] TEST_DATASOURCES = {
 			// ProductName, URL, username, password
 			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=1000", null, null, false },
 			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00" },
@@ -23,13 +29,19 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		};
 
 	public URLDataSourceFactory() {
+		DriverManager.setLoginTimeout(1);
 		for (Object[] datasource: TEST_DATASOURCES) {
 			String product = (String)datasource[0];
 			String url = (String)datasource[1];
 			String userId = (String)datasource[2];
 			String password = (String)datasource[3];
 
-			DriverManagerDataSource dataSource = new DriverManagerDataSource(url, userId, password);
+			DriverManagerDataSource dataSource = new DriverManagerDataSource(url, userId, password) {
+				@Override
+				public String toString() { //Override toString so JunitTests are prefixed with the DataSource URL
+					return product + ":" + getUrl();
+				}
+			};
 			add(dataSource, product);
 		}
 	}
@@ -41,5 +53,22 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		}
 
 		return super.get(jndiName, jndiEnvironment);
+	}
+
+	public List<DataSource> getAvailableDataSources() {
+		List<DataSource> availableDatasources = new ArrayList<>();
+		for(String dataSourceName : getDataSourceNames()) {
+			try {
+				DataSource dataSource = getDataSource(dataSourceName);
+				try(Connection connection = dataSource.getConnection()) {
+					availableDatasources.add(dataSource);
+				} catch (Exception e) {
+					log.warn("Cannot connect to ["+dataSourceName+"], skipping:"+e.getMessage());
+				}
+			} catch (NamingException e) {
+				fail(this.getClass().getSimpleName() +" should not look for DataSources in the JNDI");
+			}
+		}
+		return availableDatasources;
 	}
 }
