@@ -838,7 +838,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	@Override
 	public M changeProcessState(Object message, ProcessState toState, String reason) throws ListenerException {
-		if (toState==ProcessState.AVAILABLE || toState==ProcessState.ERROR) {
+		if (toState==ProcessState.AVAILABLE) {
 			String id = getListener().getIdFromRawMessage((M)message, null);
 			resetProblematicHistory(id);
 		}
