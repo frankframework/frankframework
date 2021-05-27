@@ -20,6 +20,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -32,27 +33,15 @@ public abstract class JdbcTestBase {
 	protected String userid;
 	protected String password;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked; // Avoid 'Peek should skip records already locked'-error. if it doesn't, it is not really a problem: Peeking is then only effective when the listener is idle
-	
 
 	protected static Connection connection; // only to be used for setup and teardown like actions
 	protected DataSource targetDataSource;
 	protected IDbmsSupport dbmsSupport;
 
-	
 	@Parameters(name= "{index}: {0} url: {1}")
 	public static Iterable<Object[]> data() {
-		Object[][] datasources = {
-			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
-			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=1000", null, null, false },
-			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false }, 
-			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false }, 
-			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver", "testiaf_user", "testiaf_user00", true }, 
-			{ "MariaDB",    "jdbc:mariadb://localhost:3306/testiaf", 				"testiaf_user", "testiaf_user00", false }, 
-			{ "MariaDB",    "jdbc:mysql://localhost:3306/testiaf?sslMode=DISABLED&disableMariaDbDriver", "testiaf_user", "testiaf_user00", false }, 
-			{ "PostgreSQL", "jdbc:postgresql://localhost:5432/testiaf", 			"testiaf_user", "testiaf_user00", true }
-		};
 		List<Object[]> availableDatasources = new ArrayList<>();
-		for (Object[] datasource:datasources) {
+		for (Object[] datasource: URLDataSourceFactory.TEST_DATASOURCES) {
 			String product = (String)datasource[0];
 			String url = (String)datasource[1];
 			String userId = (String)datasource[2];

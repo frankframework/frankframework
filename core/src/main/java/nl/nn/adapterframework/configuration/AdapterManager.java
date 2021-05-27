@@ -215,7 +215,9 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			}
 		}
 
-		stop(); //Call this just in case...
+		if(!inState(BootState.STOPPED)) {
+			stop(); //Call this just in case...
+		}
 
 		while (!getStopAdapterThreads().isEmpty()) {
 			log.debug("Waiting for stop threads to end: " + getStopAdapterThreads());
