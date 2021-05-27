@@ -448,15 +448,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	// configure wrappers/validators
 	private void configure(IPipe pipe) throws ConfigurationException {
-		if (pipe instanceof IExtendedPipe) {
-			if(getPipeLine() == null) {
-				throw new ConfigurationException("unable to configure "+ ClassUtils.nameOf(pipe) +" ["+pipe.getName()+"]");
-			}
-
-			((IExtendedPipe) pipe).configure(getPipeLine());
-		} else {
-			pipe.configure();
+		if(getPipeLine() == null) {
+			throw new ConfigurationException("unable to configure "+ ClassUtils.nameOf(pipe) +" ["+pipe.getName()+"]");
 		}
+
+		getPipeLine().configure(pipe);
 	}
 
 //	/**
