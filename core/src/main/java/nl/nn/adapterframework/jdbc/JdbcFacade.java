@@ -264,8 +264,8 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	@Deprecated
 	@ConfigurationWarning("Please use attribute dataSourceName instead")
 	public void setJmsRealm(String jmsRealmName) {
-		super.setJmsRealm(jmsRealmName);
-		if(StringUtils.isEmpty(getJmsRealmName())) { //Validate that the realm was found
+		super.setJmsRealm(jmsRealmName); //super.setJmsRealm(...) sets the jmsRealmName only when a realm is found
+		if(StringUtils.isEmpty(getJmsRealmName())) { //confirm that the configured jmsRealm exists
 			throw new IllegalStateException("JmsRealm ["+jmsRealmName+"] not found");
 		}
 	}

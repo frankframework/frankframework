@@ -27,7 +27,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	public void setUp() throws Exception {
 		super.setUp();
 
-		sender.setDatasourceName("Oracle");
+		sender.setDatasourceName("H2");
 		sender.setQuery("SELECT * FROM TEMP");
 
 		boolean databaseIsPresent = false;
