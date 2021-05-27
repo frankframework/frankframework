@@ -495,9 +495,13 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('InformationCtrl', ['$scope', '$uibModalInstance', '$uibModal', 'Api', '$timeout', function($scope, $uibModalInstance, $uibModal, Api, $timeout) {
+	$scope.error = false;
 	Api.Get("server/info", function(data) {
 		$.extend( $scope, data );
+	}, function() {
+		$scope.error = true;
 	});
+
 	$scope.close = function () {
 		$uibModalInstance.close();
 	};
