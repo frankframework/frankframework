@@ -3,6 +3,7 @@ package nl.nn.adapterframework.testutil;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -27,8 +28,9 @@ public class TestConfiguration extends Configuration {
 		configure();
 		start();
 
-		AppConstants.getInstance().setProperty("instance.name", TEST_CONFIGURATION_NAME);
-		AppConstants.getInstance().setProperty("instance.name.lc", TEST_CONFIGURATION_NAME.toLowerCase());
+		if(!TEST_CONFIGURATION_NAME.equals(AppConstants.getInstance().getProperty("instance.name"))) {
+			fail("instance.name has been altered");
+		}
 	}
 
 	@Test

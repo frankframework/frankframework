@@ -121,7 +121,9 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 
 	@Override
 	public void close() throws Exception {
-		stop(); //Call this just in case...
+		if(!inState(BootState.STOPPED)) {
+			stop(); //Call this just in case...
+		}
 
 		while (!getSchedulesList().isEmpty()) {
 			JobDef job = getSchedulesList().get(0);
