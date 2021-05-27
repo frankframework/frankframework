@@ -35,7 +35,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import java.util.Collections;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -101,7 +100,6 @@ public class ServerStatistics extends Base {
 				configurations.add(cfg);
 		}
 
-		//TODO Replace this with java.util.Collections!
 		configurations.sort(new Comparator<Map<String, Object>>() {
 			@Override
 			public int compare(Map<String, Object> lhs, Map<String, Object> rhs) {
