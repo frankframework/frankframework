@@ -73,10 +73,10 @@ public class IbisApplicationContext {
 	private AbstractApplicationContext applicationContext;
 	private ApplicationContext parentContext = null;
 
-	public final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private Logger log = LogUtil.getLogger(this);
 	private BootState state = BootState.FIRST_START;
-	private Map<String, String> iafModules = new HashMap<String, String>();
+	private Map<String, String> iafModules = new HashMap<>();
 
 
 	public void setParentContext(ApplicationContext parentContext) {
