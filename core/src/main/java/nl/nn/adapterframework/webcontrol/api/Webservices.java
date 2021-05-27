@@ -219,13 +219,10 @@ public final class Webservices extends Base {
 			IListener listener = ((Receiver) it.next()).getListener();
 			if(listener instanceof WebServiceListener) {
 				String address = ((WebServiceListener) listener).getAddress();
-				String serviceNameSpaceUri = ((WebServiceListener) listener).getServiceNamespaceURI();
 				if(StringUtils.isNotEmpty(address)) {
 					endpoint = address;
-				} else if(StringUtils.isNotEmpty(serviceNameSpaceUri)) {
-					endpoint=serviceNameSpaceUri;
 				} else {
-					endpoint=listener.getName();
+					endpoint = "rpcrouter";
 				}
 				String protocol = request.isSecure() ? "https://" : "http://";
 				int port = request.getServerPort();
