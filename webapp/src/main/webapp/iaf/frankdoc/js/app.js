@@ -94,6 +94,13 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		getCategoryMembers($scope).forEach(m => r[m.fullName] = m);
 		return r;
 	};
+})
+.filter('omitDeprecatedChildren', function() {
+	return function(children, $scope) {
+		result = [];
+		children.forEach(c => {if(! c.deprecated) {result.push(c)}});
+		return result;
+	}
 });
 
 function getCategoryMembers($scope) {

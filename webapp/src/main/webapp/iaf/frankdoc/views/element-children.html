@@ -1,0 +1,8 @@
+<div>
+	<h4>Nested children</h4>
+	<div ng-repeat="child in element.children | omitDeprecatedChildren">
+		<b>{{child.roleName}}</b><span ng-if="child.description"><b>:</b> {{ child.description }}</span>
+		<br />
+		<br/>
+	</div>
+</div>
