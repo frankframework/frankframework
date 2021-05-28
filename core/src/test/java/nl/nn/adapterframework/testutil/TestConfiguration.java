@@ -3,11 +3,13 @@ package nl.nn.adapterframework.testutil;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.webcontrol.api.MockIbisManager;
 
@@ -25,6 +27,10 @@ public class TestConfiguration extends Configuration {
 		refresh();
 		configure();
 		start();
+
+		if(!TEST_CONFIGURATION_NAME.equals(AppConstants.getInstance().getProperty("instance.name"))) {
+			fail("instance.name has been altered");
+		}
 	}
 
 	@Test

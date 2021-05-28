@@ -15,6 +15,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Consumer;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.io.input.ReaderInputStream;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,8 +31,8 @@ public class TestBlobs extends JdbcTestBase {
 
 	boolean testBigBlobs = false;
 	
-	public TestBlobs(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
+	public TestBlobs(DataSource dataSource) throws SQLException {
+		super(dataSource);
 	}
 
 	public static void getBigString(int numBlocks, int blockSize, Consumer<String> consumer) {

@@ -296,17 +296,7 @@
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
-			<version>1.5.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>net.sf.jsr107cache</groupId>
-					<artifactId>jsr107cache</artifactId>
-				</exclusion>
-				<exclusion><!-- Exclude 3.2 because we need 3.2.2 -->
-					<groupId>commons-collections</groupId>
-					<artifactId>commons-collections</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>2.10.9.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>

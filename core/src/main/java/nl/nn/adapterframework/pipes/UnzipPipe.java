@@ -191,16 +191,16 @@ public class UnzipPipe extends FixedForwardPipe {
 						log.debug(getLogPrefix(session)+"skipping directory entry ["+ze.getName()+"]");
 					}
 				} else {
-					String filename=ze.getName();
+					String entryname=ze.getName();
 					String basename=null;
 					String extension=null;
-					int dotPos=filename.lastIndexOf('.');
+					int dotPos=entryname.lastIndexOf('.');
 					if (dotPos>=0) {
-						extension=filename.substring(dotPos);
-						basename=filename.substring(0,dotPos);
+						extension=entryname.substring(dotPos);
+						basename=entryname.substring(0,dotPos);
 						log.debug(getLogPrefix(session)+"parsed filename ["+basename+"] extension ["+extension+"]");
 					} else {
-						basename=filename;
+						basename=entryname;
 					}
 					InputStream inputStream = StreamUtil.dontClose(zis); 
 					byte[] fileContentBytes = null;
@@ -211,12 +211,15 @@ public class UnzipPipe extends FixedForwardPipe {
 					File tmpFile = null;
 					if (dir != null) {
 						if (isKeepOriginalFileName()) {
-							tmpFile = new File(dir, filename);
+							tmpFile = new File(dir, entryname);
 							if (tmpFile.exists()) {
 								throw new PipeRunException(this, "file [" + tmpFile.getAbsolutePath() + "] already exists"); 
 							}
 						} else {
-							tmpFile = File.createTempFile(basename, extension, dir);
+							String filename = new File(basename).getName();
+							String zipEntryPath = entryname.substring(0, ze.getName().indexOf(filename));
+							if(filename.length() < 3) filename += ".tmp.";	//filename here is a prefix to create a unique filename and that prefix must be at least 3 chars long
+							tmpFile = File.createTempFile(filename, extension, new File(dir, zipEntryPath));
 						}
 						if (isDeleteOnExit()) {
 							tmpFile.deleteOnExit();
@@ -233,13 +236,13 @@ public class UnzipPipe extends FixedForwardPipe {
 							}
 						}
 						try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
-							log.debug(getLogPrefix(session)+"writing ZipEntry ["+filename+"] to file ["+tmpFile.getPath()+"]");
+							log.debug(getLogPrefix(session)+"writing ZipEntry ["+entryname+"] to file ["+tmpFile.getPath()+"]");
 							count++;
 							Misc.streamToStream(inputStream, fileOutputStream);
 						}
 					}
 					if (isCollectResults()) {
-						entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(filename) + "</zipEntry>";
+						entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname) + "</zipEntry>";
 						if (dir != null) {
 							entryResults += "<fileName>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath()) + "</fileName>";
 						}

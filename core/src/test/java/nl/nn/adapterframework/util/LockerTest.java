@@ -12,6 +12,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 import org.junit.After;
 import org.junit.Before;
@@ -47,14 +48,13 @@ public class LockerTest extends TransactionManagerTestBase {
 		}
 	}
 
-	public LockerTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException, NamingException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
+	public LockerTest(DataSource dataSource) throws SQLException, NamingException {
+		super(dataSource);
 
 		locker = new Locker();
-		locker.setDatasourceName(DEFAULT_DATASOURCE_NAME);
+		locker.setDatasourceName(getDataSourceName());
 		locker.setDataSourceFactory(dataSourceFactory);
 		locker.setFirstDelay(0);
-		
 	}
 
 	@Test

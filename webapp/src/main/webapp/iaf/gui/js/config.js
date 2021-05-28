@@ -225,17 +225,25 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 				$state.go("pages.manage_configurations");
 		}
 	})
-	.state('pages.logging', {
+	.state('pages.logging_show', {
 		url: "/logging?directory&file",
 		templateUrl: "views/ShowLogging.html",
 		data: {
 			pageTitle: 'Logging',
-			breadcrumbs: 'Logging'
+			breadcrumbs: 'Logging > Log Files'
 		},
 		params : {
 			directory : null,
 			file : null
 		}
+	})
+	.state('pages.logging_manage', {
+		url: "/logging/settings",
+		templateUrl: "views/ManageLogging.html",
+		data: {
+			pageTitle: 'Logging',
+			breadcrumbs: 'Logging > Log Settings'
+		},
 	})
 	.state('pages.send_message', {
 		url: "/jms/send-message",

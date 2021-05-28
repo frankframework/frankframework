@@ -143,6 +143,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IC
 		return removeElement(key);
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}

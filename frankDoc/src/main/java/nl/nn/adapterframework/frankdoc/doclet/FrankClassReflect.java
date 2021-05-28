@@ -297,7 +297,7 @@ class FrankClassReflect implements FrankClass {
 	}
 
 	@Override
-	public FrankAnnotation getGroupAnnotation() {
+	public FrankAnnotation getAnnotationIncludingInherited(String fullNameAnnotation) {
 		return null;
 	}
 }

@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.StringTokenizer;
 
@@ -9,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -188,7 +188,7 @@ public class PgpPipeTest {
 	 * @param c Class to be checked
 	 * @return True if one of the causes of the exception is the given class, false otherwise.
 	 */
-	private boolean checkExceptionClass(Throwable t, Class c) {
+	private boolean checkExceptionClass(Throwable t, Class<?> c) {
 		if (c.isInstance(t)) {
 			return true;
 		} else if (t.getCause() != null) {

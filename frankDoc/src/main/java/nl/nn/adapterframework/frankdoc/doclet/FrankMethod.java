@@ -17,8 +17,6 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.doclet;
 
 public interface FrankMethod extends FrankProgramElement {
-	public static final String JAVADOC_DEFAULT_VALUE_TAG = "@ff.default";
-
 	FrankAnnotation[] getAnnotations();
 	FrankAnnotation getAnnotation(String name);
 	FrankClass getDeclaringClass();
@@ -32,8 +30,8 @@ public interface FrankMethod extends FrankProgramElement {
 	FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException;
 	String getJavaDoc();
 	String getJavaDocIncludingInherited() throws FrankDocException;
-	String getDefaultValueFromJavadoc();
-	String getDefaultValueFromJavadocIncludingInherited() throws FrankDocException;
+	String getJavaDocTag(String tagName);
+	String getJavaDocTagIncludingInherited(String tagName) throws FrankDocException;
 
 	default String toStringImpl() {
 		return String.format("%s.%s", getDeclaringClass().getSimpleName(), getName());

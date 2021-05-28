@@ -758,10 +758,12 @@ public final class ShowConfigurationStatus extends Base {
 		adapterInfo.put("configured", adapter.configurationSucceeded());
 		adapterInfo.put("upSince", adapter.getStatsUpSinceDate().getTime());
 		Date lastMessage = adapter.getLastMessageDateDate();
-		adapterInfo.put("lastMessage", (lastMessage == null) ? null : lastMessage.getTime());
-		adapterInfo.put("messagesInProcess", adapter.getNumOfMessagesInProcess());
-		adapterInfo.put("messagesProcessed", adapter.getNumOfMessagesProcessed());
-		adapterInfo.put("messagesInError", adapter.getNumOfMessagesInError());
+		if(lastMessage != null) {
+			adapterInfo.put("lastMessage", lastMessage.getTime());
+			adapterInfo.put("messagesInProcess", adapter.getNumOfMessagesInProcess());
+			adapterInfo.put("messagesProcessed", adapter.getNumOfMessagesProcessed());
+			adapterInfo.put("messagesInError", adapter.getNumOfMessagesInError());
+		}
 
 		Iterator<Receiver<?>> it = adapter.getReceivers().iterator();
 		int errorStoreMessageCount = 0;

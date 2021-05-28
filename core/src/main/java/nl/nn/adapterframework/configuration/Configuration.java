@@ -344,12 +344,20 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	@Override
 	public void setName(String name) {
-		setId(name);
+		if(StringUtils.isNotEmpty(name)) {
+			setId(name); //ID should never be NULL
+		}
 	}
 
 	@Override
 	public String getName() {
 		return getId();
+	}
+
+	@Deprecated
+	@ConfigurationWarning("Please use attribute name instead")
+	public void setConfigurationName(String name) {
+		this.setName(name);
 	}
 
 	public void setVersion(String version) {

@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.pipes;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URL;
@@ -28,9 +30,9 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 	@Override
 	public UnzipPipe createPipe() {
-		UnzipPipe result = new UnzipPipe();
-		result.setDirectory(folder.getRoot().toString());
-		return result;
+		UnzipPipe pipe = new UnzipPipe();
+		pipe.setDirectory(folder.getRoot().toString());
+		return pipe;
 	}
 
 	@Test
@@ -116,6 +118,43 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
+
+	@Test
+	public void testCreateSubDirectories() throws Exception {
+		pipe.setCreateSubdirectories(true);
+		configureAndStartPipe();
+		
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
+		doPipe(new Message(zip));
+		String[] files = new File(folder.getRoot()+"/Folder/innerFolder").list();
+		assertEquals(1, files.length);
+		assertTrue(files[0].contains("innerFile"));
+	}
 	
+	@Test
+	public void testCreateSubDirectoriesKeepFilename() throws Exception {
+		pipe.setKeepOriginalFileName(true);
+		pipe.setCreateSubdirectories(true);
+		pipe.setDeleteOnExit(false);
+		configureAndStartPipe();
+
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
+		doPipe(new Message(zip));
+		File toBePresent = new File(folder.getRoot()+"/Folder/innerFolder/innerFile.txt");
+		assertTrue(toBePresent.isFile());
+	}
+
+	@Test
+	public void testCreateSubDirectoriesKeepFilenameDeleteOnExit() throws Exception {
+		pipe.setKeepOriginalFileName(true);
+		pipe.setCreateSubdirectories(true);
+		configureAndStartPipe();
+
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
+		doPipe(new Message(zip));
+
+		File toBePresent = new File(folder.getRoot()+"/Folder/innerFolder/innerFile.txt");
+		assertTrue(toBePresent.exists());
+	}
 
 }

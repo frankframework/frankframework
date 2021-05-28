@@ -284,9 +284,12 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 
 	@Override
 	protected JsonValue getSubstitutedChild(JsonValue node, String childName) {
+		if (!sp.hasSubstitutionsFor(getContext(), childName)) {
+			return null;
+		}
 		Object substs = sp.getSubstitutionsFor(getContext(), childName);
 		if (substs==null) {
-			return null;
+			substs="{}";
 		}
 		if (substs instanceof List) {
 			JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
@@ -298,6 +301,20 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 		objectBuilder.add(childName, substs.toString());
 		return objectBuilder.build().getJsonString(childName);
+	}
+
+	@Override
+	protected String getOverride(XSElementDeclaration elementDeclaration, JsonValue node) {
+		Object text = sp.getOverride(getContext());
+		if (text instanceof List) { 
+			// if the override is a List, than it has already be substituted via getSubstitutedChild.
+			// Therefore now get the node text, which is here an individual element already.
+			return getNodeText(elementDeclaration, node);
+		}
+		if (text instanceof String) {
+			return (String)text;
+		}
+		return text.toString();
 	}
 
 	@Override

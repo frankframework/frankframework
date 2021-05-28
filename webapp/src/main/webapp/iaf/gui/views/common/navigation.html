@@ -27,8 +27,12 @@
 					<li ui-sref-active="active"><a ui-sref="pages.manage_configurations">Manage Configurations</a></li>
 				</ul>
 			</li>
-			<li ui-sref-active="active">
-				<a ui-sref="pages.logging"><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span></a>
+			<li ng-class="{active: $state.includes('logging')}" class="nav-group">
+				<a href=""><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span> <span class="fa arrow"></span></a>
+				<ul class="nav nav-second-level" ng-class="{in: $state.includes('configuration')}">
+					<li ui-sref-active="active"><a ui-sref="pages.logging_show">Log Files</a></li>
+					<li ui-sref-active="active"><a ui-sref="pages.logging_manage">Log Settings</a></li>
+				</ul>
 			</li>
 			<li ng-class="{active: $state.includes('testing')}" class="nav-group">
 				<a href=""><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span></a>
