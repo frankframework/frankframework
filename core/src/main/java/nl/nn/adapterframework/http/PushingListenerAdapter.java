@@ -17,7 +17,7 @@ package nl.nn.adapterframework.http;
 
 import java.util.Map;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -103,7 +103,8 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
+		//Including the handler causes StackOverflowExceptions on Receiver.toString() which also prints the listener
+		return ReflectionToStringBuilder.toStringExclude(this, "handler");
 	}
 
 	@Override

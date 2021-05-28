@@ -55,7 +55,6 @@ public class FrankDocModel {
 	private static Logger log = LogUtil.getLogger(FrankDocModel.class);
 	private static String ENUM = "Enum";
 	private static final String DIGESTER_RULES = "digester-rules.xml";
-	static final String OTHER = "Other";
 
 	private FrankClassRepository classRepository;
 
@@ -71,6 +70,8 @@ public class FrankDocModel {
 	// We have a LinkedHashMap because the sequence of the types is relevant. This
 	// sequence determines the sort order of the elements of FrankDocGroup Other.
 	private @Getter Map<String, ElementType> allTypes = new LinkedHashMap<>();
+
+	private @Getter List<FrankElement> elementsOutsideConfigChildren; 
 
 	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
@@ -174,8 +175,7 @@ public class FrankDocModel {
 			return allElements.get(clazz.getName());
 		}
 		log.trace("Creating FrankElement for class name [{}]", () -> clazz.getName());
-		FrankDocGroup group = groupFactory.getGroup(clazz);
-		FrankElement current = new FrankElement(clazz, group);
+		FrankElement current = new FrankElement(clazz);
 		allElements.put(clazz.getName(), current);
 		FrankClass superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass.getName());
@@ -491,7 +491,8 @@ public class FrankDocModel {
 			log.trace("Already present");
 			return allTypes.get(clazz.getName());
 		}
-		final ElementType result = new ElementType(clazz);
+		FrankDocGroup group = groupFactory.getGroup(clazz);
+		final ElementType result = new ElementType(clazz, group);
 		// If a containing FrankElement contains the type being created, we do not
 		// want recursion.
 		allTypes.put(result.getFullName(), result);
@@ -670,14 +671,20 @@ public class FrankDocModel {
 	}
 
 	public void buildGroups() {
-		Map<String, List<FrankElement>> groupsElements = allElements.values().stream()
-				.filter(f -> ! f.getXmlElementNames().isEmpty())
+		Map<String, List<ElementType>> groupsElementTypes = allTypes.values().stream()
 				.collect(Collectors.groupingBy(f -> f.getGroup().getName()));
 		groups = groupFactory.getAllGroups();
 		for(FrankDocGroup group: groups) {
-			List<FrankElement> elements = new ArrayList<>(groupsElements.get(group.getName()));
-			Collections.sort(elements);
-			group.setElements(elements);
+			List<ElementType> elementTypes = new ArrayList<>(groupsElementTypes.get(group.getName()));
+			Collections.sort(elementTypes);
+			group.setElementTypes(elementTypes);
 		}
+		final Map<String, FrankElement> leftOvers = new HashMap<>(allElements);
+		allTypes.values().stream().flatMap(et -> et.getSyntax2Members().stream()).forEach(f -> leftOvers.remove(f.getFullName()));
+		elementsOutsideConfigChildren = leftOvers.values().stream()
+				.filter(f -> ! f.isAbstract())
+				.filter(f -> ! f.getXmlElementNames().isEmpty())
+				.sorted()
+				.collect(Collectors.toList());
 	}
 }

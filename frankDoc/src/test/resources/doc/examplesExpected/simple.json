@@ -2,17 +2,31 @@
   "groups": [
     {
       "name": "Child",
+      "types": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.IChild"]
+    },
+    {
+      "name": "Other",
+      "types": [
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.IChild",
       "members": [
         "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
         "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild"
       ]
     },
     {
-      "name": "Other",
-      "members": [
-        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
-        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"
-      ]
+      "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
+      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"]
+    },
+    {
+      "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
+      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"]
     }
   ],
   "elements": [
@@ -102,3 +116,4 @@
     }
   ]
 }
+        

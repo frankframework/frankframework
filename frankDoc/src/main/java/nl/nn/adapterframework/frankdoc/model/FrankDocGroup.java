@@ -32,11 +32,11 @@ public class FrankDocGroup implements Comparable<FrankDocGroup> {
 
 	private static final Comparator<FrankDocGroup> COMPARATOR =
 			Comparator.comparingInt(FrankDocGroup::getOrder).thenComparing(FrankDocGroup::getName);
-	static String GROUP_NAME_OTHER = "Other";
+	public static String GROUP_NAME_OTHER = "Other";
 
 	private final @Getter String name;
 	private @Getter int order = Integer.MAX_VALUE;
-	private @Getter @Setter(AccessLevel.PACKAGE) List<FrankElement> elements = new ArrayList<>();
+	private @Getter @Setter(AccessLevel.PACKAGE) List<ElementType> elementTypes = new ArrayList<>();
 
 	FrankDocGroup(String name) {
 		this.name = name;
