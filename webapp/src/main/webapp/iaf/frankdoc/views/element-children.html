@@ -3,9 +3,11 @@
 	<div ng-repeat="child in element.children | omitDeprecatedChildrenAndAddChildElements:this">
 		<b>{{child.roleName}}</b><span ng-if="child.description"><b>:</b> {{ child.description }}</span>
 		<p>
-		<select name="allowedChildElements">
-			<option ng-repeat="childElement in child.childElements" value="{{childElement}}"> {{ childElement }}</option>
-		</select>
+		<div ng-controller="element-child-controller">
+			<select name="allowedChildElements" ng-change="gotoChild()" ng-model="value">
+				<option ng-repeat="childElement in child.childElements" value="{{childElement}}"> {{ childElement }}</option>
+			</select>
+		</div>
 		<p>
 	</div>
 </div>

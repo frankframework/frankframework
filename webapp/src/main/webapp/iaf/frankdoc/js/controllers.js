@@ -39,4 +39,11 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	var parent = $scope.element.parent;
 	$scope.element = $scope.elements[parent]; //Update element to the parent's element
 	$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + $scope.element.fullName.replaceAll(".", "/") + '.html';
+}]).controller('element-child-controller', ['$scope', function($scope) {
+	console.log('Created element-child-controller');
+
+	$scope.gotoChild = function() {
+		console.log('GOTO CHILD: ' + $scope.value);
+		console.log('WAS AT: ' + $scope.$parent.element.fullName);
+	}
 }]);

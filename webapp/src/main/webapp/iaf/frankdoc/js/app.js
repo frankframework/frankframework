@@ -100,7 +100,6 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		result = [];
 		children.forEach(c => {
 			if(! c.deprecated) {
-				console.log('Child:' + c.roleName);
 				c.childElements = $scope.types[c.type];
 				result.push(c);
 			}
