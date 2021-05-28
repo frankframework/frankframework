@@ -310,22 +310,22 @@ public class FrankDocModel {
 	}
 
 	private void documentAttribute(FrankAttribute attribute, FrankMethod method, FrankElement attributeOwner) throws FrankDocException {
-		attribute.setDeprecated(method.getJava5Annotation(FrankDocletConstants.DEPRECATED) != null);
+		attribute.setDeprecated(method.getAnnotation(FrankDocletConstants.DEPRECATED) != null);
 		attribute.setDocumented(
-				(method.getJava5Annotation(FrankDocletConstants.IBISDOC) != null)
-				|| (method.getJava5Annotation(FrankDocletConstants.IBISDOCREF) != null)
+				(method.getAnnotation(FrankDocletConstants.IBISDOC) != null)
+				|| (method.getAnnotation(FrankDocletConstants.IBISDOCREF) != null)
 				|| (method.getJavaDoc() != null)
 				|| (method.getJavaDocTag(ElementChild.JAVADOC_DEFAULT_VALUE_TAG) != null));
 		log.trace("Attribute: deprecated = [{}], documented = [{}]", () -> attribute.isDeprecated(), () -> attribute.isDocumented());
 		attribute.setJavaDocBasedDescriptionAndDefault(method);
-		FrankAnnotation ibisDocRef = method.getJava5AnnotationInludingInherited(FrankDocletConstants.IBISDOCREF);
+		FrankAnnotation ibisDocRef = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOCREF);
 		if(ibisDocRef != null) {
 			log.trace("Found @IbisDocRef annotation");
 			ParsedIbisDocRef parsed = parseIbisDocRef(ibisDocRef, method);
 			FrankAnnotation ibisDoc = null;
 			if((parsed != null) && (parsed.getReferredMethod() != null)) {
 				attribute.setJavaDocBasedDescriptionAndDefault(parsed.getReferredMethod());
-				ibisDoc = parsed.getReferredMethod().getJava5AnnotationInludingInherited(FrankDocletConstants.IBISDOC);
+				ibisDoc = parsed.getReferredMethod().getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 				if(ibisDoc != null) {
 					attribute.setDescribingElement(findOrCreateFrankElement(parsed.getReferredMethod().getDeclaringClass().getName()));
 					log.trace("Describing element of attribute [{}].[{}] is [{}]",
@@ -338,7 +338,7 @@ public class FrankDocModel {
 				log.warn("@IbisDocRef of Frank elelement [{}] attribute [{}] points to non-existent method", () -> attributeOwner.getSimpleName(), () -> attribute.getName());
 			}
 		}
-		FrankAnnotation ibisDoc = method.getJava5AnnotationInludingInherited(FrankDocletConstants.IBISDOC);
+		FrankAnnotation ibisDoc = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 		if(ibisDoc != null) {
 			log.trace("For attribute [{}], have @IbisDoc without @IbisDocRef", attribute);
 			attribute.parseIbisDocAnnotation(ibisDoc);

@@ -89,7 +89,7 @@ class FrankMethodReflect implements FrankMethod {
 	}
 
 	@Override
-	public FrankAnnotation[] getJava5Annotations() {
+	public FrankAnnotation[] getAnnotations() {
 		List<FrankAnnotation> annotationList = new ArrayList<>(annotations.values());
 		FrankAnnotation[] result = new FrankAnnotation[annotationList.size()];
 		for(int i = 0; i < annotationList.size(); ++i) {
@@ -99,12 +99,12 @@ class FrankMethodReflect implements FrankMethod {
 	}
 
 	@Override
-	public FrankAnnotation getJava5Annotation(String name) {
+	public FrankAnnotation getAnnotation(String name) {
 		return annotations.get(name);
 	}
 
 	@Override
-	public FrankAnnotation getJava5AnnotationInludingInherited(String name) throws FrankDocException {
+	public FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException {
 		Annotation rawAnnotation = null;
 		try {
 			@SuppressWarnings("unchecked")

@@ -58,12 +58,12 @@ class FrankMethodDoclet implements FrankMethod {
 	}
 
 	@Override
-	public FrankAnnotation[] getJava5Annotations() {
+	public FrankAnnotation[] getAnnotations() {
 		return frankAnnotationsByName.values().toArray(new FrankAnnotation[] {});
 	}
 
 	@Override
-	public FrankAnnotation getJava5Annotation(String name) {
+	public FrankAnnotation getAnnotation(String name) {
 		return frankAnnotationsByName.get(name);
 	}
 
@@ -130,8 +130,8 @@ class FrankMethodDoclet implements FrankMethod {
 	}
 
 	@Override
-	public FrankAnnotation getJava5AnnotationInludingInherited(String name) throws FrankDocException {
-		Function<FrankMethodDoclet, FrankAnnotation> getter = m -> m.getJava5Annotation(name);
+	public FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException {
+		Function<FrankMethodDoclet, FrankAnnotation> getter = m -> m.getAnnotation(name);
 		return searchIncludingInherited(getter);
 	}
 

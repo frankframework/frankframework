@@ -84,18 +84,18 @@ public class ConfigChild extends ElementChild {
 	}
 
 	private static boolean isDocumented(FrankMethod m) {
-		return (m.getJava5Annotation(FrankDocletConstants.IBISDOC) != null) || (m.getJavaDoc() != null);
+		return (m.getAnnotation(FrankDocletConstants.IBISDOC) != null) || (m.getJavaDoc() != null);
 	}
 
 	private static boolean isDeprecated(FrankMethod m) {
-		FrankAnnotation deprecated = m.getJava5Annotation(FrankDocletConstants.DEPRECATED);
+		FrankAnnotation deprecated = m.getAnnotation(FrankDocletConstants.DEPRECATED);
 		return (deprecated != null);
 	}
 
 	private static FrankAnnotation getIbisDoc(FrankMethod method) {
 		FrankAnnotation result = null;
 		try {
-			result = method.getJava5AnnotationInludingInherited(FrankDocletConstants.IBISDOC);
+			result = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
 		} catch(FrankDocException e) {
 			log.warn("Could not @IbisDoc annotation or could not obtain JavaDoc for method {}", method, e);
 		}

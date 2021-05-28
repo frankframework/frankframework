@@ -17,8 +17,8 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.doclet;
 
 public interface FrankMethod extends FrankProgramElement {
-	FrankAnnotation[] getJava5Annotations();
-	FrankAnnotation getJava5Annotation(String name);
+	FrankAnnotation[] getAnnotations();
+	FrankAnnotation getAnnotation(String name);
 	FrankClass getDeclaringClass();
 	/**
 	 * If the return type is void, return a {@link FrankPrimitiveType} wrapping "void".
@@ -27,7 +27,7 @@ public interface FrankMethod extends FrankProgramElement {
 	int getParameterCount();
 	FrankType[] getParameterTypes();
 	boolean isVarargs();
-	FrankAnnotation getJava5AnnotationInludingInherited(String name) throws FrankDocException;
+	FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException;
 	String getJavaDoc();
 	String getJavaDocIncludingInherited() throws FrankDocException;
 	String getJavaDocTag(String tagName);

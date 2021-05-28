@@ -17,7 +17,7 @@ public class FrankAnnotationTest extends TestBase{
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Parent");
 		FrankMethod setter = TestUtil.getDeclaredMethodOf(clazz, "setInherited");
 		assertEquals("setInherited", setter.getName());
-		FrankAnnotation[] annotations = setter.getJava5Annotations();
+		FrankAnnotation[] annotations = setter.getAnnotations();
 		assertEquals(1, annotations.length);
 		FrankAnnotation annotation = annotations[0];
 		assertEquals(FrankDocletConstants.IBISDOC, annotation.getName());
@@ -31,7 +31,7 @@ public class FrankAnnotationTest extends TestBase{
 		FrankClass clazz = classRepository.findClass(PACKAGE + "DeprecatedChild");
 		FrankMethod setter = TestUtil.getDeclaredMethodOf(clazz, "someSetter");
 		assertEquals("someSetter", setter.getName());
-		FrankAnnotation annotation = setter.getJava5Annotation(FrankDocletConstants.IBISDOC);
+		FrankAnnotation annotation = setter.getAnnotation(FrankDocletConstants.IBISDOC);
 		assertEquals(FrankDocletConstants.IBISDOC, annotation.getName());
 		assertArrayEquals(new String[] {"100", "Some description", "0"}, (String[]) annotation.getValue());
 	}

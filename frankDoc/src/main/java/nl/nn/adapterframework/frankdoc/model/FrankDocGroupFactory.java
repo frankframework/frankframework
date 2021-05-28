@@ -39,7 +39,7 @@ class FrankDocGroupFactory {
 	FrankDocGroup getGroup(FrankClass clazz) {
 		FrankDocGroup result = null;
 		try {
-			FrankAnnotation annotation = clazz.getJava5AnnotationIncludingInherited(JAVADOC_GROUP_ANNOTATION);
+			FrankAnnotation annotation = clazz.getAnnotationIncludingInherited(JAVADOC_GROUP_ANNOTATION);
 			if(annotation == null) {
 				result = getGroup(FrankDocGroup.GROUP_NAME_OTHER);
 			} else {

@@ -267,7 +267,7 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	@Override
-	public FrankAnnotation getJava5AnnotationIncludingInherited(String annotationFullName) throws FrankDocException {
+	public FrankAnnotation getAnnotationIncludingInherited(String annotationFullName) throws FrankDocException {
 		FrankAnnotation result = getJava5AnnotationExcludingImplementedInterfaces(annotationFullName);
 		if(result == null) {
 			result = getJava5AnnotationFromImplementedInterfaces(annotationFullName);

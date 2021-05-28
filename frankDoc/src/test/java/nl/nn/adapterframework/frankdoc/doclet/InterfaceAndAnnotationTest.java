@@ -138,8 +138,8 @@ public class InterfaceAndAnnotationTest {
 		assertEquals(1, actualDeclaredMethods.size());
 		FrankMethod method = actualDeclaredMethods.get(0);
 		assertEquals("annotatedMethod", method.getName());
-		assertNull(method.getJava5Annotation(FrankDocletConstants.DEPRECATED));
-		FrankAnnotation annotation = method.getJava5AnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
+		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
+		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
 		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}
 
@@ -156,8 +156,8 @@ public class InterfaceAndAnnotationTest {
 		assertEquals(1, actualDeclaredMethods.size());
 		FrankMethod method = actualDeclaredMethods.get(0);
 		assertEquals("annotatedMethod", method.getName());
-		assertNull(method.getJava5Annotation(FrankDocletConstants.DEPRECATED));
-		FrankAnnotation annotation = method.getJava5AnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
+		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
+		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
 		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}
 
@@ -171,8 +171,8 @@ public class InterfaceAndAnnotationTest {
 		assertEquals(String.format("Have methods [%s]",  actualDeclaredMethodsString), 1, actualDeclaredMethods.size());
 		FrankMethod method = actualDeclaredMethods.get(0);
 		assertEquals("annotatedMethod", method.getName());
-		assertNull(method.getJava5Annotation(FrankDocletConstants.DEPRECATED));
-		FrankAnnotation annotation = method.getJava5AnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
+		assertNull(method.getAnnotation(FrankDocletConstants.DEPRECATED));
+		FrankAnnotation annotation = method.getAnnotationInludingInherited(FrankDocletConstants.DEPRECATED);
 		assertEquals(FrankDocletConstants.DEPRECATED, annotation.getName());
 	}
 }

@@ -47,5 +47,5 @@ public interface FrankClass extends FrankType {
 
 	String[] getEnumConstants();
 	String getJavaDoc();
-	FrankAnnotation getJava5AnnotationIncludingInherited(String annotationFullName) throws FrankDocException;
+	FrankAnnotation getAnnotationIncludingInherited(String annotationFullName) throws FrankDocException;
 }
