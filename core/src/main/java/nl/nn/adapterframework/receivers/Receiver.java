@@ -118,7 +118,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </ul>
  * Listeners call the IAdapter.processMessage(String correlationID,String message)
  * to do the actual work, which returns a <code>{@link PipeLineResult}</code>. The receiver
- * may observe the status in the <code>{@link PipeLineResult}</code> to perfom committing
+ * may observe the status in the <code>{@link PipeLineResult}</code> to perform committing
  * requests.
  * 
  *

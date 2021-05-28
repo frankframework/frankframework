@@ -23,6 +23,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -31,8 +33,8 @@ import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.json.JsonTee;
 import nl.nn.adapterframework.stream.json.JsonWriter;
@@ -54,6 +56,7 @@ public class MessageOutputStream implements AutoCloseable {
 	private MessageOutputStream nextStream;
 	private MessageOutputStream tail;
 	
+	private Set<AutoCloseable> resourcesToClose;
 	
 	private ThreadConnector threadConnector;
 	
@@ -135,7 +138,14 @@ public class MessageOutputStream implements AutoCloseable {
 	public void afterClose() throws Exception {
 		// can be overridden when necessary
 	}
- 	
+	
+	public void closeOnClose(AutoCloseable resource) {
+		if (resourcesToClose==null) {
+			resourcesToClose = new LinkedHashSet<>();
+		}
+		resourcesToClose.add(resource);
+	}
+	
 	@Override
 	public final void close() throws Exception {
 		try {
@@ -146,7 +156,19 @@ public class MessageOutputStream implements AutoCloseable {
 					nextStream.close();
 				}
 			} finally {
-				afterClose();
+				try {
+					afterClose();
+				} finally {
+					if (resourcesToClose!=null) {
+						resourcesToClose.forEach(r -> {
+							try {
+								r.close();
+							} catch (Exception e) {
+								log.warn("Could not close resource", e);
+							}
+						});
+					}
+				}
 			}
 		}
 	}

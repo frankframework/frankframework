@@ -271,6 +271,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			if (resultStream!=null) {
 				resultStream.captureCharacterStream(writerPlaceHolder.getWriter(), writerPlaceHolder.getSizeLimit());
+				resultStream.closeOnClose(writerPlaceHolder.getWriter());
 			} else {
 				try (Writer writer = writerPlaceHolder.getWriter()){ 
 					writer.write("<--> request to provide outputstream could not be honored");
