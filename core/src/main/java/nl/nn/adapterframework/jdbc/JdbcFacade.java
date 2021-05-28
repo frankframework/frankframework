@@ -258,6 +258,14 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		hski.handleStatisticsKeeper(data, connectionStatistics);
 	}
 
+	@Override
+	public void setJmsRealm(String jmsRealmName) {
+		super.setJmsRealm(jmsRealmName); //super.setJmsRealm(...) sets the jmsRealmName only when a realm is found
+		if(StringUtils.isEmpty(getJmsRealmName())) { //confirm that the configured jmsRealm exists
+			throw new IllegalStateException("JmsRealm ["+jmsRealmName+"] not found");
+		}
+	}
+
 	/**
 	 * Returns the name and location of the database that this objects operates on.
 	 * 
