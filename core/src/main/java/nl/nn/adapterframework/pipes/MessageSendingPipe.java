@@ -38,7 +38,6 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
-import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineSession;
@@ -448,15 +447,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	// configure wrappers/validators
 	private void configure(IPipe pipe) throws ConfigurationException {
-		if (pipe instanceof IExtendedPipe) {
-			if(getPipeLine() == null) {
-				throw new ConfigurationException("unable to configure "+ ClassUtils.nameOf(pipe) +" ["+pipe.getName()+"]");
-			}
-
-			((IExtendedPipe) pipe).configure(getPipeLine());
-		} else {
-			pipe.configure();
+		if(getPipeLine() == null) {
+			throw new ConfigurationException("unable to configure "+ ClassUtils.nameOf(pipe) +" ["+pipe.getName()+"]");
 		}
+
+		getPipeLine().configure(pipe);
 	}
 
 //	/**
