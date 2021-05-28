@@ -1,12 +1,11 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLWarning;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -28,49 +27,38 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class JdbcTestBase {
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
-	protected String productKey;
-	protected String url;
-	protected String userid;
-	protected String password;
-	protected boolean testPeekShouldSkipRecordsAlreadyLocked; // Avoid 'Peek should skip records already locked'-error. if it doesn't, it is not really a problem: Peeking is then only effective when the listener is idle
+	protected static URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
+	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
+	protected String productKey = "unknown";
 
 	protected static Connection connection; // only to be used for setup and teardown like actions
-	protected DataSource targetDataSource;
+	protected DataSource dataSource;
 	protected IDbmsSupport dbmsSupport;
 
-	@Parameters(name= "{index}: {0} url: {1}")
-	public static Iterable<Object[]> data() {
-		List<Object[]> availableDatasources = new ArrayList<>();
-		for (Object[] datasource: URLDataSourceFactory.TEST_DATASOURCES) {
-			String product = (String)datasource[0];
-			String url = (String)datasource[1];
-			String userId = (String)datasource[2];
-			String password = (String)datasource[3];
-			try (Connection connection=getConnection(url, userId, password)) {
-				availableDatasources.add(datasource);
-			} catch (Exception e) {
-				log.warn("Cannot connect to ["+url+"], skipping DbmsSupportTest for ["+product+"]:"+e.getMessage());
-			}
-		}
-		return availableDatasources;
+	@Parameters(name= "{index}: {0}")
+	public static Iterable<DataSource> data() {
+		return dataSourceFactory.getAvailableDataSources();
 	}
 
+	public JdbcTestBase(DataSource dataSource) throws SQLException {
+		this.dataSource = dataSource;
 
-	public JdbcTestBase(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException {
-		this.productKey = productKey;
-		this.url = url;
-		this.userid = userid;
-		this.password = password;
-		this.testPeekShouldSkipRecordsAlreadyLocked = testPeekDoesntFindRecordsAlreadyLocked;
+		if(dataSource instanceof DriverManagerDataSource) {
+			Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
+			productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
+			testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceProperties.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
+		}
 
-		connection = getConnection();
-		targetDataSource = new DriverManagerDataSource(url, userid, password);
+		connection = dataSource.getConnection();
 		DbmsSupportFactory factory = new DbmsSupportFactory();
 		dbmsSupport = factory.getDbmsSupport(connection);
 		try {
 			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
 				JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
-				log.warn(JdbcUtil.warningsToString(connection.getWarnings()));
+				SQLWarning warnings = connection.getWarnings();
+				if(warnings != null) {
+					log.warn(JdbcUtil.warningsToString(warnings));
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -80,25 +68,24 @@ public abstract class JdbcTestBase {
 					"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
 					"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+ 
 					"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
-			log.warn(JdbcUtil.warningsToString(connection.getWarnings()));
+			SQLWarning warnings = connection.getWarnings();
+			if(warnings != null) {
+				log.warn(JdbcUtil.warningsToString(warnings));
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	private static Connection getConnection(String url, String userId, String password) throws SQLException {
-		DriverManager.setLoginTimeout(1);
-		Connection connection;
-		if (userId==null && password==null) {
-			connection = DriverManager.getConnection(url);
-		} else {
-			connection = DriverManager.getConnection(url, userId, password);
-		}
-		return connection;
+
+	public String getDataSourceName() {
+		return productKey;
 	}
-	
+
+	/**
+	 * @return a new Connection each time this method is called
+	 */
 	public Connection getConnection() throws SQLException {
-		return getConnection(url, userid, password);
+		return dataSource.getConnection();
 	}
 
 	@AfterClass

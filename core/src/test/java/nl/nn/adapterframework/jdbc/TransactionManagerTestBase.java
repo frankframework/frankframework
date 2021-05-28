@@ -15,29 +15,19 @@ import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
 
-	public final String DEFAULT_DATASOURCE_NAME="testDataSource";
-
 	protected ResourceTransactionManager txManager;
-	protected SpringDataSourceFactory dataSourceFactory;
 	protected DataSource txManagedDataSource;
 
-	public TransactionManagerTestBase(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException, NamingException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
-		
-		// setup a DataSourceFactory like in springTOMCAT.xml
-		dataSourceFactory = new SpringDataSourceFactory();
-		dataSourceFactory.add(targetDataSource, DEFAULT_DATASOURCE_NAME);
-			
-		// setup a defaultDataSource, produced by dataSourceFactory, like in springTOMCAT.xml
-		DataSource defaultDataSource = dataSourceFactory.getDataSource(DEFAULT_DATASOURCE_NAME);
-			
+	public TransactionManagerTestBase(DataSource dataSource) throws SQLException, NamingException {
+		super(dataSource);
+
 		// setup a TransactionManager like in springTOMCAT.xml
 		DataSourceTransactionManager dataSourceTransactionManager;
-		dataSourceTransactionManager = new DataSourceTransactionManager(defaultDataSource);
+		dataSourceTransactionManager = new DataSourceTransactionManager(dataSource);
 		dataSourceTransactionManager.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
 		txManager = dataSourceTransactionManager;
-		
-		txManagedDataSource = new TransactionAwareDataSourceProxy(defaultDataSource);
+
+		txManagedDataSource = new TransactionAwareDataSourceProxy(dataSource);
 	}
 
 	public TransactionDefinition getTxDef(int transactionAttribute, int timeout) {
