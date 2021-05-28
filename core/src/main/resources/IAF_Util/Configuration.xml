@@ -8,6 +8,7 @@
 	<!ENTITY CleanupFileSystem SYSTEM "./ConfigurationCleanupFileSystem.xml">
 	<!ENTITY RecoverAdapters SYSTEM "./ConfigurationRecoverAdapters.xml">
 	<!ENTITY IbisDoc SYSTEM "./ConfigurationIbisDoc.xml">
+	<!ENTITY ManageFileSystem SYSTEM "ConfigurationManageFileSystem.xml">
 ]>
 <configuration name="IAF_Util">
 	<!-- include configuration for managing the database -->
@@ -22,4 +23,5 @@
 	&CleanupFileSystem;
 	&RecoverAdapters;
 	&IbisDoc;
+	&ManageFileSystem;
 </configuration>
