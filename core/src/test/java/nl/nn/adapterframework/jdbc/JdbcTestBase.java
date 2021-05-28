@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -13,6 +14,7 @@ import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
@@ -26,7 +28,8 @@ public abstract class JdbcTestBase {
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
 	protected static URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
-	protected String productKey;
+	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
+	protected String productKey = "unknown";
 
 	protected static Connection connection; // only to be used for setup and teardown like actions
 	protected DataSource dataSource;
@@ -40,7 +43,11 @@ public abstract class JdbcTestBase {
 	public JdbcTestBase(DataSource dataSource) throws SQLException {
 		this.dataSource = dataSource;
 
-		productKey = dataSource.toString().split(":")[0];
+		if(dataSource instanceof DriverManagerDataSource) {
+			Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
+			productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
+			testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceProperties.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
+		}
 
 		connection = dataSource.getConnection();
 		DbmsSupportFactory factory = new DbmsSupportFactory();

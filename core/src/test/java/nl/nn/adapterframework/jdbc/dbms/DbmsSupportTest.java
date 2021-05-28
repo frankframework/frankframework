@@ -454,7 +454,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 				try (ResultSet rs1=stmt1.executeQuery(readQueueQuery)) {
 					assertTrue(rs1.next());
 					assertEquals(40,rs1.getInt(1));			// find the first record
-//					if (testPeekShouldSkipRecordsAlreadyLocked) assertFalse("Peek should skip records already locked, but it found one", peek(peekQueueQuery));	// assert no more records found
+					if (testPeekShouldSkipRecordsAlreadyLocked) assertFalse("Peek should skip records already locked, but it found one", peek(peekQueueQuery));	// assert no more records found
 
 					if (testSkipLocked) {
 						try (Connection workConn2=getConnection()) {

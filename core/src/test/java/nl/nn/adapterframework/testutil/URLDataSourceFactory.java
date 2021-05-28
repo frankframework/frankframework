@@ -16,16 +16,18 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public class URLDataSourceFactory extends JndiDataSourceFactory {
+	public static final String PRODUCT_KEY = "product";
+	public static final String TEST_PEEK_KEY = "testPeek";
 
 	private static final Object[][] TEST_DATASOURCES = {
-			// ProductName, URL, username, password
+			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
 			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=1000", null, null, false },
-			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00" },
-			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00" },
-			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver", "testiaf_user", "testiaf_user00" },
-			{ "MariaDB",    "jdbc:mariadb://localhost:3306/testiaf", 				"testiaf_user", "testiaf_user00" },
-			{ "MariaDB",    "jdbc:mysql://localhost:3306/testiaf?sslMode=DISABLED&disableMariaDbDriver", "testiaf_user", "testiaf_user00" },
-			{ "PostgreSQL", "jdbc:postgresql://localhost:5432/testiaf", 			"testiaf_user", "testiaf_user00" }
+			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false }, 
+			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false }, 
+			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver", "testiaf_user", "testiaf_user00", true }, 
+			{ "MariaDB",    "jdbc:mariadb://localhost:3306/testiaf", 				"testiaf_user", "testiaf_user00", false }, 
+			{ "MariaDB",    "jdbc:mysql://localhost:3306/testiaf?sslMode=DISABLED&disableMariaDbDriver", "testiaf_user", "testiaf_user00", false }, 
+			{ "PostgreSQL", "jdbc:postgresql://localhost:5432/testiaf", 			"testiaf_user", "testiaf_user00", true }
 		};
 
 	public URLDataSourceFactory() {
@@ -35,14 +37,21 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 			String url = (String)datasource[1];
 			String userId = (String)datasource[2];
 			String password = (String)datasource[3];
+			boolean testPeek = (boolean)datasource[4];
 
 			DriverManagerDataSource dataSource = new DriverManagerDataSource(url, userId, password) {
 				@Override
 				public String toString() { //Override toString so JunitTests are prefixed with the DataSource URL
-					return product + ":" + getUrl();
+					return "DataSource ["+product+"] url [" + getUrl()+"]";
 				}
 			};
-			add(dataSource, product);
+
+			Properties properties = new Properties();
+			properties.setProperty(PRODUCT_KEY, product);
+			properties.setProperty(TEST_PEEK_KEY, ""+testPeek);
+			dataSource.setConnectionProperties(properties);
+
+			add(dataSource, product.toUpperCase());
 		}
 	}
 
