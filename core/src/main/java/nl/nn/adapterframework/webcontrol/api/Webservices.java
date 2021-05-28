@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.http.RestListener;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
@@ -178,9 +180,7 @@ public final class Webservices extends Base {
 			return Response.status(Response.Status.BAD_REQUEST).entity("<error>adapter not found</error>").build();
 		}
 		try {
-			// TODO: set proper servletName. This is used in Wsdl.service() set location of the service, when it cannot be found
-			// from the adapter itself, or from appconstant wsdl.<adapterName>.location or wsdl.location
-			String servletName = "external address of ibis"; 
+			String servletName = getServiceEndpoint(adapter); 
 			String generationInfo = "by FrankConsole";
 			WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);
@@ -210,6 +210,28 @@ public final class Webservices extends Base {
 		} catch (Exception e) {
 			throw new ApiException("exception on retrieving wsdl", e);
 		}
+	}
+
+	private String getServiceEndpoint(IAdapter adapter) {
+		String endpoint = "external address of ibis";
+		Iterator it = adapter.getReceivers().iterator();
+		while(it.hasNext()) {
+			IListener listener = ((Receiver) it.next()).getListener();
+			if(listener instanceof WebServiceListener) {
+				String address = ((WebServiceListener) listener).getAddress();
+				if(StringUtils.isNotEmpty(address)) {
+					endpoint = address;
+				} else {
+					endpoint = "rpcrouter";
+				}
+				String protocol = request.isSecure() ? "https://" : "http://";
+				int port = request.getServerPort();
+				String restBaseUrl = protocol + request.getServerName() + (port != 0 ? ":" + port : "") + request.getContextPath() + "/services/";
+				endpoint = restBaseUrl + endpoint;
+				break;	//what if there are more than 1 WebServiceListener
+			}
+		}
+		return endpoint;
 	}
 
 	private String getWsdlExtension() {

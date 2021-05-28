@@ -2394,6 +2394,10 @@ angular.module('iaf.beheerconsole')
 	};
 	$scope.processingMessage = false;
 
+	Api.Get("test-servicelistener", function(data) {
+		$scope.services = data.services;
+	});
+
 	$scope.submit = function(formData) {
 		$scope.result = "";
 		$scope.state = [];
@@ -2414,10 +2418,6 @@ angular.module('iaf.beheerconsole')
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
 
-		if(!formData.adapter) {
-			$scope.addNote("warning", "Please specify a service!");
-			return;
-		}
 		if(!formData.message && !$scope.file) {
 			$scope.addNote("warning", "Please specify a file or message!");
 			return;
