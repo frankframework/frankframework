@@ -41,13 +41,13 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 		PipeRunResult pipeRunResult = null;
 
 		IExtendedPipe pe=null;
-			
+
 		if (pipe instanceof IExtendedPipe) {
 			pe = (IExtendedPipe)pipe;
 		}
-    	
+
 		long pipeStartTime= System.currentTimeMillis();
-		
+
 		if (log.isDebugEnabled()){  // for performance reasons
 			StringBuffer sb=new StringBuffer();
 			String ownerName=pipeLine.getOwner()==null?"<null>":pipeLine.getOwner().getName();
@@ -55,12 +55,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			String messageId = pipeLineSession==null?null:pipeLineSession.getMessageId();
 			sb.append("Pipeline of adapter ["+ownerName+"] messageId ["+messageId+"] is about to call pipe ["+ pipeName+"]");
 
-			boolean lir = false;
-			if (AppConstants.getInstance().getProperty("log.logIntermediaryResults")!=null) {
-				if (AppConstants.getInstance().getProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
-					lir = true;
-				}
-			}
+			boolean lir = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe ap = (AbstractPipe) pipe;
 				if (StringUtils.isNotEmpty(ap.getLogIntermediaryResults())) {
@@ -76,7 +71,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 
 		// start it
 		long pipeDuration = -1;
-			
+
 		try {
 			pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 		} catch (PipeRunException pre) {
@@ -88,8 +83,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			if (pe!=null) {
 				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
 			}
-			throw new PipeRunException(pipe, "Uncaught runtime exception running pipe '"
-					+ (pipe==null?"null":pipe.getName()) + "'", re);
+			throw new PipeRunException(pipe, "Uncaught runtime exception running pipe '" + (pipe==null?"null":pipe.getName()) + "'", re);
 		} finally {
 			long pipeEndTime = System.currentTimeMillis();
 			pipeDuration = pipeEndTime - pipeStartTime;
@@ -100,11 +94,9 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 				sk.addValue(pipeDuration);
 			}
 
-			if (pe!=null) {
-				if (pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
-					durationLog.info("Pipe ["+pe.getName()+"] of ["+pipeLine.getOwner().getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+message+"]");
-					pe.throwEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
-				}
+			if (pe!=null && pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
+				durationLog.info("Pipe ["+pe.getName()+"] of ["+pipeLine.getOwner().getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+message+"]");
+				pe.throwEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
 			}
 
 		}
