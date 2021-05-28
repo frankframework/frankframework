@@ -401,15 +401,20 @@ function copyContents(elementId)
 function indentCompare(sources, result)
 {
 	var s = eval(sources);
-	
+
 	for (var i = 0; i < s.length; i++){
 		var elementId = s[i];
 		var text = $(elementId).value;
-		// if text is xml
-		if(text.startsWith("<") || text.startsWith(escapeChars("<"))){
-			xmlFormat(elementId);
-		} else if ((text.startsWith("{") && text.endsWith("}")) || (text.startsWith("[") && text.endsWith("]"))) { // TODO: something smarter for detecting json like text
-			jsonFormat(elementId);
+
+		try{
+			if(text.startsWith("<") || text.startsWith(escapeChars("<"))){ // if text is xml
+				xmlFormat(elementId);
+			} else if ((text.startsWith("{") && text.endsWith("}")) || (text.startsWith("[") && text.endsWith("]"))) { // TODO: something smarter for detecting json like text
+				jsonFormat(elementId);
+			}
+		} catch(error){
+			var message = "Formatting the content of element ["+elementId+"] is failed: "+error.message;
+			alert(message);
 		}
 	}
 
