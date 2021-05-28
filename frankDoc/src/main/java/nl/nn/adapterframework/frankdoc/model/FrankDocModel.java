@@ -315,7 +315,7 @@ public class FrankDocModel {
 				(method.getAnnotation(FrankDocletConstants.IBISDOC) != null)
 				|| (method.getAnnotation(FrankDocletConstants.IBISDOCREF) != null)
 				|| (method.getJavaDoc() != null)
-				|| (method.getDefaultValueFromJavadoc() != null));
+				|| (method.getJavaDocTag(ElementChild.JAVADOC_DEFAULT_VALUE_TAG) != null));
 		log.trace("Attribute: deprecated = [{}], documented = [{}]", () -> attribute.isDeprecated(), () -> attribute.isDocumented());
 		attribute.setJavaDocBasedDescriptionAndDefault(method);
 		FrankAnnotation ibisDocRef = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOCREF);

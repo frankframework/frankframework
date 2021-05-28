@@ -131,12 +131,12 @@ class FrankMethodReflect implements FrankMethod {
 	}
 
 	@Override
-	public String getDefaultValueFromJavadoc() {
+	public String getJavaDocTag(String tagName) {
 		return null;
 	}
 
 	@Override
-	public String getDefaultValueFromJavadocIncludingInherited() {
+	public String getJavaDocTagIncludingInherited(String tagName) {
 		return null;
 	}
 

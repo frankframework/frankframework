@@ -15,6 +15,9 @@ public final class TestUtil {
 	private static final Properties BUILD_PROPERTIES = new TestUtil().loadBuildProperties();
 	private static final File TEST_SOURCE_DIRECTORY = new File(BUILD_PROPERTIES.getProperty("testSourceDirectory"));
 
+	static final String JAVADOC_GROUP_ANNOTATION = "nl.nn.adapterframework.doc.FrankDocGroup";
+	static final String JAVADOC_DEFAULT_VALUE_TAG = "@ff.default";
+
 	private TestUtil() {
 	}
 
