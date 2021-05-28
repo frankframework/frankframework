@@ -95,10 +95,16 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		return r;
 	};
 })
-.filter('omitDeprecatedChildren', function() {
+.filter('omitDeprecatedChildrenAndAddChildElements', function() {
 	return function(children, $scope) {
 		result = [];
-		children.forEach(c => {if(! c.deprecated) {result.push(c)}});
+		children.forEach(c => {
+			if(! c.deprecated) {
+				console.log('Child:' + c.roleName);
+				c.childElements = $scope.types[c.type];
+				result.push(c);
+			}
+		});
 		return result;
 	}
 });

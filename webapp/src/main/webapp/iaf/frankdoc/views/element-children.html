@@ -1,8 +1,11 @@
 <div>
 	<h4>Nested children</h4>
-	<div ng-repeat="child in element.children | omitDeprecatedChildren">
+	<div ng-repeat="child in element.children | omitDeprecatedChildrenAndAddChildElements:this">
 		<b>{{child.roleName}}</b><span ng-if="child.description"><b>:</b> {{ child.description }}</span>
-		<br />
-		<br/>
+		<p>
+		<select name="allowedChildElements">
+			<option ng-repeat="childElement in child.childElements" value="{{childElement}}"> {{ childElement }}</option>
+		</select>
+		<p>
 	</div>
 </div>
