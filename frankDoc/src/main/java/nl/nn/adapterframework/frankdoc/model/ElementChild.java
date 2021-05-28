@@ -44,6 +44,8 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author martijn
  */
 public abstract class ElementChild {
+	static final String JAVADOC_DEFAULT_VALUE_TAG = "@ff.default";
+
 	private static Logger log = LogUtil.getLogger(ElementChild.class);
 
 	private @Getter FrankElement owningElement;
@@ -135,7 +137,7 @@ public abstract class ElementChild {
 			if(value != null) {
 				description = value;
 			}
-			value = method.getDefaultValueFromJavadocIncludingInherited();
+			value = method.getJavaDocTagIncludingInherited(JAVADOC_DEFAULT_VALUE_TAG);
 			if(value != null) {
 				defaultValue = value;
 			}

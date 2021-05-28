@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
+import javax.sql.DataSource;
+
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
@@ -41,11 +43,10 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
 	private boolean testSkipLocked;
-	
 
 
-	public DbmsSupportTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
+	public DbmsSupportTest(DataSource dataSource) throws SQLException {
+		super(dataSource);
 		testSkipLocked = dbmsSupport.hasSkipLockedFunctionality();
 	}
 

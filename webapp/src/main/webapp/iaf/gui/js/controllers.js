@@ -495,9 +495,13 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('InformationCtrl', ['$scope', '$uibModalInstance', '$uibModal', 'Api', '$timeout', function($scope, $uibModalInstance, $uibModal, Api, $timeout) {
+	$scope.error = false;
 	Api.Get("server/info", function(data) {
 		$.extend( $scope, data );
+	}, function() {
+		$scope.error = true;
 	});
+
 	$scope.close = function () {
 		$uibModalInstance.close();
 	};
@@ -1928,9 +1932,11 @@ angular.module('iaf.beheerconsole')
 	$scope.updateDynamicParams = false;
 
 	$scope.loggers = {};
+	var logURL = "server/logging";
 	function updateLogInformation() {
-		Api.Get("logsettings", function(data) {
-			$scope.loggers = data;
+		Api.Get(logURL+"/settings", function(data) {
+			$scope.loggers = data.loggers;
+			$scope.definitions = data.definitions;
 		}, function(data) {
 			console.error(data);
 		});
@@ -1938,7 +1944,7 @@ angular.module('iaf.beheerconsole')
 	updateLogInformation();
 
 	$scope.errorLevels = ["DEBUG", "INFO", "WARN", "ERROR"];
-	Api.Get("server/log", function(data) {
+	Api.Get(logURL, function(data) {
 		$scope.form = data;
 		$scope.errorLevels = data.errorLevels;
 	});
@@ -1958,16 +1964,24 @@ angular.module('iaf.beheerconsole')
 
 	//Individual level
 	$scope.changeLoglevel = function(logger, level) {
-		Api.Put("logsettings", {logger:logger, level:level}, function() {
+		Api.Put(logURL+"/settings", {logger:logger, level:level}, function() {
 			Toastr.success("Updated logger ["+logger+"] to ["+level+"]");
 			updateLogInformation();
 		});
 	};
 
+	//Reconfigure Log4j2
+	$scope.reconfigure = function () {
+		Api.Put(logURL+"/settings", {reconfigure:true}, function() {
+			Toastr.success("Reconfigured log definitions!");
+			updateLogInformation();
+		});
+	}
+
 	$scope.submit = function(formData) {
 		$scope.updateDynamicParams = true;
-		Api.Put("server/log", formData, function() {
-			Api.Get("server/log", function(data) {
+		Api.Put(logURL, formData, function() {
+			Api.Get(logURL, function(data) {
 				$scope.form = data;
 				$scope.updateDynamicParams = false;
 				Toastr.success("Successfully updated log configuration!");
@@ -2380,6 +2394,10 @@ angular.module('iaf.beheerconsole')
 	};
 	$scope.processingMessage = false;
 
+	Api.Get("test-servicelistener", function(data) {
+		$scope.services = data.services;
+	});
+
 	$scope.submit = function(formData) {
 		$scope.result = "";
 		$scope.state = [];
@@ -2400,10 +2418,6 @@ angular.module('iaf.beheerconsole')
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
 
-		if(!formData.adapter) {
-			$scope.addNote("warning", "Please specify a service!");
-			return;
-		}
 		if(!formData.message && !$scope.file) {
 			$scope.addNote("warning", "Please specify a file or message!");
 			return;

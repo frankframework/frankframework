@@ -194,8 +194,8 @@ class FrankMethodDoclet implements FrankMethod {
 	}
 
 	@Override
-	public String getDefaultValueFromJavadoc() {
-		Tag[] tags = method.tags(FrankMethod.JAVADOC_DEFAULT_VALUE_TAG);
+	public String getJavaDocTag(String tagName) {
+		Tag[] tags = method.tags(tagName);
 		if((tags == null) || (tags.length == 0)) {
 			return null;
 		}
@@ -204,8 +204,8 @@ class FrankMethodDoclet implements FrankMethod {
 	}
 
 	@Override
-	public String getDefaultValueFromJavadocIncludingInherited() throws FrankDocException {
-		Function<FrankMethodDoclet, String> getter = m -> m.getDefaultValueFromJavadoc();
+	public String getJavaDocTagIncludingInherited(String tagName) throws FrankDocException {
+		Function<FrankMethodDoclet, String> getter = m -> m.getJavaDocTag(tagName);
 		return searchIncludingInherited(getter);		
 	}
 

@@ -267,27 +267,27 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	@Override
-	public FrankAnnotation getGroupAnnotation() throws FrankDocException {
-		FrankAnnotation result = getGroupAnnotationExcludingImplementedInterfaces();
+	public FrankAnnotation getAnnotationIncludingInherited(String annotationFullName) throws FrankDocException {
+		FrankAnnotation result = getAnnotationExcludingImplementedInterfaces(annotationFullName);
 		if(result == null) {
-			result = getGroupAnnotationFromImplementedInterfaces();
+			result = getAnnotationFromImplementedInterfaces(annotationFullName);
 		}
 		return result;
 	}
 
-	private FrankAnnotation getGroupAnnotationExcludingImplementedInterfaces() throws FrankDocException {
-		FrankAnnotation result = getAnnotation(JAVADOC_GROUP_TAG);
+	private FrankAnnotation getAnnotationExcludingImplementedInterfaces(String annotationFullName) throws FrankDocException {
+		FrankAnnotation result = getAnnotation(annotationFullName);
 		if((result == null) && (getSuperclass() != null)) {
-			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationExcludingImplementedInterfaces();
+			result = ((FrankClassDoclet) getSuperclass()).getAnnotationExcludingImplementedInterfaces(annotationFullName);
 		}
 		return result;
 	}
 
-	private FrankAnnotation getGroupAnnotationFromImplementedInterfaces() throws FrankDocException {
+	private FrankAnnotation getAnnotationFromImplementedInterfaces(String annotationFullName) throws FrankDocException {
 		TransitiveImplementedInterfaceBrowser<FrankAnnotation> browser = new TransitiveImplementedInterfaceBrowser<>(this);
-		FrankAnnotation result = browser.search(c -> ((FrankClassDoclet) c).getAnnotation(JAVADOC_GROUP_TAG));
+		FrankAnnotation result = browser.search(c -> ((FrankClassDoclet) c).getAnnotation(annotationFullName));
 		if((result == null) && (getSuperclass() != null)) {
-			result = ((FrankClassDoclet) getSuperclass()).getGroupAnnotationFromImplementedInterfaces();
+			result = ((FrankClassDoclet) getSuperclass()).getAnnotationFromImplementedInterfaces(annotationFullName);
 		}
 		return result;
 	}

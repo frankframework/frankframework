@@ -18,10 +18,10 @@ package nl.nn.adapterframework.cache;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Statistics;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.Configuration;
 import net.sf.ehcache.config.DiskStoreConfiguration;
+import net.sf.ehcache.statistics.StatisticsGateway;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.AppConstants;
@@ -98,14 +98,13 @@ public class IbisCacheManager {
 		for (int i=0;i<cacheNames.length;i++) {
 			Object subdata=hski.openGroup(data, cacheNames[i], "cache");
 			Ehcache cache=self.cacheManager.getEhcache(cacheNames[i]);
-			Statistics stats = cache.getStatistics();
-			stats.getAverageGetTime();
-			hski.handleScalar(subdata, "CacheHits", stats.getCacheHits());
-			hski.handleScalar(subdata, "CacheMisses", stats.getCacheMisses());
-			hski.handleScalar(subdata, "EvictionCount", stats.getEvictionCount());
-			hski.handleScalar(subdata, "InMemoryHits", stats.getInMemoryHits());
-			hski.handleScalar(subdata, "ObjectCount", stats.getObjectCount());
-			hski.handleScalar(subdata, "OnDiskHits", stats.getOnDiskHits());
+			StatisticsGateway stats = cache.getStatistics();
+			hski.handleScalar(subdata, "CacheHits", stats.cacheHitCount());
+			hski.handleScalar(subdata, "CacheMisses", stats.cacheMissCount());
+			hski.handleScalar(subdata, "EvictionCount", stats.cacheEvictedCount());
+			hski.handleScalar(subdata, "InMemoryHits", stats.localHeapHitCount());
+			hski.handleScalar(subdata, "ObjectCount", cache.getSize());
+			hski.handleScalar(subdata, "OnDiskHits", stats.localDiskHitCount());
 			hski.closeGroup(subdata);
 		}
 	}

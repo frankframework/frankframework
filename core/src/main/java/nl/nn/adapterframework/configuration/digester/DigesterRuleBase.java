@@ -120,7 +120,9 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		Map<String, String> map = copyAttrsToMap(attributes);
 		if(top instanceof INamedObject) { //We must set the name first, to improve logging and configuration warnings
 			String name = map.remove("name");
-			BeanUtils.setProperty(top, "name", name);
+			if(StringUtils.isNotEmpty(name)) {
+				BeanUtils.setProperty(top, "name", name);
+			}
 		}
 
 		handleBean();
