@@ -45,17 +45,22 @@ public class FrankDocModelGroupsTest {
 		assertEquals(2, groups.size());
 		FrankDocGroup current = groups.get(0);
 		assertEquals("Listener", current.getName());
-		List<FrankElement> members = current.getElements();
-		assertEquals(1, members.size());
-		assertEquals("DefaultChild", members.get(0).getSimpleName());
+		List<ElementType> types = current.getElementTypes();
+		assertEquals(1, types.size());
+		assertEquals("IChild", types.get(0).getSimpleName());
 		current = groups.get(1);
 		assertEquals("Other", current.getName());
-		members = current.getElements();
-		assertEquals(2, members.size());
-		assertEquals("Container", members.get(0).getSimpleName());
-		assertEquals("Default", members.get(1).getSimpleName());
-		assertTrue(members.get(1).getXmlElementNames().contains("DefaultSender"));
-		// We test here that class DefaultSender is excluded from the group, because that would
+		types = current.getElementTypes();
+		assertEquals(1, types.size());
+		assertEquals("ISender", types.get(0).getSimpleName());
+		// We test here that class DefaultSender is excluded from the type, because that would
 		// produce a conflicting definition for XML tag "DefaultSender".
+		List<FrankElement> frankElements = types.get(0).getSyntax2Members();
+		assertEquals(1, frankElements.size());
+		assertEquals("Default", frankElements.get(0).getSimpleName());
+		assertTrue(frankElements.get(0).getXmlElementNames().contains("DefaultSender"));
+		List<FrankElement> leftOvers = instance.getElementsOutsideConfigChildren();
+		assertEquals(1, leftOvers.size());
+		assertEquals("Container", leftOvers.get(0).getSimpleName());
 	}
 }

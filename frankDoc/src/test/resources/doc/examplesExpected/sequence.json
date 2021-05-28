@@ -2,10 +2,35 @@
   "groups": [
     {
       "name": "Other",
-      "members": [
-        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque"
+      "types":[
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.IMnemonic",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.INemesis",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.IProton",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master"
       ]
+    }
+  ],
+  "types":[
+    {
+      "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.IMnemonic",
+      "members":[]
+    },
+    {
+      "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.INemesis",
+      "members":[]
+    },
+    {
+      "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.IProton",
+      "members":[]
+    },
+    {
+      "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque",
+      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque"]
+    },
+    {
+      "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
+      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master"]
     }
   ],
   "elements": [

@@ -18,6 +18,7 @@ package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -41,8 +42,12 @@ import nl.nn.adapterframework.util.Misc;
  * @author martijn
  *
  */
-public class ElementType {
+public class ElementType implements Comparable<ElementType> {
 	private static Logger log = LogUtil.getLogger(ElementType.class);
+
+	private static final Comparator<ElementType> COMPARATOR =
+			Comparator.comparing(ElementType::getSimpleName).thenComparing(ElementType::getFullName);
+
 	private @Getter(AccessLevel.PACKAGE) List<FrankElement> members;
 	private @Getter boolean fromJavaInterface;
 	
@@ -77,11 +82,13 @@ public class ElementType {
 
 	private final InterfaceHierarchyItem interfaceHierarchy;
 	private @Getter ElementType highestCommonInterface;
+	private final @Getter FrankDocGroup group;
 
-	ElementType(FrankClass clazz) {
+	ElementType(FrankClass clazz, FrankDocGroup group) {
 		interfaceHierarchy = new InterfaceHierarchyItem(clazz);
 		members = new ArrayList<>();
 		this.fromJavaInterface = clazz.isInterface();
+		this.group = group;
 	}
 
 	public String getFullName() {
@@ -92,6 +99,7 @@ public class ElementType {
 		return interfaceHierarchy.getSimpleName();
 	}
 
+	// This is not about FrankDocGroups, but about groups in the XSDs.
 	String getGroupName() {
 		String result = getSimpleName();
 		if(result.startsWith("I")) {
@@ -145,11 +153,16 @@ public class ElementType {
 	/**
 	 * Get the members that can be referenced with syntax 2. Only non-abstracts are returned.
 	 */
-	List<FrankElement> getSyntax2Members() {
+	public List<FrankElement> getSyntax2Members() {
 		return members.stream()
 				.filter(frankElement -> ! frankElement.getXmlElementNames().isEmpty())
 				.sorted()
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public int compareTo(ElementType other) {
+		return COMPARATOR.compare(this, other);
 	}
 
 	@Override

@@ -35,6 +35,7 @@ import nl.nn.adapterframework.frankdoc.model.AttributeType;
 import nl.nn.adapterframework.frankdoc.model.AttributeValues;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
+import nl.nn.adapterframework.frankdoc.model.ElementType;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.frankdoc.model.FrankDocGroup;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
@@ -48,9 +49,11 @@ public class FrankDocJsonFactory {
 
 	private FrankDocModel model;
 	private JsonBuilderFactory bf;
+	List<FrankElement> elementsOutsideChildren;
 
 	public FrankDocJsonFactory(FrankDocModel model) {
 		this.model = model;
+		elementsOutsideChildren = new ArrayList<>(model.getElementsOutsideConfigChildren());
 		bf = Json.createBuilderFactory(null);
 	}
 
@@ -58,6 +61,7 @@ public class FrankDocJsonFactory {
 		try {
 			JsonObjectBuilder result = bf.createObjectBuilder();
 			result.add("groups", getGroups());
+			result.add("types", getTypes());
 			result.add("elements", getElements());
 			return result.build();
 		} catch(JsonException e) {
@@ -77,10 +81,42 @@ public class FrankDocJsonFactory {
 	private JsonObject getGroup(FrankDocGroup group) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", group.getName());
+		final JsonArrayBuilder types = bf.createArrayBuilder();
+		group.getElementTypes().stream()
+				.map(ElementType::getFullName)
+				.forEach(types::add);
+		if(group.getName().equals(FrankDocGroup.GROUP_NAME_OTHER)) {
+			elementsOutsideChildren.forEach(f -> types.add(f.getFullName()));
+		}
+		result.add("types", types);
+		return result.build();
+	}
+
+	private JsonArray getTypes() {
+		JsonArrayBuilder result = bf.createArrayBuilder();
+		List<ElementType> sortedTypes = new ArrayList<>(model.getAllTypes().values());
+		Collections.sort(sortedTypes);
+		for(ElementType elementType: sortedTypes) {
+			result.add(getType(elementType));
+		}
+		elementsOutsideChildren.forEach(f -> result.add(getNonChildType(f)));
+		return result.build();
+	}
+
+	private JsonObject getType(ElementType elementType) {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", elementType.getFullName());
 		final JsonArrayBuilder members = bf.createArrayBuilder();
-		group.getElements().stream()
-				.map(FrankElement::getFullName)
-				.forEach(members::add);
+		elementType.getSyntax2Members().forEach(f -> members.add(f.getFullName()));
+		result.add("members", members);
+		return result.build();
+	}
+
+	private JsonObject getNonChildType(FrankElement frankElement) {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", frankElement.getFullName());
+		final JsonArrayBuilder members = bf.createArrayBuilder();
+		members.add(frankElement.getFullName());
 		result.add("members", members);
 		return result.build();
 	}
