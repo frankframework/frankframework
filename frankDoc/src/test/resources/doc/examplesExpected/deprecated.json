@@ -41,7 +41,8 @@
                 {
                     "deprecated":true,
                     "multiple":true,
-                    "roleName":"roleNameTChild"
+                    "roleName":"roleNameTChild",
+                    "type":"nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild"
                 }
             ]
         },
