@@ -48,12 +48,12 @@ public class FrankDocJsonFactory {
 	private static final String DESCRIPTION_HEADER = "descriptionHeader";
 
 	private FrankDocModel model;
-	private boolean hasElementsOutsideConfigChildren = false;
 	private JsonBuilderFactory bf;
+	List<FrankElement> elementsOutsideChildren;
 
 	public FrankDocJsonFactory(FrankDocModel model) {
 		this.model = model;
-		this.hasElementsOutsideConfigChildren = ! model.getElementsOutsideConfigChildren().isEmpty();
+		elementsOutsideChildren = new ArrayList<>(model.getElementsOutsideConfigChildren());
 		bf = Json.createBuilderFactory(null);
 	}
 
@@ -85,8 +85,8 @@ public class FrankDocJsonFactory {
 		group.getElementTypes().stream()
 				.map(ElementType::getFullName)
 				.forEach(types::add);
-		if(group.getName().equals(FrankDocGroup.GROUP_NAME_OTHER) && hasElementsOutsideConfigChildren) {
-			types.add(FrankDocGroup.GROUP_NAME_OTHER);
+		if(group.getName().equals(FrankDocGroup.GROUP_NAME_OTHER)) {
+			elementsOutsideChildren.forEach(f -> types.add(f.getFullName()));
 		}
 		result.add("types", types);
 		return result.build();
@@ -99,9 +99,7 @@ public class FrankDocJsonFactory {
 		for(ElementType elementType: sortedTypes) {
 			result.add(getType(elementType));
 		}
-		if(! model.getElementsOutsideConfigChildren().isEmpty()) {
-			result.add(getTypeOther());
-		}
+		elementsOutsideChildren.forEach(f -> result.add(getNonChildType(f)));
 		return result.build();
 	}
 
@@ -114,11 +112,11 @@ public class FrankDocJsonFactory {
 		return result.build();
 	}
 
-	private JsonObject getTypeOther() {
+	private JsonObject getNonChildType(FrankElement frankElement) {
 		JsonObjectBuilder result = bf.createObjectBuilder();
-		result.add("name", FrankDocGroup.GROUP_NAME_OTHER);
+		result.add("name", frankElement.getFullName());
 		final JsonArrayBuilder members = bf.createArrayBuilder();
-		model.getElementsOutsideConfigChildren().forEach(f -> members.add(f.getFullName()));
+		members.add(frankElement.getFullName());
 		result.add("members", members);
 		return result.build();
 	}

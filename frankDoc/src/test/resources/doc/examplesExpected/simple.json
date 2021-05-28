@@ -8,7 +8,7 @@
       "name": "Other",
       "types": [
         "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
-        "Other"
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"
       ]
     }
   ],
@@ -25,7 +25,7 @@
       "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"]
     },
     {
-      "name": "Other",
+      "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
       "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"]
     }
   ],

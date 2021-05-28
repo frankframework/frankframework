@@ -4,7 +4,7 @@
             "name":"Other",
             "types":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild",
-                "Other"
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master"
             ]
         }
     ],
@@ -16,7 +16,7 @@
             ]
         },
         {
-            "name":"Other",
+            "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master",
             "members":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master"
             ]

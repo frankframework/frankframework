@@ -7,7 +7,7 @@
         "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.INemesis",
         "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.IProton",
         "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque",
-        "Other"
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master"
       ]
     }
   ],
@@ -29,7 +29,7 @@
       "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque"]
     },
     {
-      "name":"Other",
+      "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
       "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master"]
     }
   ],
