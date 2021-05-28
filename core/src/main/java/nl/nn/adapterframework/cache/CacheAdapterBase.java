@@ -64,7 +64,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IC
 	@Override
 	public void configure(String ownerName) throws ConfigurationException {
 		if (StringUtils.isEmpty(getName())) {
-			setName(ownerName+"Cache");
+			setName(ownerName+"_cache");
 		}
 		if (!("xml".equals(getKeyXPathOutputType()) || "text".equals(getKeyXPathOutputType()))) {
 			throw new ConfigurationException(getLogPrefix()+"keyXPathOutputType ["+getKeyXPathOutputType()+"] must be either 'xml' or 'text'");
@@ -148,9 +148,11 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IC
 		return name;
 	}
 
-	@IbisDoc({"name of the cache, will be set from owner", ""})
+	@IbisDoc({"name of the cache, will be lowercased", "<code>&lt;ownerName&gt;</code>_cache"})
 	public void setName(String name) {
-		this.name=name;
+		if(StringUtils.isNotEmpty(name)) {
+			this.name=name.toLowerCase();
+		}
 	}
 
 	public String getLogPrefix() {
