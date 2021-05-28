@@ -45,7 +45,7 @@ public class ShowMonitorExecute extends ShowMonitors {
     
 	protected String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) throws MonitorException {
 		log.debug("performing action ["+action+"] on monitorName nr ["+index+"]");
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 		if (StringUtils.isEmpty(action)) {
 			log.warn("monitorHandler did not find action");
 			return null;

@@ -60,6 +60,10 @@ import nl.nn.adapterframework.util.Misc;
 @Path("/")
 public final class ShowMonitors extends Base {
 
+	private MonitorManager getMonitorManager() {
+		return getIbisContext().getBean("monitorManager", MonitorManager.class);
+	}
+
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/monitors")
@@ -67,7 +71,7 @@ public final class ShowMonitors extends Base {
 	public Response getMonitors() throws ApiException {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 
 		List<Map<String, Object>> monitors = new ArrayList<Map<String, Object>>();
 		for (int i=0;i<mm.getMonitors().size();i++) {
@@ -96,7 +100,7 @@ public final class ShowMonitors extends Base {
 
 				triggerMap.put("type", trigger.getType());
 				triggerMap.put("eventCodes", trigger.getEventCodes());
-				triggerMap.put("sources", trigger.getSourceList());
+				triggerMap.put("sources", trigger.getSourceList(mm));
 				triggerMap.put("severity", trigger.getSeverity());
 				triggerMap.put("threshold", trigger.getThreshold());
 				triggerMap.put("period", trigger.getPeriod());
@@ -149,7 +153,7 @@ public final class ShowMonitors extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response raiseMonitor(@PathParam("monitorName") String monitorName, @QueryParam("action") String action) throws ApiException {
 
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 		Monitor monitor = mm.findMonitor(monitorName);
 
 		if(monitor == null) {
@@ -183,7 +187,7 @@ public final class ShowMonitors extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteMonitor(@PathParam("monitorName") String monitorName) throws ApiException {
 
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 		Monitor monitor = mm.findMonitor(monitorName);
 
 		if(monitor == null) {
@@ -233,7 +237,7 @@ public final class ShowMonitors extends Base {
 		if(type == null)
 			throw new ApiException("Type not set!");
 
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 
 		Monitor monitor = new Monitor();
 		monitor.setName(name);

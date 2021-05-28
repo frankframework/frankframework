@@ -35,7 +35,7 @@ public class EditTriggerExecute extends EditMonitorExecute {
 
 	public String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
 		
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 		
 		if (index>=0 && triggerIndex>=0) {
 			Monitor monitor = mm.getMonitor(index);
@@ -51,7 +51,7 @@ public class EditTriggerExecute extends EditMonitorExecute {
 			}
 			if (formTrigger.isFilterOnLowerLevelObjects()) {
 				log.debug("setting trigger.sources from selSources");
-				trigger.setSources((String[])monitorForm.get("selSources"));
+				trigger.setSources(mm, (String[])monitorForm.get("selSources"));
 			}
 			trigger.setFilterExclusive(formTrigger.isFilterExclusive());
 			trigger.setSeverity(formTrigger.getSeverity());

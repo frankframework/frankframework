@@ -33,7 +33,7 @@ import org.apache.struts.action.DynaActionForm;
 public class EditMonitor extends ShowMonitors {
 
 	protected String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 	
 		if (index>=0) {
 			Monitor monitor = mm.getMonitor(index);

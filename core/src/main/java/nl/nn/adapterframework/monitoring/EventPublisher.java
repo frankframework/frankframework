@@ -3,9 +3,10 @@ package nl.nn.adapterframework.monitoring;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
+import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
 
-public class EventPublisher implements ApplicationEventPublisherAware {
+public class EventPublisher implements ApplicationEventPublisherAware, EventHandler {
 	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
@@ -13,8 +14,13 @@ public class EventPublisher implements ApplicationEventPublisherAware {
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
 
-	public void fireEvent(INamedObject source, String eventCode) {
-		MonitorEvent event = new MonitorEvent(source, eventCode);
-		applicationEventPublisher.publishEvent(event);
+	@Override
+	public void registerEvent(EventThrowing source, String eventCode) {
+		applicationEventPublisher.publishEvent(new RegisterMonitorEvent(source, eventCode));
+	}
+
+	@Override
+	public void fireEvent(EventThrowing source, String eventCode) {
+		applicationEventPublisher.publishEvent(new FireMonitorEvent(source, eventCode));
 	}
 }

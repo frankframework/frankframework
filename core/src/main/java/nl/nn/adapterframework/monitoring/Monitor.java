@@ -62,7 +62,8 @@ public class Monitor {
 	}
 
 	public void register(Object x) {
-		MonitorManager.getInstance().addMonitor(this);
+		System.err.println("register monitor: "+ x);
+//TODO	MonitorManager.getInstance().addMonitor(this);
 	}
 	
 	public void configure() throws ConfigurationException {
@@ -281,6 +282,7 @@ public class Monitor {
 		return (Trigger)triggers.get(index);
 	}
 
+	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}

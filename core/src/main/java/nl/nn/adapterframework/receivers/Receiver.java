@@ -79,10 +79,8 @@ import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
-import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
-import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -182,7 +180,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class Receiver<M> extends TransactionAttributes implements IManagable, IReceiverStatistics, IMessageHandler<M>, IProvidesMessageBrowsers<Object>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
-	private @Setter EventPublisher eventPublisher;
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public TransactionDefinition TXNEW_PROC;
@@ -299,7 +296,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private PlatformTransactionManager txManager;
 
-	private EventHandler eventHandler=null;
+	private @Setter EventPublisher eventPublisher;
 
 	private Set<ProcessState> knownProcessStates = new LinkedHashSet<ProcessState>();
 	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
@@ -551,7 +548,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			}
 
-			eventHandler = MonitorManager.getEventHandler();
 			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
 			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
 			registerEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
@@ -1561,15 +1557,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return getLogPrefix().trim();
 	}
 	protected void registerEvent(String eventCode) {
-		if (eventHandler!=null) {
-			eventHandler.registerEvent(this,eventCode);
-		}		
+		if (eventPublisher != null) {
+			eventPublisher.registerEvent(this, eventCode);
+		}
 	}
 	protected void throwEvent(String eventCode) {
-		if (eventHandler!=null) {
-			eventHandler.fireEvent(this,eventCode);
-		}
-		if(eventPublisher != null) {
+		if (eventPublisher != null) {
 			eventPublisher.fireEvent(this, eventCode);
 		}
 	}

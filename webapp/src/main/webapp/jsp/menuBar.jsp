@@ -82,7 +82,7 @@
 				type="security"
 				alt="Show Security Items">
 			</imagelink>
-			<% if (MonitorManager.getInstance().isEnabled()) { %>
+			<% if (AppConstants.getInstance().getBoolean("monitoring.enabled", false)) { %>
 				<imagelink 
 					href="showMonitors.do"
 					type="monitoring"

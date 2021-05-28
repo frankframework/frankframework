@@ -39,7 +39,7 @@ public class EditMonitorExecute extends EditMonitor {
 
 	public String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
 		
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 		if (index>=0) {
 			Monitor monitor = mm.getMonitor(index);
 			if (action.equals("createTrigger")) {

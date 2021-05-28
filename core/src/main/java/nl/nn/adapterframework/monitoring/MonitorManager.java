@@ -33,6 +33,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.digester.AttributeCheckingRule;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
+import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Lock;
@@ -45,6 +48,8 @@ import org.apache.commons.digester3.Rule;
 import org.apache.commons.digester3.binder.RulesBinder;
 import org.apache.commons.digester3.binder.RulesModule;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.xml.sax.Attributes;
 
 /**
@@ -53,7 +58,7 @@ import org.xml.sax.Attributes;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class MonitorManager implements EventHandler {
+public class MonitorManager implements EventHandler, ApplicationListener<MonitorEvent> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Configuration configuration;
@@ -82,14 +87,9 @@ public class MonitorManager implements EventHandler {
 
 	private Lock structureLock = new Lock();
 
-	private static MonitorManager self=null;
-
 	public static final boolean traceReconfigure=false;
 
 
-
-	private MonitorManager() {
-	}
 
 	public void configure(Configuration configuration) throws ConfigurationException {
 		Collections.sort(eventThrowers,new EventThrowerComparator());
@@ -169,7 +169,7 @@ public class MonitorManager implements EventHandler {
 		}
 
 		public Object createObject(Attributes attributes) throws Exception {
-			return getInstance();
+			return null;//TODO getInstance();
 		}
 	}
 
@@ -253,21 +253,22 @@ public class MonitorManager implements EventHandler {
 		return destinations;
 	}
 
-	public synchronized static MonitorManager getInstance() {
-		if (self==null) {
-			self=new MonitorManager();
-		}
-		return self;
+	/**
+	 * Helper method to retrieve the MonitorManager from the ApplicationContext
+	 */
+	public static MonitorManager getInstance(ApplicationContext applicationContext) {
+		return applicationContext.getBean("monitorManager", MonitorManager.class);
 	}
 
-	public static EventHandler getEventHandler() {
-		if (getInstance().isEnabled()) {
-			return getInstance();
-		} else {
-			return null;
+	@Override
+	public void onApplicationEvent(MonitorEvent event) {
+		if(event instanceof RegisterMonitorEvent) {
+			registerEvent(event.getSource(), event.getEventCode());
+		}
+		if(event instanceof FireMonitorEvent) {
+			fireEvent(event.getSource(), event.getEventCode());
 		}
 	}
-
 
 	public void addMonitor(Monitor monitor) {
 		monitor.setOwner(this);

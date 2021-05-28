@@ -145,9 +145,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
 		loader.addRules(digester);
 
-		if (MonitorManager.getInstance().isEnabled()) {
-			MonitorManager.getInstance().setDigesterRules(digester);
-		}
+//		if (MonitorManager.getInstance().isEnabled()) {
+//			MonitorManager.getInstance().setDigesterRules(digester);
+//		}
 
 		boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
 		if (validation) {
@@ -214,9 +214,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
 				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
 		}
-		if (MonitorManager.getInstance().isEnabled()) {
-			MonitorManager.getInstance().configure(configuration); //TODO fix memory leak when the configuration is reloaded
-		}
+//		if (MonitorManager.getInstance().isEnabled()) {
+//			MonitorManager.getInstance().configure(configuration); //TODO fix memory leak when the configuration is reloaded
+//		}
 	}
 
 	private String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException {

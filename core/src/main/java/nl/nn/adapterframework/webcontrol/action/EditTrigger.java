@@ -44,7 +44,7 @@ public class EditTrigger extends EditMonitor {
 	public static final String LABEL_FILTER_SOURCES2ADAPTERS =  "Sources -> Adapters";
 
 	public String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 		Monitor monitor=null;
 		Trigger trigger=null;
 		
@@ -71,8 +71,8 @@ public class EditTrigger extends EditMonitor {
 		} else 	{	
 			if (action.equals(LABEL_FILTER_SOURCES2EVENTS)) {
 				log.debug("performAction() "+LABEL_FILTER_SOURCES2EVENTS);
-				trigger.setSources((String[])monitorForm.get("selSources"));
-				eventCodes=mm.getEventCodesBySources(trigger.getSourceList());
+				trigger.setSources(mm, (String[])monitorForm.get("selSources"));
+				eventCodes=mm.getEventCodesBySources(trigger.getSourceList(mm));
 			} else {
 				eventCodes=mm.getEventCodesBySources(mm.getThrowers());
 			}
@@ -88,8 +88,8 @@ public class EditTrigger extends EditMonitor {
 			if (action.equals(LABEL_FILTER_SOURCES2ADAPTERS)) {
 				log.debug("performAction() "+LABEL_FILTER_SOURCES2ADAPTERS);
 				trigger.setSourceFiltering(Trigger.SOURCE_FILTERING_BY_ADAPTER);
-				trigger.setSources((String[])monitorForm.get("selSources"));
-				adapters=mm.getAdapterNamesBySources(trigger.getSourceList());
+				trigger.setSources(mm, (String[])monitorForm.get("selSources"));
+				adapters=mm.getAdapterNamesBySources(trigger.getSourceList(mm));
 			} else {
 				adapters=mm.getAdapterNames();
 			}				

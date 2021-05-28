@@ -169,6 +169,7 @@ public class Trigger {
 		return owner;
 	}
 
+	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
@@ -269,9 +270,8 @@ public class Trigger {
 		return result;
 	}
 
-	public List<IAdapter> getAdapterList() {
+	public List<IAdapter> getAdapterList(MonitorManager mm) {
 		List<IAdapter> result=new LinkedList<IAdapter>();
-		MonitorManager mm=MonitorManager.getInstance();
 		for (Iterator<String> it=adapterFilters.keySet(). iterator(); it.hasNext();) {
 			String adapterName=(String)it.next();
 			IAdapter adapter=mm.findAdapterByName(adapterName);
@@ -290,9 +290,9 @@ public class Trigger {
 	/**
 	 * set List of all throwers that can trigger this Trigger.
 	 */
-	public void setSources(String[] sourcesArr) {
+	public void setSources(MonitorManager mm, String[] sourcesArr) {
 		log.debug(getLogPrefix()+"setSources()");
-		List<EventThrowing> list=MonitorManager.getInstance().getEventSources((List<String>)null);
+		List<EventThrowing> list=mm.getEventSources((List<String>)null);
 		log.debug(getLogPrefix()+"setSources() clearing adapterFilter");
 		adapterFilters.clear();
 		for (int i=0; i<list.size();i++) {
@@ -345,10 +345,9 @@ public class Trigger {
 	}
 
 
-	public List<EventThrowing> getSourceList() {
+	public List<EventThrowing> getSourceList(MonitorManager mm) {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"getSourceList() collecting sources:");
 		List<EventThrowing> list=new ArrayList<EventThrowing>();
-		MonitorManager mm = MonitorManager.getInstance();
 		for(Iterator adapterIterator=adapterFilters.entrySet().iterator();adapterIterator.hasNext();) {
 			Map.Entry entry= (Map.Entry)adapterIterator.next();
 			String adapterName=(String)entry.getKey();

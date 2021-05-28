@@ -260,7 +260,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				"DumpIbisConsole", "dump", "Dump Ibis Console"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 				"showSecurityItems.do", "security", "Show Security Items"));
-		if (MonitorManager.getInstance().isEnabled()) {
+		if (MonitorManager.getInstance(getApplicationContext()).isEnabled()) {
 			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix,
 					"showMonitors.do", "monitoring", "Show Monitors"));
 		}

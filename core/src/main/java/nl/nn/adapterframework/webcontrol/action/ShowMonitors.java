@@ -59,8 +59,12 @@ public class ShowMonitors extends ActionBase {
 		return "success";
 	}
 
+	protected MonitorManager getMonitorManager() {
+		return ibisManager.getIbisContext().getBean("monitorManager", MonitorManager.class);
+	}
+
 	public void initForm(DynaActionForm monitorForm) {
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 
 		monitorForm.set("monitorManager",mm);
 		List destinations=new ArrayList();
@@ -108,7 +112,7 @@ public class ShowMonitors extends ActionBase {
 				triggerIndex=Integer.parseInt(triggerIndexStr);
 			}
 		
-			MonitorManager mm = MonitorManager.getInstance();
+			MonitorManager mm = getMonitorManager();
 			if ("getStatus".equals(action)) {
 				response.setContentType("text/xml");
 				PrintWriter out = response.getWriter();
