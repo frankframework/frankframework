@@ -26,7 +26,7 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -145,7 +145,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	private List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
-	private ICacheAdapter<String,String> cache;
+	private ICache<String,String> cache;
 
 	private boolean configurationSucceeded = false;
 
@@ -697,11 +697,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	@Override
 	@IbisDoc({"80", "Cache of results"})
-	public void setCache(ICacheAdapter<String,String> cache) {
+	public void setCache(ICache<String,String> cache) {
 		this.cache=cache;
 	}
 	@Override
-	public ICacheAdapter<String,String> getCache() {
+	public ICache<String,String> getCache() {
 		return cache;
 	}
 
