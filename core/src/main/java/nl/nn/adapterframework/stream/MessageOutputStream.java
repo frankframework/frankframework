@@ -58,7 +58,7 @@ public class MessageOutputStream implements AutoCloseable {
 	
 	private Set<AutoCloseable> resourcesToClose;
 	
-	private ThreadConnector threadConnector;
+	private ThreadConnector<?> threadConnector;
 	
 	protected MessageOutputStream(INamedObject owner, IForwardTarget next) {
 		this.owner=owner;
@@ -88,26 +88,26 @@ public class MessageOutputStream implements AutoCloseable {
 		this.requestStream=writer;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, next);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
 	}
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, nextStream);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
 	}
 	
-	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, next);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
 	}
-	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, nextStream);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
 	}
 
 
@@ -295,6 +295,7 @@ public class MessageOutputStream implements AutoCloseable {
 	@SuppressWarnings("resource")
 	public void captureCharacterStream(Writer writer, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
+		closeOnClose(writer);
 		if (requestStream instanceof Writer) {
 			requestStream = StreamUtil.captureWriter((Writer)requestStream, writer, maxSize);
 			return;
@@ -325,6 +326,7 @@ public class MessageOutputStream implements AutoCloseable {
 	@SuppressWarnings("resource")
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
+		closeOnClose(outputStream);
 		if (requestStream instanceof OutputStream) {
 			requestStream = StreamUtil.captureOutputStream((OutputStream)requestStream, outputStream, maxSize);
 			return;
