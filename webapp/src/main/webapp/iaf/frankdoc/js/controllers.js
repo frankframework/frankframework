@@ -42,8 +42,22 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 }]).controller('element-child-controller', ['$scope', function($scope) {
 	console.log('Created element-child-controller');
 
-	$scope.gotoChild = function() {
-		console.log('GOTO CHILD: ' + $scope.value);
-		console.log('WAS AT: ' + $scope.$parent.element.fullName);
+	$scope.visible = false;
+
+	$scope.init = function(child) {
+		$scope.child = child;
+		$scope.childCategory = getCategoryOfType(child.type, $scope.$parent);
+	}
+
+	$scope.onClick = function() {
+		console.log('Button clicked for child' + $scope.child.type);
+		$scope.visible = ! $scope.visible;
+	}
+
+	$scope.getChildElements = function() {
+		fullNames = $scope.$parent.types[$scope.child.type];
+		simpleNames = [];
+		fullNames.forEach(fullName => simpleNames.push(fullNameToSimpleName(fullName)));
+		return simpleNames;
 	}
 }]);

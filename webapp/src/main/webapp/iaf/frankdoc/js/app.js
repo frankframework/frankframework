@@ -120,3 +120,21 @@ function getCategoryMembers($scope) {
 	}
 	return r;
 }
+
+function getCategoryOfType(type, $scope) {
+	for(i = 0; i < $scope.categories.length; ++i) {
+		category = $scope.categories[i];
+		if(category.types.indexOf(type) >= 0) {
+			return category.name;
+		}
+	}
+	return null;
+}
+
+function fullNameToSimpleName(fullName) {
+	idx = fullName.lastIndexOf('.');
+	++idx;
+	numChars = fullName.length - idx;
+	result = fullName.substr(idx, numChars);
+	return result
+}
