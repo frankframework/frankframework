@@ -1,17 +1,9 @@
 <div>
 	<h4>Nested children</h4>
 	<div ng-repeat="child in element.children | omitDeprecatedChildrenAndAddChildElements:this">
-		<b>{{child.roleName}}</b><span ng-if="child.description"><b>:</b> {{ child.description }}</span>
-		<p>
 		<div ng-controller="element-child-controller" ng-init="init(child)">
-			<button ng-click="onClick()">Toggle child elements</button>
-			<div ng-if="visible">
-				Child elements:
-				<!-- <span ng-repeat="childElement in getChildElements()">{{($first ? childElement : ', ' + childElement)}}</span>  -->
-				<a ng-repeat="childElement in getChildElements()" ui-sref="element({category: childCategory, element:childElement})" ui-sref-active="active">
-				{{childElement}}
-				</a>{{(! $last ? ', ' : '')}}
-			</div>
+			<b ng-attr-title="{{ title }}">{{child.roleName}}</b><span ng-if="child.description"><b>:</b> {{ child.description }}</span>
+			<p>
 		</div>
 		<p>
 	</div>
