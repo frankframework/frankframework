@@ -230,8 +230,15 @@ public class Message implements Serializable {
 	public void unscheduleFromCloseOnExitOf(PipeLineSession session) {
 		session.unscheduleCloseOnSessionExit(this);
 	}
-	
-	
+
+	private void onExceptionClose(Exception e) {
+		try {
+			close();
+		} catch (Exception e2) {
+			e.addSuppressed(e2);
+		}
+	}
+
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -256,18 +263,10 @@ public class Message implements Serializable {
 			try {
 				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
 			} catch (IOException e) {
-				try {
-					close();
-				} catch (Exception e2) {
-					e.addSuppressed(e2);
-				}
+				onExceptionClose(e);
 				throw e;
 			} catch (Exception e) {
-				try {
-					close();
-				} catch (Exception e2) {
-					e.addSuppressed(e2);
-				}
+				onExceptionClose(e);
 				throw Lombok.sneakyThrow(e);
 			}
 		}
@@ -328,18 +327,10 @@ public class Message implements Serializable {
 			log.debug("returning String as InputStream");
 			return new ByteArrayInputStream(request.toString().getBytes(defaultCharset));
 		} catch (IOException e) {
-			try {
-				close();
-			} catch (Exception e2) {
-				e.addSuppressed(e2);
-			}
+			onExceptionClose(e);
 			throw e;
 		} catch (Exception e) {
-			try {
-				close();
-			} catch (Exception e2) {
-				e.addSuppressed(e2);
-			}
+			onExceptionClose(e);
 			throw Lombok.sneakyThrow(e);
 		}
 	}
