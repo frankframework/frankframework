@@ -150,7 +150,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			List<String> tempList = new ArrayList<String>();
 			StringTokenizer st = new StringTokenizer(getColumnsReturned(),",");
 			while (st.hasMoreTokens()) {
-				String column = st.nextToken();
+				String column = st.nextToken().trim();
 				tempList.add(column);
 			}
 			columnsReturnedList = new String[tempList.size()];
