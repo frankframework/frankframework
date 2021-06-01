@@ -1,7 +1,9 @@
 package nl.nn.credentialprovider;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -17,6 +19,7 @@ public class FileSystemCredentialsTest {
 	public void setup() {
 		String url = this.getClass().getResource("/secrets").toExternalForm();
 		root =  Paths.get(url.substring(url.indexOf(":/")+2));
+		assumeTrue(Files.exists(root));
 	}
 	
 	@Test
