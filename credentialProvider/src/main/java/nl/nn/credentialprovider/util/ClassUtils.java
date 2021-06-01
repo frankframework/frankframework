@@ -52,7 +52,7 @@ public class ClassUtils {
 		Constructor theConstructor = null;
 		try {
 			theConstructor = clas.getDeclaredConstructor(parameterTypes);
-		} catch (java.lang.NoSuchMethodException e) {
+		} catch (NoSuchMethodException e) {
 			log.error("cannot create constructor for Class [" + clas.getName() + "]", e);
 			for (int i = 0; i < parameterTypes.length; i++)
 				log.error("Parameter " + i + " type " + parameterTypes[i].getName());
@@ -142,16 +142,16 @@ public class ClassUtils {
     Class clas = null;
     try {
       clas=ClassUtils.loadClass(className);
-    } catch (java.lang.ClassNotFoundException C) {System.err.println(C);}
+    } catch (ClassNotFoundException C) {System.err.println(C);}
 
      Constructor con;
      con= ClassUtils.getConstructorOnType(clas, parameterClasses);
      Object theObject=null;
      try {
         theObject=con.newInstance(parameterObjects);
-      } catch(java.lang.InstantiationException E) {System.err.println(E);}
-        catch(java.lang.IllegalAccessException A) {System.err.println(A);}
-        catch(java.lang.reflect.InvocationTargetException T) {System.err.println(T);}
+      } catch(InstantiationException E) {System.err.println(E);}
+        catch(IllegalAccessException A) {System.err.println(A);}
+        catch(InvocationTargetException T) {System.err.println(T);}
      return theObject;
 
   }
