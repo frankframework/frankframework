@@ -107,13 +107,13 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	
 	@Test
 	public void testColumnsReturnedWithDoubleSpace() throws Exception {
-		sender.setQuery("INSERT INTO TEMP (  TKEY,  TVARCHAR  ) VALUES (\'1\', ?)");
+		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES (\'1\', ?)");
 		Parameter param = new Parameter();
 		param.setName("param1");
 		param.setValue("value");
 		sender.addParameter(param);
 
-		sender.setColumnsReturned("TKEY, TVARCHAR");
+		sender.setColumnsReturned("  TKEY,  TVARCHAR  ");
 		sender.setQueryType("insert");
 
 		sender.configure();
