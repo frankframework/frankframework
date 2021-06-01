@@ -17,6 +17,13 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 
+	private final String resultColumnsReturned = "<result><fielddefinition>"
+			+ "<field name=\"TKEY\" type=\"INTEGER\" columnDisplaySize=\"11\" precision=\"10\" scale=\"0\" isCurrency=\"false\" columnTypeName=\"INTEGER\" columnClassName=\"java.lang.Integer\"/>"
+			+ "<field name=\"TVARCHAR\" type=\"VARCHAR\" columnDisplaySize=\"100\" precision=\"100\" scale=\"0\" isCurrency=\"false\" columnTypeName=\"VARCHAR\" columnClassName=\"java.lang.String\"/></fielddefinition>"
+			+ "<rowset><row number=\"0\"><"
+			+ "field name=\"TKEY\">1</field>"
+			+ "<field name=\"TVARCHAR\">value</field></row></rowset></result>";
+
 	@Override
 	public FixedQuerySender createSender() throws Exception {
 		return new FixedQuerySender();
@@ -80,4 +87,56 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 		Message result = sendMessage("dummy");
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
+	
+	@Test
+	public void testColumnsReturnedWithSpaceBetween() throws Exception {
+		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES (\'1\', ?)");
+		Parameter param = new Parameter();
+		param.setName("param1");
+		param.setValue("value");
+		sender.addParameter(param);
+
+		sender.setColumnsReturned("TKEY, TVARCHAR");
+		sender.setQueryType("insert");
+
+		sender.configure();
+		sender.open();
+		Message prr = sender.sendMessage(new Message(""), session);
+		assertEquals(resultColumnsReturned, prr.asString());
+	}
+	
+	@Test
+	public void testColumnsReturnedWithDoubleSpace() throws Exception {
+		sender.setQuery("INSERT INTO TEMP (  TKEY,  TVARCHAR  ) VALUES (\'1\', ?)");
+		Parameter param = new Parameter();
+		param.setName("param1");
+		param.setValue("value");
+		sender.addParameter(param);
+
+		sender.setColumnsReturned("TKEY, TVARCHAR");
+		sender.setQueryType("insert");
+
+		sender.configure();
+		sender.open();
+		Message prr = sender.sendMessage(new Message(""), session);
+		assertEquals(resultColumnsReturned, prr.asString());
+	}
+	
+	@Test
+	public void testColumnsReturned() throws Exception {
+		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES (\'1\', ?)");
+		Parameter param = new Parameter();
+		param.setName("param1");
+		param.setValue("value");
+		sender.addParameter(param);
+
+		sender.setColumnsReturned("TKEY,TVARCHAR");
+		sender.setQueryType("insert");
+
+		sender.configure();
+		sender.open();
+		Message prr = sender.sendMessage(new Message(""), session);
+		assertEquals(resultColumnsReturned, prr.asString());
+	}
+
 }
