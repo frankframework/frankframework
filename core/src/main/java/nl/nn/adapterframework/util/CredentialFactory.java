@@ -43,6 +43,10 @@ public class CredentialFactory  {
 		return credentials.toString();
 	}
 
+	public String getAlias() {
+		return credentials.getAlias();
+	}
+
 	public String getUsername() {
 		return credentials.getUsername();
 	}
