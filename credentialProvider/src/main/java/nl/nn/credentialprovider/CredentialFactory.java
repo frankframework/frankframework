@@ -24,7 +24,7 @@ import nl.nn.credentialprovider.util.AppConstants;
 import nl.nn.credentialprovider.util.Misc;
 
 public class CredentialFactory {
-	protected Logger log = Logger.getLogger(this.getClass().getName());
+	protected Logger log = Logger.getLogger(this.getClass().getCanonicalName());
 
 	private final String PROPERTY_CREDENTIAL_FACTORY="credentialFactory.class";
 	private final String DEFAULT_CREDENTIAL_FACTORY1=FileSystemCredentialFactory.class.getName();
@@ -43,7 +43,7 @@ public class CredentialFactory {
 
 	private CredentialFactory() {
 		String factoryClassName = AppConstants.getInstance().getProperty(PROPERTY_CREDENTIAL_FACTORY);
-		if (Misc.isNotEmpty(factoryClassName) && tryFactory(factoryClassName)) {
+		if (tryFactory(factoryClassName)) {
 			return;
 		}
 		if (tryFactory(DEFAULT_CREDENTIAL_FACTORY1)) {
@@ -61,9 +61,8 @@ public class CredentialFactory {
 	}
 	
 	private boolean tryFactory(String factoryClassName) {
-		System.out.println("--> trying to configure CredentialFactory ["+factoryClassName+"]");
-		log.info("trying to configure CredentialFactory ["+factoryClassName+"]");
 		if (Misc.isNotEmpty(factoryClassName)) {
+			log.info("trying to configure CredentialFactory ["+factoryClassName+"]");
 			try {
 				Class<ICredentialFactory> factoryClass = (Class<ICredentialFactory>)Class.forName(factoryClassName);
 				ICredentialFactory candidate = factoryClass.newInstance();
