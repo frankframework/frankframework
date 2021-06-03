@@ -30,8 +30,6 @@ import java.util.logging.Logger;
 public class ClassUtils {
 	protected static Logger log = Logger.getLogger(ClassUtils.class.getName());
 	
-	private static final boolean trace=false;
-
     /**
      * Return the context classloader.
      * BL: if this is command line operation, the classloading issues

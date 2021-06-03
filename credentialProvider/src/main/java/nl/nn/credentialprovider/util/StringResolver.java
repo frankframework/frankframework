@@ -17,8 +17,6 @@ package nl.nn.credentialprovider.util;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 

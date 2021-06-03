@@ -87,7 +87,7 @@ public class FileSystemCredentialsTest {
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 		
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, null, password, root);
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, username, password, root);
 		
 		assertEquals(expectedUsername, fsc.getUsername());
 		assertEquals(expectedPassword, fsc.getPassword());
