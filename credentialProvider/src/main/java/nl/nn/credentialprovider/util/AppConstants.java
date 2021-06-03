@@ -26,10 +26,9 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Singleton class that has the constant values for this application. <br/>
@@ -43,13 +42,10 @@ import org.apache.logging.log4j.Logger;
  *
  */
 public final class AppConstants extends Properties implements Serializable {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = Logger.getLogger(this.getClass().getName());
 
-	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
+	private final static String APP_CONSTANTS_PROPERTIES_FILE = "credentialprovider.properties";
 	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
-	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
-	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
-	public final static String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 
 	private static Properties additionalProperties = new Properties();
 
@@ -127,12 +123,12 @@ public final class AppConstants extends Properties implements Serializable {
 				return result;
 			}
 		} catch (Throwable e) {
-			log.warn("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
+			log.warning("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
 		}
 		try {
 			return System.getProperty(key);
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			log.warn("Was not allowed to read system property [" + key + "]: "+ e.getMessage());
+			log.warning("Was not allowed to read system property [" + key + "]: "+ e.getMessage());
 			return null;
 		}
 	}
@@ -164,23 +160,23 @@ public final class AppConstants extends Properties implements Serializable {
 		if (value != null) {
 			try {
 				if (value.contains(StringResolver.DELIM_START+key+StringResolver.DELIM_STOP)) {
-					log.warn("cyclic property definition key [{}] value [{}]", key, value);
+					log.warning("cyclic property definition key ["+key+"] value ["+value+"]");
 					return value;
 				}
 				String result=StringResolver.substVars(value, this);
-				if (log.isTraceEnabled()) {
+				if (log.isLoggable(Level.FINER)) {
 					if (!value.equals(result)){
-						log.trace("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
+						log.finer("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
 					}
 
 				}
 				return result;
 			} catch (IllegalArgumentException e) {
-				log.error("Bad option value [" + value + "].", e);
+				log.log(Level.SEVERE, "Bad option value [" + value + "].", e);
 				return value;
 			}
 		}
-		if (log.isTraceEnabled()) log.trace("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
+		if (log.isLoggable(Level.FINER)) log.finer("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
 		return null;
 	}
 
@@ -226,7 +222,7 @@ public final class AppConstants extends Properties implements Serializable {
 			try {
 				constants.putAll(Misc.getEnvironmentVariables());
 			} catch (IOException e) {
-				log.warn("unable to retrieve environment variables", e);
+				log.log(Level.WARNING, "unable to retrieve environment variables", e);
 			}
 		}
 
@@ -253,7 +249,7 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	private synchronized void load(ClassLoader classLoader, String filename, String suffix, boolean loadAdditionalPropertiesFiles) {
-		if(StringUtils.isEmpty(filename)) {
+		if(Misc.isEmpty(filename)) {
 			throw new IllegalStateException("file to load properties from cannot be null");
 		}
 
@@ -269,12 +265,12 @@ public final class AppConstants extends Properties implements Serializable {
 				if(resources.isEmpty()) {
 					if(APP_CONSTANTS_PROPERTIES_FILE.equals(theFilename)) { //The AppConstants.properties file cannot be found, abort!
 						String msg = APP_CONSTANTS_PROPERTIES_FILE+ " file not found, unable to initalize AppConstants";
-						log.error(msg);
+						log.severe(msg);
 						throw new MissingResourceException(msg, this.getClass().getSimpleName(), APP_CONSTANTS_PROPERTIES_FILE);
 					}
 					//An additional file to load properties from cannot be found
-					if(log.isDebugEnabled()) {
-						log.debug("cannot find resource ["+theFilename+"] in classloader ["+cl.getClass().getSimpleName()+"] to load additional properties from, ignoring");
+					if(log.isLoggable(Level.FINE)) {
+						log.fine("cannot find resource ["+theFilename+"] in classloader ["+cl.getClass().getSimpleName()+"] to load additional properties from, ignoring");
 					}
 				}
 
@@ -289,11 +285,11 @@ public final class AppConstants extends Properties implements Serializable {
 				}
 
 				String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additional properties if it's defined...
-				if (loadAdditionalPropertiesFiles && StringUtils.isNotEmpty(loadFile)) {
+				if (loadAdditionalPropertiesFiles && Misc.isNotEmpty(loadFile)) {
 					// Add properties after load(is) to prevent load(is)
 					// from overriding them
 					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
-					if (StringUtils.isNotEmpty(loadFileSuffix)){
+					if (Misc.isNotEmpty(loadFileSuffix)){
 						load(classLoader, loadFile, loadFileSuffix, false);
 					} else {
 						load(classLoader, loadFile, false);
@@ -306,12 +302,12 @@ public final class AppConstants extends Properties implements Serializable {
 					String suffixedFilename = baseName
 							+ "_"
 							+ suffix
-							+ (StringUtils.isEmpty(extension) ? "" : "."
+							+ (Misc.isEmpty(extension) ? "" : "."
 									+ extension);
 					load(classLoader, suffixedFilename, false);
 				}
 			} catch (IOException e) {
-				log.error("error reading [" + APP_CONSTANTS_PROPERTIES_FILE + "]", e);
+				log.log(Level.SEVERE, "error reading [" + APP_CONSTANTS_PROPERTIES_FILE + "]", e);
 			}
 		}
 	}

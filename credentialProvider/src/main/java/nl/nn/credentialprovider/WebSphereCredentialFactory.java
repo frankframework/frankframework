@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,13 @@ public class WebSphereCredentialFactory implements ICredentialFactory {
 	@Override
 	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
 		return new WebSphereCredentials(alias, defaultUsername, defaultPassword);
+	}
+
+
+	@Override
+	public boolean hasCredentials(String alias) {
+		WebSphereCredentials credentials = new WebSphereCredentials(alias, null, null);
+		return credentials.isAliasFound();
 	}
 
 }

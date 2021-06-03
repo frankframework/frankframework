@@ -15,32 +15,30 @@
 */
 package nl.nn.credentialprovider;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.logging.Logger;
 
-import lombok.Getter;
-import lombok.Setter;
+import nl.nn.credentialprovider.util.Misc;
 
 public class Credentials implements ICredentials {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = Logger.getLogger(this.getClass().getName());
 
-	private @Getter String alias;
-	private @Setter String username;
-	private @Setter String password;
+	private String alias;
+	private String username;
+	private String password;
 	private boolean gotCredentials=false;
 
 	public Credentials(String alias, String defaultUsername, String defaultPassword) {
 		super();
-		setAlias(alias);
-		setUsername(defaultUsername);
-		setPassword(defaultPassword);
+		this.alias = alias;
+		username = defaultUsername;
+		password = defaultPassword;
 	}
 
 
 	private void getCredentials() {
 		if (!gotCredentials) {
-			if (StringUtils.isNotEmpty(getAlias())) {
+			
+			if (Misc.isNotEmpty(getAlias())) {
 				getCredentialsFromAlias();
 			}
 			gotCredentials=true;
@@ -48,8 +46,8 @@ public class Credentials implements ICredentials {
 	}
 
 	protected void getCredentialsFromAlias() {
-		if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
-			log.warn("no credential factory for alias [{}], and no default credentials, username [{}]", alias, username);
+		if (Misc.isEmpty(username) && Misc.isEmpty(password)) {
+			log.warning("no credential factory for alias ["+alias+"], and no default credentials, username ["+username+"]");
 		}
 	}
 	
@@ -66,13 +64,23 @@ public class Credentials implements ICredentials {
 		alias = string;
 		gotCredentials=false;
 	}
+	@Override
+	public String getAlias() {
+		return alias;
+	}
 
+	public void setUsername(String string) {
+		username = string;
+	}
 	@Override
 	public String getUsername() {
 		getCredentials();
 		return username;
 	}
 
+	public void setPassword(String string) {
+		password = string;
+	}
 	@Override
 	public String getPassword() {
 		getCredentials();

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Stack;
 
-import org.apache.commons.io.IOCase;
 
 /**
  * General filename and filepath manipulation utilities.
@@ -1008,101 +1007,101 @@ public class FilenameUtils {
         }
     }
 
-    //-----------------------------------------------------------------------
-    /**
-     * Checks whether two filenames are equal exactly.
-     * <p>
-     * No processing is performed on the filenames other than comparison,
-     * thus this is merely a null-safe case-sensitive equals.
-     *
-     * @param filename1  the first filename to query, may be null
-     * @param filename2  the second filename to query, may be null
-     * @return true if the filenames are equal, null equals null
-     * @see IOCase#SENSITIVE
-     */
-    public static boolean equals(String filename1, String filename2) {
-        return equals(filename1, filename2, false, IOCase.SENSITIVE);
-    }
+//    //-----------------------------------------------------------------------
+//    /**
+//     * Checks whether two filenames are equal exactly.
+//     * <p>
+//     * No processing is performed on the filenames other than comparison,
+//     * thus this is merely a null-safe case-sensitive equals.
+//     *
+//     * @param filename1  the first filename to query, may be null
+//     * @param filename2  the second filename to query, may be null
+//     * @return true if the filenames are equal, null equals null
+//     * @see IOCase#SENSITIVE
+//     */
+//    public static boolean equals(String filename1, String filename2) {
+//        return equals(filename1, filename2, false, IOCase.SENSITIVE);
+//    }
 
-    /**
-     * Checks whether two filenames are equal using the case rules of the system.
-     * <p>
-     * No processing is performed on the filenames other than comparison.
-     * The check is case-sensitive on Unix and case-insensitive on Windows.
-     *
-     * @param filename1  the first filename to query, may be null
-     * @param filename2  the second filename to query, may be null
-     * @return true if the filenames are equal, null equals null
-     * @see IOCase#SYSTEM
-     */
-    public static boolean equalsOnSystem(String filename1, String filename2) {
-        return equals(filename1, filename2, false, IOCase.SYSTEM);
-    }
+//    /**
+//     * Checks whether two filenames are equal using the case rules of the system.
+//     * <p>
+//     * No processing is performed on the filenames other than comparison.
+//     * The check is case-sensitive on Unix and case-insensitive on Windows.
+//     *
+//     * @param filename1  the first filename to query, may be null
+//     * @param filename2  the second filename to query, may be null
+//     * @return true if the filenames are equal, null equals null
+//     * @see IOCase#SYSTEM
+//     */
+//    public static boolean equalsOnSystem(String filename1, String filename2) {
+//        return equals(filename1, filename2, false, IOCase.SYSTEM);
+//    }
 
-    //-----------------------------------------------------------------------
-    /**
-     * Checks whether two filenames are equal after both have been normalized.
-     * <p>
-     * Both filenames are first passed to {@link #normalize(String)}.
-     * The check is then performed in a case-sensitive manner.
-     *
-     * @param filename1  the first filename to query, may be null
-     * @param filename2  the second filename to query, may be null
-     * @return true if the filenames are equal, null equals null
-     * @see IOCase#SENSITIVE
-     */
-    public static boolean equalsNormalized(String filename1, String filename2) {
-        return equals(filename1, filename2, true, IOCase.SENSITIVE);
-    }
-
-    /**
-     * Checks whether two filenames are equal after both have been normalized
-     * and using the case rules of the system.
-     * <p>
-     * Both filenames are first passed to {@link #normalize(String)}.
-     * The check is then performed case-sensitive on Unix and
-     * case-insensitive on Windows.
-     *
-     * @param filename1  the first filename to query, may be null
-     * @param filename2  the second filename to query, may be null
-     * @return true if the filenames are equal, null equals null
-     * @see IOCase#SYSTEM
-     */
-    public static boolean equalsNormalizedOnSystem(String filename1, String filename2) {
-        return equals(filename1, filename2, true, IOCase.SYSTEM);
-    }
-
-    /**
-     * Checks whether two filenames are equal, optionally normalizing and providing
-     * control over the case-sensitivity.
-     *
-     * @param filename1  the first filename to query, may be null
-     * @param filename2  the second filename to query, may be null
-     * @param normalized  whether to normalize the filenames
-     * @param caseSensitivity  what case sensitivity rule to use, null means case-sensitive
-     * @return true if the filenames are equal, null equals null
-     * @since Commons IO 1.3
-     */
-    public static boolean equals(
-            String filename1, String filename2,
-            boolean normalized, IOCase caseSensitivity) {
-        
-        if (filename1 == null || filename2 == null) {
-            return (filename1 == null && filename2 == null);
-        }
-        if (normalized) {
-            filename1 = normalize(filename1);
-            filename2 = normalize(filename2);
-            if (filename1 == null || filename2 == null) {
-                throw new NullPointerException(
-                    "Error normalizing one or both of the file names");
-            }
-        }
-        if (caseSensitivity == null) {
-            caseSensitivity = IOCase.SENSITIVE;
-        }
-        return caseSensitivity.checkEquals(filename1, filename2);
-    }
+//    //-----------------------------------------------------------------------
+//    /**
+//     * Checks whether two filenames are equal after both have been normalized.
+//     * <p>
+//     * Both filenames are first passed to {@link #normalize(String)}.
+//     * The check is then performed in a case-sensitive manner.
+//     *
+//     * @param filename1  the first filename to query, may be null
+//     * @param filename2  the second filename to query, may be null
+//     * @return true if the filenames are equal, null equals null
+//     * @see IOCase#SENSITIVE
+//     */
+//    public static boolean equalsNormalized(String filename1, String filename2) {
+//        return equals(filename1, filename2, true, IOCase.SENSITIVE);
+//    }
+//
+//    /**
+//     * Checks whether two filenames are equal after both have been normalized
+//     * and using the case rules of the system.
+//     * <p>
+//     * Both filenames are first passed to {@link #normalize(String)}.
+//     * The check is then performed case-sensitive on Unix and
+//     * case-insensitive on Windows.
+//     *
+//     * @param filename1  the first filename to query, may be null
+//     * @param filename2  the second filename to query, may be null
+//     * @return true if the filenames are equal, null equals null
+//     * @see IOCase#SYSTEM
+//     */
+//    public static boolean equalsNormalizedOnSystem(String filename1, String filename2) {
+//        return equals(filename1, filename2, true, IOCase.SYSTEM);
+//    }
+//
+//    /**
+//     * Checks whether two filenames are equal, optionally normalizing and providing
+//     * control over the case-sensitivity.
+//     *
+//     * @param filename1  the first filename to query, may be null
+//     * @param filename2  the second filename to query, may be null
+//     * @param normalized  whether to normalize the filenames
+//     * @param caseSensitivity  what case sensitivity rule to use, null means case-sensitive
+//     * @return true if the filenames are equal, null equals null
+//     * @since Commons IO 1.3
+//     */
+//    public static boolean equals(
+//            String filename1, String filename2,
+//            boolean normalized, IOCase caseSensitivity) {
+//        
+//        if (filename1 == null || filename2 == null) {
+//            return (filename1 == null && filename2 == null);
+//        }
+//        if (normalized) {
+//            filename1 = normalize(filename1);
+//            filename2 = normalize(filename2);
+//            if (filename1 == null || filename2 == null) {
+//                throw new NullPointerException(
+//                    "Error normalizing one or both of the file names");
+//            }
+//        }
+//        if (caseSensitivity == null) {
+//            caseSensitivity = IOCase.SENSITIVE;
+//        }
+//        return caseSensitivity.checkEquals(filename1, filename2);
+//    }
 
     //-----------------------------------------------------------------------
     /**
@@ -1181,154 +1180,154 @@ public class FilenameUtils {
         return false;
     }
 
-    //-----------------------------------------------------------------------
-    /**
-     * Checks a filename to see if it matches the specified wildcard matcher,
-     * always testing case-sensitive.
-     * <p>
-     * The wildcard matcher uses the characters '?' and '*' to represent a
-     * single or multiple (zero or more) wildcard characters.
-     * This is the same as often found on Dos/Unix command lines.
-     * The check is case-sensitive always.
-     * <pre>
-     * wildcardMatch("c.txt", "*.txt")      --> true
-     * wildcardMatch("c.txt", "*.jpg")      --> false
-     * wildcardMatch("a/b/c.txt", "a/b/*")  --> true
-     * wildcardMatch("c.txt", "*.???")      --> true
-     * wildcardMatch("c.txt", "*.????")     --> false
-     * </pre>
-     * N.B. the sequence "*?" does not work properly at present in match strings.
-     * 
-     * @param filename  the filename to match on
-     * @param wildcardMatcher  the wildcard string to match against
-     * @return true if the filename matches the wilcard string
-     * @see IOCase#SENSITIVE
-     */
-    public static boolean wildcardMatch(String filename, String wildcardMatcher) {
-        return wildcardMatch(filename, wildcardMatcher, IOCase.SENSITIVE);
-    }
+//    //-----------------------------------------------------------------------
+//    /**
+//     * Checks a filename to see if it matches the specified wildcard matcher,
+//     * always testing case-sensitive.
+//     * <p>
+//     * The wildcard matcher uses the characters '?' and '*' to represent a
+//     * single or multiple (zero or more) wildcard characters.
+//     * This is the same as often found on Dos/Unix command lines.
+//     * The check is case-sensitive always.
+//     * <pre>
+//     * wildcardMatch("c.txt", "*.txt")      --> true
+//     * wildcardMatch("c.txt", "*.jpg")      --> false
+//     * wildcardMatch("a/b/c.txt", "a/b/*")  --> true
+//     * wildcardMatch("c.txt", "*.???")      --> true
+//     * wildcardMatch("c.txt", "*.????")     --> false
+//     * </pre>
+//     * N.B. the sequence "*?" does not work properly at present in match strings.
+//     * 
+//     * @param filename  the filename to match on
+//     * @param wildcardMatcher  the wildcard string to match against
+//     * @return true if the filename matches the wilcard string
+//     * @see IOCase#SENSITIVE
+//     */
+//    public static boolean wildcardMatch(String filename, String wildcardMatcher) {
+//        return wildcardMatch(filename, wildcardMatcher, IOCase.SENSITIVE);
+//    }
 
-    /**
-     * Checks a filename to see if it matches the specified wildcard matcher
-     * using the case rules of the system.
-     * <p>
-     * The wildcard matcher uses the characters '?' and '*' to represent a
-     * single or multiple (zero or more) wildcard characters.
-     * This is the same as often found on Dos/Unix command lines.
-     * The check is case-sensitive on Unix and case-insensitive on Windows.
-     * <pre>
-     * wildcardMatch("c.txt", "*.txt")      --> true
-     * wildcardMatch("c.txt", "*.jpg")      --> false
-     * wildcardMatch("a/b/c.txt", "a/b/*")  --> true
-     * wildcardMatch("c.txt", "*.???")      --> true
-     * wildcardMatch("c.txt", "*.????")     --> false
-     * </pre>
-     * N.B. the sequence "*?" does not work properly at present in match strings.
-     * 
-     * @param filename  the filename to match on
-     * @param wildcardMatcher  the wildcard string to match against
-     * @return true if the filename matches the wilcard string
-     * @see IOCase#SYSTEM
-     */
-    public static boolean wildcardMatchOnSystem(String filename, String wildcardMatcher) {
-        return wildcardMatch(filename, wildcardMatcher, IOCase.SYSTEM);
-    }
-
-    /**
-     * Checks a filename to see if it matches the specified wildcard matcher
-     * allowing control over case-sensitivity.
-     * <p>
-     * The wildcard matcher uses the characters '?' and '*' to represent a
-     * single or multiple (zero or more) wildcard characters.
-     * N.B. the sequence "*?" does not work properly at present in match strings.
-     * 
-     * @param filename  the filename to match on
-     * @param wildcardMatcher  the wildcard string to match against
-     * @param caseSensitivity  what case sensitivity rule to use, null means case-sensitive
-     * @return true if the filename matches the wilcard string
-     * @since Commons IO 1.3
-     */
-    public static boolean wildcardMatch(String filename, String wildcardMatcher, IOCase caseSensitivity) {
-        if (filename == null && wildcardMatcher == null) {
-            return true;
-        }
-        if (filename == null || wildcardMatcher == null) {
-            return false;
-        }
-        if (caseSensitivity == null) {
-            caseSensitivity = IOCase.SENSITIVE;
-        }
-        String[] wcs = splitOnTokens(wildcardMatcher);
-        boolean anyChars = false;
-        int textIdx = 0;
-        int wcsIdx = 0;
-        Stack<int[]> backtrack = new Stack<int[]>();
-        
-        // loop around a backtrack stack, to handle complex * matching
-        do {
-            if (backtrack.size() > 0) {
-                int[] array = backtrack.pop();
-                wcsIdx = array[0];
-                textIdx = array[1];
-                anyChars = true;
-            }
-            
-            // loop whilst tokens and text left to process
-            while (wcsIdx < wcs.length) {
-      
-                if (wcs[wcsIdx].equals("?")) {
-                    // ? so move to next text char
-                    textIdx++;
-                    if (textIdx > filename.length()) {
-                        break;
-                    }
-                    anyChars = false;
-                    
-                } else if (wcs[wcsIdx].equals("*")) {
-                    // set any chars status
-                    anyChars = true;
-                    if (wcsIdx == wcs.length - 1) {
-                        textIdx = filename.length();
-                    }
-                    
-                } else {
-                    // matching text token
-                    if (anyChars) {
-                        // any chars then try to locate text token
-                        textIdx = caseSensitivity.checkIndexOf(filename, textIdx, wcs[wcsIdx]);
-                        if (textIdx == -1) {
-                            // token not found
-                            break;
-                        }
-                        int repeat = caseSensitivity.checkIndexOf(filename, textIdx + 1, wcs[wcsIdx]);
-                        if (repeat >= 0) {
-                            backtrack.push(new int[] {wcsIdx, repeat});
-                        }
-                    } else {
-                        // matching from current position
-                        if (!caseSensitivity.checkRegionMatches(filename, textIdx, wcs[wcsIdx])) {
-                            // couldnt match token
-                            break;
-                        }
-                    }
-      
-                    // matched text token, move text index to end of matched token
-                    textIdx += wcs[wcsIdx].length();
-                    anyChars = false;
-                }
-      
-                wcsIdx++;
-            }
-            
-            // full match
-            if (wcsIdx == wcs.length && textIdx == filename.length()) {
-                return true;
-            }
-            
-        } while (backtrack.size() > 0);
-  
-        return false;
-    }
+//    /**
+//     * Checks a filename to see if it matches the specified wildcard matcher
+//     * using the case rules of the system.
+//     * <p>
+//     * The wildcard matcher uses the characters '?' and '*' to represent a
+//     * single or multiple (zero or more) wildcard characters.
+//     * This is the same as often found on Dos/Unix command lines.
+//     * The check is case-sensitive on Unix and case-insensitive on Windows.
+//     * <pre>
+//     * wildcardMatch("c.txt", "*.txt")      --> true
+//     * wildcardMatch("c.txt", "*.jpg")      --> false
+//     * wildcardMatch("a/b/c.txt", "a/b/*")  --> true
+//     * wildcardMatch("c.txt", "*.???")      --> true
+//     * wildcardMatch("c.txt", "*.????")     --> false
+//     * </pre>
+//     * N.B. the sequence "*?" does not work properly at present in match strings.
+//     * 
+//     * @param filename  the filename to match on
+//     * @param wildcardMatcher  the wildcard string to match against
+//     * @return true if the filename matches the wilcard string
+//     * @see IOCase#SYSTEM
+//     */
+//    public static boolean wildcardMatchOnSystem(String filename, String wildcardMatcher) {
+//        return wildcardMatch(filename, wildcardMatcher, IOCase.SYSTEM);
+//    }
+//
+//    /**
+//     * Checks a filename to see if it matches the specified wildcard matcher
+//     * allowing control over case-sensitivity.
+//     * <p>
+//     * The wildcard matcher uses the characters '?' and '*' to represent a
+//     * single or multiple (zero or more) wildcard characters.
+//     * N.B. the sequence "*?" does not work properly at present in match strings.
+//     * 
+//     * @param filename  the filename to match on
+//     * @param wildcardMatcher  the wildcard string to match against
+//     * @param caseSensitivity  what case sensitivity rule to use, null means case-sensitive
+//     * @return true if the filename matches the wilcard string
+//     * @since Commons IO 1.3
+//     */
+//    public static boolean wildcardMatch(String filename, String wildcardMatcher, IOCase caseSensitivity) {
+//        if (filename == null && wildcardMatcher == null) {
+//            return true;
+//        }
+//        if (filename == null || wildcardMatcher == null) {
+//            return false;
+//        }
+//        if (caseSensitivity == null) {
+//            caseSensitivity = IOCase.SENSITIVE;
+//        }
+//        String[] wcs = splitOnTokens(wildcardMatcher);
+//        boolean anyChars = false;
+//        int textIdx = 0;
+//        int wcsIdx = 0;
+//        Stack<int[]> backtrack = new Stack<int[]>();
+//        
+//        // loop around a backtrack stack, to handle complex * matching
+//        do {
+//            if (backtrack.size() > 0) {
+//                int[] array = backtrack.pop();
+//                wcsIdx = array[0];
+//                textIdx = array[1];
+//                anyChars = true;
+//            }
+//            
+//            // loop whilst tokens and text left to process
+//            while (wcsIdx < wcs.length) {
+//      
+//                if (wcs[wcsIdx].equals("?")) {
+//                    // ? so move to next text char
+//                    textIdx++;
+//                    if (textIdx > filename.length()) {
+//                        break;
+//                    }
+//                    anyChars = false;
+//                    
+//                } else if (wcs[wcsIdx].equals("*")) {
+//                    // set any chars status
+//                    anyChars = true;
+//                    if (wcsIdx == wcs.length - 1) {
+//                        textIdx = filename.length();
+//                    }
+//                    
+//                } else {
+//                    // matching text token
+//                    if (anyChars) {
+//                        // any chars then try to locate text token
+//                        textIdx = caseSensitivity.checkIndexOf(filename, textIdx, wcs[wcsIdx]);
+//                        if (textIdx == -1) {
+//                            // token not found
+//                            break;
+//                        }
+//                        int repeat = caseSensitivity.checkIndexOf(filename, textIdx + 1, wcs[wcsIdx]);
+//                        if (repeat >= 0) {
+//                            backtrack.push(new int[] {wcsIdx, repeat});
+//                        }
+//                    } else {
+//                        // matching from current position
+//                        if (!caseSensitivity.checkRegionMatches(filename, textIdx, wcs[wcsIdx])) {
+//                            // couldnt match token
+//                            break;
+//                        }
+//                    }
+//      
+//                    // matched text token, move text index to end of matched token
+//                    textIdx += wcs[wcsIdx].length();
+//                    anyChars = false;
+//                }
+//      
+//                wcsIdx++;
+//            }
+//            
+//            // full match
+//            if (wcsIdx == wcs.length && textIdx == filename.length()) {
+//                return true;
+//            }
+//            
+//        } while (backtrack.size() > 0);
+//  
+//        return false;
+//    }
 
     /**
      * Splits a string into a number of tokens.

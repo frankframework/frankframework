@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -32,8 +33,6 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import nl.nn.credentialprovider.util.AppConstants;
 import nl.nn.credentialprovider.util.ClassUtils;
@@ -52,6 +51,9 @@ import nl.nn.credentialprovider.util.ClassUtils;
  */
 public class WebSphereCredentials extends Credentials implements CallbackHandler {
 
+	private boolean initialized;
+	private boolean aliasFound;
+	
 	public WebSphereCredentials(String alias, String defaultUsername, String defaultPassword) {
 		super(alias, defaultUsername, defaultPassword);
 	}
@@ -77,10 +79,10 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 					Map<String, String> mappingProperties = new HashMap<>();
 					mappingProperties.put("com.ibm.mapping.authDataAlias", getAlias());
 					ClassUtils.invokeSetter(cb,"setProperties",mappingProperties,Map.class);
-					log.debug("MappingPropertiesCallback.properties set to entry key [com.ibm.mapping.authDataAlias], value ["+getAlias()+"]");
+					log.fine("MappingPropertiesCallback.properties set to entry key [com.ibm.mapping.authDataAlias], value ["+getAlias()+"]");
 					continue;
 				} catch (Exception e) {
-					log.warn("exception setting alias ["+getAlias()+"] on MappingPropertiesCallback", e);
+					log.log(Level.WARNING, "exception setting alias ["+getAlias()+"] on MappingPropertiesCallback", e);
 				}
 			}
 			if (cbc.getName().endsWith("AuthDataAliasCallback")) { // Websphere 5
@@ -89,7 +91,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 					ClassUtils.invokeSetter(cb,"setAlias",getAlias());
 					continue;
 				} catch (Exception e) {
-					log.warn("exception setting alias ["+getAlias()+"] on AuthDataAliasCallback", e);
+					log.log(Level.WARNING, "exception setting alias ["+getAlias()+"] on AuthDataAliasCallback", e);
 				}
 			} 
 			if (cb instanceof NameCallback) {
@@ -98,7 +100,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 				ncb.setName(getAlias());
 				continue;
 			} 
-			log.debug("ignoring callback of type ["+cb.getClass().getName()+"] for alias ["+getAlias()+"]");
+			log.fine("ignoring callback of type ["+cb.getClass().getName()+"] for alias ["+getAlias()+"]");
 //			log.debug("contents of callback ["+ToStringBuilder.reflectionToString(cb)+"]");
 //			Class itf[] = cbc.getInterfaces();
 //			for (int j=0; j<itf.length; j++) {
@@ -120,7 +122,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 	private class LoginCallbackHandler implements CallbackHandler {
 		@Override
 		public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-			log.info("callback: "+ToStringBuilder.reflectionToString(callbacks));
+			//log.info("callback: "+ToStringBuilder.reflectionToString(callbacks));
 			for (int i=0; i<callbacks.length; i++) {
 				Callback cb=callbacks[i];
 				if (cb instanceof NameCallback) {
@@ -137,7 +139,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 						pcb.setPassword(password.toCharArray());
 					}
 				} else {
-					log.debug("ignoring callback of type ["+cb.getClass().getName()+"] contents ["+ToStringBuilder.reflectionToString(cb)+"]");
+					log.fine("ignoring callback of type ["+cb.getClass().getName()+"]");
 				}
 //				if (cb instanceof ChoiceCallback) {
 //					ChoiceCallback ccb = (ChoiceCallback) cb;
@@ -154,7 +156,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 	public LoginContext getLoginContext() throws LoginException {
 		String loginConfig="ClientContainer";
 		getCredentialsFromAlias();
-		log.debug("logging in using context["+loginConfig+"]");
+		log.fine("logging in using context["+loginConfig+"]");
 		LoginContext lc = new LoginContext(loginConfig, new LoginCallbackHandler());
 		lc.login();
 		return lc;
@@ -202,6 +204,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 	@Override
 	protected void getCredentialsFromAlias() {
 		try {
+			initialized = true;
 			Set<Principal> principals = new HashSet<>();
 			Set<Object> publicCredentials = new HashSet<>();
 			Set<Object> privateCredentials = new HashSet<>();
@@ -223,6 +226,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 
 			setUsername(ClassUtils.invokeStringGetter(pwcred,"getUserName"));
 			setPassword(invokeCharArrayGetter(pwcred,"getPassword"));
+			aliasFound = true;
 		} catch (Exception e) {
 			NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]"); 
 			nsee.initCause(e);
@@ -230,4 +234,11 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 		}
 	}
 
+	public boolean isAliasFound() {
+		if (!initialized) {
+			getCredentialsFromAlias();
+		}
+		return aliasFound;
+	}
+	
 }

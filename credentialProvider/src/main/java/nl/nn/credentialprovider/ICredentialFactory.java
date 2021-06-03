@@ -21,6 +21,8 @@ public interface ICredentialFactory {
 	 * init() returns true when the credentialFactory is properly configured and can be used.
 	 */
 	public boolean init();
+
+	public boolean hasCredentials(String alias);
 	
 	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword);
 

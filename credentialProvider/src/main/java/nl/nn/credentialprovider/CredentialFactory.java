@@ -17,21 +17,20 @@ package nl.nn.credentialprovider;
 
 
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import lombok.Getter;
 import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.Misc;
 
 public class CredentialFactory {
-	protected Logger log = LogManager.getLogger(this);
+	protected Logger log = Logger.getLogger(this.getClass().getName());
 
 	private final String PROPERTY_CREDENTIAL_FACTORY="credentialFactory.class";
 	private final String DEFAULT_CREDENTIAL_FACTORY1=FileSystemCredentialFactory.class.getName();
 	private final String DEFAULT_CREDENTIAL_FACTORY2=WebSphereCredentialFactory.class.getName();
 
-	private @Getter ICredentialFactory delegate;
+	private ICredentialFactory delegate;
 
 	private static CredentialFactory self;
 
@@ -44,7 +43,7 @@ public class CredentialFactory {
 
 	private CredentialFactory() {
 		String factoryClassName = AppConstants.getInstance().getProperty(PROPERTY_CREDENTIAL_FACTORY);
-		if (tryFactory(factoryClassName)) {
+		if (Misc.isNotEmpty(factoryClassName) && tryFactory(factoryClassName)) {
 			return;
 		}
 		if (tryFactory(DEFAULT_CREDENTIAL_FACTORY1)) {
@@ -53,29 +52,41 @@ public class CredentialFactory {
 		if (tryFactory(DEFAULT_CREDENTIAL_FACTORY2)) {
 			return;
 		}
-		log.warn("No CredentialFactory installed");
+		log.warning("No CredentialFactory installed");
 	}
 
+	// package private method to force delegate for test purposes
+	void forceDelegate(ICredentialFactory delegate) {
+		this.delegate=delegate;
+	}
+	
 	private boolean tryFactory(String factoryClassName) {
-		if (StringUtils.isNotEmpty(factoryClassName)) {
+		System.out.println("--> trying to configure CredentialFactory ["+factoryClassName+"]");
+		log.info("trying to configure CredentialFactory ["+factoryClassName+"]");
+		if (Misc.isNotEmpty(factoryClassName)) {
 			try {
 				Class<ICredentialFactory> factoryClass = (Class<ICredentialFactory>)Class.forName(factoryClassName);
 				ICredentialFactory candidate = factoryClass.newInstance();
 				if (candidate.init()) {
-					log.info("installing CredentialFactory [{}]", factoryClassName);
+					log.info("installing CredentialFactory ["+factoryClassName+"]");
 					delegate = candidate;
 					return true;
 				}
-				log.warn("Cannot initialize CredentialFactory [{}]", factoryClassName);
+				log.warning("Cannot initialize CredentialFactory ["+factoryClassName+"]");
 			} catch (Exception e) {
-				log.warn("Cannot instantiate CredentialFactory [{}]", factoryClassName, e);
+				log.log(Level.WARNING, "Cannot instantiate CredentialFactory ["+factoryClassName+"]", e);
 			}
 		}
 		return false;
 	}
 	
+	public static boolean hasCredential(String alias) {
+		ICredentialFactory delegate = getInstance().delegate;
+		return delegate==null || delegate.hasCredentials(alias);
+	}
+	
 	public static ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
-		ICredentialFactory delegate = getInstance().getDelegate();
+		ICredentialFactory delegate = getInstance().delegate;
 		if (delegate!=null) {
 			ICredentials result = delegate.getCredentials(alias, defaultUsername, defaultPassword);
 			if (result!=null) {

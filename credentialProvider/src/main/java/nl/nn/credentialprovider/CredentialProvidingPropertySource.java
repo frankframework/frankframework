@@ -17,6 +17,20 @@ package nl.nn.credentialprovider;
 
 import org.apache.tomcat.util.IntrospectionUtils.PropertySource;
 
+/**
+ * PropertySource that gets its data from filesystem with secrets.
+ * 
+ * Example context.xml configuration attributes:
+ *   user="${testiaf_user/username}"
+ *   password="${testiaf_user/password}"
+ *
+ * Example context.xml configuration attributes with defaults:
+ *   user="${testiaf_user/username:default username}"
+ *   password="${testiaf_user/password:default password}"
+ *
+ * @author Gerrit van Brakel
+ *
+ */
 public class CredentialProvidingPropertySource implements PropertySource{
 
 	@Override
@@ -24,11 +38,11 @@ public class CredentialProvidingPropertySource implements PropertySource{
 		String pathElements[] = key.split("/");
 		String alias = pathElements[0].trim();
 
-		String pathValues[] = pathElements.length==1 ? null : pathElements[1].split(":");
-		boolean returnPassword = pathValues==null || pathValues[0].trim().equalsIgnoreCase("password");
-		String defaultValue = pathValues!=null && pathValues.length>1 ? pathValues[1].trim() : null;
-
-		ICredentials credentials = CredentialFactory.getCredentials(alias, returnPassword?null:defaultValue, returnPassword?defaultValue:null);
+		if (!CredentialFactory.hasCredential(alias)) {
+			return null;
+		}
+		ICredentials credentials = CredentialFactory.getCredentials(alias, null, null);
+		boolean returnPassword = pathElements.length==1 || pathElements[1].trim().equalsIgnoreCase("password");
 		
 		return returnPassword ? credentials.getPassword() : credentials.getUsername();
 	}

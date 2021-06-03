@@ -22,14 +22,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 public class ClassUtils {
-	protected static Logger log = LogManager.getLogger();
+	protected static Logger log = Logger.getLogger(ClassUtils.class.getName());
 	
 	private static final boolean trace=false;
 
@@ -53,9 +52,9 @@ public class ClassUtils {
 		try {
 			theConstructor = clas.getDeclaredConstructor(parameterTypes);
 		} catch (NoSuchMethodException e) {
-			log.error("cannot create constructor for Class [" + clas.getName() + "]", e);
+			log.log(Level.SEVERE, "cannot create constructor for Class [" + clas.getName() + "]", e);
 			for (int i = 0; i < parameterTypes.length; i++)
-				log.error("Parameter " + i + " type " + parameterTypes[i].getName());
+				log.severe("Parameter " + i + " type " + parameterTypes[i].getName());
 		}
 		return theConstructor;
 	}
@@ -259,7 +258,7 @@ public class ClassUtils {
 			f.setAccessible(true);
 			return f.get(o);
 		} catch (Exception e) {
-			log.error(e);
+			log.log(Level.SEVERE, "", e);
 			return e.getMessage();
 		}
 	}
@@ -302,38 +301,7 @@ public class ClassUtils {
 		result.append("\n");
 	}
 
-	public static String debugObject(Object o) {
-		if (o==null) {
-			return null;
-		}
-		StringBuffer result=new StringBuffer(nameOf(o)+"\n");
-		Class c=o.getClass();
-		Class interfaces[] = c.getInterfaces();
-		for (int i=0;i<interfaces.length; i++) {
-			appendFieldsAndMethods(result,o,"Interface",interfaces[i]);
-		}
-		while (c!=Object.class) {
-			appendFieldsAndMethods(result,o,"Class",c);
-			c=c.getSuperclass();
-		}
-		result.append("toString=["+o.toString()+"]\n");
-		result.append("reflectionToString=["+reflectionToString(o,null)+"]\n");
-		return result.toString();
-	}
 
-	public static String reflectionToString(final Object o, final String fieldnameEnd) {
-		String result=(new ReflectionToStringBuilder(o) {
-				protected boolean accept(Field f) {
-					if (super.accept(f)) {
-						if (trace) log.debug(nameOf(o)+" field ["+f.getName()+"]");
-						return fieldnameEnd==null || f.getName().endsWith(fieldnameEnd);
-					}
-					return false;
-				}
-			}).toString();
-		return result;
-	}
-	
 	/**
 	 * clean up file path, to replace websphere specific classpath references with generic ones.
 	 */

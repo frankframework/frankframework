@@ -15,12 +15,12 @@
 */
 package nl.nn.credentialprovider.util;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
 
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
@@ -52,12 +52,12 @@ public class StringResolver {
 				return result;
 			}
 		} catch (Throwable e) {
-			LogManager.getLogger(StringResolver.class).warn("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
+			Logger.getLogger(StringResolver.class.getName()).warning("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
 		}
 		try {
 			return System.getProperty(key, def);
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			LogManager.getLogger(StringResolver.class).warn("Was not allowed to read system property [" + key + "]: " + e.getMessage());
+			Logger.getLogger(StringResolver.class.getName()).warning("Was not allowed to read system property [" + key + "]: " + e.getMessage());
 			return def;
 		}
 	}
@@ -79,11 +79,11 @@ public class StringResolver {
 	 * the second object.
 	 * 
 	 */
-	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide) throws IllegalArgumentException {
-		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP);
+	public static String substVars(String val, Map props1, Map props2) throws IllegalArgumentException {
+		return substVars(val, props1, props2, DELIM_START, DELIM_STOP);
 	}
 	
-	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, String delimStart, String delimStop) throws IllegalArgumentException {
+	public static String substVars(String val, Map props1, Map props2, String delimStart, String delimStop) throws IllegalArgumentException {
 
 		StringBuffer sbuf = new StringBuffer();
 
@@ -137,9 +137,6 @@ public class StringResolver {
 			}
 
 			if (replacement != null) {
-				if (propsToHide != null && propsToHide.contains(key)) {
-					replacement = Misc.hide(replacement);
-				}
 				// Do variable substitution on the replacement string
 				// such that we can solve "Hello ${x1}" as "Hello p2"
 				// the where the properties are
@@ -154,10 +151,6 @@ public class StringResolver {
 			}
 			i = k + delimStop.length();
 		}
-	}
-
-	public static String substVars(String val, Map props1, Map props2) throws IllegalArgumentException {
-		return substVars(val, props1, props2, null);
 	}
 
 	public static String substVars(String val, Map props) throws IllegalArgumentException {
@@ -179,8 +172,9 @@ public class StringResolver {
 			stopPos = val.indexOf(delimStop, stopPos + delimStop.length());
 			if (stopPos > 0) {
 				String key = val.substring(startPos, stopPos);
-				numEmbeddedStart = StringUtils.countMatches(key, delimStart);
-				numEmbeddedStop = StringUtils.countMatches(key, delimStop);
+				// Disabled embedded resolution, to avoid dependency on StringUtils
+				//numEmbeddedStart = StringUtils.countMatches(key, delimStart);
+				//numEmbeddedStop = StringUtils.countMatches(key, delimStop);
 			}
 		} while (stopPos > 0 && numEmbeddedStart != numEmbeddedStop);
 		return stopPos;

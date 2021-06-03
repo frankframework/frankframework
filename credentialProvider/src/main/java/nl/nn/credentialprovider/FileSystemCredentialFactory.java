@@ -19,9 +19,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.lang3.StringUtils;
-
 import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.Misc;
 
 public class FileSystemCredentialFactory implements ICredentialFactory {
 
@@ -40,7 +39,7 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	public FileSystemCredentialFactory() {
 		AppConstants appConstants = AppConstants.getInstance();
 		String fsroot = appConstants.getProperty(FILESYSTEM_ROOT_PROPERTY);
-		if (StringUtils.isEmpty(fsroot)) {
+		if (Misc.isEmpty(fsroot)) {
 			throw new IllegalStateException("No property ["+FILESYSTEM_ROOT_PROPERTY+"] found for credentialFactory ["+FileSystemCredentialFactory.class.getTypeName()+"]");
 		}
 		this.root = Paths.get(fsroot);
@@ -53,12 +52,16 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	public boolean init() {
 		return Files.exists(root);
 	}
-	
 
-	
+	@Override
+	public boolean hasCredentials(String alias) {
+		return Files.exists(Paths.get(root.toString(), alias));
+	}
+
 	@Override
 	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
 		return new FileSystemCredentials(alias, defaultUsername, defaultPassword, usernamefile, passwordfile, root);
 	}
+
 
 }

@@ -51,7 +51,7 @@ public class FileSystemCredentialsTest {
 	@Test
 	public void testPlainAlias() {
 		
-		String alias = "plain";
+		String alias = "straight";
 		String username = "fakeUsername";
 		String password = "fakePassword";
 		String expectedUsername = "username from alias";
@@ -73,6 +73,21 @@ public class FileSystemCredentialsTest {
 		String expectedPassword = "password from alias";
 		
 		FileSystemCredentials fsc = new FileSystemCredentials(alias, username, password, root);
+		
+		assertEquals(expectedUsername, fsc.getUsername());
+		assertEquals(expectedPassword, fsc.getPassword());
+	}
+
+	@Test
+	public void testPlainCredential() {
+		
+		String alias = "plainText";
+		String username = null;
+		String password = "fakePassword";
+		String expectedUsername = null;
+		String expectedPassword = "Plain Credential";
+		
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, null, password, root);
 		
 		assertEquals(expectedUsername, fsc.getUsername());
 		assertEquals(expectedPassword, fsc.getPassword());

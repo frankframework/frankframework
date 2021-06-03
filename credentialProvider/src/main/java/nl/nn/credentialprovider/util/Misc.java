@@ -25,6 +25,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
@@ -32,21 +33,19 @@ import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
@@ -55,29 +54,17 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
-import org.apache.commons.lang3.EnumUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 
 /**
  * Miscellaneous conversion functions.
  */
 public class Misc {
-	private static Logger log = LogManager.getLogger(Misc.class);
+	private static Logger log = Logger.getLogger(Misc.class.getName());
 	
 	public static final int BUFFERSIZE=20000;
 	@Deprecated
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
-	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
-	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
-	public static final String FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY = "force.fixed.forwarding.default";
 
-	private static Long messageSizeWarnByDefault = null;
-	private static Long responseBodySizeWarnByDefault = null;
-	private static Boolean forceFixedForwardingByDefault = null;
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 	public static final String LINE_SEPARATOR = System.lineSeparator();
 
@@ -393,7 +380,7 @@ public class Misc {
 	}
 
 	public static String streamToString(InputStream stream) throws IOException {
-		return streamToString(stream, null);
+		return streamToString(stream, DEFAULT_INPUT_STREAM_ENCODING);
 	}
 
 	public static String streamToString(InputStream stream, String streamEncoding) throws IOException {
@@ -401,17 +388,9 @@ public class Misc {
 	}
 
 	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding) throws IOException {
-		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream, streamEncoding), endOfLineString);
+		return readerToString(new InputStreamReader(stream, streamEncoding), endOfLineString);
 	}
 
-	public static String resourceToString(URL resource, String endOfLineString) throws IOException {
-		InputStream stream = resource.openStream();
-		return streamToString(stream, endOfLineString);
-	}
-
-	public static String resourceToString(URL resource) throws IOException {
-		return resourceToString(resource, null);
-	}
 
 	/**
 	 * Writes the string to a file.
@@ -481,7 +460,7 @@ public class Misc {
 
 	public static String concat(String separator, String... parts) {
 		int i=0;
-		while(i<parts.length && StringUtils.isEmpty(parts[i])) {
+		while(i<parts.length && isEmpty(parts[i])) {
 			i++;
 		}
 		if (i>=parts.length) {
@@ -489,58 +468,13 @@ public class Misc {
 		}
 		String result=parts[i];
 		while(++i<parts.length) {
-			if (StringUtils.isNotEmpty(parts[i])) {
+			if (isNotEmpty(parts[i])) {
 				result += separator + parts[i];
 			}
 		}
 		return result;
 	}
 
-	/**
-	 * @see #hide(String)
-	 * @return hidden string with all characters replaced with '*'
-	 */
-	public static String hide(String string) {
-		return hide(string, 0);
-	}
-
-	/**
-	 * Hides the string based on the mode given.
-	 * Mode 1 hides starting from the second character of the string
-	 * until, excluding, the last character.
-	 *<p>
-	 *     Example:
-	 *     <pre>
-	 *         String a = "test";
-	 *         String res = Misc.hide(a, 1);
-	 *         System.out.println(res) // prints "t**t"
-	 *     </pre>
-	 * </p>
-	 */
-	public static String hide(String string, int mode) {
-		if (StringUtils.isEmpty(string)) {
-			return string;
-		}
-		int len = string.length();
-		if (mode == 1) {
-			if (len <= 2) {
-				return string;
-			}
-			char firstChar = string.charAt(0);
-			char lastChar = string.charAt(len - 1);
-			return firstChar + StringUtils.repeat("*", len - 2) + lastChar;
-		} else {
-			return StringUtils.repeat("*", len);
-		}
-	}
-
-	/**
-	 * Converts a byte array into a string, and adds a specified string to the end of the converted string.
-	 */
-	public static String byteArrayToString(byte[] input, String endOfLineString) throws IOException{
-		ByteArrayInputStream bis = new ByteArrayInputStream(input);
-		return streamToString(bis, endOfLineString);
-	}
 
 	/**
 	 * Zips the input string with the default input stream encoding.
@@ -578,14 +512,6 @@ public class Misc {
 		return bos.toByteArray();
 	}
 
-	/**
-	 * Unzips a zipped byte array to a string
-	 * @see #gunzip(byte[])
-	 * @param input
-	 */
-	public static String gunzipToString(byte[] input) throws DataFormatException, IOException {
-		return byteArrayToString(gunzip(input),"\n");
-	}
 
 	/**
 	 * Unzips a zipped byte array to a string by create an expandable byte array to hold the decompressed data.
@@ -668,12 +594,6 @@ public class Misc {
 		return bos.toByteArray();
 	}
 
-	/**
-	 * @see #decompress(byte[])
-	 */
-	public static String decompressToString(byte[] input) throws DataFormatException, IOException {
-		return byteArrayToString(decompress(input),"\n");
-	}
 
 	/**
 	 * Decompresses the compressed byte array.
@@ -719,11 +639,11 @@ public class Misc {
 				props.setProperty(key,value);
 			}
 		} catch ( NoSuchMethodException e ) {
-			log.debug("Caught NoSuchMethodException, just not on JDK 1.5: "+e.getMessage());
+			log.fine("Caught NoSuchMethodException, just not on JDK 1.5: "+e.getMessage());
 		} catch ( IllegalAccessException e ) {
-			log.debug("Caught IllegalAccessException, using JDK 1.4 method",e);
+			log.log(Level.FINE, "Caught IllegalAccessException, using JDK 1.4 method",e);
 		} catch ( InvocationTargetException e ) {
-			log.debug("Caught InvocationTargetException, using JDK 1.4 method",e);
+			log.log(Level.FINE, "Caught InvocationTargetException, using JDK 1.4 method",e);
 		}
 
 		if (props.size() == 0) {
@@ -743,7 +663,7 @@ public class Misc {
 				p = r.exec("env");
 			}
 //			props.load(p.getInputStream()); // this does not work, due to potential malformed escape sequences
-			br = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(p.getInputStream()));
+			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 			while ((line = br.readLine()) != null) {
 				int idx = line.indexOf('=');
@@ -768,96 +688,6 @@ public class Misc {
 		}
 		return localHost;
 	}
-
-	public static String getDeployedApplicationBindings() throws IOException {
-		String addp = getApplicationDeploymentDescriptorPath();
-		if (addp==null) {
-			log.debug("applicationDeploymentDescriptorPath not found");
-			return null;
-		}
-		String appBndFile = addp + File.separator + "ibm-application-bnd.xmi";
-		log.debug("deployedApplicationBindingsFile [" + appBndFile + "]");
-		return fileToString(appBndFile);
-	}
-
-	public static String getApplicationDeploymentDescriptorPath() throws IOException {
-		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
-		} catch (Exception e) {
-			if("WAS".equals(AppConstants.getInstance().getString(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, ""))) {
-				throw new IOException(e);
-			}
-			log.debug("Caught NoClassDefFoundError for getApplicationDeploymentDescriptorPath, just not on Websphere Application Server: " + e.getMessage());
-			return null;
-		}
-	}
-
-	public static String getApplicationDeploymentDescriptor () throws IOException {
-		String addp = getApplicationDeploymentDescriptorPath();
-		if (addp==null) {
-			log.debug("applicationDeploymentDescriptorPath not found");
-			return null;
-		}
-		String appFile = addp + File.separator + "application.xml";
-		log.debug("applicationDeploymentDescriptorFile [" + appFile + "]");
-		return fileToString(appFile);
-	}
-
-	public static String getConfigurationResources() throws IOException {
-		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResources").invoke(null);
-		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server: " + e.getMessage());
-			return null;
-		}
-	}
-
-	public static String getConfigurationServer() throws IOException {
-		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServer").invoke(null);
-		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server: " + e.getMessage());
-			return null;
-		}
-	}
-
-	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) {
-		try {
-			Class<?>[] args_types = new Class<?>[3];
-			args_types[0] = String.class;
-			args_types[1] = String.class;
-			args_types[2] = String.class;
-			Object[] args = new Object[3];
-			args[0] = confResString;
-			args[1] = providerType;
-			args[2] = jndiName;
-			return (String) Class
-					.forName("nl.nn.adapterframework.util.IbmMisc")
-					.getMethod("getConnectionPoolProperties", args_types)
-					.invoke(null, args);
-		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server: " + e.getMessage());
-			return null;
-		}
-	}
-
-	public static String getJmsDestinations(String confResString) {
-		try {
-			Class<?>[] args_types = new Class<?>[1];
-			args_types[0] = String.class;
-			Object[] args = new Object[1];
-			args[0] = confResString;
-			return (String) Class
-					.forName("nl.nn.adapterframework.util.IbmMisc")
-					.getMethod("getJmsDestinations", args_types)
-					.invoke(null, args);
-		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getJmsDestinations, just not on Websphere Application Server: "
-					+ e.getMessage());
-			return null;
-		}
-	}
-
 
 	/**
 	 * Converts the file size to bytes.
@@ -888,95 +718,12 @@ public class Misc {
 				return Long.parseLong(s) * multiplier;
 			}
 			catch (NumberFormatException e) {
-				log.error("[" + value + "] not in expected format", e);
+				log.log(Level.SEVERE, "[" + value + "] not in expected format", e);
 			}
 		}
 		return defaultValue;
 	}
 
-	/**
-	 * @see #toFileSize(long, boolean)
-	 */
-	public static String toFileSize(long value) {
-		return toFileSize(value, false);
-	}
-
-	/**
-	 * @see #toFileSize(long, boolean, boolean)
-	 */
-	public static String toFileSize(long value, boolean format) {
-		return toFileSize(value, format, false);
-	}
-
-	/**
-	 * Converts the input value in bytes to the highest degree of file size, and formats and floors the value, if set to true.
-	 * <pre>
-	 *      String mb = Misc.toFileSize(15000000, true); // gives out "14 MB"
-	 *      String kb = Misc.toFileSize(150000, false, true); // gives out "146KB"
-	 * </pre>
-	 */
-	public static String toFileSize(long value, boolean format, boolean floor) {
-		long divider = 1024L * 1024 * 1024;
-		String suffix = null;
-		if (value >= divider) {
-			suffix = "GB";
-		} else {
-			divider = 1024L * 1024;
-			if (value >= divider) {
-				suffix = "MB";
-			} else {
-				divider = 1024;
-				if (value >= divider) {
-					if (format) {
-						suffix = "kB";
-					} else {
-						suffix = "KB";
-					}
-				}
-			}
-		}
-		if (suffix == null) {
-			if (format) {
-				if (value > 0) {
-					return "1 kB";
-				} else {
-					return "0 kB";
-				}
-			} else {
-				return Long.toString(value) + (floor ? "B" : "");
-			}
-		} else {
-			float f = (float) value / divider;
-			return Math.round(f) + (format ? " " : "") + suffix;
-		}
-	}
-
-	public static synchronized long getMessageSizeWarnByDefault() {
-		if (messageSizeWarnByDefault == null) {
-			String definitionString = AppConstants.getInstance().getString(MESSAGE_SIZE_WARN_BY_DEFAULT_KEY, null);
-			long definition = toFileSize(definitionString, -1);
-			messageSizeWarnByDefault = new Long(definition);
-		}
-		return messageSizeWarnByDefault.longValue();
-	}
-
-	public static synchronized long getResponseBodySizeWarnByDefault() {
-		if (responseBodySizeWarnByDefault == null) {
-			String definitionString = AppConstants.getInstance().getString(RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY,
-					null);
-			long definition = toFileSize(definitionString, -1);
-			responseBodySizeWarnByDefault = new Long(definition);
-		}
-		return responseBodySizeWarnByDefault.longValue();
-	}
-
-	public static synchronized boolean isForceFixedForwardingByDefault() {
-		if (forceFixedForwardingByDefault==null) {
-			boolean force=AppConstants.getInstance().getBoolean(FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY, false);
-			forceFixedForwardingByDefault = new Boolean(force);
-		}
-		return forceFixedForwardingByDefault.booleanValue();
-	}
 
 	/**
 	 * Converts the list to a string.
@@ -1009,84 +756,17 @@ public class Misc {
 			if (lowercase) {
 				item=item.toLowerCase();
 			}
-			log.debug("adding item to "+collectionDescription+" ["+item+"]");
+			log.fine("adding item to "+collectionDescription+" ["+item+"]");
 			collection.add(item);
 		}
 		if (list.trim().endsWith(",")) {
-			log.debug("adding item to "+collectionDescription+" <empty string>");
+			log.fine("adding item to "+collectionDescription+" <empty string>");
 			collection.add("");
 		}
 	}
 
-	public static String getFileSystemTotalSpace() {
-		try {
-			Method getTotalSpace = File.class.getMethod("getTotalSpace", (Class[]) null);
-			String dirName = System.getProperty("APPSERVER_ROOT_DIR");
-			if (dirName==null) {
-				dirName = System.getProperty("user.dir");
-				if (dirName==null) {
-					return null;
-				}
-			}
-			File file = new File(dirName);
-			long l = ((Long) getTotalSpace.invoke(file, (Object[]) null)).longValue();
-			return toFileSize(l);
-		} catch ( NoSuchMethodException e ) {
-			log.debug("Caught NoSuchMethodException, just not on JDK 1.6: "+e.getMessage());
-			return null;
-		} catch ( Exception e ) {
-			log.debug("Caught Exception",e);
-			return null;
-		}
-	}
-
-	public static String getFileSystemFreeSpace() {
-		try {
-			Method getFreeSpace = File.class.getMethod("getFreeSpace", (Class[]) null);
-			String dirName = System.getProperty("APPSERVER_ROOT_DIR");
-			if (dirName==null) {
-				dirName = System.getProperty("user.dir");
-				if (dirName==null) {
-					return null;
-				}
-			}
-			File file = new File(dirName);
-			long l = ((Long) getFreeSpace.invoke(file, (Object[]) null)).longValue();
-			return toFileSize(l);
-		} catch ( NoSuchMethodException e ) {
-			log.debug("Caught NoSuchMethodException, just not on JDK 1.6: "+e.getMessage());
-			return null;
-		} catch ( Exception e ) {
-			log.debug("Caught Exception",e);
-			return null;
-		}
-	}
 
 
-	public static String getAge(long value) {
-		long currentTime = (new Date()).getTime();
-		long age = currentTime - value;
-		String ageString = DurationFormatUtils.formatDuration(age, "d") + "d";
-		if ("0d".equals(ageString)) {
-			ageString = DurationFormatUtils.formatDuration(age, "H") + "h";
-			if ("0h".equals(ageString)) {
-				ageString = DurationFormatUtils.formatDuration(age, "m") + "m";
-				if ("0m".equals(ageString)) {
-					ageString = DurationFormatUtils.formatDuration(age, "s") + "s";
-					if ("0s".equals(ageString)) {
-						ageString = age + "ms";
-					}
-				}
-			}
-		}
-		return ageString;
-	}
-
-	public static String getDurationInMs(long value) {
-		long currentTime = (new Date()).getTime();
-		long duration = currentTime - value;
-		return duration + "ms";
-	}
 
 	public static long parseAge(String value, long defaultValue) {
 		if (value == null)
@@ -1113,94 +793,14 @@ public class Misc {
 			try {
 				return Long.parseLong(s) * multiplier;
 			} catch (NumberFormatException e) {
-				log.error("[" + value + "] not in expected format", e);
+				log.log(Level.SEVERE, "[" + value + "] not in expected format", e);
 			}
 		}
 		return defaultValue;
 	}
 
-	/**
-	 * Edits the input string according to the regex and the hide method specified.
-	 * @see #hideFirstHalf(String, String)
-	 * @see #hideAll(String, String)
-	 */
-	public static String cleanseMessage(String inputString, String regexForHiding, String hideMethod) {
-		if (StringUtils.isEmpty(regexForHiding)) {
-			return inputString;
-		}
-		if ("firstHalf".equalsIgnoreCase(hideMethod)) {
-			return hideFirstHalf(inputString, regexForHiding);
-		} else {
-			return hideAll(inputString, regexForHiding);
-		}
-	}
 
-	/**
-	 * Hides the first half of the string.
-	 * @see #hideAll(String, String, int)
-	 */
-	public static String hideFirstHalf(String inputString, String regex) {
-		return hideAll(inputString, regex, 1);
-	}
 
-	/**
-	 * Hide all characters matching the given Regular Expression.
-	 * If the set of expressions is null or empty it will return the raw message.
-	 * @see #hideAll(String, Collection, int)
-	 */
-	public static String hideAll(String message, Collection<String> collection) {
-		return hideAll(message, collection, 0);
-	}
-
-	/**
-	 * Hide all characters matching the given Regular Expression.
-	 * If the set of expressions is null or empty it will return the raw message
-	 * @see #hideAll(String, String, int)
-	 */
-	public static String hideAll(String message, Collection<String> collection, int mode) {
-		if(collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
-			return message; //Nothing to do!
-
-		for (String regex : collection) {
-			if (StringUtils.isNotEmpty(regex))
-				message = hideAll(message, regex, mode);
-		}
-		return message;
-	}
-
-	/**
-	 * @see #hideAll(String, String, int)
-	 */
-	public static String hideAll(String inputString, String regex) {
-		return hideAll(inputString, regex, 0);
-	}
-
-	/**
-	 * Hides the input string according to the given regex and mode.
-	 * If mode is set to 1, then the first half of the string gets hidden.
-	 * Else, all of it.
-	 */
-	public static String hideAll(String inputString, String regex, int mode) {
-		StringBuilder result = new StringBuilder();
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		int previous = 0;
-		while (matcher.find()) {
-			result.append(inputString.substring(previous, matcher.start()));
-			int len = matcher.end() - matcher.start();
-			if (mode == 1) {
-				int lenFirstHalf = (int) Math.ceil((double) len / 2);
-				result.append(StringUtils.repeat("*", lenFirstHalf));
-				result.append(inputString.substring(matcher.start()
-						+ lenFirstHalf, matcher.start() + len));
-			} else {
-				result.append(StringUtils.repeat("*", len));
-			}
-			previous = matcher.end();
-		}
-		result.append(inputString.substring(previous, inputString.length()));
-		return result.toString();
-	}
 
 	public static String getBuildOutputDirectory() {
 		String path = new File(AppConstants.class.getClassLoader().getResource("").getPath()).getPath();
@@ -1226,16 +826,6 @@ public class Misc {
 		return null;
 	}
 
-	/**
-	 * Replaces low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter
-	 * <pre>
-	 *      Misc.toSortName("new_name"); // gives out "NEW*NAME"
-	 * </pre>
-	 */
-	public static String toSortName(String name) {
-		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter
-		return StringUtils.upperCase(StringUtils.replace(name,"_", "*"));
-	}
 
 	/**
 	 * Counts the number of characters that the specified reges will affect in the specified string.
@@ -1258,7 +848,7 @@ public class Misc {
 		try {
 			return URLDecoder.decode(input,"UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
+			log.warning(e.getMessage());
 			return null;
 		}
 	}
@@ -1284,48 +874,13 @@ public class Misc {
 		return index;
 	}
 	
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
-		return parse(enumClass, null, value);
-	}
 
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value) {
-		E result = EnumUtils.getEnumIgnoreCase(enumClass, value);
-		if (result==null) {
-			throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ EnumUtils.getEnumList(enumClass));
-		}
-		return result;
-	}
-
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String value, Function<E,String> field) {
-		return parseFromField(enumClass, null, value, field);
+	public static boolean isEmpty(String string) {
+		return string==null || string.isEmpty();
 	}
 	
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, String value, Function<E,String> field) {
-		List<String> fieldValues = new ArrayList<>();
-		for (E e:EnumUtils.getEnumList(enumClass)) {
-			String fieldValue = field.apply(e);
-			if (fieldValue.equalsIgnoreCase(value)) {
-				return e;
-			}
-			fieldValues.add(fieldValue);
-		}
-		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
-	}
-
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, int value, Function<E,Integer> field) {
-		return parseFromField(enumClass, null, value, field);
-	}
-	
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, int value, Function<E,Integer> field) {
-		List<Integer> fieldValues = new ArrayList<>();
-		for (E e:EnumUtils.getEnumList(enumClass)) {
-			int fieldValue = field.apply(e);
-			if (fieldValue==value) {
-				return e;
-			}
-			fieldValues.add(fieldValue);
-		}
-		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
+	public static boolean isNotEmpty(String string) {
+		return string!=null && !string.isEmpty();
 	}
 
 }
