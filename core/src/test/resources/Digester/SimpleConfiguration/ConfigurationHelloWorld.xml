@@ -36,7 +36,7 @@
 				className="nl.nn.adapterframework.receivers.JavaListener"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" slotId="${instance.name}/HelloUniverse_In" />
+				datasourceName="${jdbc.datasource.default}" slotId="${instance.name}/HelloUniverse_In" />
 		</receiver>
 		<pipeline firstPipe="HelloUniverse">
 			<exits>
@@ -47,7 +47,7 @@
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
 					returnString="Hello, Universe!" />
    				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" 
-					jmsRealm="jdbc" 
+					datasourceName="${jdbc.datasource.default}" 
 					slotId="${instance.name}/HelloUniverse_Out" />
 				<forward name="success" path="EXIT" />
 			</pipe>

@@ -9,7 +9,7 @@
 			</exits>
 			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.SenderPipe" labelXPath="concat('L-',name(*))">
 				<sender className="nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender" applicationId="${applicationId}" messageProtocol="FF" serviceId="${SendUnstructuredEmail}" />
-				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/IfsaFFRequesterSender" />
+				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/IfsaFFRequesterSender" />
 				<forward name="success" path="Text2XmlPipe" />
 			</pipe>
 			<pipe className="nl.nn.adapterframework.pipes.Text2XmlPipe" name="Text2XmlPipe" xmlTag="result">
@@ -27,7 +27,7 @@
 			</exits>
 			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.SenderPipe" labelStyleSheet="IfsaRRRequesterSender/label.xsl">
 				<sender className="nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender" applicationId="${applicationId}" messageProtocol="RR" serviceId="${GetPartyBasicData}" />
-				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/IfsaRRRequesterSender" />
+				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/IfsaRRRequesterSender" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

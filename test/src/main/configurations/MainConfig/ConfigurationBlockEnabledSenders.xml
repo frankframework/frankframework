@@ -8,7 +8,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" datasourceName="${jdbc.datasource.default}" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
 					<param name="tchar" xpathExpression="/record/char" />
 					<param name="tnumber" value="${jdbc.blockenabledsenders.key}" />
 					<param name="tvarchar" />
@@ -27,7 +27,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe" blockSize="2" combineBlocks="false" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" datasourceName="${jdbc.datasource.default}" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
 					<param name="tchar" xpathExpression="/record/char" />
 					<param name="tnumber" value="${jdbc.blockenabledsenders.key}" />
 					<param name="tvarchar" />
@@ -46,7 +46,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" datasourceName="${jdbc.datasource.default}" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)"
 					batchSize="2" />
 					<param name="tchar" xpathExpression="/record/char" />
 					<param name="tnumber" value="${jdbc.blockenabledsenders.key}" />
@@ -66,7 +66,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.StreamLineIteratorPipe" name="StreamLineIteratorPipe_Record" >
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" datasourceName="${jdbc.datasource.default}" />
 			</pipe>
 			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />

@@ -13,7 +13,7 @@
 				serviceName="ibis4test-TransactionHandlingMultiAdapter"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" 
+				datasourceName="${jdbc.datasource.default}" 
 				slotId="${applicationId}/GenericReceiverTransactionHandlingMultiAdapter"
 			/>
 		</receiver>
@@ -39,7 +39,7 @@
 			</pipe>
 
 			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="Required">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert" datasourceName="${jdbc.datasource.default}">
 					<param name="value" value="test1" />
 				</sender>
 				<forward name="success" path="Send transacted message to required subadapter with exception" />
@@ -59,7 +59,7 @@
 			</pipe>
 
 			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" datasourceName="${jdbc.datasource.default}" />
 				<forward name="success" path="this should fail because of a tx error" />
 			</pipe>
 

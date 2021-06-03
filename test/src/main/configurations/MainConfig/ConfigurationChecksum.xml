@@ -118,7 +118,7 @@
 		        >
 		        	<param name="SOURCE" value="I4TESTGR"/>
 				</sender> 
-				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="${applicationId}/ChecksumTest-File" />
+				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/ChecksumTest-File" />
 			  <forward name="success" path="READY" />
 			</pipe>	
 		</pipeline>

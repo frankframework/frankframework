@@ -13,7 +13,7 @@
 				serviceName="ibis4test-TransactionTimeoutHandlingTransacted"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" 
+				datasourceName="${jdbc.datasource.default}" 
 				slotId="${applicationId}/GenericReceiverTransactionTimeoutHandlingTransacted"
 			/>
 		</receiver>

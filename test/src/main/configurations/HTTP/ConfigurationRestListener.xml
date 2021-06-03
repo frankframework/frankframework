@@ -13,7 +13,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
-					queryType="insert" jmsRealm="jdbc"
+					queryType="insert" datasourceName="${jdbc.datasource.default}"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true">
 					<param name="TVARCHAR" sessionKey="fileName" />
 					<param name="message" sessionKey="file" type="inputstream" />
@@ -99,7 +99,7 @@
 				storeResultInSessionKey="docFileName">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TVARCHAR FROM IBISTEMP WHERE TKEY=?" queryType="select"
-					jmsRealm="jdbc" scalar="true">
+					datasourceName="${jdbc.datasource.default}" scalar="true">
 					<param name="messageKey" sessionKey="docId" />
 				</sender>
 				<forward name="success" path="setContentDisposition" />
@@ -116,7 +116,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
-					jmsRealm="jdbc" scalar="true" streamResultToServlet="true"
+					datasourceName="${jdbc.datasource.default}" scalar="true" streamResultToServlet="true"
 					blobsCompressed="false">
 					<param name="messageKey" sessionKey="docId" />
 				</sender>

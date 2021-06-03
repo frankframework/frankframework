@@ -18,52 +18,52 @@
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
+						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
+						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
+						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
+						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
+						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
+						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
+						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
+						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
+						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
+						datasourceName="${jdbc.datasource.default}"
 					/>
 				</sender>	
 	        	<forward name="success" path="Echo"/>
