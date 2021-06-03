@@ -9,8 +9,37 @@ Ibis AdapterFramework release notes
 Upcoming
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC2...7.6-release)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+
+
+
+7.6-RC2
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...v7.6-RC2)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.6-RC2)](https://travis-ci.org/ibissource/iaf)
+
+- Reduce debug logging and fix JBoss project names (#1592)
+- Fix 'Move to InProcess' in transaction (#1603)
+- Avoid recursion explosion in IbisException.getMessage() (#1623)
+- Do not canonicalize SenderPipe to GenericMesageSendingPipe (#1631)
+- Fix bytearray support for SOAPProviderBase (#1682)
+- Skip proprietary projects when building external PRs (#1642 + #1646)
+- Fix Out of memory using maxConcurrentThreads in ParallelSenders (#1688)
+- Fix IOException in UnzipPip when collectFileContents=true (#1678)
+- Fix NPE on Exit with empty=true (#1679)
+- Make filenames mandatory in onCompletedTransferNotify (#1665)
+- Enable validators and wrappers to forward to Exits (#1695)
+- Fix 'resend message' for JdbcListeners browsed wrong message (#1732)
+- Fix Http Streams not always closed (#1741)
+- JdbcTableListener must specify statusValueError (#1754)
+- Backport Docker changes to 7.6 (#1781)
+- Fix calculating root validations from message root attributes (#1799)
+- Backport closeOnExit mechanism + message.toString() (#1806)
+- Add validator and wrapper statistics 7.6 (#1858)
+- Throw Exception when JmsRealm cannot be found (#1857)
+- Show error warning only when server in state error (#1860)
+- Trim columnsReturned in FixedQuerySender (#1870)
 
 
 
