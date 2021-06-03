@@ -28,11 +28,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.Rule;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.xml.sax.Attributes;
+
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.digester.AttributeCheckingRule;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
@@ -42,33 +52,23 @@ import nl.nn.adapterframework.util.Lock;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-import org.apache.commons.digester3.AbstractObjectCreationFactory;
-import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.Rule;
-import org.apache.commons.digester3.binder.RulesBinder;
-import org.apache.commons.digester3.binder.RulesModule;
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
-import org.xml.sax.Attributes;
-
 /**
  * Manager for Monitoring.
  *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class MonitorManager implements EventHandler, ApplicationListener<MonitorEvent> {
+public class MonitorManager extends ConfigurableLifecyleBase implements ApplicationContextAware, ApplicationListener<MonitorEvent> {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private Configuration configuration;
-	private List<Monitor> monitors = new ArrayList<Monitor>();				// all monitors managed by this monitormanager
+	private @Getter @Setter ApplicationContext applicationContext;
+	private List<Monitor> monitors = new ArrayList<>();				// all monitors managed by this monitormanager
 	private Map<String, IMonitorAdapter> destinations = new LinkedHashMap<String, IMonitorAdapter>();	// all destinations (that can receive status messages) managed by this monitormanager
 
-	private Map eventNotificationListeners = new LinkedHashMap(); // map by event of triggers that need to be notified of occurrence of event.
+	private Map<String, Map> eventNotificationListeners = new LinkedHashMap<>(); // map by event of triggers that need to be notified of occurrence of event.
 
 
-	private List<EventThrowing> eventThrowers = new ArrayList<EventThrowing>();			// static list of all throwers of events;
+	private List<EventThrowing> eventThrowers = new ArrayList<>();			// static list of all throwers of events;
 
 	private Map eventsByThrower = new LinkedHashMap();
 	private Map eventsByThrowerType = new LinkedHashMap();
@@ -89,12 +89,15 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 
 	public static final boolean traceReconfigure=false;
 
-
-
-	public void configure(Configuration configuration) throws ConfigurationException {
+	@Override
+	public void configure() {
 		Collections.sort(eventThrowers,new EventThrowerComparator());
-		this.configuration=configuration;
-		reconfigure();
+		try {
+			reconfigure();
+		} catch (ConfigurationException e) {
+			// TODO log these, or config warnings?
+			e.printStackTrace();
+		}
 	}
 
 	/*
@@ -114,10 +117,12 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 		for (Iterator it=monitors.iterator(); it.hasNext();) {
 			Monitor monitor = (Monitor)it.next();
 			monitor.configure();
+//			((ConfigurableApplicationContext)applicationContext).addApplicationListener(monitor);
 		}
 	}
 
 	private class EventThrowerComparator implements Comparator {
+		@Override
 		public int compare(Object o1, Object o2) {
 			EventThrowing et1=(EventThrowing)o1;
 			EventThrowing et2=(EventThrowing)o2;
@@ -162,92 +167,95 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 		}
 	}
 
-	public class CreationFactory extends AbstractObjectCreationFactory {
-
-		public CreationFactory() {
-			super();
-		}
-
-		public Object createObject(Attributes attributes) throws Exception {
-			return null;//TODO getInstance();
-		}
-	}
+//	public class CreationFactory extends AbstractObjectCreationFactory {
+//
+//		public CreationFactory() {
+//			super();
+//		}
+//
+//		public Object createObject(Attributes attributes) throws Exception {
+//			return null;//TODO getInstance();
+//		}
+//	}
 
 	private class DestinationCleanup extends Rule {
 
+		@Override
 		public void begin(String uri, String elementName, Attributes attributes) throws Exception {
 			destinations.clear();
 		}
 
 	}
 
-	public void setDigesterRules(Digester d) {
-		Rule attributeChecker=new AttributeCheckingRule();
+//	public void setDigesterRules(Digester d) {
+//		//TODO make set of DigesterRule
+//		Rule attributeChecker=new AttributeCheckingRule();
+//
+//		d.addFactoryCreate("*/monitoring", new CreationFactory());
+//		d.addSetProperties("*/monitoring");
+//		d.addSetTop("*/monitoring","register");
+//		d.addRule("*/monitoring", attributeChecker);
+//
+//		d.addRule("*/monitoring/destinations", new DestinationCleanup());
+//
+//		//We cannot call addObjectCreate(pattern, attributeName, clazz) as this will invoke the class (and the class is an interface).
+//		d.addObjectCreate("*/destination", IMonitorAdapter.class.getCanonicalName(), "className");
+//		d.addSetProperties("*/destination");
+//		d.addSetTop("*/destination","register");
+//		d.addRule("*/destination", attributeChecker);
+//
+//		d.addObjectCreate("*/destination/sender", ISender.class.getCanonicalName(), "className");
+//		d.addSetProperties("*/destination/sender");
+//		d.addSetNext("*/destination/sender","setSender");
+//		d.addRule("*/destination/sender", attributeChecker);
+//
+//		d.addObjectCreate("*/monitor",Monitor.class);
+//		d.addSetProperties("*/monitor");
+//		d.addSetTop("*/monitor","register");
+//		d.addRule("*/monitor", attributeChecker);
+//
+//		d.addObjectCreate("*/alarm",Trigger.class);
+//		d.addSetProperties("*/alarm");
+//		d.addSetNext("*/alarm","registerAlarm");
+//		d.addRule("*/alarm", attributeChecker);
+//
+//		d.addCallMethod("*/alarm/events/event", "addEventCode", 0);
+//
+//
+//		d.addObjectCreate("*/clearing",Trigger.class);
+//		d.addSetProperties("*/clearing");
+//		d.addSetNext("*/clearing","registerClearing");
+//		d.addRule("*/clearing", attributeChecker);
+//
+//		d.addCallMethod("*/clearing/events/event", "addEventCode", 0);
+//
+//		d.addObjectCreate("*/trigger",Trigger.class);
+//		d.addSetProperties("*/trigger");
+//		d.addSetNext("*/trigger","registerTrigger");
+//		d.addRule("*/trigger", attributeChecker);
+//
+//		d.addCallMethod("*/trigger/events/event", "addEventCode", 0);
+//
+//		d.addObjectCreate("*/adapterfilter",AdapterFilter.class);
+//		d.addSetProperties("*/adapterfilter");
+//		d.addSetNext("*/adapterfilter","registerAdapterFilter");
+//		d.addRule("*/adapterfilter", attributeChecker);
+//
+//		d.addSetNext("*/adapterfilter/sources","setFilteringToLowerLevelObjects");
+//		d.addCallMethod("*/adapterfilter/sources/source", "registerSubObject", 0);
+//
+//	}
 
-		d.addFactoryCreate("*/monitoring", new CreationFactory());
-		d.addSetProperties("*/monitoring");
-		d.addSetTop("*/monitoring","register");
-		d.addRule("*/monitoring", attributeChecker);
-
-		d.addRule("*/monitoring/destinations", new DestinationCleanup());
-
-		//We cannot call addObjectCreate(pattern, attributeName, clazz) as this will invoke the class (and the class is an interface).
-		d.addObjectCreate("*/destination", IMonitorAdapter.class.getCanonicalName(), "className");
-		d.addSetProperties("*/destination");
-		d.addSetTop("*/destination","register");
-		d.addRule("*/destination", attributeChecker);
-
-		d.addObjectCreate("*/destination/sender", ISender.class.getCanonicalName(), "className");
-		d.addSetProperties("*/destination/sender");
-		d.addSetNext("*/destination/sender","setSender");
-		d.addRule("*/destination/sender", attributeChecker);
-
-		d.addObjectCreate("*/monitor",Monitor.class);
-		d.addSetProperties("*/monitor");
-		d.addSetTop("*/monitor","register");
-		d.addRule("*/monitor", attributeChecker);
-
-		d.addObjectCreate("*/alarm",Trigger.class);
-		d.addSetProperties("*/alarm");
-		d.addSetNext("*/alarm","registerAlarm");
-		d.addRule("*/alarm", attributeChecker);
-
-		d.addCallMethod("*/alarm/events/event", "addEventCode", 0);
-
-
-		d.addObjectCreate("*/clearing",Trigger.class);
-		d.addSetProperties("*/clearing");
-		d.addSetNext("*/clearing","registerClearing");
-		d.addRule("*/clearing", attributeChecker);
-
-		d.addCallMethod("*/clearing/events/event", "addEventCode", 0);
-
-		d.addObjectCreate("*/trigger",Trigger.class);
-		d.addSetProperties("*/trigger");
-		d.addSetNext("*/trigger","registerTrigger");
-		d.addRule("*/trigger", attributeChecker);
-
-		d.addCallMethod("*/trigger/events/event", "addEventCode", 0);
-
-		d.addObjectCreate("*/adapterfilter",AdapterFilter.class);
-		d.addSetProperties("*/adapterfilter");
-		d.addSetNext("*/adapterfilter","registerAdapterFilter");
-		d.addRule("*/adapterfilter", attributeChecker);
-
-		d.addSetNext("*/adapterfilter/sources","setFilteringToLowerLevelObjects");
-		d.addCallMethod("*/adapterfilter/sources/source", "registerSubOject", 0);
-
-	}
-
-	public void register(Object dummy) {
-		// do nothing, just to get rid of stack item
-	}
+//	public void register(Object dummy) {
+//		System.out.println("what is this "+dummy);
+//		// do nothing, just to get rid of stack item
+//	}
 
 	public void registerDestination(IMonitorAdapter monitorAdapter) {
 		destinations.put(monitorAdapter.getName(),monitorAdapter);
 	}
 	public IMonitorAdapter getDestination(String name) {
-		return (IMonitorAdapter)destinations.get(name);
+		return destinations.get(name);
 	}
 	public Map<String, IMonitorAdapter> getDestinations() {
 		return destinations;
@@ -266,7 +274,8 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 			registerEvent(event.getSource(), event.getEventCode());
 		}
 		if(event instanceof FireMonitorEvent) {
-			fireEvent(event.getSource(), event.getEventCode());
+//			System.out.println("fire event " + event.getEventCode());
+//			fireEvent(event.getSource(), event.getEventCode());
 		}
 	}
 
@@ -276,15 +285,15 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 	}
 	public Monitor removeMonitor(int index) {
 		Monitor result=null;
-		result = (Monitor)monitors.remove(index);
+		result = monitors.remove(index);
 		return result;
 	}
 	public Monitor getMonitor(int index) {
-		return (Monitor)monitors.get(index);
+		return monitors.get(index);
 	}
 	public Monitor findMonitor(String name) {
 		for (int i=0; i<monitors.size(); i++) {
-			Monitor monitor = (Monitor)monitors.get(i);
+			Monitor monitor = monitors.get(i);
 			if (name!=null && name.equals(monitor.getName()) || name==monitor.getName()) {
 				return monitor;
 			}
@@ -297,7 +306,13 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 	}
 
 	public IAdapter findAdapterByName(String adapterName) {
-		return configuration.getRegisteredAdapter(adapterName);
+		//TODO remove this?
+		if(getApplicationContext() instanceof Configuration) {
+			return ((Configuration)getApplicationContext()).getRegisteredAdapter(adapterName);
+		}
+		System.out.println("cannot find adapter ["+adapterName+"]");
+		return null;
+//		return ibisManager.getRegisteredAdapter(adapterName);
 	}
 
 	/**
@@ -532,6 +547,7 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 	 * any object in the configuration has to call this function at configuration
 	 * time to notifiy the monitoring system of any event that he may wish to throw.
 	 */
+//	@Override
 	public void registerEvent(EventThrowing thrower, String eventCode) {
 
 		if (log.isDebugEnabled()) {
@@ -613,6 +629,7 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 			currentEventSource=null;
 		}
 
+		@Override
 		public boolean hasNext() {
 			if (nextCalled) {
 				determineNextEventSource();
@@ -621,6 +638,7 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 			return currentEventSource!=null;
 		}
 
+		@Override
 		public Object next() {
 			if (nextCalled) {
 				determineNextEventSource();
@@ -629,6 +647,7 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 			return currentEventSource;
 		}
 
+		@Override
 		public void remove() {
 			// will not be used...
 		}
@@ -646,7 +665,7 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 		return result;
 	}
 
-	public void registerEventNotificationListener(Trigger trigger, List eventCodes, Map adapterFilters, boolean filterOnLowerLevelObjects, boolean filterExclusive) throws MonitorException {
+	public void registerEventNotificationListener(Trigger trigger, List<String> eventCodes, Map<String, AdapterFilter> adapterFilters, boolean filterOnLowerLevelObjects, boolean filterExclusive) throws MonitorException {
 		boolean performFiltering=adapterFilters!=null;
 		for (Iterator eventIt=eventCodes.iterator(); eventIt.hasNext();) {
 			String eventCode=(String)eventIt.next();
@@ -751,6 +770,8 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 		}
 	}
 
+	/*
+	@Override
 	public void fireEvent(EventThrowing source, String eventCode) {
 		if (isEnabled()) {
 			try {
@@ -778,7 +799,7 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 			}
 		}
 	}
-
+*/
 	public XmlBuilder getStatusXml() {
 
 		long freeMem = Runtime.getRuntime().freeMemory();
@@ -869,6 +890,16 @@ public class MonitorManager implements EventHandler, ApplicationListener<Monitor
 
 	public Map getEventsByThrowerType() {
 		return eventsByThrowerType;
+	}
+
+	@Override
+	public void start() {
+		// Nothing to start?
+	}
+
+	@Override
+	public void stop() {
+		// Nothing to stop?
 	}
 
 }

@@ -24,7 +24,12 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
+import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
+import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -32,24 +37,27 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.SmartApplicationListener;
 
 /**
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class Trigger {
+public class Trigger implements LazyLoadingEventListener<FireMonitorEvent> {
 	protected Logger log = LogUtil.getLogger(this);
 	
 	public static final int SOURCE_FILTERING_NONE=0;
 	public static final int SOURCE_FILTERING_BY_ADAPTER=1;
 	public static final int SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT=2;
 	
-	private Monitor owner;
+	private Monitor monitor;
 	private SeverityEnum severity;
 	private boolean alarm;
 
-	private List<String> eventCodes = new ArrayList<String>();
-	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<String, AdapterFilter>();
+	private List<String> eventCodes = new ArrayList<>();
+	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
 	
 	private int sourceFiltering;
 	private boolean filterExclusive = false;
@@ -58,44 +66,75 @@ public class Trigger {
 	private int period=0;
 	
 	private LinkedList<Date> eventDts=null;
-		
+	private boolean configured = false;
+
+	public Trigger() {
+		System.err.println(this);
+	}
 
 	public void configure() throws ConfigurationException {
-		if (eventCodes.size()==0) {
-			log.warn(getLogPrefix()+"configure() trigger of Monitor ["+owner.getName()+"] should have at least one eventCode specified");
+		if (eventCodes.isEmpty()) {
+			log.warn(getLogPrefix()+"configure() trigger of Monitor ["+getMonitor().getName()+"] should have at least one eventCode specified");
 		}
-		try {
-			Map adapterFilterMap = (getSourceFiltering()!=SOURCE_FILTERING_NONE)?adapterFilters:null;
-			getOwner().registerEventNotificationListener(this,eventCodes,adapterFilterMap,isFilterOnLowerLevelObjects(), isFilterExclusive());
-		} catch (MonitorException e) {
-			throw new ConfigurationException(e);
-		}
+
+//		try {
+//			Map adapterFilterMap = (getSourceFiltering()!=SOURCE_FILTERING_NONE)?adapterFilters:null;
+//			getMonitor().registerEventNotificationListener(this,eventCodes,adapterFilterMap,isFilterOnLowerLevelObjects(), isFilterExclusive());
+//		} catch (MonitorException e) {
+//			throw new ConfigurationException(e);
+//		}
 		if (threshold>0) {
 			if (eventDts==null) {
-				eventDts = new LinkedList<Date>();
+				eventDts = new LinkedList<>();
 			}
 		} else {
 			eventDts=null;
 		}
+
+		configured = true;
 	}
-	
+
+	@Override
+	public void onApplicationEvent(FireMonitorEvent event) {
+		if(configured && eventCodes.contains(event.getEventCode())) {
+			evaluateEvent(event);
+		}
+	}
+
 	public String getLogPrefix() {
 		return "("+this.hashCode()+") ";
 	}
 
+	public void evaluateEvent(FireMonitorEvent event) {
+		EventThrowing source = event.getSource();
+		if(evaluateAdapterFilters(source)) {
+			try {
+				evaluateEvent(source, event.getEventCode());
+			} catch (MonitorException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	protected boolean evaluateAdapterFilters(EventThrowing source) {
+		Adapter adapter = source.getAdapter();
+		return (getAdapterFilters().isEmpty() || (adapter != null && getAdapterFilters().containsKey(adapter.getName())));
+	}
+
 	public void evaluateEvent(EventThrowing source, String eventCode) throws MonitorException {
+		System.out.println(source);
 		Date now = new Date();
 		if (getThreshold()>0) {
 			cleanUpEvents(now);
 			eventDts.add(now);
 			if (eventDts.size()>=getThreshold()) {
-				getOwner().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
+				getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
 			}
 		} else {
-			getOwner().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
+			getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
 		}
 	}	
-	
+
 	public void notificationOfReverseTrigger(EventThrowing source) {
 		if (eventDts!=null) {
 			eventDts.clear();
@@ -162,11 +201,11 @@ public class Trigger {
 		}
 	}
 
-	public void setOwner(Monitor monitor) {
-		owner = monitor;
+	public void setMonitor(Monitor monitor) {
+		this.monitor = monitor;
 	}
-	public Monitor getOwner() {
-		return owner;
+	public Monitor getMonitor() {
+		return monitor;
 	}
 
 	@Override
@@ -199,15 +238,15 @@ public class Trigger {
 	}
 
 
-	public void clearEventCodes() {
+	private void clearEventCodes() {
 		eventCodes.clear();
 	}
 	public void addEventCode(String code) {
 		eventCodes.add(code);
 	}
-	
+
 	public void setEventCode(String code) {
-		eventCodes.clear();
+		clearEventCodes();
 		addEventCode(code);
 	}
 
@@ -218,7 +257,7 @@ public class Trigger {
 		}
 	}
 	public String[] getEventCodes() {
-		return (String[])eventCodes.toArray(new String[eventCodes.size()]);
+		return eventCodes.toArray(new String[eventCodes.size()]);
 	}
 
 	public List<String> getEventCodeList() {
@@ -316,7 +355,7 @@ public class Trigger {
 						log.debug(getLogPrefix()+"setSources() registered adapter ["+adaptername+"]");
 						registerAdapterFilter(af);
 					}
-					af.registerSubOject(thrower.getEventSourceName());
+					af.registerSubObject(thrower.getEventSourceName());
 					log.debug(getLogPrefix()+"setSources() registered source ["+thrower.getEventSourceName()+"] on adapter ["+adapter.getName()+"]");
 					break;
 				}
@@ -396,7 +435,9 @@ public class Trigger {
 
 	public void registerAdapterFilter(AdapterFilter af) {
 		adapterFilters.put(af.getAdapter(),af);
-		if (getSourceFiltering()==SOURCE_FILTERING_NONE) {
+		if(af.isFilteringToLowerLevelObjects()) {
+			setSourceFiltering(SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT);
+		} else if (getSourceFiltering()==SOURCE_FILTERING_NONE) {
 			setSourceFiltering(SOURCE_FILTERING_BY_ADAPTER);
 		}
 	}
@@ -409,9 +450,9 @@ public class Trigger {
 		return filterExclusive;
 	}
 
-	public void setFilteringToLowerLevelObjects(Object dummy) {
-		setSourceFiltering(SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT);
-	}
+//	public void setFilteringToLowerLevelObjects(Object dummy) {
+//		setSourceFiltering(SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT);
+//	}
 
 	public boolean isFilterOnLowerLevelObjects() {
 		return sourceFiltering==SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT;
@@ -426,5 +467,4 @@ public class Trigger {
 	public int getSourceFiltering() {
 		return sourceFiltering;
 	}
-
 }

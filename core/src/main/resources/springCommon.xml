@@ -13,8 +13,6 @@
 		scope="singleton"
 	/>
 
-	<bean name="monitorManager" class="nl.nn.adapterframework.monitoring.MonitorManager" />
-
 	<bean
 		name="lowerCasePropertyPlaceholderConfigurer"
 		class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer"

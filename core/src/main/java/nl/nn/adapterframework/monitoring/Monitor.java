@@ -24,20 +24,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
+
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
-
 /**
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class Monitor {
+public class Monitor implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -56,13 +60,14 @@ public class Monitor {
 
 	private List<Trigger> triggers = new ArrayList<Trigger>();
 	private Set<String> destinationSet=new HashSet<String>(); 
+	private @Setter ApplicationContext applicationContext;
 	
 	public Monitor() {
 		super();
 	}
 
-	public void register(Object x) {
-		System.err.println("register monitor: "+ x);
+	public void register(MonitorManager mm) {
+		mm.addMonitor(this);
 //TODO	MonitorManager.getInstance().addMonitor(this);
 	}
 	
@@ -72,8 +77,9 @@ public class Monitor {
 				log.debug("monitor ["+getName()+"] configuring triggers");
 		}
 		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
-			Trigger trigger = (Trigger)it.next();
+			Trigger trigger = it.next();
 			trigger.configure();
+			((ConfigurableApplicationContext)applicationContext).addApplicationListener(trigger);
 		}
 	}
 	
@@ -251,7 +257,7 @@ public class Monitor {
 	}
 
 	public void registerTrigger(Trigger trigger) {
-		trigger.setOwner(this);
+		trigger.setMonitor(this);
 		triggers.add(trigger);
 	}
 
@@ -279,7 +285,7 @@ public class Monitor {
 		return triggers;
 	}
 	public Trigger getTrigger(int index) {
-		return (Trigger)triggers.get(index);
+		return triggers.get(index);
 	}
 
 	@Override

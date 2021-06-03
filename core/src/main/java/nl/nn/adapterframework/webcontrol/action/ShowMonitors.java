@@ -27,6 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
@@ -60,7 +61,8 @@ public class ShowMonitors extends ActionBase {
 	}
 
 	protected MonitorManager getMonitorManager() {
-		return ibisManager.getIbisContext().getBean("monitorManager", MonitorManager.class);
+		Configuration tx = ibisManager.getConfiguration("TX");
+		return tx.getBean("monitorManager", MonitorManager.class);
 	}
 
 	public void initForm(DynaActionForm monitorForm) {

@@ -38,6 +38,11 @@ public class DigesterRule {
 	 */
 	private @Getter @Setter String selfRegisterMethod;
 
+	/**
+	 * The 'callMethod()' attribute.
+	 */
+	private @Getter @Setter String callMethod;
+
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);

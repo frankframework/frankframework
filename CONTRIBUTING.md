@@ -3,7 +3,7 @@
 # How to contribute
 
 Thanks for reading this we're glad you're taking an interest in contributing to our framework.
-We want you working on things you're excited about, there are however pleny of [issues](https://github.com/ibissource/iaf/issues) that can be picked up.
+We want you working on things you're excited about, there are however plenty of [issues](https://github.com/ibissource/iaf/issues) that can be picked up.
 
 **Please be advised that we use our own repository manager for snapshot builds.**
 Either use our public `ibissource` or private `proprietary` profile when running Maven.

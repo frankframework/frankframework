@@ -1,4 +1,5 @@
 /*
+
    Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +48,6 @@ import nl.nn.adapterframework.configuration.filters.InitialCapsFilter;
 import nl.nn.adapterframework.configuration.filters.OnlyActiveFilter;
 import nl.nn.adapterframework.configuration.filters.SkipContainersFilter;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -145,9 +145,14 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
 		loader.addRules(digester);
 
-//		if (MonitorManager.getInstance().isEnabled()) {
-//			MonitorManager.getInstance().setDigesterRules(digester);
-//		}
+		if (AppConstants.getInstance(configuration.getClassLoader()).getBoolean("monitoring.enabled", false)) {
+			Resource digesterMonitoringRules = Resource.getResource(configuration, "digester-monitoring-rules.xml");
+			FrankDigesterRules monitoringRules = new FrankDigesterRules(digester, digesterMonitoringRules);
+			//Populate the bean with Spring magic
+			applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(monitoringRules, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false); //TODO: use helper class to wire and init
+			monitoringRules = (FrankDigesterRules) applicationContext.getAutowireCapableBeanFactory().initializeBean(monitoringRules, "digesterRules");
+			DigesterLoader.newLoader(monitoringRules).addRules(digester);
+		}
 
 		boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
 		if (validation) {
@@ -214,9 +219,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
 				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
 		}
-//		if (MonitorManager.getInstance().isEnabled()) {
-//			MonitorManager.getInstance().configure(configuration); //TODO fix memory leak when the configuration is reloaded
-//		}
 	}
 
 	private String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException {

@@ -86,8 +86,8 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter {
 	}
 
 	@Override
-	public void register(Object x) {
-		System.err.println("register monitor adapter: "+ x);
+	public void register(MonitorManager mm) {
+		mm.registerDestination(this);
 //TODO		MonitorManager.getInstance().registerDestination(this);
 	}
 

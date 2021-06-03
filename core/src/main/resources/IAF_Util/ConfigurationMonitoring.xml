@@ -1,4 +1,4 @@
-<monitoring enabled="${monitoring.enabled}">
+<monitoring active="false">
 	<destinations>
 		<destination name="GALM" className="nl.nn.adapterframework.monitoring.GalmMonitorAdapter"/>
 	</destinations>

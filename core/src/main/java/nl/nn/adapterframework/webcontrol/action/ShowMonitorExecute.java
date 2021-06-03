@@ -56,7 +56,7 @@ public class ShowMonitorExecute extends ShowMonitors {
 			if (form_file!=null && form_file.getFileSize()>0) {
 				log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
 				Digester d=new Digester();
-				mm.setDigesterRules(d);
+//				mm.setDigesterRules(d);
 				mm.getMonitors().clear();
 				d.push(mm);
 				try {

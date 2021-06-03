@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<digester-rules>
+	<!-- Rules are parsed with the DigesterRuleParser. Objects will be created with the Spring Beans Factory. -->
+	<!-- See DigesterRule for more information -->
+
+	<rule pattern="*/monitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
+<!-- 		d.addRule("*/monitoring/destinations", new DestinationCleanup()); -->
+
+	<rule pattern="*/destination" selfRegisterMethod="register"/>
+	<rule pattern="*/destination/sender" registerMethod="register"/>
+	<rule pattern="*/monitors/monitor" selfRegisterMethod="register"/>
+
+	<rule pattern="*/monitor/alarm" registerMethod="registerAlarm"/>
+	<rule pattern="*/monitor/alarm/events/event" callMethod="addEventCode"/>
+
+	<rule pattern="*/monitor/clearing" registerMethod="registerClearing"/>
+	<rule pattern="*/monitor/clearing/events/event" callMethod="addEventCode"/>
+
+	<rule pattern="*/monitor/trigger" registerMethod="registerTrigger"/>
+	<rule pattern="*/monitor/trigger/events/event" callMethod="addEventCode"/>
+
+	<rule pattern="*/adapterfilter" registerMethod="registerAdapterFilter"/>
+	<rule pattern="*/adapterfilter/sources/source" callMethod="registerSubObject"/>
+
+</digester-rules>

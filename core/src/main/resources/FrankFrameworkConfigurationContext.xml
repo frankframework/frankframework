@@ -42,6 +42,10 @@
 	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigurationWarnings" />
 	<bean name="eventPublisher" class="nl.nn.adapterframework.monitoring.EventPublisher" />
 
+	<bean name="monitorManager" class="nl.nn.adapterframework.monitoring.MonitorManager" />
+<!-- 	<bean name="applicationEventMulticaster" class="nl.nn.adapterframework.lifecycle.FrankEventMulticaster" /> -->
+
+
 	<!--
 	Beans created from Configuration.xml, but prototyped here for
 	extra dependencies which cannot be created otherwise.
@@ -145,22 +149,21 @@
 	/>
 
 	<bean
-		name="proto-trigger"
+		name="proto-alarm,proto-clearing,proto-trigger"
 		class="nl.nn.adapterframework.monitoring.Trigger"
 		autowire="byName"
 		scope="prototype"
 	/>
 
 	<bean
-		name="proto-alarm"
-		class="nl.nn.adapterframework.monitoring.Trigger"
+		name="proto-destination"
+		class="nl.nn.adapterframework.monitoring.IMonitorAdapter"
 		autowire="byName"
 		scope="prototype"
 	/>
-
 	<bean
-		name="proto-clearing"
-		class="nl.nn.adapterframework.monitoring.Trigger"
+		name="proto-adapterfilter"
+		class="nl.nn.adapterframework.monitoring.AdapterFilter"
 		autowire="byName"
 		scope="prototype"
 	/>

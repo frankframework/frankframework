@@ -15,25 +15,27 @@
 */
 package nl.nn.adapterframework.monitoring;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.configuration.digester.AbstractSpringPoweredDigesterFactory;
 
 /**
- * Interface to monitoring service. 
+ * Factory for the JMS Realms instance, which holds all JMS Realm definitions
+ * found in the Configuration File.
  * 
- * @author  Gerrit van Brakel
- * @since   4.7
+ * This bean is a singleton, not a prototype, which is why the GenericFactory
+ * can not be used.
+ * 
+ * @author Tim van der Leeuw
+ *
  */
-public interface IMonitorAdapter {
+public class MonitoringFactory extends AbstractSpringPoweredDigesterFactory {
 
-	void configure() throws ConfigurationException;
-	
-	void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t); 
+	@Override
+	public String getSuggestedBeanName() {
+		return "monitorManager";
+	}
 
-	public XmlBuilder toXml();
-	
-	void setName(String name);	
-	String getName();
-
-	void register(MonitorManager mm);
+	@Override
+	public boolean isPrototypesOnly() {
+		return false;
+	}
 }
