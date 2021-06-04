@@ -125,6 +125,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	@Test
 	public void testUseNamedParametersStringValueContains_unp_start_resolveParam() throws Exception {
 		exception.expect(SenderException.class);
+
 		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', '?{param}')");
 
 		Parameter param = new Parameter();
@@ -135,8 +136,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 		sender.configure();
 		sender.open();
 
-		Message result = sendMessage("dummy");
-		assertEquals("?{param}", result.asString());
+		sendMessage("dummy");
 	}
 	
 	@Test
@@ -154,38 +154,38 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	public void testUseNamedParametersWithoutParam() throws Exception {
 		exception.expect(SenderException.class);
 		exception.expectMessage("Syntax error in SQL statement \"INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param})[*]\"");
+
 		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param})");
 		sender.setUseNamedParams(true);
 		sender.configure();
 		sender.open();
 
-		Message result = sendMessage("dummy");
-		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+		sendMessage("dummy");
 	}
 	
 	@Test
 	public void testNamedParamInQueryFlagFalse() throws Exception {
 		exception.expect(SenderException.class);
 		exception.expectMessage("Syntax error in SQL statement \"INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param})[*]\"");
+
 		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param})");
 		sender.setUseNamedParams(false);
 		sender.configure();
 		sender.open();
 
-		Message result = sendMessage("dummy");
-		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+		sendMessage("dummy");
 	}
 
 	@Test
 	public void testInCompleteNamedParamInQuery() throws Exception {
 		exception.expect(SenderException.class);
 		exception.expectMessage("Syntax error in SQL statement \"INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param)[*]\"");
+
 		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param)");
 		sender.configure();
 		sender.open();
 
-		Message result = sendMessage("dummy");
-		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+		sendMessage("dummy");
 	}
 	@Test
 	public void testColumnsReturnedWithSpaceBetween() throws Exception {
