@@ -983,7 +983,7 @@ angular.module('iaf.beheerconsole')
 				if(data[pair] == "loaded"){
 					$scope.result += "Successfully uploaded configuration ["+pair+"]<br/>";
 				} else {
-					$scope.result += "Could not upload configuration from the file ["+pair+"]: "+data[pair]+"<br/>";
+					$scope.error += "Could not upload configuration from the file ["+pair+"]: "+data[pair]+"<br/>";
 				}
 			}
 
