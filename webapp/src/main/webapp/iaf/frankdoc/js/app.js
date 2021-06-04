@@ -94,6 +94,18 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		getCategoryMembers($scope).forEach(m => r[m.fullName] = m);
 		return r;
 	};
+})
+.filter('omitDeprecatedChildrenAndAddChildElements', function() {
+	return function(children, $scope) {
+		result = [];
+		children.forEach(c => {
+			if(! c.deprecated) {
+				c.childElements = $scope.types[c.type];
+				result.push(c);
+			}
+		});
+		return result;
+	}
 });
 
 function getCategoryMembers($scope) {
@@ -107,4 +119,22 @@ function getCategoryMembers($scope) {
 		r.push($scope.elements[memberName]);
 	}
 	return r;
+}
+
+function getCategoryOfType(type, categories) {
+	for(i = 0; i < categories.length; ++i) {
+		category = categories[i];
+		if(category.types.indexOf(type) >= 0) {
+			return category.name;
+		}
+	}
+	return null;
+}
+
+function fullNameToSimpleName(fullName) {
+	idx = fullName.lastIndexOf('.');
+	++idx;
+	numChars = fullName.length - idx;
+	result = fullName.substr(idx, numChars);
+	return result
 }

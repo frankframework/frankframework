@@ -24,6 +24,12 @@ angular.module('iaf.frankdoc').directive('overview', [function() {
 		controller: 'parent-element',
 		templateUrl: 'views/parent-element.html'
 	};
+}]).directive('elementChildren', [function() {
+	return {
+		restrict: 'A',
+		replace: true,
+		templateUrl: 'views/element-children.html'
+	}
 }]).directive('elementAttributes', [function() {
 	return {
 		restrict: 'A',

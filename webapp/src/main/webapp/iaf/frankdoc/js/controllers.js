@@ -39,4 +39,25 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	var parent = $scope.element.parent;
 	$scope.element = $scope.elements[parent]; //Update element to the parent's element
 	$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + $scope.element.fullName.replaceAll(".", "/") + '.html';
+}]).controller('element-child-controller', ['$scope', function($scope) {
+	$scope.init = function(child) {
+		let childCategory = getCategoryOfType(child.type, $scope.$parent.categories);
+		let childElements = $scope.getChildElements(child);
+		let title = 'From ' + childCategory + ": ";
+		for(i = 0; i < childElements.length; ++i) {
+			if(i == 0) {
+				title = title + childElements[i];
+			} else {
+				title = title + ", " + childElements[i];
+			}
+		}
+		$scope.title = title;
+	}
+
+	$scope.getChildElements = function(child) {
+		fullNames = $scope.$parent.types[child.type];
+		simpleNames = [];
+		fullNames.forEach(fullName => simpleNames.push(fullNameToSimpleName(fullName)));
+		return simpleNames;
+	}
 }]);

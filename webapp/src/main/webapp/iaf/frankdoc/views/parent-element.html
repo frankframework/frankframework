@@ -4,6 +4,7 @@
 		<a href="{{javaDocURL}}" target="_blank" rel="noreferrer">{{element.fullName}}</a>
 	</h5>
 
+	<div ng-if="element.children" element-children></div>
 	<table ng-if="element.attributes" element-attributes></table>
 
 	<parent-element ng-if="element.parent" parent="element.parent"></parent-element>
