@@ -38,9 +38,11 @@ import java.util.StringTokenizer;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -123,7 +125,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private String streamCharset = null;
 	private boolean blobsCompressed=true;
 	private boolean blobSmartGet=false;
-	private boolean useNamedParams=false;
+	private @Getter Boolean useNamedParams=null;
 	private boolean includeFieldDefinition=XmlUtils.isIncludeFieldDefinitionByDefault();
 	private String rowIdSessionKey=null;
 	private String packageContent = "db2";
@@ -244,7 +246,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message, PipeLineSession session) throws SenderException, SQLException, ParameterException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
 		String query=getQuery(message);
-		if (isUseNamedParams()) {
+		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
 		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, getQueryTypeEnum(), newParameterList);
@@ -1035,12 +1037,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return columnsReturnedList;
 	}
 
-	@IbisDoc({"9", "When <code>true</code>, every string in the message which equals <code>"+UNP_START+"paramname"+UNP_END+"</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.", "false"})
-	public void setUseNamedParams(boolean b) {
+	@IbisDoc({"9", "Named parameters will be auto detected by default. Every string in the query which equals <code>"+UNP_START+"paramname"+UNP_END+"</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.", "null"})
+	public void setUseNamedParams(Boolean b) {
 		useNamedParams = b;
-	}
-	public boolean isUseNamedParams() {
-		return useNamedParams;
 	}
 
 	@IbisDoc({"10", "when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields", "application default (true)"})
