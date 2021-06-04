@@ -5,11 +5,6 @@ import java.util.HashMap;
 public class MockCredentialFactory extends HashMap<String,Credentials> implements ICredentialFactory {
 
 	@Override
-	public boolean init() {
-		return true;
-	}
-
-	@Override
 	public boolean hasCredentials(String alias) {
 		return containsKey(alias);
 	}

@@ -65,15 +65,11 @@ public class CredentialFactory {
 			log.info("trying to configure CredentialFactory ["+factoryClassName+"]");
 			try {
 				Class<ICredentialFactory> factoryClass = (Class<ICredentialFactory>)Class.forName(factoryClassName);
-				ICredentialFactory candidate = factoryClass.newInstance();
-				if (candidate.init()) {
-					log.info("installing CredentialFactory ["+factoryClassName+"]");
-					delegate = candidate;
-					return true;
-				}
-				log.warning("Cannot initialize CredentialFactory ["+factoryClassName+"]");
+				delegate = factoryClass.newInstance();
+				log.info("installed CredentialFactory ["+factoryClassName+"]");
+				return true;
 			} catch (Exception e) {
-				log.log(Level.WARNING, "Cannot instantiate CredentialFactory ["+factoryClassName+"]", e);
+				log.log(Level.WARNING, "Cannot instantiate CredentialFactory ["+factoryClassName+"] (" + e.getClass().getTypeName() + "): " + e.getMessage());
 			}
 		}
 		return false;

@@ -40,17 +40,16 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 		AppConstants appConstants = AppConstants.getInstance();
 		String fsroot = appConstants.getProperty(FILESYSTEM_ROOT_PROPERTY);
 		if (Misc.isEmpty(fsroot)) {
-			throw new IllegalStateException("No property ["+FILESYSTEM_ROOT_PROPERTY+"] found for credentialFactory ["+FileSystemCredentialFactory.class.getTypeName()+"]");
+			throw new IllegalStateException("No property ["+FILESYSTEM_ROOT_PROPERTY+"] found");
 		}
 		this.root = Paths.get(fsroot);
 		
+		if (!Files.exists(root)) {
+			throw new IllegalArgumentException("Credential Filesystem ["+root+"] does not exist");
+		}
+		
 		usernamefile = appConstants.getProperty(USERNAME_FILE_PROPERTY, USERNAME_FILE_DEFAULT);
 		passwordfile = appConstants.getProperty(PASSWORD_FILE_PROPERTY, PASSWORD_FILE_DEFAULT);
-	}
-
-	@Override
-	public boolean init() {
-		return Files.exists(root);
 	}
 
 	@Override

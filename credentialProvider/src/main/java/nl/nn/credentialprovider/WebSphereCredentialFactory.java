@@ -18,12 +18,6 @@ package nl.nn.credentialprovider;
 public class WebSphereCredentialFactory implements ICredentialFactory {
 
 	@Override
-	public boolean init() {
-		return true;
-	}
-
-
-	@Override
 	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
 		return new WebSphereCredentials(alias, defaultUsername, defaultPassword);
 	}
