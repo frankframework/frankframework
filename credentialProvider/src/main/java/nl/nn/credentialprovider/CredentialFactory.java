@@ -26,7 +26,7 @@ import nl.nn.credentialprovider.util.Misc;
 public class CredentialFactory {
 	protected Logger log = Logger.getLogger(this.getClass().getCanonicalName());
 
-	private final String PROPERTY_CREDENTIAL_FACTORY="credentialFactory.class";
+	private final String CREDENTIAL_FACTORY_KEY="credentialFactory.class";
 	private final String DEFAULT_CREDENTIAL_FACTORY1=FileSystemCredentialFactory.class.getName();
 	private final String DEFAULT_CREDENTIAL_FACTORY2=WebSphereCredentialFactory.class.getName();
 
@@ -42,7 +42,7 @@ public class CredentialFactory {
 	}
 
 	private CredentialFactory() {
-		String factoryClassName = AppConstants.getInstance().getProperty(PROPERTY_CREDENTIAL_FACTORY);
+		String factoryClassName = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
 		if (tryFactory(factoryClassName)) {
 			return;
 		}
