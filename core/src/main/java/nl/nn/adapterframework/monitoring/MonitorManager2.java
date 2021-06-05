@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.Rule;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -42,7 +41,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
@@ -60,7 +58,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class MonitorManager extends ConfigurableLifecyleBase implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
+public class MonitorManager2 extends ConfigurableLifecyleBase implements ApplicationContextAware, ApplicationListener<MonitorEvent> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -81,6 +79,8 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	private Map adaptersByThrowers = new LinkedHashMap();
 	private Map eventsByAdapter = new LinkedHashMap();
 	private Map adaptersByEvent = new LinkedHashMap();
+
+
 
 	private boolean enabled = AppConstants.getInstance().getBoolean("monitoring.enabled", false);
 	private Date lastStateChange=null;
@@ -167,6 +167,90 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		}
 	}
 
+//	public class CreationFactory extends AbstractObjectCreationFactory {
+//
+//		public CreationFactory() {
+//			super();
+//		}
+//
+//		public Object createObject(Attributes attributes) throws Exception {
+//			return null;//TODO getInstance();
+//		}
+//	}
+
+	private class DestinationCleanup extends Rule {
+
+		@Override
+		public void begin(String uri, String elementName, Attributes attributes) throws Exception {
+			destinations.clear();
+		}
+
+	}
+
+//	public void setDigesterRules(Digester d) {
+//		//TODO make set of DigesterRule
+//		Rule attributeChecker=new AttributeCheckingRule();
+//
+//		d.addFactoryCreate("*/monitoring", new CreationFactory());
+//		d.addSetProperties("*/monitoring");
+//		d.addSetTop("*/monitoring","register");
+//		d.addRule("*/monitoring", attributeChecker);
+//
+//		d.addRule("*/monitoring/destinations", new DestinationCleanup());
+//
+//		//We cannot call addObjectCreate(pattern, attributeName, clazz) as this will invoke the class (and the class is an interface).
+//		d.addObjectCreate("*/destination", IMonitorAdapter.class.getCanonicalName(), "className");
+//		d.addSetProperties("*/destination");
+//		d.addSetTop("*/destination","register");
+//		d.addRule("*/destination", attributeChecker);
+//
+//		d.addObjectCreate("*/destination/sender", ISender.class.getCanonicalName(), "className");
+//		d.addSetProperties("*/destination/sender");
+//		d.addSetNext("*/destination/sender","setSender");
+//		d.addRule("*/destination/sender", attributeChecker);
+//
+//		d.addObjectCreate("*/monitor",Monitor.class);
+//		d.addSetProperties("*/monitor");
+//		d.addSetTop("*/monitor","register");
+//		d.addRule("*/monitor", attributeChecker);
+//
+//		d.addObjectCreate("*/alarm",Trigger.class);
+//		d.addSetProperties("*/alarm");
+//		d.addSetNext("*/alarm","registerAlarm");
+//		d.addRule("*/alarm", attributeChecker);
+//
+//		d.addCallMethod("*/alarm/events/event", "addEventCode", 0);
+//
+//
+//		d.addObjectCreate("*/clearing",Trigger.class);
+//		d.addSetProperties("*/clearing");
+//		d.addSetNext("*/clearing","registerClearing");
+//		d.addRule("*/clearing", attributeChecker);
+//
+//		d.addCallMethod("*/clearing/events/event", "addEventCode", 0);
+//
+//		d.addObjectCreate("*/trigger",Trigger.class);
+//		d.addSetProperties("*/trigger");
+//		d.addSetNext("*/trigger","registerTrigger");
+//		d.addRule("*/trigger", attributeChecker);
+//
+//		d.addCallMethod("*/trigger/events/event", "addEventCode", 0);
+//
+//		d.addObjectCreate("*/adapterfilter",AdapterFilter.class);
+//		d.addSetProperties("*/adapterfilter");
+//		d.addSetNext("*/adapterfilter","registerAdapterFilter");
+//		d.addRule("*/adapterfilter", attributeChecker);
+//
+//		d.addSetNext("*/adapterfilter/sources","setFilteringToLowerLevelObjects");
+//		d.addCallMethod("*/adapterfilter/sources/source", "registerSubObject", 0);
+//
+//	}
+
+//	public void register(Object dummy) {
+//		System.out.println("what is this "+dummy);
+//		// do nothing, just to get rid of stack item
+//	}
+
 	public void registerDestination(IMonitorAdapter monitorAdapter) {
 		destinations.put(monitorAdapter.getName(),monitorAdapter);
 	}
@@ -180,17 +264,23 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	/**
 	 * Helper method to retrieve the MonitorManager from the ApplicationContext
 	 */
-	public static MonitorManager getInstance(ApplicationContext applicationContext) {
-		return applicationContext.getBean("monitorManager", MonitorManager.class);
+	public static MonitorManager2 getInstance(ApplicationContext applicationContext) {
+		return applicationContext.getBean("monitorManager", MonitorManager2.class);
 	}
 
 	@Override
-	public void onApplicationEvent(RegisterMonitorEvent event) {
-		registerEvent(event);
+	public void onApplicationEvent(MonitorEvent event) {
+		if(event instanceof RegisterMonitorEvent) {
+			registerEvent(event.getSource(), event.getEventCode());
+		}
+		if(event instanceof FireMonitorEvent) {
+//			System.out.println("fire event " + event.getEventCode());
+//			fireEvent(event.getSource(), event.getEventCode());
+		}
 	}
 
 	public void addMonitor(Monitor monitor) {
-		monitor.setOwner(this);
+//		monitor.setOwner(this);
 		monitors.add(monitor);
 	}
 	public Monitor removeMonitor(int index) {
@@ -453,10 +543,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		}
 	}
 
-	public void registerEvent(RegisterMonitorEvent event) {
-		registerEvent(event.getSource(), event.getEventCode());
-	}
-
 	/**
 	 * any object in the configuration has to call this function at configuration
 	 * time to notifiy the monitoring system of any event that he may wish to throw.
@@ -465,10 +551,8 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	public void registerEvent(EventThrowing thrower, String eventCode) {
 
 		if (log.isDebugEnabled()) {
-			log.debug("registerEvent [" + eventCode + "] for adapter [" + (thrower.getAdapter() == null ? null : thrower.getAdapter().getName()) + "] object [" + thrower.getEventSourceName() + "]");
-		}
-
-		register(thrower, eventCode);
+            log.debug("registerEvent [" + eventCode + "] for adapter [" + (thrower.getAdapter() == null ? null : thrower.getAdapter().getName()) + "] object [" + thrower.getEventSourceName() + "]");
+        }
 
 		addItemToMapOfLists(eventsByThrower, eventCode, thrower, "eventsByThrower");
 		addItemToMapOfLists(throwersByEvent, thrower, eventCode, "throwersByEvent");
@@ -484,34 +568,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 			eventThrowers.add(thrower);
 		}
 
-	}
-
-	private Map<String, Thrower> throwers = new HashMap<>();
-	private void register(EventThrowing eventThrowing, String eventCode) {
-		Adapter adapter = eventThrowing.getAdapter();
-		if(adapter == null || StringUtils.isEmpty(adapter.getName())) {
-			throw new IllegalStateException("adapter ["+adapter+"] has no (usable) name");
-		}
-		String adapterName = adapter.getName();
-
-		throwers.getOrDefault(adapterName, new Thrower(eventThrowing)).addEventCode(eventCode);
-	}
-
-	private static class Thrower {
-		private EventThrowing thrower;
-		List<String> eventCodes = new ArrayList<>();
-
-		public Thrower(EventThrowing thrower) {
-			this.thrower = thrower;
-		}
-
-		public void addEventCode(String eventCode) {
-			eventCodes.add(eventCode);
-		}
-
-		public List<String> getEventCodes() {
-			return Collections.unmodifiableList(eventCodes);
-		}
 	}
 
 	private class EventSourceIterator implements Iterator {

@@ -2305,15 +2305,62 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('ShowMonitorsCtrl', ['$scope', 'Api', function($scope, Api) {
+.controller('ShowMonitorsCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
+
+	$scope.selectedConfiguration = null;
 	$scope.monitors = [];
-	$scope.enabled = false;
 	$scope.destinations = [];
-	Api.Get("monitors", function(data) {
-		$scope.enabled = data.enabled;
-		$scope.monitors = data.monitors;
-		$scope.destinations = data.destinations;
+	$scope.eventTypes = [];
+	$scope.severities = [];
+
+	$scope.changeConfiguration = function(name) {
+		$scope.selectedConfiguration = name;
+
+		if($state.params.configuration == "" || $state.params.configuration != name) { //Update the URL
+			$state.transitionTo('pages.monitors', {configuration: name}, { notify: false, reload: false});
+		}
+
+		update();
+	};
+
+	$scope.totalRaised = 0;
+	function update() {
+		Api.Get("configurations/"+$scope.selectedConfiguration+"/monitors", function(data) {
+			$.extend($scope, data);
+
+			$scope.totalRaised = 0;
+			for(i in $scope.monitors) {
+				if($scope.monitors[i].raised) $scope.totalRaised++;
+			}
+		});
+	}
+
+	//Wait for the 'configurations' field to be populated to change the monitoring page
+	$scope.$watch('configurations', function(configs) {
+		if(configs) {
+			var configName = $state.params.configuration; //See if the configuration query param is populated
+			if(!configName) configName = configs[0].name; //Fall back to the first configuration
+			$scope.changeConfiguration(configName); //Update the view
+		}
 	});
+
+	function getUrl(monitor, action) {
+		return "/configurations/"+$scope.selectedConfiguration+"/monitors/"+monitor.name+"?action="+action;
+	}
+
+	$scope.raise = function(monitor) {
+		Api.Put(getUrl(monitor, "raise"), null, function() {
+			update();
+		});
+	}
+	$scope.clear = function(monitor) {
+		Api.Put(getUrl(monitor, "clear"), null, function() {
+			update();
+		});
+	}
+	$scope.edit = function(monitor) {
+		console.log(monitor)
+	}
 }])
 
 .controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', function($scope, Api, Alert) {

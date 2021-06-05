@@ -17,37 +17,60 @@
 <!-- 		</div> -->
 <!-- 	</div> -->
 	<div class="row">
-		<div class="col-lg-6" ng-repeat="monitor in monitors">
+		<div class="col-lg-12 tabs-container">
+			<ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+				<li ng-class="{active : selectedConfiguration == configuration.name}" ng-repeat="configuration in configurations">
+					<a ng-click="changeConfiguration(configuration.name)">{{::configuration.name}}</a>
+				</li>
+			</ul>
+		</div>
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title summary">
+					<h4 ng-if="monitors.length == 0" >No monitors found in this configuration</h4>
+					<h4 ng-if="monitors.length > 0" ><span class="badge badge-secondary">{{totalRaised}}</span> monitors in state raised</h4>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div ng-if="monitors.length > 0" class="col-lg-12" ng-repeat="monitor in monitors">
 			<div class="ibox float-e-margins">
 				<div class="ibox-title {{monitor.raised ? 'danger' : 'primary'}}">
-					<div class="pull-right"><button type="button" class="btn btn-info btn-xs pull-left m-r-sm">raise</button> <i class="fa fa-cogs check-link m-xxs" aria-hidden="true"></i> <i class="fa fa-times check-link m-xxs" aria-hidden="true"></i></div>
-					<h4>{{monitor.name}} <small class="m-l-sm ng-binding">&nbsp;({{monitor.type}})</small></h4>
+					<div class="pull-right">
+						<button ng-if="!monitor.raised" title="Raise alarm {{::monitor.name}}" class="btn btn-warning btn-xs" type="button" ng-click="raise(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Raise</button>
+						<button ng-if="monitor.raised" title="Clear alarm {{::monitor.name}}" class="btn btn-primary btn-xs" type="button" ng-click="clear(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Clear</button>
+						<button title="Edit Monitor {{::monitor.name}}" class="btn btn-info btn-xs" type="button" ng-click="edit(monitor)"><i class="fa fa-pencil"></i> Edit</button>
+					</div>
+					<div class="m-l-n m-r-n almost-full-width">
+						<div class="col-lg-5 col-md-8 m-r m-t-n-xs">
+							<h4>{{monitor.name}} <span class="m-l-sm badge badge-info">{{monitor.type}}</span></h4>
+						</div>
+						<div class="col-lg-4 hidden-md" ng-if="monitor.lastHit">Last Hit: <span to-date time="{{::monitor.lastHit}}"></span></div>
+						<div class="col-lg-2 hidden-md" ng-if="monitor.hits">Hits: {{monitor.hits}} since last raise</div>
+					</div>
 				</div>
 				<div class="ibox-content">
-					<div ng-if="monitor.raised" class="row alert {{monitor.severity == 'HARMLESS' ? 'alert-info' : (monitor.severity == 'WARNING' ? 'alert-warning' : 'alert-danger')}}" role="alert">
+					<div ng-if="monitor.raised" class="row alert {{monitor.alarm.severity == 'HARMLESS' ? 'alert-info' : (monitor.alarm.severity == 'WARNING' ? 'alert-warning' : 'alert-danger')}}" role="alert">
 						<div class="col-md-6">
-							Changed: <span to-date time="{{monitor.changed}}"></span><br/>
-							Hits: {{monitor.hits}} since last raise<br/>
-						</div>
-						<div class="col-md-6">
-							Source: {{monitor.source}}<br/>
-							Severity: {{monitor.severity}}<br/>
+							Source: {{(monitor.alarm.source?monitor.alarm.source:'Manually Triggered')}}<br/>
+							Severity: {{monitor.alarm.severity}}<br/>
 						</div>
 					</div>
-					<div ng-if="monitor.destinations.length > 0">
-						<strong>Notifications:</strong>
-						<span ng-repeat="destination in monitor.destinations">
-							{{destination}}<span ng-if="!$last">,</span>
-						</span>
-					</div>
+<!-- 					<div ng-if="monitor.destinations.length > 0"> -->
+<!-- 						<strong>Destinations:</strong> -->
+<!-- 						<span ng-repeat="destination in monitor.destinations"> -->
+<!-- 							{{destination}}<span ng-if="!$last">,</span> -->
+<!-- 						</span> -->
+<!-- 					</div> -->
 					<div class="row">
 						<div class="col-md-12 table-responsive">
 							<table class="table no-margins">
 								<thead>
 									<tr>
 										<th class="col-md-1">Type</th>
-										<th class="col-md-5">EventCodes</th>
-										<th class="col-md-3">Sources</th>
+										<th class="col-md-4">EventCodes</th>
+										<th class="col-md-4">Sources</th>
 										<th class="col-md-1">Severity</th>
 										<th class="col-md-1">Threshold</th>
 										<th class="col-md-1">Period</th>
@@ -55,9 +78,10 @@
 								</thead>
 								<tbody>
 									<tr ng-repeat="trigger in monitor.triggers">
-										<td>{{trigger.type}}</td>
+										<td ng-if="trigger.type == 'Alarm'"><i class="fa fa-warning m-r-xs"></i> {{trigger.type}}</td>
+										<td ng-if="trigger.type == 'Clearing'"><i class="fa fa-eraser m-r-xs"></i> {{trigger.type}}</td>
 										<td><ul class="unstyled no-margins"><li ng-repeat="event in trigger.eventCodes">{{event}}</li></ul></td>
-										<td><ul class="unstyled no-margins"><li ng-repeat="source in trigger.sources">{{source}}</li></ul></td>
+										<td><ul class="unstyled no-margins"><li ng-repeat="filter in trigger.filters">{{filter.name}}<ul ng-if="filter.sources"><li ng-repeat="source in filter.sources">{{source}}</li></ul></li></ul></td>
 										<td>{{trigger.severity}}</td>
 										<td>{{trigger.threshold}}</td>
 										<td>{{trigger.period}}</td>

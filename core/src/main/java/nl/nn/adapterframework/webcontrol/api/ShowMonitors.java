@@ -37,8 +37,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.EnumUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
@@ -57,21 +60,30 @@ import nl.nn.adapterframework.util.Misc;
  * @author	Niels Meijer
  */
 
-@Path("/")
+@Path("/configurations/{configuration}/monitors")
 public final class ShowMonitors extends Base {
 
-	private MonitorManager getMonitorManager() {
-		return getIbisContext().getBean("monitorManager", MonitorManager.class);
+	private MonitorManager getMonitorManager(String configurationName) {
+		ApplicationContext applicationContext = getIbisManager().getConfiguration(configurationName);
+		if(applicationContext == null) {
+			throw new IllegalStateException("configuration ["+configurationName+"] not found");
+		}
+
+		return getMonitorManager(applicationContext);
+	}
+
+	private MonitorManager getMonitorManager(ApplicationContext applicationContext) {
+		return applicationContext.getBean("monitorManager", MonitorManager.class);
 	}
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/monitors")
+	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMonitors() throws ApiException {
+	public Response getMonitors(@PathParam("configuration") String configurationName) throws ApiException {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
-		MonitorManager mm = getMonitorManager();
+		MonitorManager mm = getMonitorManager(configurationName);
 
 		List<Map<String, Object>> monitors = new ArrayList<Map<String, Object>>();
 		for (int i=0;i<mm.getMonitors().size();i++) {
@@ -82,16 +94,21 @@ public final class ShowMonitors extends Base {
 			monitorMap.put("type", monitor.getType());
 			monitorMap.put("lastHit", monitor.getLastHit());
 
-			monitorMap.put("raised", monitor.isRaised());
+			boolean isRaised = monitor.isRaised();
+			monitorMap.put("raised", isRaised);
 			monitorMap.put("changed", monitor.getStateChangeDt());
 			monitorMap.put("hits", monitor.getAdditionalHitCount());
-			String eventSource = null;
-			EventThrowing source = monitor.getAlarmSource();
-			if (source!=null) {
-				eventSource = source.getEventSourceName();
+
+			if(isRaised) {
+				Map<String, Object> alarm = new HashMap<>();
+				alarm.put("severity", monitor.getAlarmSeverity());
+				EventThrowing source = monitor.getAlarmSource();
+				alarm.put("source", source);
+				if (source!=null) {
+					alarm.put("name", source.getEventSourceName());
+				}
+				monitorMap.put("alarm", alarm);
 			}
-			monitorMap.put("source", eventSource);
-			monitorMap.put("severity", monitor.getAlarmSeverity());
 
 			List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
 			for (Iterator<Trigger> it=monitor.getTriggers().iterator();it.hasNext();) {
@@ -100,11 +117,10 @@ public final class ShowMonitors extends Base {
 
 				triggerMap.put("type", trigger.getType());
 				triggerMap.put("eventCodes", trigger.getEventCodes());
-				triggerMap.put("sources", trigger.getSourceList(mm));
 				triggerMap.put("severity", trigger.getSeverity());
 				triggerMap.put("threshold", trigger.getThreshold());
 				triggerMap.put("period", trigger.getPeriod());
-				
+
 				if (trigger.getAdapterFilters()!=null) {
 					List<Map<String, Object>> filters = new ArrayList<Map<String, Object>>();
 					if (trigger.getSourceFiltering()!=Trigger.SOURCE_FILTERING_NONE) {
@@ -112,7 +128,7 @@ public final class ShowMonitors extends Base {
 							Map<String, Object> adapter = new HashMap<String, Object>(2);
 
 							String adapterName = it1.next();
-							AdapterFilter af = (AdapterFilter) trigger.getAdapterFilters().get(adapterName);
+							AdapterFilter af = trigger.getAdapterFilters().get(adapterName);
 							adapter.put("name", adapterName);
 							if (trigger.isFilterOnLowerLevelObjects()) {
 								adapter.put("sources", af.getSubObjectList());
@@ -120,10 +136,10 @@ public final class ShowMonitors extends Base {
 							filters.add(adapter);
 						}
 					}
-					triggerMap.put("filterExclusive",trigger.isFilterExclusive());
+					triggerMap.put("filterExclusive", trigger.isFilterExclusive());
 					triggerMap.put("filters", filters);
 				}
-				
+
 				triggers.add(triggerMap);
 			}
 			monitorMap.put("triggers", triggers);
@@ -144,32 +160,34 @@ public final class ShowMonitors extends Base {
 		returnMap.put("eventTypes", EnumUtils.getEnumList(EventTypeEnum.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
-		return Response.status(Response.Status.OK).entity(returnMap).build();
+		return Response.status(Status.OK).entity(returnMap).build();
 	}
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/monitors/{monitorName}")
+	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response raiseMonitor(@PathParam("monitorName") String monitorName, @QueryParam("action") String action) throws ApiException {
+	public Response raiseMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @QueryParam("action") String action) throws ApiException {
 
-		MonitorManager mm = getMonitorManager();
+		MonitorManager mm = getMonitorManager(configurationName);
 		Monitor monitor = mm.findMonitor(monitorName);
 
 		if(monitor == null) {
-			throw new ApiException("Monitor not found!");
+			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		if (action.equals("clearMonitor")) {
+		if(StringUtils.isEmpty(action)) {
+			throw new ApiException("Missing query parameter [action]", Status.BAD_REQUEST);
+		}
+		else if (action.equals("clear")) {
 			try {
 				log.info("clearing monitor ["+monitor.getName()+"]");
-				monitor.changeState(new Date(),false,SeverityEnum.WARNING,null,null,null);
+				monitor.changeState(new Date(), false, SeverityEnum.WARNING, null, null, null);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
 		}
-		
-		if (action.equals("raiseMonitor")) {
+		else if (action.equals("raise")) {
 			try {
 				log.info("raising monitor ["+monitor.getName()+"]");
 				monitor.changeState(new Date(), true, SeverityEnum.WARNING, null, null, null);
@@ -177,21 +195,24 @@ public final class ShowMonitors extends Base {
 				throw new ApiException("Failed to change monitor state", e);
 			}
 		}
+		else if (action.equals("edit")) {
+			//TODO
+		}
 
-		return Response.status(Response.Status.OK).build();
+		return Response.status(Status.OK).build();
 	}
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/monitors/{monitorName}")
+	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response deleteMonitor(@PathParam("monitorName") String monitorName) throws ApiException {
+	public Response deleteMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName) throws ApiException {
 
-		MonitorManager mm = getMonitorManager();
+		MonitorManager mm = getMonitorManager(configurationName);
 		Monitor monitor = mm.findMonitor(monitorName);
 
 		if(monitor == null) {
-			throw new ApiException("Monitor not found!");
+			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
 		if (monitor!=null) {
@@ -200,13 +221,12 @@ public final class ShowMonitors extends Base {
 			mm.removeMonitor(index);
 		}
 
-		return Response.status(Response.Status.OK).build();
+		return Response.status(Status.OK).build();
 	}
 
-	@SuppressWarnings("unchecked")
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/monitors")
+	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addMonitor(LinkedHashMap<String, Object> json) throws ApiException {
@@ -237,7 +257,7 @@ public final class ShowMonitors extends Base {
 		if(type == null)
 			throw new ApiException("Type not set!");
 
-		MonitorManager mm = getMonitorManager();
+		MonitorManager mm = getMonitorManager("");
 
 		Monitor monitor = new Monitor();
 		monitor.setName(name);

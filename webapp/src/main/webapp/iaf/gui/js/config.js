@@ -348,12 +348,15 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		}
 	})
 	.state('pages.monitors', {
-		url: "/monitors",
+		url: "/monitors?configuration",
 		templateUrl: "views/ShowMonitors.html",
 		data: {
 			pageTitle: 'Monitors',
 			breadcrumbs: 'Monitors'
-		}
+		},
+		params: {
+			configuration: { value: null, squash: true},
+		},
 	})
 	.state('pages.ibisstore_summary', {
 		url: "/ibisstore-summary",
