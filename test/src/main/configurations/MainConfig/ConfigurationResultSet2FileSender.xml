@@ -22,7 +22,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="selectRecordIds">
 				<sender className="nl.nn.adapterframework.jdbc.ResultSet2FileSender"
-					filenameSessionKey="fileName" datasourceName="${jdbc.datasource.default}" lockRows="true"
+					filenameSessionKey="fileName" lockRows="true"
 					maxRecordsSessionKey="maxRecords"
 					query="SELECT TCLOB, TTIMESTAMP, TCHAR, TKEY FROM IBISTEMP WHERE TTIMESTAMP IS NULL ORDER BY TCHAR, TKEY"
 					statusFieldType="timestamp" />

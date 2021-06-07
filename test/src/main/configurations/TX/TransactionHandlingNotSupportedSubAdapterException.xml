@@ -13,7 +13,6 @@
 				serviceName="ibis4test-TransactionHandlingNotSupportedSubAdapterException"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				datasourceName="${jdbc.datasource.default}" 
 				slotId="${applicationId}/GenericReceiverTransactionHandlingNotSupportedSubAdapterException"
 			/>
 		</receiver>
@@ -38,7 +37,7 @@
 			</pipe>
 
 			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="Required">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert" datasourceName="${jdbc.datasource.default}">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert">
 					<param name="value" value="test1" />
 				</sender>
 				<forward name="success" path="EXIT" />

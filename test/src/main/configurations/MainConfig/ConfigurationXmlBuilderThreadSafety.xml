@@ -18,52 +18,42 @@
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						datasourceName="${jdbc.datasource.default}"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						datasourceName="${jdbc.datasource.default}"
 					/>
 				</sender>	
 	        	<forward name="success" path="Echo"/>

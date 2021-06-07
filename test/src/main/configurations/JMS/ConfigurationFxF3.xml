@@ -15,7 +15,7 @@
 					<param name="SOURCE" value="${hostname}_I4TIAFFXF3" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-					datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/FxF3InSender" />
+					slotId="${applicationId}/FxF3InSender" />
 				<forward name="success" path="echo" />
 			</pipe>
 			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe"
@@ -30,7 +30,7 @@
 				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageSelector="SOURCE='${hostname}_I4TIAFFXF3'"
 				createProcessedDirectory="true" />
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/FxF3InListener" />
+				slotId="${applicationId}/FxF3InListener" />
 		</receiver>
 		<pipeline firstPipe="EchoPipe" transactionAttribute="Required">
 			<exits>

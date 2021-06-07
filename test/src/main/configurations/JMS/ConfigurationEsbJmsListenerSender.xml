@@ -73,7 +73,7 @@
 					<param name="SOURCE" value="${hostname}_FF1" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-					datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/EsbJmsFFSender" />
+					slotId="${applicationId}/EsbJmsFFSender" />
 				<inputWrapper
 					className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
 					mode="i2t" addOutputNamespace="true" />
@@ -106,7 +106,7 @@
 					<param name="SOURCE" value="${hostname}_FF2" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-					datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/EsbJmsFFSenderJmsFFSenderWithDatasource" />
+					slotId="${applicationId}/EsbJmsFFSenderJmsFFSenderWithDatasource" />
 				<inputWrapper
 					className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
 					mode="i2t" addOutputNamespace="true" />
@@ -117,7 +117,7 @@
 				getInputFromSessionKey="originalMessage">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)"
-					queryType="insert" datasourceName="${jdbc.datasource.default}">
+					queryType="insert">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="switchAction" />
@@ -129,7 +129,7 @@
 				getInputFromSessionKey="originalMessage" transactionAttribute="NotSupported">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('FIRSTNAME',?,NULL,NULL)"
-					queryType="insert" datasourceName="${jdbc.datasource.default}">
+					queryType="insert">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="exception" />
@@ -160,7 +160,7 @@
 					<param name="SOURCE" value="${hostname}_FF3" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-					datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/EsbJmsFFSenderWithRead" />
+					slotId="${applicationId}/EsbJmsFFSenderWithRead" />
 				<inputWrapper
 					className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
 					mode="i2t" addOutputNamespace="true" />
@@ -180,7 +180,7 @@
 				messageProtocol="FF" messageSelector="SOURCE='${hostname}_FF3'" />
 
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/EsbJmsFFListener" />
+				slotId="${applicationId}/EsbJmsFFListener" />
 		</receiver>
 		<pipeline firstPipe="switchAction" transactionAttribute="Required">
 			<exits>

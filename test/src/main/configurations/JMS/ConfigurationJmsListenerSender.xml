@@ -58,7 +58,7 @@
 					<param name="SOURCE" value="${hostname}_FF1" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-					datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/JmsFFSender" />
+					slotId="${applicationId}/JmsFFSender" />
 				<forward name="success" path="switchAction" />
 			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
@@ -87,7 +87,7 @@
 					<param name="SOURCE" value="${hostname}_FF2" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-					datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/JmsFFSenderJmsFFSenderWithDatasource" />
+					slotId="${applicationId}/JmsFFSenderJmsFFSenderWithDatasource" />
 				<forward name="success" path="fixedInsert" />
 			</pipe>
 			<pipe name="fixedInsert"
@@ -95,7 +95,7 @@
 				getInputFromSessionKey="originalMessage">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)"
-					queryType="insert" datasourceName="${jdbc.datasource.default}">
+					queryType="insert">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="switchAction" />
@@ -107,7 +107,7 @@
 				getInputFromSessionKey="originalMessage" transactionAttribute="NotSupported">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('FIRSTNAME',?,NULL,NULL)"
-					queryType="insert" datasourceName="${jdbc.datasource.default}">
+					queryType="insert">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="exception" />
@@ -136,7 +136,7 @@
 					<param name="SOURCE" value="${hostname}_FF3" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-					datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/JmsFFSenderWithRead" />
+					slotId="${applicationId}/JmsFFSenderWithRead" />
 				<forward name="success" path="okReply" />
 			</pipe>
 			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
@@ -177,7 +177,7 @@
 				destinationName="jms/i4testiaf_ff" useReplyTo="false" jmsRealm="qcf"
 				messageSelector="SOURCE='${hostname}_FF3'" />
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/JmsFFListener" />
+				slotId="${applicationId}/JmsFFListener" />
 		</receiver>
 		<pipeline firstPipe="switchAction" transactionAttribute="Required">
 			<exits>

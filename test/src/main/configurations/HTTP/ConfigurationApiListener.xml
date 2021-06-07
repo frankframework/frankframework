@@ -10,7 +10,7 @@
 				uriPattern="insert"
 				method="post"
 			/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" datasourceName="${jdbc.datasource.default}" slotId="ApiListenerDuplicateCheck" />
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
@@ -18,7 +18,7 @@
 			</exits>
 
 			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" datasourceName="${jdbc.datasource.default}" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
@@ -41,7 +41,7 @@
 				uriPattern="transacted-exception"
 				method="post"
 			/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" datasourceName="${jdbc.datasource.default}" slotId="ApiListenerDuplicateCheck" />
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
@@ -49,7 +49,7 @@
 			</exits>
 
 			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" datasourceName="${jdbc.datasource.default}" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
@@ -69,8 +69,8 @@
 				uriPattern="exception"
 				method="post"
 			/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" datasourceName="${jdbc.datasource.default}" slotId="ApiListenerDuplicateCheck-Errors"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" datasourceName="${jdbc.datasource.default}" slotId="ApiListenerDuplicateCheck" />
+			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck-Errors"/>
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
@@ -78,7 +78,7 @@
 			</exits>
 
 			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" datasourceName="${jdbc.datasource.default}" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>

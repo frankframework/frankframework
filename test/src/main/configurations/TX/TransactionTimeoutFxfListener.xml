@@ -16,7 +16,6 @@
 				fxfDestinationName="zzzz" 
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				datasourceName="${jdbc.datasource.default}" 
 				slotId="${applicationId}/TransactionTimeoutFxfListener" />
 		</receiver>
 

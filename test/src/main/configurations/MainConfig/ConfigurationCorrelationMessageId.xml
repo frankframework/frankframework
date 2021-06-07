@@ -2,7 +2,7 @@
 	<adapter name="CorrelationMessageId">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CorrelationMessageId" />
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/CorrelationMessageId" />
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/CorrelationMessageId" />
 		</receiver>
 		<pipeline firstPipe="ResolveString">
 			<exits>
@@ -16,11 +16,11 @@
 	<adapter name="CorrelationMessageIdXPath">
 		<receiver correlationIDXPath="request/@name">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CorrelationMessageIdXPath" />
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/CorrelationMessageIdXPath" />
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/CorrelationMessageIdXPath" />
 		</receiver>
 		<receiver correlationIDXPath="request/@name">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="CorrelationMessageIdXPath2" />
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" datasourceName="${jdbc.datasource.default}" slotId="${applicationId}/CorrelationMessageIdXPath2" />
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/CorrelationMessageIdXPath2" />
 		</receiver>
 		<pipeline firstPipe="ResolveString">
 			<exits>
