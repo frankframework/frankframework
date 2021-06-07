@@ -24,12 +24,12 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
- * {@link IInputStreamReaderFactory} that provides a reader that reads Delphi records containing Strings.
+ * {@link IReaderFactory} that provides a reader that reads Delphi records containing Strings.
  * 
  * @author  Gerrit van Brakel
  * @since   4.10  
  */
-public class DelphiStringRecordReaderFactory implements IInputStreamReaderFactory {
+public class DelphiStringRecordReaderFactory implements IReaderFactory {
 
 	private int stringLength=50;
 	private int stringsPerRecord=0; // 0 means read till end of file

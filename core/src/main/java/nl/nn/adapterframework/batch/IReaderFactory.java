@@ -28,7 +28,7 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
  * @since  
  */
 @FrankDocGroup(name = "Batch")
-public interface IInputStreamReaderFactory {
+public interface IReaderFactory {
 
 	void configure() throws ConfigurationException;
 	

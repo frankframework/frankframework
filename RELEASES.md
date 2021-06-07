@@ -16,8 +16,9 @@ Upcoming
 
 ### Non backwards compatible changes
 
+- SoapErrorMessage is renamed to SoapErrorMessageFormatter.
+- FixedErrorMessage is renamed to FixedErrorMessageFormatter.
 - ManageDatabase adapter has been disabled by default on ACC and PRD environments
-
 
 7.6-RC1
 --------

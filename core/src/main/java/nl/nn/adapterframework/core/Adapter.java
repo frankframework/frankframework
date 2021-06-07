@@ -34,7 +34,7 @@ import org.springframework.core.task.TaskExecutor;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -442,7 +442,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			hski.closeGroup(recsData);
 
-			ICacheAdapter<String,String> cache=pipeline.getCache();
+			ICache<String,String> cache=pipeline.getCache();
 			if (cache instanceof HasStatistics) {
 				((HasStatistics) cache).iterateOverStatistics(hski, recsData, action);
 			}

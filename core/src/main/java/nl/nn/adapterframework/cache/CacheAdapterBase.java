@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V>, IConfigurationAware {
+public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigurationAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
