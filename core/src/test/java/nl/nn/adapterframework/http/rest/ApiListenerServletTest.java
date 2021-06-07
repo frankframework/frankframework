@@ -693,12 +693,12 @@ public class ApiListenerServletTest extends Mockito {
 	private class MessageHandler implements IMessageHandler<Message> {
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context, long waitingTime) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
@@ -707,17 +707,6 @@ public class ApiListenerServletTest extends Mockito {
 			fail("method should not be called");
 		}
 
-		@Override
-		public Message processRequest(IListener<Message> origin, Message rawMessage, Message message) throws ListenerException {
-			fail("wrong processRequest method called");
-			return message;
-		}
-
-		@Override
-		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message) throws ListenerException {
-			fail("wrong processRequest method called");
-			return message;
-		}
 
 		@Override
 		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message, Map<String, Object> context) throws ListenerException {
@@ -727,14 +716,7 @@ public class ApiListenerServletTest extends Mockito {
 			session = context;
 			if(session.containsKey("response-content")) {
 				return Message.asMessage(session.get("response-content"));
-			} else {
-				return message;
 			}
-		}
-
-		@Override
-		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message, Map<String, Object> context, long waitingTime) throws ListenerException {
-			fail("wrong processRequest method called");
 			return message;
 		}
 

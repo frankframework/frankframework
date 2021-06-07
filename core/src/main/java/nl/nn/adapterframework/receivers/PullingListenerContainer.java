@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
@@ -197,13 +198,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {
-			IPullingListener<M> listener = null;
+			final IPullingListener<M> listener = (IPullingListener<M>) receiver.getListener();
 			Map<String,Object> threadContext = null;
 			boolean pollTokenReleased=false;
 			try {
 				threadsRunning.increase();
 				if (receiver.isInRunState(RunStateEnum.STARTED)) {
-					listener = (IPullingListener<M>) receiver.getListener();
 					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
 						inProcessStateManager = (IHasProcessState<M>)listener;
 					}
@@ -280,28 +280,54 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								pollToken.release();
 							}
 						}
+
+						boolean successfullyProcessed = false;
+						boolean tooManyRetries = false;
 						try {
-							receiver.processRawMessage(listener, rawMessage, threadContext);
-							if (txStatus != null) {
-								if (txStatus.isRollbackOnly()) {
-									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-									rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
-								} else {
-									txManager.commit(txStatus);
+							if (receiver.getMaxRetries()>=0) {
+								String messageId = listener.getIdFromRawMessage(rawMessage, threadContext);
+								String correlationId = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+								final M rawMessageFinal = rawMessage;
+								final Map<String,Object> threadContextFinal = threadContext;
+								if (receiver.hasProblematicHistory(messageId, false, rawMessage, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), threadContext, correlationId) ) {
+									tooManyRetries = true; // message is already put in state Error by hasProblematicHistory()
 								}
 							}
+							if (!tooManyRetries || receiver.isSupportProgrammaticRetry()) {
+								receiver.processRawMessage(listener, rawMessage, threadContext, true);
+								if (txStatus != null) {
+									if (txStatus.isRollbackOnly()) {
+										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
+										rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
+									} else {
+										txManager.commit(txStatus);
+									}
+								}
+								successfullyProcessed = true;
+							}
 						} catch (Exception e) {
+							receiver.error("caught Exception processing message", e);
 							try {
 								if (txStatus != null && !txStatus.isCompleted()) {
 									rollBack(txStatus, rawMessage, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
 								}
 							} catch (Exception e2) {
 								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
-							} finally {
-								if (receiver.isOnErrorContinue()) {
-									receiver.error("caught Exception processing message, will continue processing next message", e);
-								} else {
-									receiver.exceptionThrown("exception occured while processing message", e); //actually use ON_ERROR and don't just stop the receiver
+							}
+							if (receiver.isOnErrorContinue()) {
+								receiver.error("caught Exception processing message, will continue processing next message", null);
+							} else {
+								receiver.exceptionThrown("exception occured while processing message", null); //actually use ON_ERROR and don't just stop the receiver
+							}
+						} finally {
+							if (!successfullyProcessed ) {
+								if (inProcessStateManager!=null) {
+									txStatus = receiver.isTransacted() ? txManager.getTransaction(txNew) : null;
+									ProcessState targetState = tooManyRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
+									inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS, "start processing");
+									if (txStatus!=null) {
+										txManager.commit(txStatus);
+									}
 								}
 							}
 						}
@@ -323,7 +349,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					try {
 						listener.closeThread(threadContext);
 					} catch (ListenerException e) {
-						receiver.error("Exception closing listener", e);
+						receiver.error("Exception closing listener thread", e);
 					}
 				}
 				ThreadContext.removeStack(); //Cleanup the MDC stack that was created during message processing
