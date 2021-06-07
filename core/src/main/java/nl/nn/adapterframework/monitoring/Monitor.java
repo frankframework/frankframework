@@ -26,6 +26,8 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -41,7 +43,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class Monitor implements ApplicationContextAware {
+public class Monitor implements ApplicationContextAware, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -261,6 +263,17 @@ public class Monitor implements ApplicationContextAware {
 		triggers.add(trigger);
 	}
 
+	public void removeTrigger(Trigger trigger) {
+		int index = triggers.indexOf(trigger);
+		if(index > -1) {
+			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+			//BeanDefinitionRegistry factory = (BeanDefinitionRegistry) 
+//			factory.removeBeanDefinition("mongoRepository");
+			factory.destroyBean(trigger);
+			triggers.remove(trigger);
+		}
+	}
+
 	public void registerAlarm(Trigger trigger) {
 		trigger.setAlarm(true);
 		registerTrigger(trigger);
@@ -286,11 +299,6 @@ public class Monitor implements ApplicationContextAware {
 	}
 	public Trigger getTrigger(int index) {
 		return triggers.get(index);
-	}
-
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
 	}
 
 	public void setName(String string) {
@@ -371,5 +379,19 @@ public class Monitor implements ApplicationContextAware {
 		return additionalHitCount;
 	}
 
+	@Override
+	public void destroy() {
+		System.out.println("destroy monitor " + this);
+		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+		for (Trigger trigger : triggers) {
+			factory.destroyBean(trigger);
+		}
+	}
 
+
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
 }

@@ -37,6 +37,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.SmartApplicationListener;
@@ -45,7 +46,7 @@ import org.springframework.context.event.SmartApplicationListener;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class Trigger implements LazyLoadingEventListener<FireMonitorEvent> {
+public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 	
 	public static final int SOURCE_FILTERING_NONE=0;
@@ -122,7 +123,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent> {
 	}
 
 	public void evaluateEvent(EventThrowing source, String eventCode) throws MonitorException {
-		System.out.println(source);
+		System.out.println(this);
 		Date now = new Date();
 		if (getThreshold()>0) {
 			cleanUpEvents(now);
@@ -466,5 +467,11 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent> {
 	}
 	public int getSourceFiltering() {
 		return sourceFiltering;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		// TODO Auto-generated method stub
+		System.out.println("destroy trigger " + this);
 	}
 }

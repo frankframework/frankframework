@@ -24,10 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
+import javax.json.JsonObject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -111,10 +114,11 @@ public final class ShowMonitors extends Base {
 			}
 
 			List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
-			for (Iterator<Trigger> it=monitor.getTriggers().iterator();it.hasNext();) {
-				Trigger trigger=(Trigger)it.next();
+			List<Trigger> listOfTriggers = monitor.getTriggers();
+			for (Trigger trigger : listOfTriggers) {
 				Map<String, Object> triggerMap = new HashMap<String, Object>();
 
+				triggerMap.put("id", listOfTriggers.indexOf(trigger));
 				triggerMap.put("type", trigger.getType());
 				triggerMap.put("eventCodes", trigger.getEventCodes());
 				triggerMap.put("severity", trigger.getSeverity());
@@ -167,13 +171,21 @@ public final class ShowMonitors extends Base {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response raiseMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @QueryParam("action") String action) throws ApiException {
+	public Response updateMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, LinkedHashMap<String, Object> json) {
 
-		MonitorManager mm = getMonitorManager(configurationName);
+		MonitorManager mm = getMonitorManager(configName);
 		Monitor monitor = mm.findMonitor(monitorName);
 
 		if(monitor == null) {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
+		}
+
+		String action = null;
+		for (Entry<String, Object> entry : json.entrySet()) {
+			String key = entry.getKey();
+			if(key.equalsIgnoreCase("action")) {
+				action = entry.getValue().toString();
+			}
 		}
 
 		if(StringUtils.isEmpty(action)) {
@@ -196,10 +208,17 @@ public final class ShowMonitors extends Base {
 			}
 		}
 		else if (action.equals("edit")) {
-			//TODO
+			for (Entry<String, Object> entry : json.entrySet()) {
+				String key = entry.getKey();
+				if(key.equalsIgnoreCase("name")) {
+					monitor.setName(entry.getValue().toString());
+				} else if(key.equalsIgnoreCase("type")) {
+					monitor.setType(entry.getValue().toString());
+				}
+			}
 		}
 
-		return Response.status(Status.OK).build();
+		return Response.status(Status.ACCEPTED).build();
 	}
 
 	@DELETE
@@ -215,11 +234,33 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		if (monitor!=null) {
-			int index = mm.getMonitors().indexOf(monitor);
-			log.info("removing monitor nr ["+index+"] name ["+monitor.getName()+"]");
-			mm.removeMonitor(index);
+		log.info("removing monitor ["+monitor.getName()+"]");
+
+		mm.removeMonitor(monitor);
+		return Response.status(Status.OK).build();
+	}
+
+	@DELETE
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/{monitorName}/triggers/{trigger}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response deleteTrigger(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int index) throws ApiException {
+
+		MonitorManager mm = getMonitorManager(configurationName);
+		Monitor monitor = mm.findMonitor(monitorName);
+
+		if(monitor == null) {
+			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
+
+		Trigger trigger = monitor.getTrigger(index);
+
+		if(trigger == null) {
+			throw new ApiException("Trigger not found!", Status.NOT_FOUND);
+		}
+
+		log.info("removing trigger ["+trigger+"]");
+		monitor.removeTrigger(trigger);
 
 		return Response.status(Status.OK).build();
 	}

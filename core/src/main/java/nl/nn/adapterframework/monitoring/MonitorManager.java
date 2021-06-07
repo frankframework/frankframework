@@ -32,6 +32,7 @@ import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
@@ -193,6 +194,16 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		monitor.setOwner(this);
 		monitors.add(monitor);
 	}
+
+	public void removeMonitor(Monitor monitor) {
+		int index = monitors.indexOf(monitor);
+		if(index > -1) {
+			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+			factory.destroyBean(monitor);
+			monitors.remove(index);
+		}
+	}
+
 	public Monitor removeMonitor(int index) {
 		Monitor result=null;
 		result = monitors.remove(index);

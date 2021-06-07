@@ -2344,22 +2344,37 @@ angular.module('iaf.beheerconsole')
 		}
 	});
 
-	function getUrl(monitor, action) {
-		return "/configurations/"+$scope.selectedConfiguration+"/monitors/"+monitor.name+"?action="+action;
+	function getUrl(monitor, trigger) {
+		var url = "/configurations/"+$scope.selectedConfiguration+"/monitors/"+monitor.name;
+		if(trigger != undefined && trigger != "") url += "/triggers/"+trigger.id;
+		return url;
 	}
 
 	$scope.raise = function(monitor) {
-		Api.Put(getUrl(monitor, "raise"), null, function() {
+		Api.Put(getUrl(monitor), {action: "raise"}, function() {
 			update();
 		});
 	}
 	$scope.clear = function(monitor) {
-		Api.Put(getUrl(monitor, "clear"), null, function() {
+		Api.Put(getUrl(monitor), {action: "clear"}, function() {
 			update();
 		});
 	}
 	$scope.edit = function(monitor) {
-		console.log(monitor)
+		Api.Put(getUrl(monitor), {action: "edit", name: monitor.displayName, type: monitor.type}, function() {
+			update();
+		});
+	}
+	$scope.deleteMonitor = function(monitor) {
+		Api.Delete(getUrl(monitor), function() {
+			update();
+		});
+	}
+
+	$scope.deleteTrigger = function(monitor, trigger) {
+		Api.Delete(getUrl(monitor, trigger), function() {
+			update(); // TODO don't update the view, just remove the trigger
+		});
 	}
 }])
 

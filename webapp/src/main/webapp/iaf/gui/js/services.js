@@ -76,6 +76,8 @@ angular.module('iaf.beheerconsole')
 					data = JSON.stringify(object);
 					headers["Content-Type"] = "application/json";
 				}
+			} else {
+				data = null;
 			}
 			var intercept = intercept;
 

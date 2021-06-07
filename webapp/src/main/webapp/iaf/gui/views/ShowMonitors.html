@@ -1,7 +1,7 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight" ng-controller="ShowMonitorsCtrl">
+<div class="wrapper wrapper-content" ng-controller="ShowMonitorsCtrl">
 <!-- 	<div class="row"> -->
 <!-- 		<div class="col-lg-12"> -->
 <!-- 			<div class="ibox float-e-margins"> -->
@@ -34,17 +34,19 @@
 		</div>
 	</div>
 	<div class="row">
-		<div ng-if="monitors.length > 0" class="col-lg-12" ng-repeat="monitor in monitors">
+		<div ng-if="monitors.length > 0" class="col-lg-12" ng-repeat="monitor in monitors" ng-init="monitor.displayName = monitor.name">
 			<div class="ibox float-e-margins">
 				<div class="ibox-title {{monitor.raised ? 'danger' : 'primary'}}">
 					<div class="pull-right">
 						<button ng-if="!monitor.raised" title="Raise alarm {{::monitor.name}}" class="btn btn-warning btn-xs" type="button" ng-click="raise(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Raise</button>
 						<button ng-if="monitor.raised" title="Clear alarm {{::monitor.name}}" class="btn btn-primary btn-xs" type="button" ng-click="clear(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Clear</button>
-						<button title="Edit Monitor {{::monitor.name}}" class="btn btn-info btn-xs" type="button" ng-click="edit(monitor)"><i class="fa fa-pencil"></i> Edit</button>
+						<button ng-if="!monitor.raised && monitor.edit" title="Delete Monitor {{::monitor.name}}" class="btn btn-danger btn-xs" type="button" ng-click="deleteMonitor(monitor)"><i class="fa fa-close"></i> Delete</button>
+						<button ng-if="!monitor.raised && !monitor.edit" title="Edit Monitor {{::monitor.name}}" class="btn btn-info btn-xs" type="button" ng-click="monitor.edit = true"><i class="fa fa-pencil"></i> Edit</button>
+						<button ng-if="!monitor.raised && monitor.edit" title="Save Monitor {{::monitor.name}}" class="btn btn-primary btn-xs" type="button" ng-click="edit(monitor)"><i class="fa fa-save"></i> Save</button>
 					</div>
 					<div class="m-l-n m-r-n almost-full-width">
 						<div class="col-lg-5 col-md-8 m-r m-t-n-xs">
-							<h4>{{monitor.name}} <span class="m-l-sm badge badge-info">{{monitor.type}}</span></h4>
+							<h4>{{monitor.displayName}} <span class="m-l-sm badge badge-info">{{monitor.type}}</span></h4>
 						</div>
 						<div class="col-lg-4 hidden-md" ng-if="monitor.lastHit">Last Hit: <span to-date time="{{::monitor.lastHit}}"></span></div>
 						<div class="col-lg-2 hidden-md" ng-if="monitor.hits">Hits: {{monitor.hits}} since last raise</div>
@@ -56,6 +58,24 @@
 							Source: {{(monitor.alarm.source?monitor.alarm.source:'Manually Triggered')}}<br/>
 							Severity: {{monitor.alarm.severity}}<br/>
 						</div>
+					</div>
+					<div ng-if="monitor.edit">
+						<form role="form">
+							<div class="form-group">
+								<label class="col-sm-3 control-label">Name</label>
+								<div class="col-sm-9">
+									<input class="form-control m-b" name="name" type="text" ng-model="monitor.displayName" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-3 control-label">Type</label>
+								<div class="col-sm-9">
+									<select class="form-control m-b" name="type" ng-model="monitor.type">
+										<option ng-repeat="type in eventTypes" ng-value="type">{{type}}</option>
+									</select>
+								</div>
+							</div>
+						</form>
 					</div>
 <!-- 					<div ng-if="monitor.destinations.length > 0"> -->
 <!-- 						<strong>Destinations:</strong> -->
@@ -69,11 +89,12 @@
 								<thead>
 									<tr>
 										<th class="col-md-1">Type</th>
-										<th class="col-md-4">EventCodes</th>
+										<th class="col-md-{{monitor.edit?3:4}}">EventCodes</th>
 										<th class="col-md-4">Sources</th>
 										<th class="col-md-1">Severity</th>
 										<th class="col-md-1">Threshold</th>
 										<th class="col-md-1">Period</th>
+										<th ng-if="monitor.edit" class="col-md-1"></th>
 									</tr>
 								</thead>
 								<tbody>
@@ -85,6 +106,10 @@
 										<td>{{trigger.severity}}</td>
 										<td>{{trigger.threshold}}</td>
 										<td>{{trigger.period}}</td>
+										<td ng-if="monitor.edit" class="pull-right">
+											<button title="Edit trigger {{::trigger.name}}" class="btn btn-info btn-xs" type="button" ui-sref="pages.monitors.editTrigger({monitor:monitor.name, trigger:trigger.name})">Edit</button>
+											<button title="Delete trigger {{::trigger.name}}" class="btn btn-danger btn-xs" type="button" ng-click="deleteTrigger(monitor, trigger)">Delete</button>
+										</td>
 									</tr>
 								</tbody>
 							</table>
