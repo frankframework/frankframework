@@ -18,8 +18,9 @@ package nl.nn.credentialprovider;
 public interface ICredentialFactory {
 
 	/**
-	 * init() returns true when the credentialFactory is properly configured and can be used.
+	 * The constructor of an implementation can throw an exception when the credentialFactory cannot be properly configured and used.
 	 */
+	
 	public boolean hasCredentials(String alias);
 	
 	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword);
