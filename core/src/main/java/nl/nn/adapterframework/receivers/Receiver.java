@@ -322,10 +322,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	};
 
-	public class ProcessResultCacheItem {
-		public int receiveCount;
-		public Date receiveDate;
-		public String comments;
+	private class ProcessResultCacheItem {
+		private int receiveCount;
+		private Date receiveDate;
+		private String comments;
 	}
 
 	public boolean configurationSucceeded() {
