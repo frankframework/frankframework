@@ -324,7 +324,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (inProcessStateManager!=null) {
 									txStatus = receiver.isTransacted() ? txManager.getTransaction(txNew) : null;
 									ProcessState targetState = tooManyRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
-									inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS, "start processing");
+									inProcessStateManager.changeProcessState(rawMessage, targetState, tooManyRetries? "too many retries" : "processing not successful"); //TODO: set proper error message
 									if (txStatus!=null) {
 										txManager.commit(txStatus);
 									}
