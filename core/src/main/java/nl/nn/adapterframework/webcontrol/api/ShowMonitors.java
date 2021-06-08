@@ -106,9 +106,14 @@ public final class ShowMonitors extends Base {
 				Map<String, Object> alarm = new HashMap<>();
 				alarm.put("severity", monitor.getAlarmSeverity());
 				EventThrowing source = monitor.getAlarmSource();
-				alarm.put("source", source);
 				if (source!=null) {
-					alarm.put("name", source.getEventSourceName());
+					String name = "";
+					if(source.getAdapter() != null) {
+						name = String.format("%s / %s", source.getAdapter().getName(), source.getEventSourceName());
+					} else {
+						name = source.getEventSourceName();
+					}
+					alarm.put("source", name);
 				}
 				monitorMap.put("alarm", alarm);
 			}

@@ -358,16 +358,29 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			configuration: { value: null, squash: true},
 		},
 	})
-	.state('pages.monitors.editTrigger', {
-		url: "/monitors/:monitor/trigger/:trigger",
+	.state('pages.monitors_editTrigger', {
+		url: "/monitors/:monitor/triggers/:trigger?configuration",
 		templateUrl: "views/EditMonitorTrigger.html",
 		data: {
-			pageTitle: 'Monitors',
-			breadcrumbs: 'Monitors'
+			pageTitle: 'Edit Trigger',
+			breadcrumbs: 'Monitors > Triggers > Edit'
 		},
 		params: {
+			configuration: { value: null, squash: true},
 			monitor: "",
 			trigger: "",
+		},
+	})
+	.state('pages.monitors_addTrigger', {
+		url: "/monitors/:monitor/triggers/new?configuration",
+		templateUrl: "views/EditMonitorTrigger.html",
+		data: {
+			pageTitle: 'Add Trigger',
+			breadcrumbs: 'Monitors > Triggers > Add'
+		},
+		params: {
+			configuration: { value: null, squash: true},
+			monitor: "",
 		},
 	})
 	.state('pages.ibisstore_summary', {

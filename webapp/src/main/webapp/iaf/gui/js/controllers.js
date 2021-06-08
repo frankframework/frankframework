@@ -2373,8 +2373,19 @@ angular.module('iaf.beheerconsole')
 
 	$scope.deleteTrigger = function(monitor, trigger) {
 		Api.Delete(getUrl(monitor, trigger), function() {
-			update(); // TODO don't update the view, just remove the trigger
+			for(i in monitor.triggers) {
+				if(monitor.triggers[i].id == trigger.id) {
+					monitor.triggers.splice(i, 1);
+				}
+			}
 		});
+	}
+}])
+
+.controller('EditMonitorsCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
+	$scope.selectedConfiguration = null;
+	if($state.params.configuration == "") {
+		$state.transitionTo('pages.monitors', {}, { notify: false, reload: false});
 	}
 }])
 

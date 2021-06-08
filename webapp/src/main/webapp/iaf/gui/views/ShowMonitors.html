@@ -48,7 +48,7 @@
 						<div class="col-lg-5 col-md-8 m-r m-t-n-xs">
 							<h4>{{monitor.displayName}} <span class="m-l-sm badge badge-info">{{monitor.type}}</span></h4>
 						</div>
-						<div class="col-lg-4 hidden-md" ng-if="monitor.lastHit">Last Hit: <span to-date time="{{::monitor.lastHit}}"></span></div>
+						<div class="col-lg-3 hidden-md" ng-if="monitor.lastHit">Last Hit: <span to-date time="{{::monitor.lastHit}}"></span></div>
 						<div class="col-lg-2 hidden-md" ng-if="monitor.hits">Hits: {{monitor.hits}} since last raise</div>
 					</div>
 				</div>
@@ -107,9 +107,12 @@
 										<td>{{trigger.threshold}}</td>
 										<td>{{trigger.period}}</td>
 										<td ng-if="monitor.edit" class="pull-right">
-											<button title="Edit trigger {{::trigger.name}}" class="btn btn-info btn-xs" type="button" ui-sref="pages.monitors.editTrigger({monitor:monitor.name, trigger:trigger.name})">Edit</button>
+											<button title="Edit trigger {{::trigger.name}}" class="btn btn-info btn-xs" type="button" ui-sref="pages.monitors_editTrigger({monitor:monitor.name, trigger:trigger.name, configuration:selectedConfiguration})">Edit</button>
 											<button title="Delete trigger {{::trigger.name}}" class="btn btn-danger btn-xs" type="button" ng-click="deleteTrigger(monitor, trigger)">Delete</button>
 										</td>
+									</tr>
+									<tr ng-if="monitor.edit">
+										<td colspan="7" class="text-center"><button class="btn btn-primary btn-outline btn-xs" ui-sref="pages.monitors_addTrigger({monitor:monitor.name, configuration:selectedConfiguration})"><i class="fa fa-plus"></i> <i>Add Trigger</i></button></td>
 									</tr>
 								</tbody>
 							</table>
