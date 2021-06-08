@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * 
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr>
+ * <tr><td>{@link IReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr>
  * <tr><td>{@link IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line.
  * 			If no manager is specified, a default manager and flow are created. The default manager 
  * 			always uses the default flow. The default flow always uses the first registered recordHandler 

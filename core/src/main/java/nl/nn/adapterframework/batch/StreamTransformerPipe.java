@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * with new line characters.
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr>
+ * <tr><td>{@link IReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr>
  * <tr><td>{@link IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line.
  * 			If no manager is specified, a default manager and flow are created. The default manager 
  * 			always uses the default flow. The default flow always uses the first registered recordHandler 
@@ -79,7 +79,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private Map<String,IRecordHandler> registeredRecordHandlers= new HashMap<>();
 	private Map<String,IResultHandler> registeredResultHandlers= new LinkedHashMap<>();
 	
-	private IInputStreamReaderFactory readerFactory=new InputStreamReaderFactory();
+	private IReaderFactory readerFactory=new InputStreamReaderFactory();
 
 	protected String getStreamId(Message input, PipeLineSession session) {
 		return session.getMessageId();
@@ -574,10 +574,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return charset;
 	}
 
-	public void setReaderFactory(IInputStreamReaderFactory factory) {
+	public void setReaderFactory(IReaderFactory factory) {
 		readerFactory = factory;
 	}
-	public IInputStreamReaderFactory getReaderFactory() {
+	public IReaderFactory getReaderFactory() {
 		return readerFactory;
 	}
 }

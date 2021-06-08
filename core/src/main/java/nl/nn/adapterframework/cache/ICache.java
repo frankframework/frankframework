@@ -25,7 +25,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public interface ICacheAdapter<K,V> {
+public interface ICache<K,V> {
 
 	void configure(String ownerName) throws ConfigurationException; 
 	void open();

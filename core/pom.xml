@@ -18,6 +18,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>credentialprovider</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.arnx</groupId>
 			<artifactId>nashorn-promise</artifactId>
 			<version>0.1.3</version>

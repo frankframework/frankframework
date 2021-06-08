@@ -100,11 +100,13 @@
       "children": [
         {
           "multiple": false,
-          "roleName": "roleNameIChild"
+          "roleName": "roleNameIChild",
+          "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.IChild"
         },
         {
           "multiple": true,
-          "roleName": "roleNameTChild"
+          "roleName": "roleNameTChild",
+          "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"
         }
       ]
     },

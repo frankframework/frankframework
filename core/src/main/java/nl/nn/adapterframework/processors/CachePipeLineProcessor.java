@@ -17,7 +17,7 @@ package nl.nn.adapterframework.processors;
 
 import java.io.IOException;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -34,7 +34,7 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 	
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
-		ICacheAdapter<String,String> cache=pipeLine.getCache();
+		ICache<String,String> cache=pipeLine.getCache();
 		if (cache==null) {
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}

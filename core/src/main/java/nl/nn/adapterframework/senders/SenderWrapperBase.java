@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -53,7 +53,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	private @Getter boolean preserveInput=false;
 	
 	protected @Setter SenderWrapperProcessor senderWrapperProcessor;
-	private @Getter @Setter ICacheAdapter<String,String> cache=null;
+	private @Getter @Setter ICache<String,String> cache=null;
 	private @Getter @Setter Configuration configuration;
 
 	@Override

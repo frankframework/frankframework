@@ -60,19 +60,23 @@
       "children": [
         {
           "multiple": false,
-          "roleName": "roleAlpha"
+          "roleName": "roleAlpha",
+          "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.IProton"
         },
         {
           "multiple": false,
-          "roleName": "roleBeta"
+          "roleName": "roleBeta",
+          "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.IMnemonic" 
         },
         {
           "multiple": false,
-          "roleName": "roleEpsilon"
+          "roleName": "roleEpsilon",
+          "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque"
         },
         {
           "multiple": false,
-          "roleName": "roleDelta"
+          "roleName": "roleDelta",
+          "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.INemesis"
         }
       ]
     },

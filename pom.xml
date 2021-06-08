@@ -64,6 +64,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
+				<artifactId>credentialprovider</artifactId>
+				<version>7.7-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ifsa</artifactId>
 				<version>7.7-SNAPSHOT</version>
 			</dependency>
@@ -483,6 +488,7 @@
 				<module>akamai</module>
 				<module>example</module>
 				<module>frankDoc</module>
+				<module>credentialProvider</module>
 			</modules>
 		</profile>
 		<profile>

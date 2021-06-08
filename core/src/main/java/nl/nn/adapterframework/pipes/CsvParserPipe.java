@@ -80,7 +80,7 @@ public class CsvParserPipe extends StreamingPipe {
 						} catch (SAXException e) {
 							throw new PipeRunException(this, "Exception caught at line ["+record.getRecordNumber()+"] pos ["+record.getCharacterPosition()+"]", e);
 						}
-					}		
+					}
 				}
 			}
 			return target.getPipeRunResult();
