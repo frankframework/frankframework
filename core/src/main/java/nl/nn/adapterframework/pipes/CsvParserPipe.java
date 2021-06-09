@@ -110,7 +110,7 @@ public class CsvParserPipe extends StreamingPipe {
 	}
 
 	@IbisDoc({"1", "Specifies if the first line should be treated as header or as data", "true"})
-	public void setFileContainsHeader(boolean fileContainsHeader) {
+	public void setFileContainsHeader(Boolean fileContainsHeader) {
 		this.fileContainsHeader = fileContainsHeader;
 	}
 
