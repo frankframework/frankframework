@@ -23,24 +23,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
-import nl.nn.adapterframework.monitoring.events.MonitorEvent;
-import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.SmartApplicationListener;
 
 /**
  * @author  Gerrit van Brakel
@@ -48,7 +43,7 @@ import org.springframework.context.event.SmartApplicationListener;
  */
 public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	public static final int SOURCE_FILTERING_NONE=0;
 	public static final int SOURCE_FILTERING_BY_ADAPTER=1;
 	public static final int SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT=2;
@@ -467,6 +462,21 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	}
 	public int getSourceFiltering() {
 		return sourceFiltering;
+	}
+
+	//TODO Create Enum
+	public String getFilterType() {
+		switch (getSourceFiltering()) {
+		case 0:
+			return "none";
+		case 1:
+			return "adapter";
+		case 2:
+			return "source";
+
+		default:
+			return "unknown";
+		}
 	}
 
 	@Override

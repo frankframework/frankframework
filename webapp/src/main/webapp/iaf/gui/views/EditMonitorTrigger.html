@@ -8,7 +8,7 @@
 			<div class="ibox float-e-margins">
 				<div class="ibox-title">
 					<div class="pull-right">
-						<button ui-sref="pages.monitors({configuration:selectedConfiguration}})" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
+						<button ui-sref="pages.monitors({configuration:selectedConfiguration,monitor:monitor})" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
 					</div>
 					<h4>{{$state.current.data.pageTitle}}</h4>
 				</div>
@@ -17,72 +17,78 @@
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Monitor</label>
 							<div class="col-sm-9">
-								<input class="form-control m-b" name="name" type="text" ng-model="monitor.name" disabled="disabled" />
+								<input class="form-control m-b" name="name" type="text" ng-model="monitor" disabled="disabled" />
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Type</label>
 							<div class="col-sm-9">
-								<select class="form-control m-b" name="adapter" ng-model="form.adapter">
-									<option ng-repeat="adapter in adapters" ng-value="adapter.name">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
+								<select class="form-control m-b" name="adapter" ng-model="trigger.type">
+									<option value="Alarm">Alarm</option>
+									<option value="Clearing">Clearing</option>
 								</select>
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Select a listener</label>
-							<div class="col-sm-9" ng-if="!form.adapter">
-								<input class="form-control m-b" disabled="disabled" value="Select an adapter first.."/>
-							</div>
-							<div class="col-sm-9" ng-if="form.adapter">
-								<select class="form-control m-b" name="receiver" ng-model="form.receiver">
-									<option ng-repeat="receiver in adapters[form.adapter].receivers" ng-value="receiver.name">{{receiver.listener.name}}</option>
+							<label class="col-sm-3 control-label">Events <small><br/>(Hint: use ctrl to multi-select)</small></label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" multiple name="events" ng-model="trigger.events">
+									<option ng-repeat="(name,event) in events">{{name}}</option>
 								</select>
 							</div>
 						</div>
-						<div class="form-group" title="Quatz CRON Expression to specify execution times. Overrides Interval">
-							<label class="col-sm-3 control-label">CRON Expression</label>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Filtering</label>
 							<div class="col-sm-9">
-								<input class="form-control m-b" name="cron" type="text" ng-model="form.cron"/>
+								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="none" ng-model="trigger.filter" /> None</span>
+								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="adapter" ng-model="trigger.filter" /> By Adapter</span>
+								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="source" ng-model="trigger.filter" /> By Source</span>
 							</div>
 						</div>
-						<div class="form-group" title="Interval between executions. Only used when NO cron expression specified">
-							<label class="col-sm-3 control-label">Interval</label>
+						<div class="form-group" ng-if="trigger.filter == 'adapter'">
+							<label class="col-sm-3 control-label">Adapters</label>
 							<div class="col-sm-9">
-								<input class="form-control m-b" name="interval" type="text" ng-disabled="form.cron!=''" ng-model="form.interval"/>
+								<select class="form-control m-b" multiple name="adapter" ng-model="trigger.sources">
+									<option ng-repeat="adapter in getAdaptersForEvents(trigger.events)">{{adapter}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group" ng-if="trigger.filter == 'source'">
+							<label class="col-sm-3 control-label">Sources</label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" multiple name="adapter" ng-model="trigger.sources">
+									<option ng-repeat="source in getSourceForEvents(trigger.events)" ng-value="source.adapter+'$$'+source.source">{{source.adapter}} / {{source.source}}</option>
+								</select>
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-sm-3 control-label label-height-30">Message</label>
+							<label class="col-sm-3 control-label">Filter sources exclusive</label>
 							<div class="col-sm-9">
-								<textarea class="form-control m-b" name="message" rows="5" style="resize:none;" ng-model="form.message"></textarea>
-							</div>
-						</div>
-						<div class="form-group" title="At most 255 chars (optional)">
-							<label class="col-sm-3 control-label">Description</label>
-							<div class="col-sm-9">
-								<input class="form-control m-b" name="description" type="text" ng-model="form.description" />
+								<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="trigger.filterExclusive" /></span>
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Contains Locker</label>
-							<div class="col-sm-1">
-								<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.locker" /></span>
-							</div>
-							<div class="col-sm-8">
-								<input class="form-control m-b" name="lockkey" type="text" ng-model="form.lockkey" placeholder="leave blank for default key"/>
+							<label class="col-sm-3 control-label">Severity</label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" name="events" ng-model="trigger.severity">
+									<option ng-repeat="severity in severities">{{severity}}</option>
+								</select>
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Store in Database</label>
+							<label class="col-sm-3 control-label">Threshold</label>
 							<div class="col-sm-9">
-								<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.persistent" ng-disabled="editMode"/></span>
+								<input class="form-control m-b" name="threshold" type="number" min="0" ng-model="trigger.threshold" placeholder="Amount of triggers before sounding an alarm"/>
 							</div>
 						</div>
-						<div class="col-lg-3 m-t-md">
-							<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Period</label>
+							<div class="col-sm-9">
+								<input class="form-control m-b" name="period" type="number" min="0" ng-model="trigger.period" placeholder="Amount of triggers within a period of time"/>
+							</div>
 						</div>
 						<div class="col-lg-9 m-t-md">
-							<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Save</button>
+							<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(trigger)">Save</button>
 						</div>
 					</form>
 				</div>

@@ -22,23 +22,22 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
-import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
-import javax.json.JsonObject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -65,6 +64,7 @@ import nl.nn.adapterframework.util.Misc;
 
 @Path("/configurations/{configuration}/monitors")
 public final class ShowMonitors extends Base {
+	@Context Request request;
 
 	private MonitorManager getMonitorManager(String configurationName) {
 		ApplicationContext applicationContext = getIbisManager().getConfiguration(configurationName);
@@ -90,86 +90,119 @@ public final class ShowMonitors extends Base {
 
 		List<Map<String, Object>> monitors = new ArrayList<Map<String, Object>>();
 		for (int i=0;i<mm.getMonitors().size();i++) {
-			Map<String, Object> monitorMap = new HashMap<String, Object>();
 			Monitor monitor = mm.getMonitor(i);
 
-			monitorMap.put("name", monitor.getName());
-			monitorMap.put("type", monitor.getType());
-			monitorMap.put("lastHit", monitor.getLastHit());
-
-			boolean isRaised = monitor.isRaised();
-			monitorMap.put("raised", isRaised);
-			monitorMap.put("changed", monitor.getStateChangeDt());
-			monitorMap.put("hits", monitor.getAdditionalHitCount());
-
-			if(isRaised) {
-				Map<String, Object> alarm = new HashMap<>();
-				alarm.put("severity", monitor.getAlarmSeverity());
-				EventThrowing source = monitor.getAlarmSource();
-				if (source!=null) {
-					String name = "";
-					if(source.getAdapter() != null) {
-						name = String.format("%s / %s", source.getAdapter().getName(), source.getEventSourceName());
-					} else {
-						name = source.getEventSourceName();
-					}
-					alarm.put("source", name);
-				}
-				monitorMap.put("alarm", alarm);
-			}
-
-			List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
-			List<Trigger> listOfTriggers = monitor.getTriggers();
-			for (Trigger trigger : listOfTriggers) {
-				Map<String, Object> triggerMap = new HashMap<String, Object>();
-
-				triggerMap.put("id", listOfTriggers.indexOf(trigger));
-				triggerMap.put("type", trigger.getType());
-				triggerMap.put("eventCodes", trigger.getEventCodes());
-				triggerMap.put("severity", trigger.getSeverity());
-				triggerMap.put("threshold", trigger.getThreshold());
-				triggerMap.put("period", trigger.getPeriod());
-
-				if (trigger.getAdapterFilters()!=null) {
-					List<Map<String, Object>> filters = new ArrayList<Map<String, Object>>();
-					if (trigger.getSourceFiltering()!=Trigger.SOURCE_FILTERING_NONE) {
-						for (Iterator<String> it1=trigger.getAdapterFilters().keySet().iterator(); it1.hasNext(); ) {
-							Map<String, Object> adapter = new HashMap<String, Object>(2);
-
-							String adapterName = it1.next();
-							AdapterFilter af = trigger.getAdapterFilters().get(adapterName);
-							adapter.put("name", adapterName);
-							if (trigger.isFilterOnLowerLevelObjects()) {
-								adapter.put("sources", af.getSubObjectList());
-							}
-							filters.add(adapter);
-						}
-					}
-					triggerMap.put("filterExclusive", trigger.isFilterExclusive());
-					triggerMap.put("filters", filters);
-				}
-
-				triggers.add(triggerMap);
-			}
-			monitorMap.put("triggers", triggers);
-
-			List<String> destinations=new ArrayList<String>();
-			Set<String> d = monitor.getDestinationSet();
-			for (Iterator<String> it=d.iterator();it.hasNext();) {
-				destinations.add(it.next());
-			}
-			monitorMap.put("destinations", destinations);
-
-			monitors.add(monitorMap);
+			monitors.add(mapMonitor(monitor));
 		}
 
 		returnMap.put("monitors", monitors);
 		returnMap.put("enabled", new Boolean(mm.isEnabled()));
-		returnMap.put("severities", EnumUtils.getEnumList(SeverityEnum.class));
 		returnMap.put("eventTypes", EnumUtils.getEnumList(EventTypeEnum.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
 		return Response.status(Status.OK).entity(returnMap).build();
+	}
+
+	private Map<String, Object> mapMonitor(Monitor monitor) {
+		Map<String, Object> monitorMap = new HashMap<String, Object>();
+		monitorMap.put("name", monitor.getName());
+		monitorMap.put("type", monitor.getType());
+		monitorMap.put("lastHit", monitor.getLastHit());
+
+		boolean isRaised = monitor.isRaised();
+		monitorMap.put("raised", isRaised);
+		monitorMap.put("changed", monitor.getStateChangeDt());
+		monitorMap.put("hits", monitor.getAdditionalHitCount());
+
+		if(isRaised) {
+			Map<String, Object> alarm = new HashMap<>();
+			alarm.put("severity", monitor.getAlarmSeverity());
+			EventThrowing source = monitor.getAlarmSource();
+			if (source!=null) {
+				String name = "";
+				if(source.getAdapter() != null) {
+					name = String.format("%s / %s", source.getAdapter().getName(), source.getEventSourceName());
+				} else {
+					name = source.getEventSourceName();
+				}
+				alarm.put("source", name);
+			}
+			monitorMap.put("alarm", alarm);
+		}
+
+		List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
+		List<Trigger> listOfTriggers = monitor.getTriggers();
+		for (Trigger trigger : listOfTriggers) {
+
+			Map<String, Object> map = mapTrigger(trigger);
+			map.put("id", listOfTriggers.indexOf(trigger));
+
+			triggers.add(map);
+		}
+		monitorMap.put("triggers", triggers);
+
+		List<String> destinations=new ArrayList<String>();
+		Set<String> d = monitor.getDestinationSet();
+		for (Iterator<String> it=d.iterator();it.hasNext();) {
+			destinations.add(it.next());
+		}
+		monitorMap.put("destinations", destinations);
+
+		return monitorMap;
+	}
+
+	private Map<String, Object> mapTrigger(Trigger trigger) {
+		Map<String, Object> triggerMap = new HashMap<String, Object>();
+
+		triggerMap.put("type", trigger.getType());
+		triggerMap.put("events", trigger.getEventCodes());
+		triggerMap.put("severity", trigger.getSeverity());
+		triggerMap.put("threshold", trigger.getThreshold());
+		triggerMap.put("period", trigger.getPeriod());
+
+		if (trigger.getAdapterFilters()!=null) {
+			Map<String, List<String>> sources = new HashMap<>();
+			if (trigger.getSourceFiltering()!=Trigger.SOURCE_FILTERING_NONE) {
+				for (Iterator<String> it1=trigger.getAdapterFilters().keySet().iterator(); it1.hasNext(); ) {
+					String adapterName = it1.next();
+
+					AdapterFilter af = trigger.getAdapterFilters().get(adapterName);
+					sources.put(adapterName, af.getSubObjectList());
+				}
+			}
+			triggerMap.put("filter", trigger.getFilterType());
+			triggerMap.put("filterExclusive", trigger.isFilterExclusive());
+			triggerMap.put("sources", sources);
+		}
+		return triggerMap;
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/{monitorName}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName) throws ApiException {
+
+		MonitorManager mm = getMonitorManager(configName);
+		Monitor monitor = mm.findMonitor(monitorName);
+
+		if(monitor == null) {
+			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
+		}
+
+		Map<String, Object> monitorInfo = mapMonitor(monitor);//Calculate the ETag on last modified date of user resource 
+		EntityTag etag = new EntityTag(monitorInfo.hashCode() + "");
+
+		Response.ResponseBuilder response = null;
+		//Verify if it matched with etag available in http request
+		response = request.evaluatePreconditions(etag);
+
+		//If ETag matches the response will be non-null; 
+		if (response != null) {
+			return response.tag(etag).build();
+		}
+
+		return Response.status(Status.OK).entity(monitorInfo).tag(etag).build();
 	}
 
 	@PUT
@@ -243,6 +276,48 @@ public final class ShowMonitors extends Base {
 
 		mm.removeMonitor(monitor);
 		return Response.status(Status.OK).build();
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/{monitorName}/triggers/{triggerId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getTriggers(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @PathParam("triggerId") Integer id) throws ApiException {
+
+		MonitorManager mm = getMonitorManager(configName);
+		Monitor monitor = mm.findMonitor(monitorName);
+
+		if(monitor == null) {
+			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
+		}
+
+		Map<String, Object> returnMap = new HashMap<String, Object>();
+
+		if(id != null) {
+			Trigger trigger = monitor.getTrigger(id);
+			if(trigger == null) {
+				throw new ApiException("Trigger not found!", Status.NOT_FOUND);
+			} else {
+				returnMap.put("trigger", mapTrigger(trigger));
+			}
+		}
+
+		returnMap.put("severities", EnumUtils.getEnumList(SeverityEnum.class));
+		returnMap.put("events", mm.getEvents());
+
+
+		EntityTag etag = new EntityTag(returnMap.hashCode() + "");
+
+		Response.ResponseBuilder response = null;
+		//Verify if it matched with etag available in http request
+		response = request.evaluatePreconditions(etag);
+
+		//If ETag matches the response will be non-null; 
+		if (response != null) {
+			return response.tag(etag).build();
+		}
+
+		return Response.status(Status.OK).entity(returnMap).tag(etag).build();
 	}
 
 	@DELETE

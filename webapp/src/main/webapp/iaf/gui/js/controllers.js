@@ -275,6 +275,7 @@ angular.module('iaf.beheerconsole')
 
 					$scope.updateAdapterSummary();
 					Hooks.call("adapterUpdated", adapter);
+//					$scope.$broadcast('adapterUpdated', adapter);
 				}
 			}
 		};
@@ -625,7 +626,7 @@ angular.module('iaf.beheerconsole')
 		for(adapterName in adapters) {
 			var adapter = adapters[adapterName];
 
-			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && $scope.filter[adapter.status])
+			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && ($scope.filter == undefined || $scope.filter[adapter.status]))
 				r[adapterName] = adapter;
 		}
 		return r;
@@ -2311,7 +2312,6 @@ angular.module('iaf.beheerconsole')
 	$scope.monitors = [];
 	$scope.destinations = [];
 	$scope.eventTypes = [];
-	$scope.severities = [];
 
 	$scope.changeConfiguration = function(name) {
 		$scope.selectedConfiguration = name;
@@ -2383,9 +2383,85 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('EditMonitorsCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
+	$scope.loading = true;
+
+	$scope.$on('loading', function() {
+		$scope.loading = false;
+	});
+
 	$scope.selectedConfiguration = null;
-	if($state.params.configuration == "") {
-		$state.transitionTo('pages.monitors', {}, { notify: false, reload: false});
+	$scope.monitor = "";
+	$scope.events = "";
+	$scope.severities = [];
+	$scope.triggerId = "";
+	$scope.trigger = {
+		type: "Alarm",
+		filter: "none",
+		events: [],
+	}
+	if($state.params.configuration == "" || $state.params.monitor == "") {
+		$state.go('pages.monitors');
+	} else {
+		$scope.selectedConfiguration = $state.params.configuration;
+		$scope.monitor = $state.params.monitor;
+		$scope.triggerId = $state.params.trigger || "";
+		Api.Get("configurations/"+$scope.selectedConfiguration+"/monitors/"+$scope.monitor+"/triggers/"+$scope.triggerId, function(data) {
+			$.extend($scope, data);
+			calculateEventSources();
+			var sources = data.trigger.sources;
+			if(sources) {
+				$scope.trigger.sources = [];
+				for(adapter in sources) {
+					if(data.trigger.filter == "source") {
+						for(i in sources[adapter]) {
+							$scope.trigger.sources.push(adapter+"$$"+sources[adapter][i]);
+						}
+					} else {
+						$scope.trigger.sources.push(adapter);
+					}
+				}
+			}
+			console.log($scope.trigger)
+		}, function() {
+			$state.go('pages.monitors', $state.params);
+		});
+	}
+
+	$scope.getAdaptersForEvents = function(events) {
+		if(!events) return;
+		var adapters = [];
+		for(eventName in $scope.events) {
+			if(events.indexOf(eventName) > -1) {
+				var arr = $scope.events[eventName].adapters;
+				adapters = adapters.concat(arr);
+			}
+		}
+		return Array.from(new Set(adapters));
+	}
+	$scope.eventSources = [];
+	function calculateEventSources() {
+		for(eventCode in $scope.events) {
+			var retVal = [];
+			var eventSources = $scope.events[eventCode].sources;
+			for(adapter in eventSources) {
+				for(i in eventSources[adapter]) {
+					retVal.push({adapter:adapter, source: eventSources[adapter][i]});
+				}
+			}
+			$scope.eventSources[eventCode] = retVal;
+		}
+	}
+	$scope.getSourceForEvents = function(events) {
+		var retval = [];
+		for(i in events) {
+			var eventCode = events[i];
+			retval = retval.concat($scope.eventSources[eventCode]);
+		}
+		return retval;
+	}
+
+	$scope.submit = function(trigger) {
+		console.log(trigger);
 	}
 }])
 

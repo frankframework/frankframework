@@ -497,7 +497,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 
 	}
 
-	private Map<String, Thrower> throwers = new HashMap<>();
+	private Map<String, Event> events = new HashMap<>();
 	private void register(EventThrowing eventThrowing, String eventCode) {
 		Adapter adapter = eventThrowing.getAdapter();
 		if(adapter == null || StringUtils.isEmpty(adapter.getName())) {
@@ -505,23 +505,53 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		}
 		String adapterName = adapter.getName();
 
-		throwers.getOrDefault(adapterName, new Thrower(eventThrowing)).addEventCode(eventCode);
+//		throwers.computeIfAbsent(adapterName, () -> new Thrower(eventThrowing));
+		Event a = events.getOrDefault(eventCode, new Event());
+		a.addThrower(eventThrowing);
+		events.put(eventCode, a);
 	}
 
-	private static class Thrower {
-		private EventThrowing thrower;
-		List<String> eventCodes = new ArrayList<>();
+	public Map<String, Event> getEvents() {
+		return events;
+	}
 
-		public Thrower(EventThrowing thrower) {
-			this.thrower = thrower;
+	private static class Event {
+		private List<EventThrowing> throwers = new ArrayList<>();
+
+		public Event() {}
+
+		public Event(EventThrowing thrower) {
+			throwers.add(thrower);
 		}
 
-		public void addEventCode(String eventCode) {
-			eventCodes.add(eventCode);
+		public void addThrower(EventThrowing thrower) {
+			throwers.add(thrower);
 		}
 
-		public List<String> getEventCodes() {
-			return Collections.unmodifiableList(eventCodes);
+		private List<EventThrowing> getThrowers() {
+			return Collections.unmodifiableList(throwers);
+		}
+
+		public List<String> getAdapters() {
+			List<String> adapters = new ArrayList<>();
+			for(EventThrowing eventThrower : getThrowers()) {
+				Adapter adapter = eventThrower.getAdapter();
+				if(adapter != null && !adapters.contains(adapter.getName())) {
+					adapters.add(adapter.getName());
+				}
+			}
+			return adapters;
+		}
+
+		public Map<String, List<String>> getSources() {
+			Map<String, List<String>> sources = new HashMap<>();
+			for(EventThrowing eventThrower : getThrowers()) {
+				Adapter adapter = eventThrower.getAdapter(); //TODO null check?
+				List<String> sourceNames = sources.getOrDefault(adapter.getName(), new ArrayList<>());
+				sourceNames.add(eventThrower.getEventSourceName());
+				sources.put(adapter.getName(), sourceNames);
+			}
+			return sources;
 		}
 	}
 
@@ -856,5 +886,4 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	public void stop() {
 		// Nothing to stop?
 	}
-
 }
