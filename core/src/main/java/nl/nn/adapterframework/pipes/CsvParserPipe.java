@@ -69,7 +69,7 @@ public class CsvParserPipe extends StreamingPipe {
 			String[] header = format.getHeader();
 			// Change character case for the header
 			header = Arrays.stream(header)
-				.map(headerCase==HeaderCase.LOWERCASE ? (s) -> s.toLowerCase() : (s) -> s.toUpperCase())
+				.map(getHeaderCaseEnum()==HeaderCase.LOWERCASE ? (s) -> s.toLowerCase() : (s) -> s.toUpperCase())
 				.toArray(String[]::new);
 			format = format.withHeader(header);
 		}
