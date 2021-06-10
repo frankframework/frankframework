@@ -49,6 +49,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.SneakyThrows;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Functions to read and write from one stream to another.
@@ -69,19 +70,28 @@ public class StreamUtil {
 			return (OutputStream) target;
 		} 
 		if (target instanceof String) {
-			String filename=(String)target;
-			if (StringUtils.isEmpty(filename)) {
-				throw new IOException("target string cannot be empty but must contain a filename");
-			}
-			try {
-				return new FileOutputStream(filename);
-			} catch (FileNotFoundException e) {
-				FileNotFoundException fnfe = new FileNotFoundException("cannot create file ["+filename+"]");
-				fnfe.initCause(e);
-				throw fnfe;
+			return getFileOutputStream((String)target);
+			
+		}
+		if (target instanceof Message) {
+			if(((Message) target).asObject() instanceof String) {
+				return getFileOutputStream(((Message)target).asString());
 			}
 		}
 		return null;
+	}
+
+	private static OutputStream getFileOutputStream(String filename) throws IOException {
+		if (StringUtils.isEmpty(filename)) {
+			throw new IOException("target string cannot be empty but must contain a filename");
+		}
+		try {
+			return new FileOutputStream(filename);
+		} catch (FileNotFoundException e) {
+			FileNotFoundException fnfe = new FileNotFoundException("cannot create file ["+filename+"]");
+			fnfe.initCause(e);
+			throw fnfe;
+		}
 	}
 
 	public static Writer getWriter(Object target) throws IOException {
@@ -91,6 +101,7 @@ public class StreamUtil {
 		if (target instanceof Writer) {
 			return (Writer)target;
 		}
+		
 		return null;
 	}
 	
