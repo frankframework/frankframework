@@ -2373,11 +2373,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.deleteTrigger = function(monitor, trigger) {
 		Api.Delete(getUrl(monitor, trigger), function() {
-			for(i in monitor.triggers) {
-				if(monitor.triggers[i].id == trigger.id) {
-					monitor.triggers.splice(i, 1);
-				}
-			}
+			update();
 		});
 	}
 }])
@@ -2477,7 +2473,6 @@ angular.module('iaf.beheerconsole')
 				trigger.sources[adapter].push(source);
 			}
 		}
-		console.log(trigger, url);
 		if($scope.triggerId && $scope.triggerId > -1) {
 			Api.Put(url, trigger, function(returnData) {
 				$state.go('pages.monitors', $state.params);

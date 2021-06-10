@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
@@ -60,18 +59,19 @@ import nl.nn.adapterframework.util.SpringUtils;
 /**
  * Shows all monitors.
  * 
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/configurations/{configuration}/monitors")
 public final class ShowMonitors extends Base {
-	@Context Request request;
+	@Context
+	Request request;
 
 	private MonitorManager getMonitorManager(String configurationName) {
 		ApplicationContext applicationContext = getIbisManager().getConfiguration(configurationName);
 		if(applicationContext == null) {
-			throw new IllegalStateException("configuration ["+configurationName+"] not found");
+			throw new IllegalStateException("configuration [" + configurationName + "] not found");
 		}
 
 		return getMonitorManager(applicationContext);
@@ -82,7 +82,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMonitors(@PathParam("configuration") String configurationName) throws ApiException {
@@ -91,7 +91,7 @@ public final class ShowMonitors extends Base {
 		MonitorManager mm = getMonitorManager(configurationName);
 
 		List<Map<String, Object>> monitors = new ArrayList<Map<String, Object>>();
-		for (int i=0;i<mm.getMonitors().size();i++) {
+		for(int i = 0; i < mm.getMonitors().size(); i++) {
 			Monitor monitor = mm.getMonitor(i);
 
 			monitors.add(mapMonitor(monitor));
@@ -120,7 +120,7 @@ public final class ShowMonitors extends Base {
 			Map<String, Object> alarm = new HashMap<>();
 			alarm.put("severity", monitor.getAlarmSeverity());
 			EventThrowing source = monitor.getAlarmSource();
-			if (source!=null) {
+			if(source != null) {
 				String name = "";
 				if(source.getAdapter() != null) {
 					name = String.format("%s / %s", source.getAdapter().getName(), source.getEventSourceName());
@@ -134,7 +134,7 @@ public final class ShowMonitors extends Base {
 
 		List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
 		List<Trigger> listOfTriggers = monitor.getTriggers();
-		for (Trigger trigger : listOfTriggers) {
+		for(Trigger trigger : listOfTriggers) {
 
 			Map<String, Object> map = mapTrigger(trigger);
 			map.put("id", listOfTriggers.indexOf(trigger));
@@ -143,9 +143,9 @@ public final class ShowMonitors extends Base {
 		}
 		monitorMap.put("triggers", triggers);
 
-		List<String> destinations=new ArrayList<String>();
+		List<String> destinations = new ArrayList<String>();
 		Set<String> d = monitor.getDestinationSet();
-		for (Iterator<String> it=d.iterator();it.hasNext();) {
+		for(Iterator<String> it = d.iterator(); it.hasNext();) {
 			destinations.add(it.next());
 		}
 		monitorMap.put("destinations", destinations);
@@ -162,10 +162,10 @@ public final class ShowMonitors extends Base {
 		triggerMap.put("threshold", trigger.getThreshold());
 		triggerMap.put("period", trigger.getPeriod());
 
-		if (trigger.getAdapterFilters()!=null) {
+		if(trigger.getAdapterFilters() != null) {
 			Map<String, List<String>> sources = new HashMap<>();
-			if (trigger.getSourceFiltering()!=Trigger.SOURCE_FILTERING_NONE) {
-				for (Iterator<String> it1=trigger.getAdapterFilters().keySet().iterator(); it1.hasNext(); ) {
+			if(trigger.getSourceFiltering() != Trigger.SOURCE_FILTERING_NONE) {
+				for(Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext();) {
 					String adapterName = it1.next();
 
 					AdapterFilter af = trigger.getAdapterFilters().get(adapterName);
@@ -180,7 +180,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName) throws ApiException {
@@ -192,15 +192,15 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		Map<String, Object> monitorInfo = mapMonitor(monitor);//Calculate the ETag on last modified date of user resource 
+		Map<String, Object> monitorInfo = mapMonitor(monitor);// Calculate the ETag on last modified date of user resource
 		EntityTag etag = new EntityTag(monitorInfo.hashCode() + "");
 
 		Response.ResponseBuilder response = null;
-		//Verify if it matched with etag available in http request
+		// Verify if it matched with etag available in http request
 		response = request.evaluatePreconditions(etag);
 
-		//If ETag matches the response will be non-null; 
-		if (response != null) {
+		// If ETag matches the response will be non-null;
+		if(response != null) {
 			return response.tag(etag).build();
 		}
 
@@ -208,7 +208,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@PUT
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, LinkedHashMap<String, Object> json) {
@@ -221,7 +221,7 @@ public final class ShowMonitors extends Base {
 		}
 
 		String action = null;
-		for (Entry<String, Object> entry : json.entrySet()) {
+		for(Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("action")) {
 				action = entry.getValue().toString();
@@ -230,25 +230,22 @@ public final class ShowMonitors extends Base {
 
 		if(StringUtils.isEmpty(action)) {
 			throw new ApiException("Missing query parameter [action]", Status.BAD_REQUEST);
-		}
-		else if (action.equals("clear")) {
+		} else if(action.equals("clear")) {
 			try {
-				log.info("clearing monitor ["+monitor.getName()+"]");
+				log.info("clearing monitor [" + monitor.getName() + "]");
 				monitor.changeState(new Date(), false, SeverityEnum.WARNING, null, null, null);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
-		}
-		else if (action.equals("raise")) {
+		} else if(action.equals("raise")) {
 			try {
-				log.info("raising monitor ["+monitor.getName()+"]");
+				log.info("raising monitor [" + monitor.getName() + "]");
 				monitor.changeState(new Date(), true, SeverityEnum.WARNING, null, null, null);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
-		}
-		else if (action.equals("edit")) {
-			for (Entry<String, Object> entry : json.entrySet()) {
+		} else if(action.equals("edit")) {
+			for(Entry<String, Object> entry : json.entrySet()) {
 				String key = entry.getKey();
 				if(key.equalsIgnoreCase("name")) {
 					monitor.setName(entry.getValue().toString());
@@ -262,7 +259,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@DELETE
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName) throws ApiException {
@@ -274,14 +271,14 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		log.info("removing monitor ["+monitor.getName()+"]");
+		log.info("removing monitor [" + monitor.getName() + "]");
 
 		mm.removeMonitor(monitor);
 		return Response.status(Status.OK).build();
 	}
 
 	@POST
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -303,7 +300,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getTriggers(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName) throws ApiException {
@@ -311,7 +308,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{triggerId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getTriggers(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @PathParam("triggerId") Integer id) throws ApiException {
@@ -337,15 +334,14 @@ public final class ShowMonitors extends Base {
 		returnMap.put("severities", EnumUtils.getEnumList(SeverityEnum.class));
 		returnMap.put("events", mm.getEvents());
 
-
 		EntityTag etag = new EntityTag(returnMap.hashCode() + "");
 
 		Response.ResponseBuilder response = null;
-		//Verify if it matched with etag available in http request
+		// Verify if it matched with etag available in http request
 		response = request.evaluatePreconditions(etag);
 
-		//If ETag matches the response will be non-null; 
-		if (response != null) {
+		// If ETag matches the response will be non-null;
+		if(response != null) {
 			return response.tag(etag).build();
 		}
 
@@ -353,7 +349,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@PUT
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -376,6 +372,7 @@ public final class ShowMonitors extends Base {
 		return Response.status(Status.OK).build();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void handleTrigger(Trigger trigger, Map<String, Object> json) {
 		List<String> eventList = null;
 		String type = null;
@@ -387,7 +384,7 @@ public final class ShowMonitors extends Base {
 		List<String> adapters = null;
 		Map<String, List<String>> sources = null;
 
-		for (Entry<String, Object> entry : json.entrySet()) {
+		for(Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("events") && entry.getValue() instanceof List<?>) {
 				eventList = (List<String>) entry.getValue();
@@ -396,9 +393,9 @@ public final class ShowMonitors extends Base {
 			} else if(key.equalsIgnoreCase("severity")) {
 				severity = entry.getValue().toString();
 			} else if(key.equalsIgnoreCase("threshold")) {
-				threshold = (Integer.parseInt(""+entry.getValue()));
+				threshold = (Integer.parseInt("" + entry.getValue()));
 			} else if(key.equalsIgnoreCase("period")) {
-				period = (Integer.parseInt(""+entry.getValue()));
+				period = (Integer.parseInt("" + entry.getValue()));
 			} else if(key.equalsIgnoreCase("filterExclusive")) {
 				filterExclusive = Boolean.parseBoolean(entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("filter")) {
@@ -410,7 +407,7 @@ public final class ShowMonitors extends Base {
 			}
 		}
 
-		//If no parse errors have occured we can continue!
+		// If no parse errors have occured we can continue!
 		trigger.setEventCodes(eventList.toArray(new String[eventList.size()]));
 		trigger.setType(type);
 		trigger.setSeverity(severity);
@@ -430,7 +427,7 @@ public final class ShowMonitors extends Base {
 		} else if("source".equals(filter)) {
 			trigger.setSourceFiltering(Trigger.SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT);
 
-			for (Map.Entry<String, List<String>> entry : sources.entrySet()) {
+			for(Map.Entry<String, List<String>> entry : sources.entrySet()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(entry.getKey());
 				for(String subObject : entry.getValue()) {
@@ -444,7 +441,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@DELETE
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteTrigger(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int index) throws ApiException {
@@ -462,14 +459,14 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Trigger not found!", Status.NOT_FOUND);
 		}
 
-		log.info("removing trigger ["+trigger+"]");
+		log.info("removing trigger [" + trigger + "]");
 		monitor.removeTrigger(trigger);
 
 		return Response.status(Status.OK).build();
 	}
 
 	@POST
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -479,7 +476,7 @@ public final class ShowMonitors extends Base {
 		EventTypeEnum type = null;
 		ArrayList<String> destinations = new ArrayList<String>();
 
-		for (Entry<String, Object> entry : json.entrySet()) {
+		for(Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			if(key.equalsIgnoreCase("name")) {
 				name = entry.getValue().toString();
@@ -490,8 +487,7 @@ public final class ShowMonitors extends Base {
 			if(key.equalsIgnoreCase("destinations")) {
 				try {
 					destinations.addAll((ArrayList<String>) entry.getValue());
-				}
-				catch(Exception e) {
+				} catch (Exception e) {
 					throw new ApiException("Failed to parse destinations", e);
 				}
 			}
@@ -507,19 +503,19 @@ public final class ShowMonitors extends Base {
 		monitor.setName(name);
 		monitor.setTypeEnum(type);
 
-		//Check if destination is set, and if it actually exists...
+		// Check if destination is set, and if it actually exists...
 		if(destinations != null && destinations.size() > 0) {
 			List<String> tmp = new ArrayList<String>();
 
-			for (Iterator<String> i = destinations.iterator(); i.hasNext();) {
+			for(Iterator<String> i = destinations.iterator(); i.hasNext();) {
 				String destination = (String) i.next();
 				if(mm.getDestination(destination) != null) {
 					tmp.add(destination);
 				}
 			}
 
-			String[] result=new String[tmp.size()];
-			result = (String[])tmp.toArray(result);
+			String[] result = new String[tmp.size()];
+			result = (String[]) tmp.toArray(result);
 			monitor.setDestinations(result);
 		}
 

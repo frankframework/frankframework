@@ -197,6 +197,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 	}
 
+	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
 	@Override
 	public String[] getBeanNamesForType(Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
 		if(type.isAssignableFrom(ApplicationListener.class)) {

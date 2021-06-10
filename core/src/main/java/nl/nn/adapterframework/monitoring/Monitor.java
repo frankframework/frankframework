@@ -33,7 +33,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -266,8 +265,6 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		int index = triggers.indexOf(trigger);
 		if(index > -1) {
 			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
-			//BeanDefinitionRegistry factory = (BeanDefinitionRegistry) 
-//			factory.removeBeanDefinition("mongoRepository");
 			factory.destroyBean(trigger);
 			triggers.remove(trigger);
 		}
