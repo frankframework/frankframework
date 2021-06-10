@@ -733,6 +733,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				qs.setName("cleanupDatabase-"+mlo.getTableName());
 				qs.setQueryType("other");
 				qs.setTimeout(getQueryTimeout());
+				qs.setScalar(true);
 
 				Parameter param = new Parameter();
 				param.setName("now");
@@ -755,9 +756,18 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 					+ "') AND " + mlo.getExpiryDateField() + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
 					qs.setSqlDialect(Dbms.ORACLE.getKey());
 				}
-
-				Message result = qs.sendMessage(new Message(query), null);
-				log.info("result [" + result + "]");
+				boolean fetchedAllRecords = false;
+				while(!fetchedAllRecords) {
+					Message result = qs.sendMessage(new Message(query), null);
+					String resultString = result.asString();
+					log.info("deleted [" + resultString + "] rows");
+					int numberOfRowsAffected = Integer.valueOf(resultString);
+					if(numberOfRowsAffected<maxRows) {
+						fetchedAllRecords = true;
+					} else {
+						log.info("executing the query again!");
+					}
+				}
 			} catch (Exception e) {
 				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
