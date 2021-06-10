@@ -49,9 +49,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 
-	private @Setter @Getter String sessionKey = "file";
-	private @Setter @Getter String filenameSessionKey = "fileName";
-	private @Setter @Getter String propertiesFileName = "wsdl.properties";
+	private @Getter @Setter String sessionKey = "file";
+	private @Getter @Setter String filenameSessionKey = "fileName";
+	private @Getter @Setter String propertiesFileName = "wsdl.properties";
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
