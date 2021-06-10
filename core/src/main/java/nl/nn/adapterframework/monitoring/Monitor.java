@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -51,41 +50,40 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	private EventTypeEnum type=EventTypeEnum.TECHNICAL;
 	private boolean raised=false;
 	private Date stateChangeDt=null;
-	
+
 	private int additionalHitCount=0;
 	private Date lastHit=null;
-	
+
 	private SeverityEnum alarmSeverity=null;  
 	private EventThrowing alarmSource=null;  
 
-	
+
 	private MonitorManager owner=null;
 
 	private List<Trigger> triggers = new ArrayList<Trigger>();
 	private Set<String> destinationSet=new HashSet<String>(); 
 	private @Setter ApplicationContext applicationContext;
-	
+
 	public Monitor() {
 		super();
 	}
 
 	public void register(MonitorManager mm) {
 		mm.addMonitor(this);
-//TODO	MonitorManager.getInstance().addMonitor(this);
 	}
-	
-	public void configure() throws ConfigurationException {
-		if (MonitorManager.traceReconfigure) {
-			if (log.isDebugEnabled())
-				log.debug("monitor ["+getName()+"] configuring triggers");
-		}
+
+	public void configure() {
+		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
+
 		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
 			Trigger trigger = it.next();
-			trigger.configure();
-			((ConfigurableApplicationContext)applicationContext).addApplicationListener(trigger);
+			if(!trigger.isConfigured()) {
+				trigger.configure();
+				((ConfigurableApplicationContext)applicationContext).addApplicationListener(trigger);
+			}
 		}
 	}
-	
+
 	public void registerEventNotificationListener(Trigger trigger, List<String> eventCodes, Map<String, AdapterFilter> adapterFilters, boolean filterOnLowerLevelObjects, boolean filterExclusive) throws MonitorException {
 		if (MonitorManager.traceReconfigure) {
 			if (log.isDebugEnabled())
@@ -93,7 +91,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 		getOwner().registerEventNotificationListener(trigger, eventCodes, adapterFilters, filterOnLowerLevelObjects, filterExclusive);
 	}
-	
+
 	public void changeState(Date date, boolean alarm, SeverityEnum severity, EventThrowing source, String details, Throwable t) throws MonitorException {
 		boolean hit=alarm && (getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<=0);
 		boolean up=alarm && (!raised || getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<0);

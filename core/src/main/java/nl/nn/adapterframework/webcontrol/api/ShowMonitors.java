@@ -45,6 +45,7 @@ import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
@@ -54,6 +55,7 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.monitoring.Trigger;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Shows all monitors.
@@ -278,6 +280,36 @@ public final class ShowMonitors extends Base {
 		return Response.status(Status.OK).build();
 	}
 
+	@POST
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/{monitorName}/triggers")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, Map<String, Object> json) {
+
+		MonitorManager mm = getMonitorManager(configName);
+		Monitor monitor = mm.findMonitor(monitorName);
+
+		if(monitor == null) {
+			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
+		}
+
+		Trigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
+		handleTrigger(trigger, json);
+		monitor.registerTrigger(trigger);
+		monitor.configure();
+
+		return Response.status(Status.OK).build();
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/{monitorName}/triggers")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getTriggers(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName) throws ApiException {
+		return getTriggers(configName, monitorName, null);
+	}
+
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/{monitorName}/triggers/{triggerId}")
@@ -318,6 +350,97 @@ public final class ShowMonitors extends Base {
 		}
 
 		return Response.status(Status.OK).entity(returnMap).tag(etag).build();
+	}
+
+	@PUT
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/{monitorName}/triggers/{trigger}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int index, Map<String, Object> json) throws ApiException {
+
+		MonitorManager mm = getMonitorManager(configName);
+		Monitor monitor = mm.findMonitor(monitorName);
+
+		if(monitor == null) {
+			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
+		}
+
+		Trigger trigger = monitor.getTrigger(index);
+		if(trigger == null) {
+			throw new ApiException("Trigger not found!", Status.NOT_FOUND);
+		}
+
+		handleTrigger(trigger, json);
+
+		return Response.status(Status.OK).build();
+	}
+
+	private void handleTrigger(Trigger trigger, Map<String, Object> json) {
+		List<String> eventList = null;
+		String type = null;
+		String severity = null;
+		int threshold = 0;
+		int period = 0;
+		boolean filterExclusive = false;
+		String filter = null;
+		List<String> adapters = null;
+		Map<String, List<String>> sources = null;
+
+		for (Entry<String, Object> entry : json.entrySet()) {
+			String key = entry.getKey();
+			if(key.equalsIgnoreCase("events") && entry.getValue() instanceof List<?>) {
+				eventList = (List<String>) entry.getValue();
+			} else if(key.equalsIgnoreCase("type")) {
+				type = entry.getValue().toString();
+			} else if(key.equalsIgnoreCase("severity")) {
+				severity = entry.getValue().toString();
+			} else if(key.equalsIgnoreCase("threshold")) {
+				threshold = (Integer.parseInt(""+entry.getValue()));
+			} else if(key.equalsIgnoreCase("period")) {
+				period = (Integer.parseInt(""+entry.getValue()));
+			} else if(key.equalsIgnoreCase("filterExclusive")) {
+				filterExclusive = Boolean.parseBoolean(entry.getValue().toString());
+			} else if(key.equalsIgnoreCase("filter")) {
+				filter = entry.getValue().toString();
+			} else if(key.equalsIgnoreCase("adapters") && entry.getValue() instanceof List<?>) {
+				adapters = (List<String>) entry.getValue();
+			} else if(key.equalsIgnoreCase("sources") && entry.getValue() instanceof Map<?, ?>) {
+				sources = (Map<String, List<String>>) entry.getValue();
+			}
+		}
+
+		//If no parse errors have occured we can continue!
+		trigger.setEventCodes(eventList.toArray(new String[eventList.size()]));
+		trigger.setType(type);
+		trigger.setSeverity(severity);
+		trigger.setThreshold(threshold);
+		trigger.setPeriod(period);
+		trigger.setFilterExclusive(filterExclusive);
+
+		trigger.clearAdapterFilters();
+		if("adapter".equals(filter)) {
+			trigger.setSourceFiltering(Trigger.SOURCE_FILTERING_BY_ADAPTER);
+
+			for(String adapter : adapters) {
+				AdapterFilter adapterFilter = new AdapterFilter();
+				adapterFilter.setAdapter(adapter);
+				trigger.registerAdapterFilter(adapterFilter);
+			}
+		} else if("source".equals(filter)) {
+			trigger.setSourceFiltering(Trigger.SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT);
+
+			for (Map.Entry<String, List<String>> entry : sources.entrySet()) {
+				AdapterFilter adapterFilter = new AdapterFilter();
+				adapterFilter.setAdapter(entry.getKey());
+				for(String subObject : entry.getValue()) {
+					adapterFilter.registerSubObject(subObject);
+				}
+				trigger.registerAdapterFilter(adapterFilter);
+			}
+		} else {
+			trigger.setSourceFiltering(Trigger.SOURCE_FILTERING_NONE);
+		}
 	}
 
 	@DELETE

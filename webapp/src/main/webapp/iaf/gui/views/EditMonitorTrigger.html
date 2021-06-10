@@ -48,7 +48,7 @@
 						<div class="form-group" ng-if="trigger.filter == 'adapter'">
 							<label class="col-sm-3 control-label">Adapters</label>
 							<div class="col-sm-9">
-								<select class="form-control m-b" multiple name="adapter" ng-model="trigger.sources">
+								<select class="form-control m-b" multiple name="adapter" ng-model="trigger.adapters">
 									<option ng-repeat="adapter in getAdaptersForEvents(trigger.events)">{{adapter}}</option>
 								</select>
 							</div>

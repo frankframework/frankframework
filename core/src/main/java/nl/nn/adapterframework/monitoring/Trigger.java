@@ -68,7 +68,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		System.err.println(this);
 	}
 
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		if (eventCodes.isEmpty()) {
 			log.warn(getLogPrefix()+"configure() trigger of Monitor ["+getMonitor().getName()+"] should have at least one eventCode specified");
 		}
@@ -88,6 +88,10 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		}
 
 		configured = true;
+	}
+
+	public boolean isConfigured() {
+		return configured;
 	}
 
 	@Override
@@ -427,6 +431,11 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 
 	public Map<String, AdapterFilter> getAdapterFilters() {
 		return adapterFilters;
+	}
+
+	public void clearAdapterFilters() {
+		adapterFilters.clear();
+		setSourceFiltering(SOURCE_FILTERING_NONE);
 	}
 
 	public void registerAdapterFilter(AdapterFilter af) {

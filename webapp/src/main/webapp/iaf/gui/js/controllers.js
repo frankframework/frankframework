@@ -2399,29 +2399,31 @@ angular.module('iaf.beheerconsole')
 		filter: "none",
 		events: [],
 	}
+	var url;
 	if($state.params.configuration == "" || $state.params.monitor == "") {
 		$state.go('pages.monitors');
 	} else {
 		$scope.selectedConfiguration = $state.params.configuration;
 		$scope.monitor = $state.params.monitor;
 		$scope.triggerId = $state.params.trigger || "";
-		Api.Get("configurations/"+$scope.selectedConfiguration+"/monitors/"+$scope.monitor+"/triggers/"+$scope.triggerId, function(data) {
+		url = "configurations/"+$scope.selectedConfiguration+"/monitors/"+$scope.monitor+"/triggers/"+$scope.triggerId;
+		Api.Get(url, function(data) {
 			$.extend($scope, data);
 			calculateEventSources();
+			if(data.trigger && data.trigger.sources) {
 			var sources = data.trigger.sources;
-			if(sources) {
 				$scope.trigger.sources = [];
+				$scope.trigger.adapters = [];
 				for(adapter in sources) {
 					if(data.trigger.filter == "source") {
 						for(i in sources[adapter]) {
 							$scope.trigger.sources.push(adapter+"$$"+sources[adapter][i]);
 						}
 					} else {
-						$scope.trigger.sources.push(adapter);
+						$scope.trigger.adapters.push(adapter);
 					}
 				}
 			}
-			console.log($scope.trigger)
 		}, function() {
 			$state.go('pages.monitors', $state.params);
 		});
@@ -2461,7 +2463,30 @@ angular.module('iaf.beheerconsole')
 	}
 
 	$scope.submit = function(trigger) {
-		console.log(trigger);
+		if(trigger.filter == "adapter") {
+			delete trigger.sources;
+		} else if(trigger.filter == "source") {
+			delete trigger.adapters;
+			var sources = trigger.sources;
+			trigger.sources = {};
+			for(i in sources) {
+				var s = sources[i].split("$$");
+				var adapter = s[0];
+				var source = s[1];
+				if(!trigger.sources[adapter]) trigger.sources[adapter] = [];
+				trigger.sources[adapter].push(source);
+			}
+		}
+		console.log(trigger, url);
+		if($scope.triggerId && $scope.triggerId > -1) {
+			Api.Put(url, trigger, function(returnData) {
+				$state.go('pages.monitors', $state.params);
+			});
+		} else {
+			Api.Post(url, JSON.stringify(trigger), function(returnData) {
+				$state.go('pages.monitors', $state.params);
+			});
+		}
 	}
 }])
 
