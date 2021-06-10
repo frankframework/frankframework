@@ -40,7 +40,10 @@ public enum AttributeTypeStrategy {
 
 	private static Logger log = LogUtil.getLogger(AttributeTypeStrategy.class);
 
-	private static final String PATTERN_REF = "\\$\\{[^\\}]+\\}";
+	// The $-sign is not escaped in the regex below. This way,
+	// the regexes in the XSDs are not flagged by XMLSpy.
+	private static final String PATTERN_REF = "$\\{[^\\}]+\\}";
+
 	private static final String FRANK_BOOLEAN = "frankBoolean";
 	private static final String FRANK_INT = "frankInt";
 	private static final String PATTERN_FRANK_BOOLEAN = String.format("(true|false)|(%s)", PATTERN_REF);
