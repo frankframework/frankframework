@@ -38,6 +38,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * @author  Gerrit van Brakel
  * @since   4.9
+ * 
  */
 public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);

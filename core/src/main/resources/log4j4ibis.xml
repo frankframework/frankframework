@@ -117,9 +117,6 @@
 		<Logger name="nl.nn.ibistesttool" additivity="false" level="INFO">
 			<AppenderRef ref="ladybug"/>
 		</Logger>
-		<Logger name="nl.nn.adapterframework.monitoring" additivity="false" level="INFO">
-			<AppenderRef ref="stdout"/>
-		</Logger>
 
 		<!-- This is an example of a custom logger that prints all log messages of the IbisContext class to sysout -->
 		<!-- Logger name="nl.nn.adapterframework.configuration.IbisContext" level="ERROR" additivity="true">
