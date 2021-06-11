@@ -54,6 +54,7 @@
 	<!ENTITY MemoryLeak SYSTEM "./ConfigurationMemoryLeak.xml">
 	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
 	<!ENTITY Parameters SYSTEM "./ConfigurationParameters.xml">
+	<!ENTITY Receivers SYSTEM "./ConfigurationReceivers.xml">
 	<!ENTITY MessageStore SYSTEM "./ConfigurationMessageStoreSenderAndListener.xml">
 	<!ENTITY MessageStorePeek SYSTEM "./ConfigurationMessageStoreSenderAndListenerPeek.xml">
 	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
@@ -118,6 +119,7 @@
 	&MemoryLeak; 
 	&Javascript;
 	&Parameters;
+	&Receivers;
 	&MessageStore;
 	&MessageStorePeek;
 	&BlockEnabledSenders;

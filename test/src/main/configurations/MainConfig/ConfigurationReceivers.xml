@@ -1,0 +1,43 @@
+<module>
+	<adapter name="ReceiverTest">
+		<receiver
+				maxRetries="1"
+				transactionAttribute="Required"
+				pollInterval="1"
+				transactionTimeout="30">
+			<listener name="JdbcTableListener for receivertest"
+						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						tableName="IBISTEMP"
+						statusField="TCHAR"
+						timestampField="TTIMESTAMP"
+						commentField="TVARCHAR"
+						maxCommentLength="100"
+						selectCondition="TNUMBER=${jdbc.receivertest.key}"
+						statusValueAvailable="1"
+						statusValueInProcess="2"
+						statusValueProcessed="3"
+						statusValueError="4"
+						keyField="tkey"/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+				<exit path="ERROR" state="error"/>
+			</exits>
+
+			<pipe name="CallbackTesttool">
+				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+					serviceName="testtool-receivertest" />
+			</pipe>
+			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@forward" >
+				<forward name="ready" path="READY"/>
+				<forward name="error" path="ERROR"/>
+			</pipe>
+			
+
+		</pipeline>
+	</adapter>
+
+
+</module>
