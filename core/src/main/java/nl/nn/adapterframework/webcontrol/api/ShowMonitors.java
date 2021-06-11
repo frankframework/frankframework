@@ -85,11 +85,15 @@ public final class ShowMonitors extends Base {
 	@GET
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMonitors(@PathParam("configuration") String configurationName) throws ApiException {
+	public Response getMonitors(@PathParam("configuration") String configurationName, @QueryParam("xml") boolean showConfigXml) throws ApiException {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		MonitorManager mm = getMonitorManager(configurationName);
+
+		if(showConfigXml) {
+			String xml = mm.toXml().toXML();
+			return Response.status(Status.OK).type(MediaType.APPLICATION_XML).entity(xml).build();
+		}
 
 		List<Map<String, Object>> monitors = new ArrayList<Map<String, Object>>();
 		for(int i = 0; i < mm.getMonitors().size(); i++) {
@@ -103,7 +107,7 @@ public final class ShowMonitors extends Base {
 		returnMap.put("eventTypes", EnumUtils.getEnumList(EventTypeEnum.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
-		return Response.status(Status.OK).entity(returnMap).build();
+		return Response.status(Status.OK).type(MediaType.APPLICATION_JSON).entity(returnMap).build();
 	}
 
 	private Map<String, Object> mapMonitor(Monitor monitor) {

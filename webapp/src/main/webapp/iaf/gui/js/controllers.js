@@ -2378,8 +2378,11 @@ angular.module('iaf.beheerconsole')
 	}
 
 	$scope.downloadXML = function(monitorName) {
-		var url = Misc.getServerPath() + "iaf/api/configurations/"+$scope.selectedConfiguration+"/monitors/"+monitorName+"?xml=true";
-		window.open(url, "_blank");
+		var url = Misc.getServerPath() + "iaf/api/configurations/"+$scope.selectedConfiguration+"/monitors";
+		if(monitorName) {
+			url += "/"+monitorName;
+		}
+		window.open(url+"?xml=true", "_blank");
 	}
 }])
 

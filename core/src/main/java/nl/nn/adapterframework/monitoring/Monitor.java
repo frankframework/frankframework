@@ -366,6 +366,8 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	 */
 	@Override
 	public void destroy() {
+		log.info("removing monitor ["+this+"]");
+
 		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 		for (Trigger trigger : triggers) {
 			factory.destroyBean(trigger);
