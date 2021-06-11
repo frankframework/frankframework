@@ -26,6 +26,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * MonitorAdapter that creates log lines for the GALM log adapter.
@@ -122,6 +123,18 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 			dtapStage+" "+
 			message;
 		return result;
+	}
+
+	@Override
+	public String makeXml(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
+		XmlBuilder eventXml = new XmlBuilder("event");
+		eventXml.addAttribute("hostname", hostname);
+		eventXml.addAttribute("source",sourceId);
+		eventXml.addAttribute("subSource",subSource);
+		eventXml.addAttribute("eventType",eventType.name());
+		eventXml.addAttribute("severity",severity.name());
+		eventXml.addAttribute("message",message);
+		return eventXml.toXML();
 	}
 
 	@Override

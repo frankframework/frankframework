@@ -6,7 +6,7 @@
 	<rule pattern="*/monitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
 
 	<rule pattern="*/destination" selfRegisterMethod="register"/>
-	<rule pattern="*/destination/sender" registerMethod="register"/>
+	<rule pattern="*/destination/sender" registerMethod="setSender"/>
 
 	<rule pattern="*/monitors/monitor" selfRegisterMethod="register"/>
 

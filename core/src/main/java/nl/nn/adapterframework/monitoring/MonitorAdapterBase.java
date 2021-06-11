@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,52 +15,47 @@
 */
 package nl.nn.adapterframework.monitoring;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 /**
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class MonitorAdapterBase implements IMonitorAdapter {
+public abstract class MonitorAdapterBase implements IMonitorAdapter, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
-
-	private String SOURCE_ID_KEY="galm.source";
+	protected @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 	private String hostname;
-	private String sourceId;
 
 	public MonitorAdapterBase() {
-		super();
-		System.out.println("MonitorAdapterBase");
 		log.debug("creating Destination ["+ClassUtils.nameOf(this)+"]");
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
+
 		if (StringUtils.isEmpty(getName())) {
 			setName(ClassUtils.nameOf(this));
 		}
+
 		hostname=Misc.getHostname();
-		AppConstants appConstants = AppConstants.getInstance();
-		sourceId=appConstants.getResolvedProperty(SOURCE_ID_KEY);
-		if (StringUtils.isEmpty(sourceId)) {
-			throw new ConfigurationException("cannot read sourceId from ["+SOURCE_ID_KEY+"]");
-		}
 	}
 
 	public String makeXml(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		XmlBuilder eventXml = new XmlBuilder("event");
-		eventXml.addAttribute("hostname",hostname);
-		eventXml.addAttribute("source",sourceId);
+		eventXml.addAttribute("hostname", hostname);
 		eventXml.addAttribute("subSource",subSource);
 		eventXml.addAttribute("eventType",eventType.name());
 		eventXml.addAttribute("severity",severity.name());
@@ -76,7 +71,6 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter {
 		return destinationXml;
 	}
 
-
 	@Override
 	public void setName(String string) {
 		name = string;
@@ -89,7 +83,5 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter {
 	@Override
 	public void register(MonitorManager mm) {
 		mm.registerDestination(this);
-//TODO		MonitorManager.getInstance().registerDestination(this);
 	}
-
 }
