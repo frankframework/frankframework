@@ -25,7 +25,7 @@ import java.util.List;
  * @since   4.9.8
  */
 public class AdapterFilter {
-	
+
 	private String adapter;
 
 	private List<String> subObjectList=new ArrayList<>();

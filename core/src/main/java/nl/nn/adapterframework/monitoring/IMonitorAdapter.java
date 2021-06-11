@@ -27,11 +27,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public interface IMonitorAdapter {
 
 	void configure() throws ConfigurationException;
-	
+
 	void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t); 
 
 	public XmlBuilder toXml();
-	
+
 	void setName(String name);	
 	String getName();
 

@@ -40,6 +40,7 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter {
 
 	public MonitorAdapterBase() {
 		super();
+		System.out.println("MonitorAdapterBase");
 		log.debug("creating Destination ["+ClassUtils.nameOf(this)+"]");
 	}
 

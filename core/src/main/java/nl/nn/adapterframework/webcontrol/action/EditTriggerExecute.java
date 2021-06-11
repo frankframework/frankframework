@@ -47,11 +47,11 @@ public class EditTriggerExecute extends EditMonitorExecute {
 			trigger.setSourceFiltering(formTrigger.getSourceFiltering());
 			if (formTrigger.isFilterOnAdapters()) {
 				log.debug("setting trigger.adapters from selAdapters");
-				trigger.setAdapters((String[])monitorForm.get("selAdapters"));
+				setAdapters(trigger, (String[])monitorForm.get("selAdapters"));
 			}
 			if (formTrigger.isFilterOnLowerLevelObjects()) {
 				log.debug("setting trigger.sources from selSources");
-				trigger.setSources(mm, (String[])monitorForm.get("selSources"));
+				setSources(mm, trigger, (String[])monitorForm.get("selSources"));
 			}
 			trigger.setFilterExclusive(formTrigger.isFilterExclusive());
 			trigger.setSeverity(formTrigger.getSeverity());

@@ -1,5 +1,5 @@
 <module>
-<monitoring enabled="${monitoring.enabled}">
+<monitoring active="${monitoring.enabled}">
 	<destinations>
 		<destination name="GALM" className="nl.nn.adapterframework.monitoring.GalmMonitorAdapter"/>
 	</destinations>

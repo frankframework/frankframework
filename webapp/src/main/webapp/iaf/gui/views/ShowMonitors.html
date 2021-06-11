@@ -2,20 +2,6 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content" ng-controller="ShowMonitorsCtrl">
-<!-- 	<div class="row"> -->
-<!-- 		<div class="col-lg-12"> -->
-<!-- 			<div class="ibox float-e-margins"> -->
-<!-- 				<div class="ibox-title"> -->
-<!-- 					<h4>Monitors</h4> -->
-<!-- 				</div> -->
-<!-- 				<div class="ibox-content" style="overflow: visible;"> -->
-<!-- 					<div class="col-md-12"> -->
-<!-- 						tekst -->
-<!-- 					</div> -->
-<!-- 				</div> -->
-<!-- 			</div> -->
-<!-- 		</div> -->
-<!-- 	</div> -->
 	<div class="row">
 		<div class="col-lg-12 tabs-container">
 			<ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
@@ -38,11 +24,12 @@
 			<div class="ibox float-e-margins">
 				<div class="ibox-title {{monitor.raised ? 'danger' : 'primary'}}">
 					<div class="pull-right">
-						<button ng-if="!monitor.raised" title="Raise alarm {{::monitor.name}}" class="btn btn-warning btn-xs" type="button" ng-click="raise(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Raise</button>
+						<button ng-if="!monitor.raised && !monitor.edit" title="Raise alarm {{::monitor.name}}" class="btn btn-warning btn-xs" type="button" ng-click="raise(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Raise</button>
 						<button ng-if="monitor.raised" title="Clear alarm {{::monitor.name}}" class="btn btn-primary btn-xs" type="button" ng-click="clear(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Clear</button>
 						<button ng-if="!monitor.raised && monitor.edit" title="Delete Monitor {{::monitor.name}}" class="btn btn-danger btn-xs" type="button" ng-click="deleteMonitor(monitor)"><i class="fa fa-close"></i> Delete</button>
 						<button ng-if="!monitor.raised && !monitor.edit" title="Edit Monitor {{::monitor.name}}" class="btn btn-info btn-xs" type="button" ng-click="monitor.edit = true"><i class="fa fa-pencil"></i> Edit</button>
 						<button ng-if="!monitor.raised && monitor.edit" title="Save Monitor {{::monitor.name}}" class="btn btn-primary btn-xs" type="button" ng-click="edit(monitor)"><i class="fa fa-save"></i> Save</button>
+						<button title="Download Monitor Configuration" class="btn btn-secondary btn-xs" type="button" ng-click="downloadXML(monitor.name)"><i class="fa file-code-o"></i> Show XML</button>
 					</div>
 					<div class="m-l-n m-r-n almost-full-width">
 						<div class="col-lg-5 col-md-8 m-r m-t-n-xs">

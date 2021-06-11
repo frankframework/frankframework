@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,9 +27,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
@@ -47,44 +45,34 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	public static final int SOURCE_FILTERING_NONE=0;
 	public static final int SOURCE_FILTERING_BY_ADAPTER=1;
 	public static final int SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT=2;
-	
+
 	private Monitor monitor;
 	private SeverityEnum severity;
 	private boolean alarm;
 
 	private List<String> eventCodes = new ArrayList<>();
 	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
-	
+
 	private int sourceFiltering;
 	private boolean filterExclusive = false;
-		
+
 	private int threshold=0;
 	private int period=0;
-	
-	private LinkedList<Date> eventDts=null;
-	private boolean configured = false;
 
-	public Trigger() {
-		System.err.println(this);
-	}
+	private LinkedList<Date> eventDates = null;
+	private boolean configured = false;
 
 	public void configure() {
 		if (eventCodes.isEmpty()) {
-			log.warn(getLogPrefix()+"configure() trigger of Monitor ["+getMonitor().getName()+"] should have at least one eventCode specified");
+			log.warn("trigger of Monitor ["+getMonitor().getName()+"] should have at least one eventCode specified");
 		}
 
-//		try {
-//			Map adapterFilterMap = (getSourceFiltering()!=SOURCE_FILTERING_NONE)?adapterFilters:null;
-//			getMonitor().registerEventNotificationListener(this,eventCodes,adapterFilterMap,isFilterOnLowerLevelObjects(), isFilterExclusive());
-//		} catch (MonitorException e) {
-//			throw new ConfigurationException(e);
-//		}
 		if (threshold>0) {
-			if (eventDts==null) {
-				eventDts = new LinkedList<>();
+			if (eventDates==null) {
+				eventDates = new LinkedList<>();
 			}
 		} else {
-			eventDts=null;
+			eventDates=null;
 		}
 
 		configured = true;
@@ -101,17 +89,13 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		}
 	}
 
-	public String getLogPrefix() {
-		return "("+this.hashCode()+") ";
-	}
-
 	public void evaluateEvent(FireMonitorEvent event) {
 		EventThrowing source = event.getSource();
 		if(evaluateAdapterFilters(source)) {
 			try {
 				evaluateEvent(source, event.getEventCode());
 			} catch (MonitorException e) {
-				e.printStackTrace();
+				throw new IllegalStateException("unable to evaluate trigger for event ["+event.getEventCode()+"]", e);
 			}
 		}
 	}
@@ -122,30 +106,31 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	}
 
 	public void evaluateEvent(EventThrowing source, String eventCode) throws MonitorException {
-		System.out.println(this);
+		if (log.isDebugEnabled()) log.debug("evaluating MonitorEvent ["+source.getEventSourceName()+"]");
+
 		Date now = new Date();
 		if (getThreshold()>0) {
 			cleanUpEvents(now);
-			eventDts.add(now);
-			if (eventDts.size()>=getThreshold()) {
+			eventDates.add(now);
+			if (eventDates.size() >= getThreshold()) {
 				getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
 			}
 		} else {
 			getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
 		}
-	}	
+	}
 
-	public void notificationOfReverseTrigger(EventThrowing source) {
-		if (eventDts!=null) {
-			eventDts.clear();
+	public void clearEvents() {
+		if (eventDates!=null) {
+			eventDates.clear();
 		}
 	}
 
 	protected void cleanUpEvents(Date now) {
-		while(eventDts.size()>0) {
-			Date firstDate = (Date)eventDts.getFirst();
-			if ((now.getTime()-firstDate.getTime())>getPeriod()*1000) {
-				eventDts.removeFirst();
+		while(eventDates.size() > 0) {
+			Date firstDate = eventDates.getFirst();
+			if ((now.getTime() - firstDate.getTime()) > getPeriod() * 1000) {
+				eventDates.removeFirst();
 				if (log.isDebugEnabled()) log.debug("removed element dated ["+DateUtils.format(firstDate)+"]");
 			} else {
 				break;
@@ -178,18 +163,17 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 			trigger.addSubElement(filtersXml);
 			if (getSourceFiltering()!=SOURCE_FILTERING_NONE) {
 				for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
-					String adapterName=(String)it.next();
-					AdapterFilter af = (AdapterFilter)getAdapterFilters().get(adapterName);
-					XmlBuilder adapter=new XmlBuilder("adapterfilter");
+					String adapterName = it.next();
+					AdapterFilter af = getAdapterFilters().get(adapterName);
+					XmlBuilder adapter = new XmlBuilder("adapterfilter");
 					filtersXml.addSubElement(adapter);
 					adapter.addAttribute("adapter",adapterName);
 					if (isFilterOnLowerLevelObjects()) {
 						XmlBuilder sourcesXml=new XmlBuilder("sources");
 						adapter.addSubElement(sourcesXml);
-						List subobjectList=af.getSubObjectList();
+						List<String> subobjectList=af.getSubObjectList();
 						if (subobjectList!=null) {
-							for (Iterator it2 =subobjectList.iterator(); it2.hasNext();) {
-								String subObjectName=(String)it2.next();
+							for(String subObjectName : subobjectList) {
 								XmlBuilder sourceXml=new XmlBuilder("source");
 								sourcesXml.addSubElement(sourceXml);
 								sourceXml.setValue(subObjectName);
@@ -207,12 +191,6 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	public Monitor getMonitor() {
 		return monitor;
 	}
-
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-
 
 	public void setAlarm(boolean b) {
 		alarm = b;
@@ -236,7 +214,6 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 			setAlarm(false);
 		}
 	}
-
 
 	private void clearEventCodes() {
 		eventCodes.clear();
@@ -262,144 +239,6 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 
 	public List<String> getEventCodeList() {
 		return eventCodes;
-	}
-
-
-
-	/**
-	 * set List of all adapters that are present in the FilterMap, to be called from client
-	 */
-	public void setAdapters(String[] arr) {
-		log.debug(getLogPrefix()+"setAdapters()");
-		for (Iterator<String> it=adapterFilters.keySet().iterator(); it.hasNext();) {
-			String adapterName=(String)it.next();
-			boolean found=true;
-			for(int i=0; i<arr.length; i++) {
-				if (adapterName.equals(arr[i])) {
-					break;
-				}
-				found=false;
-			}
-			if (!found) {
-				log.debug(getLogPrefix()+"setAdapters() removing adapter ["+adapterName+"] from filter");
-				it.remove();
-			}
-		}
-		for(int i=0; i<arr.length; i++) {
-			String adapterName=arr[i];
-			if (!adapterFilters.containsKey(adapterName)) {
-				log.debug(getLogPrefix()+"setAdapters() addding adapter ["+adapterName+"] to filter");
-				AdapterFilter af=new AdapterFilter();
-				af.setAdapter(adapterName);
-				registerAdapterFilter(af);
-			}
-		}
-	}
-	/**
-	 * get List of all adapters that are present in the FilterMap.
-	 */
-	public String[] getAdapters() {
-		String[] result=(String[])adapterFilters.keySet().toArray(new String[adapterFilters.size()]);
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"getAdapters() returns results:");
-			for (int i=0; i<result.length; i++) {
-				log.debug(getLogPrefix()+"getAdapters() returns ["+ result[i]+"]");
-			}
-		}
-		return result;
-	}
-
-	public List<IAdapter> getAdapterList(MonitorManager mm) {
-		List<IAdapter> result=new LinkedList<IAdapter>();
-		for (Iterator<String> it=adapterFilters.keySet(). iterator(); it.hasNext();) {
-			String adapterName=(String)it.next();
-			IAdapter adapter=mm.findAdapterByName(adapterName);
-			if (adapter!=null) {
-				result.add(adapter);
-				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix()+"getAdapterList() returns adapter ["+adapterName+"]");
-				}
-			} else {
-				log.warn(getLogPrefix()+"getAdapterList() cannot find adapter ["+adapterName+"]");
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * set List of all throwers that can trigger this Trigger.
-	 */
-	public void setSources(MonitorManager mm, String[] sourcesArr) {
-		log.debug(getLogPrefix()+"setSources()");
-		List<EventThrowing> list=mm.getEventSources((List<String>)null);
-		log.debug(getLogPrefix()+"setSources() clearing adapterFilter");
-		adapterFilters.clear();
-		for (int i=0; i<list.size();i++) {
-			EventThrowing thrower=(EventThrowing)list.get(i);
-			IAdapter adapter = thrower.getAdapter();
-			String adaptername;
-			String sourcename;
-			if (adapter==null) {
-				adaptername="-";
-			} else {
-				adaptername=adapter.getName();
-			}
-			sourcename=adaptername+" / "+thrower.getEventSourceName();
-			//log.debug("setSources() checking for source ["+sourcename+"]");
-			for (int j=0; j<sourcesArr.length; j++) {
-				if (sourcesArr[j].equals(sourcename)) {
-					AdapterFilter af =(AdapterFilter)adapterFilters.get(adaptername);
-					if (af==null) {
-						af = new AdapterFilter();
-						af.setAdapter(adaptername);
-						log.debug(getLogPrefix()+"setSources() registered adapter ["+adaptername+"]");
-						registerAdapterFilter(af);
-					}
-					af.registerSubObject(thrower.getEventSourceName());
-					log.debug(getLogPrefix()+"setSources() registered source ["+thrower.getEventSourceName()+"] on adapter ["+adapter.getName()+"]");
-					break;
-				}
-			}
-		}
-	}
-	
-	/**
-	 * get List of all throwers that can trigger this Trigger.
-	 */
-	public String[] getSources() {
-		List<String> list=new ArrayList<String>();
-		for(Iterator adapterIterator=adapterFilters.entrySet().iterator();adapterIterator.hasNext();) {
-			Map.Entry entry= (Map.Entry)adapterIterator.next();
-			String adapterName=(String)entry.getKey();
-			AdapterFilter af=(AdapterFilter)entry.getValue();
-			for(Iterator subSourceIterator=af.getSubObjectList().iterator();subSourceIterator.hasNext();) {
-				String throwerName=(String)subSourceIterator.next();
-				String sourceName=adapterName+" / "+throwerName;
-				log.debug(getLogPrefix()+"getSources() adding returned source ["+sourceName+"]");
-				list.add(sourceName);
-			}
-		}
-		String[] result=new String[list.size()];
-		return result=(String[])list.toArray(result);
-	}
-
-
-	public List<EventThrowing> getSourceList(MonitorManager mm) {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"getSourceList() collecting sources:");
-		List<EventThrowing> list=new ArrayList<EventThrowing>();
-		for(Iterator adapterIterator=adapterFilters.entrySet().iterator();adapterIterator.hasNext();) {
-			Map.Entry entry= (Map.Entry)adapterIterator.next();
-			String adapterName=(String)entry.getKey();
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"getSourceList() collecting sources for adapter ["+adapterName+"]:");
-			AdapterFilter af=(AdapterFilter)entry.getValue();
-			for(Iterator subSourceIterator=af.getSubObjectList().iterator();subSourceIterator.hasNext();) {
-				String throwerName=(String)subSourceIterator.next();
-				EventThrowing thrower=mm.findThrowerByName(adapterName,throwerName);
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"getSourceList() adding source adapter ["+adapterName+"], source ["+thrower.getEventSourceName()+"]");
-				list.add(thrower);
-			}
-		}
-		return list;
 	}
 
 	public void setSeverity(String severity) {
@@ -447,17 +286,12 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		}
 	}
 
-
 	public void setFilterExclusive(boolean b) {
 		filterExclusive = b;
 	}
 	public boolean isFilterExclusive() {
 		return filterExclusive;
 	}
-
-//	public void setFilteringToLowerLevelObjects(Object dummy) {
-//		setSourceFiltering(SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT);
-//	}
 
 	public boolean isFilterOnLowerLevelObjects() {
 		return sourceFiltering==SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT;
@@ -490,7 +324,11 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 
 	@Override
 	public void destroy() throws Exception {
-		// TODO Auto-generated method stub
-		System.out.println("destroy trigger " + this);
+		log.info("removing trigger ["+this+"]");
+	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
 	}
 }

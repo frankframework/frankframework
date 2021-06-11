@@ -60,7 +60,7 @@ public class EditMonitorExecute extends EditMonitor {
 				Monitor formMonitor = (Monitor)monitorForm.get("monitor");
 				monitor.setName(formMonitor.getName());
 				monitor.setTypeEnum(formMonitor.getTypeEnum());
-				monitor.setDestinations(formMonitor.getDestinations());
+				monitor.setDestinationSet(formMonitor.getDestinationSet());
 				if (action.equals("OK")) {
 					return determineExitForward(monitorForm);
 				} 

@@ -67,7 +67,6 @@ public class ShowMonitorExecute extends ShowMonitors {
 			} else {
 				mm.updateDestinations((String[])monitorForm.get("selDestinations"));
 			}
-			mm.setEnabled(((Boolean)monitorForm.get("enabled")).booleanValue());
 			return null;
 		}
 		if (action.equals("createMonitor")) {

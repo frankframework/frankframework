@@ -185,18 +185,18 @@
 					Exclude
 					</logic:equal>
 					Adapters:<br/>
-				 	<logic:iterate id="s" indexId="sindex"  name="m"  property="triggers[0].adapters" >
-		 				<bean:write name="s" /><br/> 
-		 			</logic:iterate>
+<%-- 				 	<logic:iterate id="s" indexId="sindex"  name="m"  property="triggers[0].adapters" > --%>
+<%-- 		 				<bean:write name="s" /><br/>  --%>
+<%-- 		 			</logic:iterate> --%>
 				</logic:equal>
 				<logic:equal name="m"  property="triggers[0].filterOnLowerLevelObjects" value="true">
 					<logic:equal name="m"  property="triggers[0].filterExclusive" value="true">
 					Exclude
 					</logic:equal>
 					Sources:<br/>
-				 	<logic:iterate id="s" indexId="sindex"  name="m"  property="triggers[0].sources" >
-		 				<bean:write name="s" /><br/> 
-		 			</logic:iterate>
+<%-- 				 	<logic:iterate id="s" indexId="sindex"  name="m"  property="triggers[0].sources" > --%>
+<%-- 		 				<bean:write name="s" /><br/>  --%>
+<%-- 		 			</logic:iterate> --%>
 				</logic:equal>
 		 		</td>
 		 		<td><bean:write name="m" property="triggers[0].severity"/></td>

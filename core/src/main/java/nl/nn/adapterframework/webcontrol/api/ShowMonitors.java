@@ -34,6 +34,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
@@ -182,14 +183,19 @@ public final class ShowMonitors extends Base {
 	@GET
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName) throws ApiException {
+	@Produces()
+	public Response getMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @QueryParam("xml") boolean showConfigXml) throws ApiException {
 
 		MonitorManager mm = getMonitorManager(configName);
 		Monitor monitor = mm.findMonitor(monitorName);
 
 		if(monitor == null) {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
+		}
+
+		if(showConfigXml) {
+			String xml = monitor.toXml().toXML();
+			return Response.status(Status.OK).type(MediaType.APPLICATION_XML).entity(xml).build();
 		}
 
 		Map<String, Object> monitorInfo = mapMonitor(monitor);// Calculate the ETag on last modified date of user resource
@@ -204,7 +210,7 @@ public final class ShowMonitors extends Base {
 			return response.tag(etag).build();
 		}
 
-		return Response.status(Status.OK).entity(monitorInfo).tag(etag).build();
+		return Response.status(Status.OK).type(MediaType.APPLICATION_JSON).entity(monitorInfo).tag(etag).build();
 	}
 
 	@PUT
@@ -376,7 +382,7 @@ public final class ShowMonitors extends Base {
 	private void handleTrigger(Trigger trigger, Map<String, Object> json) {
 		List<String> eventList = null;
 		String type = null;
-		String severity = null;
+		SeverityEnum severity = null;
 		int threshold = 0;
 		int period = 0;
 		boolean filterExclusive = false;
@@ -391,11 +397,17 @@ public final class ShowMonitors extends Base {
 			} else if(key.equalsIgnoreCase("type")) {
 				type = entry.getValue().toString();
 			} else if(key.equalsIgnoreCase("severity")) {
-				severity = entry.getValue().toString();
+				severity = Misc.parse(SeverityEnum.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("threshold")) {
 				threshold = (Integer.parseInt("" + entry.getValue()));
+				if(threshold < 0) {
+					throw new ApiException("threshold must be a positive number");
+				}
 			} else if(key.equalsIgnoreCase("period")) {
 				period = (Integer.parseInt("" + entry.getValue()));
+				if(period < 0) {
+					throw new ApiException("period must be a positive number");
+				}
 			} else if(key.equalsIgnoreCase("filterExclusive")) {
 				filterExclusive = Boolean.parseBoolean(entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("filter")) {
@@ -410,7 +422,7 @@ public final class ShowMonitors extends Base {
 		// If no parse errors have occured we can continue!
 		trigger.setEventCodes(eventList.toArray(new String[eventList.size()]));
 		trigger.setType(type);
-		trigger.setSeverity(severity);
+		trigger.setSeverityEnum(severity);
 		trigger.setThreshold(threshold);
 		trigger.setPeriod(period);
 		trigger.setFilterExclusive(filterExclusive);

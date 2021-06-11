@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 package nl.nn.adapterframework.monitoring;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -41,26 +41,29 @@ import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * @author  Gerrit van Brakel
  * @since   4.9
+ * 
+ * @version 2.0
+ * @author Niels Meijer
  */
 public class Monitor implements ApplicationContextAware, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
-	private EventTypeEnum type=EventTypeEnum.TECHNICAL;
-	private boolean raised=false;
-	private Date stateChangeDt=null;
+	private EventTypeEnum type = EventTypeEnum.TECHNICAL;
+	private boolean raised = false;
+	private Date stateChangeDt = null;
 
 	private int additionalHitCount=0;
 	private Date lastHit=null;
 
-	private SeverityEnum alarmSeverity=null;  
-	private EventThrowing alarmSource=null;  
+	private SeverityEnum alarmSeverity=null;
+	private EventThrowing alarmSource=null;
 
 
-	private MonitorManager owner=null;
+	private MonitorManager manager = null;
 
 	private List<Trigger> triggers = new ArrayList<Trigger>();
-	private Set<String> destinationSet=new HashSet<String>(); 
+	private Set<String> destinationSet = new HashSet<String>(); 
 	private @Setter ApplicationContext applicationContext;
 
 	public Monitor() {
@@ -81,14 +84,6 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 				((ConfigurableApplicationContext)applicationContext).addApplicationListener(trigger);
 			}
 		}
-	}
-
-	public void registerEventNotificationListener(Trigger trigger, List<String> eventCodes, Map<String, AdapterFilter> adapterFilters, boolean filterOnLowerLevelObjects, boolean filterExclusive) throws MonitorException {
-		if (MonitorManager.traceReconfigure) {
-			if (log.isDebugEnabled())
-				log.debug("monitor ["+getName()+"] registerEventNotificationListener for trigger");
-		}
-		getOwner().registerEventNotificationListener(trigger, eventCodes, adapterFilters, filterOnLowerLevelObjects, filterExclusive);
 	}
 
 	public void changeState(Date date, boolean alarm, SeverityEnum severity, EventThrowing source, String details, Throwable t) throws MonitorException {
@@ -115,7 +110,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 			}
 		}
 		raised=alarm;
-		notifyReverseTrigger(alarm,source);
+		clearEvents(alarm);
 	}
 
 	public void changeMonitorState(Date date, EventThrowing subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) throws MonitorException {
@@ -127,23 +122,22 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 			throw new MonitorException("severity cannot be null");
 		}
 		setStateChangeDt(date);
-		
-		for (Iterator<String> it=destinationSet.iterator();it.hasNext();) {
-			String key=(String)it.next();
-			IMonitorAdapter monitorAdapter = getOwner().getDestination(key);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+key+"]");
+
+		for(String destination : destinationSet) {
+			IMonitorAdapter monitorAdapter = getManager().getDestination(destination);
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
+
 			if (monitorAdapter!=null) {
 				monitorAdapter.fireEvent(eventSource, eventType, severity, getName(), null); 
 			}
 		}
 	}
 
-
-	protected void notifyReverseTrigger(boolean alarm, EventThrowing source) {
+	protected void clearEvents(boolean alarm) {
 		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
 			Trigger trigger=(Trigger)it.next();
 			if (trigger.isAlarm()!=alarm) {
-				trigger.notificationOfReverseTrigger(source);
+				trigger.clearEvents();
 			}
 		}
 	}
@@ -176,10 +170,6 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		return monitor;
 	}
 
-
-	public boolean isDestination(String name) {
-		return destinationSet.contains(name);
-	}
 	public String getDestinationsAsString() {
 		//log.debug(getLogPrefix()+"calling getDestinationsAsString()");
 		String result=null;
@@ -193,12 +183,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 		return result;
 	}
-	public String[] getDestinations() {
-		//log.debug(getLogPrefix()+"entering getDestinations()");
-		String[] result=new String[destinationSet.size()];
-		result=(String[])destinationSet.toArray(result);
-		return result;
-	}
+
 	public void setDestinations(String newDestinations) {
 //		log.debug(getLogPrefix()+"entering setDestinations(String)");
 		destinationSet.clear();
@@ -206,7 +191,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		while (st.hasMoreTokens()) {
 			String token=st.nextToken();
 //			log.debug(getLogPrefix()+"adding destination ["+token+"]");
-			destinationSet.add(token);			
+			destinationSet.add(token);
 		}
 	}
 	public void setDestinations(String[] newDestinations) {
@@ -229,8 +214,9 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 			setDestinationSet(set);
 		}
 	}
+
 	public Set<String> getDestinationSet() {
-		return destinationSet;
+		return Collections.unmodifiableSet(destinationSet);
 	}
 	public void setDestinationSet(Set<String> newDestinations) {
 		if (newDestinations==null) {
@@ -283,11 +269,11 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		return "Monitor ["+getName()+"] ";
 	}
 
-	public void setOwner(MonitorManager manager) {
-		owner = manager;
+	public void setManager(MonitorManager manager) {
+		this.manager = manager;
 	}
-	public MonitorManager getOwner() {
-		return owner;
+	private MonitorManager getManager() {
+		return manager;
 	}
 
 	public List<Trigger> getTriggers() {
@@ -343,7 +329,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 
 	public void setStateChangeDt(Date date) {
 		stateChangeDt = date;
-		getOwner().registerStateChange(date);
+		getManager().registerStateChange(date);
 	}
 	public Date getStateChangeDt() {
 		return stateChangeDt;
@@ -375,16 +361,16 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		return additionalHitCount;
 	}
 
+	/**
+	 * Destroy the monitor and all registered triggers
+	 */
 	@Override
 	public void destroy() {
-		System.out.println("destroy monitor " + this);
 		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 		for (Trigger trigger : triggers) {
 			factory.destroyBean(trigger);
 		}
 	}
-
-
 
 	@Override
 	public String toString() {

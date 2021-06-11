@@ -2306,7 +2306,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('ShowMonitorsCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
+.controller('ShowMonitorsCtrl', ['$scope', 'Api', '$state', 'Misc', function($scope, Api, $state, Misc) {
 
 	$scope.selectedConfiguration = null;
 	$scope.monitors = [];
@@ -2375,6 +2375,11 @@ angular.module('iaf.beheerconsole')
 		Api.Delete(getUrl(monitor, trigger), function() {
 			update();
 		});
+	}
+
+	$scope.downloadXML = function(monitorName) {
+		var url = Misc.getServerPath() + "iaf/api/configurations/"+$scope.selectedConfiguration+"/monitors/"+monitorName+"?xml=true";
+		window.open(url, "_blank");
 	}
 }])
 

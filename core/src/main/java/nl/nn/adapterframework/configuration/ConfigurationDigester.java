@@ -136,21 +136,11 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		digester.push(configuration);
 
 		Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRules());
-
-		FrankDigesterRules digesterRules = new FrankDigesterRules(digester, digesterRulesResource);
-		//Populate the bean with Spring magic
-		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(digesterRules, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false); //TODO: use helper class to wire and init
-		digesterRules = (FrankDigesterRules) applicationContext.getAutowireCapableBeanFactory().initializeBean(digesterRules, "digesterRules");
-		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
-		loader.addRules(digester);
+		loadDigesterRules(digester, digesterRulesResource);
 
 		if (AppConstants.getInstance(configuration.getClassLoader()).getBoolean("monitoring.enabled", false)) {
 			Resource digesterMonitoringRules = Resource.getResource(configuration, "digester-monitoring-rules.xml");
-			FrankDigesterRules monitoringRules = new FrankDigesterRules(digester, digesterMonitoringRules);
-			//Populate the bean with Spring magic
-			applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(monitoringRules, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false); //TODO: use helper class to wire and init
-			monitoringRules = (FrankDigesterRules) applicationContext.getAutowireCapableBeanFactory().initializeBean(monitoringRules, "digesterRules");
-			DigesterLoader.newLoader(monitoringRules).addRules(digester);
+			loadDigesterRules(digester, digesterMonitoringRules);
 		}
 
 		boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
@@ -168,6 +158,15 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 
 		return digester;
+	}
+
+	private void loadDigesterRules(Digester digester, Resource digesterRulesResource) {
+		FrankDigesterRules digesterRules = new FrankDigesterRules(digester, digesterRulesResource);
+		//Populate the bean with Spring magic
+		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(digesterRules, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false); //TODO: use helper class to wire and init
+		digesterRules = (FrankDigesterRules) applicationContext.getAutowireCapableBeanFactory().initializeBean(digesterRules, "digesterRules");
+		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
+		loader.addRules(digester);
 	}
 
 	public void digest() throws ConfigurationException {

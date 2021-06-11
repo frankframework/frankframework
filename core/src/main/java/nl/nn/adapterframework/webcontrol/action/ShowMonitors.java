@@ -122,17 +122,7 @@ public class ShowMonitors extends ActionBase {
 				out.close();
 				return null;
 			} 
-			Lock lock = mm.getStructureLock();
-			try {
-				lock.acquireExclusive();
-				forward=performAction(monitorForm, action, index, triggerIndex, response);
-				log.debug("forward ["+forward+"] returned from performAction");
-				mm.reconfigure();
-			} catch (Exception e) {
-				error("could not perform action ["+action+"] on monitorIndex ["+index+"] triggerIndex ["+triggerIndex+"]", e);
-			} finally {
-				lock.releaseExclusive();
-			}
+			
 			if (response.isCommitted()) {
 				return null;
 			}
