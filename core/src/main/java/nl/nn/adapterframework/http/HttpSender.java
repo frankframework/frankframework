@@ -499,7 +499,7 @@ public class HttpSender extends HttpSenderBase {
 		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
 		Message partObject = session.getMessage(partSessionKey);
 
-		if (partObject.requiresStream()) {
+		if (partObject.isBinary()) {
 			return createMultipartBodypart(partSessionKey, partObject.asInputStream(), partName, partMimeType);
 		} else {
 			return createMultipartBodypart(partName, partObject.asString(), partMimeType);
