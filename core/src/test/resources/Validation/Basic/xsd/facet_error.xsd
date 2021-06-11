@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified" attributeFormDefault="unqualified">
+  <xs:element name="Root" type="portfolioNumber" />
+  <xs:simpleType name="portfolioNumber">
+    <!-- We are testing here that an error is seen by the XmlValidator.
+         The error to be detected is that facet maxLength is not allowed
+         when type positiveInteger is being restricted -->
+    <xs:restriction base="xs:positiveInteger">
+      <xs:maxLength value="6"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
