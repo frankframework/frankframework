@@ -65,6 +65,7 @@ public class StreamUtil {
 	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
 	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
 	
+	@Deprecated
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
 			return (OutputStream) target;
@@ -81,6 +82,7 @@ public class StreamUtil {
 		return null;
 	}
 
+	@Deprecated
 	private static OutputStream getFileOutputStream(String filename) throws IOException {
 		if (StringUtils.isEmpty(filename)) {
 			throw new IOException("target string cannot be empty but must contain a filename");
@@ -94,6 +96,7 @@ public class StreamUtil {
 		}
 	}
 
+	@Deprecated
 	public static Writer getWriter(Object target) throws IOException {
 		if (target instanceof HttpServletResponse) {
 			return ((HttpServletResponse)target).getWriter();
