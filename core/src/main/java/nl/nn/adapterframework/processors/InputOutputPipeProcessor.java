@@ -27,8 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -135,7 +135,15 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 				Message result = pipeRunResult.getResult();
-				pipeLineSession.put(pe.getStoreResultInSessionKey(),result.asObject());
+				pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
+				if (!pe.isPreserveInput() && !result.isRepeatable()) {
+					// when there is a duplicate use of the result (in a sessionKey as well as as the result), then message must be repeatable
+					try {
+						result.preserve();
+					} catch (IOException e) {
+						throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] could not preserve output", e);
+					}
+				}
 			}
 			if (pe.isPreserveInput()) {
 				pipeRunResult.getResult().closeOnCloseOf(pipeLineSession);

@@ -69,10 +69,6 @@ public final class FrankElementFilters {
 	}
 
 	public static Set<String> getExcludeFiltersForSuperclass() {
-		// TODO: Include the below line, but to remove some attributes that are too much
-		// in the runtime-generated XSDs. Is not done while the compile-time XSDs are
-		// being compared to the runtime generated ones.
-		// return new HashSet<>(Arrays.asList("org.springframework"));
-		return new HashSet<>();
+		return new HashSet<>(Arrays.asList("org.springframework"));
 	}
 }

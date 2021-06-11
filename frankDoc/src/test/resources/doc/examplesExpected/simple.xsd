@@ -106,17 +106,17 @@ This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentatio
   </xs:simpleType>
   <xs:simpleType name="frankBoolean">
     <xs:restriction base="xs:string">
-      <xs:pattern value="(true|false)|(\$\{[^\}]+\})" />
+      <xs:pattern value="(true|false)|($\{[^\}]+\})" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="frankInt">
     <xs:restriction base="xs:string">
-      <xs:pattern value="((\+|-)?[0-9]+)|(\$\{[^\}]+\})" />
+      <xs:pattern value="((\+|-)?[0-9]+)|($\{[^\}]+\})" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="variableRef">
     <xs:restriction base="xs:string">
-      <xs:pattern value="\$\{[^\}]+\}" />
+      <xs:pattern value="$\{[^\}]+\}" />
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

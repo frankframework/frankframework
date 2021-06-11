@@ -13,7 +13,6 @@
 				serviceName="ibis4test-TransactionHandlingRequiredSubAdapterException"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" 
 				slotId="${applicationId}/GenericReceiverTransactionHandlingRequiredSubAdapterException"
 			/>
 		</receiver>
@@ -39,7 +38,7 @@
 
 			<!-- This should rollback -->
 			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
