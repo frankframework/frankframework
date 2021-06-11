@@ -55,7 +55,7 @@ import nl.nn.adapterframework.stream.Message;
  * <code><pre>
 		&lt;sender
 			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-			jmsRealm="jdbc"
+			datasourceName="${jdbc.datasource.default}"
 			slotId="${instance.name}/ServiceName"
 			sessionKeys="key1,key2"
 			>
@@ -64,7 +64,7 @@ import nl.nn.adapterframework.stream.Message;
 		&lt;!-- DummyTransactionalStorage to enable messagestore browser in the console (JdbcTransactionalStorage would store an extra record in the ibisstore) -->
 		&lt;messageLog
 			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
-			jmsRealm="jdbc"
+			datasourceName="${jdbc.datasource.default}"
 			slotId="${instance.name}/ServiceName"
 			type="M"
 		/>
