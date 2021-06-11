@@ -65,7 +65,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 		try (InputStream inputStream = fileInSession.asInputStream()){
 			tempDir = FileUtils.createTempDir(null, "WEB-INF" + File.separator + "classes");
-			fileName = ((Message) session.get(getFilenameSessionKey())).asString();
+			fileName = session.getMessage(getFilenameSessionKey()).asString();
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
 				FileUtils.unzipStream(inputStream, tempDir);
 			} else {
