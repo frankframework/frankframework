@@ -66,13 +66,13 @@
 				<a ui-sref="pages.scheduler"><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a>
 			</li>
 			<li ui-sref-active="active">
+				<a ui-sref="pages.monitors"><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a>
+			</li>
+			<li ui-sref-active="active">
 				<a ui-sref="pages.environment_variables"><i class="fa fa-language"></i> <span class="nav-label">Environment Variables</span></a>
 			</li>
 			<li ui-sref-active="active">
 				<a ui-sref="pages.security_items"><i class="fa fa-lock"></i> <span class="nav-label">Security Items</span></a>
-			</li>
-			<li ng-if="::monitoring" ui-sref-active="active">
-				<a ui-sref="pages.monitors"><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a>
 			</li>
 			<li>
 				<a ng-click="openInfoModel()" class="pointer"><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a>
@@ -87,7 +87,7 @@
 				<a ng-click="showStrutsConsoleDisabled()" alt="GUI 1.2" class="pointer"><i class="fa fa-backward"></i> <span class="nav-label">GUI 1.2</span></a>
 			</li>
 			<li>
-				<a target="_blank" href="https://ibissource.org" alt="ibissource.org"><i class="fa fa-comments"></i> <span class="nav-label">Community</span></a>
+				<a target="_blank" href="../frankdoc" alt="Frank!Doc"><i class="fa fa-book"></i> <span class="nav-label">Frank!Doc</span></a>
 			</li>
 			<li>
 				<a target="_blank" href="https://github.com/ibissource/iaf" alt="github.com/ibissource/iaf"><i class="fa fa-github"></i> <span class="nav-label">GitHub SourceCode</span></a>
