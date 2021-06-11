@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.Reader;
+import java.util.Arrays;
 import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVFormat;
@@ -33,6 +34,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -41,8 +43,14 @@ public class CsvParserPipe extends StreamingPipe {
 	private @Getter Boolean fileContainsHeader;
 	private @Getter String fieldNames;
 	private @Getter String fieldSeparator;
-	
+	private HeaderCase headerCase=null;
+
 	private CSVFormat format = CSVFormat.DEFAULT;
+
+	private enum HeaderCase {
+		LOWERCASE,
+		UPPERCASE;
+	}
 	
 	@Override
 	public void configure() throws ConfigurationException {
@@ -57,6 +65,15 @@ public class CsvParserPipe extends StreamingPipe {
 				throw new ConfigurationException("No fieldNames specified, and fileContainsHeader=false");
 			}
 		}
+		if(headerCase != null) {
+			String[] header = format.getHeader();
+			// Change character case for the header
+			header = Arrays.stream(header)
+				.map(getHeaderCaseEnum()==HeaderCase.LOWERCASE ? (s) -> s.toLowerCase() : (s) -> s.toUpperCase())
+				.toArray(String[]::new);
+			format = format.withHeader(header);
+		}
+
 		if (StringUtils.isNotEmpty(getFieldSeparator())) {
 			String separator = getFieldSeparator();
 			if (separator.length()>1) {
@@ -93,7 +110,7 @@ public class CsvParserPipe extends StreamingPipe {
 	}
 
 	@IbisDoc({"1", "Specifies if the first line should be treated as header or as data", "true"})
-	public void setFileContainsHeader(boolean fileContainsHeader) {
+	public void setFileContainsHeader(Boolean fileContainsHeader) {
 		this.fileContainsHeader = fileContainsHeader;
 	}
 
@@ -105,6 +122,14 @@ public class CsvParserPipe extends StreamingPipe {
 	@IbisDoc({"3", "Character that separates fields",","})
 	public void setFieldSeparator(String fieldSeparator) {
 		this.fieldSeparator = fieldSeparator;
+	}
+
+	@IbisDoc({"4", "When set, character casing will be changed for the header. Possible values ['lowercase', 'uppercase']","not set"})
+	public void setHeaderCase(String headerCase) {
+		this.headerCase = Misc.parse(HeaderCase.class, "headerCase", headerCase);
+	}
+	public HeaderCase getHeaderCaseEnum() {
+		return headerCase;
 	}
 
 }

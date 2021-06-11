@@ -117,8 +117,8 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 			Map<String,Object> attachmentProperties = ifs.getAdditionalAttachmentProperties(item);
 			if (attachmentProperties!=null) {
 				XmlBuilder properties = new XmlBuilder("properties");
-				Set<String> excludes=getExcludeProperties();
-				Set<String> includes=getOnlyProperties();
+				Set<String> excludes=getExcludePropertiesSet();
+				Set<String> includes=getOnlyPropertiesSet();
 				if (excludes!=null || includes==null) {
 					for(Entry<String,Object>entry:attachmentProperties.entrySet()) {
 						if (excludes==null || !excludes.contains(entry.getKey())) {
@@ -173,7 +173,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		}
 		Misc.addItemsToList(onlyProperties,onlyPropertiesList,"properties to list",false);
 	}
-	public Set<String> getOnlyProperties() {
+	public Set<String> getOnlyPropertiesSet() {
 		return onlyProperties;
 	}
 
@@ -184,7 +184,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		}
 		Misc.addItemsToList(excludeProperties,excludePropertiesList,"properties not to list",false);
 	}
-	public Set<String> getExcludeProperties() {
+	public Set<String> getExcludePropertiesSet() {
 		return excludeProperties;
 	}
 
