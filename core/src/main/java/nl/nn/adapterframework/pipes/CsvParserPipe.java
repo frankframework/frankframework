@@ -124,7 +124,7 @@ public class CsvParserPipe extends StreamingPipe {
 		this.fieldSeparator = fieldSeparator;
 	}
 
-	@IbisDoc({"4", "When set, character casing will be changed for the header. Possible values ['lowercase', 'uppercase']","null"})
+	@IbisDoc({"4", "When set, character casing will be changed for the header. Possible values ['lowercase', 'uppercase']","not set"})
 	public void setHeaderCase(String headerCase) {
 		this.headerCase = Misc.parse(HeaderCase.class, "headerCase", headerCase);
 	}

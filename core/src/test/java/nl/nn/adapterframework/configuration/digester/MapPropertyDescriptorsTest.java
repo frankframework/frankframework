@@ -9,6 +9,7 @@ import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.util.Arrays;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -20,8 +21,10 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.Assert;
 
 import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class MapPropertyDescriptorsTest {
+	private  Logger log = LogUtil.getLogger(this);
 
 	@Test
 	public void testPropertyDescriptorsBeingRegistered() throws ClassNotFoundException, IntrospectionException {
@@ -41,8 +44,8 @@ public class MapPropertyDescriptorsTest {
 		scanner.setBeanNameGenerator(beanNameGenerator);
 
 		int numberOfBeans = scanner.scan("nl.nn.adapterframework", "nl.nn.ibistesttool");
-		System.out.println("Found "+numberOfBeans+" beans registered!");
-		
+		log.debug("Found "+numberOfBeans+" beans registered!");
+
 		String[] names = scanner.getRegistry().getBeanDefinitionNames();
 		for (String beanName : names) {
 			BeanInfo beanInfo = Introspector.getBeanInfo(Class.forName(beanName));
