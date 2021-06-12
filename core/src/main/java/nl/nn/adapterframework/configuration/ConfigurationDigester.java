@@ -30,7 +30,6 @@ import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.DigesterLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.ContentHandler;
@@ -51,6 +50,7 @@ import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ElementPropertyResolver;
@@ -163,8 +163,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private void loadDigesterRules(Digester digester, Resource digesterRulesResource) {
 		FrankDigesterRules digesterRules = new FrankDigesterRules(digester, digesterRulesResource);
 		//Populate the bean with Spring magic
-		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(digesterRules, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false); //TODO: use helper class to wire and init
-		digesterRules = (FrankDigesterRules) applicationContext.getAutowireCapableBeanFactory().initializeBean(digesterRules, "digesterRules");
+		SpringUtils.autowireByName(applicationContext, digesterRules);
 		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
 		loader.addRules(digester);
 	}

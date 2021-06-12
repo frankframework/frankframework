@@ -49,12 +49,12 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 
 	private Monitor monitor;
 	private SeverityEnum severity;
+	private SourceFiltering sourceFiltering = SourceFiltering.NONE;
 	private boolean alarm;
 
 	private List<String> eventCodes = new ArrayList<>();
 	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
 
-	private int sourceFiltering;
 	private boolean filterExclusive = false;
 
 	private int threshold=0;
@@ -128,7 +128,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	}
 
 	protected void cleanUpEvents(Date now) {
-		while(eventDates.size() > 0) {
+		while(!eventDates.isEmpty()) {
 			Date firstDate = eventDates.getFirst();
 			if ((now.getTime() - firstDate.getTime()) > getPeriod() * 1000) {
 				eventDates.removeFirst();
@@ -156,13 +156,13 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		for (int i=0; i<eventCodes.size(); i++) {
 			XmlBuilder event=new XmlBuilder("event");
 			events.addSubElement(event);
-			event.setValue((String)eventCodes.get(i));
+			event.setValue(eventCodes.get(i));
 		}
 		if (getAdapterFilters()!=null) {
 			XmlBuilder filtersXml=new XmlBuilder("filters");
 			filtersXml.addAttribute("filterExclusive",isFilterExclusive());
 			trigger.addSubElement(filtersXml);
-			if (getSourceFiltering()!=SOURCE_FILTERING_NONE) {
+			if (getSourceFilteringEnum() != SourceFiltering.NONE) {
 				for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
 					String adapterName = it.next();
 					AdapterFilter af = getAdapterFilters().get(adapterName);
@@ -275,15 +275,15 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 
 	public void clearAdapterFilters() {
 		adapterFilters.clear();
-		setSourceFiltering(SOURCE_FILTERING_NONE);
+		setSourceFilteringEnum(SourceFiltering.NONE);
 	}
 
 	public void registerAdapterFilter(AdapterFilter af) {
 		adapterFilters.put(af.getAdapter(),af);
 		if(af.isFilteringToLowerLevelObjects()) {
-			setSourceFiltering(SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT);
-		} else if (getSourceFiltering()==SOURCE_FILTERING_NONE) {
-			setSourceFiltering(SOURCE_FILTERING_BY_ADAPTER);
+			setSourceFilteringEnum(SourceFiltering.SOURCE);
+		} else if (getSourceFilteringEnum() == SourceFiltering.NONE) {
+			setSourceFilteringEnum(SourceFiltering.ADAPTER);
 		}
 	}
 
@@ -295,32 +295,20 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	}
 
 	public boolean isFilterOnLowerLevelObjects() {
-		return sourceFiltering==SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT;
+		return sourceFiltering == SourceFiltering.SOURCE;
 	}
 	public boolean isFilterOnAdapters() {
-		return sourceFiltering==SOURCE_FILTERING_BY_ADAPTER;
+		return sourceFiltering == SourceFiltering.ADAPTER;
 	}
 
-	public void setSourceFiltering(int i) {
-		sourceFiltering = i;
+	public void setSourceFilteringEnum(SourceFiltering filtering) {
+		this.sourceFiltering = filtering;
 	}
-	public int getSourceFiltering() {
+	public String getSourceFiltering() {
+		return sourceFiltering.name().toLowerCase();
+	}
+	public SourceFiltering getSourceFilteringEnum() {
 		return sourceFiltering;
-	}
-
-	//TODO Create Enum
-	public String getFilterType() {
-		switch (getSourceFiltering()) {
-		case 0:
-			return "none";
-		case 1:
-			return "adapter";
-		case 2:
-			return "source";
-
-		default:
-			return "unknown";
-		}
 	}
 
 	@Override

@@ -50,8 +50,6 @@ public class MiscTest {
 
 	private static File file;
 
-	private String pathSeperator = File.separator;
-
 	@BeforeClass
 	public static void setUp() throws IOException {
 		sourceFolderPath = testFolder.getRoot().getPath();
@@ -611,6 +609,6 @@ public class MiscTest {
 		String inputString = Misc.resourceToString(input);
 		URL expected = TestFileUtils.getTestFileURL("/Misc/prettified.json");
 		String expectedString = Misc.resourceToString(expected);
-		assertEquals(expectedString, Misc.jsonPretty(inputString));
+		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
 	}
 }

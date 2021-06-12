@@ -53,6 +53,7 @@ import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
+import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -169,7 +170,7 @@ public final class ShowMonitors extends Base {
 
 		if(trigger.getAdapterFilters() != null) {
 			Map<String, List<String>> sources = new HashMap<>();
-			if(trigger.getSourceFiltering() != Trigger.SOURCE_FILTERING_NONE) {
+			if(trigger.getSourceFilteringEnum() != SourceFiltering.NONE) {
 				for(Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext();) {
 					String adapterName = it1.next();
 
@@ -177,8 +178,8 @@ public final class ShowMonitors extends Base {
 					sources.put(adapterName, af.getSubObjectList());
 				}
 			}
-			triggerMap.put("filter", trigger.getFilterType());
 			triggerMap.put("filterExclusive", trigger.isFilterExclusive());
+			triggerMap.put("filter", trigger.getSourceFiltering());
 			triggerMap.put("sources", sources);
 		}
 		return triggerMap;
@@ -433,7 +434,7 @@ public final class ShowMonitors extends Base {
 
 		trigger.clearAdapterFilters();
 		if("adapter".equals(filter)) {
-			trigger.setSourceFiltering(Trigger.SOURCE_FILTERING_BY_ADAPTER);
+			trigger.setSourceFilteringEnum(SourceFiltering.ADAPTER);
 
 			for(String adapter : adapters) {
 				AdapterFilter adapterFilter = new AdapterFilter();
@@ -441,7 +442,7 @@ public final class ShowMonitors extends Base {
 				trigger.registerAdapterFilter(adapterFilter);
 			}
 		} else if("source".equals(filter)) {
-			trigger.setSourceFiltering(Trigger.SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT);
+			trigger.setSourceFilteringEnum(SourceFiltering.SOURCE);
 
 			for(Map.Entry<String, List<String>> entry : sources.entrySet()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
@@ -452,7 +453,7 @@ public final class ShowMonitors extends Base {
 				trigger.registerAdapterFilter(adapterFilter);
 			}
 		} else {
-			trigger.setSourceFiltering(Trigger.SOURCE_FILTERING_NONE);
+			trigger.setSourceFilteringEnum(SourceFiltering.NONE);
 		}
 	}
 

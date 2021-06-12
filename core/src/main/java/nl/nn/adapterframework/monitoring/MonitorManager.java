@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,15 +19,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -38,10 +35,10 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
+import nl.nn.adapterframework.monitoring.events.Event;
 import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -49,13 +46,16 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *
  * @author  Gerrit van Brakel
  * @since   4.9
+ * 
+ * @author Niels Meijer
+ * @version 2.0
  */
 public class MonitorManager extends ConfigurableLifecyleBase implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
-	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter ApplicationContext applicationContext;
-	private List<Monitor> monitors = new ArrayList<>();				// all monitors managed by this monitormanager
-	private Map<String, IMonitorAdapter> destinations = new LinkedHashMap<String, IMonitorAdapter>();	// all destinations (that can receive status messages) managed by this monitormanager
+	private List<Monitor> monitors = new ArrayList<>();							// All monitors managed by this MonitorManager
+	private Map<String, Event> events = new HashMap<>();						// All events that can be thrown
+	private Map<String, IMonitorAdapter> destinations = new LinkedHashMap<>();	// All destinations (that can receive status messages) managed by this MonitorManager
 
 	private boolean enabled = AppConstants.getInstance().getBoolean("monitoring.enabled", false);
 	private Date lastStateChange=null;
@@ -65,8 +65,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		try {
 			reconfigure();
 		} catch (ConfigurationException e) {
-			// TODO log these, or config warnings?
-			e.printStackTrace();
+			log.error("error configuring Monitors in MonitorManager ["+this+"]", e);
 		}
 	}
 
@@ -75,48 +74,25 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	 * monitors will register all required eventNotificationListeners.
 	 */
 	public void reconfigure() throws ConfigurationException {
-		if (log.isDebugEnabled()) log.debug("reconfigure() configuring destinations");
-		for (Iterator<String> it=destinations.keySet().iterator(); it.hasNext();) {
-			String name=(String)it.next();
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"configuring destinations");
+		for(String name : destinations.keySet()) {
 			IMonitorAdapter destination = getDestination(name);
 			destination.configure();
 		}
-		if (log.isDebugEnabled()) log.debug("reconfigure() configuring monitors");
+
+		//Only configure Monitors if all destinations were able to configure successfully
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"configuring monitors");
 		for(Monitor monitor : monitors) {
 			monitor.configure();
 		}
 	}
 
-	public void registerStateChange(Date date) {
-		lastStateChange=date;
+	private String getLogPrefix() {
+		return "MonitorManager ["+this+"] ";
 	}
 
-	public void updateDestinations(String[] selectedDestinations) {
-		Map monitorDestinations=new HashMap();
-		log.debug("setting destinations selectedDestinations.length ["+selectedDestinations.length+"]");
-		for (int i=0; i<selectedDestinations.length; i++) {
-			String curSelectedDestination=selectedDestinations[i];
-			log.debug("processing destination["+curSelectedDestination+"]");
-			int pos=curSelectedDestination.indexOf(',');
-			log.debug("pos["+pos+"]");
-			int index=Integer.parseInt(curSelectedDestination.substring(0,pos));
-			log.debug("index["+index+"]");
-			Monitor monitor=getMonitor(index);
-			String destination=curSelectedDestination.substring(pos+1);
-			log.debug("destination["+destination+"]");
-			Set monitorDestinationSet=(Set)monitorDestinations.get(monitor);
-			if (monitorDestinationSet==null) {
-				monitorDestinationSet=new HashSet();
-				monitorDestinations.put(monitor,monitorDestinationSet);
-			}
-			monitorDestinationSet.add(destination);
-		}
-		for(int i=0;i<getMonitors().size();i++){
-			Monitor monitor=getMonitor(i);
-			Set monitorDestinationSet=(Set)monitorDestinations.get(monitor);
-//			log.debug("setting ["+monitorDestinationSet.size()+"] destinations for monitor ["+monitor.getName()+"]");
-			monitor.setDestinationSet(monitorDestinationSet);
-		}
+	public void registerStateChange(Date date) {
+		lastStateChange=date;
 	}
 
 	public void registerDestination(IMonitorAdapter monitorAdapter) {
@@ -142,7 +118,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		String eventCode = event.getEventCode();
 
 		if (log.isDebugEnabled()) {
-			log.debug("registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
+			log.debug(getLogPrefix()+"registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
 		}
 
 		register(thrower, eventCode);
@@ -156,24 +132,25 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	public void removeMonitor(Monitor monitor) {
 		int index = monitors.indexOf(monitor);
 		if(index > -1) {
+			if(log.isDebugEnabled()) log.debug(getLogPrefix()+"removing monitor ["+monitor+"]");
+
 			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 			factory.destroyBean(monitor);
 			monitors.remove(index);
 		}
 	}
 
-	public Monitor removeMonitor(int index) {
-		Monitor result=null;
-		result = monitors.remove(index);
-		return result;
-	}
 	public Monitor getMonitor(int index) {
 		return monitors.get(index);
 	}
 	public Monitor findMonitor(String name) {
+		if(name == null) {
+			return null;
+		}
+
 		for (int i=0; i<monitors.size(); i++) {
 			Monitor monitor = monitors.get(i);
-			if (name!=null && name.equals(monitor.getName()) || name==monitor.getName()) {
+			if (name.equals(monitor.getName())) {
 				return monitor;
 			}
 		}
@@ -181,10 +158,10 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	}
 
 	public List<Monitor> getMonitors() {
-		return monitors;
+		//Monitors may not be added nor removed directly
+		return Collections.unmodifiableList(monitors);
 	}
 
-	private Map<String, Event> events = new HashMap<>();
 	private void register(EventThrowing eventThrowing, String eventCode) {
 		Adapter adapter = eventThrowing.getAdapter();
 		if(adapter == null || StringUtils.isEmpty(adapter.getName())) {
@@ -201,48 +178,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		return events;
 	}
 
-	public static class Event {
-		private List<EventThrowing> throwers = new ArrayList<>();
-
-		public Event() {}
-
-		public Event(EventThrowing thrower) {
-			throwers.add(thrower);
-		}
-
-		public void addThrower(EventThrowing thrower) {
-			throwers.add(thrower);
-		}
-
-		private List<EventThrowing> getThrowers() {
-			return Collections.unmodifiableList(throwers);
-		}
-
-		public List<String> getAdapters() {
-			List<String> adapters = new ArrayList<>();
-			for(EventThrowing eventThrower : getThrowers()) {
-				Adapter adapter = eventThrower.getAdapter();
-				if(adapter != null && !adapters.contains(adapter.getName())) {
-					adapters.add(adapter.getName());
-				}
-			}
-			return adapters;
-		}
-
-		public Map<String, List<String>> getSources() {
-			Map<String, List<String>> sources = new HashMap<>();
-			for(EventThrowing eventThrower : getThrowers()) {
-				Adapter adapter = eventThrower.getAdapter(); //TODO null check?
-				List<String> sourceNames = sources.getOrDefault(adapter.getName(), new ArrayList<>());
-				sourceNames.add(eventThrower.getEventSourceName());
-				sources.put(adapter.getName(), sourceNames);
-			}
-			return sources;
-		}
-	}
-
 	public XmlBuilder getStatusXml() {
-
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
 
@@ -265,8 +201,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		XmlBuilder configXml=new XmlBuilder("monitoring");
 		configXml.addAttribute("enabled",isEnabled());
 		XmlBuilder destinationsXml=new XmlBuilder("destinations");
-		for (Iterator it=destinations.keySet().iterator(); it.hasNext(); ) {
-			String name=(String)it.next();
+		for(String name : destinations.keySet()) {
 			IMonitorAdapter ma=getDestination(name);
 
 			XmlBuilder destinationXml=new XmlBuilder("destination");
@@ -284,6 +219,11 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		configXml.addSubElement(monitorsXml);
 
 		return configXml;
+	}
+
+	@Override
+	public String toString() {
+		return ReflectionToStringBuilder.toStringExclude(this, "applicationContext");
 	}
 
 	public boolean isEnabled() {
