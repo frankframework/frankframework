@@ -55,8 +55,6 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	private List<String> eventCodes = new ArrayList<>();
 	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
 
-	private boolean filterExclusive = false;
-
 	private int threshold=0;
 	private int period=0;
 
@@ -160,7 +158,6 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		}
 		if (getAdapterFilters()!=null) {
 			XmlBuilder filtersXml=new XmlBuilder("filters");
-			filtersXml.addAttribute("filterExclusive",isFilterExclusive());
 			trigger.addSubElement(filtersXml);
 			if (getSourceFilteringEnum() != SourceFiltering.NONE) {
 				for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
@@ -285,13 +282,6 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		} else if (getSourceFilteringEnum() == SourceFiltering.NONE) {
 			setSourceFilteringEnum(SourceFiltering.ADAPTER);
 		}
-	}
-
-	public void setFilterExclusive(boolean b) {
-		filterExclusive = b;
-	}
-	public boolean isFilterExclusive() {
-		return filterExclusive;
 	}
 
 	public boolean isFilterOnLowerLevelObjects() {

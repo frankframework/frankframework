@@ -178,7 +178,6 @@ public final class ShowMonitors extends Base {
 					sources.put(adapterName, af.getSubObjectList());
 				}
 			}
-			triggerMap.put("filterExclusive", trigger.isFilterExclusive());
 			triggerMap.put("filter", trigger.getSourceFiltering());
 			triggerMap.put("sources", sources);
 		}
@@ -390,7 +389,6 @@ public final class ShowMonitors extends Base {
 		SeverityEnum severity = null;
 		int threshold = 0;
 		int period = 0;
-		boolean filterExclusive = false;
 		String filter = null;
 		List<String> adapters = null;
 		Map<String, List<String>> sources = null;
@@ -413,8 +411,6 @@ public final class ShowMonitors extends Base {
 				if(period < 0) {
 					throw new ApiException("period must be a positive number");
 				}
-			} else if(key.equalsIgnoreCase("filterExclusive")) {
-				filterExclusive = Boolean.parseBoolean(entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("filter")) {
 				filter = entry.getValue().toString();
 			} else if(key.equalsIgnoreCase("adapters") && entry.getValue() instanceof List<?>) {
@@ -430,7 +426,6 @@ public final class ShowMonitors extends Base {
 		trigger.setSeverityEnum(severity);
 		trigger.setThreshold(threshold);
 		trigger.setPeriod(period);
-		trigger.setFilterExclusive(filterExclusive);
 
 		trigger.clearAdapterFilters();
 		if("adapter".equals(filter)) {
