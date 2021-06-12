@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.monitoring;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.ClassUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
@@ -41,7 +40,7 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 			throw new ConfigurationException("No sender found");
 		}
 		if (StringUtils.isEmpty(getSender().getName())) {
-			getSender().setName("sender of "+getName()); 
+			getSender().setName("sender of "+getName());
 		}
 
 		super.configure();
@@ -75,7 +74,7 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 	public XmlBuilder toXml() {
 		XmlBuilder result=super.toXml();
 		XmlBuilder senderXml=new XmlBuilder("sender");
-		senderXml.addAttribute("className", ClassUtils.getUserClass(getSender()).getCanonicalName());
+		senderXml.addAttribute("className", getUserClass(getSender()).getCanonicalName());
 		result.addSubElement(senderXml);
 		return result;
 	}

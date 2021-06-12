@@ -66,14 +66,6 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	private Set<String> destinationSet = new HashSet<String>(); 
 	private @Setter ApplicationContext applicationContext;
 
-	public Monitor() {
-		super();
-	}
-
-	public void register(MonitorManager mm) {
-		mm.addMonitor(this);
-	}
-
 	public void configure() {
 		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
 

@@ -34,6 +34,4 @@ public interface IMonitorAdapter {
 
 	void setName(String name);	
 	String getName();
-
-	void register(MonitorManager mm);
 }

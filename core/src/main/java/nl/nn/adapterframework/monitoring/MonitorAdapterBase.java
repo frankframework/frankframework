@@ -39,36 +39,39 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter, Application
 	private String name;
 	private String hostname;
 
-	public MonitorAdapterBase() {
+	protected MonitorAdapterBase() {
 		log.debug("creating Destination ["+ClassUtils.nameOf(this)+"]");
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-
 		if (StringUtils.isEmpty(getName())) {
 			setName(ClassUtils.nameOf(this));
 		}
 
-		hostname=Misc.getHostname();
+		hostname = Misc.getHostname();
 	}
 
 	public String makeXml(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		XmlBuilder eventXml = new XmlBuilder("event");
 		eventXml.addAttribute("hostname", hostname);
-		eventXml.addAttribute("subSource",subSource);
-		eventXml.addAttribute("eventType",eventType.name());
-		eventXml.addAttribute("severity",severity.name());
-		eventXml.addAttribute("message",message);
+		eventXml.addAttribute("source", subSource);
+		eventXml.addAttribute("type", eventType.name());
+		eventXml.addAttribute("severity", severity.name());
+		eventXml.addAttribute("message", message);
 		return eventXml.toXML();
 	}
 
 	@Override
 	public XmlBuilder toXml() {
 		XmlBuilder destinationXml=new XmlBuilder("destination");
-		destinationXml.addAttribute("name",getName());
-		destinationXml.addAttribute("className",getClass().getName());
+		destinationXml.addAttribute("name", getName());
+		destinationXml.addAttribute("className", getUserClass(this).getCanonicalName());
 		return destinationXml;
+	}
+
+	protected Class<?> getUserClass(Object clazz) {
+		return org.springframework.util.ClassUtils.getUserClass(clazz);
 	}
 
 	@Override
@@ -78,10 +81,5 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter, Application
 	@Override
 	public String getName() {
 		return name;
-	}
-
-	@Override
-	public void register(MonitorManager mm) {
-		mm.registerDestination(this);
 	}
 }

@@ -5,10 +5,10 @@
 
 	<rule pattern="*/monitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
 
-	<rule pattern="*/destination" selfRegisterMethod="register"/>
+	<rule pattern="*/destination" registerMethod="registerDestination"/>
 	<rule pattern="*/destination/sender" registerMethod="setSender"/>
 
-	<rule pattern="*/monitors/monitor" selfRegisterMethod="register"/>
+	<rule pattern="*/monitors/monitor" registerMethod="addMonitor"/>
 
 	<rule pattern="*/monitor/alarm" registerMethod="registerAlarm"/>
 	<rule pattern="*/monitor/alarm/events/event" callMethod="addEventCode"/>

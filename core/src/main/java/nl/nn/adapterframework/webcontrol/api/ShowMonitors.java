@@ -88,7 +88,7 @@ public final class ShowMonitors extends Base {
 	@Path("/")
 	public Response getMonitors(@PathParam("configuration") String configurationName, @QueryParam("xml") boolean showConfigXml) throws ApiException {
 
-		Map<String, Object> returnMap = new HashMap<String, Object>();
+		Map<String, Object> returnMap = new HashMap<>();
 		MonitorManager mm = getMonitorManager(configurationName);
 
 		if(showConfigXml) {
@@ -330,7 +330,7 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		Map<String, Object> returnMap = new HashMap<String, Object>();
+		Map<String, Object> returnMap = new HashMap<>();
 
 		if(id != null) {
 			Trigger trigger = monitor.getTrigger(id);
