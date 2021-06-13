@@ -7,8 +7,8 @@
 	</destinations>
 
 	<monitors>
-		<monitor name="Internal adapter exception" type="TECHNICAL" destinations="GALM">
-			<alarm eventCode="Pipe Exception" severity="CRITICAL" threshold="10" period="3600">
+		<monitor name="Internal adapter exception" type="TECHNICAL" destinations="GALM,log">
+			<alarm eventCode="Pipe Exception" severity="CRITICAL" threshold="1" period="3600">
 				<filters filterExclusive="false">
 					<adapterfilter adapter="TransactionTimeoutHandlingNonTransacted" />
 					<adapterfilter adapter="TransactionTimeoutHandlingTransacted" />
