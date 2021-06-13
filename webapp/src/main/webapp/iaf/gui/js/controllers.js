@@ -2434,7 +2434,8 @@ angular.module('iaf.beheerconsole')
 	}
 
 	$scope.getAdaptersForEvents = function(events) {
-		if(!events) return;
+		if(!events) return [];
+
 		var adapters = [];
 		for(eventName in $scope.events) {
 			if(events.indexOf(eventName) > -1) {

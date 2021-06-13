@@ -67,8 +67,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 @Path("/configurations/{configuration}/monitors")
 public final class ShowMonitors extends Base {
-	@Context
-	Request request;
+	private @Context Request request;
 
 	private MonitorManager getMonitorManager(String configurationName) {
 		ApplicationContext applicationContext = getIbisManager().getConfiguration(configurationName);
