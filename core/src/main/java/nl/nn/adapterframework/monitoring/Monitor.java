@@ -62,8 +62,8 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 
 	private MonitorManager manager = null;
 
-	private List<Trigger> triggers = new ArrayList<Trigger>();
-	private Set<String> destinationSet = new HashSet<String>(); 
+	private List<Trigger> triggers = new ArrayList<>();
+	private Set<String> destinations = new HashSet<>(); 
 	private @Setter ApplicationContext applicationContext;
 
 	public void configure() {
@@ -115,7 +115,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 		setStateChangeDt(date);
 
-		for(String destination : destinationSet) {
+		for(String destination : destinations) {
 			IMonitorAdapter monitorAdapter = getManager().getDestination(destination);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
 
@@ -163,74 +163,45 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	}
 
 	public String getDestinationsAsString() {
-		//log.debug(getLogPrefix()+"calling getDestinationsAsString()");
 		String result=null;
-		for (Iterator<String> it=getDestinationSet().iterator();it.hasNext();) {
-			String item=(String)it.next();
+		for(String destination : getDestinationSet()) {
 			if (result==null) {
-				result=item;
+				result=destination;
 			} else {
-				result+=","+item;
+				result+=","+destination;
 			}
 		}
 		return result;
 	}
-
 	public void setDestinations(String newDestinations) {
-//		log.debug(getLogPrefix()+"entering setDestinations(String)");
-		destinationSet.clear();
+		destinations.clear();
 		StringTokenizer st=new StringTokenizer(newDestinations,",");
 		while (st.hasMoreTokens()) {
-			String token=st.nextToken();
-//			log.debug(getLogPrefix()+"adding destination ["+token+"]");
-			destinationSet.add(token);
-		}
-	}
-	public void setDestinations(String[] newDestinations) {
-		if (newDestinations.length==1) {
-			log.debug("assuming single string, separated by commas");
-			destinationSet.clear();
-			StringTokenizer st=new StringTokenizer(newDestinations[0],",");
-			while (st.hasMoreTokens()) {
-				String token=st.nextToken();
-				log.debug(getLogPrefix()+"adding destination ["+token+"]");
-				destinationSet.add(token);			
-			}
-		} else {
-			log.debug(getLogPrefix()+"entering setDestinations(String[])");
-			Set<String> set=new HashSet<String>();
-			for (int i=0;i<newDestinations.length;i++) {
-				log.debug(getLogPrefix()+"adding destination ["+newDestinations[i]+"]");
-				set.add(newDestinations[i]); 
-			}
-			setDestinationSet(set);
+			addDestination(st.nextToken());
 		}
 	}
 
 	public Set<String> getDestinationSet() {
-		return Collections.unmodifiableSet(destinationSet);
+		return Collections.unmodifiableSet(destinations);
 	}
 	public void setDestinationSet(Set<String> newDestinations) {
 		if (newDestinations==null) {
-			log.debug(getLogPrefix()+"clearing destinations");
-			destinationSet.clear();
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"clearing destinations");
+			destinations.clear();
 		} else {
-			if (log.isDebugEnabled()) {
-				String destinations=null;
-				for (Iterator<String> it=newDestinations.iterator();it.hasNext();) {
-					if (destinations!=null) {
-						destinations+=","+(String)it.next();
-					} else {
-						destinations=(String)it.next();
-					}
-				}
-				log.debug(getLogPrefix()+"setting destinations to ["+destinations+"]");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting destinations to ["+newDestinations+"]");
+			destinations.clear();
+			for(String destination : newDestinations) {
+				addDestination(destination);
 			}
-//			log.debug("size before retain all ["+destinationSet.size()+"]" );
-			destinationSet.retainAll(newDestinations);
-//			log.debug("size after retain all ["+destinationSet.size()+"]" );
-			destinationSet.addAll(newDestinations);
-//			log.debug("size after add all ["+destinationSet.size()+"]" );
+		}
+	}
+	private void addDestination(String destination) {
+		if(getManager().getDestination(destination) != null) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"adding destination ["+destination+"]");
+			destinations.add(destination);
+		} else {
+			throw new IllegalArgumentException("destination ["+destination+"] does not exist");
 		}
 	}
 

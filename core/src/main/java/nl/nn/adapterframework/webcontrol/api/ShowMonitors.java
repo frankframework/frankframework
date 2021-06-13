@@ -18,6 +18,7 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -114,6 +115,7 @@ public final class ShowMonitors extends Base {
 		Map<String, Object> monitorMap = new HashMap<String, Object>();
 		monitorMap.put("name", monitor.getName());
 		monitorMap.put("type", monitor.getType());
+		monitorMap.put("destinations", monitor.getDestinationSet());
 		monitorMap.put("lastHit", monitor.getLastHit());
 
 		boolean isRaised = monitor.isRaised();
@@ -260,6 +262,17 @@ public final class ShowMonitors extends Base {
 					monitor.setName(entry.getValue().toString());
 				} else if(key.equalsIgnoreCase("type")) {
 					monitor.setType(entry.getValue().toString());
+				} else if(key.equalsIgnoreCase("destinations")) {
+					ArrayList<String> destinations = new ArrayList<String>();
+					try {
+						destinations.addAll((ArrayList<String>) entry.getValue());
+					} catch (Exception e) {
+						throw new ApiException("failed to parse destinations", e);
+					}
+
+					if(!destinations.isEmpty()) {
+						monitor.setDestinationSet(new HashSet<>(destinations));
+					}
 				}
 			}
 		}
@@ -481,7 +494,7 @@ public final class ShowMonitors extends Base {
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addMonitor(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response addMonitor(@PathParam("configuration") String configurationName, LinkedHashMap<String, Object> json) throws ApiException {
 
 		String name = null;
 		EventTypeEnum type = null;
@@ -492,42 +505,30 @@ public final class ShowMonitors extends Base {
 			if(key.equalsIgnoreCase("name")) {
 				name = entry.getValue().toString();
 			}
-			if(key.equalsIgnoreCase("type")) {
+			else if(key.equalsIgnoreCase("type")) {
 				type = Misc.parse(EventTypeEnum.class, entry.getValue().toString());
 			}
-			if(key.equalsIgnoreCase("destinations")) {
+			else if(key.equalsIgnoreCase("destinations")) {
 				try {
 					destinations.addAll((ArrayList<String>) entry.getValue());
 				} catch (Exception e) {
-					throw new ApiException("Failed to parse destinations", e);
+					throw new ApiException("failed to parse destinations", e);
 				}
 			}
 		}
 		if(name == null)
-			throw new ApiException("Name not set!");
+			throw new ApiException("Name not set!", Status.BAD_REQUEST);
 		if(type == null)
-			throw new ApiException("Type not set!");
+			throw new ApiException("Type not set!", Status.BAD_REQUEST);
 
-		MonitorManager mm = getMonitorManager("");
+		MonitorManager mm = getMonitorManager(configurationName);
 
 		Monitor monitor = new Monitor();
 		monitor.setName(name);
 		monitor.setTypeEnum(type);
 
-		// Check if destination is set, and if it actually exists...
-		if(destinations != null && destinations.size() > 0) {
-			List<String> tmp = new ArrayList<String>();
-
-			for(Iterator<String> i = destinations.iterator(); i.hasNext();) {
-				String destination = (String) i.next();
-				if(mm.getDestination(destination) != null) {
-					tmp.add(destination);
-				}
-			}
-
-			String[] result = new String[tmp.size()];
-			result = (String[]) tmp.toArray(result);
-			monitor.setDestinations(result);
+		if(!destinations.isEmpty()) {
+			monitor.setDestinationSet(new HashSet<>(destinations));
 		}
 
 		mm.addMonitor(monitor);
