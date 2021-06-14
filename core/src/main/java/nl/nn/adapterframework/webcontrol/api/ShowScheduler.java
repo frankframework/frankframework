@@ -386,15 +386,16 @@ public final class ShowScheduler extends Base {
 		return Response.status(Response.Status.OK).build();
 	}
 
-	private Scheduler getScheduler() {
-		DefaultIbisManager manager = (DefaultIbisManager) getIbisManager();
-		SchedulerHelper sh = manager.getSchedulerHelper();
+	private SchedulerHelper getSchedulerHelper() {
+		return getIbisContext().getBean("schedulerHelper", SchedulerHelper.class);
+	}
 
+	private Scheduler getScheduler() {
 		try {
-			return sh.getScheduler();
+			return getSchedulerHelper().getScheduler();
 		}
 		catch (SchedulerException e) {
-			throw new ApiException("Cannot find scheduler", e); 
+			throw new ApiException("Cannot find scheduler", e);
 		}
 	}
 
@@ -430,7 +431,7 @@ public final class ShowScheduler extends Base {
 				scheduler.pauseJob(jobKey);
 			}
 			else if("resume".equals(action)) {
-				SchedulerHelper sh = ((DefaultIbisManager) getIbisManager()).getSchedulerHelper();
+				SchedulerHelper sh = getSchedulerHelper();
 				JobDetail jobDetail = scheduler.getJobDetail(jobKey);
 				// TODO this part can be more generic in case multiple triggers 
 				// can be configurable
@@ -546,8 +547,8 @@ public final class ShowScheduler extends Base {
 		String message = resolveStringFromMap(inputDataMap, "message");
 
 		String description = resolveStringFromMap(inputDataMap, "description");
-		
-		SchedulerHelper sh = manager.getSchedulerHelper();
+
+		SchedulerHelper sh = getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
 		DatabaseJobDef jobdef = SpringUtils.createBean(applicationContext, DatabaseJobDef.class);
