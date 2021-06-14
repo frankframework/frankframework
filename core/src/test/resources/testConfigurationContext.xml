@@ -36,7 +36,6 @@
 		<property name="autoStartup" value="false"/>
 		<property name="waitForJobsToCompleteOnShutdown" value="false"/>
 	</bean>
-	<bean id="nl.nn.adapterframework.jdbc.FixedQuerySender" class="nl.nn.adapterframework.testutil.FixedQuerySenderMock" lazy-init="true" />
 
 	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
 	<bean name="flowGenerator" class="nl.nn.adapterframework.testutil.DummyFlowGenerator" scope="prototype" lazy-init="true" />
