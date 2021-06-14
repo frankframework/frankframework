@@ -2,10 +2,15 @@ package nl.nn.adapterframework.testutil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -30,6 +35,28 @@ public class TestConfiguration extends Configuration {
 
 		if(!TEST_CONFIGURATION_NAME.equals(AppConstants.getInstance().getProperty("instance.name"))) {
 			fail("instance.name has been altered");
+		}
+	}
+
+	@Override
+	protected DefaultListableBeanFactory createBeanFactory() {
+		return Mockito.spy(new DefaultListableBeanFactory());
+	}
+
+	public <T> void mockCreateBean(Class<T> originalBean, Class<? extends T> mockedBean) {
+		T mock = getBean(mockedBean);
+		assertNotNull("mock ["+mockedBean+"] not found", mock);
+		mockCreateBean(originalBean, mock);
+	}
+	public <T> void mockCreateBean(Class<T> originalBean, T mock) {
+		assertNotNull("mock may not be null", mock);
+		AutowireCapableBeanFactory beanFactory = getAutowireCapableBeanFactory();
+		Mockito.doReturn(mock).when(beanFactory).createBean(Mockito.eq(originalBean), Mockito.anyInt(), Mockito.anyBoolean());
+
+		T t = SpringUtils.createBean(this, originalBean); //Test the mock
+		assertNotNull(t);
+		if(t.getClass().isInstance(originalBean)) {
+			fail("Unable to mock bean ["+originalBean+"] got ["+t.getClass().getName()+"] instead");
 		}
 	}
 
@@ -60,9 +87,12 @@ public class TestConfiguration extends Configuration {
 	@Override
 	public IbisManager getIbisManager() {
 		if(super.getIbisManager() == null) {
-			MockIbisManager ibisManager = new MockIbisManager();
+			IbisManager ibisManager = new MockIbisManager();
 			ibisManager.addConfiguration(this);
+			getBeanFactory().registerSingleton("ibisManager", ibisManager);
 			setIbisManager(ibisManager);
+
+			assertTrue("bean IbisManager not found", containsBean("ibisManager"));
 		}
 		return super.getIbisManager();
 	}

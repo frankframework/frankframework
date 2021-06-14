@@ -69,7 +69,6 @@ import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
-import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DirectoryCleaner;
@@ -864,16 +863,10 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	 *    Since they have been removed from the database, remove them from the Quartz Scheduler
 	 */
 	private void loadDatabaseSchedules(IbisManager ibisManager) {
-		if(!(ibisManager instanceof DefaultIbisManager)) {
-			getMessageKeeper().add("manager is not an instance of DefaultIbisManager", MessageKeeperLevel.ERROR);
-			return;
-		}
-
 		Map<JobKey, IbisJobDetail> databaseJobDetails = new HashMap<JobKey, IbisJobDetail>();
 		Scheduler scheduler = null;
-		SchedulerHelper sh = null;
+		SchedulerHelper sh = applicationContext.getBean(SchedulerHelper.class);;
 		try {
-			sh = ((DefaultIbisManager) ibisManager).getSchedulerHelper();
 			scheduler = sh.getScheduler();
 
 			// Fill the databaseJobDetails Map with all IbisJobDetails that have been stored in the database
@@ -909,11 +902,17 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 							String message = rs.getString("MESSAGE");
 							boolean hasLocker = rs.getBoolean("LOCKER");
 							String lockKey = rs.getString("LOCK_KEY");
-			
+
 							JobKey key = JobKey.jobKey(jobName, jobGroup);
-			
+
+							Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
+							if(adapter == null) {
+								getMessageKeeper().add("unable to add schedule ["+key+"], adapter ["+adapterName+"] not found");
+								continue;
+							}
+
 							//Create a new JobDefinition so we can compare it with existing jobs
-							DatabaseJobDef jobdef = SpringUtils.createBean(applicationContext, DatabaseJobDef.class);
+							DatabaseJobDef jobdef = SpringUtils.createBean(adapter.getApplicationContext(), DatabaseJobDef.class);
 							jobdef.setCronExpression(cronExpression);
 							jobdef.setName(jobName);
 							jobdef.setInterval(interval);
