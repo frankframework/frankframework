@@ -8,7 +8,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.CsvParserPipe"
 				name="NegateBooleanPropertyParse"
 				fileContainsHeader="!${negated.property}"
-				fieldNames="ignoredHeader1,ignoredHeader2">
+				fieldNames="f1,f2">
 				<Forward name="success" path="EXIT" />
 			</pipe>
 		</Pipeline>

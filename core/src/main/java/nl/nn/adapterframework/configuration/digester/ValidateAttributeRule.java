@@ -17,7 +17,11 @@ package nl.nn.adapterframework.configuration.digester;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -34,6 +38,18 @@ import nl.nn.adapterframework.util.StringResolver;
  * @author Niels Meijer
  */
 public class ValidateAttributeRule extends DigesterRuleBase {
+	private static final Set<String> BOOLEAN_TYPES = new HashSet<>(Arrays.asList("boolean", "java.lang.Boolean"));
+
+	private static Map<String, String> BOOLEAN_NEGATIONS;
+	static {
+		BOOLEAN_NEGATIONS = new HashMap<>();
+		for(Boolean b: Arrays.asList(Boolean.FALSE, Boolean.TRUE)) {
+			String s = b.toString();
+			BOOLEAN_NEGATIONS.put(s, s);
+			BOOLEAN_NEGATIONS.put("!" + s, Boolean.valueOf(! b).toString());
+		}
+	}
+
 	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
 
 	@Override
@@ -73,6 +89,12 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				checkReadMethodType(pd, name, value, attributes);
 			}
 
+			if(writeMethodIsBoolean(pd)) {
+				if(BOOLEAN_NEGATIONS.containsKey(value)) {
+					value = BOOLEAN_NEGATIONS.get(value);
+				}
+			}
+
 			BeanUtils.setProperty(getBean(), name, value);
 		}
 	}
@@ -100,6 +122,12 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				log.warn("Error on getting default for object [" + getObjectName() + "] with method [" + rm.getName() + "] attribute ["+name+"] value ["+value+"]", t);
 			}
 		}
+	}
+
+	private boolean writeMethodIsBoolean(PropertyDescriptor pd) {
+		Method wm = pd.getWriteMethod();
+		String parameterType = wm.getParameters()[0].getType().getName();
+		return BOOLEAN_TYPES.contains(parameterType);
 	}
 
 	/**
