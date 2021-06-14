@@ -61,6 +61,8 @@
 	<!ENTITY Streaming SYSTEM "./ConfigurationStreaming.xml">
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
 	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
+	<!ENTITY NegateBooleanProperty SYSTEM "./ConfigurationNegateBooleanProperty.xml">
+	<!ENTITY DontNegateStringProperty SYSTEM "./ConfigurationDontNegateStringProperty.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
@@ -125,4 +127,6 @@
 	&Streaming;
 	&ApiWsdlGenerator;
 	&Unzip;
+	&NegateBooleanProperty;
+	&DontNegateStringProperty;
 </configuration>

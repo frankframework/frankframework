@@ -1,0 +1,15 @@
+<Module>
+	<Adapter name="DontNegateStringProperty">
+		<Receiver>
+			<JavaListener name="dontNegateStringPropertyListener" serviceName="dontNegateStringPropertyListener"></JavaListener>
+		</Receiver>
+		<Pipeline firstPipe="DontNegateStringPropertyFixedResult">
+			<Exit path="EXIT" state="success" />
+			<FixedResultPipe
+				name="DontNegateStringPropertyFixedResult"
+				returnString="!{negated.property}">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+		</Pipeline>
+	</Adapter>
+</Module>

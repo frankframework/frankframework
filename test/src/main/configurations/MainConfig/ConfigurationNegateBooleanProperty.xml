@@ -1,0 +1,16 @@
+<Module>
+	<Adapter name="NegateBooleanProperty" active="!false">
+		<Receiver>
+			<JavaListener name="negateBooleanPropertyListener" serviceName="negateBooleanPropertyListener"></JavaListener>
+		</Receiver>
+		<Pipeline firstPipe="NegateBooleanPropertyParse">
+			<Exit path="EXIT" state="success" />
+			<pipe className="nl.nn.adapterframework.pipes.CsvParserPipe"
+				name="NegateBooleanPropertyParse"
+				fileContainsHeader="!${negated.property}"
+				fieldNames="ignoredHeader1,ignoredHeader2">
+				<Forward name="success" path="EXIT" />
+			</pipe>
+		</Pipeline>
+	</Adapter>
+</Module>
