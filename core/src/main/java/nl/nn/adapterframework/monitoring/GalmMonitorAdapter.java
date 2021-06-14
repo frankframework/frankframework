@@ -126,11 +126,11 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 	}
 
 	@Override
-	public String makeXml(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
+	public String makeXml(String eventSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		XmlBuilder eventXml = new XmlBuilder("event");
 		eventXml.addAttribute("hostname", hostname);
 		eventXml.addAttribute("source",sourceId);
-		eventXml.addAttribute("subSource",subSource);
+		eventXml.addAttribute("subSource",eventSource);
 		eventXml.addAttribute("eventType",eventType.name());
 		eventXml.addAttribute("severity",severity.name());
 		eventXml.addAttribute("message",message);

@@ -60,8 +60,8 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(pattern);
 
 
-		if(rule.getCallMethod() != null) { //set the register method (callMethod with the element body as parameter)
-			ruleBuilder.callMethod(rule.getCallMethod()).usingElementBodyAsArgument();
+		if(rule.getRegisterTextMethod() != null) { //set the register method (callMethod with the element body as parameter)
+			ruleBuilder.callMethod(rule.getRegisterTextMethod()).usingElementBodyAsArgument();
 			return;
 		}
 

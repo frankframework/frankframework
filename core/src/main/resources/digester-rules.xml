@@ -64,14 +64,14 @@
 	<rule pattern="*/monitors/monitor" registerMethod="addMonitor"/>
 
 	<rule pattern="*/monitor/alarm" registerMethod="registerAlarm"/>
-	<rule pattern="*/monitor/alarm/events/event" callMethod="addEventCode"/>
+	<rule pattern="*/monitor/alarm/events/event" registerTextMethod="addEventCode"/>
 
 	<rule pattern="*/monitor/clearing" registerMethod="registerClearing"/>
-	<rule pattern="*/monitor/clearing/events/event" callMethod="addEventCode"/>
+	<rule pattern="*/monitor/clearing/events/event" registerTextMethod="addEventCode"/>
 
 	<rule pattern="*/monitor/trigger" registerMethod="registerTrigger"/>
-	<rule pattern="*/monitor/trigger/events/event" callMethod="addEventCode"/>
+	<rule pattern="*/monitor/trigger/events/event" registerTextMethod="addEventCode"/>
 
 	<rule pattern="*/adapterfilter" registerMethod="registerAdapterFilter"/>
-	<rule pattern="*/adapterfilter/sources/source" callMethod="registerSubObject"/>
+	<rule pattern="*/adapterfilter/sources/source" registerTextMethod="registerSubObject"/>
 </digester-rules>
