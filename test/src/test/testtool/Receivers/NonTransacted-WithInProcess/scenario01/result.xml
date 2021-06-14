@@ -14,7 +14,7 @@
 				<rowset>
 					<row number="0">
 						<field name="TKEY">58537</field>
-						<field name="TCHAR">3</field>
+						<field name="TCHAR">D</field>
 						<field name="TTIMESTAMP">2021-06-11 14:11:38</field>
 						<field name="TVARCHAR">exitState [success], result [String: &lt;root forward="ready"/&gt;]</field>
 					</row>
