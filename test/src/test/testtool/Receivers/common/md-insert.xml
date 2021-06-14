@@ -1,6 +1,0 @@
-<manageDatabaseREQ>
-	<sql>
-		<type>insert</type>
-		<query>INSERT INTO IBISTEMP (TKEY,TNUMBER,TCHAR) VALUES (SEQ_IBISTEMP.NEXTVAL, ${jdbc.receivertest.key}, 1)</query>
-	</sql>
-</manageDatabaseREQ>

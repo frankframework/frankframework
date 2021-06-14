@@ -15,6 +15,6 @@
 				<name>TVARCHAR</name>
 			</column>
 		</columns>
-		<where>TNUMBER=${jdbc.receivertest.key}</where>
+		<where>TNUMBER=${jdbc.receivertest.key}1</where>
 	</select>
 </manageDatabaseREQ>

@@ -4,9 +4,9 @@
 		<columns>
 			<column>
 				<name>TCHAR</name>
-				<value>1</value>
+				<value>A</value>
 			</column>
 		</columns>
-		<where>TNUMBER=${jdbc.receivertest.key} AND TCHAR='4'</where>
+		<where>TNUMBER=${jdbc.receivertest.key}2 AND TCHAR='E'</where>
 	</update>
 </manageDatabaseREQ>

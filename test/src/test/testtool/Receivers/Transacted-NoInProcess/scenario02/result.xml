@@ -1,0 +1,25 @@
+<manageDatabaseRLY>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<result>
+				<fielddefinition>
+					<field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+					<field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
+					<field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+				</fielddefinition>
+				<rowset>
+					<row number="0">
+						<field name="TKEY">58537</field>
+						<field name="TCHAR">3</field>
+						<field name="TTIMESTAMP">2021-06-11 14:11:38</field>
+						<field name="TVARCHAR">exitState [success], result [String: &lt;root forward="ready"/&gt;]</field>
+					</row>
+				</rowset>
+			</result>
+		</result>
+	</results>
+</manageDatabaseRLY>
