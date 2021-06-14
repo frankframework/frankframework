@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,17 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.monitoring;
+package nl.nn.adapterframework.monitoring.events;
 
-import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.monitoring.EventThrowing;
 
-/**
- * Interface to be implemented by objects to be monitored; Is called by code that handles event.
- * 
- * @author  Gerrit van Brakel
- * @since   4.9
- */
-public interface EventThrowing {
-	public String getEventSourceName();
-	public Adapter getAdapter();
+public class FireMonitorEvent extends MonitorEvent {
+
+	public FireMonitorEvent(EventThrowing source, String eventCode) {
+		super(source, eventCode);
+	}
+
 }

@@ -30,6 +30,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.digester3.Digester;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.struts.action.DynaActionForm;
 import org.apache.struts.upload.FormFile;
@@ -43,9 +44,10 @@ import org.apache.struts.upload.FormFile;
  */
 public class ShowMonitorExecute extends ShowMonitors {
     
+	@Override
 	protected String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) throws MonitorException {
 		log.debug("performing action ["+action+"] on monitorName nr ["+index+"]");
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 		if (StringUtils.isEmpty(action)) {
 			log.warn("monitorHandler did not find action");
 			return null;
@@ -56,7 +58,7 @@ public class ShowMonitorExecute extends ShowMonitors {
 			if (form_file!=null && form_file.getFileSize()>0) {
 				log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
 				Digester d=new Digester();
-				mm.setDigesterRules(d);
+//				mm.setDigesterRules(d);
 				mm.getMonitors().clear();
 				d.push(mm);
 				try {
@@ -65,9 +67,8 @@ public class ShowMonitorExecute extends ShowMonitors {
 					error("cannot parse file ["+form_file.getFileName()+"]",e);
 				}
 			} else {
-				mm.updateDestinations((String[])monitorForm.get("selDestinations"));
+				throw new NotImplementedException();
 			}
-			mm.setEnabled(((Boolean)monitorForm.get("enabled")).booleanValue());
 			return null;
 		}
 		if (action.equals("createMonitor")) {
@@ -84,7 +85,7 @@ public class ShowMonitorExecute extends ShowMonitors {
 			Monitor monitor=mm.getMonitor(index);
 			if (monitor!=null) {
 				log.info("removing monitor nr ["+index+"] name ["+monitor.getName()+"]");
-				mm.removeMonitor(index);
+				throw new NotImplementedException();
 			}
 			return null;
 		}

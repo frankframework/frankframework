@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,25 +13,28 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol.action;
+package nl.nn.adapterframework.monitoring;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.struts.action.DynaActionForm;
-
-
+import nl.nn.adapterframework.configuration.digester.AbstractSpringPoweredDigesterFactory;
 
 /**
- * Edit a Monitor - display the form.
+ * Factory for the MonitorManagers, returns the context's manager
  * 
- * @author  Gerrit van Brakel
- * @since   4.9
+ * This bean is a singleton, not a prototype, which is why the GenericFactory
+ * can not be used.
+ * 
+ * @author Niels Meijer
+ *
  */
-public class EditMonitor extends ShowMonitors {
+public class MonitoringFactory extends AbstractSpringPoweredDigesterFactory {
 
 	@Override
-	protected String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
-		throw new NotImplementedException();
+	public String getSuggestedBeanName() {
+		return "monitorManager";
+	}
+
+	@Override
+	public boolean isPrototypesOnly() {
+		return false;
 	}
 }

@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -35,18 +36,17 @@ import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.monitoring.EventHandler;
+import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
-import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -130,7 +130,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private ParameterList parameterList = new ParameterList();
-	private EventHandler eventHandler=null;
+	private @Setter EventPublisher eventPublisher=null;
 
 	private PipeLine pipeline;
 
@@ -190,7 +190,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			getLocker().configure();
 		}
 
-		eventHandler = MonitorManager.getEventHandler();
 		super.configure();
 	}
 
@@ -372,14 +371,14 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	}
 	@Override
 	public void registerEvent(String description) {
-		if (eventHandler!=null) {
-			eventHandler.registerEvent(this,description);
+		if (eventPublisher != null) {
+			eventPublisher.registerEvent(this, description);
 		}
 	}
 	@Override
 	public void throwEvent(String event) {
-		if (eventHandler!=null) {
-			eventHandler.fireEvent(this,event);
+		if (eventPublisher != null) {
+			eventPublisher.fireEvent(this ,event);
 		}
 	}
 

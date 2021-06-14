@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,25 +13,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol.action;
+package nl.nn.adapterframework.monitoring.events;
 
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.context.ApplicationEvent;
 
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.struts.action.DynaActionForm;
+import nl.nn.adapterframework.monitoring.EventThrowing;
 
+public class MonitorEvent extends ApplicationEvent {
+	private String eventCode;
 
-
-/**
- * Edit a Monitor - display the form.
- * 
- * @author  Gerrit van Brakel
- * @since   4.9
- */
-public class EditMonitor extends ShowMonitors {
+	public MonitorEvent(EventThrowing source, String eventCode) {
+		super(source);
+		this.eventCode = eventCode;
+	}
 
 	@Override
-	protected String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
-		throw new NotImplementedException();
+	public EventThrowing getSource() {
+		return (EventThrowing) super.getSource();
+	}
+
+	public String getEventCode() {
+		return eventCode;
 	}
 }

@@ -275,6 +275,7 @@ angular.module('iaf.beheerconsole')
 
 					$scope.updateAdapterSummary();
 					Hooks.call("adapterUpdated", adapter);
+//					$scope.$broadcast('adapterUpdated', adapter);
 				}
 			}
 		};
@@ -625,7 +626,7 @@ angular.module('iaf.beheerconsole')
 		for(adapterName in adapters) {
 			var adapter = adapters[adapterName];
 
-			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && $scope.filter[adapter.status])
+			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && ($scope.filter == undefined || $scope.filter[adapter.status]))
 				r[adapterName] = adapter;
 		}
 		return r;
@@ -2305,15 +2306,204 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('ShowMonitorsCtrl', ['$scope', 'Api', function($scope, Api) {
+.controller('ShowMonitorsCtrl', ['$scope', 'Api', '$state', 'Misc', function($scope, Api, $state, Misc) {
+
+	$scope.selectedConfiguration = null;
 	$scope.monitors = [];
-	$scope.enabled = false;
 	$scope.destinations = [];
-	Api.Get("monitors", function(data) {
-		$scope.enabled = data.enabled;
-		$scope.monitors = data.monitors;
-		$scope.destinations = data.destinations;
+	$scope.eventTypes = [];
+
+	$scope.changeConfiguration = function(name) {
+		$scope.selectedConfiguration = name;
+
+		if($state.params.configuration == "" || $state.params.configuration != name) { //Update the URL
+			$state.transitionTo('pages.monitors', {configuration: name}, { notify: false, reload: false});
+		}
+
+		update();
+	};
+
+	$scope.totalRaised = 0;
+	function update() {
+		Api.Get("configurations/"+$scope.selectedConfiguration+"/monitors", function(data) {
+			$.extend($scope, data);
+
+			$scope.totalRaised = 0;
+			for(i in $scope.monitors) {
+				if($scope.monitors[i].raised) $scope.totalRaised++;
+				var monitor = $scope.monitors[i];
+				monitor.activeDestinations = [];
+				for(j in $scope.destinations) {
+					var destination = $scope.destinations[j];
+					monitor.activeDestinations[destination] = (monitor.destinations.indexOf(destination)>-1);
+				}
+			}
+		});
+	}
+
+	//Wait for the 'configurations' field to be populated to change the monitoring page
+	$scope.$watch('configurations', function(configs) {
+		if(configs) {
+			var configName = $state.params.configuration; //See if the configuration query param is populated
+			if(!configName) configName = configs[0].name; //Fall back to the first configuration
+			$scope.changeConfiguration(configName); //Update the view
+		}
 	});
+
+	function getUrl(monitor, trigger) {
+		var url = "/configurations/"+$scope.selectedConfiguration+"/monitors/"+monitor.name;
+		if(trigger != undefined && trigger != "") url += "/triggers/"+trigger.id;
+		return url;
+	}
+
+	$scope.raise = function(monitor) {
+		Api.Put(getUrl(monitor), {action: "raise"}, function() {
+			update();
+		});
+	}
+	$scope.clear = function(monitor) {
+		Api.Put(getUrl(monitor), {action: "clear"}, function() {
+			update();
+		});
+	}
+	$scope.edit = function(monitor) {
+		var destinations = [];
+		for(dest in monitor.activeDestinations) {
+			if(monitor.activeDestinations[dest]) {
+				destinations.push(dest);
+			}
+		}
+		Api.Put(getUrl(monitor), {action: "edit", name: monitor.displayName, type: monitor.type, destinations: destinations}, function() {
+			update();
+		});
+	}
+	$scope.deleteMonitor = function(monitor) {
+		Api.Delete(getUrl(monitor), function() {
+			update();
+		});
+	}
+
+	$scope.deleteTrigger = function(monitor, trigger) {
+		Api.Delete(getUrl(monitor, trigger), function() {
+			update();
+		});
+	}
+
+	$scope.downloadXML = function(monitorName) {
+		var url = Misc.getServerPath() + "iaf/api/configurations/"+$scope.selectedConfiguration+"/monitors";
+		if(monitorName) {
+			url += "/"+monitorName;
+		}
+		window.open(url+"?xml=true", "_blank");
+	}
+}])
+
+.controller('EditMonitorsCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
+	$scope.loading = true;
+
+	$scope.$on('loading', function() {
+		$scope.loading = false;
+	});
+
+	$scope.selectedConfiguration = null;
+	$scope.monitor = "";
+	$scope.events = "";
+	$scope.severities = [];
+	$scope.triggerId = "";
+	$scope.trigger = {
+		type: "Alarm",
+		filter: "none",
+		events: [],
+	}
+	var url;
+	if($state.params.configuration == "" || $state.params.monitor == "") {
+		$state.go('pages.monitors');
+	} else {
+		$scope.selectedConfiguration = $state.params.configuration;
+		$scope.monitor = $state.params.monitor;
+		$scope.triggerId = $state.params.trigger || "";
+		url = "configurations/"+$scope.selectedConfiguration+"/monitors/"+$scope.monitor+"/triggers/"+$scope.triggerId;
+		Api.Get(url, function(data) {
+			$.extend($scope, data);
+			calculateEventSources();
+			if(data.trigger && data.trigger.sources) {
+			var sources = data.trigger.sources;
+				$scope.trigger.sources = [];
+				$scope.trigger.adapters = [];
+				for(adapter in sources) {
+					if(data.trigger.filter == "source") {
+						for(i in sources[adapter]) {
+							$scope.trigger.sources.push(adapter+"$$"+sources[adapter][i]);
+						}
+					} else {
+						$scope.trigger.adapters.push(adapter);
+					}
+				}
+			}
+		}, function() {
+			$state.go('pages.monitors', $state.params);
+		});
+	}
+
+	$scope.getAdaptersForEvents = function(events) {
+		if(!events) return [];
+
+		var adapters = [];
+		for(eventName in $scope.events) {
+			if(events.indexOf(eventName) > -1) {
+				var arr = $scope.events[eventName].adapters;
+				adapters = adapters.concat(arr);
+			}
+		}
+		return Array.from(new Set(adapters));
+	}
+	$scope.eventSources = [];
+	function calculateEventSources() {
+		for(eventCode in $scope.events) {
+			var retVal = [];
+			var eventSources = $scope.events[eventCode].sources;
+			for(adapter in eventSources) {
+				for(i in eventSources[adapter]) {
+					retVal.push({adapter:adapter, source: eventSources[adapter][i]});
+				}
+			}
+			$scope.eventSources[eventCode] = retVal;
+		}
+	}
+	$scope.getSourceForEvents = function(events) {
+		var retval = [];
+		for(i in events) {
+			var eventCode = events[i];
+			retval = retval.concat($scope.eventSources[eventCode]);
+		}
+		return retval;
+	}
+
+	$scope.submit = function(trigger) {
+		if(trigger.filter == "adapter") {
+			delete trigger.sources;
+		} else if(trigger.filter == "source") {
+			delete trigger.adapters;
+			var sources = trigger.sources;
+			trigger.sources = {};
+			for(i in sources) {
+				var s = sources[i].split("$$");
+				var adapter = s[0];
+				var source = s[1];
+				if(!trigger.sources[adapter]) trigger.sources[adapter] = [];
+				trigger.sources[adapter].push(source);
+			}
+		}
+		if($scope.triggerId && $scope.triggerId > -1) {
+			Api.Put(url, trigger, function(returnData) {
+				$state.go('pages.monitors', $state.params);
+			});
+		} else {
+			Api.Post(url, JSON.stringify(trigger), function(returnData) {
+				$state.go('pages.monitors', $state.params);
+			});
+		}
+	}
 }])
 
 .controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', function($scope, Api, Alert) {
