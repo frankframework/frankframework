@@ -43,6 +43,7 @@ import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
+import nl.nn.credentialprovider.util.Misc;
 
 
 /**
@@ -215,6 +216,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					TransactionStatus txStatus = null;
 					boolean successfullyProcessed = false;
 					boolean tooManyRetries = false;
+					String messageId = null;
 					try { //  doesn't catch anything, rolls back transaction in finally clause when required
 						try {
 							try {
@@ -287,27 +289,25 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 						try {
 							if (receiver.getMaxRetries()>=0) {
-								String messageId = listener.getIdFromRawMessage(rawMessage, threadContext);
+								messageId = listener.getIdFromRawMessage(rawMessage, threadContext);
 								String correlationId = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
 								final M rawMessageFinal = rawMessage;
 								final Map<String,Object> threadContextFinal = threadContext;
 								if (receiver.hasProblematicHistory(messageId, false, rawMessage, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), threadContext, correlationId) ) {
-									tooManyRetries = true; // message is already put in state Error by hasProblematicHistory()
+									tooManyRetries = true;
 								}
 							}
-							if (!tooManyRetries || receiver.isSupportProgrammaticRetry()) {
-								receiver.processRawMessage(listener, rawMessage, threadContext, true);
-								successfullyProcessed = true;
-								if (txStatus != null) {
-									if (txStatus.isRollbackOnly()) {
-										successfullyProcessed = false;
-										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-										rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
-									} else {
-										txManager.commit(txStatus);
-									}
-									txStatus = null;
+							receiver.processRawMessage(listener, rawMessage, threadContext, true);
+							successfullyProcessed = true;
+							if (txStatus != null) {
+								if (txStatus.isRollbackOnly()) {
+									successfullyProcessed = false;
+									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
+									rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
+								} else {
+									txManager.commit(txStatus);
 								}
+								txStatus = null;
 							}
 						} catch (Exception e) {
 							receiver.error("caught Exception processing message", e);
@@ -336,7 +336,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					if (!successfullyProcessed && (inProcessStateManager!=null || tooManyRetries && listener instanceof IHasProcessState<?>)) {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED ? txManager.getTransaction(txNew) : null;
 						ProcessState targetState = tooManyRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
-						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, tooManyRetries? "too many retries" : "processing not successful"); //TODO: set proper error message
+						String errorMessage = Misc.concatStrings(tooManyRetries? "too many retries":null, "; ", receiver.getCachedErrorMessage(messageId));
+						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
 						if (txStatus!=null) {
 							txManager.commit(txStatus);
 							txStatus = null;

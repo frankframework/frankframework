@@ -1435,6 +1435,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return processResultCache.get(messageId);
 	}
 
+	public String getCachedErrorMessage(String messageId) {
+		ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+		return prci!=null ? prci.comments : null;
+	}
+	
 	/*
 	 * returns true if message should not be processed
 	 */
@@ -1477,7 +1482,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				resetRetryInterval();
 				return false;
 			}
-			if (isSupportProgrammaticRetry() && prci.receiveCount>getMaxRetries()) {
+			if (isSupportProgrammaticRetry()) {
 				warn("message with messageId ["+messageId+"] has been received ["+prci.receiveCount+"] times, but programmatic retries supported; maxRetries=["+getMaxRetries()+"]");
 				return true; // message will be retried because supportProgrammaticRetry=true, but when it fails, it will be moved to error state.
 			}
@@ -2085,6 +2090,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		this.processResultCacheSize = processResultCacheSize;
 	}
 
+	@IbisDoc({"15", "If set <code>true</code>, message will be reprocessed when moved to available by external scripting. If not set, processing halts for an increasing time each time a message is seen more often than maxRetries", "false"})
 	public void setSupportProgrammaticRetry(boolean supportProgrammaticRetry) {
 		this.supportProgrammaticRetry = supportProgrammaticRetry;
 	}
