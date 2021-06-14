@@ -213,6 +213,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					}
 					M rawMessage = null;
 					TransactionStatus txStatus = null;
+					boolean successfullyProcessed = false;
+					boolean tooManyRetries = false;
 					try { //  doesn't catch anything, rolls back transaction in finally clause when required
 						try {
 							try {
@@ -265,6 +267,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									txManager.commit(txStatus);
 									if (receiver.isTransacted()) {
 										txStatus = txManager.getTransaction(txNew);
+									} else {
+										txStatus = null;
 									}
 								}
 							}
@@ -281,8 +285,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 						}
 
-						boolean successfullyProcessed = false;
-						boolean tooManyRetries = false;
 						try {
 							if (receiver.getMaxRetries()>=0) {
 								String messageId = listener.getIdFromRawMessage(rawMessage, threadContext);
@@ -295,21 +297,25 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 							if (!tooManyRetries || receiver.isSupportProgrammaticRetry()) {
 								receiver.processRawMessage(listener, rawMessage, threadContext, true);
+								successfullyProcessed = true;
 								if (txStatus != null) {
 									if (txStatus.isRollbackOnly()) {
+										successfullyProcessed = false;
 										receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
 										rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
 									} else {
 										txManager.commit(txStatus);
 									}
+									txStatus = null;
 								}
-								successfullyProcessed = true;
 							}
 						} catch (Exception e) {
 							receiver.error("caught Exception processing message", e);
 							try {
 								if (txStatus != null && !txStatus.isCompleted()) {
+									successfullyProcessed = false;
 									rollBack(txStatus, rawMessage, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
+									txStatus = null;
 								}
 							} catch (Exception e2) {
 								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
@@ -319,25 +325,25 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							} else {
 								receiver.exceptionThrown("exception occured while processing message", null); //actually use ON_ERROR and don't just stop the receiver
 							}
-						} finally {
-							if (!successfullyProcessed ) {
-								if (inProcessStateManager!=null) {
-									txStatus = receiver.isTransacted() ? txManager.getTransaction(txNew) : null;
-									ProcessState targetState = tooManyRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
-									inProcessStateManager.changeProcessState(rawMessage, targetState, tooManyRetries? "too many retries" : "processing not successful"); //TODO: set proper error message
-									if (txStatus!=null) {
-										txManager.commit(txStatus);
-									}
-								}
-							}
 						}
 					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
+							successfullyProcessed = false;
 							rollBack(txStatus, rawMessage, "Rollback because transaction has terminated unexpectedly");
+							txStatus = null;
+						}
+					}
+					if (!successfullyProcessed && (inProcessStateManager!=null || tooManyRetries && listener instanceof IHasProcessState<?>)) {
+						txStatus = receiver.isTransacted() || receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED ? txManager.getTransaction(txNew) : null;
+						ProcessState targetState = tooManyRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
+						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, tooManyRetries? "too many retries" : "processing not successful"); //TODO: set proper error message
+						if (txStatus!=null) {
+							txManager.commit(txStatus);
+							txStatus = null;
 						}
 					}
 				}
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				receiver.error("error occured", e);
 			} finally {
 				processToken.release();
