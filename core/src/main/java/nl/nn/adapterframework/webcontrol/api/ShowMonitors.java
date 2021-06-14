@@ -263,21 +263,28 @@ public final class ShowMonitors extends Base {
 				} else if(key.equalsIgnoreCase("type")) {
 					monitor.setType(entry.getValue().toString());
 				} else if(key.equalsIgnoreCase("destinations")) {
-					ArrayList<String> destinations = new ArrayList<String>();
-					try {
-						destinations.addAll((ArrayList<String>) entry.getValue());
-					} catch (Exception e) {
-						throw new ApiException("failed to parse destinations", e);
-					}
-
-					if(!destinations.isEmpty()) {
-						monitor.setDestinationSet(new HashSet<>(destinations));
-					}
+					monitor.setDestinationSet(parseDestinations(entry.getValue()));
 				}
 			}
 		}
 
 		return Response.status(Status.ACCEPTED).build();
+	}
+
+	@SuppressWarnings("unchecked")
+	private Set<String> parseDestinations(Object entry) {
+		List<String> destinations = new ArrayList<>();
+		try {
+			destinations.addAll((ArrayList<String>) entry);
+		} catch (Exception e) {
+			throw new ApiException("failed to parse destinations", e);
+		}
+
+		if(destinations.isEmpty()) {
+			return null;
+		}
+	
+		return new HashSet<>(destinations);
 	}
 
 	@DELETE
@@ -498,7 +505,7 @@ public final class ShowMonitors extends Base {
 
 		String name = null;
 		EventTypeEnum type = null;
-		ArrayList<String> destinations = new ArrayList<String>();
+		Set<String> destinations = null;
 
 		for(Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -509,11 +516,7 @@ public final class ShowMonitors extends Base {
 				type = Misc.parse(EventTypeEnum.class, entry.getValue().toString());
 			}
 			else if(key.equalsIgnoreCase("destinations")) {
-				try {
-					destinations.addAll((ArrayList<String>) entry.getValue());
-				} catch (Exception e) {
-					throw new ApiException("failed to parse destinations", e);
-				}
+				destinations = parseDestinations(entry);
 			}
 		}
 		if(name == null)
@@ -526,10 +529,7 @@ public final class ShowMonitors extends Base {
 		Monitor monitor = new Monitor();
 		monitor.setName(name);
 		monitor.setTypeEnum(type);
-
-		if(!destinations.isEmpty()) {
-			monitor.setDestinationSet(new HashSet<>(destinations));
-		}
+		monitor.setDestinationSet(destinations);
 
 		mm.addMonitor(monitor);
 

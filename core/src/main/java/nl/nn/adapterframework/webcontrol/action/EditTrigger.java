@@ -17,6 +17,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.struts.action.DynaActionForm;
 
 
@@ -38,6 +39,6 @@ public class EditTrigger extends EditMonitor {
 
 	@Override
 	public String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
-		return null;
+		throw new NotImplementedException();
 	}
 }

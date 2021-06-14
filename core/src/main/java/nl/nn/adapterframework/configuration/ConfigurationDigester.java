@@ -138,11 +138,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRules());
 		loadDigesterRules(digester, digesterRulesResource);
 
-		if (AppConstants.getInstance(configuration.getClassLoader()).getBoolean("monitoring.enabled", false)) {
-			Resource digesterMonitoringRules = Resource.getResource(configuration, "digester-monitoring-rules.xml");
-			loadDigesterRules(digester, digesterMonitoringRules);
-		}
-
 		boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
 		if (validation) {
 			digester.setValidating(true);

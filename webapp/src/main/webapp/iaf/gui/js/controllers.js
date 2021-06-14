@@ -2331,6 +2331,12 @@ angular.module('iaf.beheerconsole')
 			$scope.totalRaised = 0;
 			for(i in $scope.monitors) {
 				if($scope.monitors[i].raised) $scope.totalRaised++;
+				var monitor = $scope.monitors[i];
+				monitor.activeDestinations = [];
+				for(j in $scope.destinations) {
+					var destination = $scope.destinations[j];
+					monitor.activeDestinations[destination] = (monitor.destinations.indexOf(destination)>-1);
+				}
 			}
 		});
 	}
@@ -2361,7 +2367,13 @@ angular.module('iaf.beheerconsole')
 		});
 	}
 	$scope.edit = function(monitor) {
-		Api.Put(getUrl(monitor), {action: "edit", name: monitor.displayName, type: monitor.type}, function() {
+		var destinations = [];
+		for(dest in monitor.activeDestinations) {
+			if(monitor.activeDestinations[dest]) {
+				destinations.push(dest);
+			}
+		}
+		Api.Put(getUrl(monitor), {action: "edit", name: monitor.displayName, type: monitor.type, destinations: destinations}, function() {
 			update();
 		});
 	}

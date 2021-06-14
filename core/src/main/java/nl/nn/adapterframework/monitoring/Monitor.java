@@ -67,8 +67,13 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	private @Setter ApplicationContext applicationContext;
 
 	public void configure() {
-		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
+		for(String destination : destinations) {
+			if(getManager().getDestination(destination) == null) {
+				throw new IllegalArgumentException("destination ["+destination+"] does not exist");
+			}
+		}
 
+		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
 		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
 			Trigger trigger = it.next();
 			if(!trigger.isConfigured()) {
@@ -119,7 +124,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 			IMonitorAdapter monitorAdapter = getManager().getDestination(destination);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
 
-			if (monitorAdapter!=null) {
+			if (monitorAdapter != null) {
 				monitorAdapter.fireEvent(eventSource, eventType, severity, getName(), null); 
 			}
 		}
@@ -173,11 +178,13 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 		return result;
 	}
+
+	//Digester setter
 	public void setDestinations(String newDestinations) {
 		destinations.clear();
 		StringTokenizer st=new StringTokenizer(newDestinations,",");
 		while (st.hasMoreTokens()) {
-			addDestination(st.nextToken());
+			destinations.add(st.nextToken());
 		}
 	}
 
@@ -190,18 +197,18 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 			destinations.clear();
 		} else {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting destinations to ["+newDestinations+"]");
+			for(String destination : newDestinations) {
+				if(getManager().getDestination(destination) == null) {
+					throw new IllegalArgumentException("destination ["+destination+"] does not exist");
+				}
+			}
+
+			//Only proceed if all destinations exist
 			destinations.clear();
 			for(String destination : newDestinations) {
-				addDestination(destination);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"adding destination ["+destination+"]");
+				destinations.add(destination);
 			}
-		}
-	}
-	private void addDestination(String destination) {
-		if(getManager().getDestination(destination) != null) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"adding destination ["+destination+"]");
-			destinations.add(destination);
-		} else {
-			throw new IllegalArgumentException("destination ["+destination+"] does not exist");
 		}
 	}
 

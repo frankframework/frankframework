@@ -69,14 +69,23 @@
 									</select>
 								</div>
 							</div>
+							<div class="form-group">
+								<label class="col-sm-3 control-label">Destinations</label>
+								<div class="col-sm-2" ng-repeat="destination in destinations">
+									<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="monitor.activeDestinations[destination]"/> {{destination}}</span>
+								</div>
+							</div>
 						</form>
 					</div>
-<!-- 					<div ng-if="monitor.destinations.length > 0"> -->
-<!-- 						<strong>Destinations:</strong> -->
-<!-- 						<span ng-repeat="destination in monitor.destinations"> -->
-<!-- 							{{destination}}<span ng-if="!$last">,</span> -->
-<!-- 						</span> -->
-<!-- 					</div> -->
+					<div ng-if="!monitor.edit">
+						<p>
+							<strong>Log Destinations:</strong>
+							<span ng-repeat="destination in monitor.destinations">
+								{{destination}}<span ng-if="!$last">,</span>
+							</span>
+							<span ng-if="monitor.destinations.length == 0">None</span>
+						</p>
+					</div>
 					<div class="row">
 						<div class="col-md-12 table-responsive">
 							<table class="table no-margins">
