@@ -2,21 +2,74 @@
 	<adapter name="ReceiverTest">
 		<receiver
 				maxRetries="1"
-				transactionAttribute="Required"
 				pollInterval="1"
 				transactionTimeout="30">
-			<listener name="JdbcTableListener for receivertest"
+			<listener name="NonTransacted, No InProcess"
 						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
 						tableName="IBISTEMP"
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
 						commentField="TVARCHAR"
 						maxCommentLength="100"
-						selectCondition="TNUMBER=${jdbc.receivertest.key}"
-						statusValueAvailable="1"
-						statusValueInProcess="2"
-						statusValueProcessed="3"
-						statusValueError="4"
+						selectCondition="TNUMBER=${jdbc.receivertest.key}0"
+						statusValueAvailable="A"
+						statusValueProcessed="D"
+						statusValueError="E"
+						keyField="tkey"/>
+		</receiver>
+		<receiver
+				maxRetries="1"
+				pollInterval="1"
+				transactionTimeout="30">
+			<listener name="NonTransacted, InProcess"
+						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						tableName="IBISTEMP"
+						statusField="TCHAR"
+						timestampField="TTIMESTAMP"
+						commentField="TVARCHAR"
+						maxCommentLength="100"
+						selectCondition="TNUMBER=${jdbc.receivertest.key}1"
+						statusValueAvailable="A"
+						statusValueInProcess="I"
+						statusValueProcessed="D"
+						statusValueError="E"
+						keyField="tkey"/>
+		</receiver>
+		<receiver
+				maxRetries="1"
+				transactionAttribute="Required"
+				pollInterval="1"
+				transactionTimeout="30">
+			<listener name="Transacted, No InProcess"
+						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						tableName="IBISTEMP"
+						statusField="TCHAR"
+						timestampField="TTIMESTAMP"
+						commentField="TVARCHAR"
+						maxCommentLength="100"
+						selectCondition="TNUMBER=${jdbc.receivertest.key}2"
+						statusValueAvailable="A"
+						statusValueProcessed="D"
+						statusValueError="E"
+						keyField="tkey"/>
+		</receiver>
+		<receiver
+				maxRetries="1"
+				transactionAttribute="Required"
+				pollInterval="1"
+				transactionTimeout="30">
+			<listener name="Transacted, InProcess"
+						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						tableName="IBISTEMP"
+						statusField="TCHAR"
+						timestampField="TTIMESTAMP"
+						commentField="TVARCHAR"
+						maxCommentLength="100"
+						selectCondition="TNUMBER=${jdbc.receivertest.key}3"
+						statusValueAvailable="A"
+						statusValueInProcess="I"
+						statusValueProcessed="D"
+						statusValueError="E"
 						keyField="tkey"/>
 		</receiver>
 

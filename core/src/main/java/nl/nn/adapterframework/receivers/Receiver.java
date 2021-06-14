@@ -1363,10 +1363,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						threadContext.putAll(pipelineSession);
 					}
 					try {
-						if (getListener() instanceof IHasProcessState) {
-							ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
-							changeProcessState(rawMessageOrWrapper, targetState, errorMessage);
-						}
+//						if (getListener() instanceof IHasProcessState) {
+//							ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
+//							changeProcessState(rawMessageOrWrapper, targetState, errorMessage);
+//						}
 						getListener().afterMessageProcessed(pipeLineResult, rawMessageOrWrapper, afterMessageProcessedMap);
 					} catch (Exception e) {
 						if (manualRetry) {
@@ -1477,7 +1477,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				resetRetryInterval();
 				return false;
 			}
-			warn("message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
+			warn("message with messageId ["+messageId+"] has been received ["+prci.receiveCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
 			String comments="too many retries";
 			if (prci.receiveCount>getMaxRetries()+1) {
 				increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+prci.receiveCount+"]; maxRetries=["+getMaxRetries()+"]");
