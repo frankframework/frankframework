@@ -38,6 +38,7 @@
 		<receiver
 				maxRetries="1"
 				transactionAttribute="Required"
+				supportProgrammaticRetry="true"
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="Transacted, No InProcess"
@@ -56,6 +57,7 @@
 		<receiver
 				maxRetries="1"
 				transactionAttribute="Required"
+				supportProgrammaticRetry="true"
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="Transacted, InProcess"
