@@ -8,8 +8,8 @@
 	Elements: <span ng-repeat="tag in element.elementNames">{{( $first ? tag : ", " + tag )}}</span>
 	<br />
 	<p>
-	{{ element.descriptionHeader }}
 	<p>
+	{{ element.descriptionHeader }}
 	<div ng-if="element.children" element-children></div>
 	<div ng-if="element.attributes" element-attributes></div>
 	
