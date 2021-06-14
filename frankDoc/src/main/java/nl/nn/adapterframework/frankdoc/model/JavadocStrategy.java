@@ -48,8 +48,12 @@ enum JavadocStrategy {
 		void completeFrankElement(FrankElement frankElement, FrankClass clazz) {
 			frankElement.setDescription(clazz.getJavaDoc());
 			if(frankElement.getDescription() != null) {
-				String[] parts = frankElement.getDescription().split("\n\\s*\n");
-				frankElement.setDescriptionHeader(parts[0]);
+				String descriptionHeader = frankElement.getDescription();
+				int idx = frankElement.getDescription().indexOf('.');
+				if(idx >= 0) {
+					descriptionHeader = frankElement.getDescription().substring(0, idx + 1);
+				}
+				frankElement.setDescriptionHeader(descriptionHeader);
 			}
 		}
 	}
