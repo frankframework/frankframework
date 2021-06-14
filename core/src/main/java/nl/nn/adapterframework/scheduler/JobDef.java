@@ -865,7 +865,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	private void loadDatabaseSchedules(IbisManager ibisManager) {
 		Map<JobKey, IbisJobDetail> databaseJobDetails = new HashMap<JobKey, IbisJobDetail>();
 		Scheduler scheduler = null;
-		SchedulerHelper sh = applicationContext.getBean(SchedulerHelper.class);;
+		SchedulerHelper sh = applicationContext.getBean(SchedulerHelper.class);
 		try {
 			scheduler = sh.getScheduler();
 
