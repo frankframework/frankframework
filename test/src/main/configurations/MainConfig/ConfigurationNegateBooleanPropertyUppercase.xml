@@ -1,0 +1,16 @@
+<Module>
+	<Adapter name="NegateBooleanPropertyUppercase" active="!False">
+		<Receiver>
+			<JavaListener name="negateBooleanPropertyListenerUppercase" serviceName="negateBooleanPropertyListenerUppercase"></JavaListener>
+		</Receiver>
+		<Pipeline firstPipe="NegateBooleanPropertyParse">
+			<Exit path="EXIT" state="success" />
+			<pipe className="nl.nn.adapterframework.pipes.CsvParserPipe"
+				name="NegateBooleanPropertyParse"
+				fileContainsHeader="!${negated.property.uppercase}"
+				fieldNames="f1,f2">
+				<Forward name="success" path="EXIT" />
+			</pipe>
+		</Pipeline>
+	</Adapter>
+</Module>

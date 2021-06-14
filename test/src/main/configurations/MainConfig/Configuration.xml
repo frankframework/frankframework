@@ -62,6 +62,7 @@
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
 	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
 	<!ENTITY NegateBooleanProperty SYSTEM "./ConfigurationNegateBooleanProperty.xml">
+	<!ENTITY NegateBooleanPropertyUppercase SYSTEM "./ConfigurationNegateBooleanPropertyUppercase.xml">
 	<!ENTITY DontNegateStringProperty SYSTEM "./ConfigurationDontNegateStringProperty.xml">
 ]>
 <configuration name="MainConfig">
@@ -128,5 +129,6 @@
 	&ApiWsdlGenerator;
 	&Unzip;
 	&NegateBooleanProperty;
+	&NegateBooleanPropertyUppercase;
 	&DontNegateStringProperty;
 </configuration>

@@ -90,8 +90,9 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			}
 
 			if(writeMethodIsBoolean(pd)) {
-				if(BOOLEAN_NEGATIONS.containsKey(value)) {
-					value = BOOLEAN_NEGATIONS.get(value);
+				String valueLc = value.toLowerCase();
+				if(BOOLEAN_NEGATIONS.containsKey(valueLc)) {
+					value = BOOLEAN_NEGATIONS.get(valueLc);
 				}
 			}
 
