@@ -319,11 +319,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								}
 							} catch (Exception e2) {
 								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
-							}
-							if (receiver.isOnErrorContinue()) {
-								receiver.error("caught Exception processing message, will continue processing next message", null);
-							} else {
-								receiver.exceptionThrown("exception occured while processing message", null); //actually use ON_ERROR and don't just stop the receiver
+							} finally {
+								if (receiver.isOnErrorContinue()) {
+									receiver.error("caught Exception processing message, will continue processing next message", null);
+								} else {
+									receiver.exceptionThrown("exception occured while processing message", null); //actually use ON_ERROR and don't just stop the receiver
+								}
 							}
 						}
 					} finally {
