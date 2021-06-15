@@ -17,6 +17,7 @@
 package nl.nn.adapterframework.http.rest;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -127,7 +128,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			return new PipeRunResult(getSuccessForward(), "");
 		}
 
-		return new PipeRunResult(findForward("exception"), "this is not supposed to happen... like ever!");
+		return new PipeRunResult(findForward(PipeForward.EXCEPTION_FORWARD_NAME), "this is not supposed to happen... like ever!");
 	}
 
 	public void setAction(String string) {

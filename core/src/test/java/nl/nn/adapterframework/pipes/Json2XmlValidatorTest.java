@@ -403,7 +403,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		}
 
 		pipe.registerForward(new PipeForward("failure",null));
-		pipe.registerForward(new PipeForward("exception",null));
+		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME,null));
 		
 		pipe.configure();
 		pipe.start();
