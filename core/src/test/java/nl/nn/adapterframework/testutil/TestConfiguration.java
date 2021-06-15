@@ -9,7 +9,6 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import nl.nn.adapterframework.configuration.Configuration;
