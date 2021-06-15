@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.Reader;
-import java.util.Arrays;
 import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVFormat;
@@ -65,14 +64,6 @@ public class CsvParserPipe extends StreamingPipe {
 				throw new ConfigurationException("No fieldNames specified, and fileContainsHeader=false");
 			}
 		}
-		if(headerCase != null) {
-			String[] header = format.getHeader();
-			// Change character case for the header
-			header = Arrays.stream(header)
-				.map(getHeaderCaseEnum()==HeaderCase.LOWERCASE ? (s) -> s.toLowerCase() : (s) -> s.toUpperCase())
-				.toArray(String[]::new);
-			format = format.withHeader(header);
-		}
 
 		if (StringUtils.isNotEmpty(getFieldSeparator())) {
 			String separator = getFieldSeparator();
@@ -92,7 +83,11 @@ public class CsvParserPipe extends StreamingPipe {
 					for (CSVRecord record : csvParser) {
 						try (SaxElementBuilder element = document.startElement("record")) {
 							for(Entry<String,String> entry:record.toMap().entrySet()) {
-								element.addElement(entry.getKey(), entry.getValue());
+								String key = entry.getKey();
+								if(getHeaderCaseEnum() != null) {
+									key = getHeaderCaseEnum()==HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
+								}
+								element.addElement(key, entry.getValue());
 							}
 						} catch (SAXException e) {
 							throw new PipeRunException(this, "Exception caught at line ["+record.getRecordNumber()+"] pos ["+record.getCharacterPosition()+"]", e);
