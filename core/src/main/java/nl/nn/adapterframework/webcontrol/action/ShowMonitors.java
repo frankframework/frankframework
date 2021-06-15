@@ -27,6 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
@@ -59,8 +60,13 @@ public class ShowMonitors extends ActionBase {
 		return "success";
 	}
 
+	protected MonitorManager getMonitorManager() {
+		Configuration tx = ibisManager.getConfiguration("TX");
+		return tx.getBean("monitorManager", MonitorManager.class);
+	}
+
 	public void initForm(DynaActionForm monitorForm) {
-		MonitorManager mm = MonitorManager.getInstance();
+		MonitorManager mm = getMonitorManager();
 
 		monitorForm.set("monitorManager",mm);
 		List destinations=new ArrayList();
@@ -108,7 +114,7 @@ public class ShowMonitors extends ActionBase {
 				triggerIndex=Integer.parseInt(triggerIndexStr);
 			}
 		
-			MonitorManager mm = MonitorManager.getInstance();
+			MonitorManager mm = getMonitorManager();
 			if ("getStatus".equals(action)) {
 				response.setContentType("text/xml");
 				PrintWriter out = response.getWriter();
@@ -116,17 +122,7 @@ public class ShowMonitors extends ActionBase {
 				out.close();
 				return null;
 			} 
-			Lock lock = mm.getStructureLock();
-			try {
-				lock.acquireExclusive();
-				forward=performAction(monitorForm, action, index, triggerIndex, response);
-				log.debug("forward ["+forward+"] returned from performAction");
-				mm.reconfigure();
-			} catch (Exception e) {
-				error("could not perform action ["+action+"] on monitorIndex ["+index+"] triggerIndex ["+triggerIndex+"]", e);
-			} finally {
-				lock.releaseExclusive();
-			}
+			
 			if (response.isCommitted()) {
 				return null;
 			}

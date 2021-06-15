@@ -17,10 +17,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.monitoring.Monitor;
-import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.monitoring.Trigger;
-
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.struts.action.DynaActionForm;
 
 
@@ -33,39 +30,9 @@ import org.apache.struts.action.DynaActionForm;
  */
 public class EditTriggerExecute extends EditMonitorExecute {
 
+	@Override
 	public String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
-		
-		MonitorManager mm = MonitorManager.getInstance();
-		
-		if (index>=0 && triggerIndex>=0) {
-			Monitor monitor = mm.getMonitor(index);
-			Trigger trigger = monitor.getTrigger(triggerIndex);
-			Trigger formTrigger = (Trigger)monitorForm.get("trigger");
-			log.debug("copying form trigger ("+formTrigger.hashCode()+") values to trigger["+triggerIndex+"] ("+trigger.hashCode()+")");
-			trigger.setType(formTrigger.getType());
-			trigger.setEventCodes(formTrigger.getEventCodes());
-			trigger.setSourceFiltering(formTrigger.getSourceFiltering());
-			if (formTrigger.isFilterOnAdapters()) {
-				log.debug("setting trigger.adapters from selAdapters");
-				trigger.setAdapters((String[])monitorForm.get("selAdapters"));
-			}
-			if (formTrigger.isFilterOnLowerLevelObjects()) {
-				log.debug("setting trigger.sources from selSources");
-				trigger.setSources((String[])monitorForm.get("selSources"));
-			}
-			trigger.setFilterExclusive(formTrigger.isFilterExclusive());
-			trigger.setSeverity(formTrigger.getSeverity());
-			trigger.setThreshold(formTrigger.getThreshold());
-			trigger.setPeriod(formTrigger.getPeriod());
-		}
-		String result;		
-		if (action.equals("OK")) {
-			result= determineExitForward(monitorForm);
-		} else {
-			result= "self";
-		}
-		log.debug("determined forward ["+result+"] from action ["+action+"] monitorForm.return ["+monitorForm.get("return")+"]");
-		return result;
+		throw new NotImplementedException();
 	}
 
 }

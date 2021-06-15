@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,25 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol.action;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.struts.action.DynaActionForm;
-
-
-
+package nl.nn.adapterframework.monitoring;
 /**
- * Edit a Monitor - display the form.
+ * Enumeration of SourceTypes for trigger filters.
  * 
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Niels Meijer
  */
-public class EditMonitor extends ShowMonitors {
-
-	@Override
-	protected String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
-		throw new NotImplementedException();
-	}
+public enum SourceFiltering {
+	NONE, ADAPTER, SOURCE;
 }
