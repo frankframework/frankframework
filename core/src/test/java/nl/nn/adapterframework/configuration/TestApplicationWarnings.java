@@ -13,7 +13,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class TestApplicationWarnings {
 	private Logger log = LogUtil.getLogger(TestApplicationWarnings.class);
 
-	TestConfiguration configuration = null;
+	private TestConfiguration configuration = null;
 
 	@Before
 	public void setUp() {

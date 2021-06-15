@@ -73,7 +73,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 	protected MockDispatcher dispatcher = new MockDispatcher();
 	private M jaxRsResource;
 	private SecurityContext securityContext = mock(SecurityContext.class);
-	Configuration configuration = new TestConfiguration();
+	private Configuration configuration = new TestConfiguration();
 
 	abstract public M createJaxRsResource();
 
