@@ -26,8 +26,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -39,7 +37,6 @@ import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.stream.Message;
@@ -59,8 +56,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	private IbisContext ibisContext;
-	private List<Configuration> configurations = new ArrayList<Configuration>();
-	private @Getter @Setter SchedulerHelper schedulerHelper; //TODO remove this once implementations use an ApplicationContext
+	private List<Configuration> configurations = new ArrayList<>();
 	private PlatformTransactionManager transactionManager;
 	private ApplicationEventPublisher applicationEventPublisher;
 
@@ -132,9 +128,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	 * Utility function to give commands to Adapters and Receivers
 	 */
 	@Override
-	public void handleAdapter(String action, String configurationName,
-			String adapterName, String receiverName, String commandIssuedBy,
-			boolean isAdmin) {
+	public void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
 		if (action.equalsIgnoreCase("STOPADAPTER")) {
 			if (adapterName.equals("*ALL*")) {
 				if (configurationName.equals("*ALL*")) {

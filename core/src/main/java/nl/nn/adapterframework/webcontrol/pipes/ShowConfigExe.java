@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -36,13 +34,6 @@ import nl.nn.adapterframework.stream.Message;
  */
 
 public class ShowConfigExe extends TimeoutGuardPipe {
-	private IbisContext ibisContext;
-
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-	}
 
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message input,PipeLineSession session) throws PipeRunException {
@@ -74,9 +65,9 @@ public class ShowConfigExe extends TimeoutGuardPipe {
 			throw new PipeRunException(this,
 					getLogPrefix(session) + "parameter [action] must be set");
 		} else if ("activate".equals(parm_action)) {
-			activate(ibisContext, parm_name, parm_jmsRealm, session);
+			activate(parm_name, parm_jmsRealm, session);
 		} else if ("deactivate".equals(parm_action)) {
-			deactivate(ibisContext, parm_name, parm_jmsRealm, session);
+			deactivate(parm_name, parm_jmsRealm, session);
 		} else {
 			throw new PipeRunException(this,
 					getLogPrefix(session) + "unknown value [" + parm_action
@@ -85,8 +76,8 @@ public class ShowConfigExe extends TimeoutGuardPipe {
 		return "ok";
 	}
 
-	private boolean deactivate(IbisContext ibisContext, String name, String jmsRealm, PipeLineSession session) throws PipeRunException {
-		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+	private boolean deactivate(String name, String jmsRealm, PipeLineSession session) throws PipeRunException {
+		FixedQuerySender qs = createBean(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 
@@ -110,8 +101,8 @@ public class ShowConfigExe extends TimeoutGuardPipe {
 		}
 	}
 
-	private boolean activate(IbisContext ibisContext, String name, String jmsRealm, PipeLineSession session) throws PipeRunException {
-		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+	private boolean activate(String name, String jmsRealm, PipeLineSession session) throws PipeRunException {
+		FixedQuerySender qs = createBean(FixedQuerySender.class);
 		qs.setJmsRealm(jmsRealm);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 
