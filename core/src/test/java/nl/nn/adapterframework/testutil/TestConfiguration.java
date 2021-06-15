@@ -66,6 +66,7 @@ public class TestConfiguration extends Configuration {
 		assertEquals(TEST_CONFIGURATION_NAME, config.getId());
 		config.close();
 		assertFalse(config.isActive());
+		config.close();
 	}
 
 	public void autowireByType(Object bean) {

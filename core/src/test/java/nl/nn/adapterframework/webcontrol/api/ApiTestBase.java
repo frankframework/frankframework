@@ -42,6 +42,7 @@ import javax.ws.rs.core.SecurityContext;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -72,6 +73,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 	protected MockDispatcher dispatcher = new MockDispatcher();
 	private M jaxRsResource;
 	private SecurityContext securityContext = mock(SecurityContext.class);
+	Configuration configuration = new TestConfiguration();
 
 	abstract public M createJaxRsResource();
 
@@ -86,7 +88,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		MockServletConfig servletConfig = new MockServletConfig(servletContext, "JAX-RS-MockDispatcher");
 		jaxRsResource.servletConfig = servletConfig;
 		IbisContext ibisContext = mock(IbisContext.class);
-		Configuration configuration = new TestConfiguration();
+		configuration = new TestConfiguration();
 		IbisManager ibisManager = configuration.getIbisManager();
 		ibisManager.setIbisContext(ibisContext);
 		MessageKeeper messageKeeper = new MessageKeeper();
@@ -97,6 +99,13 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		registerAdapter(configuration);
 
 		dispatcher.register(jaxRsResource);
+	}
+
+	@After
+	public final void tearDown() {
+		if(configuration != null) {
+			configuration.close();
+		}
 	}
 
 	private void registerAdapter(Configuration configuration) {
