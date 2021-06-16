@@ -27,7 +27,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -35,7 +34,7 @@ import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import lombok.Lombok;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -54,6 +53,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -136,12 +136,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private int numberOfBackups=0;
 	private String wildCard=null;
 	private String excludeWildCard=null;
+	private @Getter boolean writeLineSeparator=false;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
 	private INamedObject owner;
 	private FS fileSystem;
 	private ParameterList parameterList;
+
+	private byte[] eolArray=null;
 
 	
 	public void configure(FS fileSystem, ParameterList parameterList, INamedObject owner) throws ConfigurationException {
@@ -191,6 +194,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'rotateDays'");
 			}
 		}
+		eolArray = System.getProperty("line.separator").getBytes();
 	}
 
 	private void checkConfiguration(String action) throws ConfigurationException {
@@ -501,11 +505,13 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {
-			out.write(((String) contents).getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
+			out.write(((String) contents).getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 		} else {
 			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
 		}
-		
+		if(isWriteLineSeparator()) {
+			out.write(eolArray);
+		}
 	}
 	
 	
@@ -690,5 +696,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 	public String getExcludeWildCard() {
 		return excludeWildCard;
+	}
+
+	@IbisDoc({"13", "If set to true then the system specific line separator will be appended to the file after executing the action. Works with actions "+ACTION_WRITE1+", and for action="+ACTION_APPEND, "false"})
+	public void setWriteLineSeparator(boolean writeLineSeparator) {
+		this.writeLineSeparator = writeLineSeparator;
 	}
 }

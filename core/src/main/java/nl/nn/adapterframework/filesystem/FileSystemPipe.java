@@ -150,10 +150,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 	@Override
 	public String getPhysicalDestinationName() {
-		if (getFileSystem() instanceof HasPhysicalDestination) {
-			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
-		}
-		return null;
+		return getFileSystem().getPhysicalDestinationName();
 	}
 
 	public FS getFileSystem() {
@@ -230,5 +227,10 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@IbisDocRef({"11", FILESYSTEMACTOR})
 	public void setExcludeWildCard(String excludeWildCard) {
 		actor.setExcludeWildCard(excludeWildCard);
+	}
+	
+	@IbisDocRef({"13", FILESYSTEMACTOR})
+	public void setWriteLineSeparator(boolean writeLineSeparator) {
+		actor.setWriteLineSeparator(writeLineSeparator);
 	}
 }
