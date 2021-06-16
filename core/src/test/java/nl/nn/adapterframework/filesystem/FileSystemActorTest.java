@@ -39,6 +39,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	protected INamedObject owner;
 	private IPipeLineSession session;
 
+	private final String lineSeparator = System.getProperty("line.separator");
 
 	protected abstract FS createFileSystem();
 
@@ -602,6 +603,45 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
+	public void fileSystemActorWriteActionWriteLineSeparator() throws Exception {
+		String filename = "writeLineSeparator" + FILE1;
+		String contents = "Some text content to test write action writeLineSeparator enabled";
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("writeLineSeparator", contents);
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("contents");
+		p.setSessionKey("writeLineSeparator");
+
+		params.add(p);
+		actor.setWriteLineSeparator(true);
+		actor.setAction("write");
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message = new Message(filename);
+		ParameterValueList pvl = params.getValues(message, session);
+		Object result = actor.doAction(message, pvl, session);
+		waitForActionToFinish();
+
+		String stringResult=(String)result;
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+		
+		String actualContents = readFile(null, filename);
+		
+		String expected = contents + lineSeparator;
+		
+		assertEquals(expected, actualContents);
+	}
+
+	@Test
 	public void fileSystemActorWriteActionTestWithByteArrayAndContentsViaAlternativeParameter() throws Exception {
 		String filename = "uploadedwithByteArray" + FILE1;
 		String contents = "Some text content to test upload action\n";
@@ -765,6 +805,67 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //			String actualContentsi = readFile(null, filename+"."+i);
 //			assertEquals(contents.trim()+(numOfWrites-1-i), actualContentsi.trim());
 		}
+	}
+
+	@Test
+	public void fileSystemActorAppendActionWriteLineSeparatorEnabled() throws Exception {
+		int numOfWrites = 5;
+		String filename = "AppendActionWriteLineSeparatorEnabled" + FILE1;
+		String contents = "AppendActionWriteLineSeparatorEnabled";
+		StringBuilder expectedMessageBuilder = new StringBuilder(contents);
+		
+		for(int i=0; i<numOfWrites; i++) {
+			expectedMessageBuilder.append(contents).append(i).append(lineSeparator);
+		}
+		
+		fileSystemActorAppendActionWriteLineSeparatorTest(filename, contents, true, expectedMessageBuilder.toString(), numOfWrites);
+	}
+	
+	@Test
+	public void fileSystemActorAppendActionWriteLineSeparatorDisabled() throws Exception {
+		int numOfWrites = 5;
+		String filename = "AppendAction" + FILE1;
+		String contents = "AppendAction";
+		StringBuilder expectedMessageBuilder = new StringBuilder(contents);
+		
+		for(int i=0; i<numOfWrites; i++) {
+			expectedMessageBuilder.append(contents).append(i);
+		}
+		
+		fileSystemActorAppendActionWriteLineSeparatorTest(filename, contents, false, expectedMessageBuilder.toString(), numOfWrites);
+	}
+
+	public void fileSystemActorAppendActionWriteLineSeparatorTest(String filename, String contents, boolean isWriteLineSeparator, String expected, int numOfWrites) throws Exception {
+		if(_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+		createFile(null, filename, contents);
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterList params = new ParameterList();
+
+		Parameter p = new Parameter();
+		p.setName("contents");
+		p.setSessionKey("appendWriteLineSeparatorTest");
+		params.add(p);
+		params.configure();
+		
+		actor.setWriteLineSeparator(isWriteLineSeparator);
+		actor.setAction("append");
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+		
+		Message message = new Message(filename);
+		for(int i=0; i<numOfWrites; i++) {
+			session.put("appendWriteLineSeparatorTest", contents+i);
+			ParameterValueList pvl = params.getValues(message, session);
+			String result = (String)actor.doAction(message, pvl, null);
+
+			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
+		}
+		String actualContents = readFile(null, filename);
+
+		assertEquals(expected, actualContents);
 	}
 
 	@Test

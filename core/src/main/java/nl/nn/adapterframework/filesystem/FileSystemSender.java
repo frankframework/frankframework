@@ -131,15 +131,10 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		}
 	}
 
-
 	@Override
 	public String getPhysicalDestinationName() {
-		if (getFileSystem() instanceof HasPhysicalDestination) {
-			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
-		}
-		return null;
+		return getFileSystem().getPhysicalDestinationName();
 	}
-
 
 	public void setFileSystem(FS fileSystem) {
 		this.fileSystem=fileSystem;
@@ -216,5 +211,10 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	@IbisDocRef({"11", FILESYSTEMACTOR})
 	public void setExcludeWildCard(String excludeWildCard) {
 		actor.setExcludeWildCard(excludeWildCard);
+	}
+
+	@IbisDocRef({"13", FILESYSTEMACTOR})
+	public void setWriteLineSeparator(boolean writeLineSeparator) {
+		actor.setWriteLineSeparator(writeLineSeparator);
 	}
 }
