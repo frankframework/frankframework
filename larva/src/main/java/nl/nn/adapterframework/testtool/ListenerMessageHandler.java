@@ -34,12 +34,8 @@ public class ListenerMessageHandler implements IMessageHandler {
 			throw new ListenerException("cannot convert message to string",e);
 		}
 		putRequestMessage(listenerMessage);
-		Message response = null;
 		listenerMessage = getResponseMessage();
-		if (listenerMessage != null) {
-			response = new Message(listenerMessage.getMessage());
-		}
-		return response;
+		return listenerMessage != null ? new Message(listenerMessage.getMessage()) : Message.nullMessage();
 	}
 	
 	public void putRequestMessage(ListenerMessage listenerMessage) {
