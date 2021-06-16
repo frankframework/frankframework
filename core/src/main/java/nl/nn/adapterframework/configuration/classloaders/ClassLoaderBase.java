@@ -128,10 +128,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	/**
-	 * Only for internal use within classloaders
+	 * Only for internal use within ClassLoaders
+	 * Retrieve the IbisContext from the ClassLoader which is set when the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method is called
 	 */
-	@Override
-	public IbisContext getIbisContext() {
+	protected IbisContext getIbisContext() {
 		return ibisContext;
 	}
 

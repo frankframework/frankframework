@@ -77,7 +77,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 
 	@Override
 	public List<Configuration> getConfigurations() {
-		return configurations;
+		return Collections.unmodifiableList(configurations);
 	}
 
 	@Override
@@ -98,6 +98,9 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		configuration.start();
 	}
 
+	/**
+	 * Stop and remove the Configuration
+	 */
 	@Override
 	public void unload(String configurationName) {
 		if (configurationName == null) {
@@ -325,15 +328,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			}
 		}
 		return registeredAdapters;
-	}
-
-	public List<Adapter> getRegisteredAdapters(String configurationName) {
-		for (Configuration configuration : configurations) {
-			if (configurationName.equals(configuration.getName())) {
-				return configuration.getRegisteredAdapters();
-			}
-		}
-		return null;
 	}
 
 	@Override

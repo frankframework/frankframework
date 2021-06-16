@@ -41,11 +41,6 @@ public interface IConfigurationClassLoader {
 	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException;
 
 	/**
-	 * Retrieve the IbisContext from the ClassLoader which is set when the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method is called
-	 */
-	public IbisContext getIbisContext();
-
-	/**
 	 * Retrieve the name of the configuration that uses this {@link IConfigurationClassLoader}
 	 */
 	public String getConfigurationName();

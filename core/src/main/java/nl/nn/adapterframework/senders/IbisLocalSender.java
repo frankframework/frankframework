@@ -115,7 +115,6 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			throw new ConfigurationException(getLogPrefix()+"unable to determine configuration");
 		}
 		configuration = (Configuration) getApplicationContext();
-		System.out.println(configuration);
 	}
 
 	@Override
