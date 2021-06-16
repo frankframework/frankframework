@@ -297,8 +297,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									tooManyRetries = true;
 								}
 							}
-							receiver.processRawMessage(listener, rawMessage, threadContext, true);
-							successfullyProcessed = true;
+							if (!tooManyRetries || receiver.isSupportProgrammaticRetry()) {
+								receiver.processRawMessage(listener, rawMessage, threadContext, true);
+								successfullyProcessed = true;
+							}
 							if (txStatus != null) {
 								if (txStatus.isRollbackOnly()) {
 									successfullyProcessed = false;
@@ -334,7 +336,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							txStatus = null;
 						}
 					}
-					if (!successfullyProcessed && (inProcessStateManager!=null || tooManyRetries && listener instanceof IHasProcessState<?>)) {
+					if (!successfullyProcessed && inProcessStateManager!=null) {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED ? txManager.getTransaction(txNew) : null;
 						ProcessState targetState = tooManyRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
 						String errorMessage = Misc.concatStrings(tooManyRetries? "too many retries":null, "; ", receiver.getCachedErrorMessage(messageId));

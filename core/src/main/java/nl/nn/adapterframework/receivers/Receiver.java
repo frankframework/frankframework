@@ -663,6 +663,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (getListener() instanceof IHasProcessState) {
 				knownProcessStates.addAll(((IHasProcessState)getListener()).knownProcessStates());
 				targetProcessStates = ((IHasProcessState)getListener()).targetProcessStates();
+				supportProgrammaticRetry = knownProcessStates.contains(ProcessState.INPROCESS);
 			}
 			
 			
@@ -2090,11 +2091,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		this.processResultCacheSize = processResultCacheSize;
 	}
 
-	@IbisDoc({"15", "If set <code>true</code>, message will be reprocessed when moved to available by external scripting. If not set, processing halts for an increasing time each time a message is seen more often than maxRetries", "false"})
-	public void setSupportProgrammaticRetry(boolean supportProgrammaticRetry) {
-		this.supportProgrammaticRetry = supportProgrammaticRetry;
-	}
-	
 	@IbisDoc({"16", "Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for Listeners that support it, like JavaListener)", ""})
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
