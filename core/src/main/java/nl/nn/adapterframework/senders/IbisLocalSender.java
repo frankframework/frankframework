@@ -80,8 +80,8 @@ import nl.nn.adapterframework.util.Misc;
  * @author Gerrit van Brakel
  * @since  4.2
  */
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, ConfigurationAware {
-	
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
+
 	private Configuration configuration;
 	private String serviceName;
 	private String javaListener;
@@ -110,6 +110,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
 			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
 		}
+
+		if(!(getApplicationContext() instanceof Configuration)) {
+			throw new ConfigurationException(getLogPrefix()+"unable to determine configuration");
+		}
+		configuration = (Configuration) getApplicationContext();
 	}
 
 	@Override
@@ -250,16 +255,6 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		return result;
 	}
 
-
-	@Override
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
-	
 	/**
 	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
 	 */

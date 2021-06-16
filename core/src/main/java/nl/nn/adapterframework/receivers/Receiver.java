@@ -81,7 +81,6 @@ import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
-import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -640,9 +639,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				if (sender instanceof HasPhysicalDestination) {
 					info("has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
 				}
-				if (sender instanceof ConfigurationAware) {
-					((ConfigurationAware)sender).setConfiguration(getAdapter().getConfiguration());
-				}
 			}
 
 			ISender errorSender = getErrorSender();
@@ -650,12 +646,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				if (errorSender instanceof HasPhysicalDestination) {
 					info("has errorSender to "+((HasPhysicalDestination)errorSender).getPhysicalDestinationName());
 				}
-				if (errorSender instanceof ConfigurationAware) {
-					((ConfigurationAware)errorSender).setConfiguration(getAdapter().getConfiguration());
-				}
 				errorSender.configure();
 			}
-			
+
 			if (getListener() instanceof IHasProcessState) {
 				knownProcessStates.addAll(((IHasProcessState)getListener()).knownProcessStates());
 				targetProcessStates = ((IHasProcessState)getListener()).targetProcessStates();
