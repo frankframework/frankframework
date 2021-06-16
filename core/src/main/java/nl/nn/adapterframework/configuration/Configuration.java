@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -168,14 +169,15 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", ()-> getName(), ()-> getVersion());
 		}
 
+		super.afterPropertiesSet(); //Triggers a context refresh
+
 		if(enabledAutowiredPostProcessing) {
 			//Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
 			AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+			postProcessor.setAutowiredAnnotationType(Autowired.class);
 			postProcessor.setBeanFactory(getBeanFactory());
 			getBeanFactory().addBeanPostProcessor(postProcessor);
 		}
-
-		super.afterPropertiesSet(); //Triggers a context refresh
 
 		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());

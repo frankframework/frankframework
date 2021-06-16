@@ -81,9 +81,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		PipeLine pipeLine;
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
-			// TODO why is this using a DirectoryClassloader?
-			// can't we use the current classloader? FixedForwardPipe#classLoader
-			// or even the configuration classloader? getAdapter().getConfiguration().getClassLoader()
+			// A DirectoryClassloader is used to create a new 'dummy' pipeline, see createPipeLineFromPropertiesFile(String)
+			// This method reads a properties file and xsd's (when present) to programmatically 'create' a pipeline.
+			// The pipeline will then be used to generate a new WSDL file.
 
 			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
 			directoryClassLoader.setDirectory(tempDir.getPath());

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,13 +21,11 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -44,43 +42,40 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author  Gerrit van Brakel
  * @since   4.7  
  */
-public class ResultBlock2Sender extends Result2StringWriter implements ConfigurationAware {
+public class ResultBlock2Sender extends Result2StringWriter {
 
 	private ISender sender = null; 
-	private Map<String,Integer> counters = new HashMap<String,Integer>();
-	private Map<String,Integer> levels = new HashMap<String,Integer>();
-	private Configuration configuration;
-	
+	private Map<String,Integer> counters = new HashMap<>();
+	private Map<String,Integer> levels = new HashMap<>();
+
 	public ResultBlock2Sender() {
 		super();
 		setOnOpenDocument(null);
 		setOnCloseDocument(null);
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+
 		if (sender==null) {
 			throw new ConfigurationException(ClassUtils.nameOf(this)+" ["+getName()+"] has no sender");
 		}
 		if (StringUtils.isEmpty(sender.getName())) {
 			sender.setName("sender of "+getName());
 		}
-		if (getSender() instanceof ConfigurationAware) {
-			((ConfigurationAware)getSender()).setConfiguration(getConfiguration());
-		}
-		sender.configure();		
+		sender.configure();
 	}
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		sender.open();		
+		sender.open();
 	}
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		sender.close();	
-		counters.clear();	
+		sender.close();
+		counters.clear();
 		levels.clear();
 	}
 
@@ -175,15 +170,4 @@ public class ResultBlock2Sender extends Result2StringWriter implements Configura
 	public ISender getSender() {
 		return sender;
 	}
-
-	@Override
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
-
-
 }

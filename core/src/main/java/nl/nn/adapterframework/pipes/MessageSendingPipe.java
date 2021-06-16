@@ -36,12 +36,10 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -52,6 +50,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -66,7 +65,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
-import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -287,14 +285,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 
 			try {
-				if (getSender() instanceof ConfigurationAware) {
-					IAdapter adapter=getAdapter();
-					if (adapter!=null) {
-						((ConfigurationAware)getSender()).setConfiguration(getAdapter().getConfiguration());
-					} else {
-						log.debug("No Adapter to set Configuration from");
-					}
-				}
 				//In order to suppress 'XmlQuerySender is used one or more times' config warnings
 				if(sender instanceof DirectQuerySender) {
 					String msg = "has a ["+ClassUtils.nameOf(DirectQuerySender.class)+"]. This may cause potential SQL injections!";

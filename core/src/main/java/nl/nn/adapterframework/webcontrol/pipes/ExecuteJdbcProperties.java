@@ -19,8 +19,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -38,13 +36,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 
 public class ExecuteJdbcProperties extends TimeoutGuardPipe {
-	IbisContext ibisContext;
-
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-	}
 
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
@@ -54,9 +45,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 		} else if (method.equalsIgnoreCase("POST")) {
 			return new PipeRunResult(getSuccessForward(), doPost(session));
 		} else {
-			throw new PipeRunException(this,
-					getLogPrefix(session) + "Illegal value for method ["
-							+ method + "], must be 'GET' or 'POST'");
+			throw new PipeRunException(this, getLogPrefix(session) + "Illegal value for method [" + method + "], must be 'GET' or 'POST'");
 		}
 	}
 
@@ -68,8 +57,7 @@ public class ExecuteJdbcProperties extends TimeoutGuardPipe {
 		String action = (String) session.get("action");
 		String name = (String) session.get("name");
 		String value = (String) session.get("value");
-		FixedQuerySender qs = (FixedQuerySender) ibisContext
-				.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = createBean(FixedQuerySender.class);
 		String form_jmsRealm = (String) session.get("jmsRealm");
 
 		if (StringUtils.isEmpty(name)) {

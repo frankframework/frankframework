@@ -39,6 +39,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -103,7 +104,7 @@ public class TestPipeLine extends TimeoutGuardPipe {
 						if (StringUtils.isNotEmpty(form_fileEncoding)) {
 							fileEncoding = form_fileEncoding;
 						} else {
-							fileEncoding = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+							fileEncoding = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 						}
 						if (StringUtils.endsWithIgnoreCase(form_fileName, ".zip")) {
 							try {
@@ -173,13 +174,13 @@ public class TestPipeLine extends TimeoutGuardPipe {
 	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
 		try (PipeLineSession pls = new PipeLineSession()) {
-			Map ibisContexts = XmlUtils.getIbisContext(message);
+			Map<String, String> ibisContexts = XmlUtils.getIbisContext(message);
 			String technicalCorrelationId = null;
 			if (ibisContexts != null) {
 				String contextDump = "ibisContext:";
-				for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
-					String key = (String) it.next();
-					String value = (String) ibisContexts.get(key);
+				for (Iterator<String> it = ibisContexts.keySet().iterator(); it.hasNext();) {
+					String key = it.next();
+					String value = ibisContexts.get(key);
 					if (log.isDebugEnabled()) {
 						contextDump = contextDump + "\n " + key + "=[" + value + "]";
 					}

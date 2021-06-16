@@ -19,8 +19,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -38,13 +36,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 
 public class ShowConfig extends TimeoutGuardPipe {
-	IbisContext ibisContext;
-
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-	}
 
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
@@ -73,8 +64,7 @@ public class ShowConfig extends TimeoutGuardPipe {
 							+ "No datasource jmsRealm available");
 				}
 			}
-			FixedQuerySender qs = (FixedQuerySender) ibisContext
-					.createBeanAutowireByName(FixedQuerySender.class);
+			FixedQuerySender qs = createBean(FixedQuerySender.class);
 			String queryResult;
 			try {
 				qs.setName("QuerySender");
@@ -120,8 +110,7 @@ public class ShowConfig extends TimeoutGuardPipe {
 			XmlBuilder configXML = new XmlBuilder("config");
 			String jr = jmsRealms.get(i);
 			configXML.addAttribute("jmsRealm", jr);
-			FixedQuerySender qs = (FixedQuerySender) ibisContext
-					.createBeanAutowireByName(FixedQuerySender.class);
+			FixedQuerySender qs = createBean(FixedQuerySender.class);
 			try {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(jr);

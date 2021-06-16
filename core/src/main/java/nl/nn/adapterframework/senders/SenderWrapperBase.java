@@ -21,7 +21,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -44,7 +43,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled<String,String>, ConfigurationAware {
+public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled<String,String> {
 
 	private @Getter String getInputFromSessionKey;
 	private @Getter String getInputFromFixedValue=null;
@@ -54,7 +53,6 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	
 	protected @Setter SenderWrapperProcessor senderWrapperProcessor;
 	private @Getter @Setter ICache<String,String> cache=null;
-	private @Getter @Setter Configuration configuration;
 
 	@Override
 	public void configure() throws ConfigurationException {

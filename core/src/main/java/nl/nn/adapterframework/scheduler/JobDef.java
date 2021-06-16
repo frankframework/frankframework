@@ -1003,7 +1003,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	private void executeSendMessageJob(IbisManager ibisManager) {
 		try {
 			// send job
-			IbisLocalSender localSender = new IbisLocalSender();
+			IbisLocalSender localSender = SpringUtils.createBean(applicationContext, IbisLocalSender.class);
 			localSender.setJavaListener(getReceiverName());
 			localSender.setIsolated(false);
 			localSender.setName("AdapterJob");
@@ -1016,8 +1016,6 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 					log.warn("Cannot find adapter ["+getAdapterName()+"], cannot execute job");
 					return;
 				}
-				Configuration configuration = iAdapter.getConfiguration();
-				localSender.setConfiguration(configuration);
 			}
 			localSender.configure();
 			localSender.open();

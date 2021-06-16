@@ -98,55 +98,6 @@ public class DateUtils {
 	}
 
 	/**
-	 * Formats a Date to a String, only appends the time when present
-	 */
-	@Deprecated //Belongs to Struts console
-	public static String formatOptimal(Date d)  {
-		String result;
-		if ((d.getTime()%1000)==0 ) {
-			if (d.getSeconds()==0) {
-				if (d.getMinutes()==0 && d.getHours()==0) {
-					result = format(d,"yyyy-MM-dd");
-				} else {
-					result = format(d,"yyyy-MM-dd HH:mm");
-				}
-			} else {
-				result = format(d,"yyyy-MM-dd HH:mm:ss");
-			}
-		} else {
-			result = format(d,"yyyy-MM-dd HH:mm:ss.SSS");
-		}
-		return result;
-	}
-
-	/**
-	 * returns the next higher value, as if it was formatted optimally using formatOptimal().
-	 */
-	@Deprecated //Belongs to Struts console
-	public static Date nextHigherValue(Date d)  {
-		int delta;
-		if ((d.getTime()%1000)==0 ) {
-			if (d.getSeconds()==0) {
-				if (d.getMinutes()==0 && d.getHours()==0) {
-					delta = 24*60*60*1000;
-					// result = format(d,"yyyy-MM-dd");
-				} else {
-					delta = 60*1000;
-					//result = format(d,"yyyy-MM-dd HH:mm");
-				}
-			} else {
-				delta = 1000;
-				//result = format(d,"yyyy-MM-dd HH:mm:ss");
-			}
-		} else {
-			delta=1;
-			//result = format(d,"yyyy-MM-dd HH:mm:ss.SSS");
-		}
-		return new Date(d.getTime()+delta);
-	}
-
-
-	/**
 	 * Convert date format
 	 * 
 	 * @param 	from	String	date format from.
