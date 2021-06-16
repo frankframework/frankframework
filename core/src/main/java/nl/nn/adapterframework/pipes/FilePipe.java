@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -69,8 +70,8 @@ public class FilePipe extends FixedForwardPipe {
 			return new PipeRunResult(getSuccessForward(), fileHandler.handle(message, session, getParameterList()));
 		}
 		catch(Exception e) {
-			if (findForward("exception") != null) {
-				return new PipeRunResult(findForward("exception"), message);
+			if (findForward(PipeForward.EXCEPTION_FORWARD_NAME) != null) {
+				return new PipeRunResult(findForward(PipeForward.EXCEPTION_FORWARD_NAME), message);
 			} else {
 				throw new PipeRunException(this, getLogPrefix(session)+"Error while executing file action(s)", e);
 			}
