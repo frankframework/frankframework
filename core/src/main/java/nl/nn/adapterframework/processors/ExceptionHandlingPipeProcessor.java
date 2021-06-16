@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.pipes.ExceptionPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 
@@ -37,7 +38,7 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 			prr = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
 		} catch (PipeRunException e) {
 			Map<String, PipeForward> forwards = pipe.getForwards();
-			if (forwards!=null && forwards.containsKey("exception")) {
+			if (forwards!=null && forwards.containsKey("exception") && !(pipe instanceof ExceptionPipe)) {
 				Object tsReceivedObj = pipeLineSession.get(IPipeLineSession.tsReceivedKey);
 				Date tsReceivedDate = null;
 
