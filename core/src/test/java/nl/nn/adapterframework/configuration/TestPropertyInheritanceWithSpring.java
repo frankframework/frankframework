@@ -11,6 +11,8 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.PropertySourcesPropertyResolver;
 
+import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
+
 public class TestPropertyInheritanceWithSpring {
 
 	private ClassPathXmlApplicationContext createContext(ApplicationContext parent, PropertiesPropertySource propertySource) {
@@ -19,7 +21,7 @@ public class TestPropertyInheritanceWithSpring {
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
 		if(parent != null) {
-			propertySources.addBefore("Application", propertySource);
+			propertySources.addBefore(IbisApplicationContext.APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME, propertySource);
 		} else {
 			propertySources.addLast(propertySource);
 		}
@@ -38,7 +40,7 @@ public class TestPropertyInheritanceWithSpring {
 		globalProperties.setProperty("three", "3");
 		globalProperties.setProperty("testSystemProperty3", "globalProp3");
 
-		PropertiesPropertySource globalPropertySource = new PropertiesPropertySource("Application", globalProperties);
+		PropertiesPropertySource globalPropertySource = new PropertiesPropertySource(IbisApplicationContext.APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME, globalProperties);
 		ClassPathXmlApplicationContext applicationContext = createContext(null, globalPropertySource);
 
 		Properties localProperties = new Properties();
@@ -46,7 +48,7 @@ public class TestPropertyInheritanceWithSpring {
 		localProperties.setProperty("three", "6");
 		localProperties.setProperty("testSystemProperty2", "localProp2");
 
-		PropertiesPropertySource localPropertySource = new PropertiesPropertySource("Configuration", localProperties);
+		PropertiesPropertySource localPropertySource = new PropertiesPropertySource(IbisApplicationContext.CONFIGURATION_PROPERTIES_PROPERTY_SOURCE_NAME, localProperties);
 		ClassPathXmlApplicationContext configurationContext = createContext(applicationContext, localPropertySource);
 
 		MutablePropertySources sources = configurationContext.getEnvironment().getPropertySources();
