@@ -611,7 +611,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSession session = new PipeLineSession();
+		IPipeLineSession session = new PipeLineSessionBase();
 		session.put("writeLineSeparator", contents);
 
 		ParameterList params = new ParameterList();
@@ -841,7 +841,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		createFile(null, filename, contents);
 
-		PipeLineSession session = new PipeLineSession();
+		IPipeLineSession session = new PipeLineSessionBase();
 		ParameterList params = new ParameterList();
 
 		Parameter p = new Parameter();
