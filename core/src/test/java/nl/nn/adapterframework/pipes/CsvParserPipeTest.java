@@ -115,7 +115,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		pipe.setFileContainsHeader(true);
 		configureAndStartPipe();
 		String csv ="A,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><A>1</A><b>2</b><c>3</c></record><record><A>x</A><b>y,y</b></record></csv>";
+		String expected="<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y,y</b></record></csv>";
 		
 		PipeRunResult prr = doPipe(csv);
 		assertXmlEquals(expected,prr.getResult().asString());
@@ -126,7 +126,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		pipe.setHeaderCase("lowercase");
 		configureAndStartPipe();
 		String csv ="A,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><A>1</A><b>2</b><c>3</c></record><record><A>x</A><b>y,y</b></record></csv>";
+		String expected="<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y,y</b></record></csv>";
 		
 		PipeRunResult prr = doPipe(csv);
 		assertXmlEquals(expected,prr.getResult().asString());
