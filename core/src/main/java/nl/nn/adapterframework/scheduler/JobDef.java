@@ -902,11 +902,17 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 							String message = rs.getString("MESSAGE");
 							boolean hasLocker = rs.getBoolean("LOCKER");
 							String lockKey = rs.getString("LOCK_KEY");
-			
+
 							JobKey key = JobKey.jobKey(jobName, jobGroup);
-			
+
+							Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
+							if(adapter == null) {
+								getMessageKeeper().add("unable to add schedule ["+key+"], adapter ["+adapterName+"] not found");
+								continue;
+							}
+
 							//Create a new JobDefinition so we can compare it with existing jobs
-							DatabaseJobDef jobdef = SpringUtils.createBean(applicationContext, DatabaseJobDef.class);
+							DatabaseJobDef jobdef = SpringUtils.createBean(adapter.getApplicationContext(), DatabaseJobDef.class);
 							jobdef.setCronExpression(cronExpression);
 							jobdef.setName(jobName);
 							jobdef.setInterval(interval);

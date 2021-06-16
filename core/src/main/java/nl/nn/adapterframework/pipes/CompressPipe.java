@@ -57,8 +57,6 @@ import nl.nn.adapterframework.util.FileUtils;
  */
 public class CompressPipe extends FixedForwardPipe {
 
-	private final static String EXCEPTIONFORWARD = "exception";
-
 	private boolean messageIsContent;
 	private boolean resultIsContent;
 	private String outputDirectory;
@@ -172,7 +170,7 @@ public class CompressPipe extends FixedForwardPipe {
 			}
 			return new PipeRunResult(getSuccessForward(), getResultMsg(result));
 		} catch(Exception e) {
-			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward!=null) {
 				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
 				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0));

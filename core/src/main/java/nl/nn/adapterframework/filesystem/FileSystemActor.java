@@ -55,6 +55,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -138,12 +139,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter String wildcard=null;
 	private @Getter String excludeWildcard=null;
 	private @Getter boolean removeNonEmptyFolder=false;
+	private @Getter boolean writeLineSeparator=false;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
 	private INamedObject owner;
 	private FS fileSystem;
 	private ParameterList parameterList;
+
+	private byte[] eolArray=null;
 
 	
 	public void configure(FS fileSystem, ParameterList parameterList, IConfigurable owner) throws ConfigurationException {
@@ -193,6 +197,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'rotateDays'");
 			}
 		}
+		eolArray = System.getProperty("line.separator").getBytes();
 	}
 
 	private void checkConfiguration(String action) throws ConfigurationException {
@@ -503,11 +508,13 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {
-			out.write(((String) contents).getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
+			out.write(((String) contents).getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 		} else {
 			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
 		}
-		
+		if(isWriteLineSeparator()) {
+			out.write(eolArray);
+		}
 	}
 	
 	
@@ -671,5 +678,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	@IbisDoc({"12", "If set to true then the folder and the content of the non empty folder will be deleted."})
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		this.removeNonEmptyFolder = removeNonEmptyFolder;
+	}
+
+	@IbisDoc({"13", "If set to true then the system specific line separator will be appended to the file after executing the action. Works with actions "+ACTION_WRITE1+", and for action="+ACTION_APPEND, "false"})
+	public void setWriteLineSeparator(boolean writeLineSeparator) {
+		this.writeLineSeparator = writeLineSeparator;
 	}
 }

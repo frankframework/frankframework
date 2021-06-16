@@ -7,7 +7,9 @@
 	</h4>
 	Elements: <span ng-repeat="tag in element.elementNames">{{( $first ? tag : ", " + tag )}}</span>
 	<br />
-	
+	<p>
+	<p>
+	{{ element.descriptionHeader }}
 	<div ng-if="element.children" element-children></div>
 	<div ng-if="element.attributes" element-attributes></div>
 	

@@ -194,10 +194,10 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 	/*
 	 * Dummy principal, to populate subject, to have at least a principal.
 	 */
-	private class IbisPrincipal implements Principal{
+	private class FrankPrincipal implements Principal{
 		@Override
 		public String getName() {
-			return "Ibis";
+			return "Frank";
 		}
 	}
 
@@ -209,7 +209,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 			Set<Object> publicCredentials = new HashSet<>();
 			Set<Object> privateCredentials = new HashSet<>();
 
-			Principal p = new IbisPrincipal();
+			Principal p = new FrankPrincipal();
 			principals.add(p);
 			Subject initialSubject= new Subject(false, principals, publicCredentials, privateCredentials);
 			String loginConfiguration = AppConstants.getInstance().getProperty("PrincipalMapping", "DefaultPrincipalMapping");

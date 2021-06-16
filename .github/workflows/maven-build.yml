@@ -55,6 +55,7 @@ jobs:
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
+        JAVA_OPTS: "-Xmx1024m -Xms256m"
       run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -P${{env.PROFILES}}
 
     - name: Upload coverage to Codecov

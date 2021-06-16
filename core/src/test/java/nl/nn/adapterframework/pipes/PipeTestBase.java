@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
@@ -29,7 +30,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	protected P pipe;
 	protected PipeLine pipeline;
 	protected Adapter adapter;
-	private TestConfiguration configuration = new TestConfiguration();
+	private TestConfiguration configuration = null;
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -38,6 +39,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 
 	@Before
 	public void setup() throws Exception {
+		configuration = new TestConfiguration();
 		pipe = createPipe();
 		autowireByType(pipe);
 		pipe.registerForward(new PipeForward("success",null));
@@ -51,6 +53,13 @@ public abstract class PipeTestBase<P extends IPipe> {
 		adapter = configuration.createBean(Adapter.class);
 		adapter.setName("TestAdapter-for-".concat(pipe.getClass().getSimpleName()));
 		adapter.setPipeLine(pipeline);
+	}
+
+	@After
+	public final void tearDown() {
+		if(configuration != null) {
+			configuration.close();
+		}
 	}
 
 	protected void autowireByType(Object bean) {

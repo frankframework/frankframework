@@ -146,7 +146,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			return new PipeRunResult(getSuccessForward(), returnCode);
 		}
 		else {
-			PipeForward pipeForward = findForward("exception");
+			PipeForward pipeForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			String msg;
 
 			if(cache == null)
