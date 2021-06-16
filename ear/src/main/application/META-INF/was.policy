@@ -66,7 +66,7 @@ permission java.util.PropertyPermission "*", "write";
 
 // required to for CredentialFactory to obtain credentials from JAAS Authentication Entries:
 permission javax.security.auth.AuthPermission "createLoginContext.DefaultPrincipalMapping";
-permission javax.security.auth.PrivateCredentialPermission "javax.resource.spi.security.PasswordCredential nl.nn.adapterframework.util.CredentialFactory$IbisPrincipal "Ibis"", "read";
+permission javax.security.auth.PrivateCredentialPermission "javax.resource.spi.security.PasswordCredential nl.nn.credentialprovider.WebSphereCredentials$FrankPrincipal "Frank"", "read";
 
 // required for Spring AbstractAutowireCapableBeanFactory:
 permission java.lang.RuntimePermission "getProtectionDomain";
