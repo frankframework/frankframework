@@ -128,7 +128,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			return new PipeRunResult(getSuccessForward(), "");
 		}
 
-		return new PipeRunResult(findForward(PipeForward.EXCEPTION_FORWARD_NAME), "this is not supposed to happen... like ever!");
+		return new PipeRunResult(findForward(PipeForward.EXCEPTION_FORWARD_NAME), "unable to execute action ["+getAction()+"]");
 	}
 
 	public void setAction(String string) {
