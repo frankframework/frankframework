@@ -37,8 +37,10 @@ import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.ResourceUtils;
 
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link IbisApplicationServlet servlet} 
@@ -192,9 +194,8 @@ public class IbisApplicationContext {
 		return applicationContext.getBean(beanName, beanClass);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> T createBeanAutowireByName(Class<T> beanClass) {
-		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		return SpringUtils.createBean(applicationContext, beanClass);
 	}
 
 	/**
