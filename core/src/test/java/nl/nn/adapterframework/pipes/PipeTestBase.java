@@ -56,7 +56,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	}
 
 	@After
-	public final void tearDown() {
+	public void tearDown() {
 		if(configuration != null) {
 			configuration.close();
 		}
