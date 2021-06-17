@@ -68,8 +68,6 @@ public interface IbisManager extends ApplicationEventPublisherAware {
 
     public Adapter getRegisteredAdapter(String name);
 
-    public List<String> getSortedStartedAdapterNames();
-
     public List<Adapter> getRegisteredAdapters();
 
     /**

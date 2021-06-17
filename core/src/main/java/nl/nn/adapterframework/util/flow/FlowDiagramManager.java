@@ -63,6 +63,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	private static final String ADAPTER2DOT_XSLT = "/xsl/adapter2dot.xsl";
 	private static final String CONFIGURATION2DOT_XSLT = "/xsl/configuration2dot.xsl";
+	private static final String NO_IMAGE_AVAILABLE = "/no_image_available.svg";
 
 	private TransformerPool transformerPoolAdapter;
 	private TransformerPool transformerPoolConfig;
@@ -91,9 +92,9 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			fileExtension = generator.getFileExtension();
 		}
 
-		noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
+		noImageAvailable = Resource.getResource(NO_IMAGE_AVAILABLE);
 		if(noImageAvailable == null) {
-			throw new IllegalStateException("image [no_image_available.svg] not found");
+			throw new IllegalStateException("image ["+NO_IMAGE_AVAILABLE+"] not found");
 		}
 	}
 

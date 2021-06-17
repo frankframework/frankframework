@@ -24,15 +24,15 @@
 		</init-param>
 		<init-param>
 			<param-name>allowedObserverPaths</param-name>
-			<param-value>/index.jsp /rest/showConfigurationStatus /rest/showConfiguration /FileViewerServlet /rest/showEnvironmentVariables /testtool /rest/webservices</param-value>
+			<param-value>/index.jsp /FileViewerServlet /testtool</param-value>
 		</init-param>
 		<init-param>
 			<param-name>allowedDataAdminPaths</param-name>
-			<param-value></param-value>
+			<param-value>/testtool</param-value>
 		</init-param>
 		<init-param>
 			<param-name>allowedTesterPaths</param-name>
-			<param-value>/rest/testPipeLine /rest/testIfsaService /testtool</param-value>
+			<param-value>/testtool</param-value>
 		</init-param>
 	</filter>
 

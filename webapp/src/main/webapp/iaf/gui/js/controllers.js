@@ -70,7 +70,6 @@ angular.module('iaf.beheerconsole')
 						Idle.unwatch();
 					}
 					$scope.databaseSchedulesEnabled = (appConstants["loadDatabaseSchedules.active"] === 'true');
-					$scope.strutsConsoleEnabled = (appConstants["strutsConsole.enabled"] === 'true');
 					$rootScope.$broadcast('appConstants');
 				}
 			});
