@@ -978,11 +978,10 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 
 	private void executeQueryJob(IbisManager ibisManager) {
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
-		String dataSource = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		try {
 			qs.setQuery(getQuery());
 			qs.setName("executeQueryJob");
-			qs.setDatasourceName(dataSource);
+			qs.setJmsRealm(getJmsRealm());
 			qs.setQueryType("other");
 			qs.setTimeout(getQueryTimeout());
 			qs.configure();
