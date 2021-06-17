@@ -34,12 +34,8 @@ public class ListenerMessageHandler implements IMessageHandler {
 			throw new ListenerException("cannot convert message to string",e);
 		}
 		putRequestMessage(listenerMessage);
-		Message response = null;
 		listenerMessage = getResponseMessage();
-		if (listenerMessage != null) {
-			response = new Message(listenerMessage.getMessage());
-		}
-		return response;
+		return listenerMessage != null ? new Message(listenerMessage.getMessage()) : Message.nullMessage();
 	}
 	
 	public void putRequestMessage(ListenerMessage listenerMessage) {
@@ -117,40 +113,27 @@ public class ListenerMessageHandler implements IMessageHandler {
 	}
 
 	@Override
-	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext) throws ListenerException {
+	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
 		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		Message message = origin.extractMessage(rawMessage, threadContext);
 		processRequest(origin, correlationId, rawMessage, message, threadContext);
 	}
 
 	@Override
-	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingTime) throws ListenerException {
-		processRawMessage(origin, rawMessage, threadContext);
+	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
+		processRawMessage(origin, rawMessage, threadContext, duplicatesAlreadyChecked);
 	}
 
 	@Override
 	public void processRawMessage(IListener origin, Object rawMessage) throws ListenerException {
-		processRawMessage(origin, rawMessage, null);
+		processRawMessage(origin, rawMessage, null, false);
 	}
 
-	@Override
-	public Message processRequest(IListener origin, Object rawMessage, Message message) throws ListenerException {
-		return processRequest(origin, null, rawMessage, message, null);
-	}
-
-	@Override
-	public Message processRequest(IListener origin, String correlationId, Object rawMessage, Message message) throws ListenerException {
-		return processRequest(origin, correlationId, rawMessage, message, null);
-	}
-
-	@Override
-	public Message processRequest(IListener origin, String correlationId, Object rawMessage, Message message, Map context, long waitingTime) throws ListenerException {
-		return processRequest(origin, correlationId, rawMessage, message, context);
-	}
 
 	@Override
 	public Message formatException(String origin, String arg1, Message arg2, Throwable arg3) {
 		log.error("formatException(String arg0, String arg1, String arg2, Throwable arg3) not implemented");
 		return null;
 	}
+
 }

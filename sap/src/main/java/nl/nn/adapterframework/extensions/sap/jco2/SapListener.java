@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -155,7 +155,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	public void processFunctionCall(JCO.Function function) throws SapException {
 		try {
 			log.debug("SapListener.procesFunctionCall()");
-			handler.processRawMessage(this, function, null);
+			handler.processRawMessage(this, function, null, false);
 		} catch (ListenerException e) {
 			throw new SapException(e);
 		}
@@ -165,7 +165,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	public void processIDoc(Document idoc) throws SapException {
 		try {
 			log.debug("SapListener.processIDoc()");
-			handler.processRequest(this, null, new Message(idoc.toXML()));
+			handler.processRequest(this, null, null, new Message(idoc.toXML()), null);
 		} catch (ListenerException e) {
 			throw new SapException(e);
 		}
