@@ -937,7 +937,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (errorStorage!=null) {
 				Serializable sobj;
 				if (rawMessage == null) {
-					message = messageSupplier.get();
+					if (message==null) {
+						message = messageSupplier.get();
+					}
 					if (message.isBinary()) {
 						sobj = message.asByteArray();
 					} else {
@@ -951,6 +953,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 							sobj = new MessageWrapper(rawMessage, getListener());
 						} catch (ListenerException e) {
 							log.error(getLogPrefix()+"could not wrap non serializable message for messageId ["+originalMessageId+"]",e);
+							if (message==null) {
+								message = messageSupplier.get();
+							}
 							message = messageSupplier.get();
 							sobj=message;
 						}
