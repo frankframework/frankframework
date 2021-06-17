@@ -30,7 +30,6 @@ import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.DigesterLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.ContentHandler;
@@ -47,11 +46,11 @@ import nl.nn.adapterframework.configuration.filters.InitialCapsFilter;
 import nl.nn.adapterframework.configuration.filters.OnlyActiveFilter;
 import nl.nn.adapterframework.configuration.filters.SkipContainersFilter;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ElementPropertyResolver;
@@ -137,17 +136,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		digester.push(configuration);
 
 		Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRules());
-
-		FrankDigesterRules digesterRules = new FrankDigesterRules(digester, digesterRulesResource);
-		//Populate the bean with Spring magic
-		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(digesterRules, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false); //TODO: use helper class to wire and init
-		digesterRules = (FrankDigesterRules) applicationContext.getAutowireCapableBeanFactory().initializeBean(digesterRules, "digesterRules");
-		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
-		loader.addRules(digester);
-
-		if (MonitorManager.getInstance().isEnabled()) {
-			MonitorManager.getInstance().setDigesterRules(digester);
-		}
+		loadDigesterRules(digester, digesterRulesResource);
 
 		boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
 		if (validation) {
@@ -164,6 +153,14 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 
 		return digester;
+	}
+
+	private void loadDigesterRules(Digester digester, Resource digesterRulesResource) {
+		FrankDigesterRules digesterRules = new FrankDigesterRules(digester, digesterRulesResource);
+		//Populate the bean with Spring magic
+		SpringUtils.autowireByName(applicationContext, digesterRules);
+		DigesterLoader loader = DigesterLoader.newLoader(digesterRules);
+		loader.addRules(digester);
 	}
 
 	public void digest() throws ConfigurationException {
@@ -213,9 +210,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
 				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
-		}
-		if (MonitorManager.getInstance().isEnabled()) {
-			MonitorManager.getInstance().configure(configuration); //TODO fix memory leak when the configuration is reloaded
 		}
 	}
 

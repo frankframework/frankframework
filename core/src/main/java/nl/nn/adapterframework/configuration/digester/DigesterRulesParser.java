@@ -58,6 +58,13 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		parsedPatterns.add(pattern);
 		
 		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(pattern);
+
+
+		if(rule.getRegisterTextMethod() != null) { //set the register method (callMethod with the element body as parameter)
+			ruleBuilder.callMethod(rule.getRegisterTextMethod()).usingElementBodyAsArgument();
+			return;
+		}
+
 		if(StringUtils.isNotEmpty(rule.getObject())) { //If a class is specified, load the class through the digester create-object-rule
 //			ruleBuilder.createObject().ofTypeSpecifiedByAttribute(rule.getObject()); //Can't use 'ruleBuilder' as this tries to load the class at configure time and not runtime
 			ruleBuilder.addRule(new ObjectCreateRule(rule.getObject()));

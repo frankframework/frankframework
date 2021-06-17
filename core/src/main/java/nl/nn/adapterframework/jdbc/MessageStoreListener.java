@@ -41,14 +41,14 @@ import nl.nn.adapterframework.stream.Message;
 		&lt;listener
 			name="MyListener"
 			className="nl.nn.adapterframework.jdbc.MessageStoreListener"
-			jmsRealm="jdbc"
+			datasourceName="${jdbc.datasource.default}"
 			slotId="${instance.name}/ServiceName"
 			sessionKeys="key1,key2"
 		/>
 		&lt;!-- On error the message is moved to the errorStorage. And when moveToMessageLog="true" also to the messageLog (after manual resend the messageLog doesn't change). -->
 		&lt;errorStorage
 			className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-			jmsRealm="jdbc"
+			datasourceName="${jdbc.datasource.default}"
 			slotId="${instance.name}/ServiceName"
 		/>
  * </pre></code>

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.configuration;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -22,9 +23,11 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -39,6 +42,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
+import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -165,14 +169,15 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", ()-> getName(), ()-> getVersion());
 		}
 
+		super.afterPropertiesSet(); //Triggers a context refresh
+
 		if(enabledAutowiredPostProcessing) {
 			//Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
 			AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+			postProcessor.setAutowiredAnnotationType(Autowired.class);
 			postProcessor.setBeanFactory(getBeanFactory());
 			getBeanFactory().addBeanPostProcessor(postProcessor);
 		}
-
-		super.afterPropertiesSet(); //Triggers a context refresh
 
 		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
@@ -192,6 +197,19 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(scheduleManager == null) { //Manually set the ScheduleManager bean
 			setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
 		}
+	}
+
+	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
+	@Override
+	public String[] getBeanNamesForType(Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
+		if(type.isAssignableFrom(ApplicationListener.class)) {
+			List<String> blacklist = Arrays.asList(super.getBeanNamesForType(LazyLoadingEventListener.class, includeNonSingletons, allowEagerInit));
+			List<String> beanNames = Arrays.asList(super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit));
+			log.info("removing LazyLoadingEventListeners "+blacklist+" from Spring auto-magic event-based initialization");
+
+			return beanNames.stream().filter(str -> !blacklist.contains(str)).toArray(String[]::new);
+		}
+		return super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit);
 	}
 
 	/**

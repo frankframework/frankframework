@@ -36,12 +36,10 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -52,6 +50,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -66,7 +65,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
-import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -151,7 +149,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public static final String PIPE_EXCEPTION_MONITOR_EVENT = "Sender Exception Caught";
 
 	private final static String TIMEOUT_FORWARD = "timeout";
-	private final static String EXCEPTION_FORWARD = "exception";
 	private final static String ILLEGAL_RESULT_FORWARD = "illegalResult";
 	private final static String PRESUMED_TIMEOUT_FORWARD = "presumedTimeout";
 	private final static String INTERRUPT_FORWARD = "interrupt";
@@ -288,14 +285,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 
 			try {
-				if (getSender() instanceof ConfigurationAware) {
-					IAdapter adapter=getAdapter();
-					if (adapter!=null) {
-						((ConfigurationAware)getSender()).setConfiguration(getAdapter().getConfiguration());
-					} else {
-						log.debug("No Adapter to set Configuration from");
-					}
-				}
 				//In order to suppress 'XmlQuerySender is used one or more times' config warnings
 				if(sender instanceof DirectQuerySender) {
 					String msg = "has a ["+ClassUtils.nameOf(DirectQuerySender.class)+"]. This may cause potential SQL injections!";
@@ -738,7 +727,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				log.warn(getLogPrefix(session) + "timeout occured");
 				if (timeoutForward==null) {
 					if (StringUtils.isEmpty(getResultOnTimeOut())) {
-						timeoutForward=findForward(EXCEPTION_FORWARD);
+						timeoutForward=findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 					} else {
 						timeoutForward=getSuccessForward();
 					}
@@ -756,7 +745,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	
 			} catch (Throwable t) {
 				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
-				PipeForward exceptionForward = findForward(EXCEPTION_FORWARD);
+				PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 				if (exceptionForward!=null) {
 					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
 					return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input,session.getMessageId(),0));
@@ -853,7 +842,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					sendResult = new PipeRunResult(null,result);
 				}
 			} catch (SenderException se) {
-				exitState = EXCEPTION_FORWARD;
+				exitState = PipeForward.EXCEPTION_FORWARD_NAME;
 				throw se;
 			} catch (TimeOutException toe) {
 				exitState = TIMEOUT_FORWARD;
@@ -871,7 +860,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(result)) {
-					exitState = EXCEPTION_FORWARD;
+					exitState = PipeForward.EXCEPTION_FORWARD_NAME;
 					throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
 				}
 			}

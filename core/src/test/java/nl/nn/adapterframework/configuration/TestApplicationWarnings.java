@@ -3,6 +3,7 @@ package nl.nn.adapterframework.configuration;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,14 +13,23 @@ import nl.nn.adapterframework.util.LogUtil;
 public class TestApplicationWarnings {
 	private Logger log = LogUtil.getLogger(TestApplicationWarnings.class);
 
+	private TestConfiguration configuration = null;
+
 	@Before
 	public void setUp() {
 		ApplicationWarnings.removeInstance(); //Remove old instance if present
+		configuration = new TestConfiguration();
+	}
+
+	@After
+	public void tearDown() {
+		if(configuration != null) {
+			configuration.close();
+		}
 	}
 
 	@Test
 	public void testApplicationContextFromSpring() {
-		TestConfiguration configuration = new TestConfiguration();
 		ApplicationWarnings applWarnings = configuration.getBean("applicationWarnings", ApplicationWarnings.class);
 		assertEquals(configuration, applWarnings.getApplicationContext());
 	}
@@ -28,7 +38,6 @@ public class TestApplicationWarnings {
 	public void testApplicationContextStaticInitialized() {
 		ApplicationWarnings.add(log, "test message");
 
-		TestConfiguration configuration = new TestConfiguration();
 		ApplicationWarnings applWarnings = configuration.getBean("applicationWarnings", ApplicationWarnings.class);
 
 		assertEquals(configuration, applWarnings.getApplicationContext());
@@ -39,7 +48,6 @@ public class TestApplicationWarnings {
 	public void testApplicationContextFromRefreshedSpringContext() {
 		ApplicationWarnings.add(log, "test message 1");
 
-		TestConfiguration configuration = new TestConfiguration();
 		configuration.getBean("applicationWarnings", ApplicationWarnings.class);
 		configuration.refresh();
 

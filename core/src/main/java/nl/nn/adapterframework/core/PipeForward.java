@@ -35,6 +35,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 public class PipeForward {
 
 	public final static String SUCCESS_FORWARD_NAME = PipeLineExit.EXIT_STATE_SUCCESS;
+	public final static String EXCEPTION_FORWARD_NAME = "exception";
     private String name;
     private String path;
 

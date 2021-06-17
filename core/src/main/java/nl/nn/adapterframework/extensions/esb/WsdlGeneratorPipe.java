@@ -25,6 +25,8 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
@@ -47,22 +49,23 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 
-	private String sessionKey = "file";
-	private String propertiesFileName = "wsdl.properties";
+	private @Getter @Setter String sessionKey = "file";
+	private @Getter @Setter String filenameSessionKey = "fileName";
+	private @Getter @Setter String propertiesFileName = "wsdl.properties";
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		InputStream inputStream = (InputStream) session.get("file");
-		if (inputStream == null) {
+		Message fileInSession = session.getMessage(getSessionKey());
+		if (fileInSession == null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
 		}
 
 		File tempDir;
 		String fileName;
-		
-		try {
+
+		try (InputStream inputStream = fileInSession.asInputStream()){
 			tempDir = FileUtils.createTempDir(null, "WEB-INF" + File.separator + "classes");
-			fileName = (String) session.get("fileName");
+			fileName = session.getMessage(getFilenameSessionKey()).asString();
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
 				FileUtils.unzipStream(inputStream, tempDir);
 			} else {
@@ -78,9 +81,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		PipeLine pipeLine;
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
-			// TODO why is this using a DirectoryClassloader?
-			// can't we use the current classloader? FixedForwardPipe#classLoader
-			// or even the configuration classloader? getAdapter().getConfiguration().getClassLoader()
+			// A DirectoryClassloader is used to create a new 'dummy' pipeline, see createPipeLineFromPropertiesFile(String)
+			// This method reads a properties file and xsd's (when present) to programmatically 'create' a pipeline.
+			// The pipeline will then be used to generate a new WSDL file.
 
 			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
 			directoryClassLoader.setDirectory(tempDir.getPath());
@@ -296,21 +299,5 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			return esbSoapValidator;
 		}
 		return null;
-	}
-
-	public String getSessionKey() {
-		return sessionKey;
-	}
-
-	public void setSessionKey(String string) {
-		sessionKey = string;
-	}
-
-	public String getPropertiesFileName() {
-		return propertiesFileName;
-	}
-
-	public void setPropertiesFileName(String string) {
-		propertiesFileName = string;
 	}
 }

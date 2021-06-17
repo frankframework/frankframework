@@ -168,6 +168,7 @@ public class IbisApplicationContext {
 		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
 		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
 		classPathapplicationContext.setId("IbisApplicationContext");
+		classPathapplicationContext.setDisplayName("IbisApplicationContext");
 
 		return classPathapplicationContext;
 	}

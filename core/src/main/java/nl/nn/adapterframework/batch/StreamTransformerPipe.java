@@ -37,7 +37,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -142,16 +141,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 		for (String recordHandlerName: registeredRecordHandlers.keySet()) {
 			IRecordHandler handler = getRecordHandler(recordHandlerName);
-			if(handler instanceof ConfigurationAware) {
-				((ConfigurationAware)handler).setConfiguration(getAdapter().getConfiguration());
-			}
 			handler.configure();
 		}
 		for (String resultHandlerName: registeredResultHandlers.keySet()) {
 			IResultHandler handler = getResultHandler(resultHandlerName);
-			if (handler instanceof ConfigurationAware) {
-				((ConfigurationAware)handler).setConfiguration(getAdapter().getConfiguration());
-			}
 			handler.configure();
 		}
 	}

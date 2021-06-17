@@ -138,8 +138,8 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
 			Map<String, PipeForward> forwards = getForwards();
-			if (forwards!=null && forwards.containsKey("exception")) {
-				return new PipeRunResult(getForwards().get("exception"), e.getMessage());
+			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
+				return new PipeRunResult(getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), e.getMessage());
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
@@ -151,10 +151,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 	@Override
 	public String getPhysicalDestinationName() {
-		if (getFileSystem() instanceof HasPhysicalDestination) {
-			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
-		}
-		return null;
+		return getFileSystem().getPhysicalDestinationName();
 	}
 
 	public FS getFileSystem() {
@@ -246,5 +243,10 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	@IbisDocRef({"12", FILESYSTEMACTOR})
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
+	}
+	
+	@IbisDocRef({"13", FILESYSTEMACTOR})
+	public void setWriteLineSeparator(boolean writeLineSeparator) {
+		actor.setWriteLineSeparator(writeLineSeparator);
 	}
 }

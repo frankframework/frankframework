@@ -2,9 +2,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
   <xs:element name="Master">
     <xs:annotation>
-      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master - We test here that the sequence of groups, config children and attributes is right.
- It is important that the sequences in @IbisDoc annotations, in the alphabetic order
- and in the order of appearance are all different.</xs:documentation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master - We test here that the sequence of groups, config children and attributes is right.</xs:documentation>
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
@@ -86,17 +84,17 @@
   </xs:group>
   <xs:simpleType name="frankBoolean">
     <xs:restriction base="xs:string">
-      <xs:pattern value="(true|false)|(\$\{[^\}]+\})" />
+      <xs:pattern value="(true|false)|($\{[^\}]+\})" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="frankInt">
     <xs:restriction base="xs:string">
-      <xs:pattern value="((\+|-)?[0-9]+)|(\$\{[^\}]+\})" />
+      <xs:pattern value="((\+|-)?[0-9]+)|($\{[^\}]+\})" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="variableRef">
     <xs:restriction base="xs:string">
-      <xs:pattern value="\$\{[^\}]+\}" />
+      <xs:pattern value="$\{[^\}]+\}" />
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

@@ -13,7 +13,6 @@
 				serviceName="ibis4test-TransactionHandlingMandatory"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" 
 				slotId="${applicationId}/GenericReceiverTransactionHandlingMandatory"
 			/>
 		</receiver>

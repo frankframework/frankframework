@@ -18,52 +18,42 @@
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 					<sender
 						className="nl.nn.adapterframework.jdbc.DirectQuerySender"
 						queryType="select"
-						jmsRealm="jdbc"
 					/>
 				</sender>	
 	        	<forward name="success" path="Echo"/>

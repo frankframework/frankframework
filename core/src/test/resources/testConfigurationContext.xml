@@ -31,6 +31,11 @@
 	/>
 
 	<bean id="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" lazy-init="true" />
+	<bean id="scheduler" class="nl.nn.adapterframework.scheduler.SchedulerFactoryBean" lazy-init="true" >
+		<property name="configLocation" value="classpath:quartz.properties"/>
+		<property name="autoStartup" value="false"/>
+		<property name="waitForJobsToCompleteOnShutdown" value="false"/>
+	</bean>
 
 	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
 	<bean name="flowGenerator" class="nl.nn.adapterframework.testutil.DummyFlowGenerator" scope="prototype" lazy-init="true" />

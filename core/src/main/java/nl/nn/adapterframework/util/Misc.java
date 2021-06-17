@@ -1042,12 +1042,13 @@ public class Misc {
 	/**
 	 * Converts the list to a string.
 	 * <pre>
-	 *      List list = new ArrayList<Integer>();
+	 *      List<String> list = new ArrayList<>();
 	 *      list.add("We Are");
 	 *      list.add(" Frank");
 	 *      String res = Misc.listToString(list); // res gives out "We Are Frank"
 	 * </pre>
 	 */
+	//TODO Parameterize list
 	public static String listToString(List list) {
 		StringBuilder sb = new StringBuilder();
 		for (Iterator it=list.iterator(); it.hasNext();) {
