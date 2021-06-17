@@ -956,7 +956,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 							if (message==null) {
 								message = messageSupplier.get();
 							}
-							message = messageSupplier.get();
 							sobj=message;
 						}
 					}
