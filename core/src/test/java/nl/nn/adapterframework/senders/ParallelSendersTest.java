@@ -12,7 +12,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-@Ignore
+@Ignore //STUB TaskExecutor
 public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 	private static final int DELAY = 2000;
