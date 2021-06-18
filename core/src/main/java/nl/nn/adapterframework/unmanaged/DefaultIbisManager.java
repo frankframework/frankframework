@@ -331,19 +331,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	@Override
-	public List<String> getSortedStartedAdapterNames() {
-		List<String> startedAdapters = new ArrayList<String>();
-		for (Adapter adapter : getRegisteredAdapters()) {
-			// add the adapterName if it is started.
-			if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
-				startedAdapters.add(adapter.getName());
-			}
-		}
-		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
-		return startedAdapters;
-	}
-
-	@Override
 	public PlatformTransactionManager getTransactionManager() {
 		return transactionManager;
 	}

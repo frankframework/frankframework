@@ -219,14 +219,6 @@ public class CreateRestViewPipe extends XsltPipe {
 	private String retrieveMenuBarParameter(String srcPrefix) {
 		XmlBuilder menuBar = new XmlBuilder("menuBar");
 		XmlBuilder imagelinkMenu = new XmlBuilder("imagelinkMenu");
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "rest/showConfigurationStatus", "configurationStatus", "Show Configuration Status"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "rest/showConfiguration", "configuration", "Show Configuration"));
-		if (appConstants.getBoolean("active.ifsa", false)) {
-			imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "rest/testIfsaService", "ifsa-message", "Call an IFSA Service"));
-		}
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "rest/testPipeLine", "testPipeLine", "Test a PipeLine of an Adapter"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "rest/webservices", "wsdl", "Webservices"));
-		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "rest/showEnvironmentVariables", "properties", "Show Environment Variables"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "larva", "larva", "Larva Test Tool"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "testtool", "ladybug", "Ladybug Test Tool"));
 		imagelinkMenu.addSubElement(createImagelinkElement(srcPrefix, "javascript:void(0)", "info", "Information"));

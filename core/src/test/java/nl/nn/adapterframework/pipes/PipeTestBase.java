@@ -30,7 +30,14 @@ public abstract class PipeTestBase<P extends IPipe> {
 	protected P pipe;
 	protected PipeLine pipeline;
 	protected Adapter adapter;
-	private TestConfiguration configuration = null;
+	private static TestConfiguration configuration;
+
+	private TestConfiguration getConfiguration() {
+		if(configuration == null) {
+			configuration = new TestConfiguration();
+		}
+		return configuration;
+	}
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -39,39 +46,40 @@ public abstract class PipeTestBase<P extends IPipe> {
 
 	@Before
 	public void setup() throws Exception {
-		configuration = new TestConfiguration();
 		pipe = createPipe();
 		autowireByType(pipe);
 		pipe.registerForward(new PipeForward("success",null));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipeline = configuration.createBean(PipeLine.class);
+		pipeline = getConfiguration().createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
 		exit.setState("success");
 		pipeline.registerPipeLineExit(exit);
-		adapter = configuration.createBean(Adapter.class);
+		adapter = getConfiguration().createBean(Adapter.class);
 		adapter.setName("TestAdapter-for-".concat(pipe.getClass().getSimpleName()));
 		adapter.setPipeLine(pipeline);
 	}
 
 	@After
-	public final void tearDown() {
-		if(configuration != null) {
-			configuration.close();
-		}
+	public void tearDown() throws Exception {
+		getConfigurationWarnings().destroy();
+		getConfigurationWarnings().afterPropertiesSet();
+		pipe = null;
+		pipeline = null;
+		adapter = null;
 	}
 
 	protected void autowireByType(Object bean) {
-		configuration.autowireByType(bean);
+		getConfiguration().autowireByType(bean);
 	}
 
 	protected void autowireByName(Object bean) {
-		configuration.autowireByName(bean);
+		getConfiguration().autowireByName(bean);
 	}
 
 	protected ConfigurationWarnings getConfigurationWarnings() {
-		return configuration.getConfigurationWarnings();
+		return getConfiguration().getConfigurationWarnings();
 	}
 
 	/**

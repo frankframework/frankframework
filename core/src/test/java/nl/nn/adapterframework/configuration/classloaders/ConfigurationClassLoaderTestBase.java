@@ -30,12 +30,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
@@ -56,9 +54,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 		appConstants = AppConstants.getInstance();
 		createAndConfigure(".");
 
-		//We have to create a dummy configuration so Application- and Configuration-Warnings beans are created
-		Configuration configuration = new TestConfiguration();
-		configuration.getBean(ApplicationWarnings.class);
+		ApplicationWarnings.removeInstance();
 	}
 
 	protected void createAndConfigure() throws Exception {

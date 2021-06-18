@@ -833,7 +833,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			// load new (activated) configs
 			List<String> dbConfigNames = null;
 			try {
-				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), dataSource, true);
+				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), true);
 			} catch (ConfigurationException e) {
 				getMessageKeeper().add("error while retrieving configuration names from database", e);
 			}

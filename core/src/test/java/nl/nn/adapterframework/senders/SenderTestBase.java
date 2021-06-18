@@ -35,7 +35,14 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 
 	protected Logger log = LogUtil.getLogger(this);
 	protected S sender;
-	private TestConfiguration configuration = null;
+	private static TestConfiguration configuration;
+
+	private TestConfiguration getConfiguration() {
+		if(configuration == null) {
+			configuration = new TestConfiguration();
+		}
+		return configuration;
+	}
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -47,14 +54,13 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 
 	@Before
 	public void setUp() throws Exception {
-		configuration = new TestConfiguration();
 		session = new PipeLineSession();
 		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
 		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
 		session.put(PipeLineSession.messageIdKey, messageId);
 		session.put(PipeLineSession.technicalCorrelationIdKey, technicalCorrelationId);
 		sender = createSender();
-		configuration.autowireByType(sender);
+		getConfiguration().autowireByType(sender);
 	}
 
 	@After
@@ -62,9 +68,6 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 		if (sender != null) {
 			sender.close();
 			sender = null;
-		}
-		if(configuration != null) {
-			configuration.close();
 		}
 	}
 

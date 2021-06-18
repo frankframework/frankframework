@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.mockito.Mockito;
@@ -27,8 +26,6 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.RunStateEnum;
 
 public class MockIbisManager extends Mockito implements IbisManager {
 	private IbisContext ibisContext = spy(new IbisContext());
@@ -100,19 +97,6 @@ public class MockIbisManager extends Mockito implements IbisManager {
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public List<String> getSortedStartedAdapterNames() {
-		List<String> startedAdapters = new ArrayList<String>();
-		for (IAdapter adapter : getRegisteredAdapters()) {
-			// add the adapterName if it is started.
-			if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
-				startedAdapters.add(adapter.getName());
-			}
-		}
-		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
-		return startedAdapters;
 	}
 
 	@Override

@@ -70,7 +70,7 @@ public class IbisContext extends IbisApplicationContext {
 		if(!Boolean.parseBoolean(APP_CONSTANTS.getProperty("jdbc.convertFieldnamesToUppercase")))
 			ApplicationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
-		String loadFileSuffix = APP_CONSTANTS.getProperty("ADDITIONAL.PROPERTIES.FILE.SUFFIX");
+		String loadFileSuffix = APP_CONSTANTS.getProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
 		if (StringUtils.isNotEmpty(loadFileSuffix))
 			ApplicationWarnings.add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
 
