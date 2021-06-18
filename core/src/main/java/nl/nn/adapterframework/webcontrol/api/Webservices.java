@@ -75,7 +75,7 @@ public final class Webservices extends Base {
 	@Path("/webservices")
 	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogDirectory() throws ApiException {
+	public Response getWebServices() throws ApiException {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
