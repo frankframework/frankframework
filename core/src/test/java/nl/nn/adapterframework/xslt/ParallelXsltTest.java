@@ -23,6 +23,7 @@ import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
+@Ignore //STUB TaskExecutor
 public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	public int NUM_SENDERS=10;
