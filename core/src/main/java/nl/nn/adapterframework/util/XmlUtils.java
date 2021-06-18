@@ -1640,7 +1640,11 @@ public class XmlUtils {
 			Object value = parameters.get(paramName);
 			if (value != null) {
 				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[] || value instanceof Message) {
-					value = Message.asString(value);
+					try {
+						value = Message.asString(value);
+					} catch (IOException e) {
+						throw new IOException("Cannot get value of parameter ["+paramName+"]", e);
+					}
 				}
 				t.setParameter(paramName, value);
 				log.debug("setting parameter [" + paramName+ "] on transformer from class ["+value.getClass().getTypeName()+"]");

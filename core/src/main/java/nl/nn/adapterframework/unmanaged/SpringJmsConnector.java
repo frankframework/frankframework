@@ -276,7 +276,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				IPortConnectedListener<Message> listener = getListener();
 				threadContext.put(THREAD_CONTEXT_SESSION_KEY,session);
 //				if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
-				getReceiver().processRawMessage(listener, message, threadContext);
+				getReceiver().processRawMessage(listener, message, threadContext, false);
 //				if (log.isDebugEnabled()) log.debug("transaction status after: "+JtaUtil.displayTransactionStatus());
 			} catch (ListenerException e) {
 				getReceiver().increaseRetryIntervalAndWait(e,getLogPrefix());
