@@ -304,4 +304,11 @@ class DocWriterNewXmlUtils {
 		union.addAttribute("memberTypes", memberTypes);
 		return union;
 	}
+
+	static XmlBuilder addPattern(XmlBuilder context, String pattern) {
+		XmlBuilder result = new XmlBuilder("pattern", "xs", XML_SCHEMA_URI);
+		context.addSubElement(result);
+		result.addAttribute("value", pattern);
+		return result;
+	}
 }
