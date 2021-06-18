@@ -1,12 +1,9 @@
 package nl.nn.adapterframework.testutil;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -72,16 +69,6 @@ public class TestConfiguration extends Configuration {
 		if(t.getClass().isInstance(originalBean)) {
 			fail("Unable to mock bean ["+originalBean+"] got ["+t.getClass().getName()+"] instead");
 		}
-	}
-
-	@Test
-	public void testTestConfiguration() {
-		Configuration config = new TestConfiguration(); //Validate it can create/init
-		assertTrue(config.isActive());
-		assertEquals(TEST_CONFIGURATION_NAME, config.getId());
-		config.close();
-		assertFalse(config.isActive());
-		config.close();
 	}
 
 	public void autowireByType(Object bean) {
