@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.util.Map;
@@ -35,7 +34,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
-import nl.nn.adapterframework.configuration.ConfigurationUtils.ConfigurationValidator;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 
@@ -87,72 +85,6 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 
 	@Test
-	public void retrieveBuildInfo() throws IOException {
-		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
-		assertNotNull("BuildInfoZip not found", zip);
-
-		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
-		String[] buildInfo = ConfigurationUtils.retrieveBuildInfo(zip.openStream());
-
-		String buildInfoName = buildInfo[0];
-		assertEquals("buildInfo name does not match", "ConfigurationName", buildInfoName);
-
-		String buildInfoVersion = buildInfo[1];
-		assertEquals("buildInfo version does not match", "001_20191002-1300", buildInfoVersion);
-	}
-
-	@Test
-	public void retrieveBuildInfoSC() throws IOException {
-		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
-		assertNotNull("BuildInfoZip not found", zip);
-
-		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SC";
-		String[] buildInfo = ConfigurationUtils.retrieveBuildInfo(zip.openStream());
-
-		String buildInfoName = buildInfo[0];
-		assertEquals("buildInfo name does not match", "ConfigurationName", buildInfoName);
-
-		String buildInfoVersion = buildInfo[1];
-		assertEquals("buildInfo version does not match", "123_20181002-1300", buildInfoVersion);
-	}
-
-	@Test
-	public void retrieveBuildInfoCUSTOM() throws IOException {
-		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
-		assertNotNull("BuildInfoZip not found", zip);
-
-		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SPECIAL";
-		String[] buildInfo = ConfigurationUtils.retrieveBuildInfo(zip.openStream());
-
-		String buildInfoName = buildInfo[0];
-		assertEquals("buildInfo name does not match", "ConfigurationName", buildInfoName);
-
-		String buildInfoVersion = buildInfo[1];
-		assertEquals("buildInfo version does not match", "789_20171002-1300", buildInfoVersion);
-	}
-
-	@Test
-	public void configurationValidator() throws Exception {
-		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
-		assertNotNull("BuildInfoZip not found", zip);
-
-		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
-		ConfigurationValidator details = new ConfigurationValidator(zip.openStream());
-
-		assertEquals("buildInfo name does not match", "ConfigurationName", details.getName());
-		assertEquals("buildInfo version does not match", "001_20191002-1300", details.getVersion());
-	}
-
-	@Test(expected=ConfigurationException.class)
-	public void configurationValidatorNoBuildInfoZip() throws Exception {
-		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/noBuildInfoZip.jar");
-		assertNotNull("BuildInfoZip not found", zip);
-
-		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
-		new ConfigurationValidator(zip.openStream());
-	}
-
-	@Test
 	public void addConfigToDatabaseOld() throws Exception {
 		mockDatabase();
 
@@ -174,7 +106,7 @@ public class ConfigurationUtilsTest extends Mockito {
 	public void addConfigToDatabaseNew() throws Exception {
 		mockDatabase();
 
-		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
+		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull("BuildInfoZip not found", zip);
 		String filename = FilenameUtils.getName(zip.getFile());
@@ -198,7 +130,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		String filename = FilenameUtils.getName(zip.getFile());
 		assertNotNull("filename cannot be determined", filename);
 
-		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SC";
+		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SC";
 		String result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
 		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
@@ -217,7 +149,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		String filename = FilenameUtils.getName(zip.getFile());
 		assertNotNull("filename cannot be determined", filename);
 
-		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SPECIAL";
+		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SPECIAL";
 		String result = ConfigurationUtils.addConfigToDatabase(ibisContext, "fakeDataSource", false, false, filename, zip.openStream(), "dummy-user");
 		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
@@ -234,7 +166,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/multiConfig.zip");
 		assertNotNull("multiConfig.zip not found", zip);
 
-		ConfigurationUtils.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
+		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
 		Map<String, String> result = ConfigurationUtils.processMultiConfigZipFile(ibisContext, "fakeDataSource", false, false, zip.openStream(), "user");
 		assertNotEquals("file uploaded to mock database", 0, result.size());
 		assertEquals("{ConfigurationName: 001_20191002-1300=loaded, ConfigurationName: 002_20191002-1400=loaded, noBuildInfoZip.jar=no [BuildInfo.properties] present in configuration}",result.toString());

@@ -1308,7 +1308,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return presumedTimeOutInterval;
 	}
 
-	
+	@Deprecated
+	@ConfigurationWarning("Please use a base64pipe to decode the message and send the result to the pipeline exit")
 	@IbisDoc({"24", "if set, the result is first base64 decoded and then streamed to the httpservletresponse object", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;

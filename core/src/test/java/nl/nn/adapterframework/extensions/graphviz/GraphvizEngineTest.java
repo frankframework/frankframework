@@ -40,12 +40,14 @@ public class GraphvizEngineTest {
 	public void canInitDefaultWithoutErrors() throws IOException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
+		engine.close();
 	}
 
 	@Test
 	public void canInitNullWithoutErrors() throws IOException {
 		GraphvizEngine engine = new GraphvizEngine(null);
 		assertNotNull(engine);
+		engine.close();
 	}
 
 	@Test
@@ -57,6 +59,7 @@ public class GraphvizEngineTest {
 		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 
 	@Test
@@ -69,6 +72,7 @@ public class GraphvizEngineTest {
 		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 
 	@Test
@@ -80,6 +84,7 @@ public class GraphvizEngineTest {
 		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg_standalone");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 
 	@Test
@@ -97,6 +102,7 @@ public class GraphvizEngineTest {
 
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 
 	@Test
@@ -109,6 +115,7 @@ public class GraphvizEngineTest {
 		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 	// This should be the last test case to run since it changes the graphviz version(prepend 'z' to method name)
 	@Test(expected = IOException.class)
@@ -116,6 +123,7 @@ public class GraphvizEngineTest {
 		GraphvizEngine engine = new GraphvizEngine("1.2.3");
 		assertNotNull(engine);
 		engine.execute(dot);
+		engine.close();
 	}
 
 	@Test(expected = GraphvizException.class)
@@ -123,6 +131,7 @@ public class GraphvizEngineTest {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 		engine.execute("i'm not a dot!");
+		engine.close();
 	}
 
 	@Test
@@ -138,6 +147,7 @@ public class GraphvizEngineTest {
 		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.0.5.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 
 	@Test
@@ -153,5 +163,6 @@ public class GraphvizEngineTest {
 		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.1.5.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 }

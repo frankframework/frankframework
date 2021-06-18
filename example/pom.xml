@@ -31,27 +31,11 @@
 			<artifactId>h2</artifactId>
 			<version>1.4.199</version>
 		</dependency>
-		<!-- Test scoped dependencies -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<!-- Add this dependency -->
+		<!-- Includes missing javax.jms.JMSExceptions class -->
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ladybug</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>

@@ -29,10 +29,8 @@ import org.springframework.context.LifecycleProcessor;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
-import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
  * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
@@ -122,19 +120,6 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 
 	public List<Adapter> getAdapterList() {
 		return new ArrayList<>(getAdapters().values());
-	}
-
-	public List<String> getSortedStartedAdapterNames() {
-		List<String> startedAdapters = new ArrayList<String>();
-		for (int i = 0; i < getAdapterList().size(); i++) {
-			IAdapter adapter = getAdapter(i);
-			// add the adapterName if it is started.
-			if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
-				startedAdapters.add(adapter.getName());
-			}
-		}
-		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
-		return startedAdapters;
 	}
 
 	@Override

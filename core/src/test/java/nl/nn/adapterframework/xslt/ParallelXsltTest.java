@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.xslt;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assume.assumeFalse;
 
 import java.util.ArrayList;
@@ -9,11 +9,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.runners.Parameterized.Parameters;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -45,16 +44,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	
 	protected SenderSeries createSenderContainer() {
-		SenderSeries senders=new ParallelSenders() {
-			@Override
-			protected TaskExecutor createTaskExecutor() {
-				ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-				taskExecutor.setCorePoolSize(NUM_SENDERS);
-				taskExecutor.initialize();
-				return taskExecutor;
-			}
-		};
-
+		SenderSeries senders=new ParallelSenders();
 		autowireByType(senders);
 		return senders;
 	}
@@ -91,6 +81,13 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		psenders.addParameter(param);
 		pipe.setSender(psenders);
 		return pipe;
+	}
+
+	@After
+	@Override
+	public void tearDown() throws Exception {
+		xsltSenders = null;
+		super.tearDown();
 	}
 
 	private String stripPrefix(String string, String prefix) {

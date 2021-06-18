@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
+import nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -123,16 +124,16 @@ public abstract class WsdlGeneratorUtils {
         return uri == null ? null : uri.replaceAll(" ", "_");
     }
 
-    //check if the adapter has WebServiceListener with an inputValidator 
+	//check if the adapter has WebServiceListener with an inputValidator 
 	public static boolean canHaveWsdl(Adapter adapter) {
 		IValidator inputValidator = adapter.getPipeLine().getInputValidator();
-		boolean haveWebServiceListener = false;
-		for (IListener listener : WsdlGeneratorUtils.getListeners(adapter)) {
+		boolean hasWebServiceListener = false;
+		for (IListener<?> listener : WsdlGeneratorUtils.getListeners(adapter)) {
 			if(listener instanceof WebServiceListener) {
-				haveWebServiceListener = true;
+				hasWebServiceListener = true;
 			}
 		}
-		return inputValidator != null && haveWebServiceListener;
+		return inputValidator != null && ((inputValidator instanceof ApiWsdlXmlValidator) || hasWebServiceListener);
 	}
 
 }
