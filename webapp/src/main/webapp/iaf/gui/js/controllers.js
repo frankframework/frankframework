@@ -9,8 +9,18 @@ angular.module('iaf.beheerconsole')
 	$scope.loading = true;
 	$rootScope.adapters = {};
 	function initializeFrankConsole () {
-		Debug.log("initializing Frank!Console", appConstants.init);
-		if(appConstants.init < 2) {
+		if(appConstants.init === -1) {
+			appConstants.init = 0;
+			Debug.log("Initializing Frank!Console");
+		} else if(appConstants.init === 0) {
+			Debug.log("Cancelling 2nd initialization attempt");
+			Pace.stop();
+			return ;
+		} else {
+			Debug.info("Loading Frank!Console", appConstants.init);
+		}
+
+		if(appConstants.init === 0) { //Only continue if the init state was -1
 			appConstants.init = 1;
 			Api.Get("server/info", function(data) {
 				appConstants.init = 2;
@@ -82,6 +92,7 @@ angular.module('iaf.beheerconsole')
 
 	Pace.on("done", initializeFrankConsole);
 	$scope.$on('initializeFrankConsole', initializeFrankConsole);
+	$timeout(initializeFrankConsole, 250);
 
 	$scope.loggedin = false;
 

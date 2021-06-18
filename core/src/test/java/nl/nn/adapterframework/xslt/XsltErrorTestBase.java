@@ -77,7 +77,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	}
 
 	@After
-	public void finalChecks() {
+	public void tearDown() {
 		TestAppender.removeAppender(testAppender);
 		Configurator.setLevel("nl.nn.adapterframework", Level.DEBUG);
 		if (testForEmptyOutputStream) {
@@ -86,6 +86,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			System.err.println("ErrorStream:"+errorOutputStream);
 			assertThat(errorOutputStream.toString(), isEmptyString());
 		}
+		super.tearDown();
 	}
 
 	protected void checkTestAppender(int expectedSize, String expectedString) {
