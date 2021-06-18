@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.CoreMatchers;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -25,13 +26,19 @@ public class DatabaseSchedulerTest extends Mockito {
 
 	@Before
 	public void setup() throws Exception {
-		configuration = spy(new TestConfiguration());
+		configuration = new TestConfiguration(true);
 		configuration.getIbisManager(); //Sets a dummy IbisManager if non is found
 
 		job = configuration.createBean(JobDef.class);
 		job.setName("testJob");
 		job.setFunction(JobDefFunctions.LOAD_DATABASE_SCHEDULES.getName());
 		job.configure();
+	}
+
+	@After
+	public void tearDown() {
+		configuration.close();
+		configuration = null; // <- force GC to cleanup!
 	}
 
 	@Test

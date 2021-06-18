@@ -22,10 +22,21 @@ import nl.nn.adapterframework.webcontrol.api.MockIbisManager;
  */
 public class TestConfiguration extends Configuration {
 	public final static String TEST_CONFIGURATION_NAME = "TestConfiguration";
+	private boolean mockBeanFactory = false;
 
 	//Configures a standalone configuration.
 	public TestConfiguration() {
+		this(false);
+	}
+
+	/**
+	 * When the beanfactory is mocked it holds bean references!
+	 */
+	public TestConfiguration(boolean mockBeanFactory) {
 		super();
+
+		this.mockBeanFactory = mockBeanFactory;
+
 		setConfigLocation("testConfigurationContext.xml");
 		setName(TEST_CONFIGURATION_NAME);
 		refresh();
@@ -39,7 +50,11 @@ public class TestConfiguration extends Configuration {
 
 	@Override
 	protected DefaultListableBeanFactory createBeanFactory() {
-		return Mockito.spy(new DefaultListableBeanFactory());
+		if(mockBeanFactory) {
+			return Mockito.spy(new DefaultListableBeanFactory());
+		} else {
+			return super.createBeanFactory();
+		}
 	}
 
 	public <T> void mockCreateBean(Class<T> originalBean, Class<? extends T> mockedBean) {

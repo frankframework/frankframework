@@ -65,6 +65,9 @@ public abstract class PipeTestBase<P extends IPipe> {
 	public void tearDown() throws Exception {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
+		pipe = null;
+		pipeline = null;
+		adapter = null;
 	}
 
 	protected void autowireByType(Object bean) {

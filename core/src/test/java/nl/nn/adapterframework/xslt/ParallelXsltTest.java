@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.runners.Parameterized.Parameters;
@@ -80,6 +81,13 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		psenders.addParameter(param);
 		pipe.setSender(psenders);
 		return pipe;
+	}
+
+	@After
+	@Override
+	public void tearDown() throws Exception {
+		xsltSenders = null;
+		super.tearDown();
 	}
 
 	private String stripPrefix(String string, String prefix) {
