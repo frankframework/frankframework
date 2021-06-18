@@ -1050,10 +1050,6 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
-	@IbisDoc({"controls whether adapter is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the receiver is not included in the configuration", "true"})
-	public void setActive(boolean b) {
-		active = b;
-	}
 	public boolean isActive() {
 		return active;
 	}

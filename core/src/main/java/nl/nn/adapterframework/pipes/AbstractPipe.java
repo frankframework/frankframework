@@ -422,10 +422,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return this.name;
 	}
 
-	@IbisDoc({"2", "controls whether pipe is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the pipe is not included in the configuration", "true"})
-	public void setActive(boolean b) {
-		active = b;
-	}
 	@Override
 	public boolean isActive() {
 		return active;

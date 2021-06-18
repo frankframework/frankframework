@@ -139,9 +139,6 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		return type;
 	}
 
-	public void setActive(boolean b) {
-		active = b;
-	}
 	@Override
 	public boolean isActive() {
 		return active;

@@ -2025,11 +2025,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		propagateName();
 	}
 
-	@IbisDoc({"2", "If set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the receiver is not included in the configuration", "true"})
-	public void setActive(boolean b) {
-		active = b;
-	}
-
 	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
 	public void setOnError(String value) {
 		if(StringUtils.isNotEmpty(value)) {
