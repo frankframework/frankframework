@@ -16,7 +16,6 @@ import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
@@ -32,7 +31,6 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
 
-@Ignore //STUB TaskExecutor
 public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachChildElementPipe> {
 
 	private boolean TEST_CDATA=false;

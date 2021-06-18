@@ -3,37 +3,19 @@ package nl.nn.adapterframework.senders;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-@Ignore //STUB TaskExecutor
 public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 	private static final int DELAY = 2000;
-	private ThreadPoolTaskExecutor executor = null;
-	protected TaskExecutor getTaskExecutor() {
-		if(executor == null) {
-			executor = new ThreadPoolTaskExecutor();
-			executor.setCorePoolSize(10);
-			executor.initialize();
-		}
-		return executor;
-	}
 
 	@Override
 	public ParallelSenders createSender() throws Exception {
-		ParallelSenders ps = new ParallelSenders() {
-			@Override
-			protected TaskExecutor createTaskExecutor() {
-				return getTaskExecutor();
-			}
-		};
+		ParallelSenders ps = new ParallelSenders();
 		return ps;
 	}
 

@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.xslt;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assume.assumeFalse;
 
 import java.util.ArrayList;
@@ -12,8 +12,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.runners.Parameterized.Parameters;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -23,7 +21,6 @@ import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
-@Ignore //STUB TaskExecutor
 public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	public int NUM_SENDERS=10;
@@ -46,16 +43,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	
 	protected SenderSeries createSenderContainer() {
-		SenderSeries senders=new ParallelSenders() {
-			@Override
-			protected TaskExecutor createTaskExecutor() {
-				ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-				taskExecutor.setCorePoolSize(NUM_SENDERS);
-				taskExecutor.initialize();
-				return taskExecutor;
-			}
-		};
-
+		SenderSeries senders=new ParallelSenders();
 		autowireByType(senders);
 		return senders;
 	}
