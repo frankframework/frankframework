@@ -61,8 +61,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private File configFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.config.dir"));
 	private ApplicationContext applicationContext;
 
-	private static final String ADAPTER2DOT_XSLT = "/xsl/adapter2dot.xsl";
-	private static final String CONFIGURATION2DOT_XSLT = "/xsl/configuration2dot.xsl";
+	private static final String ADAPTER2DOT_XSLT = "/xml/xsl/adapter2dot.xsl";
+	private static final String CONFIGURATION2DOT_XSLT = "/xml/xsl/configuration2dot.xsl";
 	private static final String NO_IMAGE_AVAILABLE = "/no_image_available.svg";
 
 	private TransformerPool transformerPoolAdapter;
