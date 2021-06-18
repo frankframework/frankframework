@@ -346,7 +346,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						long senderDuration = senderEndTime - senderStartTime;
 						senderStatisticsKeeper.addValue(senderDuration);
 						if (getBlockSize()>0 && ++itemsInBlock >= getBlockSize()) {
-							itemsInBlock=0;
 							endBlock();
 						}
 					}
