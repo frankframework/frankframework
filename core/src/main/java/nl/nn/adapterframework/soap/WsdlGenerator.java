@@ -916,10 +916,6 @@ public class WsdlGenerator {
         }
     }
 
-    protected PipeLine getPipeLine() {
-        return pipeLine;
-    }
-
     protected String getRoot(IXmlValidator xmlValidator) {
         return getRoot(xmlValidator, false);
     }

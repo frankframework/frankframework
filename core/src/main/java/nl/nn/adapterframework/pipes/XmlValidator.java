@@ -38,6 +38,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.IDualModeValidator;
@@ -781,10 +782,13 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	@IbisDoc({"7", "If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "<code>false</code>"})
+	@Deprecated
+	@ConfigurationWarning("use failure forward instead")
 	public void setForwardFailureToSuccess(boolean b) {
 		this.forwardFailureToSuccess = b;
 	}
-	public boolean isForwardFailureToSuccess() {
+	@Deprecated
+	private boolean isForwardFailureToSuccess() {
 		return forwardFailureToSuccess;
 	}
 
