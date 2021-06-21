@@ -36,7 +36,6 @@ import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -51,11 +50,9 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
@@ -381,8 +378,6 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 
 	private StatisticsKeeper statsKeeper;
 
-	private PlatformTransactionManager txManager;
-
 	private String jobGroup = null;
 
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
@@ -507,46 +502,36 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			return;
 		}
 		try {
-			IbisTransaction itx = IbisTransaction.getTransaction(getTxManager(), getTxDef(), "scheduled job ["+getName()+"]");
-			try {
-				if (getLocker() != null) {
-					String objectId = null;
+			if (getLocker() != null) {
+				String objectId = null;
+				try {
+					objectId = getLocker().acquire(getMessageKeeper());
+				} catch (Exception e) {
+					getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
+					log.error(getLogPrefix()+e.getMessage());
+				}
+				if (objectId!=null) {
+					TimeoutGuard tg = new TimeoutGuard("Job "+getName());
 					try {
-						objectId = getLocker().acquire(getMessageKeeper());
-					} catch (Exception e) {
-						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
-						log.error(getLogPrefix()+e.getMessage());
+						tg.activateGuard(getTransactionTimeout());
+						runJob(ibisManager);
+					} finally {
+						if (tg.cancel()) {
+							log.error(getLogPrefix()+"thread has been interrupted");
+						}
 					}
-					if (objectId!=null) {
-						TimeoutGuard tg = new TimeoutGuard("Job "+getName());
-						try {
-							tg.activateGuard(getTransactionTimeout());
-							runJob(ibisManager);
-						} finally {
-							if (tg.cancel()) {
-								log.error(getLogPrefix()+"thread has been interrupted");
-								if(itx != null) {
-									itx.setRollbackOnly();
-								}
-							}
-						}
-						try {
-							getLocker().release(objectId);
-						} catch (Exception e) {
-							String msg = "error while removing lock: " + e.getMessage();
-							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
-							log.warn(getLogPrefix()+msg);
-						}
-					} else {
-						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
+					try {
+						getLocker().release(objectId);
+					} catch (Exception e) {
+						String msg = "error while removing lock: " + e.getMessage();
+						getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
+						log.warn(getLogPrefix()+msg);
 					}
 				} else {
-					runJob(ibisManager);
+					getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
 				}
-			} finally {
-				if(itx != null) {
-					itx.commit();
-				}
+			} else {
+				runJob(ibisManager);
 			}
 		} finally {
 			decrementCountThreads();
@@ -687,14 +672,14 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 		Date date = new Date();
 
 		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);
-		
+
 		List<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
 
 		for (Iterator<String> iter = datasourceNames.iterator(); iter.hasNext();) {
 			String datasourceName = iter.next();
 			FixedQuerySender qs = null;
 			try {
-				qs = ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+				qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 				qs.setDatasourceName(datasourceName);
 				qs.setName("cleanupDatabase-IBISLOCK");
 				qs.setQueryType("other");
@@ -725,22 +710,21 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 		List<MessageLogObject> messageLogs = getAllMessageLogs(ibisManager);
 
 		for (MessageLogObject mlo: messageLogs) {
-			DirectQuerySender qs = null;
+			FixedQuerySender qs = null;
 			try {
-				qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+				qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 				qs.setDatasourceName(mlo.getDatasourceName());
 				qs.setName("cleanupDatabase-"+mlo.getTableName());
 				qs.setQueryType("other");
 				qs.setTimeout(getQueryTimeout());
+				qs.setScalar(true);
 
 				Parameter param = new Parameter();
 				param.setName("now");
 				param.setType(Parameter.TYPE_TIMESTAMP);
 				param.setValue(DateUtils.format(date));
 				qs.addParameter(param);
-				qs.configure(true);
-				qs.open();
-				
+
 				String query;
 				if (qs.getDatabaseType() == Dbms.MSSQL) {
 					query = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT "+(maxRows>0?"TOP "+maxRows+" ":"") + mlo.getKeyField() + " FROM " + mlo.getTableName()
@@ -754,9 +738,22 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 					+ "') AND " + mlo.getExpiryDateField() + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
 					qs.setSqlDialect(Dbms.ORACLE.getKey());
 				}
+				qs.setQuery(query);
+				qs.configure();
+				qs.open();
 
-				Message result = qs.sendMessage(new Message(query), null);
-				log.info("result [" + result + "]");
+				boolean deletedAllRecords = false;
+				while(!deletedAllRecords) {
+					Message result = qs.sendMessage(Message.nullMessage(), null);
+					String resultString = result.asString();
+					log.info("deleted [" + resultString + "] rows");
+					int numberOfRowsAffected = Integer.valueOf(resultString);
+					if(numberOfRowsAffected<maxRows) {
+						deletedAllRecords = true;
+					} else {
+						log.info("executing the query again for job [cleanupDatabase]!");
+					}
+				}
 			} catch (Exception e) {
 				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
@@ -787,7 +784,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 		List<String> configNames = new ArrayList<String>();
 		List<String> configsToReload = new ArrayList<String>();
 
-		FixedQuerySender qs = (FixedQuerySender) ibisManager.getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(dataSource);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
@@ -833,7 +830,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			// load new (activated) configs
 			List<String> dbConfigNames = null;
 			try {
-				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), dataSource, true);
+				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), true);
 			} catch (ConfigurationException e) {
 				getMessageKeeper().add("error while retrieving configuration names from database", e);
 			}
@@ -980,16 +977,16 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	}
 
 	private void executeQueryJob(IbisManager ibisManager) {
-		DirectQuerySender qs;
-		qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		try {
+			qs.setQuery(getQuery());
 			qs.setName("executeQueryJob");
 			qs.setJmsRealm(getJmsRealm());
 			qs.setQueryType("other");
 			qs.setTimeout(getQueryTimeout());
-			qs.configure(true);
+			qs.configure();
 			qs.open();
-			Message result = qs.sendMessage(new Message(getQuery()), null);
+			Message result = qs.sendMessage(Message.nullMessage(), null);
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
 			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
@@ -1209,22 +1206,13 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	}
 
 	@IbisDoc({"Optional Locker, to avoid parallel execution of the Job by multiple threads or servers. The Job is NOT executed when the lock cannot be obtained, " +
-				"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner. " +
-				"N.B. To retain the lock, even after the transaction of the Job rolled back, set Lockers transactionAttribute=\"RequiresNew\" and type=\"P\"; Otherwise, the Locker will join the transaction of the Job and/or the Lock will be released."})
+				"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner. "})
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 		locker.setName("Locker of job ["+getName()+"]");
 	}
 	public Locker getLocker() {
 		return locker;
-	}
-
-
-	public void setTxManager(PlatformTransactionManager manager) {
-		txManager = manager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
 	}
 
 	@IbisDoc({"the number of threads that may execute concurrently", "1"})

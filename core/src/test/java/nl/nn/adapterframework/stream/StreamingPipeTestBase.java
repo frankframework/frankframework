@@ -58,7 +58,7 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 		// TODO: CapProvider should not be provided as argument to provideOutputStream, because that is not used there.
 		// Instead, it must be the next pipe in the pipeline. When it is called, the forward of that pipe
 		// must be the result of the streaming operation.
-		CapProvider capProvider = writeOutputToStream?new CapProvider(null):null;
+//		CapProvider capProvider = writeOutputToStream?new CapProvider(null):null;
 		IPipe nextPipe = null; // TODO: must replace with capProvider, to monitor proper pass through
 		if (provideStreamForInput) {
 			//Object result;

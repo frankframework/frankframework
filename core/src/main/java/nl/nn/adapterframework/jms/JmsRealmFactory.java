@@ -123,29 +123,4 @@ public class JmsRealmFactory {
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
-
-	@Deprecated //remove with struts console
-	public String getFirstDatasourceJmsRealm() {
-		Iterator<String> it = getRegisteredRealmNames();
-		while (it.hasNext()) {
-			String jr = (String) it.next();
-			if (StringUtils.isNotEmpty(getJmsRealm(jr).getDatasourceName())) {
-				return jr;
-			}
-		}
-		return null;
-	}
-
-	@Deprecated //remove with struts console
-	public List<String> getRegisteredDatasourceRealmNamesAsList() {
-		Iterator<String> it = getRegisteredRealmNames();
-		List<String> result = new ArrayList<String>();
-		while (it.hasNext()) {
-			String jr = (String) it.next();
-			if (StringUtils.isNotEmpty(getJmsRealm(jr).getDatasourceName())) {
-				result.add(jr);
-			}
-		}
-		return result;
-	}
 }

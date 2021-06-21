@@ -38,6 +38,10 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 	@Override
 	public void afterPropertiesSet() {
 		appConstants = AppConstants.getInstance(applicationContext.getClassLoader());
+
+		if(warnings == null) {
+			warnings = new LinkedList<>();
+		}
 	}
 
 	protected void addWarnings(List<String> warnings) {
