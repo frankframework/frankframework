@@ -199,6 +199,13 @@ class DocWriterNewXmlUtils {
 		return attribute;
 	}
 
+	static XmlBuilder addAttributeRef(XmlBuilder context, String name) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("ref", name);
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
 	static XmlBuilder addAnyAttribute(XmlBuilder context) {
 		XmlBuilder attribute = new XmlBuilder("anyAttribute", "xs", XML_SCHEMA_URI);
 		context.addSubElement(attribute);

@@ -44,7 +44,6 @@ public enum AttributeTypeStrategy {
 
 	private static Logger log = LogUtil.getLogger(AttributeTypeStrategy.class);
 
-	private static final String ATTRIBUTE_ACTIVE_GROUP_NAME = "groupActive";
 	private static final String ATTRIBUTE_ACTIVE_NAME = "active";
 
 	// The $-sign is not escaped in the regex below. This way,
@@ -125,7 +124,7 @@ public enum AttributeTypeStrategy {
 
 		@Override
 		void addAttributeActive(XmlBuilder context) {
-			DocWriterNewXmlUtils.addAttributeGroupRef(context, ATTRIBUTE_ACTIVE_GROUP_NAME);
+			DocWriterNewXmlUtils.addAttributeRef(context, ATTRIBUTE_ACTIVE_NAME);
 		}
 
 		@Override
@@ -163,14 +162,13 @@ public enum AttributeTypeStrategy {
 		}
 
 		private XmlBuilder createAttributeGroupForAttributeActive() {
-			XmlBuilder result = DocWriterNewXmlUtils.createAttributeGroup(ATTRIBUTE_ACTIVE_GROUP_NAME);
 			XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
-			result.addSubElement(attribute);
 			attribute.addAttribute("name", ATTRIBUTE_ACTIVE_NAME);
+			DocWriterNewXmlUtils.addDocumentation(attribute, "If defined and false, then this element and all its children are ignored");
 			XmlBuilder simpleType = DocWriterNewXmlUtils.addSimpleType(attribute);
 			XmlBuilder restriction = DocWriterNewXmlUtils.addRestriction(simpleType, "xs:string");
 			DocWriterNewXmlUtils.addPattern(restriction, getPattern());
-			return result;
+			return attribute;
 		}
 
 		private String getPattern() {

@@ -15,6 +15,7 @@
       <xs:attribute name="arnold" type="xs:string" />
       <xs:attribute name="dennis" type="xs:string" />
       <xs:attribute name="bernhard" type="xs:string" />
+      <xs:attribute ref="active" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master" use="prohibited" />
     </xs:complexType>
   </xs:element>
@@ -24,6 +25,7 @@
     </xs:annotation>
     <xs:complexType>
       <xs:sequence />
+      <xs:attribute ref="active" />
       <xs:attribute name="elementRole" type="xs:string" fixed="roleEpsilon" use="prohibited" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque" use="prohibited" />
     </xs:complexType>
@@ -35,6 +37,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded" />
           </xs:sequence>
+          <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="roleAlpha" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute processContents="skip" />
@@ -53,6 +56,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded" />
           </xs:sequence>
+          <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="roleBeta" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute processContents="skip" />
@@ -71,6 +75,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded" />
           </xs:sequence>
+          <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="roleDelta" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute processContents="skip" />
@@ -92,6 +97,16 @@
       <xs:pattern value="((\+|-)?[0-9]+)|($\{[^\}]+\})" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:attribute name="active">
+    <xs:annotation>
+      <xs:documentation>If defined and false, then this element and all its children are ignored</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:pattern value="\!?(($\{[^\}]+\})|((t|T)(r|R)(u|U)(e|E))|((f|F)(a|A)(l|L)(s|S)(e|E)))" />
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
   <xs:simpleType name="variableRef">
     <xs:restriction base="xs:string">
       <xs:pattern value="$\{[^\}]+\}" />
