@@ -34,7 +34,6 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		if(element.attributes) {
 			element.attributes.unshift(attributeActive);
 		} else {
-			console.log(`element ${element.fullName} initially does not have attributes`);
 			element.attributes = [attributeActive];
 		}
 	}
