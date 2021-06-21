@@ -42,12 +42,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		//exception.expect(PipeRunException.class);
 		PipeRunResult prr = doPipe(pipe, input, session);
 
-		String result = null;
-		try {
-			result = Message.asString(prr.getResult());
-		} catch (IOException e) {
-			fail("cannot open stream: " + e.getMessage());
-		}
+		String result = prr.getResult().asString();
 		assertEquals("<root>1</root>", result);
 	}
 
@@ -59,12 +54,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		String input = "{ name: Lars }";
 		PipeRunResult prr = doPipe(pipe, input, session);
 
-		String result = null;
-		try {
-			result = Message.asString(prr.getResult());
-		} catch (IOException e) {
-			fail("cannot open stream: " + e.getMessage());
-		}
+		String result = prr.getResult().asString();
 		assertEquals("<name>Lars</name>", result);
 
 	}
@@ -76,49 +66,20 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		String input = "[ \"Wie\", \"dit leest\", \"is gek\" ]";
 		PipeRunResult prr = doPipe(pipe, input, session);
 
-		String result = null;
-		try {
-			result = Message.asString(prr.getResult());
-		} catch (IOException e) {
-			fail("cannot open stream: " + e.getMessage());
-		}
+		String result = prr.getResult().asString();
 		assertEquals("<root><array>Wie</array><array>dit leest</array><array>is gek</array></root>", result);
 	}
 
-//	@Test
-//	public void testEmptyXmlElement() throws Exception {
-//		pipe.setDirection("xml2json");
-//		pipe.configure();
-//		pipe.start();
-//		String input = "<root><value>a</value><empty1></empty1><empty2/></root>";
-//		String expected ="{\"root\":{\"value\":\"a\",\"empty1\":\"\", \"empty2\":\"\"}}";
-//		PipeRunResult prr = doPipe(pipe, input, session);
-//
-//		String result = null;
-//		try {
-//			result = Message.asString(prr.getResult());
-//		} catch (IOException e) {
-//			fail("cannot open stream: " + e.getMessage());
-//		}
-//		assertEquals(expected, result);
-//	}
-
 	@Test
-	public void testEmptyXmlElementV2() throws Exception {
+	public void testEmptyXmlElement() throws Exception {
 		pipe.setDirection("xml2json");
-		pipe.setVersion("2");
 		pipe.configure();
 		pipe.start();
 		String input = "<root><value>a</value><empty1></empty1><empty2/></root>";
 		String expected ="{\"value\":\"a\",\"empty1\":\"\",\"empty2\":\"\"}";
 		PipeRunResult prr = doPipe(pipe, input, session);
 
-		String result = null;
-		try {
-			result = Message.asString(prr.getResult());
-		} catch (IOException e) {
-			fail("cannot open stream: " + e.getMessage());
-		}
+		String result = prr.getResult().asString();
 		assertEquals(expected, result);
 	}
 }
