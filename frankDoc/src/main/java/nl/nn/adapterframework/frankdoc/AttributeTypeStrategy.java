@@ -48,7 +48,7 @@ public enum AttributeTypeStrategy {
 
 	// The $-sign is not escaped in the regex below. This way,
 	// the regexes in the XSDs are not flagged by XMLSpy.
-	static final String PATTERN_REF = "$\\{[^\\}]+\\}";
+	private static final String PATTERN_REF = "$\\{[^\\}]+\\}";
 
 	private static final String FRANK_BOOLEAN = "frankBoolean";
 	private static final String FRANK_INT = "frankInt";
