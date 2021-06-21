@@ -32,14 +32,14 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 	$stateProvider
 	.state('overview', {
 		url: "/",
-		data: {
-			pageTitle: 'Overview'
+		controller: function($scope, $state) {
+			$state.go("group", {group: 'All'});
 		}
 	})
 	.state('group', {
 		url: "/:group",
 		params: {
-			group: { value: '', squash: true},
+			group: { value: 'All' },
 			element: { value: '', squash: true},
 		},
 		templateUrl: function($scope) {
@@ -77,16 +77,10 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 				}
 			}); //Fired once, when API call has been completed
 		},
-		data: {
-			pageTitle: 'Overview'
-		}
 	})
 	.state('element', {
 		parent: "group",
 		url: "/:element",
-		data: {
-			pageTitle: 'Overview'
-		}
 	});
 }])
 .filter('matchElement', function() {

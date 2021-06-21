@@ -14,6 +14,13 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 
 			//map elements so we can search
 			$scope.groups = data.groups;
+			let distinctTypes = [];
+			types.forEach((e) => distinctTypes.push(e.name));
+			$scope.groups.unshift({
+				name: "All",
+				types: distinctTypes
+			});
+
 			for(i in types) {
 				let aType = types[i];
 				$scope.types[aType.name] = aType.members;
