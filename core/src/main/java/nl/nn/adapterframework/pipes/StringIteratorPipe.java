@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class StringIteratorPipe extends IteratingPipe<String> {
 
-	private @Getter int StringIteratorPipeBlockSize=0;
+	private @Getter int stringIteratorPipeBlockSize=0;
 	private @Getter int startPosition=-1;
 	private @Getter int endPosition=-1;
 	private @Getter boolean combineBlocks=true;
@@ -144,7 +144,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 	@Override
 	@IbisDoc({"1", "Controls multiline behaviour. If set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
 	public void setBlockSize(int i) {
-		StringIteratorPipeBlockSize = i;
+		stringIteratorPipeBlockSize = i;
 	}
 
 	@IbisDoc({"2", "If <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); " + 
