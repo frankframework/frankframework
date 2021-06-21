@@ -783,7 +783,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	@IbisDoc({"7", "If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "<code>false</code>"})
 	@Deprecated
-	@ConfigurationWarning("use failure forward instead")
+	@ConfigurationWarning("please specify a forward with name=failure instead")
 	public void setForwardFailureToSuccess(boolean b) {
 		this.forwardFailureToSuccess = b;
 	}

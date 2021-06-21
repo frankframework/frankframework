@@ -3,13 +3,11 @@ package nl.nn.adapterframework.soap;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.net.URL;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
