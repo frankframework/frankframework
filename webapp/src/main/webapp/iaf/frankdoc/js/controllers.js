@@ -6,7 +6,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	$scope.groups = {};
 	$scope.types = {};
 	$scope.elements = {};
-	var http = $http.get(getURI()).then(function(response) {
+	$http.get(getURI()).then(function(response) {
 		if(response && response.data) {
 			let data = response.data;
 			let types = data.types;
@@ -22,6 +22,12 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 				let element = elements[i];
 				$scope.elements[element.fullName] = element;
 			}
+		}
+	}, function(response) {
+		if(response.data && response.data.error) {
+			$scope.loadError = response.data.error;
+		} else {
+			$scope.loadError = "Unable to load Frank!Doc.json file.";
 		}
 	});
 
@@ -39,11 +45,11 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	var parent = $scope.element.parent;
 	$scope.element = $scope.elements[parent]; //Update element to the parent's element
 	$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + $scope.element.fullName.replaceAll(".", "/") + '.html';
-}]).controller('element-child-controller', ['$scope', function($scope) {
+}]).controller('element-children', ['$scope', function($scope) {
 	$scope.getTitle = function(child) {
-		let childCategory = getGroupsOfType(child.type, $scope.groups);
-		let childElements = $scope.getChildElements(child);
-		let title = 'From ' + childCategory + ": ";
+		let groups = getGroupsOfType(child.type, $scope.groups);
+		let childElements = $scope.getElementsOfType(child.type);
+		let title = 'From ' + groups + ": ";
 		for(i = 0; i < childElements.length; ++i) {
 			if(i == 0) {
 				title = title + childElements[i];
@@ -57,8 +63,8 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	function fullNameToSimpleName(fullName) {
 		return fullName.substr(fullName.lastIndexOf(".")+1)
 	}
-	$scope.getChildElements = function(child) {
-		let fullNames = $scope.types[child.type];
+	$scope.getElementsOfType = function(type) {
+		let fullNames = $scope.types[type];
 		let simpleNames = [];
 		fullNames.forEach(fullName => simpleNames.push(fullNameToSimpleName(fullName)));
 		return simpleNames;

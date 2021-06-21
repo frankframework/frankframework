@@ -57,7 +57,6 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 				for(i in groups) {
 					let group = $scope.groups[i];
 					if(group.name == groupName) {
-						$rootScope.category = group; //TODO rename category to group
 						$rootScope.group = group;
 						break;
 					}
@@ -102,18 +101,6 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		}
 		return r;
 	};
-})
-.filter('omitDeprecatedChildrenAndAddChildElements', function() {
-	return function(children, $scope) {
-		result = [];
-		children.forEach(c => {
-			if(! c.deprecated) {
-				c.childElements = $scope.types[c.type];
-				result.push(c);
-			}
-		});
-		return result;
-	}
 });
 
 function getGroupMembers(allTypes, typesToFilterOn) {

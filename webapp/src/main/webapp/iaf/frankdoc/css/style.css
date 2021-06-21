@@ -94,3 +94,12 @@ table.table thead th.tbl-65 {
 	margin-top: 0;
 	margin-bottom: 2rem;
 }
+.loadError {
+	position: absolute;
+	top: 150px;
+	left: 50%;
+	width: 650px;
+	margin-left: -300px;
+	text-align: center;
+	font-size: 30px;
+}

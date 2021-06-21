@@ -1,10 +1,9 @@
-<div>
+<div ng-controller="element-children">
 	<h4>Nested children</h4>
-	<div ng-repeat="child in element.children | omitDeprecatedChildrenAndAddChildElements:this">
-		<div ng-controller="element-child-controller">
-			<b ng-attr-title="{{ getTitle(child) }}">{{child.roleName}}</b><span ng-if="child.description"><b>:</b> {{ child.description }}</span>
-			<p>
+	<div ng-repeat="child in element.children">
+		<div>
+			<b ng-attr-title="{{ getTitle(child) }}">{{child.roleName}}</b>
+			<span ng-if="child.description"><b>:</b> {{ child.description }}</span>
 		</div>
-		<p>
 	</div>
 </div>
