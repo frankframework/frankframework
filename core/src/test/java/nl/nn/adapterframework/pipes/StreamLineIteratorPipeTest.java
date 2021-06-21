@@ -35,7 +35,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
-		assertEquals(expectedLog, resultLog.toString().trim());
+		assertEquals(expectedLogFile, expectedLog, resultLog.toString().trim());
 		assertEquals(expected, actual);
 	}
 
@@ -59,9 +59,9 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 	}
 
 
-	public void testFullBlocksWithCombine(boolean blockEnabled, boolean combinedBlocks, String expectedFile, String expectedLogFile) throws Exception {
+	public void testBlocksWithCombine(boolean blockEnabled, boolean combinedBlocks, int blockSize, String expectedFile, String expectedLogFile) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
-		pipe.setBlockSize(5);
+		pipe.setBlockSize(blockSize);
 		pipe.setLinePrefix("{"); 
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(combinedBlocks);
@@ -75,25 +75,43 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
-		assertEquals(expectedLog, resultLog.toString().trim());
-		assertEquals(expected, actual);
+		assertEquals(expectedLogFile, expectedLog, resultLog.toString().trim());
+		assertEquals(expectedFile, expected, actual);
 	}
 
 	@Test
 	public void testFullBlocksWithCombineOff() throws Exception {
-		testFullBlocksWithCombine(false, false, "/IteratingPipe/TenLinesResultWithLineFixes.xml", "/IteratingPipe/TenLinesLogPlainWithLineFixes.txt");
+		testBlocksWithCombine(false, false, 5, "/IteratingPipe/TenLinesResultWithLineFixes.xml", "/IteratingPipe/TenLinesLogPlainWithLineFixes.txt");
 	}
 	@Test
 	public void testFullBlocksWithCombineOn() throws Exception {
-		testFullBlocksWithCombine(false, true, "/IteratingPipe/TenLinesResultCombinedInBlocksOfFiveWithLineFixes.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfFiveWithLineFixes.txt");
+		testBlocksWithCombine(false, true, 5, "/IteratingPipe/TenLinesResultCombinedInBlocksOfFiveWithLineFixes.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfFiveWithLineFixes.txt");
 	}
 	@Test
 	public void testFullBlocksWithCombineOffBlockEnabled() throws Exception {
-		testFullBlocksWithCombine(true, false, "/IteratingPipe/TenLinesResultWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogInBlocksOfFiveWithLineFixesBlockEnabled.txt");
+		testBlocksWithCombine(true, false, 5, "/IteratingPipe/TenLinesResultWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogInBlocksOfFiveWithLineFixesBlockEnabled.txt");
 	}
 	@Test
 	public void testFullBlocksWithCombineOnBlockEnabled() throws Exception {
-		testFullBlocksWithCombine(true, true, "/IteratingPipe/TenLinesResultCombinedInBlocksOfFiveWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfFiveWithLineFixesBlockEnabled.txt");
+		testBlocksWithCombine(true, true, 5, "/IteratingPipe/TenLinesResultCombinedInBlocksOfFiveWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfFiveWithLineFixesBlockEnabled.txt");
+	}
+
+	@Test
+	public void testBlocksOf1WithCombineOff() throws Exception {
+		testBlocksWithCombine(false, false, 1, "/IteratingPipe/TenLinesResultWithLineFixes.xml", "/IteratingPipe/TenLinesLogPlainWithLineFixes.txt");
+	}
+	@Test
+	public void testBlocksOf1WithCombineOn() throws Exception {
+		testBlocksWithCombine(false, true, 1, "/IteratingPipe/TenLinesResultCombinedInBlocksOfOneWithLineFixes.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfOneWithLineFixes.txt");
+	}
+
+	@Test
+	public void testBlocksOf1WithCombineOffBlockEnabled() throws Exception {
+		testBlocksWithCombine(true, false, 1, "/IteratingPipe/TenLinesResultWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogInBlocksOfOneWithLineFixesBlockEnabled.txt");
+	}
+	@Test
+	public void testBlocksOf1WithCombineOnBlockEnabled() throws Exception {
+		testBlocksWithCombine(true, true, 1, "/IteratingPipe/TenLinesResultCombinedInBlocksOfOneWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfOneWithLineFixesBlockEnabled.txt");
 	}
 
 	@Test
