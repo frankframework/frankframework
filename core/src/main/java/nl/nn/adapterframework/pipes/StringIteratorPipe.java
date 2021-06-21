@@ -18,11 +18,12 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.io.Writer;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -35,27 +36,30 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class StringIteratorPipe extends IteratingPipe<String> {
 
-	private int blockSize=0;
-	private int startPosition=-1;
-	private int endPosition=-1;
-	private boolean combineBlocks=true;
+	private @Getter int stringIteratorPipeBlockSize=0;
+	private @Getter int startPosition=-1;
+	private @Getter int endPosition=-1;
+	private @Getter boolean combineBlocks=true;
 
-	private String blockPrefix="<block>";
-	private String blockSuffix="</block>";
-	private String linePrefix="";
-	private String lineSuffix="";
+	private @Getter String blockPrefix="<block>";
+	private @Getter String blockSuffix="</block>";
+	private @Getter String linePrefix="";
+	private @Getter String lineSuffix="";
 
 	private boolean processInBlocksBySize=false;
 	private boolean processInBlocksByKey=false;
-	private boolean escapeXml=false;
+	private @Getter boolean escapeXml=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		processInBlocksBySize = getBlockSize()>0;
+		processInBlocksBySize = getStringIteratorPipeBlockSize()>0;
 		processInBlocksByKey = getStartPosition()>=0 && getEndPosition()>getStartPosition();
 		if ((processInBlocksBySize || processInBlocksByKey) && !isCombineBlocks() && !(getSender() instanceof IBlockEnabledSender)) {
 			ConfigurationWarnings.add(this, log, "configured to process in blocks, but combineBlocks=false, and sender is not Block Enabled. There will be no block behaviour effectively");
+		}
+		if (getStringIteratorPipeBlockSize()>0) {
+			super.setBlockSize(isCombineBlocks() ? 1 : getStringIteratorPipeBlockSize());
 		}
 	}
 
@@ -66,49 +70,33 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 
 			private int itemCounter=0;
 			private int totalItems=0;
-			private boolean blockOpen=false;
 			private StringBuffer items = new StringBuffer();
 			private String previousKey=null;
 			private boolean processingInBlocks=false;
 			
 			@Override
 			public void endIterating() throws SenderException, TimeOutException, IOException {
-				endBlock();
+				finalizeBlock();
 				super.endIterating();
 			}
 			@Override
 			public void startBlock() throws SenderException, TimeOutException, IOException {
-				blockOpen=true;
 				processingInBlocks=true;
+				super.startBlock();
 				if (isCombineBlocks()) {
 					items.append(getBlockPrefix());
-				} else {
-					super.startBlock();
 				}
 			}
-			@Override
-			public boolean endBlock() throws SenderException, TimeOutException, IOException {
-				if (blockOpen) {
-					if (isCombineBlocks()) {
-						items.append(getBlockSuffix());
-						super.startBlock();
-						boolean result=false;
-						try {
-							result = super.handleItem(items.toString());
-							blockOpen=false; // must not be set before super.handleItem(), because that calls open if blockSize>0 and it has not seen items yet
-						} finally {
-							result &= super.endBlock();
-						}
-						items.setLength(0);
-						itemCounter=0;
-						return result;
-					} else {
-						blockOpen=false;
-						return super.endBlock();
-					}
+			
+			private boolean finalizeBlock() throws SenderException, TimeOutException, IOException {
+				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
+					items.append(getBlockSuffix());
+					boolean result = super.handleItem(items.toString());
+					items.setLength(0);
+					itemCounter=0;
+					return result;
 				}
-				blockOpen=false;
-				return true;
+				return false;
 			}
 			
 			@Override
@@ -119,7 +107,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				if (processInBlocksByKey) {
 					String key = getKey(item);
 					if (!key.equals(previousKey)) { 
-						if (previousKey!=null && !endBlock()) {
+						if (previousKey!=null && !finalizeBlock()) {
 							return false;
 						}
 						startBlock();
@@ -130,12 +118,12 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				boolean result = true;
 				if (processingInBlocks && isCombineBlocks()) {
 					items.append(itemInEnvelope);
+					++itemCounter;
+					if (processInBlocksBySize && itemCounter>=getStringIteratorPipeBlockSize()) {
+						finalizeBlock();
+					}
 				} else {
 					result = super.handleItem(itemInEnvelope);
-				}
-				if (processInBlocksBySize && ++itemCounter>=getBlockSize()) {
-					result &= endBlock();
-					itemCounter=0;
 				}
 				if (getMaxItems()>0 && ++totalItems>=getMaxItems()) {
 					log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
@@ -149,19 +137,14 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 	protected String getKey(String item) {
 		if (getEndPosition() >= item.length()) {
 			return item.substring(getStartPosition());
-		} else {
-			return item.substring(getStartPosition(), getEndPosition());
 		}
+		return item.substring(getStartPosition(), getEndPosition());
 	}
 
 	@Override
 	@IbisDoc({"1", "Controls multiline behaviour. If set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
 	public void setBlockSize(int i) {
-		blockSize = i;
-	}
-	@Override
-	public int getBlockSize() {
-		return blockSize;
+		stringIteratorPipeBlockSize = i;
 	}
 
 	@IbisDoc({"2", "If <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); " + 
@@ -169,24 +152,15 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 	public void setStartPosition(int i) {
 		startPosition = i;
 	}
-	public int getStartPosition() {
-		return startPosition;
-	}
 
 	@IbisDoc({"3", "If <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record", "-1"})
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}
-	public int getEndPosition() {
-		return endPosition;
-	}
 
 	@IbisDoc({"4", "If <code>true</code>, all items in a block are sent at once. If set false, items are sent individually, potentially leveraging block enabled sending capabilities of the sender", "true"})
 	public void setCombineBlocks(boolean combineBlocks) {
 		this.combineBlocks = combineBlocks;
-	}
-	public boolean isCombineBlocks() {
-		return combineBlocks;
 	}
 
 
@@ -196,40 +170,25 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 	public void setBlockPrefix(String string) {
 		blockPrefix = string;
 	}
-	public String getBlockPrefix() {
-		return blockPrefix;
-	}
 
 	@IbisDoc({"6", "If <code>combineBlocks = true</code>, this string is inserted at the end of the set of lines. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.", "&lt;/block&gt;"})
 	public void setBlockSuffix(String string) {
 		blockSuffix = string;
-	}
-	public String getBlockSuffix() {
-		return blockSuffix;
 	}
 
 	@IbisDoc({"7", "This string is inserted at the start of each item", ""})
 	public void setLinePrefix(String string) {
 		linePrefix = string;
 	}
-	public String getLinePrefix() {
-		return linePrefix;
-	}
 
 	@IbisDoc({"8", "This string is appended at the end of each item", ""})
 	public void setLineSuffix(String string) {
 		lineSuffix = string;
 	}
-	public String getLineSuffix() {
-		return lineSuffix;
-	}
 
 	@IbisDoc({"9", "Escape XML characters in each item", "false"})
 	public void setEscapeXml(boolean escapeXml) {
 		this.escapeXml = escapeXml;
-	}
-	public boolean isEscapeXml() {
-		return escapeXml;
 	}
 
 }
