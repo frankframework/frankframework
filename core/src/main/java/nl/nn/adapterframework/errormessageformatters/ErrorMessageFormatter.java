@@ -51,6 +51,17 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author  Gerrit van Brakel
  */
+/*
+ * For the Frank!Doc, there is a name clash between IErrorMessageFormatter and ErrorMessageFormatter.
+ * This causes the tag <ErrorMessageFormatter> to be the generic element option. This tag has a default
+ * value for the className attribute, pointing to the present class. When a Frank config has a tag
+ * <ErrorMessageFormatter> without a className attribute, then the tag references the present class.
+ * 
+ * The attributes of
+ * <ErrorMessageFormatter> are verified using an anyAttribute element in the XSDs. This is not
+ * a problem, because the present class does not introduce attributes. There is thus no need for
+ * an accurate check for the attributes of <ErrorMessageFormatter>.
+ */
 public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProvider {
     protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

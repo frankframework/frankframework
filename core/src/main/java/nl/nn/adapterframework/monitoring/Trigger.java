@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
@@ -40,7 +41,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since   4.9
  * 
  */
-public class Trigger implements ITrigger, LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
+@FrankDocGroup(name = "Monitoring", order = 80)
+public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public static final int SOURCE_FILTERING_NONE=0;

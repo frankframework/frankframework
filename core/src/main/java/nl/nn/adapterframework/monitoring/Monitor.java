@@ -33,6 +33,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Setter;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -45,6 +46,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @version 2.0
  * @author Niels Meijer
  */
+@FrankDocGroup(name = "Monitoring")
 public class Monitor implements ApplicationContextAware, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -212,8 +214,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	public void registerTrigger(ITrigger theTrigger) {
-		Trigger trigger = (Trigger) theTrigger;
+	public void registerTrigger(Trigger trigger) {
 		trigger.setMonitor(this);
 		triggers.add(trigger);
 	}
@@ -227,15 +228,13 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	public void registerAlarm(ITrigger theTrigger) {
-		Trigger trigger = (Trigger) theTrigger;
-		trigger.setAlarm(true);
-		registerTrigger(trigger);
+	public void registerAlarm(Alarm alarm) {
+		alarm.setAlarm(true);
+		registerTrigger(alarm);
 	}
-	public void registerClearing(ITrigger theTrigger) {
-		Trigger trigger = (Trigger) theTrigger;
-		trigger.setAlarm(false);
-		registerTrigger(trigger);
+	public void registerClearing(Clearing clearing) {
+		clearing.setAlarm(false);
+		registerTrigger(clearing);
 	}
 
 	public String getLogPrefix() {
