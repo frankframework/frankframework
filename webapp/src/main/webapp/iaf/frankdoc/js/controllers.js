@@ -20,10 +20,24 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			}
 			for(i in elements) {
 				var element = elements[i];
+				addAttributeActive(element);
 				$scope.elements[element.fullName] = element;
 			}
 		}
 	});
+
+	function addAttributeActive(element) {
+		attributeActive = {
+			name: "active",
+			description: "If defined and false, then this element and all its children are ignored"
+		};
+		if(element.attributes) {
+			element.attributes.unshift(attributeActive);
+		} else {
+			console.log(`element ${element.fullName} initially does not have attributes`);
+			element.attributes = [attributeActive];
+		}
+	}
 
 	$scope.element = null;
 	$scope.$on('element', function(_, element) {
