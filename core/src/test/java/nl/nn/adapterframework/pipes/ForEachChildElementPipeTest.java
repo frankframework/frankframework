@@ -65,6 +65,16 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			"<block><sub name=\"r\">R</sub></block>\n"+
 			"</result>\n</results>";
 
+	private String expectedBasicNoNSBlockSize1="<results>\n"+
+			"<result item=\"1\">\n"+
+			"<block><sub>A &amp; B</sub></block>\n"+
+			"</result>\n"+
+			"<result item=\"2\">\n"+
+			"<block><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></block>\n"+
+			"</result>\n"+
+			"<result item=\"3\">\n"+
+			"<block><sub name=\"r\">R</sub></block>\n"+
+			"</result>\n</results>";
 
 	private String expectedBasicNoNSFirstElement="<results>\n"+
 			"<result item=\"1\">\n"+
@@ -181,6 +191,22 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNSBlock, actual);
+	}
+
+	@Test
+	public void testBlockSize1CombineBlocksIsTrue() throws Exception {
+		pipe.setSender(getElementRenderer());
+		pipe.setBlockSize(1);
+		pipe.setBlockPrefix("<block>");
+		pipe.setBlockSuffix("</block>");
+		pipe.setCombineBlocks(true);
+		configurePipe();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, messageBasicNoNS, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expectedBasicNoNSBlockSize1, actual);
 	}
 
 	@Test
