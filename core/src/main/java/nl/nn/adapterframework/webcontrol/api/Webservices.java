@@ -100,7 +100,7 @@ public final class Webservices extends Base {
 		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			Map<String, Object> wsdlMap = null;
 			try {
-				if(WsdlGeneratorUtils.canHaveWsdl(adapter)) { // check eligibility
+				if(WsdlGeneratorUtils.canProvideWSDL(adapter)) { // check eligibility
 					wsdlMap = new HashMap<String, Object>(2);
 					WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine());
 					wsdlMap.put("name", wsdl.getName());

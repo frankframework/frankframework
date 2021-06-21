@@ -23,6 +23,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.util.XMLChar;
 
 import javanet.staxutils.IndentingXMLStreamWriter;
@@ -31,7 +32,6 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
-import nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -124,16 +124,30 @@ public abstract class WsdlGeneratorUtils {
         return uri == null ? null : uri.replaceAll(" ", "_");
     }
 
-	//check if the adapter has WebServiceListener with an inputValidator 
-	public static boolean canHaveWsdl(Adapter adapter) {
-		IValidator inputValidator = adapter.getPipeLine().getInputValidator();
+	// Check if the adapter has WebServiceListener with an InputValidator OR 
+	// InputValidator==SoapValidator OR
+	// IXmlValidator.getSchema()!=NULL && webServiceListenerNamespace!=NULL
+	public static boolean canProvideWSDL(Adapter adapter) {
 		boolean hasWebServiceListener = false;
+		String webServiceListenerNamespace = null;
 		for (IListener<?> listener : WsdlGeneratorUtils.getListeners(adapter)) {
 			if(listener instanceof WebServiceListener) {
 				hasWebServiceListener = true;
+				webServiceListenerNamespace = ((WebServiceListener)listener).getServiceNamespaceURI();
 			}
 		}
-		return inputValidator != null && ((inputValidator instanceof ApiWsdlXmlValidator) || hasWebServiceListener);
+
+		IValidator inputValidator = adapter.getPipeLine().getInputValidator();
+		if(inputValidator instanceof SoapValidator) { //We have to check this first as the SoapValidator cannot use getSchema()
+			return true;
+		} else if(inputValidator instanceof IXmlValidator) {
+			IXmlValidator xmlValidator = (IXmlValidator)inputValidator;
+			if(xmlValidator.getSchema() != null) {
+				return StringUtils.isNotEmpty(webServiceListenerNamespace);
+			}
+		}
+
+		return hasWebServiceListener; //If not an IXmlValidator, return false
 	}
 
 }
