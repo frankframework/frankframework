@@ -56,7 +56,7 @@
 	<rule pattern="*/cache" registerMethod="setCache"/>
 
 	<!-- Digester rules for monitoring -->
-	<rule pattern="*/monitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
+	<rule pattern="*/monitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory" registerMethod="registerMonitoring"/>
 
 	<rule pattern="*/destination" registerMethod="registerDestination"/>
 	<rule pattern="*/destination/sender" registerMethod="setSender"/>

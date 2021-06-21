@@ -212,7 +212,8 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	public void registerTrigger(Trigger trigger) {
+	public void registerTrigger(ITrigger theTrigger) {
+		Trigger trigger = (Trigger) theTrigger;
 		trigger.setMonitor(this);
 		triggers.add(trigger);
 	}
@@ -226,11 +227,13 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	public void registerAlarm(Trigger trigger) {
+	public void registerAlarm(ITrigger theTrigger) {
+		Trigger trigger = (Trigger) theTrigger;
 		trigger.setAlarm(true);
 		registerTrigger(trigger);
 	}
-	public void registerClearing(Trigger trigger) {
+	public void registerClearing(ITrigger theTrigger) {
+		Trigger trigger = (Trigger) theTrigger;
 		trigger.setAlarm(false);
 		registerTrigger(trigger);
 	}
