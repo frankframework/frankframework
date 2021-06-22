@@ -45,11 +45,6 @@ public interface IExtendedPipe extends IPipe {
 	 */
 	void configure(PipeLine pipeline) throws ConfigurationException;
 
-	/**
-	 * controls whether pipe is used in configuration. Can be used for debug-only pipes.
-	 */
-	public boolean isActive();
-
 	@IbisDoc({"1", "If set, input is taken from this session key, instead of regular input", ""})
 	public void setGetInputFromSessionKey(String string);
 	public String getGetInputFromSessionKey();

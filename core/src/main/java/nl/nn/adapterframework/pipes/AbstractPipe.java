@@ -126,8 +126,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private String logIntermediaryResults = null;
 	private String hideRegex = null;
 
-	private boolean active=true;
-
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private ParameterList parameterList = new ParameterList();
 	private @Setter EventPublisher eventPublisher=null;
@@ -420,11 +418,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	@Override
 	public String getName() {
 		return this.name;
-	}
-
-	@Override
-	public boolean isActive() {
-		return active;
 	}
 
 	@Override

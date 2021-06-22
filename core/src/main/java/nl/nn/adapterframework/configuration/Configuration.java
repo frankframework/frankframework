@@ -329,10 +329,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * Register an adapter with the configuration.
 	 */
 	public void registerAdapter(Adapter adapter) {
-		if (!adapter.isActive()) {
-			log.debug("adapter [" + adapter.getName() + "] is not active, therefore not included in configuration");
-			return;
-		}
 		adapter.setConfiguration(this);
 		adapterManager.registerAdapter(adapter);
 

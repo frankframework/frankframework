@@ -47,7 +47,6 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 
 	private String slotId=null;
 	private String type=null;
-	private boolean active=true;
 
 	private final String ITRANSACTIONALSTORAGE = "nl.nn.adapterframework.core.ITransactionalStorage";
 
@@ -138,10 +137,4 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	public String getType() {
 		return type;
 	}
-
-	@Override
-	public boolean isActive() {
-		return active;
-	}
-	
 }

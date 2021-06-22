@@ -213,7 +213,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public enum OnError { CONTINUE, RECOVER, CLOSE };
 
 	private @Getter String name;
-	private @Getter boolean active=true;
 
 	private OnError onError = OnError.CONTINUE;
 
@@ -1987,9 +1986,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	@IbisDoc({"40", "Storage to keep track of messages that failed processing"})
 	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
-		if (errorStorage.isActive()) {
-			this.errorStorage = errorStorage;
-		}
+		this.errorStorage = errorStorage;
 	}
 	/**
 	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed messages. If present, this storage will be managed by the Receiver.
@@ -2001,9 +1998,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
 	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
-		if (messageLog.isActive()) {
-			this.messageLog = messageLog;
-		}
+		this.messageLog = messageLog;
 	}
 	/**
 	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed successfully. If present, this storage will be managed by the Receiver.

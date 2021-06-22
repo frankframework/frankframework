@@ -719,10 +719,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
 		}
-		if (pipe instanceof IExtendedPipe && !((IExtendedPipe)pipe).isActive()) {
-			log.debug("Pipe [" + pipe.getName() + "] is not active, therefore not included in configuration");
-			return;
-		}
 		String name = pipe.getName();
 		if (StringUtils.isEmpty(name)) {
 			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe)+"] to be added has no name, pipelineTable size ["+pipesByName.size()+"]");

@@ -151,7 +151,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	private @Getter boolean createTable=false;
 
 	private String host;
-	private @Getter boolean active=true;
 	private @Getter boolean blobsCompressed=true;
 	private @Getter boolean storeFullMessage=true;
 
