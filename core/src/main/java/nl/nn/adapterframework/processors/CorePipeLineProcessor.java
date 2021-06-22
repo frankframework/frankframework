@@ -28,6 +28,8 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
+import nl.nn.adapterframework.core.IValidator;
+import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
@@ -175,6 +177,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 									log.debug("validating error message after PipeLineResult validation failed");
 								} else {
 									log.debug("validating PipeLineResult");
+								}
+								String exitSpecificResponseRoot = plExit.getResponseRoot();
+								if(outputValidator instanceof IXmlValidator) {
+									pipeLineSession.put("exitSpecificResponseRoot", exitSpecificResponseRoot);
 								}
 								PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
 								if (!validationResult.isSuccessful()) {
