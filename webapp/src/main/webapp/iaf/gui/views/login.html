@@ -4,12 +4,12 @@
             <h1 class="logo-name">FF<span class="text-frank">!</span></h1>
         </div>
         <h3>Frank<strong class="text-frank">!</strong>Console</h3>
-        <form class="m-t" role="form" ng-submit="login(credentials)">
+        <form class="m-t FrankLogin" role="form" ng-submit="login(credentials)">
             <div class="form-group">
-                <input type="username" ng-model="credentials.username" class="form-control" placeholder="Username" required="" autofocus>
+                <input id="username" type="username" ng-model="credentials.username" class="form-control" placeholder="Username" required="" autofocus>
             </div>
             <div class="form-group">
-                <input type="password" ng-model="credentials.password" class="form-control" placeholder="Password" required="">
+                <input id="password" type="password" ng-model="credentials.password" class="form-control" placeholder="Password" required="">
             </div>
             <div class="form-group">
                 <span ng-repeat="notification in notifications" style="color: red;">{{notification.message}}</span>
