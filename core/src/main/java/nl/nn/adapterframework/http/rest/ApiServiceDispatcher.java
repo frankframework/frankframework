@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http.rest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -156,7 +157,7 @@ public class ApiServiceDispatcher {
 	}
 
 	public SortedMap<String, ApiDispatchConfig> getPatternClients() {
-		return patternClients;
+		return Collections.unmodifiableSortedMap(patternClients);
 	}
 
 	protected JsonObject generateOpenApiJsonSchema(HttpServletRequest request) {
