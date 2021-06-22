@@ -521,7 +521,7 @@ public class CmisSender extends SenderWithParametersBase {
 		try {
 			Message inputFromSessionKey = session.getMessage(getFileSessionKey());
 
-			if(inputFromSessionKey.asObject() instanceof String) {
+			if(convert2Base64 && inputFromSessionKey.asObject() instanceof String) {
 				inputFromSessionKey = new Message(Base64.decodeBase64(inputFromSessionKey.asByteArray()));
 			}
 
