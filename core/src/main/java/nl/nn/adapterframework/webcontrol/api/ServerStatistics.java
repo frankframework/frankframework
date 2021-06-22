@@ -80,6 +80,7 @@ public class ServerStatistics extends Base {
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
 			cfg.put("stubbed", configuration.isStubbed());
+			cfg.put("state", configuration.getState());
 
 			cfg.put("type", configuration.getClassLoaderType());
 			if(configuration.getConfigurationException() != null) {

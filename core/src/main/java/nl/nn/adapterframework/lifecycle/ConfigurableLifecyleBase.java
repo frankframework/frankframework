@@ -23,17 +23,9 @@ public abstract class ConfigurableLifecyleBase implements ConfigurableLifecycle 
 	protected final Logger log = LogUtil.getLogger(this);
 	private BootState state = BootState.STOPPED;
 
+	@Override
 	public BootState getState() {
 		return state;
-	}
-
-	public boolean inState(BootState state) {
-		return this.state == state;
-	}
-
-	@Override
-	public boolean isRunning() {
-		return this.state == BootState.STARTED;
 	}
 
 	protected void updateState(BootState state) {

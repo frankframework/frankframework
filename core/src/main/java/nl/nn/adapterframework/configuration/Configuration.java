@@ -60,7 +60,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.Adapter
  */
-public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware {
+public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Boolean autoStart = null;
@@ -461,5 +461,15 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public ClassLoader getConfigurationClassLoader() {
 		return getClassLoader();
+	}
+
+	@Override
+	public boolean isRunning() {
+		return inState(BootState.STARTED) && super.isRunning();
+	}
+
+	@Override
+	public BootState getState() {
+		return null;
 	}
 }

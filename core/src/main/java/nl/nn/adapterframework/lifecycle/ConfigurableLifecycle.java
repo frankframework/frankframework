@@ -29,5 +29,16 @@ public interface ConfigurableLifecycle extends Lifecycle {
 		STARTING, STARTED, STOPPING, STOPPED;
 	}
 
+	public BootState getState();
+
+	public default boolean inState(BootState state) {
+		return getState() == state;
+	}
+
+	@Override
+	public default boolean isRunning() {
+		return getState() == BootState.STARTED;
+	}
+
 	public void configure();
 }
