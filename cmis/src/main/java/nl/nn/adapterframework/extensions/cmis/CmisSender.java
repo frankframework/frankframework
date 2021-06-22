@@ -15,7 +15,6 @@
  */
 package nl.nn.adapterframework.extensions.cmis;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -62,8 +61,8 @@ import org.w3c.dom.Node;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -216,8 +215,6 @@ public class CmisSender extends SenderWithParametersBase {
 	private String userName;
 	private String password;
 	private String filenameSessionKey;
-	private String fileInputStreamSessionKey;
-	private String fileContentStreamSessionKey;
 	private String defaultMediaType = "application/octet-stream";
 	private boolean streamResultToServlet = false;
 	private boolean getProperties = false;
@@ -239,25 +236,22 @@ public class CmisSender extends SenderWithParametersBase {
 
 	//TODO remove this when fileContentSessionKey gets removed
 	private boolean convert2Base64 = AppConstants.getInstance().getBoolean("CmisSender.Base64FileContent", true);
+	private String fileSessionKey;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (getAction().equals("create")) {
-			if (StringUtils.isEmpty(getFileInputStreamSessionKey()) && StringUtils.isEmpty(getFileContentSessionKey())) {
-				throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
-			}
+		if(convert2Base64) {
+			ConfigurationWarnings.add(this, log, "the use of Base64 is deprecated. Please use attribute [fileSessionKey] or set property [CmisSender.Base64FileContent] to false");
 		}
-		if (getAction().equals("get")) {
-			if (isGetProperties() && isGetDocumentContent()) {
-				if (StringUtils.isEmpty(getFileInputStreamSessionKey()) && StringUtils.isEmpty(getFileContentSessionKey())) {
-					throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
-				}
-			}
-			if(StringUtils.isNotEmpty(getFileContentSessionKey())) {
-				ConfigurationWarnings.add(this, log, "Property [fileContentSessionKey] is deprecated. Please use fileInputStreamSessionKey instead.");
-			}
+
+		if (getAction().equals("create") && StringUtils.isEmpty(getFileSessionKey())) {
+			throw new ConfigurationException("fileSessionKey should be specified");
+		}
+
+		if (getAction().equals("get") && isGetProperties() && isGetDocumentContent() && StringUtils.isEmpty(getFileSessionKey())) {
+			throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
 		}
 
 		// Legacy; check if the session should be created runtime (and thus for each call)
@@ -436,15 +430,13 @@ public class CmisSender extends SenderWithParametersBase {
 				if(getDocumentContent) {
 					ContentStream contentStream = document.getContentStream();
 					InputStream inputStream = contentStream.getStream();
-					if (StringUtils.isNotEmpty(getFileInputStreamSessionKey())) {
-						session.put(getFileInputStreamSessionKey(), inputStream);
-					} else {
-						byte[] bytes = Misc.streamToBytes(inputStream);
 
-						if(convert2Base64)
-							session.put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
-						else
-							session.put(getFileContentSessionKey(), bytes);
+					if(convert2Base64) {
+						byte[] bytes = Misc.streamToBytes(inputStream);
+						session.put(getFileSessionKey(), Base64.encodeBase64String(bytes));
+					}
+					else {
+						session.put(getFileSessionKey(), inputStream);
 					}
 				}
 
@@ -462,15 +454,13 @@ public class CmisSender extends SenderWithParametersBase {
 				ContentStream contentStream = document.getContentStream();
 				InputStream inputStream = contentStream.getStream();
 
-				if (StringUtils.isNotEmpty(getFileInputStreamSessionKey())) {
-					session.put(getFileInputStreamSessionKey(), inputStream);
-					return Message.nullMessage();
-				} else if (StringUtils.isNotEmpty(getFileContentSessionKey())) {
-					byte[] bytes = Misc.streamToBytes(inputStream);
-					if(convert2Base64)
-						session.put(getFileContentSessionKey(), Base64.encodeBase64String(bytes));
-					else
-						session.put(getFileContentSessionKey(), bytes);
+				if (StringUtils.isNotEmpty(getFileSessionKey())) {
+					if(convert2Base64) {
+						byte[] bytes = Misc.streamToBytes(inputStream);
+						session.put(getFileSessionKey(), Base64.encodeBase64String(bytes));
+					} else {
+						session.put(getFileSessionKey(), inputStream);
+					}
 					return Message.nullMessage();
 				}
 				else {
@@ -486,32 +476,6 @@ public class CmisSender extends SenderWithParametersBase {
 
 	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String fileName = (String) session.get(getFilenameSessionKey());
-
-		Object inputFromSessionKey;
-		if(StringUtils.isNotEmpty(getFileInputStreamSessionKey())) {
-			inputFromSessionKey = session.get(getFileInputStreamSessionKey());
-		}
-		else {
-			inputFromSessionKey = session.get(getFileContentSessionKey());
-		}
-		InputStream inputStream = null;
-		if (inputFromSessionKey instanceof InputStream) {
-			inputStream = (InputStream) inputFromSessionKey;
-		} else if (inputFromSessionKey instanceof byte[]) {
-			inputStream = new ByteArrayInputStream((byte[]) inputFromSessionKey);
-		} else if(inputFromSessionKey instanceof String) {
-			byte[] bytes = Base64.decodeBase64((String) inputFromSessionKey);
-			inputStream = new ByteArrayInputStream(bytes);
-		} else {
-			throw new SenderException("expected InputStream, ByteArray or Base64-String but got ["+inputFromSessionKey.getClass().getName()+"] instead");
-		}
-
-		long fileLength = 0;
-		try {
-			fileLength = inputStream.available();
-		} catch (IOException e) {
-			log.warn(getLogPrefix() + "could not determine file size", e);
-		}
 
 		String mediaType;
 		Map<String, Object> props = new HashMap<String, Object>();
@@ -553,7 +517,20 @@ public class CmisSender extends SenderWithParametersBase {
 			mediaType = getDefaultMediaType();
 		}
 
-		ContentStream contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, inputStream);
+		ContentStream contentStream;
+		try {
+			Message inputFromSessionKey = session.getMessage(getFileSessionKey());
+
+			if(inputFromSessionKey.asObject() instanceof String) {
+				inputFromSessionKey = new Message(Base64.decodeBase64(inputFromSessionKey.asByteArray()));
+			}
+
+			long fileLength = inputFromSessionKey.size();
+			contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, inputFromSessionKey.asInputStream());
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
+
 		if (isUseRootFolder()) {
 			Folder folder = cmisSession.getRootFolder();
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
@@ -1152,6 +1129,14 @@ public class CmisSender extends SenderWithParametersBase {
 		sessionBuilder.setBindingType(bindingType);
 	}
 
+	@IbisDoc({"If <code>action=create</code> the sessionKey that contains the file to use. If <code>action=get</code> and <code>getproperties=true</code> the sessionKey to store the result in", ""})
+	public void setFileSessionKey(String string) {
+		fileSessionKey = string;
+	}
+	public String getFileSessionKey() {
+		return fileSessionKey;
+	}
+
 	public String getFilenameSessionKey() {
 		return filenameSessionKey;
 	}
@@ -1164,26 +1149,22 @@ public class CmisSender extends SenderWithParametersBase {
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String string) {
-		filenameSessionKey = string;
+		setFilenameSessionKey(string);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileInputStreamSessionKey' is replaced with 'fileSessionKey'")
 	@IbisDoc({"If <code>action=create</code> the session key that contains the input stream of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the input stream of the document is stored", ""})
 	public void setFileInputStreamSessionKey(String string) {
-		fileInputStreamSessionKey = string;
-	}
-
-	public String getFileInputStreamSessionKey() {
-		return fileInputStreamSessionKey;
+		setFileSessionKey(string);
+		convert2Base64 = false;
 	}
 
 	@IbisDoc({"If <code>action=create</code> the session key that contains the base64 encoded content of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the base64 encoded content of the document is stored", ""})
-	//TODO @Deprecated when action=get
+	@ConfigurationWarning("attribute 'fileContentSessionKey' is replaced with 'fileSessionKey', please note that the result will no longer be BASE64")
 	public void setFileContentSessionKey(String string) {
-		fileContentStreamSessionKey = string;
-	}
-
-	public String getFileContentSessionKey() {
-		return fileContentStreamSessionKey;
+		setFileSessionKey(string);
+		convert2Base64 = true;
 	}
 
 	@IbisDoc({"If <code>action=create</code> the mime type used to store the document when it's not set in the input message by a property", "'application/octet-stream'"})
