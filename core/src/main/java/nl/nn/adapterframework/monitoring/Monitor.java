@@ -229,11 +229,9 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	}
 
 	public void registerAlarm(Alarm alarm) {
-		alarm.setAlarm(true);
 		registerTrigger(alarm);
 	}
 	public void registerClearing(Clearing clearing) {
-		clearing.setAlarm(false);
 		registerTrigger(clearing);
 	}
 

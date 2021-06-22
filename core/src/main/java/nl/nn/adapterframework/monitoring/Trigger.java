@@ -192,7 +192,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		return monitor;
 	}
 
-	public void setAlarm(boolean b) {
+	void setAlarm(boolean b) {
 		alarm = b;
 	}
 	public boolean isAlarm() {

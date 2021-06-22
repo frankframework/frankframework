@@ -13,4 +13,7 @@ package nl.nn.adapterframework.monitoring;
  * 
  */
 public class Alarm extends Trigger {
+	public Alarm() {
+		setAlarm(true);
+	}
 }
