@@ -6,6 +6,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	$scope.groups = {};
 	$scope.types = {};
 	$scope.elements = {};
+	$scope.search = "";
 	$http.get(getURI()).then(function(response) {
 		if(response && response.data) {
 			let data = response.data;

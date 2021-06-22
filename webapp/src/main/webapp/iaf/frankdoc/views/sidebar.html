@@ -1,5 +1,5 @@
 <div class="sidebar">
-	<div class="sidebar__search"><input type="text" placeholder="Search.."></div>
+	<div class="sidebar__search"><input type="text" placeholder="Search.." ng-model-options="{debounce: 500}" ng-model="search"></div>
 	<ul class="sidebar__categories">
 		<li ng-repeat="group in groups">
 			<a ui-sref="group({group: group.name})" ui-sref-active="active"><span class="nav-label">{{group.name}}</span></a>

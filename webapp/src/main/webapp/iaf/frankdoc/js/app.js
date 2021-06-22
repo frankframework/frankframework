@@ -84,13 +84,20 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 	});
 }])
 .filter('matchElement', function() {
-	return function(elements, $scope) {
+	return function(elements, $scope, searchText) {
 		if(!elements || elements.length < 1 || !$scope.group) return []; //Cannot filter elements if no group has been selected
 		let r = {};
 		let groupMembers = getGroupMembers($scope.types, $scope.group.types);
 		for(element in elements) {
 			if(groupMembers.indexOf(element) > -1) {
-				r[element] = elements[element];
+				let obj = elements[element];
+				if(searchText && searchText != "") {
+					if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchText) > -1) {
+						r[element] = obj;
+					}
+				} else {
+					r[element] = obj;
+				}
 			}
 		}
 		return r;
