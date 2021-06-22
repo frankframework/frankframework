@@ -55,7 +55,7 @@ import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
-import nl.nn.adapterframework.monitoring.Trigger;
+import nl.nn.adapterframework.monitoring.TriggerBase;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -140,8 +140,8 @@ public final class ShowMonitors extends Base {
 		}
 
 		List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
-		List<Trigger> listOfTriggers = monitor.getTriggers();
-		for(Trigger trigger : listOfTriggers) {
+		List<TriggerBase> listOfTriggers = monitor.getTriggers();
+		for(TriggerBase trigger : listOfTriggers) {
 
 			Map<String, Object> map = mapTrigger(trigger);
 			map.put("id", listOfTriggers.indexOf(trigger));
@@ -160,7 +160,7 @@ public final class ShowMonitors extends Base {
 		return monitorMap;
 	}
 
-	private Map<String, Object> mapTrigger(Trigger trigger) {
+	private Map<String, Object> mapTrigger(TriggerBase trigger) {
 		Map<String, Object> triggerMap = new HashMap<String, Object>();
 
 		triggerMap.put("type", trigger.getType());
@@ -320,7 +320,7 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		Trigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
+		TriggerBase trigger = SpringUtils.createBean(mm.getApplicationContext(), TriggerBase.class);
 		handleTrigger(trigger, json);
 		monitor.registerTrigger(trigger);
 		monitor.configure();
@@ -352,7 +352,7 @@ public final class ShowMonitors extends Base {
 		Map<String, Object> returnMap = new HashMap<>();
 
 		if(id != null) {
-			Trigger trigger = monitor.getTrigger(id);
+			TriggerBase trigger = monitor.getTrigger(id);
 			if(trigger == null) {
 				throw new ApiException("Trigger not found!", Status.NOT_FOUND);
 			} else {
@@ -391,7 +391,7 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		Trigger trigger = monitor.getTrigger(index);
+		TriggerBase trigger = monitor.getTrigger(index);
 		if(trigger == null) {
 			throw new ApiException("Trigger not found!", Status.NOT_FOUND);
 		}
@@ -402,7 +402,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void handleTrigger(Trigger trigger, Map<String, Object> json) {
+	private void handleTrigger(TriggerBase trigger, Map<String, Object> json) {
 		List<String> eventList = null;
 		String type = null;
 		SeverityEnum severity = null;
@@ -484,7 +484,7 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		Trigger trigger = monitor.getTrigger(index);
+		TriggerBase trigger = monitor.getTrigger(index);
 
 		if(trigger == null) {
 			throw new ApiException("Trigger not found!", Status.NOT_FOUND);
