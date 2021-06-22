@@ -17,7 +17,6 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,12 +39,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +51,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -74,7 +72,6 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 @Path("/")
 public final class ShowConfiguration extends Base {
-	@Context SecurityContext securityContext;
 
 	private String orderBy = AppConstants.getInstance().getProperty("iaf-api.configurations.orderby", "version").trim();
 
@@ -126,7 +123,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					getIbisManager().handleAdapter("FULLRELOAD", "", "", "", null, true);
+					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUPN(), true);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -262,7 +259,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					getIbisManager().handleAdapter("RELOAD", configurationName, "", "", null, false);
+					getIbisManager().handleAction(IbisAction.RELOAD, configurationName, "", "", getUPN(), false);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -361,11 +358,10 @@ public final class ShowConfiguration extends Base {
 		boolean automatic_reload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
 		InputStream file = resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
 
-		String user = ""; //Should not be NULL as it's an optional field.
-		Principal principal = securityContext.getUserPrincipal();
-		if(principal != null)
-			user = principal.getName();
-		user = resolveTypeFromMap(inputDataMap, "user", String.class, user);
+		String user = resolveTypeFromMap(inputDataMap, "user", String.class, "");
+		if(StringUtils.isEmpty(user)) {
+			user = getUPN();
+		}
 
 		fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 

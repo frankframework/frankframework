@@ -65,27 +65,23 @@ public class MockIbisManager extends Mockito implements IbisManager {
 	}
 
 	@Override
-	public void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
-		// TODO Auto-generated method stub
-
+	public void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
+		// Ignore all actions
 	}
 
 	@Override
 	public void startConfiguration(Configuration configuration) {
-		// TODO Auto-generated method stub
-
+		// ignore start
 	}
 
 	@Override
 	public void unload(String configurationName) {
-		// TODO Auto-generated method stub
-
+		// ignore unload
 	}
 
 	@Override
 	public void shutdown() {
-		// TODO Auto-generated method stub
-
+		// ignore shutdown
 	}
 
 	@Override
