@@ -61,7 +61,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class ApiServiceDispatcher {
 
 	private Logger log = LogUtil.getLogger(this);
-	private ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<String, ApiDispatchConfig>(new ApiUriComparator());
+	private ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<>(new ApiUriComparator());
 	private static ApiServiceDispatcher self = null;
 	private static final String SCHEMA_DEFINITION_PATH = "#/components/schemas/";
 
@@ -88,7 +88,7 @@ public class ApiServiceDispatcher {
 
 		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
 			String uriPattern = it.next();
-			log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
+			if(log.isTraceEnabled()) log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
 
 			String patternSegments[] = uriPattern.split("/");
 			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
@@ -114,39 +114,43 @@ public class ApiServiceDispatcher {
 		return results;
 	}
 
-	public synchronized void registerServiceClient(ApiListener listener) throws ListenerException {
+	public void registerServiceClient(ApiListener listener) throws ListenerException {
 		String uriPattern = listener.getCleanPattern();
 		if(uriPattern == null)
 			throw new ListenerException("uriPattern cannot be null or empty");
 
 		String method = listener.getMethod();
 
-		ApiDispatchConfig dispatchConfig = null;
-		if(patternClients.containsKey(uriPattern))
-			dispatchConfig = patternClients.get(uriPattern);
-		else
-			dispatchConfig = new ApiDispatchConfig(uriPattern);
+		synchronized(patternClients) {
+			ApiDispatchConfig dispatchConfig = patternClients.getOrDefault(uriPattern, new ApiDispatchConfig(uriPattern));
+			dispatchConfig.register(method, listener);
+			patternClients.put(uriPattern, dispatchConfig);
+		}
 
-		dispatchConfig.register(method, listener);
-
-		patternClients.put(uriPattern, dispatchConfig);
-		log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
+		if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
 	}
 
-	public synchronized void unregisterServiceClient(ApiListener listener) {
+	public void unregisterServiceClient(ApiListener listener) {
 		String method = listener.getMethod();
 		String uriPattern = listener.getCleanPattern();
 		if(uriPattern == null) {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
 		}
 		else {
-			ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
-			if(dispatchConfig == null) {
-				log.warn("unable to find DispatchConfig for uriPattern ["+uriPattern+"]");
-			} else {
-				dispatchConfig.destroy(method);
+			boolean success = false;
+			synchronized (patternClients) {
+				ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
+				if(dispatchConfig != null) {
+					dispatchConfig.destroy(method);
+					success = true;
+				}
+			}
 
-				log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+			//Remove log statements from synchronized block
+			if(success) {
+				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+			} else {
+				log.warn("unable to find DispatchConfig for uriPattern ["+uriPattern+"]");
 			}
 		}
 	}
