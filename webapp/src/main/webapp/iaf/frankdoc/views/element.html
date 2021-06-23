@@ -5,13 +5,13 @@
 			{{element.fullName}}
 		</a>
 	</h4>
-	Elements: <span ng-repeat="tag in element.elementNames">{{( $first ? tag : ", " + tag )}}</span>
+	Elements: <span ng-repeat="tag in element.elementNames"><code>{{tag}}</code><span ng-if="!$last">, </span></span>
 	<br />
 	<p>
 	<p>
 	{{ element.descriptionHeader }}
 	<div ng-if="element.children" element-children></div>
 	<div ng-if="element.attributes" element-attributes></div>
-	
+
 	<parent-element ng-if="element.parent" parent="element.parent"></parent-element>
 </div>

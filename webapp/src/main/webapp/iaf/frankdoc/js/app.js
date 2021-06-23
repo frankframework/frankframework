@@ -32,14 +32,14 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 	$stateProvider
 	.state('overview', {
 		url: "/",
-		data: {
-			pageTitle: 'Overview'
+		controller: function($scope, $state) {
+			$state.go("group", {group: 'All'});
 		}
 	})
-	.state('category', {
-		url: "/:category",
+	.state('group', {
+		url: "/:group",
 		params: {
-			category: { value: '', squash: true},
+			group: { value: 'All' },
 			element: { value: '', squash: true},
 		},
 		templateUrl: function($scope) {
@@ -50,24 +50,26 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 			}
 		},
 		controller: function($scope, $state, $rootScope) {
-			var categoryName = $state.params.category;
-			$scope.$watch('categories', function(categories) {
-				if(!categories || categories.length < 1) return;
+			let groupName = $state.params.group;
+			$scope.$watch('groups', function(groups) {
+				if(!groups || groups.length < 1) return;
 
-				for(i in categories) {
-					var category = $scope.categories[i];
-					if(category.name == categoryName) {
-						$rootScope.category = category;
+				for(i in groups) {
+					let group = $scope.groups[i];
+					if(group.name == groupName) {
+						$rootScope.group = group;
+						break;
 					}
 				}
 
-				if($scope.category && $state.params && $state.params.element) {
-					var elementName = $state.params.element;
-					var categoryMembers = getCategoryMembers($scope);
-					for(i in categoryMembers) {
-						var fullName = categoryMembers[i].fullName;
-						if($scope.elements[fullName].name == elementName) {
-							$rootScope.$broadcast('element', $scope.elements[fullName]);
+				if($scope.group && $state.params && $state.params.element) {
+					let elementSimpleName = $state.params.element;
+					// Match the SimpleName of the Frank!Element and try and find it in the group's members
+					let groupMembers = getGroupMembers($scope.types, $scope.group.types);
+					for(i in groupMembers) {
+						let memberName = groupMembers[i];
+						if($scope.elements[memberName].name == elementSimpleName) {
+							$rootScope.$broadcast('element', $scope.elements[memberName]);
 						}
 					}
 				} else {
@@ -75,66 +77,45 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 				}
 			}); //Fired once, when API call has been completed
 		},
-		data: {
-			pageTitle: 'Overview'
-		}
 	})
 	.state('element', {
-		parent: "category",
+		parent: "group",
 		url: "/:element",
-		data: {
-			pageTitle: 'Overview'
-		}
 	});
 }])
 .filter('matchElement', function() {
-	return function(elements, $scope) {
-		if(!elements || elements.length < 1 || !$scope.category) return [];
-		var r = {};
-		getCategoryMembers($scope).forEach(m => r[m.fullName] = m);
+	return function(elements, $scope, searchText) {
+		if(!elements || elements.length < 1 || !$scope.group) return []; //Cannot filter elements if no group has been selected
+		let r = {};
+		let groupMembers = getGroupMembers($scope.types, $scope.group.types);
+		for(element in elements) {
+			if(groupMembers.indexOf(element) > -1) {
+				let obj = elements[element];
+				if(searchText && searchText != "") {
+					if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchText) > -1) {
+						r[element] = obj;
+					}
+				} else {
+					r[element] = obj;
+				}
+			}
+		}
 		return r;
 	};
-})
-.filter('omitDeprecatedChildrenAndAddChildElements', function() {
-	return function(children, $scope) {
-		result = [];
-		children.forEach(c => {
-			if(! c.deprecated) {
-				c.childElements = $scope.types[c.type];
-				result.push(c);
-			}
-		});
-		return result;
-	}
 });
 
-function getCategoryMembers($scope) {
-	var types = $scope.category.types;
-	var memberNames = [];
-	types.forEach(t => memberNames = memberNames.concat($scope.types[t]));
-	memberNames = memberNames.filter((x, i, a) => a.indexOf(x) == i);
-	var r = [];
-	for(i in memberNames) {
-		var memberName = memberNames[i];
-		r.push($scope.elements[memberName]);
-	}
-	return r;
+function getGroupMembers(allTypes, typesToFilterOn) {
+	let memberNames = [];
+	typesToFilterOn.forEach(t => memberNames = memberNames.concat(allTypes[t])); //Find all members in the supplied type(s)
+	return memberNames.filter((x, i, a) => a.indexOf(x) == i); //get distinct array results
 }
 
-function getCategoryOfType(type, categories) {
-	for(i = 0; i < categories.length; ++i) {
-		category = categories[i];
-		if(category.types.indexOf(type) >= 0) {
-			return category.name;
+function getGroupsOfType(type, groups) {
+	for(i = 0; i < groups.length; ++i) {
+		let group = groups[i];
+		if(group.types.indexOf(type) >= 0) {
+			return group.name;
 		}
 	}
 	return null;
-}
-
-function fullNameToSimpleName(fullName) {
-	idx = fullName.lastIndexOf('.');
-	++idx;
-	numChars = fullName.length - idx;
-	result = fullName.substr(idx, numChars);
-	return result
 }

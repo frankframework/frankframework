@@ -275,18 +275,22 @@ angular.module('iaf.beheerconsole')
 			data[uri].setInterval(interval, false);
 		},
 		this.add = function (uri, callback, autoStart, interval) {
-			Debug.log("Adding new poller ["+uri+"] autoStart ["+!!autoStart+"] interval ["+interval+"]");
-			var poller = new this.createPollerObject(uri, callback);
-			data[uri] = poller;
-			if(!!autoStart)
-				poller.fn();
-			if(interval && interval > 1500)
-				poller.setInterval(interval);
-			return poller;
+			if(!data[uri]) {
+				Debug.log("Adding new poller ["+uri+"] autoStart ["+!!autoStart+"] interval ["+interval+"]");
+				var poller = new this.createPollerObject(uri, callback);
+				data[uri] = poller;
+				if(!!autoStart)
+					poller.fn();
+				if(interval && interval > 1500)
+					poller.setInterval(interval);
+				return poller;
+			}
 		},
 		this.remove = function (uri) {
-			data[uri].stop();
-			delete data[uri];
+			if(data[uri]) {
+				data[uri].stop();
+				delete data[uri];
+			}
 		},
 		this.get = function (uri) {
 			return data[uri];
