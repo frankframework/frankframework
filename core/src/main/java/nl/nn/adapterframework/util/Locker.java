@@ -359,8 +359,9 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	public String getTransactionAttribute() {
 		return JtaUtil.getTransactionAttributeString(transactionAttribute);
 	}
-	
+
 	@Override
+	@Deprecated
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}
