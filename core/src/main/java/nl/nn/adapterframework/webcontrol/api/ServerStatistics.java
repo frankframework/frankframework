@@ -125,7 +125,7 @@ public class ServerStatistics extends Base {
 		String dtapSide = appConstants.getProperty("dtap.side");
 		returnMap.put("dtap.side", dtapSide);
 
-		String user = getUPN();
+		String user = getUserPrincipalName();
 		if(user != null) {
 			returnMap.put("userName", user);
 		}

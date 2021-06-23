@@ -123,7 +123,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUPN(), true);
+					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUserPrincipalName(), true);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -259,7 +259,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					getIbisManager().handleAction(IbisAction.RELOAD, configurationName, "", "", getUPN(), false);
+					getIbisManager().handleAction(IbisAction.RELOAD, configurationName, "", "", getUserPrincipalName(), false);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -360,7 +360,7 @@ public final class ShowConfiguration extends Base {
 
 		String user = resolveTypeFromMap(inputDataMap, "user", String.class, "");
 		if(StringUtils.isEmpty(user)) {
-			user = getUPN();
+			user = getUserPrincipalName();
 		}
 
 		fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );

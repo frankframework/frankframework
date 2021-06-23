@@ -274,12 +274,12 @@ public final class ShowConfigurationStatus extends Base {
 		if(action != null) {
 			response.status(Response.Status.ACCEPTED);
 			if(adapters.isEmpty()) {
-				getIbisManager().handleAction(action, "*ALL*", "*ALL*", null, getUPN(), false);
+				getIbisManager().handleAction(action, "*ALL*", "*ALL*", null, getUserPrincipalName(), false);
 			}
 			else {
 				for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
 					String adapterName = iterator.next();
-					getIbisManager().handleAction(action, "", adapterName, null, getUPN(), false);
+					getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
 				}
 			}
 		}
@@ -306,7 +306,7 @@ public final class ShowConfigurationStatus extends Base {
 				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
 				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 
-				getIbisManager().handleAction(action, "", adapterName, null, getUPN(), false);
+				getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
 
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -345,7 +345,7 @@ public final class ShowConfigurationStatus extends Base {
 				if(action == null)
 					throw new ApiException("no or unknown action provided");
 
-				getIbisManager().handleAction(action, "", adapterName, receiverName, getUPN(), false);
+				getIbisManager().handleAction(action, "", adapterName, receiverName, getUserPrincipalName(), false);
 				response.entity("{\"status\":\"ok\"}");
 			}
 		}

@@ -587,7 +587,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			break;
 
 		default:
-			IbisAction action = Misc.parse(IbisAction.class, getFunction()); //If it's non of the above actions, try and parse the function as an IbisAction
+			IbisAction action = Misc.parse(IbisAction.class, getFunction()); //If it's none of the above actions, try and parse the function as an IbisAction
 			ibisManager.handleAction(action, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 			break;
 		}

@@ -610,7 +610,7 @@ public final class ShowScheduler extends Base {
 						stmt.setString(8, description);
 						stmt.setBoolean(9, hasLocker);
 						stmt.setString(10, lockKey);
-						stmt.setString(11, getUPN());
+						stmt.setString(11, getUserPrincipalName());
 		
 						success = stmt.executeUpdate() > 0;
 					}

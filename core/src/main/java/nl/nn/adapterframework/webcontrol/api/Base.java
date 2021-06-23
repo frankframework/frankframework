@@ -119,7 +119,7 @@ public abstract class Base implements ApplicationContextAware {
 		}
 	}
 
-	protected String getUPN() {
+	protected String getUserPrincipalName() {
 		Principal principal = securityContext.getUserPrincipal();
 		if(principal != null && StringUtils.isNotEmpty(principal.getName())) {
 			return principal.getName();
