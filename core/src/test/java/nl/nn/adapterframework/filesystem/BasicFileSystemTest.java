@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
