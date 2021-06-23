@@ -149,7 +149,7 @@ public class ApiServiceDispatcher {
 				}
 			}
 
-			//Remove log statements from synchronized block
+			//keep log statements out of synchronized block
 			if(success) {
 				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
 			} else {
