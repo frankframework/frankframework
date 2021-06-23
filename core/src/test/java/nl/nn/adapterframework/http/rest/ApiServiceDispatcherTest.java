@@ -2,6 +2,7 @@ package nl.nn.adapterframework.http.rest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,9 +97,15 @@ public class ApiServiceDispatcherTest {
 		assertNotNull(config);
 		assertEquals("[POST, GET]", config.getMethods().toString());
 
+		//Test what happens after we remove 1 ServiceClient
 		dispatcher.unregisterServiceClient(createServiceClient(Methods.POST, uri));
 		ApiDispatchConfig config2 = dispatcher.findConfigForUri("/"+uri);
 		assertNotNull(config2);
 		assertEquals("[GET]", config2.getMethods().toString());
+
+		//Test what happens after we remove both ServiceClient in the same DispatchConfig
+		dispatcher.unregisterServiceClient(createServiceClient(Methods.GET, uri));
+		ApiDispatchConfig config3 = dispatcher.findConfigForUri("/"+uri);
+		assertNull(config3);
 	}
 }

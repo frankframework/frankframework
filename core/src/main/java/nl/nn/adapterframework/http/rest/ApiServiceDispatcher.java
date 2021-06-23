@@ -123,9 +123,7 @@ public class ApiServiceDispatcher {
 		String method = listener.getMethod();
 
 		synchronized(patternClients) {
-			ApiDispatchConfig dispatchConfig = patternClients.getOrDefault(uriPattern, new ApiDispatchConfig(uriPattern));
-			dispatchConfig.register(method, listener);
-			patternClients.put(uriPattern, dispatchConfig);
+			patternClients.computeIfAbsent(uriPattern, pattern -> new ApiDispatchConfig(pattern)).register(method, listener);
 		}
 
 		if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
@@ -142,7 +140,11 @@ public class ApiServiceDispatcher {
 			synchronized (patternClients) {
 				ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
 				if(dispatchConfig != null) {
-					dispatchConfig.destroy(method);
+					if(dispatchConfig.getMethods().size() == 1) {
+						patternClients.remove(uriPattern); //Remove the entire config if there's only 1 ServiceClient registered
+					} else {
+						dispatchConfig.remove(method); //Only remove the ServiceClient as there are multiple registered
+					}
 					success = true;
 				}
 			}
