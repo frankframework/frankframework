@@ -611,7 +611,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename = "senderwriteWithCharsetUseDefault" + FILE1;
 		String contents = "€ $ & ^ % @ < é ë ó ú à è";
 
-		PipeLineSession session = new PipeLineSession();
+		IPipeLineSession session = new PipeLineSessionBase();
 		session.put("senderwriteWithCharsetUseDefault", contents);
 
 		ParameterList params = new ParameterList();
