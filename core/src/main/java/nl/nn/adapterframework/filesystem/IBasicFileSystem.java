@@ -44,7 +44,6 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	public void configure() throws ConfigurationException;
 	public void open() throws FileSystemException;
 	public void close() throws FileSystemException;
-	public void setCharset(String string);
 
 	public boolean isOpen();
 
@@ -73,7 +72,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	public boolean exists(F f) throws FileSystemException;
 
 	public boolean folderExists(String folder) throws FileSystemException;
-	public Message readFile(F f) throws FileSystemException, IOException;
+	public Message readFile(F f, String charset) throws FileSystemException, IOException;
 	public void deleteFile(F f) throws FileSystemException;
 
 	/**

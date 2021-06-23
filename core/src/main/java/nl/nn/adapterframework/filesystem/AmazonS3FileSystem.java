@@ -229,12 +229,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public Message readFile(S3Object f) throws FileSystemException, IOException {
+	public Message readFile(S3Object f, String charset) throws FileSystemException, IOException {
 		try {
 			final S3Object file = s3Client.getObject(bucketName, f.getKey());
 			final S3ObjectInputStream is = file.getObjectContent();
 
-			return new Message(is, getCharset());
+			return new Message(is, charset);
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}

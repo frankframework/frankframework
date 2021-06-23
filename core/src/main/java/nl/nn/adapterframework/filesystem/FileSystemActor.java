@@ -55,7 +55,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -140,7 +139,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter String excludeWildcard=null;
 	private @Getter boolean removeNonEmptyFolder=false;
 	private @Getter boolean writeLineSeparator=false;
-	private @Getter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter String charset;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
@@ -155,7 +154,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
-		this.fileSystem.setCharset(getCharset());
 		
 		if (fileSystem instanceof IWritableFileSystem) {
 			actions.addAll(Arrays.asList(ACTIONS_WRITABLE_FS));
@@ -332,14 +330,14 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {
 				F file=getFile(input, pvl);
-				Message in = fileSystem.readFile(file);
+				Message in = fileSystem.readFile(file, getCharset());
 				if (StringUtils.isNotEmpty(getBase64())) {
 					return new Base64InputStream(in.asInputStream(), getBase64().equals(BASE64_ENCODE));
 				}
 				return in;
 			} else if (action.equalsIgnoreCase(ACTION_READ_DELETE)) {
 				F file=getFile(input, pvl);
-				InputStream in = new FilterInputStream(fileSystem.readFile(file).asInputStream()) {
+				InputStream in = new FilterInputStream(fileSystem.readFile(file, getCharset()).asInputStream()) {
 
 					@Override
 					public void close() throws IOException {
@@ -510,7 +508,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {
-			out.write(((String) contents).getBytes(getCharset()));
+			if(StringUtils.isNotEmpty(getCharset())) {
+				out.write(((String) contents).getBytes(getCharset()));
+			} else {
+				out.write(((String) contents).getBytes());
+			}
+			
 		} else {
 			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
 		}
@@ -687,7 +690,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.writeLineSeparator = writeLineSeparator;
 	}
 
-	@IbisDoc({"14", "Charset to be used for read action"})
+	@IbisDoc({"14", "Charset to be used for read and write action"})
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
