@@ -705,7 +705,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.writeLineSeparator = writeLineSeparator;
 	}
 
-	@IbisDoc({"14", "Charset to be used while reading a file."})
+	@IbisDoc({"14", "Charset to be used for read action"})
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
