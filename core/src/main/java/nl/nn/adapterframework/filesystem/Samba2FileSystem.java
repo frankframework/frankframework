@@ -303,7 +303,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 				file.close();
 			}
 		};
-		return new Message(fis);
+		return new Message(fis, getCharset());
 	}
 
 	@Override

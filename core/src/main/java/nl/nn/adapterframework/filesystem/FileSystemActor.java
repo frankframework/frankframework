@@ -140,6 +140,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter String excludeWildcard=null;
 	private @Getter boolean removeNonEmptyFolder=false;
 	private @Getter boolean writeLineSeparator=false;
+	private @Getter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
@@ -154,7 +155,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
-
+		this.fileSystem.setCharset(getCharset());
+		
 		if (fileSystem instanceof IWritableFileSystem) {
 			actions.addAll(Arrays.asList(ACTIONS_WRITABLE_FS));
 		}
@@ -508,7 +510,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {
-			out.write(((String) contents).getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
+			out.write(((String) contents).getBytes(getCharset()));
 		} else {
 			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
 		}
@@ -683,5 +685,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	@IbisDoc({"13", "If set to true then the system specific line separator will be appended to the file after executing the action. Works with actions "+ACTION_WRITE1+", and for action="+ACTION_APPEND, "false"})
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
 		this.writeLineSeparator = writeLineSeparator;
+	}
+
+	@IbisDoc({"14", "Charset to be used while reading a file."})
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 }
