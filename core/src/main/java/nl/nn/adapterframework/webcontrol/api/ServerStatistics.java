@@ -71,9 +71,56 @@ public class ServerStatistics extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServerInformation() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<>();
-		List<Map<String, Object>> configurations = new ArrayList<>();
 
 		AppConstants appConstants = AppConstants.getInstance();
+		Map<String, Object> framework = new HashMap<String, Object>(2);
+		framework.put("name", "FF!");
+		framework.put("version", appConstants.getProperty("application.version"));
+		returnMap.put("framework", framework);
+
+		Map<String, Object> instance = new HashMap<String, Object>(2);
+		instance.put("version", appConstants.getProperty("instance.version"));
+		instance.put("name", getIbisContext().getApplicationName());
+		returnMap.put("instance", instance);
+
+		String dtapStage = appConstants.getProperty("dtap.stage");
+		returnMap.put("dtap.stage", dtapStage);
+		String dtapSide = appConstants.getProperty("dtap.side");
+		returnMap.put("dtap.side", dtapSide);
+
+		returnMap.put("configurations", getConfigurations());
+
+		Principal userPrincipal = securityContext.getUserPrincipal();
+		if(userPrincipal != null) {
+			returnMap.put("userName", userPrincipal.getName());
+		}
+
+		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
+		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
+		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
+		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
+		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
+		returnMap.put("fileSystem", fileSystem);
+		returnMap.put("processMetrics", ProcessMetrics.toMap());
+		Date date = new Date();
+		returnMap.put("serverTime", date.getTime());
+		returnMap.put("machineName" , Misc.getHostname());
+		ApplicationMetrics metrics = getIbisContext().getBean("metrics", ApplicationMetrics.class);
+		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
+
+		return Response.status(Response.Status.OK).entity(returnMap).build();
+	}
+
+	@GET
+	@PermitAll
+	@Path("/server/configurations")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getAllConfigurations() throws ApiException {
+		return Response.status(Response.Status.OK).entity(getConfigurations()).build();
+	}
+
+	private List<Map<String, Object>> getConfigurations() {
+		List<Map<String, Object>> configurations = new ArrayList<>();
 
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			Map<String, Object> cfg = new HashMap<>();
@@ -111,44 +158,9 @@ public class ServerStatistics extends Base {
 				return name1.startsWith("IAF_") ? -1 : name2.startsWith("IAF_") ? 1 : name1.compareTo(name2);
 			}
 		});
-
-		returnMap.put("configurations", configurations);
-
-		Map<String, Object> framework = new HashMap<String, Object>(2);
-		framework.put("name", "FF!");
-		framework.put("version", appConstants.getProperty("application.version"));
-		returnMap.put("framework", framework);
-
-		Map<String, Object> instance = new HashMap<String, Object>(2);
-		instance.put("version", appConstants.getProperty("instance.version"));
-		instance.put("name", getIbisContext().getApplicationName());
-		returnMap.put("instance", instance);
-
-		String dtapStage = appConstants.getProperty("dtap.stage");
-		returnMap.put("dtap.stage", dtapStage);
-		String dtapSide = appConstants.getProperty("dtap.side");
-		returnMap.put("dtap.side", dtapSide);
-
-		Principal userPrincipal = securityContext.getUserPrincipal();
-		if(userPrincipal != null) {
-			returnMap.put("userName", userPrincipal.getName());
-		}
-
-		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
-		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
-		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
-		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
-		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
-		returnMap.put("fileSystem", fileSystem);
-		returnMap.put("processMetrics", ProcessMetrics.toMap());
-		Date date = new Date();
-		returnMap.put("serverTime", date.getTime());
-		returnMap.put("machineName" , Misc.getHostname());
-		ApplicationMetrics metrics = getIbisContext().getBean("metrics", ApplicationMetrics.class);
-		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
-
-		return Response.status(Response.Status.OK).entity(returnMap).build();
+		return configurations;
 	}
+
 
 	@GET
 	@PermitAll
