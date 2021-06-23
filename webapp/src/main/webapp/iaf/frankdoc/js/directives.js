@@ -1,4 +1,17 @@
-angular.module('iaf.frankdoc').directive('overview', [function() {
+angular.module('iaf.frankdoc')
+.directive('pageTitle', ['$timeout', '$state', '$transitions', function($timeout, $state, $transitions) {
+	return {
+		link: function(scope, element) {
+			var listener = function() {
+				let title = 'Frank!Doc';
+				$timeout(function() {
+					element.text(title);
+				});
+			};
+			$transitions.onSuccess({}, listener); //Fired on every state change
+		}
+	};
+}]).directive('overview', [function() {
 	return {
 		restrict: 'E',
 		replace: true,
