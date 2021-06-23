@@ -137,47 +137,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 	
 	@Test
-	public void basicFileSystemTestReadSpecialChars() throws Exception {
-		String filename = "readSpecial" + FILE1;
-		String contents = "€ $ & ^ % @ < é ë ó ú à è";
-
-		fileSystem.configure();
-		fileSystem.open();
-
-		createFile(null, filename, contents);
-		waitForActionToFinish();
-		// test
-		existsCheck(filename);
-
-		F file = fileSystem.toFile(filename);
-		// test
-		testReadFile(file, contents);
-	}
-	
-	@Test
-	public void basicFileSystemTestReadSpecialCharsFails() throws Exception {
-//		assumeFalse(this.getClass().equals(MockFileSystemTest.class));
-//		assumeFalse(this.getClass().equals(MockFileSystemWithAttachmentsTest.class));
-//		String filename = "readSpecial" + FILE1;
-//		String contents = "€ é";
-//
-//		fileSystem.configure();
-//		fileSystem.open();
-//
-//		createFile(null, filename, contents);
-//		waitForActionToFinish();
-//		// test
-//		existsCheck(filename);
-//
-//		F file = fileSystem.toFile(filename);
-//		// test
-////		Message in = fileSystem.readFile(file);
-//		String actual = in.asString();
-//		// test
-//		assertNotEquals(contents, actual);
-	}
-
-	@Test
 	public void basicFileSystemTestGetName() throws Exception {
 		String filename = "readName" + FILE1;
 		String contents = "Tekst om te lezen";
