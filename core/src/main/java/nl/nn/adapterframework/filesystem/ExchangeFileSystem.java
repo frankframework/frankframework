@@ -632,7 +632,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (a instanceof ItemAttachment) {
 			ItemAttachment itemAttachment=(ItemAttachment)a;
 			EmailMessage attachmentItem = (EmailMessage)itemAttachment.getItem();
-			return readFile(attachmentItem, null); // do not specify a charset
+			return readFile(attachmentItem, null); // we don't know the charset here, leave it null for now
 		}
 		if (content==null) {
 			log.warn("content of attachment is null");
