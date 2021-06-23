@@ -44,6 +44,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	public void configure() throws ConfigurationException;
 	public void open() throws FileSystemException;
 	public void close() throws FileSystemException;
+	public void setCharset(String string);
 
 	public boolean isOpen();
 

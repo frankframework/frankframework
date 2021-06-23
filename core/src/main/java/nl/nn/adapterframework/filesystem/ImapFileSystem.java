@@ -333,17 +333,17 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					MimeBodyPart bodyPart = (MimeBodyPart) mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text/html")) {
-						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream());
+						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream(), getCharset());
 					}
 				}
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text")) {
-						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream());
+						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream(), getCharset());
 					}
 				}
 			}
-			return new nl.nn.adapterframework.stream.Message(f.getInputStream());
+			return new nl.nn.adapterframework.stream.Message(f.getInputStream(), getCharset());
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}

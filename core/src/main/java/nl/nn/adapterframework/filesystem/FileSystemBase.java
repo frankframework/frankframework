@@ -21,8 +21,11 @@ import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Baseclass for {@link IBasicFileSystem FileSystems}.
@@ -36,6 +39,7 @@ public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
 	private int maxNumberOfMessagesToList=-1;
 	
 	private boolean open;
+	private @Getter @Setter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	@Override
 	public void open() throws FileSystemException {

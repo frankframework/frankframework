@@ -31,6 +31,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
@@ -46,7 +48,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	private String remoteDirectory = "";
 
 	private boolean open;
-
+	private @Getter @Setter String charset;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -149,7 +151,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	public Message readFile(FTPFile f) throws FileSystemException, IOException {
 		InputStream inputStream = ftpClient.retrieveFileStream(f.getName());
 		ftpClient.completePendingCommand();
-		return new Message(inputStream);
+		return new Message(inputStream, getCharset());
 	}
 
 	@Override

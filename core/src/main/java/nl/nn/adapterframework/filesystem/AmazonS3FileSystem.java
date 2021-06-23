@@ -234,7 +234,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			final S3Object file = s3Client.getObject(bucketName, f.getKey());
 			final S3ObjectInputStream is = file.getObjectContent();
 
-			return new Message(is);
+			return new Message(is, getCharset());
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
