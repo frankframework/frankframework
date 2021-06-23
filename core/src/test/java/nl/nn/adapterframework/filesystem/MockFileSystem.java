@@ -13,8 +13,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -25,7 +23,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	private boolean configured=false;
 	private boolean opened=false;
-	private @Getter @Setter String charset;
 
 	public MockFileSystem() {
 		super("MOCKFILESYSTEM",null);
