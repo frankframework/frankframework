@@ -25,6 +25,11 @@ import org.springframework.context.Lifecycle;
  */
 public interface ConfigurableLifecycle extends Lifecycle {
 
+	/**
+	 * Calling configure() should set the state to STARTING, 
+	 * calling start() should set the state to STARTED
+	 *
+	 */
 	public enum BootState {
 		STARTING, STARTED, STOPPING, STOPPED;
 	}
@@ -37,7 +42,7 @@ public interface ConfigurableLifecycle extends Lifecycle {
 
 	@Override
 	public default boolean isRunning() {
-		return getState() == BootState.STARTED;
+		return inState(BootState.STARTED);
 	}
 
 	public void configure();
