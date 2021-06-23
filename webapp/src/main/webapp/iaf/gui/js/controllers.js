@@ -767,8 +767,8 @@ angular.module('iaf.beheerconsole')
 		$scope.reloading = true;
 		Poller.getAll().stop();
 		Api.Put("configurations", {"action": "reload"}, function() {
+			$scope.reloading = false;
 			startPollingForConfigurationStateChanges(function() {
-				$scope.reloading = false;
 				Poller.getAll().start();
 			});
 		});
