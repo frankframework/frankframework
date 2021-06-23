@@ -53,6 +53,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -505,12 +506,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {
-			if(StringUtils.isNotEmpty(getCharset())) {
-				out.write(((String) contents).getBytes(getCharset()));
-			} else {
-				out.write(((String) contents).getBytes());
-			}
-			
+			out.write(((String) contents).getBytes(StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 		} else {
 			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
 		}

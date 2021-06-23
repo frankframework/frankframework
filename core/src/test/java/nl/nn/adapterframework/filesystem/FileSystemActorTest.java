@@ -607,6 +607,37 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 	
 	@Test
+	public void fileSystemActorWriteWithNoCharsetUsed() throws Exception {
+		String filename = "senderwriteWithCharsetUseDefault" + FILE1;
+		String contents = "€ $ & ^ % @ < é ë ó ú à è";
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("senderwriteWithCharsetUseDefault", contents);
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("contents");
+		p.setSessionKey("senderwriteWithCharsetUseDefault");
+		params.add(p);
+		params.configure();
+
+		waitForActionToFinish();
+
+		actor.setAction("write");
+		actor.setFilename(filename);
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message message= new Message(contents);
+		ParameterValueList pvl = params.getValues(message, session);
+		
+		actor.doAction(message, pvl, session);
+
+		String actualContents = readFile(null, filename);
+		assertEquals(contents, actualContents);
+	}
+
+	@Test
 	public void fileSystemActorWriteActionTestWithStringAndUploadAsAction() throws Exception {
 		String filename = "uploadedwithString" + FILE1;
 		String contents = "Some text content to test upload action\n";
