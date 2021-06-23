@@ -2,6 +2,7 @@ package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -564,6 +565,48 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		fileSystemActorReadActionTest("readDelete",false, false);
 	}
 
+	@Test
+	public void fileSystemActorReadWithCharsetUseDefault() throws Exception {
+		String filename = "sender" + FILE1;
+		String contents = "€ $ & ^ % @ < é ë ó ú à è";
+		
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		actor.setAction("read");
+		actor.setFilename(filename);
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message message= new Message(filename);
+		ParameterValueList pvl = null;
+
+		Message result = Message.asMessage(actor.doAction(message, pvl, session));
+		assertEquals(contents, result.asString());
+	}
+	
+	@Test
+	public void fileSystemActorReadWithCharsetUseIncompatible() throws Exception {
+		String filename = "sender" + FILE1;
+		String contents = "€ è";
+		String expected = "â¬ Ã¨";
+		
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		actor.setAction("read");
+		actor.setFilename(filename);
+		actor.setCharset("ISO-8859-1");
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message message= new Message(filename);
+		ParameterValueList pvl = null;
+
+		Message result = Message.asMessage(actor.doAction(message, pvl, session));
+		assertEquals(expected, result.asString());
+	}
+	
 	@Test
 	public void fileSystemActorWriteActionTestWithStringAndUploadAsAction() throws Exception {
 		String filename = "uploadedwithString" + FILE1;

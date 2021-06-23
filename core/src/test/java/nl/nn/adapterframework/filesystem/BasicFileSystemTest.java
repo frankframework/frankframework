@@ -114,7 +114,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	public void testReadFile(F file, String expectedContents) throws IOException, FileSystemException {
-		Message in = fileSystem.readFile(file);
+		Message in = fileSystem.readFile(file, null);
 		String actual = in.asString();
 		// test
 		equalsCheck(expectedContents.trim(), actual.trim());
@@ -136,49 +136,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		F file = fileSystem.toFile(filename);
 		// test
 		testReadFile(file, contents);
-	}
-	
-	@Test
-	public void basicFileSystemTestReadSpecialChars() throws Exception {
-		String filename = "readSpecial" + FILE1;
-		String contents = "€ $ & ^ % @ < é ë ó ú à è";
-
-		fileSystem.configure();
-		fileSystem.open();
-		fileSystem.setCharset("UTF-8");
-
-		createFile(null, filename, contents);
-		waitForActionToFinish();
-		// test
-		existsCheck(filename);
-
-		F file = fileSystem.toFile(filename);
-		// test
-		testReadFile(file, contents);
-	}
-	
-	@Test
-	public void basicFileSystemTestReadSpecialCharsFails() throws Exception {
-		assumeFalse(this.getClass().equals(MockFileSystemTest.class));
-		assumeFalse(this.getClass().equals(MockFileSystemWithAttachmentsTest.class));
-		String filename = "readSpecial" + FILE1;
-		String contents = "€ é";
-
-		fileSystem.configure();
-		fileSystem.open();
-		fileSystem.setCharset("ISO-8859-1");
-
-		createFile(null, filename, contents);
-		waitForActionToFinish();
-		// test
-		existsCheck(filename);
-
-		F file = fileSystem.toFile(filename);
-		// test
-		Message in = fileSystem.readFile(file);
-		String actual = in.asString();
-		// test
-		assertNotEquals(contents, actual);
 	}
 
 	@Test
