@@ -235,7 +235,7 @@ public class CmisSender extends SenderWithParametersBase {
 	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
 	//TODO remove this when fileContentSessionKey gets removed
-	private boolean convert2Base64 = AppConstants.getInstance().getBoolean("CmisSender.Base64FileContent", true);
+	private boolean convert2Base64 = false;
 	private String fileSessionKey;
 
 	@Override
@@ -1157,14 +1157,14 @@ public class CmisSender extends SenderWithParametersBase {
 	@IbisDoc({"If <code>action=create</code> the session key that contains the input stream of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the input stream of the document is stored", ""})
 	public void setFileInputStreamSessionKey(String string) {
 		setFileSessionKey(string);
-		convert2Base64 = false;
 	}
 
 	@IbisDoc({"If <code>action=create</code> the session key that contains the base64 encoded content of the file to use. When <code>action=get</code> and <code>getproperties=true</code>: the session key in which the base64 encoded content of the document is stored", ""})
-	@ConfigurationWarning("attribute 'fileContentSessionKey' is replaced with 'fileSessionKey', please note that the result will no longer be BASE64")
+	@ConfigurationWarning("attribute 'fileContentSessionKey' is replaced with 'fileSessionKey', please note that the 'fileSessionKey' result will not BASE64 encode the content")
+	@Deprecated
 	public void setFileContentSessionKey(String string) {
 		setFileSessionKey(string);
-		convert2Base64 = true;
+		convert2Base64 = AppConstants.getInstance().getBoolean("CmisSender.Base64FileContent", true);
 	}
 
 	@IbisDoc({"If <code>action=create</code> the mime type used to store the document when it's not set in the input message by a property", "'application/octet-stream'"})

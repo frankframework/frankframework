@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
@@ -127,12 +128,10 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		IbisCacheManager.shutdown();
 	}
 
-	/**
-	 * Utility function to give commands to Adapters and Receivers
-	 */
 	@Override
-	public void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
-		if (action.equalsIgnoreCase("STOPADAPTER")) {
+	public void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
+		switch (action) {
+		case STOPADAPTER:
 			if (adapterName.equals("*ALL*")) {
 				if (configurationName.equals("*ALL*")) {
 					log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
@@ -151,7 +150,9 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					}
 				}
 			}
-		} else if (action.equalsIgnoreCase("STARTADAPTER")) {
+			break;
+
+		case STARTADAPTER:
 			if (adapterName.equals("*ALL*")) {
 				if (configurationName.equals("*ALL*")) {
 					log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
@@ -175,7 +176,9 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					//errors.add("", new ActionError("errors.generic", e.toString()));
 				}
 			}
-		} else if (action.equalsIgnoreCase("STOPRECEIVER")) {
+			break;
+
+		case STOPRECEIVER:
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
@@ -196,7 +199,9 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
 				}
 			}
-		} else if (action.equalsIgnoreCase("STARTRECEIVER")) {
+			break;
+
+		case STARTRECEIVER:
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
@@ -217,21 +222,27 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
 				}
 			}
-		} else if (action.equalsIgnoreCase("RELOAD")) {
+			break;
+
+		case RELOAD:
 			String msg = "Reload configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]";
 			log.info(msg);
 			secLog.info(msg);
 			ibisContext.reload(configurationName);
-		} else if (action.equalsIgnoreCase("FULLRELOAD")) {
+			break;
+
+		case FULLRELOAD:
 			if (isAdmin) {
-				String msg = "Full reload on request of [" + commandIssuedBy+"]";
-				log.info(msg);
-				secLog.info(msg);
+				String msg2 = "Full reload on request of [" + commandIssuedBy+"]";
+				log.info(msg2);
+				secLog.info(msg2);
 				ibisContext.fullReload();
 			} else {
 				log.warn("Full reload not allowed for [" + commandIssuedBy+"]");
 			}
-		} else if (action.equalsIgnoreCase("INCTHREADS")) {
+			break;
+
+		case INCTHREADS:
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
@@ -242,7 +253,9 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					log.info("receiver [" + receiverName + "] increased threadcount on request of " + commandIssuedBy);
 				}
 			}
-		} else if (action.equalsIgnoreCase("DECTHREADS")) {
+			break;
+
+		case DECTHREADS:
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
@@ -253,7 +266,9 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					log.info("receiver [" + receiverName + "] decreased threadcount on request of " + commandIssuedBy);
 				}
 			}
-		} else if (action.equalsIgnoreCase("SENDMESSAGE")) {
+			break;
+
+		case SENDMESSAGE:
 			try {
 				// send job
 				IbisLocalSender localSender = new IbisLocalSender();
@@ -270,7 +285,9 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			} catch(Exception e) {
 				log.error("Error while sending message (as part of scheduled job execution)", e);
 			}
-		} else if (action.equalsIgnoreCase("MOVEMESSAGE")) {
+			break;
+
+		case MOVEMESSAGE:
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
@@ -294,6 +311,10 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					}
 				}
 			}
+			break;
+
+		default:
+			throw new NotImplementedException("action ["+action.name()+"] not implemented");
 		}
 	}
 
