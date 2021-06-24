@@ -48,7 +48,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	public void setup() throws Exception {
 		pipe = createPipe();
 		autowireByType(pipe);
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipeline = getConfiguration().createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
