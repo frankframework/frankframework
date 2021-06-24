@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -33,7 +32,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -61,7 +59,6 @@ import nl.nn.adapterframework.util.RunStateEnum;
 @Path("/")
 public class ServerStatistics extends Base {
 
-	@Context private SecurityContext securityContext;
 	@Context private Request rsRequest;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
@@ -90,9 +87,9 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("configurations", getConfigurations());
 
-		Principal userPrincipal = securityContext.getUserPrincipal();
-		if(userPrincipal != null) {
-			returnMap.put("userName", userPrincipal.getName());
+		String user = getUserPrincipalName();
+		if(user != null) {
+			returnMap.put("userName", user);
 		}
 
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
@@ -158,6 +155,7 @@ public class ServerStatistics extends Base {
 				return name1.startsWith("IAF_") ? -1 : name2.startsWith("IAF_") ? 1 : name1.compareTo(name2);
 			}
 		});
+
 		return configurations;
 	}
 

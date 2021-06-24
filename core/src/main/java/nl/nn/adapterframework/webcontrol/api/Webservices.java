@@ -29,7 +29,6 @@ import java.util.SortedMap;
 
 import javax.annotation.security.RolesAllowed;
 import javax.naming.NamingException;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -37,7 +36,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -68,7 +66,6 @@ import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 
 @Path("/")
 public final class Webservices extends Base {
-	@Context ServletConfig servletConfig;
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -150,7 +147,6 @@ public final class Webservices extends Base {
 		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
 
-	
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/webservices/{resourceName}")
