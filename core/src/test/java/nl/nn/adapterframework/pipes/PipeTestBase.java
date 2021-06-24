@@ -9,7 +9,6 @@ import org.junit.rules.ExpectedException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
@@ -86,11 +85,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	 * Configure the pipe
 	 */
 	protected void configurePipe() throws ConfigurationException {
-		if (pipe instanceof IExtendedPipe) {
-			((IExtendedPipe) pipe).configure(pipeline);
-		} else {
-			pipe.configure();
-		}
+		pipe.configure();
 	}
 
 	/**

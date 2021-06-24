@@ -41,9 +41,9 @@ public interface IExtendedPipe extends IPipe {
 
 	/**
 	 * Extension, allowing Pipes to register things with the PipeLine at Configuration time.
-	 * For IExtendedPipes, PileLine will call this method rather then the no-args configure().
+	 * Must be set before calling configure()
 	 */
-	void configure(PipeLine pipeline) throws ConfigurationException;
+	void setPipeLine(PipeLine pipeline) throws ConfigurationException;
 
 	/**
 	 * controls whether pipe is used in configuration. Can be used for debug-only pipes.

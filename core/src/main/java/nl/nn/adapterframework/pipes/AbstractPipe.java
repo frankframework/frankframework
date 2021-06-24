@@ -132,7 +132,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private ParameterList parameterList = new ParameterList();
 	private @Setter EventPublisher eventPublisher=null;
 
-	private PipeLine pipeline;
+	private @Getter @Setter PipeLine pipeLine;
 
 	private DummyNamedObject inSizeStatDummyObject=null;
 	private DummyNamedObject outSizeStatDummyObject=null;
@@ -175,9 +175,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 				if (forward!=null) {
 					String path=forward.getPath();
 					if (path!=null) {
-						PipeLineExit plExit= pipeline.getPipeLineExits().get(path);
+						PipeLineExit plExit= pipeLine.getPipeLineExits().get(path);
 						if (plExit==null){
-							if (pipeline.getPipe(path)==null){
+							if (pipeLine.getPipe(path)==null){
 								ConfigurationWarnings.add(this, log, "has a forward of which the pipe to execute ["+path+"] is not defined");
 							}
 						}
@@ -191,15 +191,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		}
 
 		super.configure();
-	}
-
-	/**
-	 * Extension for IExtendedPipe that calls configure(void) in its implementation.
-	 */
-	@Override
-	public void configure(PipeLine pipeline) throws ConfigurationException {
-		this.pipeline=pipeline;
-		configure();
 	}
 
 	/**
@@ -380,10 +371,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		if (eventPublisher != null) {
 			eventPublisher.fireEvent(this ,event);
 		}
-	}
-
-	public PipeLine getPipeLine() {
-		return pipeline;
 	}
 
 	@Override
