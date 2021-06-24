@@ -48,6 +48,10 @@
 		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
 		<property name="regexFilter"><ref bean="regexFilter"/></property>
 		<property name="securityLoggerName" value="SEC"/>
+		<!-- Prevent threads that didn't start and aren't cancelled to keep reports in progress. Most of the times (like when using ParallelSenders) the main thread will wait for child threads to return their result anyway -->
+		<property name="closeThreads" value="true"/>
+		<!-- Prevent streams for which close method isn't invoked to keep reports in progress. Most of the times streams will be processed during the lifetime of the main thread (which is executing the PipeLine) anyway -->
+		<property name="closeMessageCapturers" value="true"/>
 	</bean>
 
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
