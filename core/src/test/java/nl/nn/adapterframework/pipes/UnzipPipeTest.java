@@ -140,13 +140,9 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		doPipe(new Message(zip));
 		String[] files = new File(folder.getRoot()+"/MyProjects/").list();
 		assertEquals(4, files.length);
-		assertTrue(files[0].contains("build"));
-		assertTrue(files[1].contains("classes"));
 		
 		files = new File(folder.getRoot()+"/MyProjects/classes/xml/xsl/").list();
 		assertEquals(2, files.length);
-		assertTrue(files[0].contains("stub4testtool"));
-		assertTrue(files[1].contains("uglify_lookup"));
 	}
 	
 	@Test
