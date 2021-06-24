@@ -26,9 +26,10 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.testtool.MessageCapturerImpl;
 import nl.nn.testtool.TestTool;
 
-public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
+public class MessageCapturer extends MessageCapturerImpl {
 	private Logger log = LogUtil.getLogger(this);
 
 	private @Setter @Getter TestTool testTool;
@@ -45,7 +46,7 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 				return StreamingType.CHARACTER_STREAM;
 			}
 		}
-		return StreamingType.NONE;
+		return super.getStreamingType(message);
 	}
 
 	@Override
@@ -61,13 +62,15 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 					log.error("Could not close writer", e);
 				}
 			}
+			return message;
 		} 
 		if (message instanceof WriterPlaceHolder) {
 			WriterPlaceHolder writerPlaceHolder = (WriterPlaceHolder)message;
 			writerPlaceHolder.setWriter(writer);
 			writerPlaceHolder.setSizeLimit(testTool.getMaxMessageLength());
+			return message;
 		}
-		return message;
+		return super.toWriter(message, writer, exceptionNotifier);
 	}
 
 	@Override
@@ -85,8 +88,9 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 					log.error("Could not close output stream", e);
 				}
 			}
+			return message;
 		}
-		return message;
+		return super.toOutputStream(message, outputStream, charsetNotifier, exceptionNotifier);
 	}
 
 }

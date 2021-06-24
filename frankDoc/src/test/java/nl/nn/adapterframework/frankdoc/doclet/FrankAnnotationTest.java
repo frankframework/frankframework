@@ -5,12 +5,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import nl.nn.adapterframework.frankdoc.testtarget.doclet.Java5Annotation;
 
-@RunWith(Parameterized.class)
 public class FrankAnnotationTest extends TestBase{
 	@Test
 	public void whenArrayAnnotationValueProvidedAsScalarThenStillFetchable() throws FrankDocException {
