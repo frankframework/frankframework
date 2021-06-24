@@ -29,9 +29,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.stream.Message;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,6 +37,8 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -216,24 +215,25 @@ public class UnzipPipe extends FixedForwardPipe {
 								throw new PipeRunException(this, "file [" + tmpFile.getAbsolutePath() + "] already exists"); 
 							}
 						} else {
-							String filename = new File(basename).getName();
-							String zipEntryPath = entryname.substring(0, ze.getName().indexOf(filename));
-							if(filename.length() < 3) filename += ".tmp.";	//filename here is a prefix to create a unique filename and that prefix must be at least 3 chars long
-							tmpFile = File.createTempFile(filename, extension, new File(dir, zipEntryPath));
+							if (isCreateSubdirectories()) {
+								String filename = new File(basename).getName();
+								String zipEntryPath = entryname.substring(0, ze.getName().indexOf(filename));
+								if(filename.length() < 3) filename += ".tmp.";	//filename here is a prefix to create a unique filename and that prefix must be at least 3 chars long
+								File file = new File(dir, zipEntryPath);
+								if(!file.exists()) {
+									if (file.mkdirs()) {
+										log.debug(getLogPrefix(session)+"created directory ["+file.getPath()+"]");
+									} else {
+										log.warn(getLogPrefix(session)+"directory ["+file.getPath()+"] could not be created");
+									}
+								}
+								tmpFile = File.createTempFile(filename, extension, file);
+							} else {
+								tmpFile = File.createTempFile(basename, extension, dir);
+							}
 						}
 						if (isDeleteOnExit()) {
 							tmpFile.deleteOnExit();
-						}
-						if (isCreateSubdirectories()) {
-							//extra check
-							File tmpDir = tmpFile.getParentFile();
-							if (!tmpDir.exists()) {
-								if (tmpDir.mkdirs()) {
-									log.debug(getLogPrefix(session)+"created directory ["+tmpDir.getPath()+"]");
-								} else {
-									log.warn(getLogPrefix(session)+"directory ["+tmpDir.getPath()+"] could not be created");
-								}
-							}
 						}
 						try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
 							log.debug(getLogPrefix(session)+"writing ZipEntry ["+entryname+"] to file ["+tmpFile.getPath()+"]");

@@ -132,6 +132,35 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	}
 	
 	@Test
+	public void testCreateSubDirectoriesInnerItemAsTheFirstEntry() throws Exception {
+		pipe.setCreateSubdirectories(true);
+		configureAndStartPipe();
+		
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
+		doPipe(new Message(zip));
+		String[] files = new File(folder.getRoot()+"/MyProjects/").list();
+		assertEquals(4, files.length);
+		assertTrue(files[0].contains("build"));
+		assertTrue(files[1].contains("classes"));
+		
+		files = new File(folder.getRoot()+"/MyProjects/classes/xml/xsl/").list();
+		assertEquals(2, files.length);
+		assertTrue(files[0].contains("stub4testtool"));
+		assertTrue(files[1].contains("uglify_lookup"));
+	}
+	
+	@Test
+	public void testExtractAllInTheRoot() throws Exception {
+		pipe.setCreateSubdirectories(false);
+		configureAndStartPipe();
+		
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
+		doPipe(new Message(zip));
+		String[] files = new File(folder.getRoot().getPath()).list();
+		assertEquals(5, files.length);
+	}
+	
+	@Test
 	public void testCreateSubDirectoriesKeepFilename() throws Exception {
 		pipe.setKeepOriginalFileName(true);
 		pipe.setCreateSubdirectories(true);
