@@ -85,7 +85,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	 * Configure the pipe
 	 */
 	protected void configurePipe() throws ConfigurationException {
-		pipe.configure();
+		pipeline.configure();
 	}
 
 	/**

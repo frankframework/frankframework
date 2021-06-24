@@ -294,7 +294,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		try {
 			if (pipe instanceof IExtendedPipe) {
 				IExtendedPipe epipe=(IExtendedPipe)pipe;
-				epipe.configure();
+				epipe.setPipeLine(this); //Temporary here because of validators and wrappers
 
 				if (epipe.getDurationThreshold() >= 0) {
 					epipe.registerEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
@@ -316,9 +316,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						pipeSizeStats.put(pipe.getName(), new SizeStatisticsKeeper(pipe.getName()));
 					}
 				}
-			} else {
-				pipe.configure();
 			}
+
+			pipe.configure();
+
 			if (pipe instanceof MessageSendingPipe) {
 				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
 				if (messageSendingPipe.getMessageLog() != null) {
@@ -731,9 +732,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		IPipe current = getPipe(name);
 		if (current != null) {
 			throw new ConfigurationException("pipe [" + name + "] defined more then once");
-		}
-		if (pipe instanceof IExtendedPipe) {
-			((IExtendedPipe) pipe).setPipeLine(this);
 		}
 		pipesByName.put(name, pipe);
 		pipes.add(pipe);

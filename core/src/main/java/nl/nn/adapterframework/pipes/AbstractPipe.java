@@ -151,6 +151,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
+//		if(pipeLine == null) { //TODO make sure pipeline is never NULL
+//			throw new ConfigurationException("pipeline not set");
+//		}
+
 		ParameterList params = getParameterList();
 
 		if (params!=null) {
@@ -169,16 +173,18 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			//TODO pipe will follow the next forward no need to show warning
 			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
 		} else {
-			for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
-				String forwardName = it.next();
-				PipeForward forward= pipeForwards.get(forwardName);
-				if (forward!=null) {
-					String path=forward.getPath();
-					if (path!=null) {
-						PipeLineExit plExit= pipeLine.getPipeLineExits().get(path);
-						if (plExit==null){
-							if (pipeLine.getPipe(path)==null){
-								ConfigurationWarnings.add(this, log, "has a forward of which the pipe to execute ["+path+"] is not defined");
+			if(pipeLine != null) { //TODO make sure pipeline is never NULL
+				for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
+					String forwardName = it.next();
+					PipeForward forward= pipeForwards.get(forwardName);
+					if (forward!=null) {
+						String path=forward.getPath();
+						if (path!=null) {
+							PipeLineExit plExit= pipeLine.getPipeLineExits().get(path);
+							if (plExit==null){
+								if (pipeLine.getPipe(path)==null){
+									ConfigurationWarnings.add(this, log, "has a forward of which the pipe to execute ["+path+"] is not defined");
+								}
 							}
 						}
 					}
