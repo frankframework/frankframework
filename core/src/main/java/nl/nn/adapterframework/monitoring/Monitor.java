@@ -214,9 +214,13 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	public void registerTrigger(TriggerBase trigger) {
+	public void registerTrigger(Trigger trigger) {
+		registerTheTrigger(trigger);
+	}
+
+	private void registerTheTrigger(TriggerBase trigger) {
 		trigger.setMonitor(this);
-		triggers.add(trigger);
+		triggers.add(trigger);		
 	}
 
 	public void removeTrigger(TriggerBase trigger) {
@@ -229,10 +233,10 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	}
 
 	public void registerAlarm(Alarm alarm) {
-		registerTrigger(alarm);
+		registerTheTrigger(alarm);
 	}
 	public void registerClearing(Clearing clearing) {
-		registerTrigger(clearing);
+		registerTheTrigger(clearing);
 	}
 
 	public String getLogPrefix() {
