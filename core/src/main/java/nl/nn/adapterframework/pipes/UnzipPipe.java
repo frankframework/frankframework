@@ -150,7 +150,7 @@ public class UnzipPipe extends FixedForwardPipe {
 			}
 		}
 
-		File dir = this.dir;
+		File targetDirectory = this.dir;
 		if (StringUtils.isEmpty(getDirectory())) {
 			String directory = (String) session.get(getDirectorySessionKey());
 			if (StringUtils.isEmpty(directory)) {
@@ -158,12 +158,12 @@ public class UnzipPipe extends FixedForwardPipe {
 					throw new PipeRunException(this, "directorySessionKey is empty");
 				}
 			} else {
-				dir = new File(directory);
-				if (!dir.exists()) {
+				targetDirectory = new File(directory);
+				if (!targetDirectory.exists()) {
 					if (!isCollectFileContents()) {
 						throw new PipeRunException(this, "Directory ["+directory+"] does not exist");
 					}
-				} else if (!dir.isDirectory()) {
+				} else if (!targetDirectory.isDirectory()) {
 					throw new PipeRunException(this, "Directory ["+directory+"] is not a directory");
 				}
 			}
@@ -174,32 +174,32 @@ public class UnzipPipe extends FixedForwardPipe {
 		try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(in))) {
 			ZipEntry ze;
 			while ((ze=zis.getNextEntry())!=null) {
-				if (ze.isDirectory()) {
-					if (isCreateSubdirectories() && dir != null) {
-						File tmpFile = new File(dir, ze.getName());
-						if (!tmpFile.exists()) {
-							if (tmpFile.mkdirs()) {
-								log.debug(getLogPrefix(session)+"created directory ["+tmpFile.getPath()+"]");
-							} else {
-								log.warn(getLogPrefix(session)+"directory ["+tmpFile.getPath()+"] could not be created");
-							}
+				String entryname = ze.getName();
+				if(isCreateSubdirectories() && targetDirectory != null) { 
+					File tmpFile = new File(targetDirectory, entryname);
+					tmpFile = tmpFile.isDirectory() ? tmpFile : tmpFile.getParentFile();
+					if (!tmpFile.exists()) {
+						if (tmpFile.mkdirs()) {	// Create directories included in the path
+							log.debug(getLogPrefix(session)+"created directory ["+tmpFile.getPath()+"]");
 						} else {
-							log.debug(getLogPrefix(session)+"directory entry ["+tmpFile.getPath()+"] already exists");
+							log.warn(getLogPrefix(session)+"directory ["+tmpFile.getPath()+"] could not be created");
 						}
 					} else {
-						log.debug(getLogPrefix(session)+"skipping directory entry ["+ze.getName()+"]");
+						log.debug(getLogPrefix(session)+"directory entry ["+tmpFile.getPath()+"] already exists");
 					}
-				} else {
-					String entryname=ze.getName();
-					String basename=null;
+				}
+
+				if(!ze.isDirectory()) {
+					// split the entry name and the extension
+					String entryNameWithoutExtension=null;
 					String extension=null;
 					int dotPos=entryname.lastIndexOf('.');
 					if (dotPos>=0) {
 						extension=entryname.substring(dotPos);
-						basename=entryname.substring(0,dotPos);
-						log.debug(getLogPrefix(session)+"parsed filename ["+basename+"] extension ["+extension+"]");
+						entryNameWithoutExtension=entryname.substring(0,dotPos);
+						log.debug(getLogPrefix(session)+"parsed filename ["+entryNameWithoutExtension+"] extension ["+extension+"]");
 					} else {
-						basename=entryname;
+						entryNameWithoutExtension=entryname;
 					}
 					InputStream inputStream = StreamUtil.dontClose(zis); 
 					byte[] fileContentBytes = null;
@@ -207,29 +207,23 @@ public class UnzipPipe extends FixedForwardPipe {
 						fileContentBytes = Misc.streamToBytes(inputStream);
 						inputStream = new ByteArrayInputStream(fileContentBytes);
 					}
+
 					File tmpFile = null;
-					if (dir != null) {
+					if (targetDirectory != null) {
 						if (isKeepOriginalFileName()) {
-							tmpFile = new File(dir, entryname);
+							String filename = isCreateSubdirectories() ? entryname : new File(entryname).getName();
+							tmpFile = new File(targetDirectory, filename);
 							if (tmpFile.exists()) {
 								throw new PipeRunException(this, "file [" + tmpFile.getAbsolutePath() + "] already exists"); 
 							}
 						} else {
 							if (isCreateSubdirectories()) {
-								String filename = new File(basename).getName();
+								String filename = new File(entryNameWithoutExtension).getName();
 								String zipEntryPath = entryname.substring(0, ze.getName().indexOf(filename));
 								if(filename.length() < 3) filename += ".tmp.";	//filename here is a prefix to create a unique filename and that prefix must be at least 3 chars long
-								File file = new File(dir, zipEntryPath);
-								if(!file.exists()) {
-									if (file.mkdirs()) {
-										log.debug(getLogPrefix(session)+"created directory ["+file.getPath()+"]");
-									} else {
-										log.warn(getLogPrefix(session)+"directory ["+file.getPath()+"] could not be created");
-									}
-								}
-								tmpFile = File.createTempFile(filename, extension, file);
+								tmpFile = File.createTempFile(filename, extension, new File(targetDirectory, zipEntryPath));
 							} else {
-								tmpFile = File.createTempFile(basename, extension, dir);
+								tmpFile = File.createTempFile(entryNameWithoutExtension, extension, targetDirectory);
 							}
 						}
 						if (isDeleteOnExit()) {
@@ -243,7 +237,7 @@ public class UnzipPipe extends FixedForwardPipe {
 					}
 					if (isCollectResults()) {
 						entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname) + "</zipEntry>";
-						if (dir != null) {
+						if (targetDirectory != null) {
 							entryResults += "<fileName>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath()) + "</fileName>";
 						}
 						if (isCollectFileContents()) {
@@ -258,6 +252,7 @@ public class UnzipPipe extends FixedForwardPipe {
 						}
 						entryResults += "</result>";
 					}
+				
 				}
 			}
 		} catch (IOException e) {

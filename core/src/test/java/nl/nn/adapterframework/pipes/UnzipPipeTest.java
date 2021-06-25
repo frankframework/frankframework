@@ -139,7 +139,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
 		doPipe(new Message(zip));
 		String[] files = new File(folder.getRoot()+"/MyProjects/").list();
-		assertEquals(4, files.length);
+		assertEquals(5, files.length);
 		
 		files = new File(folder.getRoot()+"/MyProjects/classes/xml/xsl/").list();
 		assertEquals(2, files.length);
@@ -147,13 +147,15 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	
 	@Test
 	public void testExtractAllInTheRoot() throws Exception {
+		pipe.setKeepOriginalFileName(true);
 		pipe.setCreateSubdirectories(false);
+		pipe.setDeleteOnExit(false);
 		configureAndStartPipe();
 		
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
 		doPipe(new Message(zip));
 		String[] files = new File(folder.getRoot().getPath()).list();
-		assertEquals(5, files.length);
+		assertEquals(6, files.length);
 	}
 	
 	@Test
@@ -182,4 +184,24 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		assertTrue(toBePresent.exists());
 	}
 
+	@Test
+	public void testNullDirectory() throws Exception {
+		exception.expectMessage("directory or directorySessionKey must be specified");
+
+		pipe.setDirectory(null);
+		pipe.setDirectorySessionKey(null);
+		configureAndStartPipe();
+	}
+
+	@Test
+	public void testNullDirectoryFakeSessionKey() throws Exception {
+		exception.expectMessage("directorySessionKey is empty");
+
+		pipe.setDirectory(null);
+		pipe.setDirectorySessionKey("dummy");
+		configureAndStartPipe();
+
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
+		doPipe(new Message(zip));
+	}
 }
