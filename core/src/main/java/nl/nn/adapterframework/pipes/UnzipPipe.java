@@ -32,6 +32,8 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -93,19 +95,20 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class UnzipPipe extends FixedForwardPipe {
 	
-	private String directory;
-	private String directorySessionKey;
-	private boolean deleteOnExit=true;
-	private boolean collectResults=true;
-	private boolean collectFileContents=false;
-	private String collectFileContentsBase64Encoded;
-	private boolean keepOriginalFileName=false;
-	private boolean createSubdirectories=false;
+	private @Getter String directory;
+	private @Getter String directorySessionKey;
+	private @Getter boolean deleteOnExit=true;
+	private @Getter boolean collectResults=true;
+	private @Getter boolean collectFileContents=false;
+	private @Getter String collectFileContentsBase64Encoded;
+	private @Getter boolean keepOriginalFileName=false;
+	private @Getter boolean keepOriginalFilePath=false;
+	private @Getter boolean assumeDirectoryExists=false;
 
 	private File dir; // File representation of directory
 	private List<String> base64Extensions;
 
-	private boolean assumeDirectoryExists=false;
+	
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -175,7 +178,7 @@ public class UnzipPipe extends FixedForwardPipe {
 			ZipEntry ze;
 			while ((ze=zis.getNextEntry())!=null) {
 				String entryname = ze.getName();
-				if(isCreateSubdirectories() && targetDirectory != null) { 
+				if(isKeepOriginalFilePath() && targetDirectory != null) { 
 					File tmpFile = new File(targetDirectory, entryname);
 					tmpFile = tmpFile.isDirectory() ? tmpFile : tmpFile.getParentFile();
 					if (!tmpFile.exists()) {
@@ -211,18 +214,19 @@ public class UnzipPipe extends FixedForwardPipe {
 					File tmpFile = null;
 					if (targetDirectory != null) {
 						if (isKeepOriginalFileName()) {
-							String filename = isCreateSubdirectories() ? entryname : new File(entryname).getName();
+							String filename = isKeepOriginalFilePath() ? entryname : new File(entryname).getName();
 							tmpFile = new File(targetDirectory, filename);
 							if (tmpFile.exists()) {
 								throw new PipeRunException(this, "file [" + tmpFile.getAbsolutePath() + "] already exists"); 
 							}
 						} else {
-							if (isCreateSubdirectories()) {
+							if (isKeepOriginalFilePath()) {
 								String filename = new File(entryNameWithoutExtension).getName();
 								String zipEntryPath = entryname.substring(0, ze.getName().indexOf(filename));
 								if(filename.length() < 3) filename += ".tmp.";	//filename here is a prefix to create a unique filename and that prefix must be at least 3 chars long
 								tmpFile = File.createTempFile(filename, extension, new File(targetDirectory, zipEntryPath));
 							} else {
+								if(entryNameWithoutExtension.length() < 3) entryNameWithoutExtension += ".tmp.";
 								tmpFile = File.createTempFile(entryNameWithoutExtension, extension, targetDirectory);
 							}
 						}
@@ -266,72 +270,51 @@ public class UnzipPipe extends FixedForwardPipe {
 	public void setDirectory(String string) {
 		directory = string;
 	}
-	public String getDirectory() {
-		return directory;
-	}
 
 	@IbisDoc({"2", "Sessionkey with a directory value to extract the archive to", ""})
 	public void setDirectorySessionKey(String directorySessionKey) {
 		this.directorySessionKey = directorySessionKey;
-	}
-	public String getDirectorySessionKey() {
-		return directorySessionKey;
 	}
 
 	@IbisDoc({"3", "If true, file is automatically deleted upon normal JVM termination", "true"})
 	public void setDeleteOnExit(boolean b) {
 		deleteOnExit = b;
 	}
-	public boolean isDeleteOnExit() {
-		return deleteOnExit;
-	}
 
 	@IbisDoc({"4", "If set <code>false</code>, only a small summary (count of items in zip) is returned", "true"})
 	public void setCollectResults(boolean b) {
 		collectResults = b;
-	}
-	public boolean isCollectResults() {
-		return collectResults;
 	}
 
 	@IbisDoc({"5", "If set <code>true</code>, the contents of the files in the zip are returned in the result xml message of this pipe. Please note this can consume a lot of memory for large files or a large number of files", "false"})
 	public void setCollectFileContents(boolean b) {
 		collectFileContents = b;
 	}
-	public boolean isCollectFileContents() {
-		return collectFileContents;
-	}
 
 	@IbisDoc({"6", "Comma separated list of file extensions. Files with an extension which is part of this list will be base64 encoded. All other files are assumed to have UTF-8 when reading it from the zip and are added as escaped xml with non-unicode-characters being replaced by inverted question mark appended with #, the character number and ;", "false"})
 	public void setCollectFileContentsBase64Encoded(String string) {
 		collectFileContentsBase64Encoded = string;
-	}
-	public String getCollectFileContentsBase64Encoded() {
-		return collectFileContentsBase64Encoded;
 	}
 
 	@IbisDoc({"7", "If set <code>false</code>, a suffix is added to the original filename to be sure it is unique", "false"})
 	public void setKeepOriginalFileName(boolean b) {
 		keepOriginalFileName = b;
 	}
-	public boolean isKeepOriginalFileName() {
-		return keepOriginalFileName;
-	}
 
-	@IbisDoc({"8", "If set <code>true</code>, subdirectories in the zip file are created in the directory to extract the archive to", "false"})
-	public void setCreateSubdirectories(boolean b) {
-		createSubdirectories = b;
+	@Deprecated
+	@ConfigurationWarning("the attribute 'createSubDirectories' has been renamed to 'keepOriginalFilePath'")
+	public void setCreateSubDirectories(boolean b) {
+		keepOriginalFilePath = b;
 	}
-	public boolean isCreateSubdirectories() {
-		return createSubdirectories;
+	
+	@IbisDoc({"8", "If set <code>true</code>, the path of the zip entry will be preserved. Otherwise, the zip entries will be extracted to the root folder", "false"})
+	public void setKeepOriginalFilePath(boolean b) {
+		keepOriginalFilePath = b;
 	}
 
 	@IbisDoc({"9", "if set <code>true</code>, validation of directory is ignored", "false"})
 	public void setAssumeDirectoryExists(boolean assumeDirectoryExists) {
 		this.assumeDirectoryExists = assumeDirectoryExists;
-	}
-	public boolean isAssumeDirectoryExists() {
-		return assumeDirectoryExists;
 	}
 
 	@Deprecated

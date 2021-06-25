@@ -121,7 +121,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 	@Test
 	public void testCreateSubDirectories() throws Exception {
-		pipe.setCreateSubdirectories(true);
+		pipe.setKeepOriginalFilePath(true);
 		configureAndStartPipe();
 		
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
@@ -133,7 +133,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	
 	@Test
 	public void testCreateSubDirectoriesInnerItemAsTheFirstEntry() throws Exception {
-		pipe.setCreateSubdirectories(true);
+		pipe.setKeepOriginalFilePath(true);
 		configureAndStartPipe();
 		
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
@@ -148,7 +148,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	@Test
 	public void testExtractAllInTheRoot() throws Exception {
 		pipe.setKeepOriginalFileName(true);
-		pipe.setCreateSubdirectories(false);
+		pipe.setKeepOriginalFilePath(false);
 		pipe.setDeleteOnExit(false);
 		configureAndStartPipe();
 		
@@ -161,7 +161,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	@Test
 	public void testCreateSubDirectoriesKeepFilename() throws Exception {
 		pipe.setKeepOriginalFileName(true);
-		pipe.setCreateSubdirectories(true);
+		pipe.setKeepOriginalFilePath(true);
 		pipe.setDeleteOnExit(false);
 		configureAndStartPipe();
 
@@ -174,7 +174,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	@Test
 	public void testCreateSubDirectoriesKeepFilenameDeleteOnExit() throws Exception {
 		pipe.setKeepOriginalFileName(true);
-		pipe.setCreateSubdirectories(true);
+		pipe.setKeepOriginalFilePath(true);
 		configureAndStartPipe();
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
