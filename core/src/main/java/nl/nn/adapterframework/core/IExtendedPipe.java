@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.Locker;
 
@@ -43,7 +42,7 @@ public interface IExtendedPipe extends IPipe {
 	 * Extension, allowing Pipes to register things with the PipeLine at Configuration time.
 	 * Must be set before calling configure()
 	 */
-	void setPipeLine(PipeLine pipeline) throws ConfigurationException;
+	void setPipeLine(PipeLine pipeline);
 
 	/**
 	 * controls whether pipe is used in configuration. Can be used for debug-only pipes.

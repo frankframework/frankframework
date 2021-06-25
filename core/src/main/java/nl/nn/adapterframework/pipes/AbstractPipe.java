@@ -17,7 +17,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.lang.reflect.Field;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +37,6 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -97,7 +95,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @see PipeLineSession
  */
-public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable, ApplicationContextAware {
+public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, ApplicationContextAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
@@ -149,12 +147,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
 	 */
+	//For testing purposes the configure method should not require the PipeLine to be present.
 	@Override
 	public void configure() throws ConfigurationException {
-//		if(pipeLine == null) { //TODO make sure pipeline is never NULL
-//			throw new ConfigurationException("pipeline not set");
-//		}
-
 		ParameterList params = getParameterList();
 
 		if (params!=null) {
@@ -169,27 +164,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 		}
 
-		if (pipeForwards.isEmpty()) {
-			//TODO pipe will follow the next forward no need to show warning
+		if (pipeForwards.isEmpty()) { //In the case of a NON-FixedForwardPipe && ForceFixedForwarding no default/global forward is added
 			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
-		} else {
-			if(pipeLine != null) { //TODO make sure pipeline is never NULL
-				for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
-					String forwardName = it.next();
-					PipeForward forward= pipeForwards.get(forwardName);
-					if (forward!=null) {
-						String path=forward.getPath();
-						if (path!=null) {
-							PipeLineExit plExit= pipeLine.getPipeLineExits().get(path);
-							if (plExit==null){
-								if (pipeLine.getPipe(path)==null){
-									ConfigurationWarnings.add(this, log, "has a forward of which the pipe to execute ["+path+"] is not defined");
-								}
-							}
-						}
-					}
-				}
-			}
 		}
 
 		if (getLocker() != null) {
@@ -251,6 +227,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		if (pipeline==null) {
 			return null;
 		}
+
+		//Remove global 'ForceFixedForwarding' forwards. 
 		List<IPipe> pipes = pipeline.getPipes();
 		for (int i=0; i<pipes.size(); i++) {
 			String pipeName = pipes.get(i).getName();
