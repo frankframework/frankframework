@@ -134,9 +134,9 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	
 	private class ElementRenderer extends EchoSender {
 
-		SwitchCounter sc;
-		Exception e;
-		int callCounter;
+		public SwitchCounter sc;
+		public Exception e;
+		public int callCounter;
 		
 		ElementRenderer(SwitchCounter sc, Exception e) {
 			super();
