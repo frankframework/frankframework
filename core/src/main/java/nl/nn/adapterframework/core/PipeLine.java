@@ -805,7 +805,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return messageSizeWarn;
 	}
 
-	@IbisDoc({"8", "Forces that each pipe in the pipeline is not automatically added to the globalforwards table", "application default"})
+	@IbisDoc({"8", "Forces that each pipe in the pipeline is not automatically added to the globalforwards table", "false"})
 	public void setForceFixedForwarding(boolean b) {
 		forceFixedForwarding = b;
 	}
