@@ -116,47 +116,59 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		return new ForEachChildElementPipe();
 	}
 
-	protected ISender getElementRenderer() {
-		return getElementRenderer(null, null);
+	protected ElementRenderer getElementRenderer() {
+		return new ElementRenderer(null, null);
 	}
 
-	protected ISender getElementRenderer(final Exception e) {
-		return getElementRenderer(null, e);
+	protected ElementRenderer getElementRenderer(final Exception e) {
+		return new ElementRenderer(null, e);
 	}
 
-	protected ISender getElementRenderer(final SwitchCounter sc) {
-		return getElementRenderer(sc, null);
+	protected ElementRenderer getElementRenderer(final SwitchCounter sc) {
+		return new ElementRenderer(sc, null);
 	}
 
-	protected ISender getElementRenderer(final SwitchCounter sc, final Exception e) {
-		EchoSender sender = new EchoSender() {
+	protected ElementRenderer getElementRenderer(final SwitchCounter sc, final Exception e) {
+		return new ElementRenderer(sc, e);
+	}
+	
+	private class ElementRenderer extends EchoSender {
 
-			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
-				if (sc!=null) sc.mark("out");
-				try {
-					if (message.asString().contains("error")) {
-						if (e!=null) {
-							if (e instanceof SenderException) {
-								throw (SenderException)e;
-							}
-							if (e instanceof TimeOutException) {
-								throw (TimeOutException)e;
-							}
-							if (e instanceof RuntimeException) {
-								throw (RuntimeException)e;
-							}
+		SwitchCounter sc;
+		Exception e;
+		int callCounter;
+		
+		ElementRenderer(SwitchCounter sc, Exception e) {
+			super();
+			this.sc=sc;
+			this.e=e;
+		}
+		
+		@Override
+		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+			callCounter++;
+			if (sc!=null) sc.mark("out");
+			try {
+				if (message.asString().contains("error")) {
+					if (e!=null) {
+						if (e instanceof SenderException) {
+							throw (SenderException)e;
 						}
-						throw new SenderException("Exception triggered", e);
+						if (e instanceof TimeOutException) {
+							throw (TimeOutException)e;
+						}
+						if (e instanceof RuntimeException) {
+							throw (RuntimeException)e;
+						}
 					}
-				} catch (IOException e) {
-					throw new SenderException(getLogPrefix(),e);
+					throw new SenderException("Exception triggered", e);
 				}
-				return super.sendMessage(message, session);
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix(),e);
 			}
+			return super.sendMessage(message, session);
+		}
 
-		};
-		return sender;
 	}
 
 	@Override
@@ -181,8 +193,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	public void testBlockSize() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setBlockSize(2);
-		pipe.setBlockPrefix("<block>");
-		pipe.setBlockSuffix("</block>");
 		configurePipe();
 		pipe.start();
 
@@ -193,12 +203,9 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	}
 
 	@Test
-	public void testBlockSize1CombineBlocksIsTrue() throws Exception {
+	public void testBlockSize1() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setBlockSize(1);
-		pipe.setBlockPrefix("<block>");
-		pipe.setBlockSuffix("</block>");
-		pipe.setCombineBlocks(true);
 		configurePipe();
 		pipe.start();
 
@@ -206,6 +213,25 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNSBlockSize1, actual);
+	}
+
+	@Test
+	public void testErrorBlock() throws Exception {
+		Exception targetException = new NullPointerException("FakeException");
+		ElementRenderer er = getElementRenderer(targetException) ;
+		pipe.setSender(er);
+		pipe.setBlockSize(10);
+		configurePipe();
+		pipe.start();
+
+		try {
+			PipeRunResult prr = doPipe(pipe, messageError, session);
+			fail("Expected exception to be thrown");
+		} catch (Exception e) {
+			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
+			assertCauseChainEndsAtOriginalException(targetException,e);
+			assertEquals(1, er.callCounter);
+		}
 	}
 
 	@Test
