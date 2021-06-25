@@ -157,7 +157,12 @@ class FrankMethodDoclet implements FrankMethod {
 		MethodDoc overriddenMethodDoc = method.overriddenMethod();
 		if(overriddenMethodDoc != null) {
 			FrankMethodDoclet overriddenMethod = (FrankMethodDoclet) declaringClass.recursivelyFindFrankMethod(overriddenMethodDoc);
-			return overriddenMethod.searchExcludingImplementedInterfaces(getter);
+			if(overriddenMethod != null) {
+				return overriddenMethod.searchExcludingImplementedInterfaces(getter);
+			} else {
+				log.warn("Method {}.{} overrides {}.{}, but that is not detected by the Frank!Doc wrapper API",
+						getDeclaringClass().getName(), getName(), overriddenMethodDoc.containingClass().name(), overriddenMethodDoc.name());
+			}
 		}
 		return null;
 	}

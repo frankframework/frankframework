@@ -322,7 +322,7 @@ public final class ShowMonitors extends Base {
 
 		TriggerBase trigger = SpringUtils.createBean(mm.getApplicationContext(), TriggerBase.class);
 		handleTrigger(trigger, json);
-		monitor.registerTrigger(trigger);
+		monitor.registerTheTrigger(trigger);
 		monitor.configure();
 
 		return Response.status(Status.OK).build();

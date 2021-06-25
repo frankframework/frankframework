@@ -218,7 +218,10 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		registerTheTrigger(trigger);
 	}
 
-	private void registerTheTrigger(TriggerBase trigger) {
+	// Not used by the Frank!Doc, but needed to satisfy the type system.
+	// This method is not used by the Frank!Doc because the name
+	// registerTheTrigger does not appear in digester-rules.xml.
+	public void registerTheTrigger(TriggerBase trigger) {
 		trigger.setMonitor(this);
 		triggers.add(trigger);		
 	}
