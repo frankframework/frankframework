@@ -19,7 +19,6 @@ import org.hamcrest.core.StringContains;
 import org.junit.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -134,9 +133,9 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	
 	private class ElementRenderer extends EchoSender {
 
-		SwitchCounter sc;
-		Exception e;
-		int callCounter;
+		public SwitchCounter sc;
+		public Exception e;
+		public int callCounter;
 		
 		ElementRenderer(SwitchCounter sc, Exception e) {
 			super();
