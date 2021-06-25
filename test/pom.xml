@@ -58,11 +58,12 @@
 				</configuration>
 			</plugin>
 -->
+			<!-- use maven-jar-plugin to make separate artifacts of context, configurations, resources and testscenarios, to inject them into deployments -->
+			<!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.2.0</version>
-				<!-- make separate artifacts of context, configurations, resources and testscenarios, to inject them into deployments -->
 				<executions>
 					<execution>
 						<id>zip-context</id>
@@ -112,6 +113,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>

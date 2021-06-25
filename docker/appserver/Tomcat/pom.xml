@@ -15,8 +15,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-webapp</artifactId>
-			<type>war</type>
+			<artifactId>credentialprovider</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
