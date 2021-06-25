@@ -90,10 +90,10 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 			
 			private boolean finalizeBlock() throws SenderException, TimeOutException, IOException {
 				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
+					itemCounter=0;
 					items.append(getBlockSuffix());
 					boolean result = super.handleItem(items.toString());
 					items.setLength(0);
-					itemCounter=0;
 					return result;
 				}
 				return false;
