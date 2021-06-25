@@ -159,6 +159,16 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	}
 	
 	@Test
+	public void testDefaultConfiguration() throws Exception {
+		configureAndStartPipe();
+		
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
+		doPipe(new Message(zip));
+		String[] files = new File(folder.getRoot().getPath()).list();
+		assertEquals(6, files.length);
+	}
+
+	@Test
 	public void testCreateSubDirectoriesKeepFilename() throws Exception {
 		pipe.setKeepOriginalFileName(true);
 		pipe.setKeepOriginalFilePath(true);
