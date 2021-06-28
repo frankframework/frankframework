@@ -238,9 +238,18 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	private class S3Message extends Message {
 		
+		private S3Object file;
+		
 		public S3Message(S3Object file) {
 			super(() -> file.getObjectContent(), null, file.getClass());
+			this.file = file;
 		}
+
+		@Override
+		public long size() {
+			return file.getObjectMetadata().getContentLength();
+		}
+		
 	}
 	
 	@Override
