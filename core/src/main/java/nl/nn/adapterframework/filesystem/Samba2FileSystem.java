@@ -292,7 +292,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		return new Samba2Message(getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN));
 	}
 
-	private class Samba2Message extends nl.nn.adapterframework.stream.Message {
+	private class Samba2Message extends Message {
 		
 		public Samba2Message(File file) {
 			super(() -> {

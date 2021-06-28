@@ -45,8 +45,10 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Lombok;
+import lombok.Setter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -62,7 +64,7 @@ public class Message implements Serializable {
 
 	private Object request;
 	private @Getter Class<?> requestClass;
-	private @Getter String charset; // representing a charset of byte typed requests
+	private @Getter @Setter(AccessLevel.PROTECTED) String charset; // representing a charset of byte typed requests
 	
 	private Set<AutoCloseable> resourcesToClose;
 

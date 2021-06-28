@@ -149,7 +149,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		return new Samba1Message(f);
 	}
 
-	private class Samba1Message extends nl.nn.adapterframework.stream.Message {
+	private class Samba1Message extends Message {
 		
 		public Samba1Message(SmbFile f) {
 			super(() -> new SmbFileInputStream(f), null, f.getClass());
