@@ -431,6 +431,15 @@ public class Message implements Serializable {
 		if (object instanceof Message) {
 			return (Message) object;
 		}
+		if (object instanceof URL) {
+			return new Message((URL)object, null);
+		}
+		if (object instanceof File) {
+			return new Message((File)object, null);
+		}
+		if (object instanceof Path) {
+			return new Message((Path)object, null);
+		}
 		return new Message(object, null);
 	}
 
