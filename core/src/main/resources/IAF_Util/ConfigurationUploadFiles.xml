@@ -3,7 +3,7 @@
 		<receiver name="UploadFiles">
 			<listener name="UploadFiles"
 				className="nl.nn.adapterframework.http.rest.ApiListener"
-				uriPattern="upload" 
+				uriPattern="uploadFiles" 
 				method="POST"
 				multipartBodyName="destination"/>
 		</receiver>
@@ -35,7 +35,7 @@
 				elementXPathExpression="/parts/part[@type='file']">			
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
 					javaListener="UploadFiles_Child"/>
-				<param name="unzipFile" sessionKey="ifUnzipFile"/>
+				<param name="unzipFile" sessionKey="unzipFile"/>
 				<param name="file" sessionKeyXPath="part/@name"/>
 				<param name="destination" sessionKey="destination"/>
 				<forward name="success" path="EXIT"/>
