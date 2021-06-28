@@ -99,7 +99,7 @@ public class Message implements Serializable {
 	/**
 	 * Constructor for Message using InputStream supplier. It is assumed the InputStream can be supplied multiple times.
 	 */
-	public Message(ThrowingSupplier<InputStream,Exception> request, String charset, Class<?> requestClass) {
+	protected Message(ThrowingSupplier<InputStream,Exception> request, String charset, Class<?> requestClass) {
 		this((Object)request, charset, requestClass);
 	}
 	
@@ -110,27 +110,6 @@ public class Message implements Serializable {
 		this((Object)request, null);
 	}
 
-	public Message(File request, String charset) {
-		this(()-> new FileInputStream(request), charset, request.getClass());
-	}
-	public Message(File request) {
-		this(request, null);
-	}
-
-	public Message(Path request, String charset) {
-		this(() -> Files.newInputStream(request), charset, request.getClass());
-	}
-	public Message(Path request) {
-		this(request, null);
-	}
-
-	public Message(URL request, String charset) {
-		this(() -> request.openStream(), charset, request.getClass());
-	}
-	public Message(URL request) {
-		this(request, null);
-	}
-	
 	public static Message nullMessage() {
 		return new Message((Object)null, null);
 	}
@@ -432,13 +411,13 @@ public class Message implements Serializable {
 			return (Message) object;
 		}
 		if (object instanceof URL) {
-			return new Message((URL)object, null);
+			return new UrlMessage((URL)object, null);
 		}
 		if (object instanceof File) {
-			return new Message((File)object, null);
+			return new FileMessage((File)object);
 		}
 		if (object instanceof Path) {
-			return new Message((Path)object, null);
+			return new PathMessage((Path)object, null);
 		}
 		return new Message(object, null);
 	}

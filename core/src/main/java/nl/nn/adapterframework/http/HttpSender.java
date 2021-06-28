@@ -625,7 +625,7 @@ public class HttpSender extends HttpSenderBase {
 					if(contentType.getCharset() != null) {
 						charset = contentType.getCharset().name();
 					}
-					result = new Message(() -> bodyPart.getInputStream(), charset, bodyPart.getClass());
+					result = new PartMessage(bodyPart);
 				} else {
 					session.put("multipart" + i, bodyPart.getInputStream());
 				}

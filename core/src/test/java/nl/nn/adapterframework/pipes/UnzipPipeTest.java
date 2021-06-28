@@ -14,6 +14,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
@@ -52,7 +53,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 								"<result item=\"2\"><zipEntry>filebb.log</zipEntry><fileName>"+folder.getRoot().toString()+fileSeparator+"filebb.log</fileName></result>" + 
 							"</results>";
 		
-		PipeRunResult prr = doPipe(new Message(zip));
+		PipeRunResult prr = doPipe(new UrlMessage(zip));
 		
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
@@ -69,7 +70,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		String expected = 	"<results count=\"2\">"+
 							"</results>";
 		
-		PipeRunResult prr = doPipe(new Message(zip));
+		PipeRunResult prr = doPipe(new UrlMessage(zip));
 		
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
@@ -91,7 +92,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 				"</result>" + 
 			"</results>";
 		
-		PipeRunResult prr = doPipe(new Message(zip));
+		PipeRunResult prr = doPipe(new UrlMessage(zip));
 		
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
@@ -114,7 +115,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 				"</result>" + 
 			"</results>";
 		
-		PipeRunResult prr = doPipe(new Message(zip));
+		PipeRunResult prr = doPipe(new UrlMessage(zip));
 		
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
@@ -125,7 +126,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		configureAndStartPipe();
 		
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
-		doPipe(new Message(zip));
+		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder.getRoot()+"/Folder/innerFolder").list();
 		assertEquals(1, files.length);
 		assertTrue(files[0].contains("innerFile"));
@@ -139,7 +140,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		configureAndStartPipe();
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
-		doPipe(new Message(zip));
+		doPipe(new UrlMessage(zip));
 		File toBePresent = new File(folder.getRoot()+"/Folder/innerFolder/innerFile.txt");
 		assertTrue(toBePresent.isFile());
 	}
@@ -151,7 +152,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		configureAndStartPipe();
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
-		doPipe(new Message(zip));
+		doPipe(new UrlMessage(zip));
 
 		File toBePresent = new File(folder.getRoot()+"/Folder/innerFolder/innerFile.txt");
 		assertTrue(toBePresent.exists());

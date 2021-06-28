@@ -50,7 +50,6 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.RestoreObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.Tier;
@@ -231,14 +230,19 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public Message readFile(S3Object f) throws FileSystemException, IOException {
 		try {
-			final S3Object file = s3Client.getObject(bucketName, f.getKey());
-
-			return new Message(() -> file.getObjectContent(), null, file.getClass());
+			return new S3Message(s3Client.getObject(bucketName, f.getKey()));
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
+	private class S3Message extends Message {
+		
+		public S3Message(S3Object file) {
+			super(() -> file.getObjectContent(), null, file.getClass());
+		}
+	}
+	
 	@Override
 	public void deleteFile(S3Object f) throws FileSystemException {
 		try {

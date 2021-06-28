@@ -489,7 +489,7 @@ public class MessageTest {
 	@Test
 	public void testURLAsInputStream() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new Message(source);
+		Message adapter = new UrlMessage(source);
 		testAsInputStream(adapter);
 	}
 
@@ -497,7 +497,7 @@ public class MessageTest {
 	public void testUnknownURL() throws Exception {
 		String unknownFile = "xxx.bestaat.niet.txt";
 		URL source = new URL("file://"+unknownFile);
-		Message adapter = new Message(source);
+		Message adapter = new UrlMessage(source);
 		Exception exception = assertThrows(Exception.class, () -> { adapter.asInputStream(); } );
 		assertThat(exception.getMessage(), containsString(unknownFile));
 	}
@@ -505,35 +505,35 @@ public class MessageTest {
 	@Test
 	public void testURLAsReader() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new Message(source);
+		Message adapter = new UrlMessage(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testURLAsInputSource() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new Message(source);
+		Message adapter = new UrlMessage(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testURLAsByteArray() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new Message(source);
+		Message adapter = new UrlMessage(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testURLAsString() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new Message(source);
+		Message adapter = new UrlMessage(source);
 		testAsString(adapter);
 	}
 
 	@Test
 	public void testURLToString() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new Message(source);
+		Message adapter = new UrlMessage(source);
 		testToString(adapter,URL.class);
 	}
 
@@ -541,7 +541,7 @@ public class MessageTest {
 	@Test
 	public void testFileAsInputStream() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new Message(source);
+		Message adapter = new FileMessage(source);
 		testAsInputStream(adapter);
 	}
 
@@ -549,7 +549,7 @@ public class MessageTest {
 	public void testUnknownFile() throws Exception {
 		String unkownfilename = new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath()+"-bestaatniet";
 		File source = new File(unkownfilename);
-		Message adapter = new Message(source);
+		Message adapter = new FileMessage(source);
 		Exception exception = assertThrows(FileNotFoundException.class, () -> { adapter.asInputStream(); } );
 		assertThat(exception.getMessage(), containsString(unkownfilename));
 	}
@@ -558,35 +558,35 @@ public class MessageTest {
 	@Test
 	public void testFileAsReader() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new Message(source);
+		Message adapter = new FileMessage(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testFileAsInputSource() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new Message(source);
+		Message adapter = new FileMessage(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testFileAsByteArray() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new Message(source);
+		Message adapter = new FileMessage(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testFileAsString() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new Message(source);
+		Message adapter = new FileMessage(source);
 		testAsString(adapter);
 	}
 
 	@Test
 	public void testFileToString() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new Message(source);
+		Message adapter = new FileMessage(source);
 		testToString(adapter,File.class);
 	}
 
@@ -594,7 +594,7 @@ public class MessageTest {
 	@Test
 	public void testPathAsInputStream() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new Message(source);
+		Message adapter = new PathMessage(source);
 		testAsInputStream(adapter);
 	}
 
@@ -602,7 +602,7 @@ public class MessageTest {
 	public void testUnknownPath() throws Exception {
 		String unkownfilename = new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath()+"-bestaatniet";
 		Path source = Paths.get(unkownfilename);
-		Message adapter = new Message(source);
+		Message adapter = new PathMessage(source);
 		Exception exception = assertThrows(NoSuchFileException.class, () -> { adapter.asInputStream(); } );
 		assertThat(exception.getMessage(), containsString(unkownfilename));
 	}
@@ -610,35 +610,35 @@ public class MessageTest {
 	@Test
 	public void testPathAsReader() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new Message(source);
+		Message adapter = new PathMessage(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testPathAsInputSource() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new Message(source);
+		Message adapter = new PathMessage(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testPathAsByteArray() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new Message(source);
+		Message adapter = new PathMessage(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testPathAsString() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new Message(source);
+		Message adapter = new PathMessage(source);
 		testAsString(adapter);
 	}
 
 	@Test
 	public void testPathToString() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new Message(source);
+		Message adapter = new PathMessage(source);
 		testToString(adapter,source.getClass());
 	}
 
@@ -706,7 +706,7 @@ public class MessageTest {
 		File source = folder.newFile();
 		writeContentsToFile(source, testString);
 		
-		Message in = new Message(source);
+		Message in = new FileMessage(source);
 		byte[] wire = serializationTester.serialize(in);
 		writeContentsToFile(source, "fakeContentAsReplacementOfThePrevious");
 		Message out = serializationTester.deserialize(wire);
@@ -723,7 +723,7 @@ public class MessageTest {
 		writeContentsToFile(file, testString);
 		URL source = file.toURI().toURL();
 
-		Message in = new Message(source);
+		Message in = new UrlMessage(source);
 		byte[] wire = serializationTester.serialize(in);
 		writeContentsToFile(file, "fakeContentAsReplacementOfThePrevious");
 		Message out = serializationTester.deserialize(wire);
