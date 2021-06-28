@@ -290,20 +290,23 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	@Override
 	public Message readFile(String filename) throws FileSystemException, IOException {
 		final File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
-		InputStream is = file.getInputStream();
-		FilterInputStream fis = new FilterInputStream(is) {
+		return new Message(() -> {
+			InputStream is = file.getInputStream();
+			FilterInputStream fis = new FilterInputStream(is) {
 
-			boolean isOpen = true;
-			@Override
-			public void close() throws IOException {
-				if(isOpen) {
-					super.close();
-					isOpen=false;
+				boolean isOpen = true;
+				@Override
+				public void close() throws IOException {
+					if(isOpen) {
+						super.close();
+						isOpen=false;
+					}
+					file.close();
 				}
-				file.close();
-			}
-		};
-		return new Message(fis);
+			};
+			return fis;
+			
+		}, null, file.getClass());
 	}
 
 	@Override

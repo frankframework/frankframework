@@ -51,7 +51,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 						try (InputStream inputStream = m.asInputStream()) {
 							IOUtils.copy(new BoundedInputStream(inputStream, testTool.getMaxMessageLength()), baos, testTool.getMaxMessageLength());
 							ToStringResult result = super.toString(baos.toByteArray(), charset);
-							result.setMessageClassName(m.asObject().getClass().getTypeName());
+							result.setMessageClassName(m.getRequestClass().getTypeName());
 							return result;
 						} catch (IOException e) {
 							return super.toString(e, null);
@@ -63,9 +63,9 @@ public class MessageEncoder extends MessageEncoderImpl {
 					} catch (IOException e) {
 						return super.toString(e, null);
 					}
-					return new ToStringResult(writer.toString(), null, m.asObject().getClass().getTypeName());
+					return new ToStringResult(writer.toString(), null, m.getRequestClass().getTypeName());
 				}
-				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.asObject().getClass().getTypeName());
+				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass().getTypeName());
 			}
 			return super.toString(m.asObject(), charset);
 		}

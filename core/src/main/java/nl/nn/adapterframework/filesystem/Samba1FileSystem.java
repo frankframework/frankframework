@@ -146,8 +146,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public Message readFile(SmbFile f) throws IOException {
-		SmbFileInputStream is = new SmbFileInputStream(f);
-		return new Message(is);
+		return new Message(() -> new SmbFileInputStream(f), null, f.getClass());
 	}
 
 	@Override

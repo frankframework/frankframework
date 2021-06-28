@@ -15,15 +15,19 @@
 */
 package nl.nn.adapterframework.stream;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,10 +37,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
@@ -102,9 +106,9 @@ public class MessageTest {
 		System.out.println("toString ["+actual+"] class typename ["+clazz.getSimpleName()+"]");
 		assertEquals(clazz.getSimpleName(), actual.substring(0, actual.indexOf(": ")));
 		if (wrapperClass == null) {
-			assertEquals(adapter.asObject().getClass().getName(), clazz.getName());
+			assertEquals(adapter.getRequestClass().getName(), clazz.getName());
 		} else {
-			assertEquals(adapter.asObject().getClass().getName(), wrapperClass.getName());
+			assertEquals(adapter.getRequestClass().getName(), wrapperClass.getName());
 		}
 	}
 	
@@ -167,7 +171,7 @@ public class MessageTest {
 		
 		String captured = new String(outputStream.toByteArray(), "utf-8");
 		assertEquals(testString, captured);
-		testToString(adapter, ByteArrayInputStream.class, adapter.asObject().getClass());
+		testToString(adapter, ByteArrayInputStream.class);
 	}
 	
 	@Test
@@ -320,7 +324,7 @@ public class MessageTest {
 		
 		String captured = writer.toString();
 		assertEquals(testString, captured);
-		testToString(adapter, StringReader.class, adapter.asObject().getClass());
+		testToString(adapter, StringReader.class);
 	}
 
 	@Test
@@ -490,6 +494,15 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testUnknownURL() throws Exception {
+		String unknownFile = "xxx.bestaat.niet.txt";
+		URL source = new URL("file://"+unknownFile);
+		Message adapter = new Message(source);
+		Exception exception = assertThrows(Exception.class, () -> { adapter.asInputStream(); } );
+		assertThat(exception.getMessage(), containsString(unknownFile));
+	}
+
+	@Test
 	public void testURLAsReader() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
 		Message adapter = new Message(source);
@@ -533,6 +546,16 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testUnknownFile() throws Exception {
+		String unkownfilename = new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath()+"-bestaatniet";
+		File source = new File(unkownfilename);
+		Message adapter = new Message(source);
+		Exception exception = assertThrows(FileNotFoundException.class, () -> { adapter.asInputStream(); } );
+		assertThat(exception.getMessage(), containsString(unkownfilename));
+	}
+
+
+	@Test
 	public void testFileAsReader() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
 		Message adapter = new Message(source);
@@ -573,6 +596,15 @@ public class MessageTest {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
 		Message adapter = new Message(source);
 		testAsInputStream(adapter);
+	}
+
+	@Test
+	public void testUnknownPath() throws Exception {
+		String unkownfilename = new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath()+"-bestaatniet";
+		Path source = Paths.get(unkownfilename);
+		Message adapter = new Message(source);
+		Exception exception = assertThrows(NoSuchFileException.class, () -> { adapter.asInputStream(); } );
+		assertThat(exception.getMessage(), containsString(unkownfilename));
 	}
 
 	@Test

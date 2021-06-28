@@ -622,10 +622,10 @@ public class HttpSender extends HttpSenderBase {
 				if (i == 0) {
 					String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 					ContentType contentType = ContentType.parse(bodyPart.getContentType());
-					if(contentType.getCharset() != null)
+					if(contentType.getCharset() != null) {
 						charset = contentType.getCharset().name();
-
-					result = new Message(bodyPart.getInputStream(), charset);
+					}
+					result = new Message(() -> bodyPart.getInputStream(), charset, bodyPart.getClass());
 				} else {
 					session.put("multipart" + i, bodyPart.getInputStream());
 				}

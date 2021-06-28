@@ -48,6 +48,7 @@ import org.xml.sax.SAXException;
 import lombok.Getter;
 import lombok.Lombok;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -60,12 +61,12 @@ public class Message implements Serializable {
 	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
-	private Object wrappedRequest;
+	private @Getter Class<?> requestClass;
 	private @Getter String charset; // representing a charset of byte typed requests
 	
 	private Set<AutoCloseable> resourcesToClose;
 
-	private Message(Object request, String charset) {
+	private Message(Object request, String charset, Class<?> requestClass) {
 		if (request instanceof Message) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
@@ -74,6 +75,10 @@ public class Message implements Serializable {
 			this.request = request;
 		}
 		this.charset = charset;
+		this.requestClass = requestClass;
+	}
+	private Message(Object request, String charset) {
+		this(request, charset, request !=null ? request.getClass() : null);
 	}
 
 	public Message(String request) {
@@ -91,6 +96,13 @@ public class Message implements Serializable {
 		this(request, null);
 	}
 
+	/**
+	 * Constructor for Message using InputStream supplier. It is assumed the InputStream can be supplied multiple times.
+	 */
+	public Message(ThrowingSupplier<InputStream,Exception> request, String charset, Class<?> requestClass) {
+		this((Object)request, charset, requestClass);
+	}
+	
 	public Message(InputStream request, String charset) {
 		this((Object)request, charset);
 	}
@@ -99,24 +111,24 @@ public class Message implements Serializable {
 	}
 
 	public Message(File request, String charset) {
-		this((Object)request, charset);
+		this(()-> new FileInputStream(request), charset, request.getClass());
 	}
 	public Message(File request) {
-		this((Object)request, null);
+		this(request, null);
 	}
 
 	public Message(Path request, String charset) {
-		this((Object)request, charset);
+		this(() -> Files.newInputStream(request), charset, request.getClass());
 	}
 	public Message(Path request) {
-		this((Object)request, null);
+		this(request, null);
 	}
 
 	public Message(URL request, String charset) {
-		this((Object)request, charset);
+		this(() -> request.openStream(), charset, request.getClass());
 	}
 	public Message(URL request) {
-		this((Object)request, null);
+		this(request, null);
 	}
 	
 	public static Message nullMessage() {
@@ -154,23 +166,24 @@ public class Message implements Serializable {
 		}
 	}
 
+	@Deprecated // Please avoid the use of the raw object.
 	public Object asObject() {
 		return request;
 	}
 
 	public boolean isBinary() {
-		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
+		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof byte[];
 	}
 	
 	public boolean isRepeatable() {
-		return request instanceof String || request instanceof URL || request instanceof File || request instanceof Path || request instanceof byte[];
+		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[];
 	}
 
 	/**
 	 * If true, the Message should preferably be read using a streaming method, i.e. asReader() or asInputStream(), to avoid copying it into memory.
 	 */
 	public boolean requiresStream() {
-		return request instanceof InputStream || request instanceof URL || request instanceof File || request instanceof Path || request instanceof Reader;
+		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof Reader;
 	}
 	
 	
@@ -293,25 +306,9 @@ public class Message implements Serializable {
 				log.debug("returning InputStream as InputStream");
 				return (InputStream) request;
 			}
-			if (request instanceof URL) {
-				log.debug("returning URL as InputStream");
-				return ((URL) request).openStream();
-			}
-			if (request instanceof File) {
-				log.debug("returning File as InputStream");
-				try {
-					return new FileInputStream((File)request);
-				} catch (IOException e) {
-					throw new IOException("Cannot open file ["+((File)request).getPath()+"]", e);
-				}
-			}
-			if (request instanceof Path) {
-				log.debug("returning Path as InputStream");
-				try {
-					return Files.newInputStream((Path)request);
-				} catch (IOException e) {
-					throw new IOException("Cannot open file ["+((Path)request).getFileName()+"]", e);
-				}
+			if (request instanceof ThrowingSupplier) {
+				log.debug("returning InputStream from supplier");
+				return ((ThrowingSupplier<InputStream,Exception>) request).get();
 			}
 			if (StringUtils.isEmpty(defaultCharset)) {
 				defaultCharset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
@@ -427,10 +424,7 @@ public class Message implements Serializable {
 		if (request==null) {
 			return "null";
 		}
-		if (wrappedRequest != null) {
-			return wrappedRequest.getClass().getSimpleName()+": "+request.toString();
-		}
-		return request.getClass().getSimpleName()+": "+request.toString();
+		return (getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString();
 	}
 
 	public static Message asMessage(Object object) {
@@ -598,7 +592,6 @@ public class Message implements Serializable {
 		if (isRepeatable()) {
 			log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
 		}
-		wrappedRequest = request;
 		if (isBinary()) {
 			request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
 		} else {
@@ -627,7 +620,6 @@ public class Message implements Serializable {
 		if (isRepeatable()) {
 			log.warn("repeatability of message of type ["+request.getClass().getTypeName()+"] will be lost by capturing stream");
 		}
-		wrappedRequest = request;
 		if (!isBinary()) {
 			request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
 		} else {

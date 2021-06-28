@@ -333,17 +333,17 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					MimeBodyPart bodyPart = (MimeBodyPart) mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text/html")) {
-						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream());
+						return new nl.nn.adapterframework.stream.Message(() -> bodyPart.getInputStream(), null, bodyPart.getClass());
 					}
 				}
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text")) {
-						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream());
+						return new nl.nn.adapterframework.stream.Message(() -> bodyPart.getInputStream(), null, bodyPart.getClass());
 					}
 				}
 			}
-			return new nl.nn.adapterframework.stream.Message(f.getInputStream());
+			return new nl.nn.adapterframework.stream.Message(() -> f.getInputStream(), null, f.getClass());
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}
@@ -584,11 +584,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 
 	@Override
 	public nl.nn.adapterframework.stream.Message getMimeContent(Message emailMessage) throws FileSystemException {
-		try {
-			return new nl.nn.adapterframework.stream.Message(((IMAPMessage) emailMessage).getMimeStream());
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
-		}
+		return new nl.nn.adapterframework.stream.Message(() -> ((IMAPMessage) emailMessage).getMimeStream(), null, emailMessage.getClass());
 	}
 
 	@Override
