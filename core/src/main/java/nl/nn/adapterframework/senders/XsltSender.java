@@ -186,13 +186,14 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 			TransformerPool poolToUse = transformerPool;
 			if(StringUtils.isNotEmpty(styleSheetNameSessionKey)) {
-				String styleSheetNameToUse = session.getMessage(styleSheetNameSessionKey).asString();
-				if (styleSheetNameToUse != null) {
-					if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
-						dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameToUse, null, true, getParameterList()));
+				Message styleSheetNameToUse = session.getMessage(styleSheetNameSessionKey);
+				if (!Message.isEmpty(styleSheetNameToUse )) {
+					String styleSheetNameFromSessionKey = styleSheetNameToUse.asString();
+					if(!dynamicTransformerPoolMap.containsKey(styleSheetNameFromSessionKey)) {
+						dynamicTransformerPoolMap.put(styleSheetNameFromSessionKey, poolToUse = TransformerPool.configureTransformer(getLogPrefix(), this, null, null, styleSheetNameFromSessionKey, null, true, getParameterList()));
 						poolToUse.open();
 					} else {
-						poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
+						poolToUse = dynamicTransformerPoolMap.get(styleSheetNameFromSessionKey);
 					}
 				}
 				if (poolToUse == null) {
