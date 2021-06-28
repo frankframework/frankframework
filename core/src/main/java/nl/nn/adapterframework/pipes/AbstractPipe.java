@@ -163,7 +163,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 		}
 
-		if (pipeForwards.isEmpty()) { //In the case of a NON-FixedForwardPipe && ForceFixedForwarding no default/global forward is added
+		if (pipeForwards.isEmpty()) { //In the case of a NON-FixedForwardPipe (default success/exception forwards) || no global forwards
 			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
 		}
 
