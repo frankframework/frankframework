@@ -288,7 +288,7 @@ public class HttpSenderResultTest extends Mockito {
 		}
 		assertEquals(2, multipartAttachmentCount);
 
-		InputStream multipart1 = (InputStream)pls.get("multipart1");
+		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
 		assertEquals("Content of a txt file.", Misc.streamToString(multipart1).trim());
 
 		InputStream multipart2 = (InputStream)pls.get("multipart2");
@@ -317,7 +317,7 @@ public class HttpSenderResultTest extends Mockito {
 		}
 		assertEquals(1, multipartAttachmentCount);
 
-		InputStream multipart1 = (InputStream)pls.get("multipart1");
+		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
 		assertEquals("PDF-1.4 content", Misc.streamToString(multipart1).trim());
 	}
 }

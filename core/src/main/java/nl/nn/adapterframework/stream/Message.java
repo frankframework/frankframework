@@ -147,7 +147,9 @@ public class Message implements Serializable {
 		}
 	}
 
-	@Deprecated // Please avoid the use of the raw object.
+	/**
+	 * @Deprecated Please avoid the use of the raw object.
+	 */
 	public Object asObject() {
 		return request;
 	}
@@ -542,16 +544,6 @@ public class Message implements Serializable {
 
 		if(request instanceof String) {
 			return ((String) request).length();
-		}
-		if (request instanceof File) {
-			return ((File) request).length();
-		}
-		if (request instanceof Path) {
-			try {
-				return Files.size((Path) request);
-			} catch (IOException e) {
-				log.debug("unable to determine size of stream ["+ClassUtils.nameOf(request)+"]", e);
-			}
 		}
 		if (request instanceof byte[]) {
 			return ((byte[]) request).length;
