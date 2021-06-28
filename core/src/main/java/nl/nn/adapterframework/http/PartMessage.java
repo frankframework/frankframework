@@ -15,14 +15,28 @@
 */
 package nl.nn.adapterframework.http;
 
+import javax.mail.MessagingException;
 import javax.mail.Part;
 
 import nl.nn.adapterframework.stream.Message;
 
 public class PartMessage extends Message {
 	
+	private Part part;
+	
 	public PartMessage(Part part) {
 		super(() -> part.getInputStream(), null, part.getClass());
+		this.part = part;
+	}
+
+	@Override
+	public long size() {
+		try {
+			return part.getSize();
+		} catch (MessagingException e) {
+			log.warn("Cannot get size", e);
+			return -1;
+		}
 	}
 
 }
