@@ -1030,7 +1030,8 @@ angular.module('iaf.beheerconsole')
 			var errorCount = 0;
 			return {
 				request: function(config) {
-					if (config.url.indexOf('views') !== -1 && ff_version != null) {
+					//First check if we can append the version, then if it's an HTML file, and lastly if it's ours!
+					if (ff_version != null && config.url.indexOf('.html') !== -1 && config.url.indexOf('views/') !== -1) {
 						config.url = config.url + '?v=' + ff_version;
 					}
 					return config;
