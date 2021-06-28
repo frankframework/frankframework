@@ -25,7 +25,6 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.util.Misc;
@@ -134,7 +133,7 @@ public class IbisException extends Exception {
 				String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
 				message = Misc.concatStrings(exceptionType, " ", message);
 				expandedMessage = Misc.concatStrings(expandedMessage, ": ", message);
-				t = ExceptionUtils.getCause(t);
+				t = t.getCause();
 			}
 			if (expandedMessage==null) {
 				// do not replace the following with toString(), this causes an endless loop. GvB
@@ -147,7 +146,7 @@ public class IbisException extends Exception {
 
 
 	public static LinkedList<String> getMessages(Throwable t, String message) {
-		Throwable cause = ExceptionUtils.getCause(t);
+		Throwable cause = t.getCause();
 		LinkedList<String> result;
 		if (cause !=null) {
 			String causeMessage = cause.getMessage();
