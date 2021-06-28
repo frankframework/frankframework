@@ -19,7 +19,7 @@ Upcoming
 - SoapErrorMessage is renamed to SoapErrorMessageFormatter.
 - FixedErrorMessage is renamed to FixedErrorMessageFormatter.
 - ManageDatabase adapter has been disabled by default on ACC and PRD environments
-- JsonPipe produces json without root element for direction
+- JsonPipe produces json without root element
 
 7.6-RC1
 --------
