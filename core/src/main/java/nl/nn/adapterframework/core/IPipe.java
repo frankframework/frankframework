@@ -28,7 +28,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author Johan Verrips
  */
 @FrankDocGroup(order = 10, name = "Pipes")
-public interface IPipe extends INamedObject, IForwardTarget, IConfigurable {
+public interface IPipe extends IConfigurable, IForwardTarget {
 
 	/**
 	 * <code>configure()</code> is called once after the {@link PipeLine} is registered
