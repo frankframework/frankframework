@@ -9,7 +9,7 @@
 	<!ENTITY RecoverAdapters SYSTEM "./ConfigurationRecoverAdapters.xml">
 	<!ENTITY IbisDoc SYSTEM "./ConfigurationIbisDoc.xml">
 	<!ENTITY ManageFileSystem SYSTEM "ConfigurationManageFileSystem.xml">
-	<!ENTITY UploadFiles SYSTEM "ConfigurationUploadFiles.xml">
+	<!ENTITY FileSystem SYSTEM "ConfigurationFileSystem.xml">
 ]>
 <configuration name="IAF_Util">
 	<!-- include configuration for managing the database -->
@@ -25,5 +25,5 @@
 	&RecoverAdapters;
 	&IbisDoc;
 	&ManageFileSystem;
-	&UploadFiles;
+	&FileSystem;
 </configuration>
