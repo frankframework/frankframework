@@ -37,4 +37,9 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	protected Map<String, Lifecycle> getLifecycleBeans() {
 		return super.getLifecycleBeans();
 	}
+
+	@Override
+	public BootState getState() {
+		return isRunning() ? BootState.STARTED : BootState.STOPPED;
+	}
 }

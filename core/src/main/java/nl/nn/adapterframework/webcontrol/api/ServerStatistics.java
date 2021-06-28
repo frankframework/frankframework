@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -33,7 +32,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -61,7 +59,6 @@ import nl.nn.adapterframework.util.RunStateEnum;
 @Path("/")
 public class ServerStatistics extends Base {
 
-	@Context private SecurityContext securityContext;
 	@Context private Request rsRequest;
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 
@@ -71,15 +68,63 @@ public class ServerStatistics extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServerInformation() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<>();
-		List<Map<String, Object>> configurations = new ArrayList<>();
 
 		AppConstants appConstants = AppConstants.getInstance();
+		Map<String, Object> framework = new HashMap<String, Object>(2);
+		framework.put("name", "FF!");
+		framework.put("version", appConstants.getProperty("application.version"));
+		returnMap.put("framework", framework);
+
+		Map<String, Object> instance = new HashMap<String, Object>(2);
+		instance.put("version", appConstants.getProperty("instance.version"));
+		instance.put("name", getIbisContext().getApplicationName());
+		returnMap.put("instance", instance);
+
+		String dtapStage = appConstants.getProperty("dtap.stage");
+		returnMap.put("dtap.stage", dtapStage);
+		String dtapSide = appConstants.getProperty("dtap.side");
+		returnMap.put("dtap.side", dtapSide);
+
+		returnMap.put("configurations", getConfigurations());
+
+		String user = getUserPrincipalName();
+		if(user != null) {
+			returnMap.put("userName", user);
+		}
+
+		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
+		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
+		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
+		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
+		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
+		returnMap.put("fileSystem", fileSystem);
+		returnMap.put("processMetrics", ProcessMetrics.toMap());
+		Date date = new Date();
+		returnMap.put("serverTime", date.getTime());
+		returnMap.put("machineName" , Misc.getHostname());
+		ApplicationMetrics metrics = getIbisContext().getBean("metrics", ApplicationMetrics.class);
+		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
+
+		return Response.status(Response.Status.OK).entity(returnMap).build();
+	}
+
+	@GET
+	@PermitAll
+	@Path("/server/configurations")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getAllConfigurations() throws ApiException {
+		return Response.status(Response.Status.OK).entity(getConfigurations()).build();
+	}
+
+	private List<Map<String, Object>> getConfigurations() {
+		List<Map<String, Object>> configurations = new ArrayList<>();
 
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			Map<String, Object> cfg = new HashMap<>();
 			cfg.put("name", configuration.getName());
 			cfg.put("version", configuration.getVersion());
 			cfg.put("stubbed", configuration.isStubbed());
+			cfg.put("state", configuration.getState());
 
 			cfg.put("type", configuration.getClassLoaderType());
 			if(configuration.getConfigurationException() != null) {
@@ -111,43 +156,9 @@ public class ServerStatistics extends Base {
 			}
 		});
 
-		returnMap.put("configurations", configurations);
-
-		Map<String, Object> framework = new HashMap<String, Object>(2);
-		framework.put("name", "FF!");
-		framework.put("version", appConstants.getProperty("application.version"));
-		returnMap.put("framework", framework);
-
-		Map<String, Object> instance = new HashMap<String, Object>(2);
-		instance.put("version", appConstants.getProperty("instance.version"));
-		instance.put("name", getIbisContext().getApplicationName());
-		returnMap.put("instance", instance);
-
-		String dtapStage = appConstants.getProperty("dtap.stage");
-		returnMap.put("dtap.stage", dtapStage);
-		String dtapSide = appConstants.getProperty("dtap.side");
-		returnMap.put("dtap.side", dtapSide);
-
-		Principal userPrincipal = securityContext.getUserPrincipal();
-		if(userPrincipal != null) {
-			returnMap.put("userName", userPrincipal.getName());
-		}
-
-		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
-		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
-		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
-		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
-		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
-		returnMap.put("fileSystem", fileSystem);
-		returnMap.put("processMetrics", ProcessMetrics.toMap());
-		Date date = new Date();
-		returnMap.put("serverTime", date.getTime());
-		returnMap.put("machineName" , Misc.getHostname());
-		ApplicationMetrics metrics = getIbisContext().getBean("metrics", ApplicationMetrics.class);
-		returnMap.put("uptime", (metrics != null) ? metrics.getUptimeDate() : "");
-
-		return Response.status(Response.Status.OK).entity(returnMap).build();
+		return configurations;
 	}
+
 
 	@GET
 	@PermitAll

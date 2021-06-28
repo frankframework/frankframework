@@ -153,7 +153,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	@Override
-	@IbisDoc({"4", "Value of status field indicating is being processed. Set to 'I' if database has no SKIP LOCKED functionality or the Receiver cannot be set to Required or RequiresNew.", ""})
+	@IbisDoc({"4", "Value of status field indicating is being processed. Set to 'I' if database has no SKIP LOCKED functionality, the Receiver cannot be set to Required or RequiresNew, or to support programmatic retry.", ""})
 	public void setStatusValueInProcess(String string) {
 		super.setStatusValueInProcess(string);
 	}

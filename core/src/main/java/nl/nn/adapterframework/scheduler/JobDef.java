@@ -44,6 +44,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -586,7 +587,8 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			break;
 
 		default:
-			ibisManager.handleAdapter(getFunction(), getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
+			IbisAction action = Misc.parse(IbisAction.class, getFunction()); //If it's none of the above actions, try and parse the function as an IbisAction
+			ibisManager.handleAction(action, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 			break;
 		}
 

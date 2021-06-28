@@ -16,10 +16,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-@RunWith(Parameterized.class)
 public class FrankClassTest extends TestBase {
 	@Test
 	public void testChildClass() throws FrankDocException {

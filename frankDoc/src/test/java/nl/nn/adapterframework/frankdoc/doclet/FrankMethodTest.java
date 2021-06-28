@@ -13,10 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-@RunWith(Parameterized.class)
 public class FrankMethodTest extends TestBase {
 	@Test
 	public void testMethod() throws FrankDocException {

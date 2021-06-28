@@ -10,6 +10,8 @@ import java.io.Reader;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -25,6 +27,9 @@ public abstract class SenderBase<S extends ISender> extends Mockito {
 
 	protected Logger log = LogUtil.getLogger(this);
 	protected S sender;
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
 	protected PipeLineSession session = new PipeLineSession();

@@ -54,6 +54,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
@@ -250,15 +251,15 @@ public final class ShowConfigurationStatus extends Base {
 	public Response updateAdapters(LinkedHashMap<String, Object> json) throws ApiException {
 
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
-		String action = null;
+		IbisAction action = null;
 		ArrayList<String> adapters = new ArrayList<>();
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				if(value.equals("stop")) { action = "stopadapter"; }
-				if(value.equals("start")) { action = "startadapter"; }
+				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
+				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 			}
 			if(key.equalsIgnoreCase("adapters")) {
 				try {
@@ -273,12 +274,12 @@ public final class ShowConfigurationStatus extends Base {
 		if(action != null) {
 			response.status(Response.Status.ACCEPTED);
 			if(adapters.isEmpty()) {
-				getIbisManager().handleAdapter(action, "*ALL*", "*ALL*", null, null, false);
+				getIbisManager().handleAction(action, "*ALL*", "*ALL*", null, getUserPrincipalName(), false);
 			}
 			else {
 				for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
 					String adapterName = iterator.next();
-					getIbisManager().handleAdapter(action, "", adapterName, null, null, false);
+					getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
 				}
 			}
 		}
@@ -300,12 +301,12 @@ public final class ShowConfigurationStatus extends Base {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				String action = null;
+				IbisAction action = null;
 
-				if(value.equals("stop")) { action = "stopadapter"; }
-				if(value.equals("start")) { action = "startadapter"; }
+				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
+				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 
-				getIbisManager().handleAdapter(action, "", adapterName, null, null, false);
+				getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
 
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -334,17 +335,17 @@ public final class ShowConfigurationStatus extends Base {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				String action = null;
+				IbisAction action = null;
 
-				if(value.equals("stop")) { action = "stopreceiver"; }
-				else if(value.equals("start")) { action = "startreceiver"; }
-				else if(value.equals("incthread")) { action = "incthreads"; }
-				else if(value.equals("decthread")) { action = "decthreads"; }
+				if(value.equals("stop")) { action = IbisAction.STOPRECEIVER; }
+				else if(value.equals("start")) { action = IbisAction.STARTRECEIVER; }
+				else if(value.equals("incthread")) { action = IbisAction.INCTHREADS; }
+				else if(value.equals("decthread")) { action = IbisAction.DECTHREADS; }
 
-				if(StringUtils.isEmpty(action))
-					throw new ApiException("unknown or empty action ["+action+"]");
+				if(action == null)
+					throw new ApiException("no or unknown action provided");
 
-				getIbisManager().handleAdapter(action, "", adapterName, receiverName, null, false);
+				getIbisManager().handleAction(action, "", adapterName, receiverName, getUserPrincipalName(), false);
 				response.entity("{\"status\":\"ok\"}");
 			}
 		}

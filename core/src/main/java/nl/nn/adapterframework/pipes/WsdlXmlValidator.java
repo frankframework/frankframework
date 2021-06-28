@@ -108,7 +108,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 	}
 
-	public String getWsdl() {
+	private String getWsdl() {
 		return wsdl;
 	}
 

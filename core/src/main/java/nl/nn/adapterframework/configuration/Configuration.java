@@ -61,7 +61,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.Adapter
  */
-public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware {
+public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Boolean autoStart = null;
@@ -70,7 +70,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
 
-	private boolean unloadInProgressOrDone = false;
+	private BootState state = BootState.STOPPED;
 
 	private String version;
 	private IbisManager ibisManager;
@@ -224,6 +224,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
 		super.start();
+		state = BootState.STARTED;
 	}
 
 	/**
@@ -232,6 +233,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void configure() {
 		log.info("configuring configuration ["+getId()+"]");
+		state = BootState.STARTING;
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
@@ -258,9 +260,26 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	@Override
 	public void close() {
-		setUnloadInProgressOrDone(true); //Marks Configuration as inactive
+		try {
+			state = BootState.STOPPING;
+			super.close();
+		} finally {
+			state = BootState.STOPPED;
+		}
+	}
 
-		super.close();
+	public boolean isUnloadInProgressOrDone() {
+		return inState(BootState.STOPPING) || inState(BootState.STOPPED);
+	}
+
+	@Override
+	public boolean isRunning() {
+		return inState(BootState.STARTED) && super.isRunning();
+	}
+
+	@Override
+	public BootState getState() {
+		return state;
 	}
 
 	public void setAutoStart(boolean autoStart) {
@@ -316,14 +335,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	public void removeStopAdapterThread(Runnable runnable) {
 		adapterManager.removeStopAdapterThread(runnable);
-	}
-
-	public boolean isUnloadInProgressOrDone() {
-		return unloadInProgressOrDone;
-	}
-
-	public void setUnloadInProgressOrDone(boolean unloadInProgressOrDone) {
-		this.unloadInProgressOrDone = unloadInProgressOrDone;
 	}
 
 	/**

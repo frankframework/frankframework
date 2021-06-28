@@ -24,15 +24,15 @@ RUN set -eux \
 COPY src/scripts/*.sh /
 RUN chmod +rx /*.sh
 
-# copy the frank framework
-COPY target/dependencies/ibis-adapterframework-webapp.war /usr/local/tomcat/webapps/iaf.war
-
 # copy environment configuration
 COPY src/scripts/catalinaAdditional.properties /tmp
 RUN cat /tmp/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalina.properties  && rm -f /tmp/catalinaAdditional.properties
 
 # copy JDBC and JMS drivers
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
+
+# prepare root/mountpoint for credential filesystem
+RUN mkdir -p /opt/frank/secrets/testiaf_user
 
 # entrypoint.sh is used to set file permissions and change user to "tomcat"
 ENTRYPOINT ["/entrypoint.sh"]
