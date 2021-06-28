@@ -46,6 +46,9 @@ public class SoapValidator extends Json2XmlValidator {
 	private String soapHeaderNamespace = "";
 	private SoapVersion soapVersion = SoapVersion.SOAP11;
 	private boolean allowPlainXml = false;
+	public static final String ENVELOPE_ROOT = "Envelope";
+	public static final String BODY_ROOT = "Body";
+	public static final String HEADER_ROOT = "Header";
 
 	protected boolean addSoapEnvelopeToSchemaLocation = true;
 
@@ -54,7 +57,7 @@ public class SoapValidator extends Json2XmlValidator {
 		setSoapNamespace("");
 		if (isAllowPlainXml()) {
 			//super.setRoot("Envelope,"+soapBody);
-			addRequestRootValidation(Arrays.asList("Envelope,"+soapBody));
+			addRequestRootValidation(Arrays.asList(ENVELOPE_ROOT+","+soapBody));
 		} else {
 			super.setRoot(getRoot());
 		}
@@ -65,17 +68,17 @@ public class SoapValidator extends Json2XmlValidator {
 			ConfigurationWarnings.add(this, log, "soapBody not specified");
 		}
 		if (!isAllowPlainXml()) {
-			addRequestRootValidation(Arrays.asList("Envelope", "Body", soapBody));
+			addRequestRootValidation(Arrays.asList(ENVELOPE_ROOT, BODY_ROOT, soapBody));
 			if (StringUtils.isNotEmpty(outputSoapBody)) {
-				addResponseRootValidation(Arrays.asList("Envelope", "Body", outputSoapBody));
+				addResponseRootValidation(Arrays.asList(ENVELOPE_ROOT, BODY_ROOT, outputSoapBody));
 			}
-			addRequestRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
+			addRequestRootValidation(Arrays.asList(ENVELOPE_ROOT, HEADER_ROOT, soapHeader));
 			List<String> invalidRootNamespaces = new ArrayList<String>();
 			for (String namespace:soapVersion.getNamespaces()) {
 				invalidRootNamespaces.add(namespace);
 			}
-			addInvalidRootNamespaces(Arrays.asList("Envelope", "Body", soapBody), invalidRootNamespaces);
-			addInvalidRootNamespaces(Arrays.asList("Envelope", "Header", soapHeader), invalidRootNamespaces);
+			addInvalidRootNamespaces(Arrays.asList(ENVELOPE_ROOT, BODY_ROOT, soapBody), invalidRootNamespaces);
+			addInvalidRootNamespaces(Arrays.asList(ENVELOPE_ROOT, HEADER_ROOT, soapHeader), invalidRootNamespaces);
 		}
 		super.configure();
 	}
@@ -108,7 +111,7 @@ public class SoapValidator extends Json2XmlValidator {
 
 	@Override
 	public String getRoot() {
-		return "Envelope";
+		return ENVELOPE_ROOT;
 	}
 
 	@IbisDoc({ "always envelope (not allowed to change)", "envelope" })

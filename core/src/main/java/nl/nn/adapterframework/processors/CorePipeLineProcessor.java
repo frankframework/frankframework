@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
-import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
@@ -38,6 +37,8 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.XmlValidator.ResponseValidatorWrapper;
+import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -180,7 +181,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 								}
 								String exitSpecificResponseRoot = plExit.getResponseRoot();
 								if(outputValidator instanceof IXmlValidator) {
-									pipeLineSession.put("exitSpecificResponseRoot", exitSpecificResponseRoot);
+									if(outputValidator instanceof ResponseValidatorWrapper && ((ResponseValidatorWrapper)outputValidator).getOwner() instanceof SoapValidator) {
+										pipeLineSession.put("exitSpecificResponseRoot", SoapValidator.ENVELOPE_ROOT+","+SoapValidator.BODY_ROOT+","+exitSpecificResponseRoot);
+									} else {
+										pipeLineSession.put("exitSpecificResponseRoot", exitSpecificResponseRoot);
+									}
 								}
 								PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
 								if (!validationResult.isSuccessful()) {

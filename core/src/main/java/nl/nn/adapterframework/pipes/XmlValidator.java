@@ -271,7 +271,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		String exitSpecificResponseRoot = session.get("exitSpecificResponseRoot", null);
 		if(StringUtils.isNotEmpty(exitSpecificResponseRoot)) {
 			List<String> responseRootList = new ArrayList<String>();
-			responseRootList.add(exitSpecificResponseRoot);
+			responseRootList.addAll(Arrays.asList(exitSpecificResponseRoot.split(",")));
 			Set<List<String>> responseRootListSet = new HashSet<List<String>>();
 			responseRootListSet.add(responseRootList);
 			context = validator.createValidationContext(session, responseRootListSet, getInvalidRootNamespaces());
@@ -558,6 +558,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		@Override
 		public String getDocumentation() {
 			return null;
+		}
+		
+		public XmlValidator getOwner() {
+			return owner;
 		}
 	}
 	
