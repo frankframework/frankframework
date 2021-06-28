@@ -42,8 +42,8 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		assertEquals("success", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "<parts>"
 				+ "<part type=\"string\" name=\"string1\" sessionKey=\"part_string\" size=\"19\"/>"
-				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
-				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
+				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream\"/>"
+				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream\"/>"
 				+ "</parts>";
 		assertEquals(expectedResult, pipeRunResult.getResult().asString());
 	}
@@ -58,9 +58,9 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		assertEquals("success", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "<parts>"
 				+ "<part type=\"string\" name=\"string1\" sessionKey=\"part_string\" size=\"19\"/>"
-				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
+				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream\"/>"
 				+ "<part type=\"string\" name=\"antivirus_rc\" sessionKey=\"part_string2\" size=\"4\"/>"
-				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
+				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream\"/>"
 				+ "<part type=\"string\" name=\"antivirus_rc\" sessionKey=\"part_string3\" size=\"4\"/>"
 				+ "</parts>";
 		assertEquals(expectedResult, pipeRunResult.getResult().asString());
@@ -77,8 +77,8 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		assertEquals("success", pipeRunResult.getPipeForward().getName());
 		String expectedResult = "<parts>"
 				+ "<part type=\"string\" name=\"string1\" sessionKey=\"part_string\" size=\"19\"/>"
-				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
-				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream; charset=ISO-8859-1\"/>"
+				+ "<part type=\"file\" name=\"doc001.pdf\" sessionKey=\"part_file\" size=\"26358\" mimeType=\"application/octet-stream\"/>"
+				+ "<part type=\"file\" name=\"doc002.pdf\" sessionKey=\"part_file2\" size=\"25879\" mimeType=\"application/octet-stream\"/>"
 				+ "</parts>";
 		assertEquals(expectedResult, pipeRunResult.getResult().asString());
 	}
