@@ -121,7 +121,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			esbJmsListener.setDestinationName("jms/dest_" + fileBaseName);
 			receiver.setListener(esbJmsListener);
 			adapter.registerReceiver(receiver);
-			pipeLine.setAdapter(adapter);
+			adapter.setPipeLine(pipeLine);
 			WsdlGenerator wsdl = null;
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
 			wsdl = new WsdlGenerator(pipeLine, generationInfo);
@@ -161,8 +161,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private PipeLine createPipeLineFromPropertiesFile(File propertiesFile)
-			throws IOException, ConfigurationException {
+	private PipeLine createPipeLineFromPropertiesFile(File propertiesFile) throws IOException, ConfigurationException {
 		Properties props = new Properties();
 		FileInputStream fis = null;
 		try {
@@ -188,7 +187,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			int inputCmh = Integer.parseInt(inputCmhString);
 			File inputXsdFile = new File(propertiesFile.getParent(), inputXsd);
 			EsbSoapValidator inputValidator = createValidator(inputXsdFile,
-					inputNamespace, inputRoot, 1, inputCmh);
+					inputNamespace, inputRoot, 1, inputCmh, pipeLine);
 			pipeLine.setInputValidator(inputValidator);
 		}
 		if (props.containsKey("output.xsd")) {
@@ -204,7 +203,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			} else {
 				rootPosition = 1;
 			}
-			EsbSoapValidator outputValidator = createValidator(outputXsdFile, outputNamespace, outputRoot, rootPosition, outputCmh);
+			EsbSoapValidator outputValidator = createValidator(outputXsdFile, outputNamespace, outputRoot, rootPosition, outputCmh, pipeLine);
 			pipeLine.setOutputValidator(outputValidator);
 		}
 		return pipeLine;
@@ -214,7 +213,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			throws ConfigurationException {
 		PipeLine pipeLine = new PipeLine();
 		EsbSoapValidator inputValidator;
-		inputValidator = createValidator(xsdFile, null, null, 1, 1);
+		inputValidator = createValidator(xsdFile, null, null, 1, 1, pipeLine);
 		pipeLine.setInputValidator(inputValidator);
 
 		String countRoot = null;
@@ -227,7 +226,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				int cr = Integer.parseInt(countRoot);
 				if (cr > 1) {
 					EsbSoapValidator outputValidator;
-					outputValidator = createValidator(xsdFile, null, null, 2, 1);
+					outputValidator = createValidator(xsdFile, null, null, 2, 1, pipeLine);
 					pipeLine.setOutputValidator(outputValidator);
 				}
 			}
@@ -238,7 +237,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	}
 
 	private EsbSoapValidator createValidator(File xsdFile, String namespace,
-			String root, int rootPosition, int cmhVersion) throws ConfigurationException {
+			String root, int rootPosition, int cmhVersion, PipeLine pipeLine) throws ConfigurationException {
 		if (xsdFile != null) {
 			EsbSoapValidator esbSoapValidator = new EsbSoapValidator();
 			esbSoapValidator.setWarn(false);
@@ -295,6 +294,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			PipeForward pf = new PipeForward();
 			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			esbSoapValidator.registerForward(pf);
+			esbSoapValidator.setPipeLine(pipeLine);
 			esbSoapValidator.configure();
 			return esbSoapValidator;
 		}

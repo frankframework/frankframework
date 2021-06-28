@@ -817,7 +817,7 @@ angular.module('iaf.beheerconsole')
 		for(var i in $scope.configurations) {
 			var config = $scope.configurations[i];
 			$scope.isConfigStubbed[config.name] = config.stubbed;
-			$scope.isConfigReloading[config.name] = config.state != "STARTED"; //Assume reloading when not in state STARTED
+			$scope.isConfigReloading[config.name] = config.state == "STARTING" || config.state == "STOPPING"; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
 		}
 	};
 	$scope.$watch('configurations', $scope.check4StubbedConfigs);

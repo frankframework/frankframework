@@ -84,11 +84,9 @@ public class Misc {
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
 	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
-	public static final String FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY = "force.fixed.forwarding.default";
 
 	private static Long messageSizeWarnByDefault = null;
 	private static Long responseBodySizeWarnByDefault = null;
-	private static Boolean forceFixedForwardingByDefault = null;
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 	public static final String LINE_SEPARATOR = System.lineSeparator();
 
@@ -1029,14 +1027,6 @@ public class Misc {
 			responseBodySizeWarnByDefault = new Long(definition);
 		}
 		return responseBodySizeWarnByDefault.longValue();
-	}
-
-	public static synchronized boolean isForceFixedForwardingByDefault() {
-		if (forceFixedForwardingByDefault==null) {
-			boolean force=AppConstants.getInstance().getBoolean(FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY, false);
-			forceFixedForwardingByDefault = new Boolean(force);
-		}
-		return forceFixedForwardingByDefault.booleanValue();
 	}
 
 	/**

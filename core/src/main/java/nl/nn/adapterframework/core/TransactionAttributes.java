@@ -65,6 +65,7 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	}
 
 	@Override
+	@Deprecated
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}

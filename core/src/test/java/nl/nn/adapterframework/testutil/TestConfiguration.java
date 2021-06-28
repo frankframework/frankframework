@@ -45,6 +45,10 @@ public class TestConfiguration extends Configuration {
 		}
 	}
 
+	public String getConfigWarning(int index) {
+		return getConfigurationWarnings().getWarnings().get(index);
+	}
+
 	@Override
 	protected DefaultListableBeanFactory createBeanFactory() {
 		if(mockBeanFactory) {
