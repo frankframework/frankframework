@@ -733,9 +733,9 @@ public class MessageTest {
 	}
 	
 	private void writeContentsToFile(File file, String contents) throws IOException {
-		Writer fw = new OutputStreamWriter(new FileOutputStream(file), "utf-8");
-		fw.write(contents);
-		fw.close();
+		try (Writer fw = new OutputStreamWriter(new FileOutputStream(file), "utf-8")) {
+			fw.write(contents);
+		}
 	}
 
 	@Test
