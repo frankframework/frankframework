@@ -227,7 +227,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			return null;
 		}
 
-		//Omit global-pipeline-forwards added when using 'ForceFixedForwarding'
+		//Omit global pipeline-forwards and only return local pipe-forwards
 		List<IPipe> pipes = pipeline.getPipes();
 		for (int i=0; i<pipes.size(); i++) {
 			String pipeName = pipes.get(i).getName();

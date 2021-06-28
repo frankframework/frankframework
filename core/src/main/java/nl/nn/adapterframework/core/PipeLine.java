@@ -139,7 +139,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private String commitOnState = "success"; // exit state on which receiver will commit XA transactions
 	private boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
-	private boolean forceFixedForwarding = Misc.isForceFixedForwardingByDefault();
 	private Message transformNullMessage = null;
 	private String adapterToRunBeforeOnEmptyInput = null;
 
@@ -749,16 +748,15 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
 		}
 		log.debug("added pipe [" + pipe.toString() + "]");
-		if (!isForceFixedForwarding())
-		{
-			if (globalForwards.get(name) == null) {
-				PipeForward pw = new PipeForward();
-				pw.setName(name);
-				pw.setPath(name);
-				registerForward(pw);
-			} else {
-				log.info("already had a pipeForward with name ["+ name+ "] skipping the implicit one to Pipe ["+ pipe.getName()+ "]");
-			}
+
+		//Add this pipe's name to the pipeline's Global-Forwards list. @See XmlSwitch
+		if (globalForwards.get(name) == null) {
+			PipeForward pw = new PipeForward();
+			pw.setName(name);
+			pw.setPath(name);
+			registerForward(pw);
+		} else {
+			log.info("already had a pipeForward with name ["+ name+ "] skipping the implicit one to Pipe ["+ pipe.getName()+ "]");
 		}
 	}
 
@@ -803,14 +801,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 	public long getMessageSizeWarnNum() {
 		return messageSizeWarn;
-	}
-
-	@IbisDoc({"8", "Forces that each pipe in the pipeline is not automatically added to the globalforwards table", "false"})
-	public void setForceFixedForwarding(boolean b) {
-		forceFixedForwarding = b;
-	}
-	public boolean isForceFixedForwarding() {
-		return forceFixedForwarding;
 	}
 
 	@IbisDoc({"9", "when specified and <code>null</code> is received as a message the message is changed to the specified value", ""})
