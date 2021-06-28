@@ -106,34 +106,32 @@ public class CompareStringPipe extends AbstractPipe {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}
 		}
-
 		String operand1 = getParameterValue(pvl, OPERAND1);
-		if (operand1 == null) {
-			if (StringUtils.isNotEmpty(getSessionKey1())) {
-				operand1 = (String) session.get(getSessionKey1());
-			}
+		try {
 			if (operand1 == null) {
-				try {
+				if (StringUtils.isNotEmpty(getSessionKey1())) {
+					operand1 = session.getMessage(getSessionKey1()).asString();
+				}
+				if (operand1 == null) {
 					operand1 = message.asString();
-				} catch (Exception e) {
-					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand1 from input message", e);
 				}
 			}
+		} catch (Exception e) {
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand1 from input message", e);
 		}
 		String operand2 = getParameterValue(pvl, OPERAND2);
-		if (operand2 == null) {
-			if (StringUtils.isNotEmpty(getSessionKey2())) {
-				operand2 = (String) session.get(getSessionKey2());
-			}
+		try {
 			if (operand2 == null) {
-				try {
+				if (StringUtils.isNotEmpty(getSessionKey2())) {
+					operand2 = session.getMessage(getSessionKey2()).asString();
+				}
+				if (operand2 == null) {
 					operand2 = message.asString();
-				} catch (Exception e) {
-					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand2 from input message", e);
 				}
 			}
+		} catch (Exception e) {
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand2 from input message", e);
 		}
-
 		if (isXml()) {
 			try {
 				operand1 = XmlUtils.canonicalize(operand1);

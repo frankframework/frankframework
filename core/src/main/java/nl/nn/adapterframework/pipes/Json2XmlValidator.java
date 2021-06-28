@@ -104,17 +104,21 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		}
 	}
 	
-	public String getOutputFormat(PipeLineSession session, boolean responseMode) {
+	public String getOutputFormat(PipeLineSession session, boolean responseMode) throws PipeRunException {
 		String format=null;
-		if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
-			format=(String)session.get(getOutputFormatSessionKey());
+		try {
+			if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
+				format=session.getMessage(getOutputFormatSessionKey()).asString();
+			}
+			if (StringUtils.isEmpty(format) && isAutoFormat() && responseMode) {
+				format=session.getMessage(getInputFormatSessionKey()).asString();
+			}
+			if (StringUtils.isEmpty(format)) {
+				format=getOutputFormat();
+			}
+		} catch(IOException e) {
+			throw new PipeRunException(this, "cannot get output format", e);
 		}
-		if (StringUtils.isEmpty(format) && isAutoFormat() && responseMode) {
-			format=(String)session.get(getInputFormatSessionKey());
-		}	
-		if (StringUtils.isEmpty(format)) {
-			format=getOutputFormat();
-		}	
 		return format;
 	}
 	

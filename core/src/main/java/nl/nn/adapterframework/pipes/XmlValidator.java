@@ -604,8 +604,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		String schemaSessionKey = getSchemaSessionKey();
 		if (schemaSessionKey != null) {
 			if (session.containsKey(schemaSessionKey)) {
-				return session.get(schemaSessionKey).toString();
-			} 
+				try {
+					return session.getMessage(schemaSessionKey).asString();
+				} catch(IOException e) {
+					throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
+				}
+			}
 			throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 		}
 		return null;

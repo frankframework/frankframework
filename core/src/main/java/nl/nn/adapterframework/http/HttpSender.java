@@ -449,7 +449,7 @@ public class HttpSender extends HttpSenderBase {
 						String fileName = null;
 						String sessionKey = pv.getDefinition().getSessionKey();
 						if (sessionKey != null) {
-							fileName = (String) session.get(sessionKey + "Name");
+							fileName = session.getMessage(sessionKey + "Name").asString();
 						}
 
 						entity.addPart(createMultipartBodypart(name, fis, fileName));
@@ -466,7 +466,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
-			String multipartXml = (String) session.get(getMultipartXmlSessionKey());
+			String multipartXml = session.getMessage(getMultipartXmlSessionKey()).asString();
 			log.debug(getLogPrefix()+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
 			if (StringUtils.isEmpty(multipartXml)) {
 				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
