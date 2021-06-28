@@ -125,7 +125,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
 		assertEquals("Content of a txt file.", Misc.streamToString(multipart1).trim());
 
-		InputStream multipart2 = (InputStream)pls.get("multipart2");
+		InputStream multipart2 = pls.getMessage("multipart2").asInputStream();
 		assertEquals("<!DOCTYPE html><title>Content of a html file.</title>", Misc.streamToString(multipart2).trim());
 	}
 
