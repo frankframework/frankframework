@@ -223,7 +223,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	// registerTheTrigger does not appear in digester-rules.xml.
 	public void registerTheTrigger(TriggerBase trigger) {
 		trigger.setMonitor(this);
-		triggers.add(trigger);		
+		triggers.add(trigger);
 	}
 
 	public void removeTrigger(TriggerBase trigger) {
