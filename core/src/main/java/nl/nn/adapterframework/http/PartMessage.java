@@ -37,8 +37,7 @@ public class PartMessage extends Message {
 			try {
 				ContentType contentType = ContentType.parse(part.getContentType());
 				if(contentType.getCharset() != null) {
-					charset = contentType.getCharset().name();
-					this.setCharset(charset);
+					this.setCharset(contentType.getCharset().name());
 				}
 			} catch (UnsupportedCharsetException | ParseException | MessagingException e) {
 				log.warn("Could not determine charset", e);
