@@ -133,7 +133,7 @@ public enum AttributeTypeStrategy {
 			List<XmlBuilder> result = new ArrayList<>();
 			result.add(createTypeFrankBoolean());
 			result.add(createTypeFrankInteger());
-			result.add(createAttributeGroupForAttributeActive());
+			result.add(createAttributeForAttributeActive());
 			// Helper type for allowing a variable reference instead of an enum value
 			result.add(createTypeVariableReference(VARIABLE_REFERENCE));
 			return result;
@@ -161,7 +161,7 @@ public enum AttributeTypeStrategy {
 			return simpleType;
 		}
 
-		private XmlBuilder createAttributeGroupForAttributeActive() {
+		private XmlBuilder createAttributeForAttributeActive() {
 			XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
 			attribute.addAttribute("name", ATTRIBUTE_ACTIVE_NAME);
 			DocWriterNewXmlUtils.addDocumentation(attribute, "If defined and false, then this element and all its children are ignored");
@@ -185,7 +185,7 @@ public enum AttributeTypeStrategy {
 
 		private String getCaseInsensitivePattern(final String word) {
 			return IntStream.range(0, word.length()).mapToObj(i -> Character.valueOf(word.charAt(i)))
-				.map(c -> "(" + Character.toLowerCase(c) + "|" + Character.toUpperCase(c) + ")")
+				.map(c -> "[" + Character.toLowerCase(c) + Character.toUpperCase(c) + "]")
 				.collect(Collectors.joining(""));
 		}
 	}
