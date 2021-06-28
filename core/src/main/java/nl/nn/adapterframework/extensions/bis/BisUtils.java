@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.bis;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -199,7 +200,7 @@ public class BisUtils {
 		return resultElement.toXML();
 	}
 	public Message prepareReply(Message rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
-		ArrayList messages = new ArrayList();
+		List<String> messages = new ArrayList<>();
 		if (messageHeader != null) {
 			messages.add(messageHeader);
 		}
