@@ -33,7 +33,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Setter;
-import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -46,7 +45,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @version 2.0
  * @author Niels Meijer
  */
-@FrankDocGroup(name = "Monitoring")
 public class Monitor implements ApplicationContextAware, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -64,7 +62,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 
 	private MonitorManager manager = null;
 
-	private List<TriggerBase> triggers = new ArrayList<>();
+	private List<Trigger> triggers = new ArrayList<>();
 	private Set<String> destinations = new HashSet<>(); 
 	private @Setter ApplicationContext applicationContext;
 
@@ -76,8 +74,8 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 
 		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
-		for (Iterator<TriggerBase> it=triggers.iterator(); it.hasNext();) {
-			TriggerBase trigger = it.next();
+		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
+			Trigger trigger = it.next();
 			if(!trigger.isConfigured()) {
 				trigger.configure();
 				((ConfigurableApplicationContext)applicationContext).addApplicationListener(trigger);
@@ -133,8 +131,8 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	}
 
 	protected void clearEvents(boolean alarm) {
-		for (Iterator<TriggerBase> it=triggers.iterator(); it.hasNext();) {
-			TriggerBase trigger=(TriggerBase)it.next();
+		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
+			Trigger trigger=(Trigger)it.next();
 			if (trigger.isAlarm()!=alarm) {
 				trigger.clearEvents();
 			}
@@ -162,8 +160,8 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		monitor.addAttribute("name",getName());
 		monitor.addAttribute("type",getType());
 		monitor.addAttribute("destinations",getDestinationsAsString());
-		for (Iterator<TriggerBase> it=triggers.iterator();it.hasNext();) {
-			TriggerBase trigger=(TriggerBase)it.next();
+		for (Iterator<Trigger> it=triggers.iterator();it.hasNext();) {
+			Trigger trigger=(Trigger)it.next();
 			trigger.toXml(monitor);
 		}
 		return monitor;
@@ -215,18 +213,11 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	}
 
 	public void registerTrigger(Trigger trigger) {
-		registerTheTrigger(trigger);
-	}
-
-	// Not used by the Frank!Doc, but needed to satisfy the type system.
-	// This method is not used by the Frank!Doc because the name
-	// registerTheTrigger does not appear in digester-rules.xml.
-	public void registerTheTrigger(TriggerBase trigger) {
 		trigger.setMonitor(this);
 		triggers.add(trigger);
 	}
 
-	public void removeTrigger(TriggerBase trigger) {
+	public void removeTrigger(Trigger trigger) {
 		int index = triggers.indexOf(trigger);
 		if(index > -1) {
 			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
@@ -235,11 +226,13 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	public void registerAlarm(Alarm alarm) {
-		registerTheTrigger(alarm);
+	public void registerAlarm(Trigger trigger) {
+		trigger.setAlarm(true);
+		registerTrigger(trigger);
 	}
-	public void registerClearing(Clearing clearing) {
-		registerTheTrigger(clearing);
+	public void registerClearing(Trigger trigger) {
+		trigger.setAlarm(false);
+		registerTrigger(trigger);
 	}
 
 	public String getLogPrefix() {
@@ -253,10 +246,10 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		return manager;
 	}
 
-	public List<TriggerBase> getTriggers() {
+	public List<Trigger> getTriggers() {
 		return triggers;
 	}
-	public TriggerBase getTrigger(int index) {
+	public Trigger getTrigger(int index) {
 		return triggers.get(index);
 	}
 
@@ -346,7 +339,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		log.info("removing monitor ["+this+"]");
 
 		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
-		for (TriggerBase trigger : triggers) {
+		for (Trigger trigger : triggers) {
 			factory.destroyBean(trigger);
 		}
 	}
