@@ -303,7 +303,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	@Deprecated
 	@ConfigurationWarning("the attribute 'createSubDirectories' has been renamed to 'keepOriginalFilePath'")
 	public void setCreateSubDirectories(boolean b) {
-		keepOriginalFilePath = b;
+		setKeepOriginalFilePath(b);
 	}
 	
 	@IbisDoc({"8", "If set <code>true</code>, the path of the zip entry will be preserved. Otherwise, the zip entries will be extracted to the root folder", "false"})
