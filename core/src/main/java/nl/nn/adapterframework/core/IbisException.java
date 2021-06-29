@@ -161,6 +161,10 @@ public class IbisException extends Exception {
      *  <li>{@code getRootCause()}</li>
      *  <li>{@code getCausedByException()}</li>
      *  <li>{@code getNested()}</li>
+     *  <li>{@code getLinkedException()}</li>
+     *  <li>{@code getNestedException()}</li>
+     *  <li>{@code getLinkedCause()}</li>
+     *  <li>{@code getThrowable()}</li>
      * </ul>
      *
      * <p>If none of the above is found, returns {@code null}.</p>
