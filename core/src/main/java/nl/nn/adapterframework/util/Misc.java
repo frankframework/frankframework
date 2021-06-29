@@ -1038,11 +1038,10 @@ public class Misc {
 	 *      String res = Misc.listToString(list); // res gives out "We Are Frank"
 	 * </pre>
 	 */
-	//TODO Parameterize list
-	public static String listToString(List list) {
+	public static String listToString(List<String> list) {
 		StringBuilder sb = new StringBuilder();
-		for (Iterator it=list.iterator(); it.hasNext();) {
-			sb.append((String) it.next());
+		for (Iterator<String> it=list.iterator(); it.hasNext();) {
+			sb.append(it.next());
 		}
 		return sb.toString();
 	}

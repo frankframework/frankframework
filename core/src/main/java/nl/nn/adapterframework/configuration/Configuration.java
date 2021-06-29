@@ -473,4 +473,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public ClassLoader getConfigurationClassLoader() {
 		return getClassLoader();
 	}
+
+	@Override
+	public void setBeanName(String name) {
+		super.setBeanName(name);
+		setDisplayName("ConfigurationContext [" + name + "]");
+	}
 }
