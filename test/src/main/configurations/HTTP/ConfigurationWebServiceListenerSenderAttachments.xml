@@ -170,18 +170,18 @@
 				/>
 				<forward name="success" path="WriteStream" />
 			</pipe>
-			<pipe
-				name="WriteStream" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" getInputFromSessionKey="multipart1" filename="${testdata.dir}/webservices/received.txt"
+			<LocalFileSystemPipe
+				name="WriteStream"
+				action="write" getInputFromSessionKey="multipart1" filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="ReadFile"/>
-			</pipe>
-			<pipe
-				name="ReadFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" filename="${testdata.dir}/webservices/received.txt"
+			</LocalFileSystemPipe>
+			<LocalFileSystemPipe
+				name="ReadFile"
+				action="read" filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="EXIT"/>
-			</pipe>
+			</LocalFileSystemPipe>
 		</pipeline>
 	</adapter>
 	<adapter name="WebServiceSenderAddressAttachmentsReturningAttachmentsSessionKey" 
@@ -200,20 +200,41 @@
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
 					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
 				/>
-				<forward name="success" path="WriteStream" />
+				<forward name="success" path="CheckIfMultipartSessionKeyPresent" />
 			</pipe>
-			<pipe
-				name="WriteStream" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" getInputFromSessionKey="multipart1" filename="${testdata.dir}/webservices/received.txt"
+			<XsltPipe 
+				name="CheckIfMultipartSessionKeyPresent"
+				styleSheetName="WebServiceListenerSender/checkMultipartSessionkeyPresence.xsl"
+			>
+				<Param name="multipart1" sessionKey="multipart1" defaultValue="NoMultiPart1"/>
+				<Forward name="success" path="SwitchCases"/>
+			</XsltPipe>
+			<XmlSwitchPipe 
+				name="SwitchCases"
+				xpathExpression="/case"
+			>
+				<Forward name="noFiles" path="throwException"/>
+				<Forward name="oneFile" path="WriteStream"/>
+			</XmlSwitchPipe>
+			<LocalFileSystemPipe
+				name="WriteStream"
+				action="write"
+				getInputFromSessionKey="multipart1"
+				filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="ReadFile"/>
-			</pipe>
-			<pipe
-				name="ReadFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" filename="${testdata.dir}/webservices/received.txt"
+			</LocalFileSystemPipe>
+			<LocalFileSystemPipe
+				name="ReadFile"
+				action="read"
+				filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="EXIT"/>
-			</pipe>
+			</LocalFileSystemPipe>
+			
+			<ExceptionPipe name="throwException" getInputFromFixedValue="Session key [multipart1] does not exists or not contains the expected data.">
+				<Forward name="success" path="EXIT" />
+			</ExceptionPipe>
 		</pipeline>
 	</adapter>
 </module>
