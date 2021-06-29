@@ -73,7 +73,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 		ftpSession.setHost(host);
 		ftpSession.setPort(port);
 		ftpSession.configure();
-		
+
 		try {
 			ftpSession.openClient(remoteDirectory);
 		} catch (FtpConnectException e) {
@@ -147,12 +147,12 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	public boolean _folderExists(String folderName) throws Exception {
+	public boolean _folderExists(String folder) throws Exception {
 		boolean isDirectory = false;
 		try {
-			FTPFile[] files = ftpSession.ftpClient.listFiles(folderName);
-			if(files.length > 1) 
-				isDirectory = true;
+			String pwd = ftpSession.ftpClient.printWorkingDirectory();
+			isDirectory = ftpSession.ftpClient.changeWorkingDirectory(pwd + "/" + folder);
+			ftpSession.ftpClient.changeWorkingDirectory(pwd);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
