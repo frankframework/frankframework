@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -783,12 +783,13 @@ public class FtpSession implements IConfigurable {
 	public void setFtpTypeDescription(String string) {
 		setFtpType(string);
 	}
+	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
 	public void setFtpType(String string) {
 		ftpType = Misc.parse(FtpType.class, "type", string);
 	}
 	public FtpType getFtpTypeEnum() {
 		return ftpType;
-	}
+	} 
 
 	@IbisDoc({"file type, one of ascii, binary", ""})
 	public void setFileType(String string) {

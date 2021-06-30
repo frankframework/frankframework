@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
 package nl.nn.adapterframework.ftp;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.ftp.FtpSession.Prot;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -136,8 +138,13 @@ public class FtpSender extends SenderWithParametersBase {
 	}
 
 	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
-	public void setFtpTypeDescription(String ftpTypeDescription) {
-		ftpSession.setFtpTypeDescription(ftpTypeDescription);
+	@Deprecated
+	@ConfigurationWarning("use attribute ftpType instead")
+	public void setFtpTypeDescription(String string) {
+		setFtpType(string);
+	}
+	public void setFtpType(String string) {
+		ftpSession.setFtpType(string);
 	}
 
 	@IbisDoc({"file type, one of ascii, binary", ""})
@@ -270,9 +277,25 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
 
-	@IbisDoc({"(ftps) if true, the server returns data via another socket", "false"})
-	public void setProtP(boolean protP) {
-		ftpSession.setProtP(protP);
+	@IbisDoc({"(ftps) if true, the server returns data via a SSL socket", "false"})
+	@Deprecated
+	@ConfigurationWarning("use attribute prot=\"P\" instead")
+	public void setProtP(boolean b) {
+		ftpSession.setProt(Prot.P.name());
+	}
+
+	/**
+	 * <ul>
+	 * <li>C - Clear</li>
+	 * <li>S - Safe(SSL protocol only)</li>
+	 * <li>E - Confidential(SSL protocol only)</li>
+	 * <li>P - Private</li>
+	 * </ul>
+	 *
+	 */
+	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>. C - Clear; S - Safe(SSL protocol only), E - Confidential(SSL protocol only), P - Private", "C"})
+	public void setProt(String prot) {
+		ftpSession.setProt(prot);
 	}
 
 	@IbisDoc({"when true, keyboardinteractive is used to login", "false"})
