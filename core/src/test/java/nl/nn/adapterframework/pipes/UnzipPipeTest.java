@@ -137,7 +137,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		configureAndStartPipe();
 		
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
-		doPipe(new Message(zip));
+		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder.getRoot()+"/MyProjects/").list();
 		assertEquals(5, files.length);
 		
@@ -153,7 +153,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		configureAndStartPipe();
 		
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
-		doPipe(new Message(zip));
+		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder.getRoot().getPath()).list();
 		assertEquals(6, files.length);
 	}
@@ -163,7 +163,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		configureAndStartPipe();
 		
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
-		doPipe(new Message(zip));
+		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder.getRoot().getPath()).list();
 		assertEquals(6, files.length);
 	}
@@ -212,6 +212,6 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		configureAndStartPipe();
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
-		doPipe(new Message(zip));
+		doPipe(new UrlMessage(zip));
 	}
 }

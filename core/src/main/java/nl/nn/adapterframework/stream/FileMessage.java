@@ -22,11 +22,15 @@ public class FileMessage extends Message {
 	
 	private File file;
 	
-	public FileMessage(File file) {
-		super(() -> new FileInputStream(file), null, file.getClass());
+	public FileMessage(File file, String charset) {
+		super(() -> new FileInputStream(file), charset, file.getClass());
 		this.file = file;
 	}
 
+	public FileMessage(File file) {
+		this(file, null);
+	}
+	
 	@Override
 	public long size() {
 		return file.length();
