@@ -338,20 +338,20 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 					if (isStreamResultToServlet()) {
 						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-						String contentType = (String) session.get("contentType");
-						String contentDisposition = (String) session.get("contentDisposition");
+						String contentType = session.getMessage("contentType").asString();
+						String contentDisposition = session.getMessage("contentDisposition").asString();
 						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
 					} else {
 						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);
 					}
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
-						return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:Message.asMessage(session.get(getBlobSessionKey()))));
+						return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:session.getMessage(getBlobSessionKey())));
 					} 
 					return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
 				case UPDATECLOB:
 					if (StringUtils.isNotEmpty(getClobSessionKey())) {
-						return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:Message.asMessage(session.get(getClobSessionKey()))));
+						return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:session.getMessage(getClobSessionKey())));
 					} 
 					return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
 				case PACKAGE:
