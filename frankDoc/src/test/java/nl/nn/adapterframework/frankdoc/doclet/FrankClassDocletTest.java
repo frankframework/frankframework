@@ -35,7 +35,7 @@ public class FrankClassDocletTest {
 		List<String> actualMethodNames = Arrays.asList(instance.getDeclaredMethods()).stream()
 				.map(FrankMethod::getName)
 				.collect(Collectors.toList());
-		String[] expectedMethodNames = new String[] {"setInherited", "packagePrivateMethod", "setVarargMethod", "getMyInnerEnum", "myAnnotatedMethod"};
+		String[] expectedMethodNames = new String[] {"setInherited", "setVarargMethod", "getMyInnerEnum", "myAnnotatedMethod", "methodWithoutAnnotations"};
 		assertArrayEquals(expectedMethodNames, actualMethodNames.toArray(new String[] {}));
 	}
 }

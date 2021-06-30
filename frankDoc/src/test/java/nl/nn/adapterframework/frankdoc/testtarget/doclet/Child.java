@@ -27,4 +27,7 @@ public class Child extends Parent implements MyInterface {
 	@Override
 	public void myAnnotatedMethod() {
 	}
+
+	public void methodWithoutAnnotations() {
+	}
 }
