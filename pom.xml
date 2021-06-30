@@ -313,6 +313,7 @@
 					<excludes>
 						<exclude>it.**</exclude>
 					</excludes>
+					<argLine>-Dfile.encoding=CP-1252</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
