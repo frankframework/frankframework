@@ -78,7 +78,6 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -620,14 +619,9 @@ public class HttpSender extends HttpSenderBase {
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 				if (i == 0) {
-					String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-					ContentType contentType = ContentType.parse(bodyPart.getContentType());
-					if(contentType.getCharset() != null)
-						charset = contentType.getCharset().name();
-
-					result = new Message(bodyPart.getInputStream(), charset);
+					result = new PartMessage(bodyPart);
 				} else {
-					session.put("multipart" + i, bodyPart.getInputStream());
+					session.put("multipart" + i, new PartMessage(bodyPart));
 				}
 			}
 		} catch(MessagingException e) {

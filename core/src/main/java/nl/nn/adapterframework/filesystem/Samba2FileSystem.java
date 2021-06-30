@@ -289,23 +289,33 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 	@Override
 	public Message readFile(String filename, String charset) throws FileSystemException, IOException {
-		final File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
-		InputStream is = file.getInputStream();
-		FilterInputStream fis = new FilterInputStream(is) {
-
-			boolean isOpen = true;
-			@Override
-			public void close() throws IOException {
-				if(isOpen) {
-					super.close();
-					isOpen=false;
-				}
-				file.close();
-			}
-		};
-		return new Message(fis, charset);
+		return new Samba2Message(getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN), charset);
 	}
 
+	private class Samba2Message extends Message {
+		
+		public Samba2Message(File file, String charset) {
+			super(() -> {
+				InputStream is = file.getInputStream();
+				FilterInputStream fis = new FilterInputStream(is) {
+
+					boolean isOpen = true;
+					@Override
+					public void close() throws IOException {
+						if(isOpen) {
+							super.close();
+							isOpen=false;
+						}
+						file.close();
+					}
+				};
+				return fis;
+				
+			}, charset, file.getClass());
+		}
+	}
+
+	
 	@Override
 	public void deleteFile(String f) throws FileSystemException {
 		diskShare.rm(f);

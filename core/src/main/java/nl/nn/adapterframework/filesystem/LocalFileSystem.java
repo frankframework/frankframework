@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.PathMessage;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -109,7 +110,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public Message readFile(Path f, String charset) throws IOException {
-		return new Message(f, charset);
+		return new PathMessage(f, charset);
 	}
 
 	@Override
