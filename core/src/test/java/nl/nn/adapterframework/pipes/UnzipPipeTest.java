@@ -121,7 +121,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 	@Test
 	public void testCreateSubDirectories() throws Exception {
-		pipe.setCreateSubdirectories(true);
+		pipe.setKeepOriginalFilePath(true);
 		configureAndStartPipe();
 		
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
@@ -132,9 +132,46 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	}
 	
 	@Test
+	public void testCreateSubDirectoriesInnerItemAsTheFirstEntry() throws Exception {
+		pipe.setKeepOriginalFilePath(true);
+		configureAndStartPipe();
+		
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
+		doPipe(new Message(zip));
+		String[] files = new File(folder.getRoot()+"/MyProjects/").list();
+		assertEquals(5, files.length);
+		
+		files = new File(folder.getRoot()+"/MyProjects/classes/xml/xsl/").list();
+		assertEquals(2, files.length);
+	}
+	
+	@Test
+	public void testExtractAllInTheRoot() throws Exception {
+		pipe.setKeepOriginalFileName(true);
+		pipe.setKeepOriginalFilePath(false);
+		pipe.setDeleteOnExit(false);
+		configureAndStartPipe();
+		
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
+		doPipe(new Message(zip));
+		String[] files = new File(folder.getRoot().getPath()).list();
+		assertEquals(6, files.length);
+	}
+	
+	@Test
+	public void testDefaultConfiguration() throws Exception {
+		configureAndStartPipe();
+		
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
+		doPipe(new Message(zip));
+		String[] files = new File(folder.getRoot().getPath()).list();
+		assertEquals(6, files.length);
+	}
+
+	@Test
 	public void testCreateSubDirectoriesKeepFilename() throws Exception {
 		pipe.setKeepOriginalFileName(true);
-		pipe.setCreateSubdirectories(true);
+		pipe.setKeepOriginalFilePath(true);
 		pipe.setDeleteOnExit(false);
 		configureAndStartPipe();
 
@@ -147,7 +184,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	@Test
 	public void testCreateSubDirectoriesKeepFilenameDeleteOnExit() throws Exception {
 		pipe.setKeepOriginalFileName(true);
-		pipe.setCreateSubdirectories(true);
+		pipe.setKeepOriginalFilePath(true);
 		configureAndStartPipe();
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
@@ -157,4 +194,24 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		assertTrue(toBePresent.exists());
 	}
 
+	@Test
+	public void testNullDirectory() throws Exception {
+		exception.expectMessage("directory or directorySessionKey must be specified");
+
+		pipe.setDirectory(null);
+		pipe.setDirectorySessionKey(null);
+		configureAndStartPipe();
+	}
+
+	@Test
+	public void testNullDirectoryFakeSessionKey() throws Exception {
+		exception.expectMessage("directorySessionKey is empty");
+
+		pipe.setDirectory(null);
+		pipe.setDirectorySessionKey("dummy");
+		configureAndStartPipe();
+
+		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
+		doPipe(new Message(zip));
+	}
 }

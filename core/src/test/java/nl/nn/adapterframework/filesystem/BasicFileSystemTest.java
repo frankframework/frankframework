@@ -111,8 +111,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
 	}
 
-	public void testReadFile(F file, String expectedContents) throws IOException, FileSystemException {
-		Message in = fileSystem.readFile(file);
+	public void testReadFile(F file, String expectedContents, String charset) throws IOException, FileSystemException {
+		Message in = fileSystem.readFile(file, charset);
 		String actual = in.asString();
 		// test
 		equalsCheck(expectedContents.trim(), actual.trim());
@@ -133,9 +133,45 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		F file = fileSystem.toFile(filename);
 		// test
-		testReadFile(file, contents);
+		testReadFile(file, contents, null);
 	}
 
+	@Test
+	public void basicFileSystemTestReadSpecialChars() throws Exception {
+		String filename = "readSpecial" + FILE1;
+		String contents = "€ $ & ^ % @ < é ë ó ú à è";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+
+		F file = fileSystem.toFile(filename);
+		// test
+		testReadFile(file, contents, "UTF-8");
+	}
+	
+	@Test
+	public void basicFileSystemTestReadSpecialCharsFails() throws Exception {
+		String filename = "readSpecialChars" + FILE1;
+		String contents = "€ é";
+		String expected = "â¬ Ã©";
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+
+		F file = fileSystem.toFile(filename);
+		// test
+		testReadFile(file, expected, "ISO-8859-1");
+	}
+	
 	@Test
 	public void basicFileSystemTestGetName() throws Exception {
 		String filename = "readName" + FILE1;

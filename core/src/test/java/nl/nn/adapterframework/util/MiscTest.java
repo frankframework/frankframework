@@ -466,7 +466,7 @@ public class MiscTest {
 
 	@Test
 	public void testListToStringWithStringList() {
-		List list = new ArrayList<Integer>();
+		List<String> list = new ArrayList<>();
 		list.add("bailar");
 		list.add("besos");
 		String res = Misc.listToString(list);

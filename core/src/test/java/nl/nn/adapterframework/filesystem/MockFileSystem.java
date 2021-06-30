@@ -23,7 +23,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	private boolean configured=false;
 	private boolean opened=false;
-	
 
 	public MockFileSystem() {
 		super("MOCKFILESYSTEM",null);
@@ -179,9 +178,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public Message readFile(MockFile f) throws FileSystemException, IOException {
+	public Message readFile(MockFile f, String charset) throws FileSystemException, IOException {
 		checkOpenAndExists(f);
-		return new Message(f.getInputStream(), null);
+		return new Message(f.getInputStream(), charset);
 	}
 
 	@Override

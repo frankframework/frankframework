@@ -134,7 +134,7 @@ public class IbisException extends Exception {
 				String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
 				message = Misc.concatStrings(exceptionType, " ", message);
 				expandedMessage = Misc.concatStrings(expandedMessage, ": ", message);
-				t = ExceptionUtils.getCause(t);
+				t = getCause(t);
 			}
 			if (expandedMessage==null) {
 				// do not replace the following with toString(), this causes an endless loop. GvB
@@ -144,10 +144,37 @@ public class IbisException extends Exception {
 		return expandedMessage;
 	}
 
-
+	/**
+     * <p>Introspects the {@code Throwable} to obtain the cause.</p>
+     *
+     * <p>The method searches for methods with specific names that return a
+     * {@code Throwable} object. This will pick up most wrapping exceptions,
+     * including those from JDK 1.4.
+     *
+     * <p>The default list searched for are:</p>
+     * <ul>
+     *  <li>{@code getCause()}</li>
+     *  <li>{@code getNextException()}</li>
+     *  <li>{@code getTargetException()}</li>
+     *  <li>{@code getException()}</li>
+     *  <li>{@code getSourceException()}</li>
+     *  <li>{@code getRootCause()}</li>
+     *  <li>{@code getCausedByException()}</li>
+     *  <li>{@code getNested()}</li>
+     *  <li>{@code getLinkedException()}</li>
+     *  <li>{@code getNestedException()}</li>
+     *  <li>{@code getLinkedCause()}</li>
+     *  <li>{@code getThrowable()}</li>
+     * </ul>
+     *
+     * <p>If none of the above is found, returns {@code null}.</p>
+	 */
+	private static Throwable getCause(Throwable t) {
+		return ExceptionUtils.getCause(t);
+	}
 
 	public static LinkedList<String> getMessages(Throwable t, String message) {
-		Throwable cause = ExceptionUtils.getCause(t);
+		Throwable cause = getCause(t);
 		LinkedList<String> result;
 		if (cause !=null) {
 			String causeMessage = cause.getMessage();

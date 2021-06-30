@@ -288,13 +288,13 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public Message readFile(String filename) throws FileSystemException, IOException {
-		return new Samba2Message(getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN));
+	public Message readFile(String filename, String charset) throws FileSystemException, IOException {
+		return new Samba2Message(getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN), charset);
 	}
 
 	private class Samba2Message extends Message {
 		
-		public Samba2Message(File file) {
+		public Samba2Message(File file, String charset) {
 			super(() -> {
 				InputStream is = file.getInputStream();
 				FilterInputStream fis = new FilterInputStream(is) {
@@ -311,7 +311,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 				};
 				return fis;
 				
-			}, null, file.getClass());
+			}, charset, file.getClass());
 		}
 	}
 

@@ -15,19 +15,18 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Manager for SAP Logical Units of Work (LUWs). 
@@ -67,8 +66,8 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 	@Override
-	public void configure(PipeLine pipeline) throws ConfigurationException {
-		super.configure(pipeline);
+	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getAction())) {
 			throw new ConfigurationException("action should be specified, it must be one of: "+
 				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
@@ -81,7 +80,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
 		}
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
-			pipeline.registerExitHandler(this);
+			getPipeLine().registerExitHandler(this);
 		}
 		if (StringUtils.isEmpty(getLuwHandleSessionKey())) {
 			throw new ConfigurationException("action should be specified, it must be one of: "+

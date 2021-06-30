@@ -47,7 +47,6 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	private boolean open;
 
-
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -146,10 +145,10 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public Message readFile(FTPFile f) throws FileSystemException, IOException {
+	public Message readFile(FTPFile f, String charset) throws FileSystemException, IOException {
 		InputStream inputStream = ftpClient.retrieveFileStream(f.getName());
 		ftpClient.completePendingCommand();
-		return new Message(inputStream);
+		return new Message(inputStream, charset);
 	}
 
 	@Override
