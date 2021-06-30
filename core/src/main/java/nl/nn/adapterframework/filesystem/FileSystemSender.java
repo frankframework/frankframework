@@ -233,4 +233,9 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
 		actor.setWriteLineSeparator(writeLineSeparator);
 	}
+
+	@IbisDocRef({"14", FILESYSTEMACTOR})
+	public void setCharset(String charset) {
+		actor.setCharset(charset);
+	}
 }

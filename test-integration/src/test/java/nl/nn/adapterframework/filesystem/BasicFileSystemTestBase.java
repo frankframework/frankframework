@@ -118,7 +118,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 			
 			// read each the files
 			for(F f: files) {
-				Message in=fileSystem.readFile(f); 
+				Message in=fileSystem.readFile(f, null); 
 				log.debug("reading file ["+fileSystem.getName(f)+"]");
 				String contentsString= in.asString();
 				log.debug("contents ["+contentsString+"]");

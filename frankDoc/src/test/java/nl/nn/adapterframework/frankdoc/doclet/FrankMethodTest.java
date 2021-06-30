@@ -44,17 +44,16 @@ public class FrankMethodTest extends TestBase {
 	}
 
 	@Test
-	public void whenMethodIsPackagePrivateThenNotPublic() throws FrankDocException {
+	public void whenMethodIsPackagePrivateThenNotFound() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "packagePrivateMethod");
-		assertNotNull(method);
-		assertFalse(method.isPublic());
+		assertNull(method);
 	}
 
 	@Test
 	public void whenNoAnnotationsThenNullReturned() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child");
-		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "packagePrivateMethod");
+		FrankMethod method = TestUtil.getDeclaredMethodOf(clazz, "methodWithoutAnnotations");
 		assertEquals(0, method.getAnnotations().length);
 		assertNull(method.getAnnotation(FrankDocletConstants.IBISDOC));
 	}
