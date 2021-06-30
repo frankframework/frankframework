@@ -136,16 +136,17 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public boolean _folderExists(String folder) throws Exception {
-		boolean isDirectory = false;
+		String pwd = null;
 		try {
-			String pwd = ftpSession.ftpClient.printWorkingDirectory();
-			isDirectory = ftpSession.ftpClient.changeWorkingDirectory(pwd + "/" + folder);
-			ftpSession.ftpClient.changeWorkingDirectory(pwd);
+			pwd = ftpSession.ftpClient.printWorkingDirectory();
+			try {
+				return ftpSession.ftpClient.changeWorkingDirectory(pwd + "/" + folder);
+			} finally {
+				ftpSession.ftpClient.changeWorkingDirectory(pwd);
+			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-		
-		return isDirectory;
 	}
 
 	@Override
