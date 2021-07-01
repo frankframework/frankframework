@@ -10,8 +10,6 @@ import org.junit.After;
 import org.junit.Before;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.filesystem.FileSystemException;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 
@@ -73,7 +71,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 		ftpSession.setHost(host);
 		ftpSession.setPort(port);
 		ftpSession.configure();
-		
+
 		try {
 			ftpSession.openClient(remoteDirectory);
 		} catch (FtpConnectException e) {
@@ -82,23 +80,13 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 	@Override
 	public boolean _fileExists(String folder, String filename) throws IOException, FileSystemException {
-		// TODO: must implement folder searching, probably via change-directory
-		String path = folder != null ? folder + "/" + filename : filename;
 		try {
-			FTPFile[] files = ftpSession.ftpClient.listFiles(path);
-			for (FTPFile o : files) {
-				if (o.isDirectory()) {
-					if ((filename.endsWith("/") ? o.getName() + "/" : o.getName()).equals(filename)) {
-						return true;
-					}
-				} else if (o.getName().equals(filename)) {
-					return true;
-				}
-			}
+			String path = folder != null ? folder + "/" + filename : filename;
+			FTPFile[] files = ftpSession.ftpClient.listFiles(path, f -> f.getName().equals(filename));
+			return files.length > 0;
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-		return false;
 	}
 
 	@Override
@@ -147,17 +135,18 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	public boolean _folderExists(String folderName) throws Exception {
-		boolean isDirectory = false;
+	public boolean _folderExists(String folder) throws Exception {
+		String pwd = null;
 		try {
-			FTPFile[] files = ftpSession.ftpClient.listFiles(folderName);
-			if(files.length > 1) 
-				isDirectory = true;
+			pwd = ftpSession.ftpClient.printWorkingDirectory();
+			try {
+				return ftpSession.ftpClient.changeWorkingDirectory(pwd + "/" + folder);
+			} finally {
+				ftpSession.ftpClient.changeWorkingDirectory(pwd);
+			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-		
-		return isDirectory;
 	}
 
 	@Override

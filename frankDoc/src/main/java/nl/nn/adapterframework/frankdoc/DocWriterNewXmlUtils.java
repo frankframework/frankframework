@@ -199,6 +199,13 @@ class DocWriterNewXmlUtils {
 		return attribute;
 	}
 
+	static XmlBuilder addAttributeRef(XmlBuilder context, String name) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("ref", name);
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
 	static XmlBuilder addAnyAttribute(XmlBuilder context) {
 		XmlBuilder attribute = new XmlBuilder("anyAttribute", "xs", XML_SCHEMA_URI);
 		context.addSubElement(attribute);
@@ -303,5 +310,12 @@ class DocWriterNewXmlUtils {
 		String memberTypes = Arrays.asList(combinedTypes).stream().collect(Collectors.joining(" "));
 		union.addAttribute("memberTypes", memberTypes);
 		return union;
+	}
+
+	static XmlBuilder addPattern(XmlBuilder context, String pattern) {
+		XmlBuilder result = new XmlBuilder("pattern", "xs", XML_SCHEMA_URI);
+		context.addSubElement(result);
+		result.addAttribute("value", pattern);
+		return result;
 	}
 }
