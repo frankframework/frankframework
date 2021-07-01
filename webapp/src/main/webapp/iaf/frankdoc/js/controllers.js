@@ -29,7 +29,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	function addAttributeActive(element) {
 		attributeActive = {
 			name: "active",
-			description: "If defined and false, then this element and all its children are ignored"
+			description: "If defined and empty or false, then this element and all its children are ignored"
 		};
 		if(element.attributes) {
 			element.attributes.unshift(attributeActive);

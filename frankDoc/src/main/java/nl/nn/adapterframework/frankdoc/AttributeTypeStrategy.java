@@ -164,7 +164,7 @@ public enum AttributeTypeStrategy {
 		private XmlBuilder createAttributeForAttributeActive() {
 			XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
 			attribute.addAttribute("name", ATTRIBUTE_ACTIVE_NAME);
-			DocWriterNewXmlUtils.addDocumentation(attribute, "If defined and false, then this element and all its children are ignored");
+			DocWriterNewXmlUtils.addDocumentation(attribute, "If defined and empty or false, then this element and all its children are ignored");
 			XmlBuilder simpleType = DocWriterNewXmlUtils.addSimpleType(attribute);
 			XmlBuilder restriction = DocWriterNewXmlUtils.addRestriction(simpleType, "xs:string");
 			DocWriterNewXmlUtils.addPattern(restriction, getPattern());
