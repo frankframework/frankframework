@@ -789,7 +789,7 @@ public class FtpSession implements IConfigurable {
 	}
 	public FtpType getFtpTypeEnum() {
 		return ftpType;
-	} 
+	}
 
 	@IbisDoc({"file type, one of ascii, binary", ""})
 	public void setFileType(String string) {

@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.ftp.FtpSession.Prot;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
@@ -31,6 +32,8 @@ import nl.nn.adapterframework.stream.Message;
  *  
  * @author John Dekker
  */
+@Deprecated
+@ConfigurationWarning("Please replace with FtpFileSystemListener")
 public class FtpSender extends SenderWithParametersBase {
 
 	private FtpSession ftpSession;
@@ -143,8 +146,12 @@ public class FtpSender extends SenderWithParametersBase {
 	public void setFtpTypeDescription(String string) {
 		setFtpType(string);
 	}
+	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
 	public void setFtpType(String string) {
 		ftpSession.setFtpType(string);
+	}
+	public FtpType getFtpTypeEnum() {
+		return ftpSession.getFtpTypeEnum();
 	}
 
 	@IbisDoc({"file type, one of ascii, binary", ""})
@@ -296,6 +303,9 @@ public class FtpSender extends SenderWithParametersBase {
 	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>. C - Clear; S - Safe(SSL protocol only), E - Confidential(SSL protocol only), P - Private", "C"})
 	public void setProt(String prot) {
 		ftpSession.setProt(prot);
+	}
+	public Prot getProtEnum() {
+		return ftpSession.getProtEnum();
 	}
 
 	@IbisDoc({"when true, keyboardinteractive is used to login", "false"})
