@@ -35,6 +35,7 @@ import javax.xml.validation.ValidatorHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -466,25 +467,25 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 		return null;
 	}
-	
-	public class ResponseValidatorWrapper implements IPipe,IXmlValidator {
+
+	public class ResponseValidatorWrapper implements IPipe, IXmlValidator {
 
 		private String name;
 		private Map<String, PipeForward> forwards=new HashMap<String, PipeForward>();
-		
+
 		protected XmlValidator owner;
 		public ResponseValidatorWrapper(XmlValidator owner) {
 			super();
 			this.owner=owner;
 			name="ResponseValidator of "+owner.getName();
 		}
-		
+
 		@Override
 		public String getName() {
 			return name;
 		}
 
-	@IbisDoc({"name of the pipe", ""})
+		@IbisDoc({"name of the pipe", ""})
 		@Override
 		public void setName(String name) {
 			this.name=name;
@@ -551,6 +552,21 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		public String getDocumentation() {
 			return null;
 		}
+
+		@Override
+		public ApplicationContext getApplicationContext() {
+			return owner.getApplicationContext();
+		}
+
+		@Override
+		public ClassLoader getConfigurationClassLoader() {
+			return owner.getConfigurationClassLoader();
+		}
+
+		@Override
+		public void setApplicationContext(ApplicationContext applicationContext) {
+			//Can ignore this as it's not set through Spring
+		}
 	}
 	
 	public boolean isMixedValidator(Object outputValidator) {
@@ -604,8 +620,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		String schemaSessionKey = getSchemaSessionKey();
 		if (schemaSessionKey != null) {
 			if (session.containsKey(schemaSessionKey)) {
-				return session.get(schemaSessionKey).toString();
-			} 
+				try {
+					return session.getMessage(schemaSessionKey).asString();
+				} catch(IOException e) {
+					throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
+				}
+			}
 			throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 		}
 		return null;

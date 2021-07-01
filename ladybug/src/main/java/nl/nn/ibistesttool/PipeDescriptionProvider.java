@@ -33,7 +33,6 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
@@ -116,8 +115,14 @@ public class PipeDescriptionProvider {
 			// object will be created. The old configuration object will be
 			// removed from pipeDescriptionCaches by the garbage collection as
 			// this is a WeakHashMap.
-			Adapter adapter = pipeLine.getAdapter();
-			Configuration configuration = adapter==null? null : adapter.getConfiguration();
+			if(!(pipeLine.getApplicationContext() instanceof Configuration)) {
+				pipeDescription = new PipeDescription();
+				pipeDescription.setCheckpointName(getCheckpointName(pipe, checkpointName));
+				pipeDescription.setDescription("Unable to find pipe information, configuration not found.");
+				return pipeDescription;
+			}
+
+			Configuration configuration = (Configuration) pipeLine.getApplicationContext();
 			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.get(configuration);
 			if (pipeDescriptionCache == null) {
 				pipeDescriptionCache = new HashMap<String, PipeDescription>();

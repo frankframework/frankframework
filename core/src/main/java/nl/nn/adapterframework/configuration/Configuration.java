@@ -475,6 +475,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getClassLoader();
 	}
 
+	@Override
+	public void setBeanName(String name) {
+		super.setBeanName(name);
+		setDisplayName("ConfigurationContext [" + name + "]");
+	}
+
 	/**
 	 * Dummy method to include monitoring in the Frank!Doc.
 	 */

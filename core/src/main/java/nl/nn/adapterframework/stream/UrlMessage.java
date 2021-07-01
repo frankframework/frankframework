@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,19 +13,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.core;
+package nl.nn.adapterframework.stream;
 
-/**
- * ExeceptionListener-class to signal exceptions to other objects, for instance 
- * MessagePushers to PushingReceivers.
- * 
- * @author Gerrit van Brakel
- * @since 4.2
- */
-public interface IbisExceptionListener {
+import java.net.URL;
 
-	/**
-	 * Inform the implementing class that the exception <code>t</code> occurred in <code>object</code>.
-	 */
-	void exceptionThrown(INamedObject object, Throwable t);
+public class UrlMessage  extends Message {
+	
+	public UrlMessage(URL url, String charset) {
+		super(() -> url.openStream(), charset, url.getClass());
+	}
+	
+	public UrlMessage(URL url) {
+		this(url, null);
+	}
 }

@@ -1,18 +1,19 @@
 package nl.nn.adapterframework.jdbc.transformer;
 
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestFileUtils;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.xml.sax.SAXException;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import nl.nn.adapterframework.stream.FileMessage;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
 public class ToJson {
@@ -48,7 +49,7 @@ public class ToJson {
 		String expected = TestFileUtils.getTestFile(FOLDER + expectedFile.getName());
 
 		QueryOutputToJson transformer = new QueryOutputToJson();
-		String output = transformer.parse(new Message(xmlFile));
+		String output = transformer.parse(new FileMessage(xmlFile));
 
 		Assert.assertEquals(expected, output);
 	}

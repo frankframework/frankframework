@@ -1,15 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.stream.Message;
 
 public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
