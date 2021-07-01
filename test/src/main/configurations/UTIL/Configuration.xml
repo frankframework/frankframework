@@ -2,10 +2,12 @@
 	<!ENTITY Larva SYSTEM "./ConfigurationLarva.xml">
 	<!ENTITY UploadFiles SYSTEM "./ConfigurationUploadFiles.xml">
 	<!ENTITY Ladybug SYSTEM "./ConfigurationLadybug.xml">
+	<!ENTITY Larva2 SYSTEM "./ConfigurationLarva2.xml">
 ]>
 <configuration name="UTIL">
 	<!-- Run Larva scenario's (on startup and once a day scheduled) -->
 	&Larva;
+	&Larva2;
 
 	<!-- Include configuration for console functions -->
 	&UploadFiles;
