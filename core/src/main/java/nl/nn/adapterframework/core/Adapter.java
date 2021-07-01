@@ -106,7 +106,6 @@ public class Adapter implements IAdapter, NamedBean {
 	private String name;
 	private Configuration configuration;
 	private String targetDesignDocument;
-	private boolean active=true;
 
 	private ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
@@ -739,12 +738,8 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@IbisDoc("100")
 	public void registerReceiver(Receiver<?> receiver) {
-		if (receiver.isActive()) {
-			receivers.add(receiver);
-			log.debug("Adapter [" + name + "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
-		} else {
-			log.debug("Adapter [" + name + "] did not register inactive receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
-		}
+		receivers.add(receiver);
+		log.debug("Adapter [" + name + "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
 	}
 
 	/**
@@ -1048,14 +1043,6 @@ public class Adapter implements IAdapter, NamedBean {
 			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=false as msgLogLevel=None");
 			msgLogLevel = Level.toLevel("OFF");
 		}
-	}
-
-	@IbisDoc({"controls whether adapter is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the receiver is not included in the configuration", "true"})
-	public void setActive(boolean b) {
-		active = b;
-	}
-	public boolean isActive() {
-		return active;
 	}
 
 	public void setTargetDesignDocument(String string) {

@@ -667,7 +667,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						}
 					} else {
 						if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
-							messageTrail = (String)(session.get(getAuditTrailSessionKey()));
+							messageTrail = session.getMessage(getAuditTrailSessionKey()).asString();
 						}
 					}
 					String storedMessageID=messageID;
@@ -676,7 +676,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 					if (correlationIDTp!=null) {
 						if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
-							String sourceString = (String)(session.get(getCorrelationIDSessionKey()));
+							String sourceString = session.getMessage(getCorrelationIDSessionKey()).asString();
 							correlationID=correlationIDTp.transform(sourceString,null);
 						} else {
 							if (isUseInputForExtract()) {
@@ -789,7 +789,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			
 			try {
 				InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);
-				String contentType = (String) session.get("contentType");
+				String contentType = session.getMessage("contentType").asString();
 				if (StringUtils.isNotEmpty(contentType)) {
 					RestListenerUtils.setResponseContentType(session, contentType);
 				}
@@ -1033,15 +1033,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	@IbisDoc({"30"})
 	public void setMessageLog(ITransactionalStorage messageLog) {
-		if (messageLog.isActive()) {
-			this.messageLog = messageLog;
-			messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
-			if (StringUtils.isEmpty(messageLog.getSlotId())) {
-				messageLog.setSlotId(getName());
-			}
-			if (StringUtils.isEmpty(messageLog.getType())) {
-				messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode());
-			}
+		this.messageLog = messageLog;
+		messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
+		if (StringUtils.isEmpty(messageLog.getSlotId())) {
+			messageLog.setSlotId(getName());
+		}
+		if (StringUtils.isEmpty(messageLog.getType())) {
+			messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode());
 		}
 	}
 	public ITransactionalStorage getMessageLog() {

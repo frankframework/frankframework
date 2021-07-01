@@ -60,7 +60,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 				filename = FileUtils.getFilename(getParameterList(), session, "", getFilePattern());
 			} else {
 				if (StringUtils.isNotEmpty(getFilePatternSessionKey())) {
-					filename = FileUtils.getFilename(getParameterList(), session, "", (String)session.get(getFilePatternSessionKey()));
+					filename = FileUtils.getFilename(getParameterList(), session, "", session.getMessage(getFilePatternSessionKey()).asString());
 				} else {
 					if (StringUtils.isEmpty(message.asString())) {
 						throw new PipeRunException(this, "input empty, but should contain filename to delete");

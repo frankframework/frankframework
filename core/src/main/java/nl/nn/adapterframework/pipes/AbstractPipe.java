@@ -123,8 +123,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private String logIntermediaryResults = null;
 	private String hideRegex = null;
 
-	private boolean active=true;
-
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private ParameterList parameterList = new ParameterList();
 	private @Setter EventPublisher eventPublisher=null;
@@ -390,15 +388,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	@Override
 	public String getName() {
 		return this.name;
-	}
-
-	@IbisDoc({"2", "controls whether pipe is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the pipe is not included in the configuration", "true"})
-	public void setActive(boolean b) {
-		active = b;
-	}
-	@Override
-	public boolean isActive() {
-		return active;
 	}
 
 	@Override

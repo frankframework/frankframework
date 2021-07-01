@@ -11,6 +11,7 @@
       </xs:sequence>
       <xs:attribute name="attribute" type="xs:string" />
       <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
+      <xs:attribute ref="active" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start" use="prohibited" />
     </xs:complexType>
   </xs:element>
@@ -20,6 +21,7 @@
     </xs:annotation>
     <xs:complexType>
       <xs:sequence />
+      <xs:attribute ref="active" />
       <xs:attribute name="elementRole" type="xs:string" fixed="roleNameTChild" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild" use="prohibited" />
     </xs:complexType>
@@ -31,6 +33,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded" />
           </xs:sequence>
+          <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute processContents="skip" />
@@ -50,6 +53,7 @@ This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentatio
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="DescribedPossibleIChildType">
+              <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild" />
             </xs:extension>
@@ -63,6 +67,7 @@ This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentatio
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="NotDescribedPossibleIChildType">
+              <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild" />
             </xs:extension>
@@ -114,6 +119,16 @@ This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentatio
       <xs:pattern value="((\+|-)?[0-9]+)|($\{[^\}]+\})" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:attribute name="active">
+    <xs:annotation>
+      <xs:documentation>If defined and empty or false, then this element and all its children are ignored</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:pattern value="\!?(($\{[^\}]+\})|([tT][rR][uU][eE])|([fF][aA][lL][sS][eE]))" />
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
   <xs:simpleType name="variableRef">
     <xs:restriction base="xs:string">
       <xs:pattern value="$\{[^\}]+\}" />

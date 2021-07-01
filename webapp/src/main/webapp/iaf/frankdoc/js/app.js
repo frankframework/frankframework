@@ -110,8 +110,9 @@ function getGroupMembers(allTypes, typesToFilterOn) {
 	return memberNames.filter((x, i, a) => a.indexOf(x) == i); //get distinct array results
 }
 
+// Exclude group All.
 function getGroupsOfType(type, groups) {
-	for(i = 0; i < groups.length; ++i) {
+	for(i = 1; i < groups.length; ++i) {
 		let group = groups[i];
 		if(group.types.indexOf(type) >= 0) {
 			return group.name;
