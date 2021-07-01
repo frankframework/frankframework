@@ -85,7 +85,7 @@ public abstract class MailFileSystemTestBase<M,A,FS> extends SelfContainedBasicF
 	@Test
 	public void testNormalMessageContents() throws Exception {
 		M emailMessage = getFirstFileFromFolder(null);
-		Message content = fileSystem.readFile(emailMessage);
+		Message content = fileSystem.readFile(emailMessage, null);
 		String expected = TestFileUtils.getTestFile("/ExchangeMailNormalContents.txt");
 		assertEquals(expected.trim(), content.asString().replaceAll("\r\n", "\n").trim());
 	}

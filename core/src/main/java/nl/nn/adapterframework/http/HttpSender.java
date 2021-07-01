@@ -78,7 +78,6 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -449,7 +448,7 @@ public class HttpSender extends HttpSenderBase {
 						String fileName = null;
 						String sessionKey = pv.getDefinition().getSessionKey();
 						if (sessionKey != null) {
-							fileName = (String) session.get(sessionKey + "Name");
+							fileName = session.getMessage(sessionKey + "Name").asString();
 						}
 
 						entity.addPart(createMultipartBodypart(name, fis, fileName));
@@ -466,7 +465,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
-			String multipartXml = (String) session.get(getMultipartXmlSessionKey());
+			String multipartXml = session.getMessage(getMultipartXmlSessionKey()).asString();
 			log.debug(getLogPrefix()+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
 			if (StringUtils.isEmpty(multipartXml)) {
 				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
@@ -620,14 +619,9 @@ public class HttpSender extends HttpSenderBase {
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 				if (i == 0) {
-					String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-					ContentType contentType = ContentType.parse(bodyPart.getContentType());
-					if(contentType.getCharset() != null)
-						charset = contentType.getCharset().name();
-
-					result = new Message(bodyPart.getInputStream(), charset);
+					result = new PartMessage(bodyPart);
 				} else {
-					session.put("multipart" + i, bodyPart.getInputStream());
+					session.put("multipart" + i, new PartMessage(bodyPart));
 				}
 			}
 		} catch(MessagingException e) {

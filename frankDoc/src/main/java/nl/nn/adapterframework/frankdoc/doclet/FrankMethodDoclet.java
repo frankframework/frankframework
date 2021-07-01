@@ -157,7 +157,16 @@ class FrankMethodDoclet implements FrankMethod {
 		MethodDoc overriddenMethodDoc = method.overriddenMethod();
 		if(overriddenMethodDoc != null) {
 			FrankMethodDoclet overriddenMethod = (FrankMethodDoclet) declaringClass.recursivelyFindFrankMethod(overriddenMethodDoc);
-			return overriddenMethod.searchExcludingImplementedInterfaces(getter);
+			if(overriddenMethod != null) {
+				return overriddenMethod.searchExcludingImplementedInterfaces(getter);
+			} else {
+				// The overridden method is not included in the produced JavaDocs. This
+				// means that the overridden method is not public. Therefore it is not
+				// relevant.
+				//
+				// This empty else branch is covered by test
+				// FrankMethodOverrideTest.whenPackagePrivateOverriddenByPublicThenOnlyChildMethodConsidered()
+			}
 		}
 		return null;
 	}

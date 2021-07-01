@@ -34,9 +34,9 @@ public class FrankClassTest extends TestBase {
 	}
 
 	@Test
-	public void whenClassIsPackagePrivateThenNotPublic() throws FrankDocException {
+	public void whenClassIsPackagePrivateThenNotFound() throws FrankDocException {
 		FrankClass instance = classRepository.findClass(PACKAGE + "PackagePrivateClass");
-		assertFalse(instance.isPublic());
+		assertNull(instance);
 	}
 
 	@Test
@@ -112,7 +112,7 @@ public class FrankClassTest extends TestBase {
 		Arrays.asList(declaredMethods).forEach(m -> actualMethodNames.add(m.getName()));
 		List<String> sortedActualMethodNames = new ArrayList<>(actualMethodNames);
 		sortedActualMethodNames = sortedActualMethodNames.stream().filter(name -> ! name.contains("jacoco")).collect(Collectors.toList());
-		assertArrayEquals(new String[] {"getMyInnerEnum", "myAnnotatedMethod", "packagePrivateMethod", "setInherited", "setVarargMethod"}, sortedActualMethodNames.toArray());
+		assertArrayEquals(new String[] {"getMyInnerEnum", "methodWithoutAnnotations", "myAnnotatedMethod", "setInherited", "setVarargMethod"}, sortedActualMethodNames.toArray());
 	}
 
 	/**
@@ -132,7 +132,7 @@ public class FrankClassTest extends TestBase {
 			.map(FrankMethod::getName)
 			.filter(name -> ! name.contains("jacoco"))
 			.forEach(name -> methodNames.add(name));
-		assertArrayEquals(new String[] {"equals", "getClass", "getInherited", "getMyInnerEnum", "hashCode", "myAnnotatedMethod", "notify", "notifyAll", "setInherited", "setVarargMethod", "toString", "wait"}, new ArrayList<>(methodNames).toArray());
+		assertArrayEquals(new String[] {"equals", "getClass", "getInherited", "getMyInnerEnum", "hashCode", "methodWithoutAnnotations", "myAnnotatedMethod", "notify", "notifyAll", "setInherited", "setVarargMethod", "toString", "wait"}, new ArrayList<>(methodNames).toArray());
 		// Test we have no duplicates
 		Map<String, List<FrankMethod>> methodsByName = Arrays.asList(methods).stream()
 				.filter(m -> methodNames.contains(m.getName()))

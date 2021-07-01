@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
@@ -64,7 +65,7 @@ public class EasyDoclet {
 		}
 		try {
 			Iterable<? extends JavaFileObject> files = new ArrayList<>();
-			rootDoc = javadocTool.getRootDocImpl(Locale.ENGLISH.getDisplayCountry(), "UTF-8", new ModifierFilter(ModifierFilter.ALL_ACCESS),
+			rootDoc = javadocTool.getRootDocImpl(Locale.ENGLISH.getDisplayCountry(), "UTF-8", new ModifierFilter(Modifier.PUBLIC),
 					javaNames.toList(), new ListBuffer<String[]>().toList(), files, false, subPackages.toList(), new ListBuffer<String>().toList(),
 					false, false, false);
 		} catch (Exception ex) {
