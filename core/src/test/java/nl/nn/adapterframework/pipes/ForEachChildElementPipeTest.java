@@ -19,7 +19,6 @@ import org.hamcrest.core.StringContains;
 import org.junit.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -64,6 +63,16 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			"<block><sub name=\"r\">R</sub></block>\n"+
 			"</result>\n</results>";
 
+	private String expectedBasicNoNSBlockSize1="<results>\n"+
+			"<result item=\"1\">\n"+
+			"<block><sub>A &amp; B</sub></block>\n"+
+			"</result>\n"+
+			"<result item=\"2\">\n"+
+			"<block><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></block>\n"+
+			"</result>\n"+
+			"<result item=\"3\">\n"+
+			"<block><sub name=\"r\">R</sub></block>\n"+
+			"</result>\n</results>";
 
 	private String expectedBasicNoNSFirstElement="<results>\n"+
 			"<result item=\"1\">\n"+
@@ -106,47 +115,59 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		return new ForEachChildElementPipe();
 	}
 
-	protected ISender getElementRenderer() {
-		return getElementRenderer(null, null);
+	protected ElementRenderer getElementRenderer() {
+		return new ElementRenderer(null, null);
 	}
 
-	protected ISender getElementRenderer(final Exception e) {
-		return getElementRenderer(null, e);
+	protected ElementRenderer getElementRenderer(final Exception e) {
+		return new ElementRenderer(null, e);
 	}
 
-	protected ISender getElementRenderer(final SwitchCounter sc) {
-		return getElementRenderer(sc, null);
+	protected ElementRenderer getElementRenderer(final SwitchCounter sc) {
+		return new ElementRenderer(sc, null);
 	}
 
-	protected ISender getElementRenderer(final SwitchCounter sc, final Exception e) {
-		EchoSender sender = new EchoSender() {
+	protected ElementRenderer getElementRenderer(final SwitchCounter sc, final Exception e) {
+		return new ElementRenderer(sc, e);
+	}
+	
+	private class ElementRenderer extends EchoSender {
 
-			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
-				if (sc!=null) sc.mark("out");
-				try {
-					if (message.asString().contains("error")) {
-						if (e!=null) {
-							if (e instanceof SenderException) {
-								throw (SenderException)e;
-							}
-							if (e instanceof TimeOutException) {
-								throw (TimeOutException)e;
-							}
-							if (e instanceof RuntimeException) {
-								throw (RuntimeException)e;
-							}
+		public SwitchCounter sc;
+		public Exception e;
+		public int callCounter;
+		
+		ElementRenderer(SwitchCounter sc, Exception e) {
+			super();
+			this.sc=sc;
+			this.e=e;
+		}
+		
+		@Override
+		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+			callCounter++;
+			if (sc!=null) sc.mark("out");
+			try {
+				if (message.asString().contains("error")) {
+					if (e!=null) {
+						if (e instanceof SenderException) {
+							throw (SenderException)e;
 						}
-						throw new SenderException("Exception triggered", e);
+						if (e instanceof TimeOutException) {
+							throw (TimeOutException)e;
+						}
+						if (e instanceof RuntimeException) {
+							throw (RuntimeException)e;
+						}
 					}
-				} catch (IOException e) {
-					throw new SenderException(getLogPrefix(),e);
+					throw new SenderException("Exception triggered", e);
 				}
-				return super.sendMessage(message, session);
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix(),e);
 			}
+			return super.sendMessage(message, session);
+		}
 
-		};
-		return sender;
 	}
 
 	@Override
@@ -171,8 +192,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	public void testBlockSize() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setBlockSize(2);
-		pipe.setBlockPrefix("<block>");
-		pipe.setBlockSuffix("</block>");
 		configurePipe();
 		pipe.start();
 
@@ -180,6 +199,38 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNSBlock, actual);
+	}
+
+	@Test
+	public void testBlockSize1() throws Exception {
+		pipe.setSender(getElementRenderer());
+		pipe.setBlockSize(1);
+		configurePipe();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, messageBasicNoNS, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expectedBasicNoNSBlockSize1, actual);
+	}
+
+	@Test
+	public void testErrorBlock() throws Exception {
+		Exception targetException = new NullPointerException("FakeException");
+		ElementRenderer er = getElementRenderer(targetException) ;
+		pipe.setSender(er);
+		pipe.setBlockSize(10);
+		configurePipe();
+		pipe.start();
+
+		try {
+			PipeRunResult prr = doPipe(pipe, messageError, session);
+			fail("Expected exception to be thrown");
+		} catch (Exception e) {
+			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
+			assertCauseChainEndsAtOriginalException(targetException,e);
+			assertEquals(1, er.callCounter);
+		}
 	}
 
 	@Test

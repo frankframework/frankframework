@@ -122,10 +122,10 @@ public class WebServiceSenderResultTest extends Mockito {
 		}
 		assertEquals(2, multipartAttachmentCount);
 
-		InputStream multipart1 = (InputStream)pls.get("multipart1");
+		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
 		assertEquals("Content of a txt file.", Misc.streamToString(multipart1).trim());
 
-		InputStream multipart2 = (InputStream)pls.get("multipart2");
+		InputStream multipart2 = pls.getMessage("multipart2").asInputStream();
 		assertEquals("<!DOCTYPE html><title>Content of a html file.</title>", Misc.streamToString(multipart2).trim());
 	}
 
@@ -190,7 +190,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		}
 		assertEquals(1, multipartAttachmentCount);
 
-		InputStream multipart1 = (InputStream)pls.get("multipart1");
+		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
 		assertEquals("PDF-1.4 content", Misc.streamToString(multipart1).trim());
 	}
 }

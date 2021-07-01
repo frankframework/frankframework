@@ -176,7 +176,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		InputStream stream = (InputStream) session.get(sender.getFileInputStreamSessionKey());
+		InputStream stream = (InputStream) session.get(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals(GET_RESULT_FOR_INPUT, Misc.streamToString(stream));
 		} else {
@@ -207,7 +207,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		String base64Content = (String) session.get(sender.getFileContentSessionKey());
+		String base64Content = (String) session.get(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals("ZHVtbXlfc3RyZWFt", base64Content);
 		} else {
@@ -227,7 +227,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		InputStream stream = (InputStream) session.get(sender.getFileInputStreamSessionKey());
+		InputStream stream = (InputStream) session.get(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals(GET_RESULT_FOR_INPUT, Misc.streamToString(stream));
 		} else {
@@ -247,7 +247,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		String base64Content = (String) session.get(sender.getFileContentSessionKey());
+		String base64Content = (String) session.get(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals("ZHVtbXlfc3RyZWFt", base64Content);
 		} else {

@@ -78,7 +78,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 				if (getRoundsSessionKey() == null) {
 					result = PasswordHash.createHash(input.toCharArray(), getRounds());
 				} else {
-					result = PasswordHash.createHash(input.toCharArray(), Integer.valueOf(session.get(getRoundsSessionKey()).toString()));
+					result = PasswordHash.createHash(input.toCharArray(), Integer.valueOf(session.getMessage(getRoundsSessionKey()).asString()));
 				}
 				pipeForward = getSuccessForward();
 			} catch (Exception e) {
@@ -87,7 +87,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 		} else {
 			try {
 				result = message;
-				if (PasswordHash.validatePassword(input, (String)session.get(getHashSessionKey()))) {
+				if (PasswordHash.validatePassword(input, session.getMessage(getHashSessionKey()).asString())) {
 					pipeForward = getSuccessForward();
 				} else {
 					pipeForward = findForward(FAILURE_FORWARD_NAME);

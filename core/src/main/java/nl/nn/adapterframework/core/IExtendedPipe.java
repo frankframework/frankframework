@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.Locker;
 
@@ -41,9 +40,9 @@ public interface IExtendedPipe extends IPipe {
 
 	/**
 	 * Extension, allowing Pipes to register things with the PipeLine at Configuration time.
-	 * For IExtendedPipes, PileLine will call this method rather then the no-args configure().
+	 * Must be set before calling configure()
 	 */
-	void configure(PipeLine pipeline) throws ConfigurationException;
+	void setPipeLine(PipeLine pipeline);
 
 	@IbisDoc({"1", "If set, input is taken from this session key, instead of regular input", ""})
 	public void setGetInputFromSessionKey(String string);

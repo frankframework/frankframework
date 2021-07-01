@@ -79,8 +79,8 @@ public class ZipWriterPipe extends FixedForwardPipe {
 
 
 	@Override
-	public void configure(PipeLine pipeline) throws ConfigurationException {
-		super.configure(pipeline);
+	public void configure() throws ConfigurationException {
+		super.configure();
 		if (!(ACTION_OPEN.equals(getAction()) || ACTION_WRITE.equals(getAction())  || ACTION_STREAM.equals(getAction()) || ACTION_CLOSE.equals(getAction()))) {
 			throw new ConfigurationException("action must be either '"+ACTION_OPEN+"','"+ACTION_WRITE+"','"+ACTION_STREAM+"' or '"+ACTION_CLOSE+"'");
 		}

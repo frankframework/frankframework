@@ -1,6 +1,6 @@
 <module>
 	<adapter name="ManageDatabase" description="Manage the database" active="${manageDatabase.active}">
-		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.FixedErrorMessage" filename="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="INTERNAL_ERROR" />
+		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.FixedErrorMessageFormatter" filename="/ManageDatabase/xml/ErrorMessage.xml" replaceFrom="%reasonCode" replaceTo="INTERNAL_ERROR" />
 		<receiver name="ManageDatabase">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ManageDatabase" serviceName="${manageDatabase.serviceName}" />
 		</receiver>

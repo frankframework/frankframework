@@ -2061,12 +2061,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		checkForDuplicatesMethod=method;
 	}
 
-	@IbisDoc({"13", "The maximum delivery count after which to stop processing the message. If -1 the delivery count is ignored", "5"})
+	@IbisDoc({"13", "The maximum delivery count after which to stop processing the message (only for listeners that know the delivery count of received messages). If -1 the delivery count is ignored", "5"})
 	public void setMaxDeliveries(int i) {
 		maxDeliveries = i;
 	}
 
-	@IbisDoc({"14", "The number of times a processing attempt is retried after an exception is caught or rollback is experienced (only applicable for transacted Receivers). If maxRetries &lt; 0 the number of attempts is infinite", "1"})
+	@IbisDoc({"14", "The number of times a processing attempt is automatically retried after an exception is caught or rollback is experienced. If <code>maxRetries &lt; 0</code> the number of attempts is infinite", "1"})
 	public void setMaxRetries(int i) {
 		maxRetries = i;
 	}

@@ -704,7 +704,6 @@ angular.module('iaf.beheerconsole')
 		$scope.searchText = $state.params.search;
 	}
 
-	$scope.reload = false;
 	$scope.selectedConfiguration = "All";
 
 	$scope.updateQueryParams = function() {
@@ -752,23 +751,48 @@ angular.module('iaf.beheerconsole')
 		Api.Put("adapters", {"action": "start", "adapters": adapters});
 	};
 	$scope.reloadConfiguration = function() {
-		$scope.reload = true;
 		if($scope.selectedConfiguration == "All") return;
+
+		$scope.isConfigReloading[$scope.selectedConfiguration] = true;
 
 		Poller.getAll().stop();
 		Api.Put("configurations/"+$scope.selectedConfiguration, {"action": "reload"}, function() {
-			$scope.reload = false;
-			Poller.getAll().start();
+			startPollingForConfigurationStateChanges(function() {
+				Poller.getAll().start();
+			});
 		});
 	};
+	$scope.reloading = false;
 	$scope.fullReload = function() {
-		$scope.reload = true;
+		$scope.reloading = true;
 		Poller.getAll().stop();
 		Api.Put("configurations", {"action": "reload"}, function() {
-			$scope.reload = false;
-			Poller.getAll().start();
+			$scope.reloading = false;
+			startPollingForConfigurationStateChanges(function() {
+				Poller.getAll().start();
+			});
 		});
 	};
+
+	function startPollingForConfigurationStateChanges(callback) {
+		Poller.add("server/configurations", function(configurations) {
+			$scope.updateConfigurations(configurations);
+	
+			var ready = true;
+			for(var i in configurations) {
+				var config = configurations[i];
+				if(config.state != "STARTED") {
+					ready = false;
+					break;
+				}
+			}
+			if(ready) { //Remove poller once all states are STARTED
+				Poller.remove("server/configurations");
+				if(callback != null && typeof callback == "function") callback();
+			}
+		}, true);
+	}
+
 	$scope.showReferences = function() {
 		window.open($scope.configurationFlowDiagram);
 	};
@@ -788,10 +812,12 @@ angular.module('iaf.beheerconsole')
 	});
 
 	$scope.isConfigStubbed = {};
+	$scope.isConfigReloading = {};
 	$scope.check4StubbedConfigs = function() {
 		for(var i in $scope.configurations) {
 			var config = $scope.configurations[i];
 			$scope.isConfigStubbed[config.name] = config.stubbed;
+			$scope.isConfigReloading[config.name] = config.state == "STARTING" || config.state == "STOPPING"; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
 		}
 	};
 	$scope.$watch('configurations', $scope.check4StubbedConfigs);
@@ -874,8 +900,8 @@ angular.module('iaf.beheerconsole')
 
 //** Ctrls **//
 .controller('ManageConfigurationsCtrl', ['$scope', 'Api', function($scope, Api) {
-	Api.Get("server/info", function(data) {
-		$scope.updateConfigurations(data.configurations);
+	Api.Get("server/configurations", function(data) {
+		$scope.updateConfigurations(data);
 	});
 }])
 
