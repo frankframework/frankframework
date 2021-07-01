@@ -77,12 +77,58 @@ public class AttributeTypeStrategyTest {
 		validate(getBoolTestXml("${myVariable"));
 	}
 
+	@Test
+	public void whenAttributeActiveIsLowerCaseTrueThenAccepted() throws Exception {
+		validate(getTestXmlActive("true"));
+	}
+
+	@Test
+	public void whenAttributeActiveIsLowerCaseFalseThenAccepted() throws Exception {
+		validate(getTestXmlActive("false"));		
+	}
+
+	@Test
+	public void whenAttributeActiveIsMixedCaseTrueThenAccepted() throws Exception {
+		validate(getTestXmlActive("True"));
+	}
+
+	@Test
+	public void whenAttributeActiveIsMixedCaseFalseThenAccepted() throws Exception {
+		validate(getTestXmlActive("False"));		
+	}
+
+	@Test
+	public void whenAttributeActiveIsVarRefThenAccepted() throws Exception {
+		validate(getTestXmlActive("${myVar}"));
+	}
+
+	@Test
+	public void whenAttributeActiveIsNegatedLiteralThenAccepted() throws Exception {
+		validate(getTestXmlActive("!true"));
+	}
+
+	@Test
+	public void whenAttributeActiveIsNegatedVarRefThenAccepted() throws Exception {
+		validate(getTestXmlActive("!${myVar}"));
+	}
+
+	@Test(expected = SAXException.class)
+	public void whenAttributeActiveIsSimpleTextThenRejected() throws Exception {
+		validate(getTestXmlActive("xxx"));
+	}
+
+	@Test(expected = SAXException.class)
+	public void whenAttributeActiveConcatsMultipleValidElementsThenCombinationRejected() throws Exception {
+		validate(getTestXmlActive("${myVar}true"));
+	}
+
 	private static String getXsd() {
 		XmlBuilder schema = getXmlSchema();
 		XmlBuilder element = addElementWithType(schema, "myElement");
 		XmlBuilder complexType = addComplexType(element);
 		AttributeTypeStrategy.ALLOW_PROPERTY_REF.addAttribute(complexType, "boolAttr", AttributeType.BOOL);
 		AttributeTypeStrategy.ALLOW_PROPERTY_REF.addAttribute(complexType, "intAttr", AttributeType.INT);
+		AttributeTypeStrategy.ALLOW_PROPERTY_REF.addAttributeActive(complexType);
 		AttributeTypeStrategy.ALLOW_PROPERTY_REF.createHelperTypes().forEach(h -> schema.addSubElement(h));
 		return schema.toXML(true);
 	}
@@ -93,6 +139,10 @@ public class AttributeTypeStrategyTest {
 
 	private static String getIntTestXml(String value) {
 		return String.format("<myElement intAttr=\"%s\"/>", value);
+	}
+
+	private static String getTestXmlActive(String value) {
+		return String.format("<myElement active=\"%s\"/>", value);
 	}
 
 	private void validate(String testXml) throws Exception {

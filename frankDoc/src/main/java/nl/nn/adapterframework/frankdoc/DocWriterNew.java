@@ -371,6 +371,7 @@ public class DocWriterNew {
 		if(checkNotDefined(frankElement)) {
 			String xsdElementName = frankElement.getSimpleName();
 			XmlBuilder attributeBuilder = recursivelyDefineXsdElementUnchecked(frankElement, xsdElementName);
+			attributeTypeStrategy.addAttributeActive(attributeBuilder);
 			log.trace("Adding attribute className for FrankElement [{}]", () -> frankElement.getFullName());
 			addClassNameAttribute(attributeBuilder, frankElement);
 		}
@@ -640,6 +641,7 @@ public class DocWriterNew {
 	}
 
 	private void addExtraAttributesNotFromModel(XmlBuilder context, FrankElement frankElement, ElementRole role) {
+		attributeTypeStrategy.addAttributeActive(context);
 		addAttribute(context, ELEMENT_ROLE, FIXED, role.getRoleName(), version.getRoleNameAttributeUse());
 		addClassNameAttribute(context, frankElement);
 	}
@@ -777,6 +779,7 @@ public class DocWriterNew {
 	}
 
 	private void addGenericElementOptionAttributes(XmlBuilder complexType, ConfigChildSet configChildSet) {
+		attributeTypeStrategy.addAttributeActive(complexType);
 		addAttribute(complexType, ELEMENT_ROLE, FIXED, configChildSet.getRoleName(), version.getRoleNameAttributeUse());
 		Optional<FrankElement> defaultFrankElement = configChildSet.getGenericElementOptionDefault(version.getElementFilter());
 		if(defaultFrankElement.isPresent()) {
