@@ -35,7 +35,8 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	 */
 	public static void add(IConfigurationAware source, Logger log, String message, Throwable t) {
 		if(source == null) {
-			throw new IllegalArgumentException("A source must be provided.");
+			ApplicationWarnings.add(log, message, t);
+			log.warn("Unable to log notification in it's proper context", new IllegalArgumentException("no source provided"));
 		}
 
 		ConfigurationWarnings instance = getInstance(source);
