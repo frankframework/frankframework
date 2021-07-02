@@ -1,3 +1,6 @@
+<!-- This adapter is made to test the transaction behavior of multiple sub-adapters.
+	If you want the larva test to use the pipes after delayPipe then set transactionTimeout="10"
+	and run the test. Afterwards set the value back to transactionTimeout="2"-->
 <module>
 	<adapter
 		name="TransactionTimeoutHandlingTransacted"
