@@ -386,7 +386,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		F file = fileSystem.toFile(filename);
 		assertTrue("Expected the file ["+filename+"] to be present", _fileExists(filename));
 		
-		Message result = fileSystem.readFile(file);
+		Message result = fileSystem.readFile(file, null);
 		assertEquals(content, result.asString());
 		
 		fileSystem.deleteFile(file);

@@ -325,7 +325,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public nl.nn.adapterframework.stream.Message readFile(Message f) throws FileSystemException, IOException {
+	public nl.nn.adapterframework.stream.Message readFile(Message f, String charset) throws FileSystemException, IOException {
 		try {
 			Object content = f.getContent();
 			if (content instanceof MimeMultipart) {
@@ -333,17 +333,17 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					MimeBodyPart bodyPart = (MimeBodyPart) mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text/html")) {
-						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream());
+						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream(), charset);
 					}
 				}
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text")) {
-						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream());
+						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream(), charset);
 					}
 				}
 			}
-			return new nl.nn.adapterframework.stream.Message(f.getInputStream());
+			return new nl.nn.adapterframework.stream.Message(f.getInputStream(), charset);
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}

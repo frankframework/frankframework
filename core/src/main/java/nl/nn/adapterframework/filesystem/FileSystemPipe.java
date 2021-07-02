@@ -228,9 +228,14 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public void setExcludeWildCard(String excludeWildCard) {
 		actor.setExcludeWildCard(excludeWildCard);
 	}
-	
+
 	@IbisDocRef({"13", FILESYSTEMACTOR})
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
 		actor.setWriteLineSeparator(writeLineSeparator);
+	}
+
+	@IbisDocRef({"14", FILESYSTEMACTOR})
+	public void setCharset(String charset) {
+		actor.setCharset(charset);
 	}
 }

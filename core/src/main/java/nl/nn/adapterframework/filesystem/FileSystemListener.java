@@ -76,6 +76,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	
 	private boolean disableMessageBrowsers = false;
 	
+	private @Getter String charset;
 
 	private long minStableTime = 1000;
 //	private Long fileListFirstFileFound;
@@ -282,7 +283,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				return new Message(getFileSystem().getCanonicalName(rawMessage));
 			}
 			if (getMessageType().equalsIgnoreCase("contents")) {
-				return getFileSystem().readFile(rawMessage);
+				return getFileSystem().readFile(rawMessage, getCharset());
 			}
 			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(rawMessage);
 			if (attributes!=null) {
@@ -566,5 +567,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public String getExcludeWildCard() {
 		return excludeWildCard;
 	}
-
+	
+	@IbisDoc({"19", "Charset to be used for extracting the contents"})
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
 }
