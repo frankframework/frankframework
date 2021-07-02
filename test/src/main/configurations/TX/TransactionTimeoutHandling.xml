@@ -56,9 +56,10 @@
 
 			<pipe name="compare values"
 				className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
-				sessionKey1="index"
-				sessionKey2="endIndex"
 			>
+				<param name="operand1" sessionKey="index"/>
+				<param name="operand2" sessionKey="endIndex"/>
+				
 				<forward name="lessthan" path="delay"/>
 				<forward name="equals" path="READY"/>
 				<forward name="greaterthan" path="READY"/>
@@ -120,9 +121,10 @@
 			
 			<pipe name="compare values"
 				className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
-				sessionKey1="index"
-				sessionKey2="endIndex"
 			>
+				<param name="operand1" sessionKey="index"/>
+				<param name="operand2" sessionKey="endIndex"/>
+				
 				<forward name="lessthan" path="delay"/>
 				<forward name="equals" path="READY"/>
 				<forward name="greaterthan" path="READY"/>
