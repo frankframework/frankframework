@@ -16,10 +16,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-@RunWith(Parameterized.class)
 public class FrankClassTest extends TestBase {
 	@Test
 	public void testChildClass() throws FrankDocException {
@@ -37,9 +34,9 @@ public class FrankClassTest extends TestBase {
 	}
 
 	@Test
-	public void whenClassIsPackagePrivateThenNotPublic() throws FrankDocException {
+	public void whenClassIsPackagePrivateThenNotFound() throws FrankDocException {
 		FrankClass instance = classRepository.findClass(PACKAGE + "PackagePrivateClass");
-		assertFalse(instance.isPublic());
+		assertNull(instance);
 	}
 
 	@Test
@@ -115,7 +112,7 @@ public class FrankClassTest extends TestBase {
 		Arrays.asList(declaredMethods).forEach(m -> actualMethodNames.add(m.getName()));
 		List<String> sortedActualMethodNames = new ArrayList<>(actualMethodNames);
 		sortedActualMethodNames = sortedActualMethodNames.stream().filter(name -> ! name.contains("jacoco")).collect(Collectors.toList());
-		assertArrayEquals(new String[] {"getMyInnerEnum", "myAnnotatedMethod", "packagePrivateMethod", "setInherited", "setVarargMethod"}, sortedActualMethodNames.toArray());
+		assertArrayEquals(new String[] {"getMyInnerEnum", "methodWithoutAnnotations", "myAnnotatedMethod", "setInherited", "setVarargMethod"}, sortedActualMethodNames.toArray());
 	}
 
 	/**
@@ -135,7 +132,7 @@ public class FrankClassTest extends TestBase {
 			.map(FrankMethod::getName)
 			.filter(name -> ! name.contains("jacoco"))
 			.forEach(name -> methodNames.add(name));
-		assertArrayEquals(new String[] {"equals", "getClass", "getInherited", "getMyInnerEnum", "hashCode", "myAnnotatedMethod", "notify", "notifyAll", "setInherited", "setVarargMethod", "toString", "wait"}, new ArrayList<>(methodNames).toArray());
+		assertArrayEquals(new String[] {"equals", "getClass", "getInherited", "getMyInnerEnum", "hashCode", "methodWithoutAnnotations", "myAnnotatedMethod", "notify", "notifyAll", "setInherited", "setVarargMethod", "toString", "wait"}, new ArrayList<>(methodNames).toArray());
 		// Test we have no duplicates
 		Map<String, List<FrankMethod>> methodsByName = Arrays.asList(methods).stream()
 				.filter(m -> methodNames.contains(m.getName()))
@@ -181,5 +178,13 @@ public class FrankClassTest extends TestBase {
 	public void simpleNameOfInnerClassDoesNotContainOuterClassName() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child" + ".MyInnerEnum");
 		assertEquals("MyInnerEnum", clazz.getSimpleName());
+	}
+
+	@Test
+	public void testToString() throws Exception {
+		FrankClass clazz = classRepository.findClass(PACKAGE + "Child" + ".MyInnerEnum");
+		// This method is just for logging. There is no point in ensuring we get a "." instead of a "$".
+		String actual = clazz.toString().replace("$", ".");
+		assertEquals(PACKAGE + "Child" + ".MyInnerEnum", actual);
 	}
 }

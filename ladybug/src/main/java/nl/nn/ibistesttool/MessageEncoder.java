@@ -35,7 +35,7 @@ import nl.nn.testtool.TestTool;
 
 public class MessageEncoder extends MessageEncoderImpl {
 
-	private @Setter @Getter TestTool testTool;	
+	private @Setter @Getter TestTool testTool;
 
 	@Override
 	public ToStringResult toString(Object message, String charset) {
@@ -51,21 +51,21 @@ public class MessageEncoder extends MessageEncoderImpl {
 						try (InputStream inputStream = m.asInputStream()) {
 							IOUtils.copy(new BoundedInputStream(inputStream, testTool.getMaxMessageLength()), baos, testTool.getMaxMessageLength());
 							ToStringResult result = super.toString(baos.toByteArray(), charset);
-							result.setMessageClassName(m.asObject().getClass().getTypeName());
+							result.setMessageClassName(m.getRequestClass().getTypeName());
 							return result;
 						} catch (IOException e) {
-							return super.toString("Could not capture message: ("+ e.getClass().getTypeName()+") "+e.getMessage(), charset);
+							return super.toString(e, null);
 						}
 					} 
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
 						IOUtils.copy(new BoundedReader(reader, testTool.getMaxMessageLength()), writer);
 					} catch (IOException e) {
-						writer.write("Could not capture message: ("+ e.getClass().getTypeName()+") "+e.getMessage());
+						return super.toString(e, null);
 					}
-					return new ToStringResult(writer.toString(), charset, m.asObject().getClass().getTypeName());
+					return new ToStringResult(writer.toString(), null, m.getRequestClass().getTypeName());
 				}
-				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.asObject().getClass().getTypeName());
+				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass().getTypeName());
 			}
 			return super.toString(m.asObject(), charset);
 		}

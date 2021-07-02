@@ -43,7 +43,7 @@ public class IbisMetricsPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {	
-		return new PipeRunResult(getForward(), ProcessMetrics.toXml());
+		return new PipeRunResult(getSuccessForward(), ProcessMetrics.toXml());
 	}
 
 }

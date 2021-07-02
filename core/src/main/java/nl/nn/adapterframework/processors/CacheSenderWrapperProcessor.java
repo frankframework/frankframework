@@ -17,7 +17,7 @@ package nl.nn.adapterframework.processors;
 
 import java.io.IOException;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -34,7 +34,7 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 	
 	@Override
 	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeOutException {
-		ICacheAdapter<String,String> cache=senderWrapperBase.getCache();
+		ICache<String,String> cache=senderWrapperBase.getCache();
 		if (cache==null) {
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}

@@ -151,7 +151,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	private @Getter boolean createTable=false;
 
 	private String host;
-	private @Getter @Setter boolean active=true;
 	private @Getter boolean blobsCompressed=true;
 	private @Getter boolean storeFullMessage=true;
 
@@ -189,7 +188,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	private TransactionDefinition txDef;
 	
 	public JdbcTransactionalStorage() {
-		super();
+		super(null);
 		setTableName("IBISSTORE");
 		setKeyField("MESSAGEKEY");
 		setIdField("MESSAGEID");
@@ -817,7 +816,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	
 	@Override
-	protected S retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	protected S retrieveObject(ResultSet rs, int columnIndex) throws JdbcException {
 		try {
 			if (isBlobsCompressed()) {
 				try {

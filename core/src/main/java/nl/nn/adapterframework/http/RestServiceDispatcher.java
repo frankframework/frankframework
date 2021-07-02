@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018, 2020 Nationale-Nederlanden
+   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,17 +41,13 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
-import nl.nn.adapterframework.pipes.CreateRestViewPipe;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 /**
  * Singleton class that knows about the RestListeners that are active.
  * <br/>
@@ -69,7 +64,6 @@ public class RestServiceDispatcher  {
 	private final String KEY_LISTENER="listener";
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
-	private final String SVG_FILE_NO_IMAGE_AVAILABLE = "/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg";
 
 	private static AppConstants appConstants = AppConstants.getInstance();
 	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
@@ -146,21 +140,6 @@ public class RestServiceDispatcher  {
 		
 		String matchingPattern = findMatchingPattern(uri);
 		if (matchingPattern==null) {
-			if (uri != null && (uri.equals("/showFlowDiagram")
-					|| uri.startsWith("/showFlowDiagram/"))) {
-				log.info("no REST listener configured for uri ["+uri+"], so using 'no image available'");
-				noImageAvailable(httpServletResponse);
-				return "";
-			}
-			if (uri != null && STRUTS_CONSOLE_ENABLED && (uri.equals("/showConfigurationStatus") || uri.startsWith("/showConfigurationStatus/")) ) {
-				log.info("no REST listener configured for uri [" + uri + "], if REST listener does exist then trying to restart");
-				if (RestListenerUtils.restartShowConfigurationStatus(servletContext)) {
-					httpServletResponse.setHeader("REFRESH", "0");
-					return "";
-				} else {
-					return retrieveNoIbisContext(httpServletRequest, servletContext);
-				}
-			}
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
 		}
 		
@@ -320,51 +299,6 @@ public class RestServiceDispatcher  {
 			if (listener instanceof RestListener) {
 				Thread.currentThread().setName(ctName);
 			}
-		}
-	}
-
-	private void noImageAvailable(HttpServletResponse httpServletResponse)
-			throws ListenerException {
-		URL svgSource = ClassUtils.getResourceURL(SVG_FILE_NO_IMAGE_AVAILABLE);
-		if (svgSource == null) {
-			throw new ListenerException("cannot find resource ["
-					+ SVG_FILE_NO_IMAGE_AVAILABLE + "]");
-		}
-		try {
-			httpServletResponse.setContentType("image/svg+xml");
-			InputStream inputStream = null;
-			try {
-				inputStream = svgSource.openStream();
-				Misc.streamToStream(inputStream,
-						httpServletResponse.getOutputStream());
-			} finally {
-				if (inputStream != null) {
-					inputStream.close();
-				}
-			}
-		} catch (IOException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public String retrieveNoIbisContext(HttpServletRequest httpServletRequest, ServletContext servletContext) throws ListenerException {
-		try {
-			CreateRestViewPipe pipe = new CreateRestViewPipe();
-			pipe.setStyleSheetName("xml/xsl/web/noIbisContext.xsl");
-			//pipe.setXslt2(true);
-			PipeForward pipeForward = new PipeForward();
-			pipeForward.setName("success");
-			pipe.registerForward(pipeForward);
-			pipe.configure();
-			pipe.start();
-			PipeLineSession session = new PipeLineSession();
-			session.put(PipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
-			session.put(PipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
-			String result = pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult().asString();
-			pipe.stop();
-			return result;
-		} catch (Exception e) {
-			throw new ListenerException(e);
 		}
 	}
 	

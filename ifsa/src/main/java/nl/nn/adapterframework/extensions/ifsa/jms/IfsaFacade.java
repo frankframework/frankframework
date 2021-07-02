@@ -40,6 +40,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import com.ing.ifsa.IFSAConstants;
 import com.ing.ifsa.IFSAMessage;
@@ -49,6 +50,7 @@ import com.ing.ifsa.IFSAServerQueueSender;
 import com.ing.ifsa.IFSATextMessage;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Base class for IFSA 2.0/2.2 functions.
@@ -81,8 +83,9 @@ import lombok.Getter;
  * @since 4.2
  */
 public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
-    protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
  	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
  	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;

@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -41,11 +39,14 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -55,7 +56,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -73,11 +73,11 @@ public class ConfigurationUtils {
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
 	private static final String CANONICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
+	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.autoDatabaseClassLoader", false);
+	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.database.autoLoad", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
-	public static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = APP_CONSTANTS.getString("ADDITIONAL.PROPERTIES.FILE.SUFFIX", null);
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
 
 	/**
@@ -92,19 +92,19 @@ public class ConfigurationUtils {
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
 		parameters.put("disableValidators", AppConstants.getInstance(configuration.getClassLoader()).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
-		return transformConfiguration(configuration, originalConfig, STUB4TESTTOOL_XSLT, parameters);
+		return transformConfiguration(originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 
-	public static String getActivatedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return transformConfiguration(configuration, originalConfig, ACTIVE_XSLT, null);
+	public static String getActivatedConfiguration(String originalConfig) throws ConfigurationException {
+		return transformConfiguration(originalConfig, ACTIVE_XSLT, null);
 	}
 
-	public static String getCanonicalizedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
-		return transformConfiguration(configuration, originalConfig, CANONICALIZE_XSLT, null);
+	public static String getCanonicalizedConfiguration(String originalConfig) throws ConfigurationException {
+		return transformConfiguration(originalConfig, CANONICALIZE_XSLT, null);
 	}
 
-	public static String transformConfiguration(Configuration configuration, String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
-		URL xsltSource = ClassUtils.getResourceURL(configuration, xslt);
+	public static String transformConfiguration(String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
+		URL xsltSource = ClassUtils.getResourceURL(xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + xslt + "]");
 		}
@@ -150,7 +150,7 @@ public class ConfigurationUtils {
 		return getConfigurationVersion(AppConstants.getInstance(classLoader));
 	}
 
-	private static String getConfigurationVersion(Properties properties) {
+	protected static String getConfigurationVersion(Properties properties) {
 		return getVersion(properties, "configuration.version", "configuration.timestamp");
 	}
 
@@ -172,12 +172,8 @@ public class ConfigurationUtils {
 		return version;
 	}
 
-	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name) throws ConfigurationException {
-		return getConfigFromDatabase(ibisContext, name, null);
-	}
-
-	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String jmsRealm) throws ConfigurationException {
-		return getConfigFromDatabase(ibisContext, name, jmsRealm, null);
+	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String dataSourceName) throws ConfigurationException {
+		return getConfigFromDatabase(ibisContext, name, dataSourceName, null);
 	}
 
 	public static Map<String, Object> getConfigFromDatabase(IbisContext ibisContext, String name, String dataSourceName, String version) throws ConfigurationException {
@@ -188,10 +184,11 @@ public class ConfigurationUtils {
 		if (StringUtils.isEmpty(version)) {
 			version = null; //Make sure this is null when empty!
 		}
+		if(log.isInfoEnabled()) log.info("trying to fetch configuration [{}] version [{}] from database with dataSourceName [{}]", name, version, workdataSourceName);
 
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -213,7 +210,7 @@ public class ConfigurationUtils {
 				rs = stmt.executeQuery();
 			}
 			if (!rs.next()) {
-				log.warn("no configuration found in database with name ["+name+"] version ["+version+"]");
+				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
 				return null;
 			}
 
@@ -227,11 +224,7 @@ public class ConfigurationUtils {
 			configuration.put("CREATED", rs.getString(4));
 			configuration.put("USER", rs.getString(5));
 			return configuration;
-		} catch (SenderException e) {
-			throw new ConfigurationException(e);
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} catch (SQLException e) {
+		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
 			JdbcUtil.fullClose(conn, rs);
@@ -244,81 +237,11 @@ public class ConfigurationUtils {
 	 * @throws ConfigurationException when SQL error occurs or filename validation fails
 	 */
 	public static String addConfigToDatabase(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
-		ConfigurationValidator configDetails = new ConfigurationValidator(file);
+		BuildInfoValidator configDetails = new BuildInfoValidator(file);
 		if(addConfigToDatabase(ibisContext, datasource, activate_config, automatic_reload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
 			return configDetails.getName() +": "+ configDetails.getVersion();
 		}
 		return null;
-	}
-
-	/**
-	 * Validates if the buildinfo is present, and if the name and version properties are set
-	 */
-	public static class ConfigurationValidator {
-		private String name = null;
-		private String version = null;
-		private byte[] jar = null;
-		private String buildInfoFilename = null;
-
-		public ConfigurationValidator(InputStream stream) throws ConfigurationException {
-			String buildInfoFilename = "BuildInfo";
-			if(StringUtils.isNotEmpty(ADDITIONAL_PROPERTIES_FILE_SUFFIX)) {
-				buildInfoFilename += ADDITIONAL_PROPERTIES_FILE_SUFFIX;
-			}
-			this.buildInfoFilename = buildInfoFilename + ".properties";
-
-			try {
-				jar = Misc.streamToBytes(stream);
-
-				read();
-				validate();
-			} catch(IOException e) {
-				throw new ConfigurationException("unable to read jarfile", e);
-			}
-		}
-
-		private void read() throws IOException, ConfigurationException {
-			boolean isBuildInfoPresent = false;
-			try (JarInputStream zipInputStream = new JarInputStream(getJar())) {
-				ZipEntry zipEntry;
-				while ((zipEntry = zipInputStream.getNextJarEntry()) != null) {
-					if (!zipEntry.isDirectory()) {
-						String entryName = zipEntry.getName();
-						String fileName = FilenameUtils.getName(entryName);
-
-						if(buildInfoFilename.equals(fileName)) {
-							name = FilenameUtils.getPathNoEndSeparator(entryName);
-							Properties props = new Properties();
-							props.load(zipInputStream);
-							version = getConfigurationVersion(props);
-
-							isBuildInfoPresent = true;
-							break;
-						}
-					}
-				}
-			}
-			if(!isBuildInfoPresent) {
-				throw new ConfigurationException("no ["+buildInfoFilename+"] present in configuration");
-			}
-		}
-
-		private void validate() throws ConfigurationException {
-			if(StringUtils.isEmpty(name))
-				throw new ConfigurationException("unknown configuration name");
-			if(StringUtils.isEmpty(version))
-				throw new ConfigurationException("unknown configuration version");
-		}
-
-		public InputStream getJar() {
-			return new ByteArrayInputStream(jar);
-		}
-		public String getName() {
-			return name;
-		}
-		public String getVersion() {
-			return version;
-		}
 	}
 
 	public static Map<String, String> processMultiConfigZipFile(IbisContext ibisContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
@@ -353,6 +276,10 @@ public class ConfigurationUtils {
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
+
+		PlatformTransactionManager txManager = ibisContext.getBean("txManager", PlatformTransactionManager.class);
+		TransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		IbisTransaction itx = new IbisTransaction(txManager , txDef, "add config ["+name+"] to database");
 		try {
 			qs.open();
 			conn = qs.getConnection();
@@ -387,13 +314,11 @@ public class ConfigurationUtils {
 			stmt.setObject(7, qs.getDbmsSupport().getBooleanValue(automatic_reload));
 
 			return stmt.executeUpdate() > 0;
-		} catch (SenderException e) {
-			throw new ConfigurationException(e);
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} catch (SQLException e) {
+		} catch (SenderException | JdbcException | SQLException e) {
+			itx.setRollbackOnly();
 			throw new ConfigurationException(e);
 		} finally {
+			itx.commit();
 			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
@@ -523,7 +448,7 @@ public class ConfigurationUtils {
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	public static Map<String, String> retrieveAllConfigNames(IbisContext ibisContext) {
-		Map<String, String> allConfigNameItems = new LinkedHashMap<String, String>();
+		Map<String, String> allConfigNameItems = new LinkedHashMap<>();
 
 		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
 		while (tokenizer.hasMoreTokens()) {
@@ -554,7 +479,7 @@ public class ConfigurationUtils {
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
 			log.info("scanning database for configurations");
 			try {
-				List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext, null);
+				List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext);
 				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
 					log.debug("found database configurations "+dbConfigNames.toString()+"");
 					for (String dbConfigName : dbConfigNames) {
@@ -578,14 +503,14 @@ public class ConfigurationUtils {
 		return allConfigNameItems;
 	}
 
-	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
-		return retrieveConfigNamesFromDatabase(ibisContext, jmsRealm, false);
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext) throws ConfigurationException {
+		return retrieveConfigNamesFromDatabase(ibisContext, false);
 	}
 
-	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm, boolean onlyAutoReload) throws ConfigurationException {
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, boolean onlyAutoReload) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -603,27 +528,11 @@ public class ConfigurationUtils {
 				stringList.add(rs.getString(1));
 			}
 			return stringList;
-		} catch (SenderException e) {
-			throw new ConfigurationException(e);
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} catch (SQLException e) {
+		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
 			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
-	}
-
-	@Deprecated
-	public static String[] retrieveBuildInfo(InputStream inputStream) throws IOException {
-		String name = null;
-		String version = null;
-		try {
-			ConfigurationValidator configDefails = new ConfigurationValidator(inputStream);
-			name = configDefails.getName();
-			version = configDefails.getVersion();
-		} catch (ConfigurationException e) { } //Do nothing
-		return new String[] { name, version };
 	}
 }

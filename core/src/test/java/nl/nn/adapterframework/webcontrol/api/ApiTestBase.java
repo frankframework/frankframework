@@ -41,6 +41,8 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -49,12 +51,21 @@ import org.springframework.mock.web.MockServletContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.pipes.EchoPipe;
+import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public abstract class ApiTestBase<M extends Base> extends Mockito {
+	private Logger log = LogUtil.getLogger(ApiTestBase.class);
 	public enum IbisRole {
 		IbisWebService, IbisObserver, IbisDataAdmin, IbisAdmin, IbisTester;
 	}
@@ -62,30 +73,61 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 	protected MockDispatcher dispatcher = new MockDispatcher();
 	private M jaxRsResource;
 	private SecurityContext securityContext = mock(SecurityContext.class);
+	private Configuration configuration = new TestConfiguration();
 
 	abstract public M createJaxRsResource();
 
 	@Before
 	public void setUp() {
+		ApplicationWarnings.removeInstance(); //Remove old instance if present
 		M resource = createJaxRsResource();
 		checkContextFields(resource);
 		jaxRsResource = spy(resource);
 
-		ConfigurationWarnings globalConfigWarnings = ConfigurationWarnings.getInstance();
-		globalConfigWarnings.clear();
-
 		MockServletContext servletContext = new MockServletContext();
 		MockServletConfig servletConfig = new MockServletConfig(servletContext, "JAX-RS-MockDispatcher");
 		jaxRsResource.servletConfig = servletConfig;
+		jaxRsResource.securityContext = mock(SecurityContext.class);
 		IbisContext ibisContext = mock(IbisContext.class);
-		IbisManager ibisManager = new MockIbisManager();
+		configuration = new TestConfiguration();
+		IbisManager ibisManager = configuration.getIbisManager();
 		ibisManager.setIbisContext(ibisContext);
 		MessageKeeper messageKeeper = new MessageKeeper();
 		doReturn(messageKeeper).when(ibisContext).getMessageKeeper();
 		doReturn(ibisManager).when(ibisContext).getIbisManager();
 		doReturn(ibisContext).when(jaxRsResource).getIbisContext();
+		doReturn(configuration.getBean("applicationWarnings")).when(ibisContext).getBean(eq("applicationWarnings"), any());
+		registerAdapter(configuration);
 
 		dispatcher.register(jaxRsResource);
+	}
+
+	@After
+	public final void tearDown() {
+		if(configuration != null) {
+			configuration.close();
+		}
+	}
+
+	private void registerAdapter(Configuration configuration) {
+		Adapter adapter = new Adapter();
+		adapter.setName("dummyAdapter");
+		try {
+			PipeLine pipeline = new PipeLine();
+			PipeLineExit exit = new PipeLineExit();
+			exit.setPath("EXIT");
+			exit.setState("success");
+			pipeline.registerPipeLineExit(exit);
+			EchoPipe pipe = new EchoPipe();
+			pipe.setName("myPipe");
+			pipeline.addPipe(pipe);
+			adapter.setPipeLine(pipeline);
+			configuration.registerAdapter(adapter);
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			fail("error registering adapter ["+adapter+"] " + e.getMessage());
+		}
+		configuration.getConfigurationWarnings().add((Object) null, log, "hello I am a configuration warning!");
 	}
 
 	//This has to happen before it's proxied by Mockito (spy method)
@@ -288,7 +330,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 				return response;
 			} catch (Exception e) {
 				e.printStackTrace();
-				fail("error dispatching request ["+rsResourceKey+"]");
+				fail("error dispatching request ["+rsResourceKey+"] " + e.getMessage());
 				return null;
 			}
 		}

@@ -12,7 +12,7 @@
 			</exits>
 			<pipe
 				name="HelloWorld"
-				className="nl.nn.adapterframework.pipes.FixedResult"
+				className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				returnString="Hello World"
 				>
 				<forward name="success" path="EXIT"/>
@@ -36,18 +36,17 @@
 				className="nl.nn.adapterframework.receivers.JavaListener"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" slotId="${instance.name}/HelloUniverse_In" />
+				slotId="${instance.name}/HelloUniverse_In" />
 		</receiver>
 		<pipeline firstPipe="HelloUniverse">
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="HelloUniverse"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
 					returnString="Hello, Universe!" />
    				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" 
-					jmsRealm="jdbc" 
 					slotId="${instance.name}/HelloUniverse_Out" />
 				<forward name="success" path="EXIT" />
 			</pipe>

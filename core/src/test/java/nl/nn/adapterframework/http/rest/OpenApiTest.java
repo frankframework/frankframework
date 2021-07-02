@@ -27,7 +27,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "get", null)
-			.setValidator("simple.xsd", null, "user", null)
+			.setInputValidator("simple.xsd", null, "user", null)
 			.addExit("200")
 			.addExit("500")
 			.build(true);
@@ -48,7 +48,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "post", null)
-			.setValidator("simple.xsd", null, "user", null)
+			.setInputValidator("simple.xsd", null, "user", null)
 			.addExit("200")
 			.build(true);
 
@@ -68,7 +68,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "post", null)
-			.setValidator("simple.xsd", null, "user", null)
+			.setInputValidator("simple.xsd", null, "user", null)
 			.addExit("200")
 			.addExit("500", null, "true")
 			.build(true);
@@ -89,7 +89,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri, "get", "operationId")
-			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
 			.addExit("200")
 			.build(true);
 
@@ -113,13 +113,13 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri, "get", null)
-			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
 			.addExit("200")
 			.build(true);
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri, "post", null)
-			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
 			.addExit("200")
 			.build(true);
 
@@ -143,7 +143,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri+"/{pattern}", "get", null)
-			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
 			.addExit("200")
 			.addExit("500")
 			.addExit("403")
@@ -151,7 +151,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri+"/{pattern}/sub/{path}", "post", null)
-			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
 			.addExit("200")
 			.addExit("500")
 			.addExit("403")
@@ -178,7 +178,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String responseRoot = "EnvelopeResponse,EnvelopeError403,EnvelopeError500";
 		new AdapterBuilder("myAdapterName", "each exit have specific element name")
 			.setListener(uri, "get", null)
-			.setValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
 			.addExit("200","EnvelopeResponse","false")
 			.addExit("500","EnvelopeError500", "false")
 			.addExit("403","EnvelopeError403","false")
@@ -186,7 +186,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "200 code will retrieve the ref from first of response root")
 			.setListener(uri+"/test", "get", null)
-			.setValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
 			.addExit("200",null,"false")
 			.addExit("500","EnvelopeError500", "false")
 			.addExit("403","EnvelopeError403","false")
@@ -194,7 +194,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "no element name responseRoot will be used as source for refs")
 			.setListener(uri+"/elementNames", "get", null)
-			.setValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
 			.addExit("200")
 			.addExit("500")
 			.addExit("403")
@@ -202,7 +202,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "403 empty exit")
 			.setListener(uri+"/{pattern}/sub/{path}", "post", null)
-			.setValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
 			.addExit("200")
 			.addExit("500")
 			.addExit("403",null,"true")
@@ -225,21 +225,21 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("listPets", "List all pets")
 			.setListener(uriBase, "get", null)
-			.setValidator("petstore.xsd", null, "Pets", null)
+			.setInputValidator("petstore.xsd", null, "Pets", null)
 			.addExit("200")
 			.addExit("500", "Error", "false")
 			.build(true);
 
 		new AdapterBuilder("createPets", "Create a pet")
 			.setListener(uriBase, "post", null)
-			.setValidator("petstore.xsd", "Pet", "Pet", null)
+			.setInputValidator("petstore.xsd", "Pet", "Pet", null)
 			.addExit("201", null, "true")
 			.addExit("500", "Error", "false")
 			.build(true);
 
 		new AdapterBuilder("showPetById", "Info for a specific pet")
 			.setListener(uriBase+"/{petId}", "get", null)
-			.setValidator("petstore.xsd", null, "Pet", null)
+			.setInputValidator("petstore.xsd", null, "Pet", null)
 			.addExit("200")
 			.addExit("500", "Error", "false")
 			.build(true);
@@ -268,14 +268,14 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri+"users", "get", null)
-			.setValidator("simple.xsd", null, "user", null)
+			.setInputValidator("simple.xsd", null, "user", null)
 			.addExit("200")
 			.addExit("500")
 			.build(true);
 		
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri+"test", "get", null)
-			.setValidator("simple.xsd", null, "user", null)
+			.setInputValidator("simple.xsd", null, "user", null)
 			.addExit("200")
 			.addExit("500")
 			.build(true);
@@ -296,7 +296,7 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri+"/validator", "get", null)
-			.setValidator("simple.xsd", null, "user", null)
+			.setInputValidator("simple.xsd", null, "user", null)
 			.addExit("200")
 			.addExit("500")
 			.build(true);
@@ -324,7 +324,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "get", null, null)
 			.setHeaderParams("envelopeId, envelopeType")
-			.setValidator("simple.xsd", null, "user", null)
+			.setInputValidator("simple.xsd", null, "user", null)
 			.addExit("200")
 			.addExit("500")
 			.build(true);
@@ -414,7 +414,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri, "get", null, null)
 			.setHeaderParams("parameter")
-			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
 			.addExit("200")
 			.build(true);
 
@@ -441,7 +441,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri, "get", null, null)
 			.setMessageIdHeader("x-message-id")
-			.setValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
 			.addExit("200")
 			.build(true);
 
@@ -473,7 +473,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "get", null, null)
 			.setHeaderParams("envelopeId, envelopeType")
-			.setValidator("simple.xsd", null, "user", p)
+			.setInputValidator("simple.xsd", null, "user", p)
 			.addExit("200")
 			.addExit("500")
 			.build(true);
@@ -488,6 +488,69 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/twoHeaderParams.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
+
+	@Test
+	@IsolatedThread
+	public void testOutputValidator() throws Exception {
+		String uri="/outputValidator";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		new AdapterBuilder("myAdapterName", "description4simple-get")
+			.setListener(uri, "get", null, null)
+			.setOutputValidator("simple.xsd", "user")
+			.addExit("200")
+			.addExit("500")
+			.build(true);
+
+		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		String result = callOpenApi(uri);
+		String expected = TestFileUtils.getTestFile("/OpenApi/outputValidator.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
+
+	@Test
+	@IsolatedThread
+	public void testInputOutputValidator() throws Exception {
+		String uri="/outputValidator";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		new AdapterBuilder("myAdapterName", "description4simple-get")
+			.setListener(uri, "post", null, null)
+			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse, EnvelopeError500", null)
+			.setOutputValidator("simple.xsd", "user")
+			.addExit("200")
+			.addExit("500", "EnvelopeError500", "false")
+			.build(true);
+
+		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		String result = callOpenApi(uri);
+		String expected = TestFileUtils.getTestFile("/OpenApi/inputOutputValidators.json");
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
+
+	@Test
+	@IsolatedThread
+	public void testWithoutValidator() throws Exception {
+		String uri="/noValidator";
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		new AdapterBuilder("myAdapterName", "description4simple-get")
+			.setListener(uri, "get", null, null)
+			.addExit("200")
+			.addExit("500")
+			.build(true);
+
+		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
+
+		String result = callOpenApi(uri);
+		String expected = TestFileUtils.getTestFile("/OpenApi/noValidator.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
 }

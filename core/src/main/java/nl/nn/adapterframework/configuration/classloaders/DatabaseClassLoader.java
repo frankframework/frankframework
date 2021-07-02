@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 - 2019 Nationale-Nederlanden
+   Copyright 2016 - 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 public class DatabaseClassLoader extends JarBytesClassLoader {
 
 	private Map<String, Object> configuration;
+	private String dataSourceName = null;
 
 	public DatabaseClassLoader(ClassLoader parent) {
 		super(parent);
@@ -36,7 +37,7 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	protected Map<String, byte[]> loadResources() throws ConfigurationException {
 		Map<String, Object> configuration = null;
 		try { //Make sure there's a database present
-			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), null);
+			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), dataSourceName);
 		}
 		catch (Throwable t) {
 			//Make the error a little bit more IBIS-developer intuitive
@@ -67,5 +68,9 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 
 	public String getCreationDate() {
 		return (String) configuration.get("CREATED");
+	}
+
+	public void setDataSourceName(String dataSourceName) {
+		this.dataSourceName = dataSourceName;
 	}
 }

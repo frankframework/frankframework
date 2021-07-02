@@ -29,14 +29,19 @@ public class DigesterRule {
 	private @Getter @Setter String factory;
 
 	/**
-	 * The 'set-next-rule' attribute.
+	 * The 'set-next-rule' attribute. Register the just-created-object on it's parent.
 	 */
 	private @Getter @Setter String registerMethod;
 
 	/**
-	 * The 'set-top-rule' attribute.
+	 * The 'set-top-rule' attribute. Register the parent on the just-created-object.
 	 */
 	private @Getter @Setter String selfRegisterMethod;
+
+	/**
+	 * The 'registerTextMethod()' attribute. Add the element body text to the parent.
+	 */
+	private @Getter @Setter String registerTextMethod;
 
 	@Override
 	public String toString() {

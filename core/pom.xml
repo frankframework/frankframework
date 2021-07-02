@@ -11,12 +11,16 @@
 	<name>Ibis AdapterFramework core</name>
 
 	<properties>
-		<spring.version>4.3.25.RELEASE</spring.version>
+		<spring.version>5.3.8</spring.version>
 		<j2v8.version>4.6.0</j2v8.version>
 		<cxf.version>3.1.18</cxf.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>credentialprovider</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>net.arnx</groupId>
 			<artifactId>nashorn-promise</artifactId>
@@ -250,11 +254,7 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
-			<version>4.2.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-struts</artifactId>
+			<version>4.2.3</version>
 		</dependency>
 		<dependency><!-- Needed for WsdlUtils. When running with only Woodstox, NullPointerExceptions in System.arraycopy appear,
 		probably due to a mal-initialized writer.  Probably also needed when running on WAS, see comment about SJSXP in XmlUtils.java -->
@@ -272,25 +272,6 @@
 			<groupId>org.apache.ws.security</groupId>
 			<artifactId>wss4j</artifactId>
 			<version>1.5.11</version>
-		</dependency>
-		<dependency>
-			<groupId>axis</groupId>
-			<artifactId>axis</artifactId>
-			<version>1.4</version>
-			<exclusions>
-				<exclusion>
-					<groupId>axis</groupId>
-					<artifactId>axis-jaxrpc</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>axis</groupId>
-					<artifactId>axis-wsdl4j</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>axis</groupId>
-					<artifactId>axis-saaj</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>soap</groupId>
@@ -315,17 +296,7 @@
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
-			<version>1.5.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>net.sf.jsr107cache</groupId>
-					<artifactId>jsr107cache</artifactId>
-				</exclusion>
-				<exclusion><!-- Exclude 3.2 because we need 3.2.2 -->
-					<groupId>commons-collections</groupId>
-					<artifactId>commons-collections</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>2.10.9.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
@@ -415,10 +386,6 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
 			<version>4.5.3</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.htmlcleaner</groupId>
@@ -694,67 +661,6 @@
 					<optional>true</optional>
 				</dependency>
 			</dependencies>
-		</profile>
-		<profile>
-			<id>attachFrankDoc</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.2.0</version>
-						<inherited>false</inherited>
-						<configuration>
-							<doclint>none</doclint>
-							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
-							<docletArtifact>
-								<groupId>org.ibissource</groupId>
-								<artifactId>ibis-adapterframework-frankDoc</artifactId>
-								<version>${project.version}</version>
-							</docletArtifact>
-							<additionalOptions>
-								<additionalOption>-outputDir</additionalOption>
-								<additionalOption>${project.build.directory}/classes/xml/xsd</additionalOption>
-							</additionalOptions>
-							<source>1.8</source>
-							<useStandardDocletOptions>false</useStandardDocletOptions>
-							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
-						</configuration>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<phase>prepare-package</phase>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-								<configuration>
-									<failOnError>false</failOnError>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.projectlombok</groupId>
-						<artifactId>lombok-maven-plugin</artifactId>
-						<version>1.18.16.0</version>
-						<executions>
-							<execution>
-								<phase>generate-sources</phase>
-								<goals>
-									<goal>delombok</goal>
-								</goals>
-								<configuration>
-									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-									<addOutputDirectory>false</addOutputDirectory>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
 		</profile>
 	</profiles>
 </project>

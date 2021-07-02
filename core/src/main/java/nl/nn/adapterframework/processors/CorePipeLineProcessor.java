@@ -21,9 +21,13 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
@@ -45,9 +49,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * @author Jaco de Groot
  */
-public class CorePipeLineProcessor implements PipeLineProcessor {
+public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationContextAware {
 	private Logger log = LogUtil.getLogger(this);
 	private PipeProcessor pipeProcessor;
+	private @Setter ApplicationContext applicationContext;
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
@@ -55,11 +60,8 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		if (message.isEmpty()) {
 			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 				log.debug("running adapterBeforeOnEmptyInput");
-				IAdapter adapter = pipeLine
-						.getAdapter()
-						.getConfiguration()
-						.getIbisManager()
-						.getRegisteredAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
+				IbisManager ibisManager = applicationContext.getBean(IbisManager.class);
+				IAdapter adapter = ibisManager.getRegisteredAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
 				if (adapter == null) {
 					log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
 				} else {
@@ -85,7 +87,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, message, pipeLineSession);
 			if (validationResult!=null) {
-				if (!validationResult.getPipeForward().getName().equals("success")) {
+				if (!validationResult.isSuccessful()) {
 					forwardTarget = pipeLine.resolveForward(inputValidator, validationResult.getPipeForward());
 					log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to validation fault");
 					inputValidateError = true;
@@ -102,7 +104,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			if (inputWrapper!=null) {
 				log.debug("wrapping input");
 				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, message, pipeLineSession);
-				if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+				if (wrapResult!=null && !wrapResult.isSuccessful()) {
 					forwardTarget = pipeLine.resolveForward(inputWrapper, wrapResult.getPipeForward());
 					log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
 				} else {
@@ -157,7 +159,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						if (outputWrapper !=null) {
 							log.debug("wrapping PipeLineResult");
 							PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
-							if (wrapResult!=null && !wrapResult.getPipeForward().getName().equals("success")) {
+							if (wrapResult!=null && !wrapResult.isSuccessful()) {
 								forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
 								log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
 								outputWrapError = true;
@@ -177,7 +179,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 									log.debug("validating PipeLineResult");
 								}
 								PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
-								if (!validationResult.getPipeForward().getName().equals("success")) {
+								if (!validationResult.isSuccessful()) {
 									if (!outputValidationFailed) {
 										outputValidationFailed=true;
 										forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());

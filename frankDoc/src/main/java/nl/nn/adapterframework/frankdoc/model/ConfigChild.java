@@ -28,59 +28,21 @@ import org.apache.logging.log4j.Logger;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.frankdoc.XsdVersion;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
-import nl.nn.adapterframework.frankdoc.doclet.FrankType;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigChild extends ElementChild implements Comparable<ConfigChild> {
+public class ConfigChild extends ElementChild {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
-
-	private static final Comparator<ConfigChild> CONFIG_CHILD_COMPARATOR =
-			Comparator.comparingInt(ConfigChild::getOrder)
-			.thenComparing(c -> c.getElementRole().getRoleName())
-			.thenComparing(c -> c.getElementRole().getElementType().getFullName());
 
 	private static final Comparator<ConfigChild> SINGLE_ELEMENT_ONLY =
 			Comparator.comparing(c -> ! c.isAllowMultiple());
 
 	private static final Comparator<ConfigChild> REMOVE_DUPLICATES_COMPARATOR =
 			SINGLE_ELEMENT_ONLY.thenComparing(c -> ! c.isMandatory());
-
-	static final class SortNode implements Comparable<SortNode> {
-		private static final Comparator<SortNode> SORT_NODE_COMPARATOR =
-				Comparator.comparing(SortNode::getName).thenComparing(sn -> sn.getElementType().getName());
-
-		private @Getter String name;
-		private @Getter boolean documented;
-		private @Getter boolean deprecated;
-		private @Getter FrankType elementType;
-		private @Getter FrankAnnotation ibisDoc;
-
-		SortNode(FrankMethod method) {
-			this.name = method.getName();
-			this.documented = (method.getAnnotation(FrankDocletConstants.IBISDOC) != null);
-			this.deprecated = isDeprecated(method);
-			this.elementType = method.getParameterTypes()[0];
-			try {
-				this.ibisDoc = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
-			} catch(FrankDocException e) {
-				log.warn("Could not @IbisDoc annotation", e);
-			}
-		}
-
-		private static boolean isDeprecated(FrankMethod m) {
-			FrankAnnotation deprecated = m.getAnnotation(FrankDocletConstants.DEPRECATED);
-			return (deprecated != null);
-		}
-
-		@Override
-		public int compareTo(SortNode other) {
-			return SORT_NODE_COMPARATOR.compare(this, other);
-		}
-	}
 
 	@EqualsAndHashCode(callSuper = false)
 	static final class Key extends AbstractKey {
@@ -94,7 +56,7 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 
 		@Override
 		public String toString() {
-			return "(roleName=" + roleName + ", elementType=" + elementType + ")";
+			return "(roleName=" + roleName + ", elementType=" + elementType.getFullName() + ")";
 		}
 	}
 
@@ -104,11 +66,40 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	private String methodName;
 	private boolean isOverrideMeaningfulLogged = false;
 
-	ConfigChild(FrankElement owningElement, SortNode sortNode) {
+	ConfigChild(FrankElement owningElement, FrankMethod method) {
 		super(owningElement);
-		setDocumented(sortNode.isDocumented());
-		setDeprecated(sortNode.isDeprecated());
-		this.methodName = sortNode.name;
+		setDocumented(isDocumented(method));
+		setDeprecated(isDeprecated(method));
+		log.trace("ConfigChild of method {} has documented={}, deprecated={}", () -> method.toString(), () -> isDocumented(), () -> isDeprecated());
+		this.methodName = method.getName();
+		setJavaDocBasedDescriptionAndDefault(method);
+		FrankAnnotation ibisDoc = getIbisDoc(method);
+		if(ibisDoc != null) {
+			try {
+				parseIbisDocAnnotation(ibisDoc);
+			} catch(FrankDocException e) {
+				log.warn("Could not parse IbisDoc annotation of method {}", method.toString(), e);
+			}
+		}
+	}
+
+	private static boolean isDocumented(FrankMethod m) {
+		return (m.getAnnotation(FrankDocletConstants.IBISDOC) != null) || (m.getJavaDoc() != null);
+	}
+
+	private static boolean isDeprecated(FrankMethod m) {
+		FrankAnnotation deprecated = m.getAnnotation(FrankDocletConstants.DEPRECATED);
+		return (deprecated != null);
+	}
+
+	private static FrankAnnotation getIbisDoc(FrankMethod method) {
+		FrankAnnotation result = null;
+		try {
+			result = method.getAnnotationInludingInherited(FrankDocletConstants.IBISDOC);
+		} catch(FrankDocException e) {
+			log.warn("Could not @IbisDoc annotation or could not obtain JavaDoc for method {}", method, e);
+		}
+		return result;
 	}
 
 	@Override
@@ -122,11 +113,6 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 
 	public ElementType getElementType() {
 		return elementRole.getElementType();
-	}
-
-	@Override
-	public int compareTo(ConfigChild other) {
-		return CONFIG_CHILD_COMPARATOR.compare(this, other);
 	}
 
 	/**
@@ -152,16 +138,17 @@ public class ConfigChild extends ElementChild implements Comparable<ConfigChild>
 	 * have a config child for the {@link ElementRole}.
 	 */
 	static List<ConfigChild> removeDuplicates(List<ConfigChild> orig) {
+		List<Key> keySequence = orig.stream().map(Key::new).collect(Collectors.toList());
 		Map<Key, List<ConfigChild>> byKey = orig.stream().collect(Collectors.groupingBy(Key::new));
 		List<ConfigChild> result = new ArrayList<>();
-		for(Key key: byKey.keySet()) {
+		for(Key key: keySequence) {
 			List<ConfigChild> bucket = new ArrayList<>(byKey.get(key));
 			Collections.sort(bucket, REMOVE_DUPLICATES_COMPARATOR);
 			ConfigChild selected = bucket.get(0);
 			result.add(selected);
 			if(selected.isDeprecated()) {
-				log.warn("From duplicate config children, only a deprecated one is selected. In strict.xsd, {} will not have a config child for ElementRole {}",
-						() -> selected.getOwningElement().getFullName(), () -> selected.getElementRole().toString());
+				log.warn("From duplicate config children, only a deprecated one is selected. In mode {}, {} will not have a config child for ElementRole {}",
+						() -> XsdVersion.STRICT, () -> selected.getOwningElement().getFullName(), () -> selected.getElementRole().toString());
 			}
 			if(log.isTraceEnabled() && (bucket.size() >= 2)) {
 				for(ConfigChild omitted: bucket.subList(1, bucket.size())) {

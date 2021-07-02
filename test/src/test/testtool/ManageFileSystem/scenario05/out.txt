@@ -1,0 +1,16 @@
+<manageFileSystemRLY>
+	<completionInformation>
+		<returnCode>NOT_OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<exception>unable to process [null] action for File [null]: Remove directory for [TESTDATA_DIR/ManageFileSystem] has failed. Directory does not exist.</exception>
+		</result>
+		<result item="2">
+TESTDATA_DIR/ManageFileSystem
+</result>
+		<result item="3">
+TESTDATA_DIR/ManageFileSystem
+</result>
+	</results>
+</manageFileSystemRLY>

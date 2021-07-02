@@ -36,12 +36,14 @@ import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
+import nl.nn.credentialprovider.util.Misc;
 
 
 /**
@@ -194,15 +196,15 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			setName("Receiver ["+receiver.getName()+"]");
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {
-			IPullingListener<M> listener = null;
+			final IPullingListener<M> listener = (IPullingListener<M>) receiver.getListener();
 			Map<String,Object> threadContext = null;
 			boolean pollTokenReleased=false;
 			try {
 				threadsRunning.increase();
 				if (receiver.isInRunState(RunStateEnum.STARTED)) {
-					listener = (IPullingListener<M>) receiver.getListener();
 					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
 						inProcessStateManager = (IHasProcessState<M>)listener;
 					}
@@ -212,6 +214,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					}
 					M rawMessage = null;
 					TransactionStatus txStatus = null;
+					boolean successfullyProcessed = false;
+					boolean tooManyRetries = false;
+					String messageId = null;
 					try { //  doesn't catch anything, rolls back transaction in finally clause when required
 						try {
 							try {
@@ -251,7 +256,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 
 							if (inProcessStateManager!=null) {
-								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS))==null) {
+								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS, "start processing"))==null) {
 									if (txStatus!=null) {
 										txManager.rollback(txStatus);
 									}
@@ -264,6 +269,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									txManager.commit(txStatus);
 									if (receiver.isTransacted()) {
 										txStatus = txManager.getTransaction(txNew);
+									} else {
+										txStatus = null;
 									}
 								}
 							}
@@ -279,20 +286,38 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								pollToken.release();
 							}
 						}
+
 						try {
-							receiver.processRawMessage(listener, rawMessage, threadContext);
+							if (receiver.getMaxRetries()>=0) {
+								messageId = listener.getIdFromRawMessage(rawMessage, threadContext);
+								String correlationId = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+								final M rawMessageFinal = rawMessage;
+								final Map<String,Object> threadContextFinal = threadContext;
+								if (receiver.hasProblematicHistory(messageId, false, rawMessage, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), threadContext, correlationId) ) {
+									tooManyRetries = true;
+								}
+							}
+							if (!tooManyRetries || receiver.isSupportProgrammaticRetry()) {
+								receiver.processRawMessage(listener, rawMessage, threadContext, true);
+								successfullyProcessed = true;
+							}
 							if (txStatus != null) {
 								if (txStatus.isRollbackOnly()) {
+									successfullyProcessed = false;
 									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
-									rollBack(txStatus, rawMessage);
+									rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
 								} else {
 									txManager.commit(txStatus);
 								}
+								txStatus = null;
 							}
 						} catch (Exception e) {
+							receiver.error("caught Exception processing message", e);
 							try {
 								if (txStatus != null && !txStatus.isCompleted()) {
-									rollBack(txStatus, rawMessage);
+									successfullyProcessed = false;
+									rollBack(txStatus, rawMessage, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
+									txStatus = null;
 								}
 							} catch (Exception e2) {
 								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
@@ -306,11 +331,23 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
-							rollBack(txStatus, rawMessage);
+							successfullyProcessed = false;
+							rollBack(txStatus, rawMessage, "Rollback because transaction has terminated unexpectedly");
+							txStatus = null;
+						}
+					}
+					if (!successfullyProcessed && inProcessStateManager!=null) {
+						txStatus = receiver.isTransacted() || receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED ? txManager.getTransaction(txNew) : null;
+						ProcessState targetState = tooManyRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
+						String errorMessage = Misc.concatStrings(tooManyRetries? "too many retries":null, "; ", receiver.getCachedErrorMessage(messageId));
+						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
+						if (txStatus!=null) {
+							txManager.commit(txStatus);
+							txStatus = null;
 						}
 					}
 				}
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				receiver.error("error occured", e);
 			} finally {
 				processToken.release();
@@ -322,20 +359,20 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					try {
 						listener.closeThread(threadContext);
 					} catch (ListenerException e) {
-						receiver.error("Exception closing listener", e);
+						receiver.error("Exception closing listener thread", e);
 					}
 				}
 				ThreadContext.removeStack(); //Cleanup the MDC stack that was created during message processing
 			}
 		}
 
-		private void rollBack(TransactionStatus txStatus, M rawMessage) throws ListenerException {
+		private void rollBack(TransactionStatus txStatus, M rawMessage, String reason) throws ListenerException {
 			try {
 				txManager.rollback(txStatus);
 			} finally {
 				if (inProcessStateManager!=null) {
 					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
-					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE);
+					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE, reason);
 					txManager.commit(txStatusRevert);
 				}
 			}

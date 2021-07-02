@@ -1,0 +1,98 @@
+<module>
+	<adapter name="ReceiverTest">
+		<receiver
+				maxRetries="1"
+				pollInterval="1"
+				transactionTimeout="30">
+			<listener name="NonTransacted, No InProcess"
+						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						tableName="IBISTEMP"
+						statusField="TCHAR"
+						timestampField="TTIMESTAMP"
+						commentField="TVARCHAR"
+						maxCommentLength="100"
+						selectCondition="TNUMBER=${jdbc.receivertest.key}0"
+						statusValueAvailable="A"
+						statusValueProcessed="D"
+						statusValueError="E"
+						keyField="tkey"/>
+		</receiver>
+		<receiver
+				maxRetries="1"
+				pollInterval="1"
+				transactionTimeout="30">
+			<listener name="NonTransacted, InProcess"
+						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						tableName="IBISTEMP"
+						statusField="TCHAR"
+						timestampField="TTIMESTAMP"
+						commentField="TVARCHAR"
+						maxCommentLength="100"
+						selectCondition="TNUMBER=${jdbc.receivertest.key}1"
+						statusValueAvailable="A"
+						statusValueInProcess="I"
+						statusValueProcessed="D"
+						statusValueError="E"
+						keyField="tkey"/>
+		</receiver>
+		<receiver
+				maxRetries="1"
+				transactionAttribute="Required"
+				supportProgrammaticRetry="true"
+				pollInterval="1"
+				transactionTimeout="30">
+			<listener name="Transacted, No InProcess"
+						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						tableName="IBISTEMP"
+						statusField="TCHAR"
+						timestampField="TTIMESTAMP"
+						commentField="TVARCHAR"
+						maxCommentLength="100"
+						selectCondition="TNUMBER=${jdbc.receivertest.key}2"
+						statusValueAvailable="A"
+						statusValueProcessed="D"
+						statusValueError="E"
+						keyField="tkey"/>
+		</receiver>
+		<receiver
+				maxRetries="1"
+				transactionAttribute="Required"
+				supportProgrammaticRetry="true"
+				pollInterval="1"
+				transactionTimeout="30">
+			<listener name="Transacted, InProcess"
+						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						tableName="IBISTEMP"
+						statusField="TCHAR"
+						timestampField="TTIMESTAMP"
+						commentField="TVARCHAR"
+						maxCommentLength="100"
+						selectCondition="TNUMBER=${jdbc.receivertest.key}3"
+						statusValueAvailable="A"
+						statusValueInProcess="I"
+						statusValueProcessed="D"
+						statusValueError="E"
+						keyField="tkey"/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+				<exit path="ERROR" state="error"/>
+			</exits>
+
+			<pipe name="CallbackTesttool">
+				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+					serviceName="testtool-receivertest" />
+			</pipe>
+			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@forward" >
+				<forward name="ready" path="READY"/>
+				<forward name="error" path="ERROR"/>
+			</pipe>
+			
+
+		</pipeline>
+	</adapter>
+
+
+</module>

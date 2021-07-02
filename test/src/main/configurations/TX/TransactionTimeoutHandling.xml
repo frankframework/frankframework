@@ -4,8 +4,6 @@
 		description="Adapter for testing transactionTimeout handling. (Transacted)"
 	>
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GenericReceiverTransactionTimeoutHandlingTransacted"
 			transactionTimeout="2"
 			transactionAttribute="Required"
 		>
@@ -15,7 +13,6 @@
 				serviceName="ibis4test-TransactionTimeoutHandlingTransacted"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" 
 				slotId="${applicationId}/GenericReceiverTransactionTimeoutHandlingTransacted"
 			/>
 		</receiver>
@@ -75,8 +72,6 @@
 		description="Adapter for testing transactionTimeout handling. (Non transacted)"
 	>
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GenericReceiverTransactionTimeoutHandlingNonTransacted"
 			transactionTimeout="2"
 		>
 			<listener

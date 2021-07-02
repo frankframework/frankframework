@@ -13,6 +13,9 @@
 
 	<bean name="lifecycleProcessor" class="nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor" />
 
+	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigurationWarnings" />
+	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
+
 	<bean
 		name="adapterManager"
 		class="nl.nn.adapterframework.configuration.AdapterManager"
@@ -30,4 +33,8 @@
 	<bean id="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" lazy-init="true" />
 
 	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
+	<bean name="flowGenerator" class="nl.nn.adapterframework.testutil.DummyFlowGenerator" scope="prototype" lazy-init="true" />
+
+	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.URLDataSourceFactory" />
 </beans>

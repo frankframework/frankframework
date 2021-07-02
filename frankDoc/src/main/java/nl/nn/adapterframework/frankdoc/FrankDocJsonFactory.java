@@ -28,12 +28,14 @@ import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.frankdoc.model.AttributeType;
 import nl.nn.adapterframework.frankdoc.model.AttributeValues;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
+import nl.nn.adapterframework.frankdoc.model.ElementType;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.frankdoc.model.FrankDocGroup;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
@@ -43,11 +45,15 @@ import nl.nn.adapterframework.util.LogUtil;
 public class FrankDocJsonFactory {
 	private static Logger log = LogUtil.getLogger(FrankDocJsonFactory.class);
 
+	private static final String DESCRIPTION_HEADER = "descriptionHeader";
+
 	private FrankDocModel model;
 	private JsonBuilderFactory bf;
+	List<FrankElement> elementsOutsideChildren;
 
 	public FrankDocJsonFactory(FrankDocModel model) {
 		this.model = model;
+		elementsOutsideChildren = new ArrayList<>(model.getElementsOutsideConfigChildren());
 		bf = Json.createBuilderFactory(null);
 	}
 
@@ -55,6 +61,7 @@ public class FrankDocJsonFactory {
 		try {
 			JsonObjectBuilder result = bf.createObjectBuilder();
 			result.add("groups", getGroups());
+			result.add("types", getTypes());
 			result.add("elements", getElements());
 			return result.build();
 		} catch(JsonException e) {
@@ -65,7 +72,7 @@ public class FrankDocJsonFactory {
 
 	private JsonArray getGroups() throws JsonException {
 		JsonArrayBuilder result = bf.createArrayBuilder();
-		for(FrankDocGroup group: model.getGroups().values()) {
+		for(FrankDocGroup group: model.getGroups()) {
 			result.add(getGroup(group));
 		}
 		return result.build();
@@ -74,11 +81,42 @@ public class FrankDocJsonFactory {
 	private JsonObject getGroup(FrankDocGroup group) throws JsonException {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", group.getName());
-		result.add("category", group.getCategory());
+		final JsonArrayBuilder types = bf.createArrayBuilder();
+		group.getElementTypes().stream()
+				.map(ElementType::getFullName)
+				.forEach(types::add);
+		if(group.getName().equals(FrankDocGroup.GROUP_NAME_OTHER)) {
+			elementsOutsideChildren.forEach(f -> types.add(f.getFullName()));
+		}
+		result.add("types", types);
+		return result.build();
+	}
+
+	private JsonArray getTypes() {
+		JsonArrayBuilder result = bf.createArrayBuilder();
+		List<ElementType> sortedTypes = new ArrayList<>(model.getAllTypes().values());
+		Collections.sort(sortedTypes);
+		for(ElementType elementType: sortedTypes) {
+			result.add(getType(elementType));
+		}
+		elementsOutsideChildren.forEach(f -> result.add(getNonChildType(f)));
+		return result.build();
+	}
+
+	private JsonObject getType(ElementType elementType) {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", elementType.getFullName());
 		final JsonArrayBuilder members = bf.createArrayBuilder();
-		group.getElements().stream()
-				.map(FrankElement::getFullName)
-				.forEach(members::add);
+		elementType.getSyntax2Members().forEach(f -> members.add(f.getFullName()));
+		result.add("members", members);
+		return result.build();
+	}
+
+	private JsonObject getNonChildType(FrankElement frankElement) {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", frankElement.getFullName());
+		final JsonArrayBuilder members = bf.createArrayBuilder();
+		members.add(frankElement.getFullName());
 		result.add("members", members);
 		return result.build();
 	}
@@ -103,12 +141,19 @@ public class FrankDocJsonFactory {
 		if(frankElement.isDeprecated()) {
 			result.add("deprecated", frankElement.isDeprecated());
 		}
+		addDescriptionHeader(result, frankElement.getDescriptionHeader());
 		addIfNotNull(result, "parent", getParentOrNull(frankElement));
 		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
 		frankElement.getXmlElementNames().forEach(xmlElementNames::add);
 		result.add("elementNames", xmlElementNames);
-		result.add("attributes", getAttributes(frankElement));
-		result.add("children", getConfigChildren(frankElement));
+		JsonArray attributes = getAttributes(frankElement);
+		if(! attributes.isEmpty()) {
+			result.add("attributes", attributes);
+		}
+		JsonArray configChildren = getConfigChildren(frankElement);
+		if(! configChildren.isEmpty()) {
+			result.add("children", configChildren);
+		}
 		return result.build();
 	}
 
@@ -155,6 +200,12 @@ public class FrankDocJsonFactory {
 		}
 	}
 
+	private void addDescriptionHeader(JsonObjectBuilder builder, String value) {
+		if(! StringUtils.isBlank(value)) {
+			builder.add(DESCRIPTION_HEADER, value.replaceAll("\"", "\\\\\\\""));
+		}
+	}
+
 	private JsonArray getValues(AttributeValues vl) {
 		final JsonArrayBuilder result = bf.createArrayBuilder();
 		vl.getValues().forEach(value -> result.add(value));
@@ -179,8 +230,8 @@ public class FrankDocJsonFactory {
 		}
 		result.add("multiple", child.isAllowMultiple());
 		result.add("roleName", child.getElementRole().getRoleName());
-		result.add("group", child.getElementRole().getElementType().getFrankDocGroup().getName());
 		addIfNotNull(result, "description", child.getDescription());
+		result.add("type", child.getElementType().getFullName());
 		return result.build();
 	}
 }

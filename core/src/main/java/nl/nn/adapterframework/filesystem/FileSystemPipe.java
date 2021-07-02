@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -115,7 +116,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return actor.provideOutputStream(session, getNextPipe());
 	}
 
@@ -137,23 +138,20 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
 			Map<String, PipeForward> forwards = getForwards();
-			if (forwards!=null && forwards.containsKey("exception")) {
-				return new PipeRunResult(getForwards().get("exception"), e.getMessage());
+			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
+				return new PipeRunResult(getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), e.getMessage());
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
 		if (result!=null) {
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(getSuccessForward(), result);
 		}
-		return new PipeRunResult(getForward(), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		if (getFileSystem() instanceof HasPhysicalDestination) {
-			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
-		}
-		return null;
+		return getFileSystem().getPhysicalDestinationName();
 	}
 
 	public FS getFileSystem() {
@@ -222,18 +220,38 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		actor.setBase64(base64);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
+	public void setWildCard(String wildcard) {
+		setWildcard(wildcard);
+	}
 	@IbisDocRef({"10", FILESYSTEMACTOR})
-	public void setWildCard(String wildCard) {
-		actor.setWildCard(wildCard);
+	public void setWildcard(String wildcard) {
+		actor.setWildcard(wildcard);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
+	public void setExcludeWildCard(String excludeWildcard) {
+		setExcludeWildcard(excludeWildcard);
+	}
 	@IbisDocRef({"11", FILESYSTEMACTOR})
-	public void setExcludeWildCard(String excludeWildCard) {
-		actor.setExcludeWildCard(excludeWildCard);
+	public void setExcludeWildcard(String excludeWildcard) {
+		actor.setExcludeWildcard(excludeWildcard);
 	}
 
 	@IbisDocRef({"12", FILESYSTEMACTOR})
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
+	}
+
+	@IbisDocRef({"13", FILESYSTEMACTOR})
+	public void setWriteLineSeparator(boolean writeLineSeparator) {
+		actor.setWriteLineSeparator(writeLineSeparator);
+	}
+
+	@IbisDocRef({"14", FILESYSTEMACTOR})
+	public void setCharset(String charset) {
+		actor.setCharset(charset);
 	}
 }

@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -24,8 +24,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -37,7 +39,10 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
+import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -55,15 +60,16 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.Adapter
  */
-public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware {
+public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Boolean autoStart = null;
+	private boolean enabledAutowiredPostProcessing = false;
 
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
 
-	private boolean unloadInProgressOrDone = false;
+	private BootState state = BootState.STOPPED;
 
 	private String version;
 	private IbisManager ibisManager;
@@ -73,7 +79,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter @Setter boolean configured = false;
 
 	private ConfigurationException configurationException = null;
-	private BaseConfigurationWarnings configurationWarnings = new BaseConfigurationWarnings();
 
 	private Date statisticsMarkDateMain=new Date();
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
@@ -139,6 +144,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		setParent(applicationContext);
 	}
 
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return this;
+	}
+
 	/**
 	 * Spring's configure method.
 	 * Only called when the Configuration has been added through a parent context!
@@ -161,6 +171,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		super.afterPropertiesSet(); //Triggers a context refresh
 
+		if(enabledAutowiredPostProcessing) {
+			//Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+			AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+			postProcessor.setAutowiredAnnotationType(Autowired.class);
+			postProcessor.setBeanFactory(getBeanFactory());
+			getBeanFactory().addBeanPostProcessor(postProcessor);
+		}
+
 		ibisManager.addConfiguration(this); //Only if successfully refreshed, add the configuration
 		log.info("initialized Configuration [{}] with ClassLoader [{}]", ()-> toString(), ()-> getClassLoader());
 	}
@@ -181,6 +199,19 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 	}
 
+	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
+	@Override
+	public String[] getBeanNamesForType(Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
+		if(type.isAssignableFrom(ApplicationListener.class)) {
+			List<String> blacklist = Arrays.asList(super.getBeanNamesForType(LazyLoadingEventListener.class, includeNonSingletons, allowEagerInit));
+			List<String> beanNames = Arrays.asList(super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit));
+			log.info("removing LazyLoadingEventListeners "+blacklist+" from Spring auto-magic event-based initialization");
+
+			return beanNames.stream().filter(str -> !blacklist.contains(str)).toArray(String[]::new);
+		}
+		return super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit);
+	}
+
 	/**
 	 * Spring method which starts the ApplicationContext.
 	 * Loads + digests the configuration and calls start() in all registered 
@@ -192,6 +223,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
 		super.start();
+		state = BootState.STARTED;
 	}
 
 	/**
@@ -200,6 +232,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void configure() {
 		log.info("configuring configuration ["+getId()+"]");
+		state = BootState.STARTING;
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
@@ -211,7 +244,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
 		try {
 			flowDiagramManager.generate(this);
-		} catch (IOException e) { //Don't throw an exception when generating the flow fails
+		} catch (Exception e) { //Don't throw an exception when generating the flow fails
 			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
 		}
 
@@ -226,9 +259,26 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	@Override
 	public void close() {
-		setUnloadInProgressOrDone(true); //Marks Configuration as inactive
+		try {
+			state = BootState.STOPPING;
+			super.close();
+		} finally {
+			state = BootState.STOPPED;
+		}
+	}
 
-		super.close();
+	public boolean isUnloadInProgressOrDone() {
+		return inState(BootState.STOPPING) || inState(BootState.STOPPED);
+	}
+
+	@Override
+	public boolean isRunning() {
+		return inState(BootState.STARTED) && super.isRunning();
+	}
+
+	@Override
+	public BootState getState() {
+		return state;
 	}
 
 	public void setAutoStart(boolean autoStart) {
@@ -286,22 +336,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		adapterManager.removeStopAdapterThread(runnable);
 	}
 
-	public boolean isUnloadInProgressOrDone() {
-		return unloadInProgressOrDone;
-	}
-
-	public void setUnloadInProgressOrDone(boolean unloadInProgressOrDone) {
-		this.unloadInProgressOrDone = unloadInProgressOrDone;
-	}
-
 	/**
 	 * Register an adapter with the configuration.
 	 */
 	public void registerAdapter(Adapter adapter) {
-		if (!adapter.isActive()) {
-			log.debug("adapter [" + adapter.getName() + "] is not active, therefore not included in configuration");
-			return;
-		}
 		adapter.setConfiguration(this);
 		adapterManager.registerAdapter(adapter);
 
@@ -331,12 +369,20 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	@Override
 	public void setName(String name) {
-		setId(name);
+		if(StringUtils.isNotEmpty(name)) {
+			setId(name); //ID should never be NULL
+		}
 	}
 
 	@Override
 	public String getName() {
 		return getId();
+	}
+
+	@Deprecated
+	@ConfigurationWarning("Please use attribute name instead")
+	public void setConfigurationName(String name) {
+		this.setName(name);
 	}
 
 	public void setVersion(String version) {
@@ -366,7 +412,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getClassLoader().getClass().getSimpleName();
 	}
 
-	@Autowired
 	public void setIbisManager(IbisManager ibisManager) {
 		this.ibisManager = ibisManager;
 	}
@@ -407,12 +452,27 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return configurationException;
 	}
 
-	public BaseConfigurationWarnings getConfigurationWarnings() {
-		return configurationWarnings;
+	public ConfigurationWarnings getConfigurationWarnings() {
+		if(isActive()) {
+			return getBean("configurationWarnings", ConfigurationWarnings.class);
+		}
+
+		return null;
+	}
+
+	// Dummy setter to allow JmsRealms being added to Configurations via FrankDoc.xsd
+	public void registerJmsRealm(JmsRealm realm) {
+		JmsRealmFactory.getInstance().registerJmsRealm(realm);
 	}
 
 	@Override
 	public ClassLoader getConfigurationClassLoader() {
 		return getClassLoader();
+	}
+
+	@Override
+	public void setBeanName(String name) {
+		super.setBeanName(name);
+		setDisplayName("ConfigurationContext [" + name + "]");
 	}
 }

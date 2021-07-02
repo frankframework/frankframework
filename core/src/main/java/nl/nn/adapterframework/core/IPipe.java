@@ -18,6 +18,7 @@ package nl.nn.adapterframework.core;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.pipes.FixedResultPipe;
 import nl.nn.adapterframework.stream.Message;
 
@@ -26,7 +27,9 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Johan Verrips
  */
-public interface IPipe extends INamedObject, IForwardTarget {
+@FrankDocGroup(order = 10, name = "Pipes")
+public interface IPipe extends IConfigurable, IForwardTarget {
+
 	/**
 	 * <code>configure()</code> is called once after the {@link PipeLine} is registered
 	 * at the {@link Adapter}. Purpose of this method is to reduce
@@ -34,6 +37,7 @@ public interface IPipe extends INamedObject, IForwardTarget {
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
 	 */ 
+	@Override
 	void configure() throws ConfigurationException;
 
 	/**

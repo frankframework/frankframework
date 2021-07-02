@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,8 +34,19 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 	@Override
 	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		Message senderInput=message;
+		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreInputInSessionKey())) {
+			try {
+				message.preserve();
+			} catch (IOException e) {
+				throw new SenderException("Could not preserve input",e);
+			}
+			session.put(senderWrapperBase.getStoreInputInSessionKey(), message);
+		}
 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
-			senderInput=Message.asMessage(session.get(senderWrapperBase.getGetInputFromSessionKey()));
+			if (!session.containsKey(senderWrapperBase.getGetInputFromSessionKey())) {
+				throw new SenderException("getInputFromSessionKey ["+senderWrapperBase.getGetInputFromSessionKey()+"] is not present in session");
+			}
+			senderInput=session.getMessage(senderWrapperBase.getGetInputFromSessionKey());
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
 		} else {
 			if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromFixedValue())) {

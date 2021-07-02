@@ -21,9 +21,8 @@ import com.sap.conn.jco.JCoException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -70,8 +69,8 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 	@Override
-	public void configure(PipeLine pipeline) throws ConfigurationException {
-		super.configure(pipeline);
+	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getAction())) {
 			throw new ConfigurationException("action should be specified, it must be one of: "+
 				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
@@ -84,7 +83,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
 		}
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
-			pipeline.registerExitHandler(this);
+			getPipeLine().registerExitHandler(this);
 		}
 		if (StringUtils.isEmpty(getLuwHandleSessionKey())) {
 			throw new ConfigurationException("action should be specified, it must be one of: "+
@@ -157,7 +156,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 				throw new PipeRunException(this, "release: could not release handle", e);
 			}
 		} 
-		return new PipeRunResult(getForward(),message);
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 
 

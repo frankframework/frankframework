@@ -19,9 +19,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -43,7 +43,7 @@ public class TransactionAttributes implements HasTransactionAttribute {
 		if (isTransacted(transactionAttribute) && transactionTimeout>0) {
 			Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
 			if (maximumTransactionTimeout != null && transactionTimeout > maximumTransactionTimeout) {
-				ConfigurationWarnings.add(null, log, "transaction timeout ["+transactionTimeout+"] exceeds the maximum transaction timeout ["+maximumTransactionTimeout+"]");
+				ApplicationWarnings.add(log, "transaction timeout ["+transactionTimeout+"] exceeds the maximum transaction timeout ["+maximumTransactionTimeout+"]");
 			}
 		}
 
@@ -65,6 +65,7 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	}
 
 	@Override
+	@Deprecated
 	public void setTransactionAttributeNum(int i) {
 		transactionAttribute = i;
 	}

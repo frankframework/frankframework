@@ -3,15 +3,20 @@ package nl.nn.adapterframework.frankdoc.doclet;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
 
 import com.sun.javadoc.ClassDoc;
 
 import nl.nn.adapterframework.frankdoc.doclet.classdocs.EasyDoclet;
 
-final class TestUtil {
+public final class TestUtil {
 	private static final Properties BUILD_PROPERTIES = new TestUtil().loadBuildProperties();
 	private static final File TEST_SOURCE_DIRECTORY = new File(BUILD_PROPERTIES.getProperty("testSourceDirectory"));
+
+	static final String JAVADOC_GROUP_ANNOTATION = "nl.nn.adapterframework.doc.FrankDocGroup";
+	static final String JAVADOC_DEFAULT_VALUE_TAG = "@ff.default";
 
 	private TestUtil() {
 	}
@@ -24,6 +29,11 @@ final class TestUtil {
 			}
 		}
 		return null;
+	}
+
+	public static FrankClassRepository getFrankClassRepositoryDoclet(String ...packages) {
+		ClassDoc[] classes = getClassDocs(packages);
+		return FrankClassRepository.getDocletInstance(classes, new HashSet<>(Arrays.asList(packages)), new HashSet<>(), new HashSet<>());
 	}
 
 	public static ClassDoc[] getClassDocs(String ...packages) {

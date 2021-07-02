@@ -32,6 +32,7 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
  
 public class UtilsTest {
 	private static final String SIMPLE = "nl.nn.adapterframework.frankdoc.testtarget.simple";
@@ -39,7 +40,7 @@ public class UtilsTest {
 
 	@Before
 	public void setUp() {
-		repository = FrankClassRepository.getReflectInstance(SIMPLE);
+		repository = TestUtil.getFrankClassRepositoryDoclet(SIMPLE);
 	}
 
 	@Test

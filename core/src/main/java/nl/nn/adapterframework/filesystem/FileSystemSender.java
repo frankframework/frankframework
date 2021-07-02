@@ -18,6 +18,7 @@ package nl.nn.adapterframework.filesystem;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -131,15 +132,10 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		}
 	}
 
-
 	@Override
 	public String getPhysicalDestinationName() {
-		if (getFileSystem() instanceof HasPhysicalDestination) {
-			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
-		}
-		return null;
+		return getFileSystem().getPhysicalDestinationName();
 	}
-
 
 	public void setFileSystem(FS fileSystem) {
 		this.fileSystem=fileSystem;
@@ -208,18 +204,38 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		actor.setBase64(base64);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
+	public void setWildCard(String wildcard) {
+		setWildcard(wildcard);
+	}
 	@IbisDocRef({"10", FILESYSTEMACTOR})
-	public void setWildCard(String wildCard) {
-		actor.setWildCard(wildCard);
+	public void setWildcard(String wildcard) {
+		actor.setWildcard(wildcard);
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
+	public void setExcludeWildCard(String excludeWildcard) {
+		setExcludeWildcard(excludeWildcard);
+	}
 	@IbisDocRef({"11", FILESYSTEMACTOR})
-	public void setExcludeWildCard(String excludeWildCard) {
-		actor.setExcludeWildCard(excludeWildCard);
+	public void setExcludeWildcard(String excludeWildcard) {
+		actor.setExcludeWildcard(excludeWildcard);
 	}
 
 	@IbisDocRef({"12", FILESYSTEMACTOR})
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
+	}
+
+	@IbisDocRef({"13", FILESYSTEMACTOR})
+	public void setWriteLineSeparator(boolean writeLineSeparator) {
+		actor.setWriteLineSeparator(writeLineSeparator);
+	}
+
+	@IbisDocRef({"14", FILESYSTEMACTOR})
+	public void setCharset(String charset) {
+		actor.setCharset(charset);
 	}
 }

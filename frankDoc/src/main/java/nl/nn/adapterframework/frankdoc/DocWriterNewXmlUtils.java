@@ -40,22 +40,6 @@ class DocWriterNewXmlUtils {
 		return schema;
 	}
 
-	static void addElement(XmlBuilder context, String elementName, String elementType) {
-		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
-		element.addAttribute("name", elementName);
-		element.addAttribute("type", elementType);
-		context.addSubElement(element);
-	}
-
-	static void addElement(XmlBuilder context, String elementName, String elementType, String minOccurs, String maxOccurs) {
-		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
-		element.addAttribute("name", elementName);
-		element.addAttribute("type", elementType);
-		element.addAttribute("minOccurs", minOccurs);
-		element.addAttribute("maxOccurs", maxOccurs);
-		context.addSubElement(element);
-	}
-
 	static XmlBuilder addElementRef(XmlBuilder context, String elementName, String minOccurs, String maxOccurs) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("ref", elementName);
@@ -81,15 +65,6 @@ class DocWriterNewXmlUtils {
 	static XmlBuilder createElementWithType(String name) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("name", name);
-		return element;
-	}
-
-	static XmlBuilder addElementWithType(XmlBuilder context, String name, String minOccurs, String maxOccurs) {
-		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
-		element.addAttribute("name", name);
-		element.addAttribute("minOccurs", minOccurs);
-		element.addAttribute("maxOccurs", maxOccurs);
-		context.addSubElement(element);
 		return element;
 	}
 
@@ -224,6 +199,13 @@ class DocWriterNewXmlUtils {
 		return attribute;
 	}
 
+	static XmlBuilder addAttributeRef(XmlBuilder context, String name) {
+		XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+		attribute.addAttribute("ref", name);
+		context.addSubElement(attribute);
+		return attribute;
+	}
+
 	static XmlBuilder addAnyAttribute(XmlBuilder context) {
 		XmlBuilder attribute = new XmlBuilder("anyAttribute", "xs", XML_SCHEMA_URI);
 		context.addSubElement(attribute);
@@ -328,5 +310,12 @@ class DocWriterNewXmlUtils {
 		String memberTypes = Arrays.asList(combinedTypes).stream().collect(Collectors.joining(" "));
 		union.addAttribute("memberTypes", memberTypes);
 		return union;
+	}
+
+	static XmlBuilder addPattern(XmlBuilder context, String pattern) {
+		XmlBuilder result = new XmlBuilder("pattern", "xs", XML_SCHEMA_URI);
+		context.addSubElement(result);
+		result.addAttribute("value", pattern);
+		return result;
 	}
 }

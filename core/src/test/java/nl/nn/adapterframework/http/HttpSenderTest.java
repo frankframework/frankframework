@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
@@ -81,7 +82,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, null).asString();
+		String result = sender.sendMessage(input, session).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithoutPRC.txt"), result.trim());
 	}
 
@@ -517,7 +518,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	public void binaryHttpPostPDF() throws Throwable {
 		HttpSender sender = getSender();
 		URL url = TestFileUtils.getTestFileURL("/Documents/doc001.pdf");
-		Message input = new Message(url);
+		Message input = new UrlMessage(url);
 		assertTrue("input message has to be a binary file", input.isBinary());
 
 		PipeLineSession pls = new PipeLineSession(session);

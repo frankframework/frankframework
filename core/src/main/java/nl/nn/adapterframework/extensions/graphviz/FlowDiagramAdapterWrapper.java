@@ -17,9 +17,6 @@ package nl.nn.adapterframework.extensions.graphviz;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import nl.nn.adapterframework.configuration.AdapterLifecycleWrapperBase;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -44,8 +41,6 @@ public class FlowDiagramAdapterWrapper extends AdapterLifecycleWrapperBase {
 		//no need to do anything here
 	}
 
-	@Autowired(required = false)
-	@Qualifier("flowDiagramManager")
 	public void setFlowDiagramManager(FlowDiagramManager flowDiagramManager) {
 		this.flowDiagramManager = flowDiagramManager;
 	}

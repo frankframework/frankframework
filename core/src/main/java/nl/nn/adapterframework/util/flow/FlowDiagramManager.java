@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018 Nationale-Nederlanden, 2019-2020 WeAreFrank!
+   Copyright 2016, 2018 Nationale-Nederlanden, 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeansException;
@@ -60,8 +61,9 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private File configFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.config.dir"));
 	private ApplicationContext applicationContext;
 
-	private static final String ADAPTER2DOT_XSLT = "/xsl/adapter2dot.xsl";
-	private static final String CONFIGURATION2DOT_XSLT = "/xsl/configuration2dot.xsl";
+	private static final String ADAPTER2DOT_XSLT = "/xml/xsl/adapter2dot.xsl";
+	private static final String CONFIGURATION2DOT_XSLT = "/xml/xsl/configuration2dot.xsl";
+	private static final String NO_IMAGE_AVAILABLE = "/no_image_available.svg";
 
 	private TransformerPool transformerPoolAdapter;
 	private TransformerPool transformerPoolConfig;
@@ -90,9 +92,9 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			fileExtension = generator.getFileExtension();
 		}
 
-		noImageAvailable = Resource.getResource("/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg");
+		noImageAvailable = Resource.getResource(NO_IMAGE_AVAILABLE);
 		if(noImageAvailable == null) {
-			throw new IllegalStateException("image [no_image_available.svg] not found");
+			throw new IllegalStateException("image ["+NO_IMAGE_AVAILABLE+"] not found");
 		}
 	}
 
@@ -202,10 +204,10 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		try {
 			dotOutput = generateDot(configuration);
 		} catch(Exception e) {
-			log.warn("failed to create dot file for configuration["+configuration.getName()+"]", e);
+			log.warn("failed to create dot file for configuration ["+configuration.getName()+"]", e);
 		}
 
-		String name = "configuration[" + configuration.getName() + "]";
+		String name = "configuration [" + configuration.getName() + "]";
 		generateFlowDiagram(name, dotOutput, destFile);
 	}
 
@@ -250,7 +252,12 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	private File retrieveConfigurationFlowFile(Configuration configuration) {
-		return retrieveFlowFile(configFlowDir, configuration.getName());
+		String filename = configuration.getName();
+		if(StringUtils.isEmpty(filename)) {
+			log.warn("cannot generate FlowFile, configuration name is null");
+			return null;
+		}
+		return retrieveFlowFile(configFlowDir, filename);
 	}
 
 	private File retrieveAllConfigurationsFlowFile() {
@@ -259,6 +266,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	private File retrieveFlowFile(File parent, String fileName) {
 		if(fileExtension == null) {
+			log.warn("cannot generate FlowFile, file extensions is null");
 			return null;
 		}
 

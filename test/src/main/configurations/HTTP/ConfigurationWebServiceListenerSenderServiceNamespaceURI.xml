@@ -2,8 +2,7 @@
     <!-- serviceNamespaceURI listeners -->
 	<adapter name="WebServiceListenerServiceNamespaceURI" 
 		description="Test the functioning of the WebServiceListener with the attribute serviceNamespaceURI">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerServiceNamespaceURI">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				serviceNamespaceURI="urn:ws:serviceNamespaceURI" />
 		</receiver>
@@ -18,8 +17,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerErrorServiceNamespaceURI"
 		description="Test the functioning of the WebServiceListener with the attribute serviceNamespaceURI (error)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerErrorServiceNamespaceURI">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				serviceNamespaceURI="urn:ws_error:serviceNamespaceURI" />
 		</receiver>
@@ -34,8 +32,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerTimeoutServiceNamespaceURI"
 		description="Test the functioning of the WebServiceListener with the attribute serviceNamespaceURI (timeout)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeoutServiceNamespaceURI">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				serviceNamespaceURI="urn:ws_timeout:serviceNamespaceURI" />
 		</receiver>
@@ -53,8 +50,7 @@
 	<!--serviceNamespaceURI senders -->
 	<adapter name="WebServiceSenderServiceNamespaceURI" 
 		description="Test the functioning of the WebServiceSender sending to a listener with serviceNamespaceURI">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderServiceNamespaceURI">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderServiceNamespaceURI" />
 		</receiver>
@@ -62,7 +58,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws:serviceNamespaceURI"
@@ -75,8 +71,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderErrorServiceNamespaceURI"
 		description="Test the functioning of the WebServiceSender sending to a listener with serviceNamespaceURI (error)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderErrorServiceNamespaceURI">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderErrorServiceNamespaceURI" />
 		</receiver>
@@ -84,7 +79,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_error:serviceNamespaceURI"
@@ -96,8 +91,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderTimeoutGlobalForwardServiceNamespaceURI"
 		description="Test the functioning of the WebServiceSender in combination with global-forward sending to a listener with serviceNamespaceURI">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderTimeoutGlobalForwardServiceNamespaceURI">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderTimeoutGlobalForwardServiceNamespaceURI" />
 		</receiver>
@@ -111,7 +105,7 @@
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>
 			<!-- send2ws_no_forwards -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
@@ -121,7 +115,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
@@ -151,8 +145,7 @@
 	</adapter>
 	<adapter name="WebServiceSenderTimeoutServiceNamespaceURI"
 		description="Test the functioning of the WebServiceSender sending to a listener with serviceNamespaceURI (timeout)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderTimeoutServiceNamespaceURI">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderTimeoutServiceNamespaceURI" />
 		</receiver>
@@ -163,7 +156,7 @@
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>
 			<!-- send2ws_no_forwards -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
@@ -173,7 +166,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
@@ -184,7 +177,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_exception -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_forward_exception">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
@@ -195,7 +188,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_with_forwards -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_with_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
@@ -219,7 +212,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_no_forwards_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_no_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
@@ -229,7 +222,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_forward_timeout_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
@@ -240,7 +233,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_exception_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_forward_exception_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
@@ -251,7 +244,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_with_forwards_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="send2ws_with_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"

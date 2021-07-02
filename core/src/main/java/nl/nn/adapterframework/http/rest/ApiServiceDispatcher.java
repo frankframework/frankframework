@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http.rest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.xerces.xs.XSModel;
 
+import nl.nn.adapterframework.align.XmlTypeToJsonSchemaConverter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ListenerException;
@@ -59,8 +62,9 @@ import nl.nn.adapterframework.util.LogUtil;
 public class ApiServiceDispatcher {
 
 	private Logger log = LogUtil.getLogger(this);
-	private ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<String, ApiDispatchConfig>(new ApiUriComparator());
+	private ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<>(new ApiUriComparator());
 	private static ApiServiceDispatcher self = null;
+	private static final String SCHEMA_DEFINITION_PATH = "#/components/schemas/";
 
 	public static synchronized ApiServiceDispatcher getInstance() {
 		if( self == null ) {
@@ -85,7 +89,7 @@ public class ApiServiceDispatcher {
 
 		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
 			String uriPattern = it.next();
-			log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
+			if(log.isTraceEnabled()) log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
 
 			String patternSegments[] = uriPattern.split("/");
 			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
@@ -111,45 +115,51 @@ public class ApiServiceDispatcher {
 		return results;
 	}
 
-	public synchronized void registerServiceClient(ApiListener listener) throws ListenerException {
+	public void registerServiceClient(ApiListener listener) throws ListenerException {
 		String uriPattern = listener.getCleanPattern();
 		if(uriPattern == null)
 			throw new ListenerException("uriPattern cannot be null or empty");
 
 		String method = listener.getMethod();
 
-		ApiDispatchConfig dispatchConfig = null;
-		if(patternClients.containsKey(uriPattern))
-			dispatchConfig = patternClients.get(uriPattern);
-		else
-			dispatchConfig = new ApiDispatchConfig(uriPattern);
+		synchronized(patternClients) {
+			patternClients.computeIfAbsent(uriPattern, pattern -> new ApiDispatchConfig(pattern)).register(method, listener);
+		}
 
-		dispatchConfig.register(method, listener);
-
-		patternClients.put(uriPattern, dispatchConfig);
-		log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
+		if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
 	}
 
-	public synchronized void unregisterServiceClient(ApiListener listener) {
+	public void unregisterServiceClient(ApiListener listener) {
 		String method = listener.getMethod();
 		String uriPattern = listener.getCleanPattern();
 		if(uriPattern == null) {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
 		}
 		else {
-			ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
-			if(dispatchConfig == null) {
-				log.warn("unable to find DispatchConfig for uriPattern ["+uriPattern+"]");
-			} else {
-				dispatchConfig.destroy(method);
+			boolean success = false;
+			synchronized (patternClients) {
+				ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
+				if(dispatchConfig != null) {
+					if(dispatchConfig.getMethods().size() == 1) {
+						patternClients.remove(uriPattern); //Remove the entire config if there's only 1 ServiceClient registered
+					} else {
+						dispatchConfig.remove(method); //Only remove the ServiceClient as there are multiple registered
+					}
+					success = true;
+				}
+			}
 
-				log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+			//keep log statements out of synchronized block
+			if(success) {
+				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+			} else {
+				log.warn("unable to find DispatchConfig for uriPattern ["+uriPattern+"]");
 			}
 		}
 	}
 
 	public SortedMap<String, ApiDispatchConfig> getPatternClients() {
-		return patternClients;
+		return Collections.unmodifiableSortedMap(patternClients);
 	}
 
 	protected JsonObject generateOpenApiJsonSchema(HttpServletRequest request) {
@@ -234,8 +244,8 @@ public class ApiServiceDispatcher {
 		return serversArray;
 	}
 
-	public static Json2XmlValidator getJsonValidator(PipeLine pipeline) {
-		IPipe validator = pipeline.getInputValidator();
+	public static Json2XmlValidator getJsonValidator(PipeLine pipeline, boolean forOutputValidation) {
+		IPipe validator = forOutputValidation ? pipeline.getOutputValidator() : pipeline.getInputValidator();
 		if(validator == null) {
 			validator = pipeline.getPipe(pipeline.getFirstPipe());
 		}
@@ -252,9 +262,9 @@ public class ApiServiceDispatcher {
 		List<String> paramsFromHeaderAndCookie = mapHeaderAndParams(paramBuilder, request, listener);
 
 		// query params
-		Json2XmlValidator validator = getJsonValidator(adapter.getPipeLine());
-		if(validator != null && !validator.getParameterList().isEmpty()) {
-			for (Parameter parameter : validator.getParameterList()) {
+		Json2XmlValidator inputValidator = getJsonValidator(adapter.getPipeLine(), false);
+		if(inputValidator != null && !inputValidator.getParameterList().isEmpty()) {
+			for (Parameter parameter : inputValidator.getParameterList()) {
 				String parameterSessionkey = parameter.getSessionKey();
 				if(StringUtils.isNotEmpty(parameterSessionkey) && !parameterSessionkey.equals("headers") && !paramsFromHeaderAndCookie.contains(parameterSessionkey)) {
 					String parameterType = parameter.getType() != null ? parameter.getType() : "string";
@@ -319,10 +329,10 @@ public class ApiServiceDispatcher {
 
 	private void mapRequest(IAdapter adapter, MediaTypes consumes, JsonObjectBuilder methodBuilder) {
 		PipeLine pipeline = adapter.getPipeLine();
-		Json2XmlValidator validator = getJsonValidator(pipeline);
-		if(validator != null && StringUtils.isNotEmpty(validator.getRoot())) {
+		Json2XmlValidator inputValidator = getJsonValidator(pipeline,false);
+		if(inputValidator != null && StringUtils.isNotEmpty(inputValidator.getRoot())) {
 			JsonObjectBuilder requestBodyContent = Json.createObjectBuilder();
-			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder().add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+validator.getRoot()));
+			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder().add("schema", Json.createObjectBuilder().add("$ref", SCHEMA_DEFINITION_PATH+inputValidator.getRoot()));
 			requestBodyContent.add("content", Json.createObjectBuilder().add(consumes.getContentType(), schemaBuilder));
 			methodBuilder.add("requestBody", requestBodyContent);
 		}
@@ -332,19 +342,25 @@ public class ApiServiceDispatcher {
 		JsonObjectBuilder responses = Json.createObjectBuilder();
 
 		PipeLine pipeline = adapter.getPipeLine();
-		Json2XmlValidator validator = getJsonValidator(pipeline);
+		Json2XmlValidator inputValidator = getJsonValidator(pipeline, false);
+		Json2XmlValidator outputValidator = getJsonValidator(pipeline, true);
+
 		JsonObjectBuilder schema = null;
-		String ref = null;
-		if(validator != null) {
-			JsonObject jsonSchema = validator.createJsonSchemaDefinitions("#/components/schemas/");
-			if(jsonSchema != null) {
-				for (Entry<String,JsonValue> entry: jsonSchema.entrySet()) {
-					schemas.add(entry.getKey(), entry.getValue());
-				}
-				ref = validator.getMessageRoot(true);
-				schema = Json.createObjectBuilder();
-			}
+		String schemaReferenceElement = null;
+		List<XSModel> models = new ArrayList<XSModel>();
+		if(inputValidator != null) {
+			models.addAll(inputValidator.getXSModels());
+			schemaReferenceElement = inputValidator.getMessageRoot(true);
 		}
+		if(outputValidator != null) {
+			models.addAll(outputValidator.getXSModels());
+			schemaReferenceElement = outputValidator.getRoot();	// all non-empty exits should refer to this element
+		}
+
+		if(!models.isEmpty()) {
+			schema = Json.createObjectBuilder();
+		}
+		addComponentsToTheSchema(schemas, models);
 
 		Map<String, PipeLineExit> pipeLineExits = pipeline.getPipeLineExits();
 		for(String exitPath : pipeLineExits.keySet()) {
@@ -360,20 +376,20 @@ public class ApiServiceDispatcher {
 			exit.add("description", status.getReasonPhrase());
 			if(!ple.getEmptyResult()) {
 				JsonObjectBuilder content = Json.createObjectBuilder();
-				if(StringUtils.isNotEmpty(ref)){
+				if(StringUtils.isNotEmpty(schemaReferenceElement)){
 					String reference = null;
-					if(StringUtils.isNotEmpty(ple.getResponseRoot())) {
+					if(StringUtils.isNotEmpty(ple.getResponseRoot()) && outputValidator == null) {
 						reference = ple.getResponseRoot();
 					} else {
-						List<String> references = Arrays.asList(ref.split(","));
-						if(ple.getState().equals("success")) {
+						List<String> references = Arrays.asList(schemaReferenceElement.split(","));
+						if(ple.isSuccessExit()) {
 							reference = references.get(0);
 						} else {
 							reference = references.get(references.size()-1);
 						}
 					}
 					// JsonObjectBuilder add method consumes the schema
-					schema.add("schema", Json.createObjectBuilder().add("$ref", "#/components/schemas/"+reference));
+					schema.add("schema", Json.createObjectBuilder().add("$ref", SCHEMA_DEFINITION_PATH+reference));
 					content.add(contentType.getContentType(), schema);
 				}
 				exit.add("content", content);
@@ -382,6 +398,16 @@ public class ApiServiceDispatcher {
 			responses.add(""+exitCode, exit);
 		}
 		return responses;
+	}
+
+	private void addComponentsToTheSchema(JsonObjectBuilder schemas, List<XSModel> models) {
+		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, true, SCHEMA_DEFINITION_PATH);
+		JsonObject jsonSchema = converter.getDefinitions();
+		if(jsonSchema != null) {
+			for (Entry<String,JsonValue> entry: jsonSchema.entrySet()) {
+				schemas.add(entry.getKey(), entry.getValue());
+			}
+		}
 	}
 
 	public void clear() {

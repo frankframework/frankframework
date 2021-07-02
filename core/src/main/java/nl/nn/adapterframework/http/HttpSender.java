@@ -78,7 +78,6 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -346,8 +345,9 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
+	 * @throws IOException 
 	 */
-	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		HttpPost hmethod = new HttpPost(uri);
 
 		if (postType.equals(PostType.URLENCODED) && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
@@ -419,7 +419,7 @@ public class HttpSender extends HttpSenderBase {
 		return bodyPart.build();
 	}
 
-	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
@@ -448,7 +448,7 @@ public class HttpSender extends HttpSenderBase {
 						String fileName = null;
 						String sessionKey = pv.getDefinition().getSessionKey();
 						if (sessionKey != null) {
-							fileName = (String) session.get(sessionKey + "Name");
+							fileName = session.getMessage(sessionKey + "Name").asString();
 						}
 
 						entity.addPart(createMultipartBodypart(name, fis, fileName));
@@ -465,7 +465,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
-			String multipartXml = (String) session.get(getMultipartXmlSessionKey());
+			String multipartXml = session.getMessage(getMultipartXmlSessionKey()).asString();
 			log.debug(getLogPrefix()+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
 			if (StringUtils.isEmpty(multipartXml)) {
 				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
@@ -492,20 +492,16 @@ public class HttpSender extends HttpSenderBase {
 		return entity.build();
 	}
 
-	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) {
+	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) throws IOException {
 		String partName = element.getAttribute("name"); //Name of the part
 		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
 		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
-		Object partObject = session.get(partSessionKey);
+		Message partObject = session.getMessage(partSessionKey);
 
-		if (partObject instanceof InputStream) {
-			InputStream fis = (InputStream) partObject;
-
-			return createMultipartBodypart(partSessionKey, fis, partName, partMimeType);
+		if (partObject.isBinary()) {
+			return createMultipartBodypart(partSessionKey, partObject.asInputStream(), partName, partMimeType);
 		} else {
-			String partValue = (String) session.get(partSessionKey);
-
-			return createMultipartBodypart(partName, partValue, partMimeType);
+			return createMultipartBodypart(partName, partObject.asString(), partMimeType);
 		}
 	}
 
@@ -548,22 +544,27 @@ public class HttpSender extends HttpSenderBase {
 			response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 
 		if (response==null) {
+			Message responseMessage = responseHandler.getResponseMessage();
+			if(!Message.isEmpty(responseMessage)) {
+				responseMessage.closeOnCloseOf(session);
+			}
+
 			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
 				try {
 					String fileName = Message.asString(session.get(getStreamResultToFileNameSessionKey()));
 					File file = new File(fileName);
-					Misc.streamToFile(responseHandler.getResponse(), file);
+					Misc.streamToFile(responseMessage.asInputStream(), file);
 					return new Message(fileName);
 				} catch (IOException e) {
 					throw new SenderException("cannot find filename to stream result to", e);
 				}
 			} else if (isBase64()) { //This should be removed in a future iteration
-				return getResponseBodyAsBase64(responseHandler.getResponse());
+				return getResponseBodyAsBase64(responseMessage.asInputStream());
 			} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
-				session.put(getStoreResultAsStreamInSessionKey(), responseHandler.getResponse());
+				session.put(getStoreResultAsStreamInSessionKey(), responseMessage.asInputStream());
 				return Message.nullMessage();
 			} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
-				session.put(getStoreResultAsByteArrayInSessionKey(), Misc.streamToBytes(responseHandler.getResponse()));
+				session.put(getStoreResultAsByteArrayInSessionKey(), responseMessage.asByteArray());
 				return Message.nullMessage();
 			} else if (BooleanUtils.isTrue(getMultipartResponse()) || responseHandler.isMultipart()) {
 				if(BooleanUtils.isFalse(getMultipartResponse())) {
@@ -592,9 +593,6 @@ public class HttpSender extends HttpSenderBase {
 			return Message.asMessage(headersXml.toXML());
 		}
 
-		if (responseHandler.isMultipart()) {
-			log.error("message body is not handled as a multipart");
-		}
 		return responseHandler.getResponseMessage();
 	}
 
@@ -606,7 +604,7 @@ public class HttpSender extends HttpSenderBase {
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
-	public static Message handleMultipartResponse(HttpResponseHandler httpHandler, PipeLineSession session) throws IOException {
+	private static Message handleMultipartResponse(HttpResponseHandler httpHandler, PipeLineSession session) throws IOException {
 		return handleMultipartResponse(httpHandler.getContentType().getMimeType(), httpHandler.getResponse(), session);
 	}
 
@@ -621,14 +619,9 @@ public class HttpSender extends HttpSenderBase {
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 				if (i == 0) {
-					String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-					ContentType contentType = ContentType.parse(bodyPart.getContentType());
-					if(contentType.getCharset() != null)
-						charset = contentType.getCharset().name();
-
-					result = new Message(bodyPart.getInputStream(), charset);
+					result = new PartMessage(bodyPart);
 				} else {
-					session.put("multipart" + i, bodyPart.getInputStream());
+					session.put("multipart" + i, new PartMessage(bodyPart));
 				}
 			}
 		} catch(MessagingException e) {

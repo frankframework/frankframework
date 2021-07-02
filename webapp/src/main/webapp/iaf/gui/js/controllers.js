@@ -9,8 +9,18 @@ angular.module('iaf.beheerconsole')
 	$scope.loading = true;
 	$rootScope.adapters = {};
 	function initializeFrankConsole () {
-		Debug.log("initializing Frank!Console", appConstants.init);
-		if(appConstants.init < 2) {
+		if(appConstants.init === -1) {
+			appConstants.init = 0;
+			Debug.log("Initializing Frank!Console");
+		} else if(appConstants.init === 0) {
+			Debug.log("Cancelling 2nd initialization attempt");
+			Pace.stop();
+			return ;
+		} else {
+			Debug.info("Loading Frank!Console", appConstants.init);
+		}
+
+		if(appConstants.init === 0) { //Only continue if the init state was -1
 			appConstants.init = 1;
 			Api.Get("server/info", function(data) {
 				appConstants.init = 2;
@@ -70,7 +80,6 @@ angular.module('iaf.beheerconsole')
 						Idle.unwatch();
 					}
 					$scope.databaseSchedulesEnabled = (appConstants["loadDatabaseSchedules.active"] === 'true');
-					$scope.strutsConsoleEnabled = (appConstants["strutsConsole.enabled"] === 'true');
 					$rootScope.$broadcast('appConstants');
 				}
 			});
@@ -82,6 +91,7 @@ angular.module('iaf.beheerconsole')
 
 	Pace.on("done", initializeFrankConsole);
 	$scope.$on('initializeFrankConsole', initializeFrankConsole);
+	$timeout(initializeFrankConsole, 250);
 
 	$scope.loggedin = false;
 
@@ -275,6 +285,7 @@ angular.module('iaf.beheerconsole')
 
 					$scope.updateAdapterSummary();
 					Hooks.call("adapterUpdated", adapter);
+//					$scope.$broadcast('adapterUpdated', adapter);
 				}
 			}
 		};
@@ -495,9 +506,13 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('InformationCtrl', ['$scope', '$uibModalInstance', '$uibModal', 'Api', '$timeout', function($scope, $uibModalInstance, $uibModal, Api, $timeout) {
+	$scope.error = false;
 	Api.Get("server/info", function(data) {
 		$.extend( $scope, data );
+	}, function() {
+		$scope.error = true;
 	});
+
 	$scope.close = function () {
 		$uibModalInstance.close();
 	};
@@ -621,7 +636,7 @@ angular.module('iaf.beheerconsole')
 		for(adapterName in adapters) {
 			var adapter = adapters[adapterName];
 
-			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && $scope.filter[adapter.status])
+			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && ($scope.filter == undefined || $scope.filter[adapter.status]))
 				r[adapterName] = adapter;
 		}
 		return r;
@@ -689,7 +704,6 @@ angular.module('iaf.beheerconsole')
 		$scope.searchText = $state.params.search;
 	}
 
-	$scope.reload = false;
 	$scope.selectedConfiguration = "All";
 
 	$scope.updateQueryParams = function() {
@@ -737,23 +751,48 @@ angular.module('iaf.beheerconsole')
 		Api.Put("adapters", {"action": "start", "adapters": adapters});
 	};
 	$scope.reloadConfiguration = function() {
-		$scope.reload = true;
 		if($scope.selectedConfiguration == "All") return;
+
+		$scope.isConfigReloading[$scope.selectedConfiguration] = true;
 
 		Poller.getAll().stop();
 		Api.Put("configurations/"+$scope.selectedConfiguration, {"action": "reload"}, function() {
-			$scope.reload = false;
-			Poller.getAll().start();
+			startPollingForConfigurationStateChanges(function() {
+				Poller.getAll().start();
+			});
 		});
 	};
+	$scope.reloading = false;
 	$scope.fullReload = function() {
-		$scope.reload = true;
+		$scope.reloading = true;
 		Poller.getAll().stop();
 		Api.Put("configurations", {"action": "reload"}, function() {
-			$scope.reload = false;
-			Poller.getAll().start();
+			$scope.reloading = false;
+			startPollingForConfigurationStateChanges(function() {
+				Poller.getAll().start();
+			});
 		});
 	};
+
+	function startPollingForConfigurationStateChanges(callback) {
+		Poller.add("server/configurations", function(configurations) {
+			$scope.updateConfigurations(configurations);
+	
+			var ready = true;
+			for(var i in configurations) {
+				var config = configurations[i];
+				if(config.state != "STARTED") {
+					ready = false;
+					break;
+				}
+			}
+			if(ready) { //Remove poller once all states are STARTED
+				Poller.remove("server/configurations");
+				if(callback != null && typeof callback == "function") callback();
+			}
+		}, true);
+	}
+
 	$scope.showReferences = function() {
 		window.open($scope.configurationFlowDiagram);
 	};
@@ -773,10 +812,12 @@ angular.module('iaf.beheerconsole')
 	});
 
 	$scope.isConfigStubbed = {};
+	$scope.isConfigReloading = {};
 	$scope.check4StubbedConfigs = function() {
 		for(var i in $scope.configurations) {
 			var config = $scope.configurations[i];
 			$scope.isConfigStubbed[config.name] = config.stubbed;
+			$scope.isConfigReloading[config.name] = config.state == "STARTING" || config.state == "STOPPING"; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
 		}
 	};
 	$scope.$watch('configurations', $scope.check4StubbedConfigs);
@@ -859,8 +900,8 @@ angular.module('iaf.beheerconsole')
 
 //** Ctrls **//
 .controller('ManageConfigurationsCtrl', ['$scope', 'Api', function($scope, Api) {
-	Api.Get("server/info", function(data) {
-		$scope.updateConfigurations(data.configurations);
+	Api.Get("server/configurations", function(data) {
+		$scope.updateConfigurations(data);
 	});
 }])
 
@@ -979,7 +1020,7 @@ angular.module('iaf.beheerconsole')
 				if(data[pair] == "loaded"){
 					$scope.result += "Successfully uploaded configuration ["+pair+"]<br/>";
 				} else {
-					$scope.result += "Could not upload configuration from the file ["+pair+"]: "+data[pair]+"<br/>";
+					$scope.error += "Could not upload configuration from the file ["+pair+"]: "+data[pair]+"<br/>";
 				}
 			}
 
@@ -1058,8 +1099,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', 'Toastr', function($scope, Api, appConstants, Toastr) {
-	$scope.updateDynamicParams = false;
+.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', function($scope, Api, appConstants) {
 	$scope.variables = {};
 	$scope.searchFilter = "";
 
@@ -1096,35 +1136,6 @@ angular.module('iaf.beheerconsole')
 		}
 		return tmp;
 	}
-
-	Api.Get("server/log", function(data) {
-		$scope.form = data;
-	});
-
-	$scope.form = {
-		loglevel: "DEBUG",
-		logIntermediaryResults: true,
-		maxMessageLength: -1,
-		errorLevels: ["DEBUG", "INFO", "WARN", "ERROR"],
-		enableDebugger: true,
-	};
-
-	$scope.changeLoglevel = function(name) {
-		$scope.form.loglevel = name;
-	};
-
-	$scope.submit = function(formData) {
-		$scope.updateDynamicParams = true;
-		Api.Put("server/log", formData, function() {
-			Api.Get("server/log", function(data) {
-				$scope.form = data;
-				$scope.updateDynamicParams = false;
-				Toastr.success("Successfully updated log configuration!");
-			});
-		}, function() {
-			$scope.updateDynamicParams = false;
-		});
-	};
 }])
 
 .controller('AdapterStatisticsCtrl', ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', function($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug) {
@@ -1892,14 +1903,11 @@ angular.module('iaf.beheerconsole')
 		}
 
 		$scope.viewFile = URL;
-		$scope.loading = true;
 		$timeout(function() {
 			var iframe = angular.element("iframe");
 
 			iframe[0].onload = function() {
-				$scope.loading = false;
 				var iframeBody = $(iframe[0].contentWindow.document.body);
-				iframeBody.css({"background-color": "rgb(243, 243, 244)"});
 				iframe.css({"height": iframeBody.height() + 50});
 			};
 		});
@@ -1907,7 +1915,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.closeFile = function () {
 		$scope.viewFile = false;
-		$state.transitionTo('pages.logging', {directory: $scope.directory});
+		$state.transitionTo('pages.logging_show', {directory: $scope.directory});
 	};
 
 	$scope.download = function (file) {
@@ -1936,9 +1944,9 @@ angular.module('iaf.beheerconsole')
 
 	$scope.open = function(file) {
 		if(file.type == "directory") {
-			$state.transitionTo('pages.logging', {directory: file.path});
+			$state.transitionTo('pages.logging_show', {directory: file.path});
 		} else {
-			$state.transitionTo('pages.logging', {directory: $scope.directory, file: file.name}, { notify: false, reload: false });
+			$state.transitionTo('pages.logging_show', {directory: $scope.directory, file: file.name}, { notify: false, reload: false });
 		}
 	};
 
@@ -1955,6 +1963,71 @@ angular.module('iaf.beheerconsole')
 	else {
 		openDirectory(directory);
 	}
+}])
+
+.controller('LogSettingsCtrl', ['$scope', 'Api', 'Misc', '$timeout', '$state','Toastr', function($scope, Api, Misc, $timeout, $state, Toastr) {
+	$scope.updateDynamicParams = false;
+
+	$scope.loggers = {};
+	var logURL = "server/logging";
+	function updateLogInformation() {
+		Api.Get(logURL+"/settings", function(data) {
+			$scope.loggers = data.loggers;
+			$scope.definitions = data.definitions;
+		}, function(data) {
+			console.error(data);
+		});
+	}
+	updateLogInformation();
+
+	$scope.errorLevels = ["DEBUG", "INFO", "WARN", "ERROR"];
+	Api.Get(logURL, function(data) {
+		$scope.form = data;
+		$scope.errorLevels = data.errorLevels;
+	});
+
+	$scope.form = {
+		loglevel: "DEBUG",
+		logIntermediaryResults: true,
+		maxMessageLength: -1,
+		errorLevels: $scope.errorLevels,
+		enableDebugger: true,
+	};
+
+	//Root logger level
+	$scope.changeRootLoglevel = function(level) {
+		$scope.form.loglevel = level;
+	};
+
+	//Individual level
+	$scope.changeLoglevel = function(logger, level) {
+		Api.Put(logURL+"/settings", {logger:logger, level:level}, function() {
+			Toastr.success("Updated logger ["+logger+"] to ["+level+"]");
+			updateLogInformation();
+		});
+	};
+
+	//Reconfigure Log4j2
+	$scope.reconfigure = function () {
+		Api.Put(logURL+"/settings", {reconfigure:true}, function() {
+			Toastr.success("Reconfigured log definitions!");
+			updateLogInformation();
+		});
+	}
+
+	$scope.submit = function(formData) {
+		$scope.updateDynamicParams = true;
+		Api.Put(logURL, formData, function() {
+			Api.Get(logURL, function(data) {
+				$scope.form = data;
+				$scope.updateDynamicParams = false;
+				Toastr.success("Successfully updated log configuration!");
+				updateLogInformation();
+			});
+		}, function() {
+			$scope.updateDynamicParams = false;
+		});
+	};
 }])
 
 .controller('IBISstoreSummaryCtrl', ['$scope', 'Api', '$location', function($scope, Api, $location) {
@@ -2025,19 +2098,21 @@ angular.module('iaf.beheerconsole')
 
 .controller('SendJmsMessageCtrl', ['$scope', 'Api', function($scope, Api) {
 	$scope.destinationTypes = ["QUEUE", "TOPIC"]; 
+	$scope.processing = false;
 	Api.Get("jms", function(data) {
 		$.extend($scope, data);
 		angular.element("select[name='type']").val($scope.destinationTypes[0]);
 	});
 
 	$scope.submit = function(formData) {
+		$scope.processing = true;
 		if(!formData) return;
 
 		var fd = new FormData();
-		if(formData.realm && formData.realm != "")
-			fd.append("realm", formData.realm);
+		if(formData.connectionFactory && formData.connectionFactory != "")
+			fd.append("connectionFactory", formData.connectionFactory);
 		else 
-			fd.append("realm", $scope.jmsRealms[0]);
+			fd.append("connectionFactory", $scope.connectionFactories[0]);
 		if(formData.destination && formData.destination != "")
 			fd.append("destination", formData.destination);
 		if(formData.type && formData.type != "")
@@ -2050,6 +2125,8 @@ angular.module('iaf.beheerconsole')
 			fd.append("persistent", formData.persistent);
 		if(formData.synchronous && formData.synchronous != "")
 			fd.append("synchronous", formData.synchronous);
+		if(formData.lookupDestination && formData.lookupDestination != "")
+			fd.append("lookupDestination", formData.lookupDestination);
 
 		if(!formData.message && !formData.file) {
 			$scope.error = "Please specify a file or message!";
@@ -2065,7 +2142,9 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("jms/message", fd, function(returnData) {
 			//?
+			$scope.processing = false;
 		}, function(errorData, status, errorMsg) {
+			$scope.processing = false;
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
 		});
 	};
@@ -2105,12 +2184,12 @@ angular.module('iaf.beheerconsole')
 	$scope.submit = function(formData) {
 		$scope.processing = true;
 		if(!formData || !formData.destination) {
-			$scope.error = "Please specify a jms realm and destination!";
+			$scope.error = "Please specify a connection factory and destination!";
 			return;
 		}
 
 		Cookies.set("browseJmsQueue", formData);
-		if(!formData.realm) formData.realm = $scope.jmsRealms[0] || false;
+		if(!formData.connectionFactory) formData.connectionFactory = $scope.connectionFactories[0] || false;
 		if(!formData.type) formData.type = $scope.destinationTypes[0] || false;
 
 		Api.Post("jms/browse", JSON.stringify(formData), function(data) {
@@ -2263,15 +2342,204 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('ShowMonitorsCtrl', ['$scope', 'Api', function($scope, Api) {
+.controller('ShowMonitorsCtrl', ['$scope', 'Api', '$state', 'Misc', function($scope, Api, $state, Misc) {
+
+	$scope.selectedConfiguration = null;
 	$scope.monitors = [];
-	$scope.enabled = false;
 	$scope.destinations = [];
-	Api.Get("monitors", function(data) {
-		$scope.enabled = data.enabled;
-		$scope.monitors = data.monitors;
-		$scope.destinations = data.destinations;
+	$scope.eventTypes = [];
+
+	$scope.changeConfiguration = function(name) {
+		$scope.selectedConfiguration = name;
+
+		if($state.params.configuration == "" || $state.params.configuration != name) { //Update the URL
+			$state.transitionTo('pages.monitors', {configuration: name}, { notify: false, reload: false});
+		}
+
+		update();
+	};
+
+	$scope.totalRaised = 0;
+	function update() {
+		Api.Get("configurations/"+$scope.selectedConfiguration+"/monitors", function(data) {
+			$.extend($scope, data);
+
+			$scope.totalRaised = 0;
+			for(i in $scope.monitors) {
+				if($scope.monitors[i].raised) $scope.totalRaised++;
+				var monitor = $scope.monitors[i];
+				monitor.activeDestinations = [];
+				for(j in $scope.destinations) {
+					var destination = $scope.destinations[j];
+					monitor.activeDestinations[destination] = (monitor.destinations.indexOf(destination)>-1);
+				}
+			}
+		});
+	}
+
+	//Wait for the 'configurations' field to be populated to change the monitoring page
+	$scope.$watch('configurations', function(configs) {
+		if(configs) {
+			var configName = $state.params.configuration; //See if the configuration query param is populated
+			if(!configName) configName = configs[0].name; //Fall back to the first configuration
+			$scope.changeConfiguration(configName); //Update the view
+		}
 	});
+
+	function getUrl(monitor, trigger) {
+		var url = "/configurations/"+$scope.selectedConfiguration+"/monitors/"+monitor.name;
+		if(trigger != undefined && trigger != "") url += "/triggers/"+trigger.id;
+		return url;
+	}
+
+	$scope.raise = function(monitor) {
+		Api.Put(getUrl(monitor), {action: "raise"}, function() {
+			update();
+		});
+	}
+	$scope.clear = function(monitor) {
+		Api.Put(getUrl(monitor), {action: "clear"}, function() {
+			update();
+		});
+	}
+	$scope.edit = function(monitor) {
+		var destinations = [];
+		for(dest in monitor.activeDestinations) {
+			if(monitor.activeDestinations[dest]) {
+				destinations.push(dest);
+			}
+		}
+		Api.Put(getUrl(monitor), {action: "edit", name: monitor.displayName, type: monitor.type, destinations: destinations}, function() {
+			update();
+		});
+	}
+	$scope.deleteMonitor = function(monitor) {
+		Api.Delete(getUrl(monitor), function() {
+			update();
+		});
+	}
+
+	$scope.deleteTrigger = function(monitor, trigger) {
+		Api.Delete(getUrl(monitor, trigger), function() {
+			update();
+		});
+	}
+
+	$scope.downloadXML = function(monitorName) {
+		var url = Misc.getServerPath() + "iaf/api/configurations/"+$scope.selectedConfiguration+"/monitors";
+		if(monitorName) {
+			url += "/"+monitorName;
+		}
+		window.open(url+"?xml=true", "_blank");
+	}
+}])
+
+.controller('EditMonitorsCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
+	$scope.loading = true;
+
+	$scope.$on('loading', function() {
+		$scope.loading = false;
+	});
+
+	$scope.selectedConfiguration = null;
+	$scope.monitor = "";
+	$scope.events = "";
+	$scope.severities = [];
+	$scope.triggerId = "";
+	$scope.trigger = {
+		type: "Alarm",
+		filter: "none",
+		events: [],
+	}
+	var url;
+	if($state.params.configuration == "" || $state.params.monitor == "") {
+		$state.go('pages.monitors');
+	} else {
+		$scope.selectedConfiguration = $state.params.configuration;
+		$scope.monitor = $state.params.monitor;
+		$scope.triggerId = $state.params.trigger || "";
+		url = "configurations/"+$scope.selectedConfiguration+"/monitors/"+$scope.monitor+"/triggers/"+$scope.triggerId;
+		Api.Get(url, function(data) {
+			$.extend($scope, data);
+			calculateEventSources();
+			if(data.trigger && data.trigger.sources) {
+			var sources = data.trigger.sources;
+				$scope.trigger.sources = [];
+				$scope.trigger.adapters = [];
+				for(adapter in sources) {
+					if(data.trigger.filter == "source") {
+						for(i in sources[adapter]) {
+							$scope.trigger.sources.push(adapter+"$$"+sources[adapter][i]);
+						}
+					} else {
+						$scope.trigger.adapters.push(adapter);
+					}
+				}
+			}
+		}, function() {
+			$state.go('pages.monitors', $state.params);
+		});
+	}
+
+	$scope.getAdaptersForEvents = function(events) {
+		if(!events) return [];
+
+		var adapters = [];
+		for(eventName in $scope.events) {
+			if(events.indexOf(eventName) > -1) {
+				var arr = $scope.events[eventName].adapters;
+				adapters = adapters.concat(arr);
+			}
+		}
+		return Array.from(new Set(adapters));
+	}
+	$scope.eventSources = [];
+	function calculateEventSources() {
+		for(eventCode in $scope.events) {
+			var retVal = [];
+			var eventSources = $scope.events[eventCode].sources;
+			for(adapter in eventSources) {
+				for(i in eventSources[adapter]) {
+					retVal.push({adapter:adapter, source: eventSources[adapter][i]});
+				}
+			}
+			$scope.eventSources[eventCode] = retVal;
+		}
+	}
+	$scope.getSourceForEvents = function(events) {
+		var retval = [];
+		for(i in events) {
+			var eventCode = events[i];
+			retval = retval.concat($scope.eventSources[eventCode]);
+		}
+		return retval;
+	}
+
+	$scope.submit = function(trigger) {
+		if(trigger.filter == "adapter") {
+			delete trigger.sources;
+		} else if(trigger.filter == "source") {
+			delete trigger.adapters;
+			var sources = trigger.sources;
+			trigger.sources = {};
+			for(i in sources) {
+				var s = sources[i].split("$$");
+				var adapter = s[0];
+				var source = s[1];
+				if(!trigger.sources[adapter]) trigger.sources[adapter] = [];
+				trigger.sources[adapter].push(source);
+			}
+		}
+		if($scope.triggerId && $scope.triggerId > -1) {
+			Api.Put(url, trigger, function(returnData) {
+				$state.go('pages.monitors', $state.params);
+			});
+		} else {
+			Api.Post(url, JSON.stringify(trigger), function(returnData) {
+				$state.go('pages.monitors', $state.params);
+			});
+		}
+	}
 }])
 
 .controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', function($scope, Api, Alert) {
@@ -2352,6 +2620,10 @@ angular.module('iaf.beheerconsole')
 	};
 	$scope.processingMessage = false;
 
+	Api.Get("test-servicelistener", function(data) {
+		$scope.services = data.services;
+	});
+
 	$scope.submit = function(formData) {
 		$scope.result = "";
 		$scope.state = [];
@@ -2372,10 +2644,6 @@ angular.module('iaf.beheerconsole')
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
 
-		if(!formData.adapter) {
-			$scope.addNote("warning", "Please specify a service!");
-			return;
-		}
 		if(!formData.message && !$scope.file) {
 			$scope.addNote("warning", "Please specify a file or message!");
 			return;

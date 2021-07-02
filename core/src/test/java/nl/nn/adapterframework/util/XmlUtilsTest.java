@@ -3,16 +3,25 @@ package nl.nn.adapterframework.util;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
@@ -111,10 +120,36 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	public void testIdentityTransformWithDefaultEntityResolver() throws Exception { //External EntityResolving is still possible with the XMLEntityResolver
 		Resource resource = Resource.getResource(new TestScopeProvider(), "XmlUtils/EntityResolution/in-file-entity-c-temp.xml");
 		SAXException thrown = assertThrows(SAXException.class, () -> {
-			XmlUtils.identityTransform(resource);
+			XmlUtils.parseXml(resource, new XmlWriter());
 		});
 
 		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:///c:/temp/test.xml] in scope [nl.nn.adapterframework.testutil.TestScopeProvider";
 		assertTrue("SaxParseException should start with [Cannot get resource ...] but is ["+thrown.getMessage()+"]", thrown.getMessage().startsWith(errorMessage));
+	}
+
+	@Test
+	public void testSettingTransformerParameters() throws IOException, TransformerConfigurationException {
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("stringParamKey", "stringParamValue");
+		parameters.put("byteArrayParamKey", "byteArrayParamValue".getBytes());
+		parameters.put("baisParamKey", new ByteArrayInputStream("baisParamValue".getBytes()));
+		parameters.put("readerParamKey", new StringReader("readerParamValue"));
+		parameters.put("nullParamKey", null);
+		parameters.put("messageParamKey", new Message("messageParamValue"));
+		parameters.put("integerParamKey", 3);
+		parameters.put("booleanParamKey", false);
+
+		Transformer transformer = TransformerFactory.newInstance().newTransformer();
+		XmlUtils.setTransformerParameters(transformer, parameters);
+
+		assertTrue(transformer.getParameter("stringParamKey") instanceof String);
+		assertTrue(transformer.getParameter("byteArrayParamKey") instanceof String);
+		assertTrue(transformer.getParameter("baisParamKey") instanceof String);
+		assertTrue(transformer.getParameter("readerParamKey") instanceof String);
+		assertTrue(transformer.getParameter("messageParamKey") instanceof String);
+
+		assertTrue(transformer.getParameter("integerParamKey") instanceof Integer);
+		assertTrue(transformer.getParameter("booleanParamKey") instanceof Boolean);
+
 	}
 }

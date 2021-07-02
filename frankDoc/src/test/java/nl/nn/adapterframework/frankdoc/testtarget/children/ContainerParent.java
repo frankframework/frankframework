@@ -13,8 +13,8 @@ public class ContainerParent {
 	public void setInheritedWithoutOverride(InheritedWithoutOverride child) {
 	}
 
-	@IbisDoc("20")
-	public void setInheritedChildDocWithOrderOverride(InheritedChildDocWithOrderOverride child) {
+	@IbisDoc("Description of ContainerParent.setInheritedChildDocWithDescriptionOverride")
+	public void setInheritedChildDocWithDescriptionOverride(InheritedChildDocWithDescriptionOverride child) {
 	}
 
 	@IbisDoc("120")
@@ -22,7 +22,7 @@ public class ContainerParent {
 	}
 
 	@Deprecated
-	@IbisDoc("110")
+	@IbisDoc("Description of ContainerParent.setChildOverriddenOnlyParentAnnotated")
 	public void setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated child) {
 	}
 }

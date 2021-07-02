@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -117,7 +118,7 @@ public final class TestServiceListener extends Base {
 				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
 
-			result.put("state", "success");
+			result.put("state", PipeLineExit.EXIT_STATE_SUCCESS);
 			result.put("result", dispatchResult);
 		} catch (IOException e) {
 			return Response.status(Response.Status.BAD_REQUEST).build();

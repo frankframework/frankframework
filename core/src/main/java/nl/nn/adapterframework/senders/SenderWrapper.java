@@ -40,7 +40,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class SenderWrapper extends SenderWrapperBase {
 	private ISender sender;
-	
+
 	@Override
 	protected boolean isSenderConfigured() {
 		return getSender()!=null;
@@ -49,9 +49,6 @@ public class SenderWrapper extends SenderWrapperBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getSender() instanceof ConfigurationAware) {
-			((ConfigurationAware)getSender()).setConfiguration(getConfiguration());
-		}
 		getSender().configure();
 	}
 	@Override

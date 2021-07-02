@@ -63,7 +63,6 @@ public interface HasTransactionAttribute {
 			+ "<tr><td>4</td><td>NotSupported</td></tr>"
 			+ "<tr><td>5</td><td>Never</td></tr>"
 			+ "</table>", "1"})
-	@Deprecated
 	public void setTransactionAttributeNum(int i);
 	public int getTransactionAttributeNum();
 

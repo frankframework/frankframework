@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Provides an example of a pipe. It may return the contents of a file
- * (in the classpath) when <code>fileName</code> or <code>fileNameSessionKey</code> is specified, otherwise the
+ * (in the classpath) when <code>filename</code> or <code>filenameSessionKey</code> is specified, otherwise the
  * input of <code>returnString</code> is returned.
  *
  * <table border="1">
@@ -53,7 +53,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr>
  *   <td><i>any</i></td><td><i>any</i></td>
  * 	 <td>Any parameters defined on the pipe will be used for replacements. Each occurrence
- * 		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} 
+ * 		 of <code>${name-of-parameter}</code> in the file {@link #setFilename(String) filename} 
  *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
  *       This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>
  * </tr>
@@ -194,7 +194,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	    log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
 
-   		return new PipeRunResult(getForward(), result);
+   		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public static String replace (String target, String from, String to) {   
@@ -244,7 +244,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	@Deprecated
-	@ConfigurationWarning("attribute 'setFileNameSessionKey' is replaced with 'setFilenameSessionKey'")
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String fileNameSessionKey) {
 		setFilenameSessionKey(fileNameSessionKey);
 	}

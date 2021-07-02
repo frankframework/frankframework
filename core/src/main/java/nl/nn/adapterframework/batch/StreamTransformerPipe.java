@@ -37,7 +37,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -47,7 +46,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * with new line characters.
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr>
+ * <tr><td>{@link IReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr>
  * <tr><td>{@link IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line.
  * 			If no manager is specified, a default manager and flow are created. The default manager 
  * 			always uses the default flow. The default flow always uses the first registered recordHandler 
@@ -79,7 +78,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private Map<String,IRecordHandler> registeredRecordHandlers= new HashMap<>();
 	private Map<String,IResultHandler> registeredResultHandlers= new LinkedHashMap<>();
 	
-	private IInputStreamReaderFactory readerFactory=new InputStreamReaderFactory();
+	private IReaderFactory readerFactory=new InputStreamReaderFactory();
 
 	protected String getStreamId(Message input, PipeLineSession session) {
 		return session.getMessageId();
@@ -142,16 +141,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 		for (String recordHandlerName: registeredRecordHandlers.keySet()) {
 			IRecordHandler handler = getRecordHandler(recordHandlerName);
-			if(handler instanceof ConfigurationAware) {
-				((ConfigurationAware)handler).setConfiguration(getAdapter().getConfiguration());
-			}
 			handler.configure();
 		}
 		for (String resultHandlerName: registeredResultHandlers.keySet()) {
 			IResultHandler handler = getResultHandler(resultHandlerName);
-			if (handler instanceof ConfigurationAware) {
-				((ConfigurationAware)handler).setConfiguration(getAdapter().getConfiguration());
-			}
 			handler.configure();
 		}
 	}
@@ -307,7 +300,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				}
 			}
 		}
-		return new PipeRunResult(getForward(),transformationResult);
+		return new PipeRunResult(getSuccessForward(),transformationResult);
 	}
 
 	private List<String> getBlockStack(PipeLineSession session, IResultHandler handler, String streamId, boolean create) {
@@ -574,10 +567,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return charset;
 	}
 
-	public void setReaderFactory(IInputStreamReaderFactory factory) {
+	public void setReaderFactory(IReaderFactory factory) {
 		readerFactory = factory;
 	}
-	public IInputStreamReaderFactory getReaderFactory() {
+	public IReaderFactory getReaderFactory() {
 		return readerFactory;
 	}
 }

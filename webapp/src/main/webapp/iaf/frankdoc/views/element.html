@@ -1,0 +1,17 @@
+<div>
+	<h1 class="element__name">{{element.name}} <span class="label label-warning" ng-if="element.deprecated">Deprecated</span></h1>
+	<h4 class="element__fullname">
+		<a href="{{javaDocURL}}" target="_blank" rel="noreferrer">
+			{{element.fullName}}
+		</a>
+	</h4>
+	Elements: <span ng-repeat="tag in element.elementNames"><code>{{tag}}</code><span ng-if="!$last">, </span></span>
+	<br />
+	<p>
+	<p>
+	{{ element.descriptionHeader }}
+	<div ng-if="element.children" element-children></div>
+	<div ng-if="element.attributes" element-attributes></div>
+
+	<parent-element ng-if="element.parent" parent="element.parent"></parent-element>
+</div>

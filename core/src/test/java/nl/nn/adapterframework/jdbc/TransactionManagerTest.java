@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 import org.junit.Test;
 import org.springframework.transaction.TransactionDefinition;
@@ -16,8 +17,8 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 public class TransactionManagerTest extends TransactionManagerTestBase {
 
-	public TransactionManagerTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException, NamingException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
+	public TransactionManagerTest(DataSource dataSource) throws SQLException, NamingException {
+		super(dataSource);
 	}
 
 	protected void checkNumberOfLines(int expected) throws JdbcException, SQLException {

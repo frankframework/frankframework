@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
   <xs:element name="Start">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start</xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="RoleNameIChildElementGroup" minOccurs="0" maxOccurs="1" />
@@ -8,12 +11,17 @@
       </xs:sequence>
       <xs:attribute name="attribute" type="xs:string" />
       <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
+      <xs:attribute ref="active" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="RoleNameTChild">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild - This is the header of the JavaDoc of "TChild".</xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence />
+      <xs:attribute ref="active" />
       <xs:attribute name="elementRole" type="xs:string" fixed="roleNameTChild" use="prohibited" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild" use="prohibited" />
     </xs:complexType>
@@ -25,6 +33,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded" />
           </xs:sequence>
+          <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute processContents="skip" />
@@ -36,9 +45,15 @@
   <xs:group name="RoleNameIChildElementGroupBase">
     <xs:choice>
       <xs:element name="DescribedPossibleIRoleNameIChild">
+        <xs:annotation>
+          <xs:documentation>DescribedPossibleIRoleNameIChild - nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild used as RoleNameIChild
+
+This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="DescribedPossibleIChildType">
+              <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" use="prohibited" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild" use="prohibited" />
             </xs:extension>
@@ -46,9 +61,13 @@
         </xs:complexType>
       </xs:element>
       <xs:element name="NotDescribedPossibleIRoleNameIChild">
+        <xs:annotation>
+          <xs:documentation>NotDescribedPossibleIRoleNameIChild - nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild used as RoleNameIChild</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="NotDescribedPossibleIChildType">
+              <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" use="prohibited" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild" use="prohibited" />
             </xs:extension>
@@ -92,17 +111,27 @@
   </xs:simpleType>
   <xs:simpleType name="frankBoolean">
     <xs:restriction base="xs:string">
-      <xs:pattern value="(true|false)|(\$\{[^\}]+\})" />
+      <xs:pattern value="(true|false)|($\{[^\}]+\})" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="frankInt">
     <xs:restriction base="xs:string">
-      <xs:pattern value="((\+|-)?[0-9]+)|(\$\{[^\}]+\})" />
+      <xs:pattern value="((\+|-)?[0-9]+)|($\{[^\}]+\})" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:attribute name="active">
+    <xs:annotation>
+      <xs:documentation>If defined and empty or false, then this element and all its children are ignored</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:pattern value="\!?(($\{[^\}]+\})|([tT][rR][uU][eE])|([fF][aA][lL][sS][eE]))" />
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
   <xs:simpleType name="variableRef">
     <xs:restriction base="xs:string">
-      <xs:pattern value="\$\{[^\}]+\}" />
+      <xs:pattern value="$\{[^\}]+\}" />
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

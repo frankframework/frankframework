@@ -110,7 +110,7 @@ public class ParallelSenders extends SenderSeries {
 					resultXml.addAttribute("type", "null");
 				} else {
 					try {
-						resultXml.addAttribute("type", ClassUtils.nameOf(result.asObject()));
+						resultXml.addAttribute("type", ClassUtils.nameOf(result.getRequestClass()));
 						resultXml.setValue(XmlUtils.skipXmlDeclaration(result.asString()),false);
 					} catch (IOException e) {
 						throw new SenderException(getLogPrefix(),e);

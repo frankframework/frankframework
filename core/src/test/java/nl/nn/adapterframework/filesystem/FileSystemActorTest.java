@@ -18,8 +18,11 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -35,9 +38,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	protected FileSystemActor<F, FS> actor;
 
 	protected FS fileSystem;
-	protected INamedObject owner;
+	protected IConfigurable owner;
 	private PipeLineSession session;
 
+	private final String lineSeparator = System.getProperty("line.separator");
 
 	protected abstract FS createFileSystem();
 
@@ -45,7 +49,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		owner= new INamedObject() {
+		owner= new IConfigurable() {
 
 			@Override
 			public String getName() {
@@ -55,7 +59,22 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			public void setName(String newName) {
 				throw new IllegalStateException("setName() should not be called");
 			}
-			
+			@Override
+			public ClassLoader getConfigurationClassLoader() {
+				return Thread.currentThread().getContextClassLoader();
+			}
+			@Override
+			public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+				// Ignore
+			}
+			@Override
+			public void configure() throws ConfigurationException {
+				// Ignore
+			}
+			@Override
+			public ApplicationContext getApplicationContext() {
+				return null;
+			}
 		};
 		fileSystem = createFileSystem();
 		fileSystem.configure();
@@ -308,7 +327,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorListActionTestInFolderWithExcludeWildCard() throws Exception {
-		actor.setExcludeWildCard("*d0*");
+		actor.setExcludeWildcard("*d0*");
 		_createFolder("folder");
 		fileSystemActorListActionTest("folder",5,4);
 	}
@@ -316,7 +335,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test
 	public void fileSystemActorListActionTestInFolderWithBothWildCardAndExcludeWildCard() throws Exception {
 		actor.setWildCard("*.txt");
-		actor.setExcludeWildCard("*ted1*");
+		actor.setExcludeWildcard("*ted1*");
 		_createFolder("folder");
 		fileSystemActorListActionTest("folder",5,4);
 	}
@@ -352,7 +371,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename2 = filename+".xml";
 		String contents = "regeltje tekst";
 		
-		actor.setExcludeWildCard("*.bak");
+		actor.setExcludeWildcard("*.bak");
 		actor.setAction("list");
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -381,7 +400,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String contents = "regeltje tekst";
 		
 		actor.setWildCard("*.xml");
-		actor.setExcludeWildCard("*.oud.xml");
+		actor.setExcludeWildcard("*.oud.xml");
 		actor.setAction("list");
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -563,6 +582,79 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
+	public void fileSystemActorReadWithCharsetUseDefault() throws Exception {
+		String filename = "sender" + FILE1;
+		String contents = "€ $ & ^ % @ < é ë ó ú à è";
+		
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		actor.setAction("read");
+		actor.setFilename(filename);
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message message= new Message(filename);
+		ParameterValueList pvl = null;
+
+		Message result = Message.asMessage(actor.doAction(message, pvl, session));
+		assertEquals(contents, result.asString());
+	}
+	
+	@Test
+	public void fileSystemActorReadWithCharsetUseIncompatible() throws Exception {
+		String filename = "sender" + FILE1;
+		String contents = "€ è";
+		String expected = "â¬ Ã¨";
+		
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+
+		actor.setAction("read");
+		actor.setFilename(filename);
+		actor.setCharset("ISO-8859-1");
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message message= new Message(filename);
+		ParameterValueList pvl = null;
+
+		Message result = Message.asMessage(actor.doAction(message, pvl, session));
+		assertEquals(expected, result.asString());
+	}
+	
+	@Test
+	public void fileSystemActorWriteWithNoCharsetUsed() throws Exception {
+		String filename = "senderwriteWithCharsetUseDefault" + FILE1;
+		String contents = "€ $ & ^ % @ < é ë ó ú à è";
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("senderwriteWithCharsetUseDefault", contents);
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("contents");
+		p.setSessionKey("senderwriteWithCharsetUseDefault");
+		params.add(p);
+		params.configure();
+
+		waitForActionToFinish();
+
+		actor.setAction("write");
+		actor.setFilename(filename);
+		actor.configure(fileSystem,null,owner);
+		actor.open();
+		
+		Message message= new Message(contents);
+		ParameterValueList pvl = params.getValues(message, session);
+		
+		actor.doAction(message, pvl, session);
+
+		String actualContents = readFile(null, filename);
+		assertEquals(contents, actualContents);
+	}
+
+	@Test
 	public void fileSystemActorWriteActionTestWithStringAndUploadAsAction() throws Exception {
 		String filename = "uploadedwithString" + FILE1;
 		String contents = "Some text content to test upload action\n";
@@ -598,6 +690,45 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// TODO: evaluate 'result'
 		//assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actualContents.trim());
+	}
+
+	@Test
+	public void fileSystemActorWriteActionWriteLineSeparator() throws Exception {
+		String filename = "writeLineSeparator" + FILE1;
+		String contents = "Some text content to test write action writeLineSeparator enabled";
+		
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("writeLineSeparator", contents);
+
+		ParameterList params = new ParameterList();
+		Parameter p = new Parameter();
+		p.setName("contents");
+		p.setSessionKey("writeLineSeparator");
+
+		params.add(p);
+		actor.setWriteLineSeparator(true);
+		actor.setAction("write");
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message = new Message(filename);
+		ParameterValueList pvl = params.getValues(message, session);
+		Object result = actor.doAction(message, pvl, session);
+		waitForActionToFinish();
+
+		String stringResult=(String)result;
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+		
+		String actualContents = readFile(null, filename);
+		
+		String expected = contents + lineSeparator;
+		
+		assertEquals(expected, actualContents);
 	}
 
 	@Test
@@ -767,6 +898,67 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
+	public void fileSystemActorAppendActionWriteLineSeparatorEnabled() throws Exception {
+		int numOfWrites = 5;
+		String filename = "AppendActionWriteLineSeparatorEnabled" + FILE1;
+		String contents = "AppendActionWriteLineSeparatorEnabled";
+		StringBuilder expectedMessageBuilder = new StringBuilder(contents);
+		
+		for(int i=0; i<numOfWrites; i++) {
+			expectedMessageBuilder.append(contents).append(i).append(lineSeparator);
+		}
+		
+		fileSystemActorAppendActionWriteLineSeparatorTest(filename, contents, true, expectedMessageBuilder.toString(), numOfWrites);
+	}
+	
+	@Test
+	public void fileSystemActorAppendActionWriteLineSeparatorDisabled() throws Exception {
+		int numOfWrites = 5;
+		String filename = "AppendAction" + FILE1;
+		String contents = "AppendAction";
+		StringBuilder expectedMessageBuilder = new StringBuilder(contents);
+		
+		for(int i=0; i<numOfWrites; i++) {
+			expectedMessageBuilder.append(contents).append(i);
+		}
+		
+		fileSystemActorAppendActionWriteLineSeparatorTest(filename, contents, false, expectedMessageBuilder.toString(), numOfWrites);
+	}
+
+	public void fileSystemActorAppendActionWriteLineSeparatorTest(String filename, String contents, boolean isWriteLineSeparator, String expected, int numOfWrites) throws Exception {
+		if(_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+		createFile(null, filename, contents);
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterList params = new ParameterList();
+
+		Parameter p = new Parameter();
+		p.setName("contents");
+		p.setSessionKey("appendWriteLineSeparatorTest");
+		params.add(p);
+		params.configure();
+		
+		actor.setWriteLineSeparator(isWriteLineSeparator);
+		actor.setAction("append");
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+		
+		Message message = new Message(filename);
+		for(int i=0; i<numOfWrites; i++) {
+			session.put("appendWriteLineSeparatorTest", contents+i);
+			ParameterValueList pvl = params.getValues(message, session);
+			String result = (String)actor.doAction(message, pvl, null);
+
+			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
+		}
+		String actualContents = readFile(null, filename);
+
+		assertEquals(expected, actualContents);
+	}
+
+	@Test
 	public void fileSystemActorAppendActionWithRolloverBySize() throws Exception {
 		String filename = "rolloverBySize" + FILE1;
 		String contents = "thanos car ";
@@ -880,7 +1072,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		actor.setAction("move");
-		actor.setExcludeWildCard("tobemoved*");
+		actor.setExcludeWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
@@ -1049,7 +1241,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		actor.setAction("copy");
-		actor.setExcludeWildCard("tobemoved*");
+		actor.setExcludeWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
@@ -1311,7 +1503,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		actor.setAction("delete");
-		actor.setExcludeWildCard("tostay*");
+		actor.setExcludeWildcard("tostay*");
 		actor.setInputFolder(srcFolderName);
 		actor.configure(fileSystem,null,owner);
 		actor.open();

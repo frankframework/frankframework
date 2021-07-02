@@ -1,0 +1,8 @@
+<manageFileSystemRLY>
+	<completionInformation>
+		<returnCode>NOT_OK</returnCode>
+		<reasonCode>INVALID_XML</reasonCode>
+		<message>Validation using XmlValidator with 'ManageFileSystem/xsd/ManageFileSystem.xsd' failed:
+/manageFileSystemREQ: at (2,10): cvc-complex-type.2.4.a: Invalid content was found starting with element 'mkdirs'. One of '{list, info, read, readDelete, move, copy, delete, mkdir, rmdir, write, append, rename}' is expected.</message>
+	</completionInformation>
+</manageFileSystemRLY>

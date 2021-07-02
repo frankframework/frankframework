@@ -128,7 +128,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				setSoapNamespaceSessionKey(DEFAULT_SOAP_NAMESPACE_SESSION_KEY);
 			}
 		}
-		if (getSoapVersion()==null) {
+		if (getSoapVersionEnum()==null) {
 			soapVersion=SoapVersion.AUTO;
 		}
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
@@ -231,14 +231,14 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
 			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
 				if (log.isDebugEnabled()) log.debug("onlyIfSessionKey ["+getOnlyIfSessionKey()+"] value ["+onlyIfActualValue+"]: not found or not equal to value ["+getOnlyIfValue()+"]");
-				return new PipeRunResult(getForward(), message);
+				return new PipeRunResult(getSuccessForward(), message);
 			}
 		}
 		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
 			Object unlessActualValue = session.get(getUnlessSessionKey());
 			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
 				if (log.isDebugEnabled()) log.debug("unlessSessionKey ["+getUnlessSessionKey()+"] value ["+unlessActualValue+"]: not found or not equal to value ["+getUnlessValue()+"]");
-				return new PipeRunResult(getForward(), message);
+				return new PipeRunResult(getSuccessForward(), message);
 			}
 		}
 		Message result;
@@ -296,7 +296,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		} catch (Exception t) {
 			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	protected String determineSoapNamespace(PipeLineSession session) {
@@ -306,7 +306,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			if (StringUtils.isNotEmpty(savedSoapNamespace)) {
 				soapNamespace = savedSoapNamespace;
 			} else {
-				SoapVersion soapVersion = getSoapVersion();
+				SoapVersion soapVersion = getSoapVersionEnum();
 				if (soapVersion==SoapVersion.AUTO) {
 					soapVersion=DEFAULT_SOAP_VERSION_FOR_WRAPPING;
 				}
@@ -340,7 +340,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	public void setSoapVersion(String string) {
 		soapVersion = SoapVersion.getSoapVersion(string);
 	}
-	public SoapVersion getSoapVersion() {
+	public SoapVersion getSoapVersionEnum() {
 		return soapVersion;
 	}
 

@@ -28,12 +28,21 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class SenderTestBase<S extends ISender> extends Mockito {
 
 	protected Logger log = LogUtil.getLogger(this);
 	protected S sender;
+	private static TestConfiguration configuration;
+
+	private TestConfiguration getConfiguration() {
+		if(configuration == null) {
+			configuration = new TestConfiguration();
+		}
+		return configuration;
+	}
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -51,6 +60,7 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 		session.put(PipeLineSession.messageIdKey, messageId);
 		session.put(PipeLineSession.technicalCorrelationIdKey, technicalCorrelationId);
 		sender = createSender();
+		getConfiguration().autowireByType(sender);
 	}
 
 	@After

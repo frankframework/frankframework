@@ -29,10 +29,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.beans.factory.NamedBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
 import lombok.Getter;
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import lombok.Setter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -89,6 +91,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  */
 public class Adapter implements IAdapter, NamedBean {
+	private @Getter @Setter ApplicationContext applicationContext;
+
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
@@ -102,7 +106,6 @@ public class Adapter implements IAdapter, NamedBean {
 	private String name;
 	private Configuration configuration;
 	private String targetDesignDocument;
-	private boolean active=true;
 
 	private ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
@@ -438,7 +441,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			hski.closeGroup(recsData);
 
-			ICacheAdapter<String,String> cache=pipeline.getCache();
+			ICache<String,String> cache=pipeline.getCache();
 			if (cache instanceof HasStatistics) {
 				((HasStatistics) cache).iterateOverStatistics(hski, recsData, action);
 			}
@@ -730,6 +733,16 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
+	 * Register a receiver for this Adapter
+	 * @see Receiver
+	 */
+	@IbisDoc("100")
+	public void registerReceiver(Receiver<?> receiver) {
+		receivers.add(receiver);
+		log.debug("Adapter [" + name + "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
+	}
+
+	/**
 	 * Register a PipeLine at this adapter. On registering, the adapter performs
 	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
 	 * @see PipeLine
@@ -739,20 +752,6 @@ public class Adapter implements IAdapter, NamedBean {
 		this.pipeline = pipeline;
 		pipeline.setAdapter(this);
 		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");
-	}
-
-	/**
-	 * Register a receiver for this Adapter
-	 * @see Receiver
-	 */
-	@IbisDoc("100")
-	public void registerReceiver(Receiver<?> receiver) {
-		if (receiver.isActive()) {
-			receivers.add(receiver);
-			log.debug("Adapter [" + name + "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
-		} else {
-			log.debug("Adapter [" + name + "] did not register inactive receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
-		}
 	}
 
 	/**
@@ -1044,14 +1043,6 @@ public class Adapter implements IAdapter, NamedBean {
 			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=false as msgLogLevel=None");
 			msgLogLevel = Level.toLevel("OFF");
 		}
-	}
-
-	@IbisDoc({"controls whether adapter is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the receiver is not included in the configuration", "true"})
-	public void setActive(boolean b) {
-		active = b;
-	}
-	public boolean isActive() {
-		return active;
 	}
 
 	public void setTargetDesignDocument(String string) {

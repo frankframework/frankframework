@@ -1,12 +1,14 @@
 package nl.nn.adapterframework.pipes;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
@@ -16,6 +18,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class PipeTestBase<P extends IPipe> {
@@ -26,36 +29,63 @@ public abstract class PipeTestBase<P extends IPipe> {
 	protected P pipe;
 	protected PipeLine pipeline;
 	protected Adapter adapter;
+	private static TestConfiguration configuration;
+
+	private TestConfiguration getConfiguration() {
+		if(configuration == null) {
+			configuration = new TestConfiguration();
+		}
+		return configuration;
+	}
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	public abstract P createPipe();
-	
+
 	@Before
 	public void setup() throws Exception {
 		pipe = createPipe();
-		pipe.registerForward(new PipeForward("success",null));
+		autowireByType(pipe);
+		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipeline = new PipeLine();
+		pipeline = getConfiguration().createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
 		exit.setState("success");
 		pipeline.registerPipeLineExit(exit);
-		adapter = new Adapter();
+		adapter = getConfiguration().createBean(Adapter.class);
+		adapter.setName("TestAdapter-for-".concat(pipe.getClass().getSimpleName()));
 		adapter.setPipeLine(pipeline);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		getConfigurationWarnings().destroy();
+		getConfigurationWarnings().afterPropertiesSet();
+		pipe = null;
+		pipeline = null;
+		adapter = null;
+	}
+
+	protected void autowireByType(Object bean) {
+		getConfiguration().autowireByType(bean);
+	}
+
+	protected void autowireByName(Object bean) {
+		getConfiguration().autowireByName(bean);
+	}
+
+	protected ConfigurationWarnings getConfigurationWarnings() {
+		return getConfiguration().getConfigurationWarnings();
 	}
 
 	/**
 	 * Configure the pipe
 	 */
 	protected void configurePipe() throws ConfigurationException {
-		if (pipe instanceof IExtendedPipe) {
-			((IExtendedPipe) pipe).configure(pipeline);
-		} else {
-			pipe.configure();
-		}
+		pipeline.configure();
 	}
 
 	/**

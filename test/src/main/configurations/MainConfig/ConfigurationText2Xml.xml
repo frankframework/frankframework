@@ -1,7 +1,6 @@
 <ibis>
 	<adapter name="Text2Xml">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="Text2Xml">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-Text2Xml" />
 		</receiver>
@@ -10,7 +9,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="text2xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="MessageLogCorrelationID" getInputFromSessionKey="id">
+				xmlTag="MessageLogCorrelationID" getInputFromSessionKey="messageId">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

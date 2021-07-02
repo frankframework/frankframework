@@ -35,7 +35,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	private Digester digester;
 	private RulesBinder rulesBinder;
 	private @Setter ApplicationContext applicationContext; //Autowired ByType
-	private Rule attributeChecker = new AttributeCheckingRule();
+	private Rule attributeChecker;
 	private Set<String> parsedPatterns = new HashSet<String>();
 
 	public DigesterRulesParser(Digester digester, RulesBinder rulesBinder) {
@@ -58,6 +58,13 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		parsedPatterns.add(pattern);
 		
 		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(pattern);
+
+
+		if(rule.getRegisterTextMethod() != null) { //set the register method (callMethod with the element body as parameter)
+			ruleBuilder.callMethod(rule.getRegisterTextMethod()).usingElementBodyAsArgument();
+			return;
+		}
+
 		if(StringUtils.isNotEmpty(rule.getObject())) { //If a class is specified, load the class through the digester create-object-rule
 //			ruleBuilder.createObject().ofTypeSpecifiedByAttribute(rule.getObject()); //Can't use 'ruleBuilder' as this tries to load the class at configure time and not runtime
 			ruleBuilder.addRule(new ObjectCreateRule(rule.getObject()));
@@ -68,18 +75,18 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 				ruleBuilder.factoryCreate().usingFactory(factory); //If a factory is specified, use the factory to create the object
 			}
 		}
-		ruleBuilder.setProperties(); //set the set-properties-rule
 		if(rule.getRegisterMethod() != null) { //set the register method (set-next-rule)
 			ruleBuilder.setNext(rule.getRegisterMethod());
 		}
 		if(rule.getSelfRegisterMethod() != null) { //set the register method (set-top-rule)
 			ruleBuilder.setTop(rule.getSelfRegisterMethod());
 		}
-		ruleBuilder.addRule(attributeChecker); //Add the attribute checker
+		ruleBuilder.addRule(getAttributeChecker()); //Add the attribute checker, which implements the set-properties-rule
 	}
 
 	/**
 	 * Return the specified factory or the default factory when empty.
+	 * The factory should be Spring wired
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private ObjectCreationFactory<Object> getFactory(String factory) {
@@ -102,6 +109,14 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		}
 		if(log.isTraceEnabled()) log.trace("no factory specified, returing default ["+GenericFactory.class.getCanonicalName()+"]");
 		return autoWireAndInitializeBean(GenericFactory.class); //Wire the factory through Spring
+	}
+
+	//TODO get rid of this and autowire it
+	private Rule getAttributeChecker() {
+		if(attributeChecker == null) {
+			attributeChecker = autoWireAndInitializeBean(ValidateAttributeRule.class);
+		}
+		return attributeChecker;
 	}
 
 	protected <T> T autoWireAndInitializeBean(Class<T> clazz) {

@@ -321,18 +321,6 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	}
 
 	@Override
-	public List getTreeChildren(String path) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List getStorageIds(String path) throws StorageException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		final Report report = new Report();
 		report.setTestTool(testTool);
@@ -567,7 +555,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 				if(securityContext.getUserPrincipal() != null)
 					pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 				PipeLineResult processResult = adapter.processMessage(TestTool.getCorrelationId(), message, pipeLineSession);
-				if (!(processResult.getState().equalsIgnoreCase("success"))) {
+				if (!processResult.isSuccessful()) {
 					errorMessage = "Delete failed (see logging for more details)";
 				} else {
 					try {

@@ -20,11 +20,15 @@ import static nl.nn.adapterframework.frankdoc.DocWriterNew.ATTRIBUTE_VALUES_TYPE
 import static nl.nn.adapterframework.frankdoc.DocWriterNew.VARIABLE_REFERENCE;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.XML_SCHEMA_URI;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addAttributeWithType;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addPattern;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addSimpleType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addUnion;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.logging.log4j.Logger;
 
@@ -40,7 +44,12 @@ public enum AttributeTypeStrategy {
 
 	private static Logger log = LogUtil.getLogger(AttributeTypeStrategy.class);
 
-	private static final String PATTERN_REF = "\\$\\{[^\\}]+\\}";
+	private static final String ATTRIBUTE_ACTIVE_NAME = "active";
+
+	// The $-sign is not escaped in the regex below. This way,
+	// the regexes in the XSDs are not flagged by XMLSpy.
+	private static final String PATTERN_REF = "$\\{[^\\}]+\\}";
+
 	private static final String FRANK_BOOLEAN = "frankBoolean";
 	private static final String FRANK_INT = "frankInt";
 	private static final String PATTERN_FRANK_BOOLEAN = String.format("(true|false)|(%s)", PATTERN_REF);
@@ -60,6 +69,10 @@ public enum AttributeTypeStrategy {
 		return delegate.addRestrictedAttribute(context, attribute);
 	}
 
+	void addAttributeActive(XmlBuilder context) {
+		delegate.addAttributeActive(context);
+	}
+
 	List<XmlBuilder> createHelperTypes() {
 		return delegate.createHelperTypes();
 	}
@@ -67,6 +80,7 @@ public enum AttributeTypeStrategy {
 	private static abstract class Delegate {
 		abstract XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType);
 		abstract XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute);
+		abstract void addAttributeActive(XmlBuilder context);
 		abstract List<XmlBuilder> createHelperTypes();
 
 		final XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType, String boolType, String intType) {
@@ -109,11 +123,17 @@ public enum AttributeTypeStrategy {
 		}
 
 		@Override
+		void addAttributeActive(XmlBuilder context) {
+			DocWriterNewXmlUtils.addAttributeRef(context, ATTRIBUTE_ACTIVE_NAME);
+		}
+
+		@Override
 		List<XmlBuilder> createHelperTypes() {
 			log.trace("Adding helper types for boolean and integer attributes, allowing ${...} references");
 			List<XmlBuilder> result = new ArrayList<>();
 			result.add(createTypeFrankBoolean());
 			result.add(createTypeFrankInteger());
+			result.add(createAttributeForAttributeActive());
 			// Helper type for allowing a variable reference instead of an enum value
 			result.add(createTypeVariableReference(VARIABLE_REFERENCE));
 			return result;
@@ -137,10 +157,36 @@ public enum AttributeTypeStrategy {
 			XmlBuilder restriction = new XmlBuilder("restriction", "xs", XML_SCHEMA_URI);
 			simpleType.addSubElement(restriction);
 			restriction.addAttribute("base", "xs:string");
-			XmlBuilder patternElement = new XmlBuilder("pattern", "xs", XML_SCHEMA_URI);
-			restriction.addSubElement(patternElement);
-			patternElement.addAttribute("value", pattern);
+			addPattern(restriction, pattern);
 			return simpleType;
+		}
+
+		private XmlBuilder createAttributeForAttributeActive() {
+			XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
+			attribute.addAttribute("name", ATTRIBUTE_ACTIVE_NAME);
+			DocWriterNewXmlUtils.addDocumentation(attribute, "If defined and empty or false, then this element and all its children are ignored");
+			XmlBuilder simpleType = DocWriterNewXmlUtils.addSimpleType(attribute);
+			XmlBuilder restriction = DocWriterNewXmlUtils.addRestriction(simpleType, "xs:string");
+			DocWriterNewXmlUtils.addPattern(restriction, getPattern());
+			return attribute;
+		}
+
+		private String getPattern() {
+			return "\\!?" + "(" + getPatternThatMightBeNegated() + ")";
+		}
+
+		private String getPatternThatMightBeNegated() {
+			String patternTrue = getCaseInsensitivePattern(Boolean.valueOf(true).toString());
+			String patternFalse = getCaseInsensitivePattern(Boolean.valueOf(false).toString());
+			return Arrays.asList(PATTERN_REF, patternTrue, patternFalse).stream()
+					.map(s -> "(" + s + ")")
+					.collect(Collectors.joining("|"));
+		}
+
+		private String getCaseInsensitivePattern(final String word) {
+			return IntStream.range(0, word.length()).mapToObj(i -> Character.valueOf(word.charAt(i)))
+				.map(c -> "[" + Character.toLowerCase(c) + Character.toUpperCase(c) + "]")
+				.collect(Collectors.joining(""));
 		}
 	}
 
@@ -153,6 +199,10 @@ public enum AttributeTypeStrategy {
 		@Override
 		XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
 			return DocWriterNewXmlUtils.addAttribute(context, attribute.getName(), attribute.getAttributeValues().getUniqueName(ATTRIBUTE_VALUES_TYPE));
+		}
+
+		@Override
+		void addAttributeActive(XmlBuilder context) {
 		}
 
 		@Override

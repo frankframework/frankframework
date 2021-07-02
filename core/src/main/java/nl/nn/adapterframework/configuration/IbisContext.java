@@ -67,12 +67,16 @@ public class IbisContext extends IbisApplicationContext {
 	private final String INSTANCE_NAME = APP_CONSTANTS.getResolvedProperty("instance.name");
 
 	static {
-		if(!Boolean.parseBoolean(AppConstants.getInstance().getProperty("jdbc.convertFieldnamesToUppercase")))
-			ConfigurationWarnings.addGlobalWarning(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
+		if(!Boolean.parseBoolean(APP_CONSTANTS.getProperty("jdbc.convertFieldnamesToUppercase")))
+			ApplicationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
-		String loadFileSuffix = AppConstants.getInstance().getProperty("ADDITIONAL.PROPERTIES.FILE.SUFFIX");
+		String loadFileSuffix = APP_CONSTANTS.getProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
 		if (StringUtils.isNotEmpty(loadFileSuffix))
-			ConfigurationWarnings.addGlobalWarning(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
+			ApplicationWarnings.add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
+
+		String autoDatabaseClassLoader = APP_CONSTANTS.getProperty("configurations.autoDatabaseClassLoader");
+		if (StringUtils.isNotEmpty(autoDatabaseClassLoader))
+			ApplicationWarnings.add(LOG, "DEPRECATED property [configurations.autoDatabaseClassLoader], please use [configurations.database.autoLoad] instead");
 	}
 
 	private IbisManager ibisManager;
@@ -371,8 +375,6 @@ public class IbisContext extends IbisApplicationContext {
 
 			currentConfigurationVersion = configuration.getVersion();
 
-			ConfigurationWarnings.getInstance().setActiveConfiguration(configuration);
-
 			if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
 				try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
 					databaseMigrator.setIbisContext(this);
@@ -415,7 +417,6 @@ public class IbisContext extends IbisApplicationContext {
 			log(currentConfigurationName, currentConfigurationVersion, "exception", MessageKeeperLevel.ERROR, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
-			ConfigurationWarnings.getInstance().setActiveConfiguration(null);
 		}
 	}
 

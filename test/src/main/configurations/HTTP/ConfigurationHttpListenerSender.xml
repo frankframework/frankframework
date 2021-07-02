@@ -1,7 +1,6 @@
 <module>
 	<adapter name="HttpListener" description="Test the functioning of the HttpListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="HttpListener">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.HttpListener"
 				serviceName="LocalHttpListener" />
 		</receiver>
@@ -15,8 +14,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="HttpSender" description="Test the functioning of the HttpSender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="HttpSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="${web.contextpath}-HttpSender" />
 		</receiver>
@@ -34,8 +32,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="HttpListenerTimeout">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="HttpListenerTimeout">
+		<receiver>
 			<listener className="nl.nn.adapterframework.http.HttpListener"
 				serviceName="LocalHttpListenerTimeout" />
 		</receiver>
@@ -50,8 +47,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="HttpSenderTimeout">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="HttpSenderTimeout">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="${web.contextpath}-HttpSenderTimeout" />
 		</receiver>
@@ -74,11 +70,10 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<!--adapter description="Actuver Http" name="StartActuverHttp"> <receiver 
-		className="nl.nn.adapterframework.receivers.GenericReceiver" name="StartActuverHttp"> 
+	<!--adapter description="Actuver Http" name="StartActuverHttp"> <receiver> 
 		<listener className="nl.nn.adapterframework.receivers.JavaListener" name="StartActuverHttp"/> 
 		</receiver> <pipeline firstPipe="ActuverHttpSend"> <exits> <exit path="READY" 
-		state="success"/> </exits> <pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" 
+		state="success"/> </exits> <pipe className="nl.nn.adapterframework.pipes.SenderPipe" 
 		name="ActuverHttpSend"> <sender className="nl.nn.adapterframework.http.HttpSender" 
 		methodType="POST" paramsInUrl="false" ignoreRedirects="true" timeout="15000" 
 		url="http://rn0903r.itc.intranet/actuver/ActuverServlet"> <param name="datasource" 

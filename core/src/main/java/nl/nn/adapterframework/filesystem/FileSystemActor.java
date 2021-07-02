@@ -34,12 +34,15 @@ import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -52,6 +55,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -121,20 +125,22 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String[] ACTIONS_WRITABLE_FS= {ACTION_WRITE1, ACTION_WRITE2, ACTION_APPEND, ACTION_RENAME};
 	public final String[] ACTIONS_MAIL_FS= {ACTION_FORWARD};
 
-	private String action;
-	private String filename;
-	private String destination;
-	private String inputFolder; // folder for action=list
-	private boolean createFolder; // for action move, rename and list
+	private @Getter String action;
+	private @Getter String filename;
+	private @Getter String destination;
+	private @Getter String inputFolder; // folder for action=list
+	private @Getter boolean createFolder; // for action move, rename and list
 
-	private String base64;
-	private int rotateDays=0;
-	private int rotateSize=0;
-	private boolean overwrite=false;
-	private int numberOfBackups=0;
-	private String wildCard=null;
-	private String excludeWildCard=null;
-	private boolean removeNonEmptyFolder=false;
+	private @Getter String base64;
+	private @Getter int rotateDays=0;
+	private @Getter int rotateSize=0;
+	private @Getter boolean overwrite=false;
+	private @Getter int numberOfBackups=0;
+	private @Getter String wildcard=null;
+	private @Getter String excludeWildcard=null;
+	private @Getter boolean removeNonEmptyFolder=false;
+	private @Getter boolean writeLineSeparator=false;
+	private @Getter String charset;
 
 	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS_BASIC));
 	
@@ -142,12 +148,14 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private FS fileSystem;
 	private ParameterList parameterList;
 
+	private byte[] eolArray=null;
+
 	
-	public void configure(FS fileSystem, ParameterList parameterList, INamedObject owner) throws ConfigurationException {
+	public void configure(FS fileSystem, ParameterList parameterList, IConfigurable owner) throws ConfigurationException {
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
-
+		
 		if (fileSystem instanceof IWritableFileSystem) {
 			actions.addAll(Arrays.asList(ACTIONS_WRITABLE_FS));
 		}
@@ -190,6 +198,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'rotateDays'");
 			}
 		}
+		eolArray = System.getProperty("line.separator").getBytes();
 	}
 
 	private void checkConfiguration(String action) throws ConfigurationException {
@@ -322,14 +331,14 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				return getFileAsXmlBuilder(file, "file").toXML();
 			} else if (action.equalsIgnoreCase(ACTION_READ1)) {
 				F file=getFile(input, pvl);
-				Message in = fileSystem.readFile(file);
+				Message in = fileSystem.readFile(file, getCharset());
 				if (StringUtils.isNotEmpty(getBase64())) {
 					return new Base64InputStream(in.asInputStream(), getBase64().equals(BASE64_ENCODE));
 				}
 				return in;
 			} else if (action.equalsIgnoreCase(ACTION_READ_DELETE)) {
 				F file=getFile(input, pvl);
-				InputStream in = new FilterInputStream(fileSystem.readFile(file).asInputStream()) {
+				InputStream in = new FilterInputStream(fileSystem.readFile(file, getCharset()).asInputStream()) {
 
 					@Override
 					public void close() throws IOException {
@@ -359,7 +368,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else if (action.equalsIgnoreCase(ACTION_LIST)) {
 				String folder = arrangeFolder(determineInputFoldername(input, pvl));
 				XmlBuilder dirXml = new XmlBuilder("directory");
-				try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
+				try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard())) {
 					int count = 0;
 					Iterator<F> it = stream.iterator();
 					while(it.hasNext()) {
@@ -447,10 +456,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	 * @throws IOException 
 	 */
 	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException {
-		if(StringUtils.isNotEmpty(getWildCard()) || StringUtils.isNotEmpty(getExcludeWildCard())) { 
+		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) { 
 			String folder = arrangeFolder(determineInputFoldername(input, pvl));
 			XmlBuilder dirXml = new XmlBuilder(getAction()+"FilesList");
-			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildCard(), getExcludeWildCard())) {
+			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard())) {
 				Iterator<F> it = stream.iterator();
 				while(it.hasNext()) {
 					F file = it.next();
@@ -500,15 +509,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {
-			out.write(((String) contents).getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
+			out.write(((String) contents).getBytes(StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 		} else {
 			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
 		}
-		
+		if(isWriteLineSeparator()) {
+			out.write(eolArray);
+		}
 	}
 	
 	
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return (ACTION_WRITE1.equals(getAction()) || ACTION_APPEND.equals(getAction())) && parameterList.findParameter(PARAMETER_FILENAME)!=null;
 	}
 
@@ -597,48 +608,30 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public void setAction(String action) {
 		this.action = action;
 	}
-	public String getAction() {
-		return action;
-	}
 
 	@IbisDoc({"2", "Folder that is scanned for files when action="+ACTION_LIST+". When not set, the root is scanned", ""})
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
-	}
-	public String getInputFolder() {
-		return inputFolder;
 	}
 
 	@IbisDoc({"3", "when set to <code>true</code>, the folder to move or copy to is created if it does not exist", "false"})
 	public void setCreateFolder(boolean createFolder) {
 		this.createFolder = createFolder;
 	}
-	public boolean isCreateFolder() {
-		return createFolder;
-	}
 
 	@IbisDoc({"4", "when set to <code>true</code>, for actions "+ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+", the destination file is overwritten if it already exists", "false"})
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
-	}
-	public boolean isOverwrite() {
-		return overwrite;
 	}
 
 	@IbisDoc({"5", "filename to operate on. When not set, the parameter "+PARAMETER_FILENAME+" is used. When that is not set either, the input is used", ""})
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
-	public String getFilename() {
-		return filename;
-	}
 
 	@IbisDoc({"5", "destination for "+ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+". If not set, the parameter "+PARAMETER_DESTINATION+" is used. When that is not set either, the input is used", ""})
 	public void setDestination(String destination) {
 		this.destination = destination;
-	}
-	public String getDestination() {
-		return destination;
 	}
 
 
@@ -646,24 +639,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public void setRotateDays(int rotateDays) {
 		this.rotateDays = rotateDays;
 	}
-	public int getRotateDays() {
-		return rotateDays;
-	}
 
 	@IbisDoc({"7", "for action="+ACTION_APPEND+": when set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides", "0"})
 	public void setRotateSize(int rotateSize) {
 		this.rotateSize = rotateSize;
 	}
-	public int getRotateSize() {
-		return rotateSize;
-	}
 
 	@IbisDoc({"8", "for action="+ACTION_WRITE1+", and for action="+ACTION_APPEND+" with rotateSize>0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides", "0"})
 	public void setNumberOfBackups(int numberOfBackups) {
 		this.numberOfBackups = numberOfBackups;
-	}
-	public int getNumberOfBackups() {
-		return numberOfBackups;
 	}
 
 	@IbisDoc({"9", "Can be set to 'encode' or 'decode' for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
@@ -671,31 +655,39 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public void setBase64(String base64) {
 		this.base64 = base64;
 	}
-	public String getBase64() {
-		return base64;
-	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
+	public void setWildCard(String wildcard) {
+		setWildcard(wildcard);
+	}
 	@IbisDoc({"10", "Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, ""})
-	public void setWildCard(String wildCard) {
-		this.wildCard = wildCard;
-	}
-	public String getWildCard() {
-		return wildCard;
+	public void setWildcard(String wildcard) {
+		this.wildcard = wildcard;
 	}
 
-	@IbisDoc({"11", "Filter of files to be excluded when looking in inputFolder. Works with actions "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, ""})
-	public void setExcludeWildCard(String excludeWildCard) {
-		this.excludeWildCard = excludeWildCard;
+	@Deprecated
+	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
+	public void setExcludeWildCard(String excludeWildcard) {
+		setExcludeWildcard(excludeWildcard);
 	}
-	public String getExcludeWildCard() {
-		return excludeWildCard;
+	@IbisDoc({"11", "Filter of files to be excluded when looking in inputFolder. Works with actions "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, ""})
+	public void setExcludeWildcard(String excludeWildcard) {
+		this.excludeWildcard = excludeWildcard;
 	}
 
 	@IbisDoc({"12", "If set to true then the folder and the content of the non empty folder will be deleted."})
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		this.removeNonEmptyFolder = removeNonEmptyFolder;
 	}
-	public boolean isRemoveNonEmptyFolder() {
-		return removeNonEmptyFolder;
+
+	@IbisDoc({"13", "If set to true then the system specific line separator will be appended to the file after executing the action. Works with actions "+ACTION_WRITE1+", and for action="+ACTION_APPEND, "false"})
+	public void setWriteLineSeparator(boolean writeLineSeparator) {
+		this.writeLineSeparator = writeLineSeparator;
+	}
+
+	@IbisDoc({"14", "Charset to be used for read and write action"})
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 }

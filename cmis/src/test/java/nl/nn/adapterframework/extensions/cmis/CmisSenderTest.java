@@ -175,7 +175,7 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 		String dummyString = "dummyString";
 		sender.setFileNameSessionKey(dummyString);
 
-		assertEquals(dummyString, sender.getFileNameSessionKey());
+		assertEquals(dummyString, sender.getFilenameSessionKey());
 	}
 
 	@Test
@@ -183,7 +183,7 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 		String dummyString = "dummyString";
 		sender.setFileInputStreamSessionKey(dummyString);
 
-		assertEquals(dummyString, sender.getFileInputStreamSessionKey());
+		assertEquals(dummyString, sender.getFileSessionKey());
 	}
 
 	@Test
@@ -191,7 +191,7 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 		String dummyString = "dummyString";
 		sender.setFileContentSessionKey(dummyString);
 
-		assertEquals(dummyString, sender.getFileContentSessionKey());
+		assertEquals(dummyString, sender.getFileSessionKey());
 	}
 
 	@Test

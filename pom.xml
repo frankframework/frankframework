@@ -64,6 +64,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
+				<artifactId>credentialprovider</artifactId>
+				<version>7.7-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ifsa</artifactId>
 				<version>7.7-SNAPSHOT</version>
 			</dependency>
@@ -140,6 +145,11 @@
 				<version>7.7-SNAPSHOT</version>
 			</dependency>
 			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-frankDoc</artifactId>
+				<version>7.7-SNAPSHOT</version>
+			</dependency>
+			<dependency>
 				<groupId>commons-lang</groupId>
 				<artifactId>commons-lang</artifactId>
 				<version>2.6</version>
@@ -165,11 +175,6 @@
 				<groupId>javax.ejb</groupId>
 				<artifactId>ejb-api</artifactId>
 				<version>3.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-struts</artifactId>
-				<version>1.2.9.4</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.servlet</groupId>
@@ -200,11 +205,6 @@
 				<version>1.8.1</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-httpclient</groupId>
-				<artifactId>commons-httpclient</artifactId>
-				<version>3.1</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-pool2</artifactId>
 				<version>2.9.0</version>
@@ -222,7 +222,7 @@
 			<dependency>
 				<groupId>commons-net</groupId>
 				<artifactId>commons-net</artifactId>
-				<version>1.4.1</version>
+				<version>3.8.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
@@ -289,7 +289,7 @@
 				<executions>
 					<execution>
 						<id>attach-sources</id>
-						<phase>verify</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>jar-no-fork</goal>
 						</goals>
@@ -308,6 +308,7 @@
 					<excludes>
 						<exclude>it.**</exclude>
 					</excludes>
+					<argLine>-Dfile.encoding=CP-1252</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -330,6 +331,28 @@
 				<version>3.9.1</version>
 			</plugin>
 		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.projectlombok</groupId>
+					<artifactId>lombok-maven-plugin</artifactId>
+					<version>1.18.16.0</version>
+					<executions>
+						<execution>
+							<phase>generate-sources</phase>
+							<goals>
+								<goal>delombok</goal>
+							</goals>
+							<configuration>
+								<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+								<addOutputDirectory>false</addOutputDirectory>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<reporting>
@@ -350,6 +373,14 @@
 				<configuration>
 					<doclint>none</doclint>
 				</configuration>
+				<reportSets>
+					<reportSet>
+						<id>javadoc</id>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+				</reportSets>
 			</plugin>
 		</plugins>
 	</reporting>
@@ -448,6 +479,7 @@
 				<module>akamai</module>
 				<module>example</module>
 				<module>frankDoc</module>
+				<module>credentialProvider</module>
 			</modules>
 		</profile>
 		<profile>
@@ -514,6 +546,10 @@
 			<build>
 				<plugins>
 					<plugin>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<version>3.2.0</version>
@@ -548,19 +584,52 @@
 							</execution>
 						</executions>
 					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>attachFrankDoc</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
 					<plugin>
 						<groupId>org.projectlombok</groupId>
 						<artifactId>lombok-maven-plugin</artifactId>
-						<version>1.18.16.0</version>
+					</plugin>
+					<plugin>
+						<groupId>org.ibissource</groupId>
+						<artifactId>frank-doc-plugin</artifactId>
+						<version>0.1-SNAPSHOT</version>
+						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
+						<configuration>
+							<doclint>none</doclint>
+							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
+							<docletArtifact>
+								<groupId>org.ibissource</groupId>
+								<artifactId>ibis-adapterframework-frankDoc</artifactId>
+								<version>${project.version}</version>
+							</docletArtifact>
+							<additionalOptions>
+								<additionalOption>-outputDirectory</additionalOption>
+								<additionalOption>${project.build.directory}/frankdoc</additionalOption>
+							</additionalOptions>
+							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
+							<source>1.8</source>
+							<useStandardDocletOptions>false</useStandardDocletOptions>
+							<appendTo>ibis-adapterframework-core</appendTo>
+							<finalName>ibis-adapterframework-frankdoc-${project.version}</finalName>
+						</configuration>
 						<executions>
 							<execution>
-								<phase>generate-sources</phase>
+								<id>attach-frankdoc</id>
+								<phase>process-sources</phase>
 								<goals>
-									<goal>delombok</goal>
+									<goal>aggregate-jar</goal>
 								</goals>
 								<configuration>
-									<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-									<addOutputDirectory>false</addOutputDirectory>
+									<failOnError>false</failOnError>
 								</configuration>
 							</execution>
 						</executions>

@@ -64,7 +64,7 @@ if(version.isEmpty()) {
 
 <script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
 <script src="js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
-<script data-pace-options='{ "ajax": false }' src="js/plugins/pace/pace.min.js"></script>
+<script data-pace-options='{ "ajax": false }' src="js/plugins/pace/pace-v1.2.4.min.js"></script>
 
 <script src="js/main.js"></script>
 

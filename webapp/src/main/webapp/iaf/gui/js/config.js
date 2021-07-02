@@ -225,17 +225,25 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 				$state.go("pages.manage_configurations");
 		}
 	})
-	.state('pages.logging', {
+	.state('pages.logging_show', {
 		url: "/logging?directory&file",
 		templateUrl: "views/ShowLogging.html",
 		data: {
 			pageTitle: 'Logging',
-			breadcrumbs: 'Logging'
+			breadcrumbs: 'Logging > Log Files'
 		},
 		params : {
 			directory : null,
 			file : null
 		}
+	})
+	.state('pages.logging_manage', {
+		url: "/logging/settings",
+		templateUrl: "views/ManageLogging.html",
+		data: {
+			pageTitle: 'Logging',
+			breadcrumbs: 'Logging > Log Settings'
+		},
 	})
 	.state('pages.send_message', {
 		url: "/jms/send-message",
@@ -340,12 +348,40 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		}
 	})
 	.state('pages.monitors', {
-		url: "/monitors",
+		url: "/monitors?configuration",
 		templateUrl: "views/ShowMonitors.html",
 		data: {
 			pageTitle: 'Monitors',
 			breadcrumbs: 'Monitors'
-		}
+		},
+		params: {
+			configuration: { value: null, squash: true},
+		},
+	})
+	.state('pages.monitors_editTrigger', {
+		url: "/monitors/:monitor/triggers/:trigger?configuration",
+		templateUrl: "views/EditMonitorTrigger.html",
+		data: {
+			pageTitle: 'Edit Trigger',
+			breadcrumbs: 'Monitors > Triggers > Edit'
+		},
+		params: {
+			configuration: { value: null, squash: true},
+			monitor: "",
+			trigger: "",
+		},
+	})
+	.state('pages.monitors_addTrigger', {
+		url: "/monitors/:monitor/triggers/new?configuration",
+		templateUrl: "views/EditMonitorTrigger.html",
+		data: {
+			pageTitle: 'Add Trigger',
+			breadcrumbs: 'Monitors > Triggers > Add'
+		},
+		params: {
+			configuration: { value: null, squash: true},
+			monitor: "",
+		},
 	})
 	.state('pages.ibisstore_summary', {
 		url: "/ibisstore-summary",

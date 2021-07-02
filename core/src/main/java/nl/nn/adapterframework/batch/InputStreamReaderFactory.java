@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public class InputStreamReaderFactory implements IInputStreamReaderFactory {
+public class InputStreamReaderFactory implements IReaderFactory {
 
 	@Override
 	public void configure() throws ConfigurationException {

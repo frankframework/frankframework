@@ -15,23 +15,27 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase> extends Mockito {
 
@@ -49,6 +53,8 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 	public void setUp() throws Exception {
 		appConstants = AppConstants.getInstance();
 		createAndConfigure(".");
+
+		ApplicationWarnings.removeInstance();
 	}
 
 	protected void createAndConfigure() throws Exception {

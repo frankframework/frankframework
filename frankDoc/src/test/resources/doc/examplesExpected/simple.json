@@ -2,16 +2,31 @@
   "groups": [
     {
       "name": "Child",
-      "category": "Child",
+      "types": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.IChild"]
+    },
+    {
+      "name": "Other",
+      "types": [
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.IChild",
       "members": [
         "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
         "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild"
       ]
     },
     {
-      "name": "Other",
-      "category": "Other",
+      "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
       "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"]
+    },
+    {
+      "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
+      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"]
     }
   ],
   "elements": [
@@ -23,12 +38,12 @@
       "attributes": [{
         "name": "abstractParentOfStartAttribute",
         "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart"
-      }],
-      "children": []
+      }]
     },
     {
       "name": "DescribedPossibleIChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
+      "descriptionHeader": "This is the header of the JavaDoc of \\\"DescribedPossibleIChild\\\".",
       "elementNames": ["DescribedPossibleIRoleNameIChild"],
       "attributes": [
         {
@@ -42,8 +57,7 @@
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
           "description": "Second attribute of DescribedPossibleIChild"
         }
-      ],
-      "children": []
+      ]
     },
     {
       "name": "NotDescribedPossibleIChild",
@@ -67,15 +81,12 @@
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
           "type": "int"
         }
-      ],
-      "children": []
+      ]
     },
     {
       "name": "Object",
       "fullName": "java.lang.Object",
-      "elementNames": [],
-      "attributes": [],
-      "children": []
+      "elementNames": []
     },
     {
       "name": "Start",
@@ -90,21 +101,21 @@
         {
           "multiple": false,
           "roleName": "roleNameIChild",
-          "group": "Child"
+          "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.IChild"
         },
         {
           "multiple": true,
           "roleName": "roleNameTChild",
-          "group": "Other"
+          "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"
         }
       ]
     },
     {
       "name": "TChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
-      "elementNames": ["RoleNameTChild"],
-      "attributes": [],
-      "children": []
+      "descriptionHeader": "This is the header of the JavaDoc of \\\"TChild\\\".",
+      "elementNames": ["RoleNameTChild"]
     }
   ]
 }
+        

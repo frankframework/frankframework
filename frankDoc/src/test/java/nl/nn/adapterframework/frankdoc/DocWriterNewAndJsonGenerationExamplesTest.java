@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import javax.json.JsonObject;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -30,40 +31,52 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
-import nl.nn.adapterframework.frankdoc.model.FrankElementFilters;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
 public class DocWriterNewAndJsonGenerationExamplesTest {
-	@Parameters(name = "{1}")
+	@Parameters(name = "{0}-{3}-{4}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"},
-			{"examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"},
-			{"examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master", null, "deprecated.json"}
+			{XsdVersion.STRICT, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"},
+			{XsdVersion.COMPATIBILITY, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simpleForCompatibility.xsd", "simple.json"},
+			{XsdVersion.STRICT, "examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"},
+			{XsdVersion.STRICT, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master", null, "deprecated.json"}
 		});
 	}
 
 	@Parameter(0)
-	public String digesterRulesFileName;
+	public XsdVersion xsdVersion;
 
 	@Parameter(1)
-	public String startClassName;
+	public String digesterRulesFileName;
 
 	@Parameter(2)
-	public String expectedXsdFileName;
+	public String startClassName;
 
 	@Parameter(3)
+	public String expectedXsdFileName;
+
+	@Parameter(4)
 	public String expectedJsonFileName;
+
+	private String packageOfClasses;
+
+	@Before
+	public void setUp() {
+		int idx = startClassName.lastIndexOf(".");
+		packageOfClasses = startClassName.substring(0, idx);
+	}
 
 	@Test
 	public void testXsd() throws Exception {
 		assumeNotNull(expectedXsdFileName);
 		FrankDocModel model = createModel();
 		DocWriterNew docWriter = new DocWriterNew(model, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
-		docWriter.init(startClassName, XsdVersion.STRICT);
+		docWriter.init(startClassName, xsdVersion);
 		String actualXsd = docWriter.getSchema();
 		System.out.println(actualXsd);
 		String expectedXsd = TestFileUtils.getTestFile("/doc/examplesExpected/" + expectedXsdFileName);
@@ -71,8 +84,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	}
 
 	private FrankDocModel createModel() throws Exception {
-		FrankClassRepository classRepository = FrankClassRepository.getReflectInstance(
-				FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter(), FrankElementFilters.getExcludeFiltersForSuperclass());
+		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(packageOfClasses);
 		return FrankDocModel.populate(
 				getDigesterRulesPath(digesterRulesFileName), startClassName, classRepository);
 	}

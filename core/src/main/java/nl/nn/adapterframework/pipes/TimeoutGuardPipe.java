@@ -82,7 +82,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 				log.error(msgString, e);
 				String msgCdataString = "<![CDATA[" + msgString + "]]>";
 				Message errorMessage = new Message("<error>" + msgCdataString + "</error>");
-				return new PipeRunResult(getForward(), errorMessage);
+				return new PipeRunResult(getSuccessForward(), errorMessage);
 			}
 		} finally {
 			if(tg.cancel()) {
@@ -96,7 +96,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 					log.error(msgString, e);
 					String msgCdataString = "<![CDATA[" + msgString + ": "+ e.getMessage() + "]]>";
 					Message errorMessage = new Message("<error>" + msgCdataString + "</error>");
-					return new PipeRunResult(getForward(), errorMessage);
+					return new PipeRunResult(getSuccessForward(), errorMessage);
 				}
 			}
 		}

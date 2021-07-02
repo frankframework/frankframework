@@ -27,7 +27,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 			try {
 				long timeout = Long.parseLong(input.asString());
 				Thread.sleep(timeout);
-				return new PipeRunResult(getForward(), new Message(SUCCESS_MESSAGE));
+				return new PipeRunResult(getSuccessForward(), new Message(SUCCESS_MESSAGE));
 			} catch (NumberFormatException | IOException e) {
 				throw new PipeRunException(this, "error parsing input", e);
 			} catch (InterruptedException e) {

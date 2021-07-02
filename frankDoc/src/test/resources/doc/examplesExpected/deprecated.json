@@ -2,9 +2,23 @@
     "groups":[
         {
             "name":"Other",
-            "category":"Other",
+            "types":[
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild",
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master"
+            ]
+        }
+    ],
+    "types":[
+        {
+            "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild",
             "members":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild"
+            ]
+        },
+        {
+            "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master",
+            "members":[
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master"
             ]
         }
     ],
@@ -28,7 +42,7 @@
                     "deprecated":true,
                     "multiple":true,
                     "roleName":"roleNameTChild",
-                    "group":"Other"
+                    "type":"nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.TChild"
                 }
             ]
         },
@@ -36,10 +50,6 @@
             "name":"Object",
             "fullName":"java.lang.Object",
             "elementNames":[
-            ],
-            "attributes":[
-            ],
-            "children":[
             ]
         },
         {
@@ -48,10 +58,6 @@
             "deprecated":true,
             "elementNames":[
                 "RoleNameTChild"
-            ],
-            "attributes":[
-            ],
-            "children":[
             ]
         }
     ]

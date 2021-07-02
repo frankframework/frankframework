@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import java.util.StringTokenizer;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -39,6 +38,7 @@ import org.springframework.util.ResourceUtils;
 
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link IbisApplicationServlet servlet} 
@@ -73,10 +73,10 @@ public class IbisApplicationContext {
 	private AbstractApplicationContext applicationContext;
 	private ApplicationContext parentContext = null;
 
-	public final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private Logger log = LogUtil.getLogger(this);
 	private BootState state = BootState.FIRST_START;
-	private Map<String, String> iafModules = new HashMap<String, String>();
+	private Map<String, String> iafModules = new HashMap<>();
 
 
 	public void setParentContext(ApplicationContext parentContext) {
@@ -168,6 +168,7 @@ public class IbisApplicationContext {
 		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
 		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
 		classPathapplicationContext.setId("IbisApplicationContext");
+		classPathapplicationContext.setDisplayName("IbisApplicationContext");
 
 		return classPathapplicationContext;
 	}
@@ -191,9 +192,8 @@ public class IbisApplicationContext {
 		return applicationContext.getBean(beanName, beanClass);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> T createBeanAutowireByName(Class<T> beanClass) {
-		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		return SpringUtils.createBean(applicationContext, beanClass);
 	}
 
 	/**

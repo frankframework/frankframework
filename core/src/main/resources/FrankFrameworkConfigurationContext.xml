@@ -6,8 +6,15 @@
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
 	default-autowire="byName"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+	">
+
+	<!-- AOP has to be enabled explicitly on a per Context basis -->
+	<aop:config proxy-target-class="true" />
 
 	<bean
 		name="configurationDigester"
@@ -31,6 +38,13 @@
 		autowire="byType"
 		scope="singleton"
 	/>
+
+	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigurationWarnings" />
+	<bean name="eventPublisher" class="nl.nn.adapterframework.monitoring.EventPublisher" />
+
+	<bean name="monitorManager" class="nl.nn.adapterframework.monitoring.MonitorManager" />
+<!-- 	<bean name="applicationEventMulticaster" class="nl.nn.adapterframework.lifecycle.FrankEventMulticaster" /> -->
+
 
 	<!--
 	Beans created from Configuration.xml, but prototyped here for
@@ -135,22 +149,21 @@
 	/>
 
 	<bean
-		name="proto-trigger"
+		name="proto-alarm,proto-clearing,proto-trigger"
 		class="nl.nn.adapterframework.monitoring.Trigger"
 		autowire="byName"
 		scope="prototype"
 	/>
 
 	<bean
-		name="proto-alarm"
-		class="nl.nn.adapterframework.monitoring.Trigger"
+		name="proto-destination"
+		class="nl.nn.adapterframework.monitoring.IMonitorAdapter"
 		autowire="byName"
 		scope="prototype"
 	/>
-
 	<bean
-		name="proto-clearing"
-		class="nl.nn.adapterframework.monitoring.Trigger"
+		name="proto-adapterfilter"
+		class="nl.nn.adapterframework.monitoring.AdapterFilter"
 		autowire="byName"
 		scope="prototype"
 	/>

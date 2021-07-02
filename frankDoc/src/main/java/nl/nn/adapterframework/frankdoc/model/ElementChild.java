@@ -20,11 +20,13 @@ import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.DocWriterNew;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
+import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -42,6 +44,8 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author martijn
  */
 public abstract class ElementChild {
+	static final String JAVADOC_DEFAULT_VALUE_TAG = "@ff.default";
+
 	private static Logger log = LogUtil.getLogger(ElementChild.class);
 
 	private @Getter FrankElement owningElement;
@@ -79,7 +83,7 @@ public abstract class ElementChild {
 	/**
 	 * Different {@link ElementChild} of the same FrankElement are allowed to have the same order.
 	 */
-	private @Getter @Setter int order = Integer.MAX_VALUE;
+	private @Getter(AccessLevel.PACKAGE) @Setter(AccessLevel.PACKAGE) int order = Integer.MAX_VALUE;
 	private @Getter String description;
 	private @Getter String defaultValue;
 
@@ -127,17 +131,31 @@ public abstract class ElementChild {
 
 	abstract boolean overrideIsMeaningful(ElementChild overriddenFrom);
 
-	boolean parseIbisDocAnnotation(FrankAnnotation ibisDoc) {
+	void setJavaDocBasedDescriptionAndDefault(FrankMethod method) {
+		try {
+			String value = method.getJavaDocIncludingInherited();
+			if(value != null) {
+				description = value;
+			}
+			value = method.getJavaDocTagIncludingInherited(JAVADOC_DEFAULT_VALUE_TAG);
+			if(value != null) {
+				defaultValue = value;
+			}
+		} catch(FrankDocException e) {
+			log.warn("A FrankDocException occurred when searching the (inherited) javadoc of {}", method.toString(), e);
+		}
+	}
+
+	void parseIbisDocAnnotation(FrankAnnotation ibisDoc) throws FrankDocException {
 		String[] ibisDocValues = null;
 		try {
 			ibisDocValues = (String[]) ibisDoc.getValue();
 		} catch(FrankDocException e) {
-			log.warn("Could not parse FrankAnnotation of @IbisDoc", e);
+			throw new FrankDocException("Could not parse FrankAnnotation of @IbisDoc", e);
 		}
 		boolean isIbisDocHasOrder = false;
-		description = "";
 		try {
-			order = Integer.parseInt(ibisDocValues[0]);
+			Integer.parseInt(ibisDocValues[0]);
 			isIbisDocHasOrder = true;
 		} catch (NumberFormatException e) {
 			isIbisDocHasOrder = false;
@@ -155,7 +173,6 @@ public abstract class ElementChild {
 				defaultValue = ibisDocValues[1];
 			}
 		}
-		return isIbisDocHasOrder;
 	}
 
 	@Override

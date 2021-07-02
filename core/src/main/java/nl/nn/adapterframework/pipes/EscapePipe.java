@@ -111,7 +111,7 @@ public class EscapePipe extends FixedForwardPipe {
 			}
 		}
 
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public String getSubstringStart() {

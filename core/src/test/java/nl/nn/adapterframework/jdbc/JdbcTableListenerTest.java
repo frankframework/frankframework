@@ -37,8 +37,8 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	 */
 	private boolean testNegativePeekWhileGet = false;
 	
-	public JdbcTableListenerTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
+	public JdbcTableListenerTest(DataSource dataSourceName) throws SQLException {
+		super(dataSourceName);
 		listener = new JdbcTableListener() {
 
 			@Override
@@ -162,7 +162,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1,null);
 			assertEquals("10",rawMessage1);
-			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS)!=null) {
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
 			}
 
@@ -197,7 +197,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 					waitBeforeUpdate.release();
 					updateDone.acquire();
 				}
-				rawMessage1 = listener.changeProcessState(conn, "10", ProcessState.ERROR);
+				rawMessage1 = listener.changeProcessState(conn, "10", ProcessState.ERROR, "test");
 				if (mainThreadFirst) {
 					waitBeforeUpdate.release();
 				} else {
@@ -271,7 +271,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1, null);
 			assertEquals("10",rawMessage1);
-			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS)!=null) {
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
 			}
 
@@ -292,7 +292,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1, null);
 			assertEquals("10",rawMessage1);
-			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS)!=null) {
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
 			}
 
@@ -317,7 +317,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			rawMessage = listener.getRawMessage(connection1,null);
 			assertEquals("10",rawMessage);
-			if (useStatusInProcess=listener.changeProcessState(connection1, rawMessage, ProcessState.INPROCESS)!=null) {
+			if (useStatusInProcess=listener.changeProcessState(connection1, rawMessage, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
 			} else {
 				connection1.rollback();
@@ -325,7 +325,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		}
 
 		if (useStatusInProcess) {
-			listener.changeProcessState(connection, rawMessage, ProcessState.AVAILABLE);
+			listener.changeProcessState(connection, rawMessage, ProcessState.AVAILABLE, "test");
 		}
 		String status = JdbcUtil.executeStringQuery(connection, "SELECT TINT FROM TEMP WHERE TKEY=10");
 		assertEquals("status should be returned to available, to be able to try again", "1", status);

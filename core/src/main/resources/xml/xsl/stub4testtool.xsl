@@ -33,11 +33,7 @@
 	<xsl:template match="adapter">
 		<xsl:element name="adapter">
 			<xsl:apply-templates select="@*" />
-			<xsl:for-each select="receiver[1]">
-				<xsl:call-template name="stubReceiver">
-					<xsl:with-param name="isAdapterStub" select="true()"/>
-				</xsl:call-template>
-			</xsl:for-each>
+			<xsl:call-template name="stubAdapterReceiver"/>
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
@@ -52,43 +48,55 @@
 										or @className='nl.nn.adapterframework.jdbc.MessageStoreListener'
 										or @className='nl.nn.adapterframework.http.rest.ApiListener']]">
 		<xsl:call-template name="copy" />
-		<xsl:call-template name="stubReceiver">
-			<xsl:with-param name="isAdapterStub" select="false()"/>
-		</xsl:call-template>
+		<xsl:call-template name="stubReceiver"/>
 	</xsl:template>
 	
 	<xsl:template match="receiver">
 		<xsl:call-template name="disable" />
-		<xsl:call-template name="stubReceiver">
-			<xsl:with-param name="isAdapterStub" select="false()"/>
-		</xsl:call-template>
+		<xsl:call-template name="stubReceiver"/>
 	</xsl:template>	
 	
-	<xsl:template name="stubReceiver">
-		<xsl:param name="isAdapterStub" as="xs:boolean"/>
-
-		<xsl:variable name="receiverName">
-			<xsl:choose>
-				<xsl:when test="$isAdapterStub">
-					<xsl:value-of select="parent::adapter/@name"/>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="string-join((parent::adapter/@name,xs:string(count(preceding-sibling::receiver)+1)),'-')"/>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
-		
+	<xsl:template name="stubAdapterReceiver">
+		<xsl:variable name="receiverName" select="concat('testtool-',@name)"/>
+		<xsl:variable name="baseReceiver" select="receiver[1]"/>
 		<xsl:element name="receiver">
 			<xsl:attribute name="name">
-				<xsl:value-of select="concat('testtool-',$receiverName)" />
+				<xsl:value-of select="$receiverName" />
 			</xsl:attribute>
-			<xsl:apply-templates select="@*[name()!='transactionAttribute' and name() !='name']" />
+			<xsl:apply-templates select="$baseReceiver/@*[name()!='transactionAttribute']" />
 			<xsl:element name="listener">
 				<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
 				<xsl:attribute name="serviceName">
-					<xsl:value-of select="concat('testtool-',$receiverName)" />
+					<xsl:value-of select="$receiverName" />
 				</xsl:attribute>
-				<xsl:if test="parent::*[adapter]/errorMessageFormatter">
+				<xsl:if test="errorMessageFormatter">
+					<xsl:attribute name="throwException">false</xsl:attribute>
+				</xsl:if>
+			</xsl:element>
+			<xsl:call-template name="stubNameForStorage">
+				<xsl:with-param name="store" select="$baseReceiver/errorStorage[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			</xsl:call-template>
+			<xsl:copy-of select="errorSender[@className='nl.nn.adapterframework.senders.IbisLocalSender']"/>
+			<xsl:call-template name="stubNameForStorage">
+				<xsl:with-param name="store" select="$baseReceiver/messageLog[@className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' or @className='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']"/>
+			</xsl:call-template>
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template name="stubReceiver">
+		<xsl:variable name="receiverName" select="string-join(('testtool',(parent::adapter/@name,xs:string(count(preceding-sibling::receiver)+1))),'-')"/>
+		
+		<xsl:element name="receiver">
+			<xsl:attribute name="name">
+				<xsl:value-of select="$receiverName" />
+			</xsl:attribute>
+			<xsl:apply-templates select="@*[name()!='transactionAttribute' and name()!='name']" />
+			<xsl:element name="listener">
+				<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
+				<xsl:attribute name="serviceName">
+					<xsl:value-of select="$receiverName" />
+				</xsl:attribute>
+				<xsl:if test="parent::adapter/errorMessageFormatter">
 					<xsl:attribute name="throwException">false</xsl:attribute>
 				</xsl:if>
 			</xsl:element>
@@ -366,8 +374,14 @@
 	<xsl:template name="disable">
 		<xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
 		<xsl:copy>
-			<xsl:apply-templates select="*|@*|processing-instruction()|text()" />
+			<xsl:apply-templates select="*|@*|processing-instruction()|text()" mode="disable" />
 		</xsl:copy>
 		<xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="*|@*|processing-instruction()|text()" mode="disable">
+		<xsl:copy>
+			<xsl:apply-templates select="*|@*|processing-instruction()|text()" mode="disable"/>
+		</xsl:copy>
 	</xsl:template>
 </xsl:stylesheet>

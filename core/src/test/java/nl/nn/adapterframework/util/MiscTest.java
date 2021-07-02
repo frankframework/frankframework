@@ -50,8 +50,6 @@ public class MiscTest {
 
 	private static File file;
 
-	private String pathSeperator = File.separator;
-
 	@BeforeClass
 	public static void setUp() throws IOException {
 		sourceFolderPath = testFolder.getRoot().getPath();
@@ -468,7 +466,7 @@ public class MiscTest {
 
 	@Test
 	public void testListToStringWithStringList() {
-		List list = new ArrayList<Integer>();
+		List<String> list = new ArrayList<>();
 		list.add("bailar");
 		list.add("besos");
 		String res = Misc.listToString(list);
@@ -605,4 +603,12 @@ public class MiscTest {
 		assertEquals("<!doctype txt>this is a text file. newly added string new line in the text file.", s1);
 	}
 
+	@Test
+	public void testPrettyJson() throws IOException {
+		URL input = TestFileUtils.getTestFileURL("/Misc/minified.json");
+		String inputString = Misc.resourceToString(input);
+		URL expected = TestFileUtils.getTestFileURL("/Misc/prettified.json");
+		String expectedString = Misc.resourceToString(expected);
+		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
+	}
 }

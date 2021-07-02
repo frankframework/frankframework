@@ -70,7 +70,7 @@ public class TibetView extends View {
 			pipeLineSession.put("StorageId", StorageId);
 			pipeLineSession.put("View", getName());
 			PipeLineResult processResult = adapter.processMessage(null, new Message("<dummy/>"), pipeLineSession);
-			if ((processResult.getState().equalsIgnoreCase("success"))) {
+			if (processResult.isSuccessful()) {
 				return "Allowed";
 			} else {
 				return "Not allowed. Result of adapter "

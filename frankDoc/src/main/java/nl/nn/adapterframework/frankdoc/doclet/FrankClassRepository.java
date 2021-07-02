@@ -16,30 +16,12 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.doclet;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.sun.javadoc.ClassDoc;
 
 public interface FrankClassRepository {
 	FrankClass findClass(String fullName) throws FrankDocException;
-
-	public static FrankClassRepository getReflectInstance(String ...includeFilters) {
-		FrankClassRepositoryReflect result = new FrankClassRepositoryReflect();
-		result.setIncludeFilters(new HashSet<>(Arrays.asList(includeFilters)));
-		result.setExcludeFilters(new HashSet<>());
-		result.setExcludeFiltersForSuperclass(new HashSet<>());
-		return result;
-	}
-
-	public static FrankClassRepository getReflectInstance(Set<String> includeFilters, Set<String> excludeFilters, Set<String> excludeFiltersForSuperclass) {
-		FrankClassRepositoryReflect result = new FrankClassRepositoryReflect();
-		result.setIncludeFilters(includeFilters);
-		result.setExcludeFilters(excludeFilters);
-		result.setExcludeFiltersForSuperclass(excludeFiltersForSuperclass);
-		return result;
-	}
 
 	public static FrankClassRepository getDocletInstance(
 			ClassDoc[] classDocs, Set<String> includeFilters, Set<String> excludeFilters, Set<String> excludeFiltersForSuperclass) {

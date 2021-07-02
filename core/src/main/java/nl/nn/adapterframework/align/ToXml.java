@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017,2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -184,7 +185,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		handleElement(elementDeclaration,rootNode);
 	}
 
-//	@Override
 	public void handleElement(XSElementDeclaration elementDeclaration, N node) throws SAXException {
 		String name = elementDeclaration.getName();
 		String elementNamespace=elementDeclaration.getNamespace();
@@ -230,15 +230,23 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			validatorHandler.endElement(elementNamespace, name, qname);
 			validatorHandler.endPrefixMapping(XSI_PREFIX_MAPPING);
 		} else {
-			validatorHandler.startElement(elementNamespace, name, qname, attributes);
-			handleElementContents(elementDeclaration, node);
-			validatorHandler.endElement(elementNamespace, name, qname);
+			if (isMultipleOccurringChildElement(name) && node instanceof List) {
+				for(Object o:(List)node) {
+					doHandleElement(elementDeclaration, (N)o, elementNamespace, name, qname, attributes);
+				}
+			} else {
+				doHandleElement(elementDeclaration, node, elementNamespace, name, qname, attributes);
+			}
 		}
-//		if (createdPrefix!=null) {
-//			validatorHandler.endPrefixMapping(createdPrefix);
-//		}
 	}
 	
+	private void doHandleElement(XSElementDeclaration elementDeclaration, N node, String elementNamespace, String name, String qname, Attributes attributes) throws SAXException {
+		validatorHandler.startElement(elementNamespace, name, qname, attributes);
+		handleElementContents(elementDeclaration, node);
+		validatorHandler.endElement(elementNamespace, name, qname);
+	}
+
+
 	public void handleElementContents(XSElementDeclaration elementDeclaration, N node) throws SAXException {
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
 		if (typeDefinition==null) {

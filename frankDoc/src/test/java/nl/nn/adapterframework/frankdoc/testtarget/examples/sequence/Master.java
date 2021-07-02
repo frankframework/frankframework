@@ -8,35 +8,35 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * and in the order of appearance are all different. 
  */
 public class Master {
-	@IbisDoc("10")
+	@IbisDoc("20")
 	public void setAlpha(IProton child) {
 	}
 
 	@IbisDoc("30")
-	public void setEpsilon(Opaque child) {
-	}
-
-	@IbisDoc("40")
-	public void setDelta(INemesis child) {
-	}
-
-	@IbisDoc("20")
 	public void setBeta(IMnemonic child) {
 	}
 
+	@IbisDoc("40")
+	public void setEpsilon(Opaque child) {
+	}
+
 	@IbisDoc("10")
+	public void setDelta(INemesis child) {
+	}
+
+	@IbisDoc("30")
 	public void setClemens(String value) {
 	}
 
 	@IbisDoc("40")
-	public void setBernhard(String value) {
-	}
-
-	@IbisDoc("20")
 	public void setArnold(String value) {
 	}
 
-	@IbisDoc("30")
+	@IbisDoc("10")
 	public void setDennis(String value) {
+	}
+
+	@IbisDoc("20")
+	public void setBernhard(String value) {
 	}
 }

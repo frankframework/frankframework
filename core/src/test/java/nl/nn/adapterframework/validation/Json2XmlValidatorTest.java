@@ -87,7 +87,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         if (rootelement!=null) { 
         	instance.setRoot(rootelement);
         }
-        instance.configure(null);
+        instance.configure();
         instance.start();
         validator.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
         validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
@@ -96,7 +96,12 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
         String testXml=inputFile!=null?TestFileUtils.getTestFile(inputFile+".xml"):null;
         System.out.println("testXml ["+inputFile+".xml] contents ["+testXml+"]");
-        String xml2json = jsonPipe.doPipe(new Message(testXml),session).getResult().asString();
+        String xml2json=null; 
+        try {
+        	xml2json = jsonPipe.doPipe(new Message(testXml),session).getResult().asString();
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
         System.out.println("testXml ["+inputFile+".xml] to json ["+xml2json+"]");
         String testJson=inputFile!=null?TestFileUtils.getTestFile(inputFile+".json"):null;
         System.out.println("testJson ["+testJson+"]");
@@ -106,7 +111,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         	String result = prr.getResult().asString();
         	System.out.println("result ["+ToStringBuilder.reflectionToString(prr)+"]");
         	String event;
-        	if (prr.getPipeForward().getName().equals("success")) {
+        	if (prr.isSuccessful()) {
         		event="valid XML";
         	} else {
             	if (prr.getPipeForward().getName().equals("failure")) {
