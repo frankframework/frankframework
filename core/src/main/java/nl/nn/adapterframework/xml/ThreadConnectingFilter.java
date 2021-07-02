@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
-public class ThreadConnectingFilter extends ExceptionCatchingFilter {
+public class ThreadConnectingFilter extends ExceptionCatchingFilter implements AutoCloseable {
 
 	private ThreadConnector threadConnector;
 	
@@ -53,5 +53,10 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 	public void endDocument() throws SAXException {
 		super.endDocument();
 		threadConnector.endThread(null);
+	}
+
+	@Override
+	public void close() throws Exception {
+		threadConnector.close();
 	}
 }
