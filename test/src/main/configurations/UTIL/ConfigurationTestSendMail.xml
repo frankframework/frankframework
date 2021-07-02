@@ -15,7 +15,7 @@
 			/>
 		</receiver>
 		<pipeline firstPipe="CreateMail">
-			
+		
 			<pipe
 				name="CreateMail"
 				className="nl.nn.adapterframework.pipes.XsltPipe"
@@ -23,9 +23,9 @@
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				>
 				<param name="hostname" value="${hostname}" />
-				<param name="message" sessionKey="message" />
-				<param name="mailaddresses" sessionKey="mailaddresses" />
-				<param name="result" sessionKey="result" />
+				<param name="message" sessionkey="originalMessage" />
+				<param name="mailaddresses" value="${errorreport.mailaddresses.fail}" />
+				<param name="result" value="testmail" />
 				<forward name="success" path="SendMail" />
 			</pipe>
 			<pipe
