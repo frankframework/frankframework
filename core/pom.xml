@@ -138,7 +138,7 @@
 			<version>1.8</version>
 		</dependency>
 
-<!-- 	(old) digester is used in LdapSender and StatisticsParser -->
+<!-- 	(old) digester is used in the StatisticsParser -->
 		<dependency>
 			<groupId>commons-digester</groupId>
 			<artifactId>commons-digester</artifactId>

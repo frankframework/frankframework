@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -285,7 +285,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private static final String DEFAULT_RESULT_DELETE = "<LdapResult>Delete Success - Never Existed</LdapResult>";
 	private static final String DEFAULT_RESULT_CREATE_OK = "<LdapResult>Create Success - Already There</LdapResult>";
 	private static final String DEFAULT_RESULT_CREATE_NOK = "<LdapResult>Create FAILED - Entry with given name already exists</LdapResult>";
-	private static final String DEFAULT_RESULT_UPDATE_NOK = "<LdapResult>Update FAILED</LdapResult>";
+//	private static final String DEFAULT_RESULT_UPDATE_NOK = "<LdapResult>Update FAILED</LdapResult>"; //TODO Find out why this was disabled
 	private static final String DEFAULT_RESULT_CHALLENGE_OK = DEFAULT_RESULT;
 	private static final String DEFAULT_RESULT_CHALLENGE_NOK = "<LdapResult>Challenge FAILED - Invalid credentials</LdapResult>";
 	private static final String DEFAULT_RESULT_CHANGE_UNICODE_PWD_OK = DEFAULT_RESULT;
