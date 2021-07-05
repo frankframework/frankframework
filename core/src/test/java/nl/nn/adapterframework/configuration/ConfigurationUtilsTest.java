@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 import java.sql.Connection;
+import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
@@ -34,14 +35,20 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
+import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 
 public class ConfigurationUtilsTest extends Mockito {
 
 	private IbisContext ibisContext = spy(new IbisContext());
 	private PreparedStatementMock stmt;
 
+	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
+	
 	private void mockDatabase() throws Exception {
 		// Mock a FixedQuerySender
 		FixedQuerySender fq = mock(FixedQuerySender.class);
@@ -183,5 +190,24 @@ public class ConfigurationUtilsTest extends Mockito {
 
 		//This field is pretty obsolete, check if it's been set
 		assertNotNull("FILENAME not set", parameters.get("FILENAME"));
+	}
+	
+	@Test
+	public void stub4testtoolTest() throws Exception {
+		Map<String, Object> parameters = new Hashtable<String, Object>();
+		// Parameter disableValidators has been used to test the impact of
+		// validators on memory usage.
+		parameters.put("disableValidators", false);
+		
+		String originalConfiguration = TestFileUtils.getTestFile("/ConfigurationUtils/stub4testtool/original.xml");
+		String stubbedConfiguration = ConfigurationUtils.transformConfiguration(originalConfiguration, STUB4TESTTOOL_XSLT, parameters);
+		String expectedConfiguration = TestFileUtils.getTestFile("/ConfigurationUtils/stub4testtool/expected.xml");
+		
+		assertTransformIsCorrect(expectedConfiguration, stubbedConfiguration);
+	}
+	
+	protected void assertTransformIsCorrect(String expected, String actual) {
+		// Trim results to remove starting/ending whitespaces that might be introduced by the xslt but do not matter
+		assertEquals(expected.trim(),actual.trim());	
 	}
 }
