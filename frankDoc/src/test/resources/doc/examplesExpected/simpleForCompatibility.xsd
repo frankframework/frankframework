@@ -6,8 +6,10 @@
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
-        <xs:group ref="RoleNameIChildElementGroup" minOccurs="0" maxOccurs="1" />
-        <xs:element ref="RoleNameTChild" minOccurs="0" maxOccurs="unbounded" />
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:group ref="RoleNameIChildElementGroup" minOccurs="0" maxOccurs="1" />
+          <xs:element ref="RoleNameTChild" minOccurs="0" maxOccurs="unbounded" />
+        </xs:choice>
       </xs:sequence>
       <xs:attribute name="attribute" type="xs:string" />
       <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
@@ -20,7 +22,9 @@
       <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild - This is the header of the JavaDoc of "TChild".</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:sequence />
+      <xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
       <xs:attribute ref="active" />
       <xs:attribute name="elementRole" type="xs:string" fixed="roleNameTChild" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild" use="prohibited" />
@@ -77,6 +81,9 @@ This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentatio
     </xs:choice>
   </xs:group>
   <xs:complexType name="DescribedPossibleIChildType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
     <xs:attributeGroup ref="DescribedPossibleIChildDeclaredAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="DescribedPossibleIChildDeclaredAttributeGroup">
@@ -92,6 +99,9 @@ This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentatio
     </xs:attribute>
   </xs:attributeGroup>
   <xs:complexType name="NotDescribedPossibleIChildType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
     <xs:attributeGroup ref="NotDescribedPossibleIChildDeclaredAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="NotDescribedPossibleIChildDeclaredAttributeGroup">

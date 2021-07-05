@@ -398,7 +398,8 @@ public class DocWriterNew {
 			}
 		} else {
 			log.trace("FrankElement [{}] does not have plural config children", () -> frankElement.getFullName());
-			frankElement.getCumulativeConfigChildren(version.getChildSelector(), version.getChildRejector()).forEach(c -> addConfigChild(sequence, c));
+			final XmlBuilder childContext = version.configChildBuilderWithinSequence(sequence);
+			frankElement.getCumulativeConfigChildren(version.getChildSelector(), version.getChildRejector()).forEach(c -> addConfigChild(childContext, c));
 		}
 		log.trace("Adding cumulative attributes of FrankElement [{}] to XSD element [{}]", () -> frankElement.getFullName(), () -> xsdElementName);
 		addAttributeList(complexType, frankElement.getCumulativeAttributes(version.getChildSelector(), version.getChildRejector()));
@@ -475,18 +476,20 @@ public class DocWriterNew {
 
 	private class ElementAdder extends ElementBuildingStrategy {
 		private final XmlBuilder complexType;
+		private XmlBuilder configChildBuilder;
 		private final FrankElement addingTo;
 
 		ElementAdder(FrankElement frankElement) {
 			complexType = createComplexType(xsdElementType(frankElement));
 			xsdComplexItems.add(complexType);
+			configChildBuilder = version.configChildBuilder(complexType);
 			this.addingTo = frankElement;
 		}
 
 		@Override
 		void addGroupRef(String referencedGroupName) {
 			log.trace("Appending XSD type def of [{}] with reference to XSD group [{}]", () -> addingTo.getFullName(), () -> referencedGroupName);
-			DocWriterNewXmlUtils.addGroupRef(complexType, referencedGroupName);
+			DocWriterNewXmlUtils.addGroupRef(configChildBuilder, referencedGroupName);
 		}
 
 		@Override
