@@ -41,8 +41,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since   4.9
  * 
  */
-@FrankDocGroup(name = "Monitoring", order = 80)
-public abstract class TriggerBase implements LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
+public abstract class TriggerBase implements ITrigger, LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public static final int SOURCE_FILTERING_NONE=0;
