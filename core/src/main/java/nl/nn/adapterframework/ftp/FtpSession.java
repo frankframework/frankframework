@@ -784,8 +784,8 @@ public class FtpSession implements IConfigurable {
 		setFtpType(string);
 	}
 	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
-	public void setFtpType(String string) {
-		ftpType = Misc.parse(FtpType.class, "type", string);
+	public void setFtpType(String value) {
+		ftpType = Misc.parseFromField(FtpType.class, value, m -> m.type);
 	}
 	public FtpType getFtpTypeEnum() {
 		return ftpType;
